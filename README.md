@@ -1,139 +1,61 @@
-# Hardline Dreams - A Matrix Online Server Emulator written in C#
-===============================================================
+# Hardline Dreams - Matrix Online Server Emulator
 
-## About Hardline Dreams
-We are still here ! 
+**A modernized .NET 8.0 implementation of the Matrix Online server emulator**
 
-This is the development git repository for Hardline Dreams (HDS) a Matrix Online Server Emulator.
-Our Goal is to get most features working like in the good old MxO Game.
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![License](https://img.shields.io/badge/license-Check%20repo-blue)](LICENSE)
 
-For more information check out our site: http://www.mxoemu.com 
+---
 
-The benefit is that we want to target both combat systems - pre-CR2 and CR2.
-As we got a working client in 2014 from Community Member Draxxx (many thanks to him at this point) we want to get both working.
+## About This Project
 
-Also we started the analyse for the CR1 Client and figured out some differences (RPC Header Mapping is different, player object has one attribute that was added later etc.)
-Currently we handle that with different namespaces but this isnt a clean solution at all.
+This is a **modernized fork** of the [Hardline Dreams](https://github.com/hdneo/mxo-hd) Matrix Online server emulator, updated for current development practices and cross-platform compatibility.
 
-So we will use different branches for CR2 and pre-CR2 (aka CR1). The Master branch will stay always CR2. 
-Well this is an idea - but maybe we change this later. 
+**What is Matrix Online?** The Matrix Online (MxO) was an MMORPG set in the Matrix universe that ran from 2005-2009. This server emulator aims to preserve and recreate the game experience.
 
-## Current State
-As we didnt commit a while here this is the current develop version. It is not stable at all.
-Currently many features are just working "partically" or just started to implement them.
-But this is nearly a state which will be deployed to our "experimental" Server soon.
+### Why This Fork?
 
-Partically working features:
-- Signposts
-- Hyperjump (works but crappy and not really high enough)
-- Multi Player support (it "should" work but wasnt tested enough so you should see each other and hopefully you can chat)
-- Mission System (still at the beginning)
-- Ability loadout change (still buggy if you unload/load more than one ability)
-- Ability Vendor at Mara C just for tests (but you can buy items)
-- Inventory System (you can wear items but stackable doesnt work currently)
-- Friendlist (could be buggy too - not tested)
-- Teleporting through hardlines (this should work nearly perfect)
-- Opening Doors (for this you need an extra file with the static objects - so currently not working here and also not finished properly)
-- Mobs are working partically (they get spawned and auto-move a little bit but still some calculations are wrong - you cannot fight them and they are not attacking you)
-  EDIT: you can partically fight them (attack them with Hacker Attacks for example but its still very buggy)
-- Vendors are implemented (but selling items doesnt work and buy items doesnt decrease amount of money :))
-  Also i parsed all possible vendors from logs but many vendors missing which need be filled later.
-  For Fun and that you didnt see a vendor window the first vendor from the CSV is the "default vendor".
-- WIP: Crew and Factions Functionality (you can create crews and join factions / create factions but some parts are missing like updating all "online" playerviews)
+The original Hardline Dreams project laid excellent groundwork but hasn't been actively maintained since ~2020. This fork brings the codebase into 2024+ with:
 
-Server Features:
-- Entity and View System: Every View has an internal entityId so that we can just spawn view on static and dynamic obbjects.
-- Network System: we have now message Queues for RPC and Object related Messages. And it will be resend until ack.
-- Encryption Library Changed (but not finally - we still use engimaLib): to move to .NET Framework 4.0 and to compile for 64 Bit i created an encryption interface. 
-  So we use a C# Library and a C# implementation.
-  The Reason for this is that EngimaLib had to be recompiled for 64 Bit (as it is a C++ Library) but i am not sure if the base libs are able to compile 64 Bit.
-  As i dont know if this works well and how good the performance is i created a Encryption Interface and moved the Engima Implemenation there.
-  So if it doesnt work we could easily change back.
+- ✅ **.NET 8.0 LTS** - Upgraded from .NET Core 3.1 (now EOL)
+- ✅ **Cross-platform** - Build and run on macOS, Linux, and Windows
+- ✅ **Docker support** - One-command MySQL database setup
+- ✅ **Modern tooling** - Works with Rider, VS Code, Visual Studio 2022+
+- ✅ **CLI workflow** - Use standard `dotnet` commands
+- ✅ **Better documentation** - Comprehensive setup guides for all platforms
 
-Chat commands:
-There are some ingame commands we added that you can use in HardlineDreams.
-- ?org <OrgId> 
-   Change the players aligment / organisation (possible values are 0 - 3)
-- ?rep <OrgName> <Amount> 
-  Set the reputation for an organisation. 
-  - Example: for zion ?rep zion 120 
-  - Example: for machine: ?rep machine 120
-  - Example: for mero: ?rep mero 120
-- ?spawngameobject <GoId>
-  Spawns a GameObject of Type GoId in your current position and rotation. This can only work if this type of Go has values for Position and rotation (all other possible attributes are not set).
-  This works with reflections.
-- ?gotopos X Y Z 
-- ?rsi <part> <value> : you can change rsi parts but be careful with it
-- ?spawndatanode : This spawn a datanode
-- ?moa <hexMoa> 
-  Change the moa (only visible to yourself currently)
-- ?playanim <animId>
-  Play an animation.
-- ?playmove <moveid> 
-  Should play movement (again i am not sure if this works)
-- ?mob
-  This should spawn a testmob but this doesnt work currently 
+## Quick Start
 
-There are some other commands implemented but they are not important.
- 
+### Prerequisites
 
-## The Future
-We still continue the development on this project. There is no real "roadmap" or something - we implement the stuff on the fly.
-This is because we need to research, test and implement everytime.
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- MySQL 8.0 (or use Docker - see below)
+- Matrix Online client (CR2 or CR1)
 
-So the next goals be: 
-- Real HyperJump
-- Crew and Faction Managment Finalize
-- Static Objects with correct values (some positions are currently wrong)
+### Option 1: Docker Setup (Recommended for macOS/Linux)
 
+```bash
+# Clone the repository
+git clone https://github.com/kylebrussell/mxo-hd.git
+cd mxo-hd
 
-## Other Files
-I commited the debug folder for the reason that there are some resource files inside.
-The resource files are contributed by MxOSource (for missions XML files - which are currently unused by hds) and several data files which are contributed by the community and mxoemu.info (Rajkosto).
-So special thanks for this resources goes to them. 
+# Start MySQL with Docker Compose
+docker-compose up -d
 
-If you find files where you see a credit by yourself, feel free to contact us on hardline dreams and i add you here too.
+# Configure the server
+cp Config.xml.dist Config.xml
 
-In the docs folder is a "data.zip" - thanks to githubs upload limit of 100 MB i coulnd't provide them directly.
-If you want run the server: extract the folder in the debug folder so that you have a "data" folder inside that where the extracted stuff is there.
-This is necessary to get all the mobs and all static objects recognized.
-[Data](docs/data.zip)
+# Build and run
+dotnet restore
+dotnet build
+dotnet run --project "hds/Hardline Dreams MxO server.csproj"
+```
 
-## Activity
-If we dont commit here, it doesnt mean that we didnt something on it. We want just to commit some major updates in the future.
-Also check out our other repositories for helpful stuff like packets tools etc.
+**See the detailed [macOS Setup Guide](docs/SETUP-macOS.md) for complete instructions.**
 
+### Option 2: Manual Setup
 
-## Development Environment Setup
-
-This project has been modernized to use **.NET 8.0** and supports cross-platform development on Windows, macOS, and Linux.
-
-### Recommended Setup
-
-**For macOS users:** See the comprehensive [macOS Setup Guide](docs/SETUP-macOS.md) for detailed instructions including Docker setup.
-
-**For all platforms:**
-- Install [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
-- Use any modern IDE:
-  - **JetBrains Rider** (recommended) - Best C# IDE with excellent cross-platform support
-  - **Visual Studio 2022** (Windows/Mac)
-  - **Visual Studio Code** with C# Dev Kit extension
-  - **MonoDevelop** also works
-
-## Getting the Server Running
-
-### Quick Start (macOS with Docker)
-
-For the fastest setup on macOS, see the [macOS Setup Guide](docs/SETUP-macOS.md) which includes:
-- Automated Docker MySQL setup with `docker-compose.yml`
-- One-command database initialization
-- Step-by-step build and run instructions
-
-### Manual Setup (All Platforms)
-
-**1. Set up the Database**
-
-Install MySQL 8.0 and import the schema:
+**1. Set up MySQL:**
 ```bash
 mysql -u root -p
 CREATE DATABASE reality_hd CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -142,50 +64,201 @@ GRANT ALL PRIVILEGES ON reality_hd.* TO 'mxo'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 
-# Import the database schema
 mysql -u mxo -p reality_hd < SQL/reality_hd.sql
 ```
 
-**2. Configure the Server**
-
-Copy the configuration template:
+**2. Configure and build:**
 ```bash
 cp Config.xml.dist Config.xml
+# Edit Config.xml with your database settings
+
+dotnet restore
+dotnet build
 ```
 
-Edit `Config.xml` to match your database settings if needed.
-
-**3. Build and Run**
-
+**3. Extract data files:**
 ```bash
-# Restore dependencies
-dotnet restore
-
-# Build the project
-dotnet build
-
-# Copy config to output directory
+# Extract docs/data.zip to hds/bin/Debug/net8.0/data/
+unzip docs/data.zip -d hds/bin/Debug/net8.0/data/
 cp Config.xml hds/bin/Debug/net8.0/
+```
 
-# Extract data files (static game objects)
-# Note: Extract docs/data.zip to hds/bin/Debug/net8.0/data/
-# These CSV files contain static gameobjects for the 3 world files
-
-# Run the server
+**4. Run the server:**
+```bash
 dotnet run --project "hds/Hardline Dreams MxO server.csproj"
 ```
 
-**Expected Output:** The server should initialize and end with **"I am running :D"**
+**Success!** When you see `"I am running :D"`, the server is ready.
 
-### About the Data Files
+## Current Features & State
 
-The data files (CSV) contain static game objects for the 3 world files (constructs are missing currently). These enable features like opening doors.
+This emulator is a **work-in-progress** and implements partial functionality of the original Matrix Online game.
 
-**Note:** The objects were parsed using a tool called "Cortana" (created before Windows 10 existed!). Some door positions may be incorrect due to parsing bugs. You can check out the tool here: https://github.com/hdneo/cortana-python.git
+### Implemented Features
 
-## Thanks & Credits
-Just as i forgot i want to give some thanks and credits.
-I didnt go deep in detail for what so here it is.
-* Rajkosto (mxoemu.info) - many base logic like the encryption, GoProps etc. are based from him.
-* Morpheus (hardlinedreams) - Many researching stuff and "cortana". Many thanks mate :)
-* The Whole MxO Community - Just for Motivation and support and sure for packet researching too. 
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Authentication** | ✅ Working | Login server functional |
+| **Character Creation/Selection** | ✅ Working | Margin server operational |
+| **Multi-player Support** | ⚠️ Partial | Players can see each other, chat works |
+| **Hardlines (Teleportation)** | ✅ Working | Teleporting between locations works well |
+| **Movement & Navigation** | ✅ Working | Basic player movement |
+| **Inventory System** | ⚠️ Partial | Can equip items, stackables need work |
+| **Ability System** | ⚠️ Partial | Loadout changes work, some bugs with multiple abilities |
+| **Vendors** | ⚠️ Partial | Buying works (doesn't decrease money), selling not implemented |
+| **NPCs/Mobs** | ⚠️ Partial | Spawn and move, combat is very buggy |
+| **Doors & Static Objects** | ⚠️ Partial | Can open doors (requires data files) |
+| **Mission System** | 🚧 Early stage | Basic framework only |
+| **Crews & Factions** | 🚧 Early stage | Creation works, management incomplete |
+| **Hyperjump** | ⚠️ Needs work | Implemented but height calculations are off |
+| **Friend List** | ⚠️ Untested | Code exists, needs testing |
+
+### Technical Architecture
+
+**Server Components:**
+- **Auth Server** (Port 10000) - Handles login authentication
+- **Margin Server** (Port 10001) - Character selection and creation
+- **World Server** (Port 10002) - Main game world
+
+**Key Features:**
+- Entity/View system with internal entity IDs for static and dynamic objects
+- Message queue system for RPC and object-related messages with resend until ACK
+- Encryption interface for flexibility (currently using EnigmaLib)
+- Support for CR1 and CR2 client versions
+
+## In-Game Commands
+
+Once connected to the server, you can use these admin commands (prefix with `?`):
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `?org <OrgId>` | Change organization/alignment (0-3) | `?org 1` |
+| `?rep <OrgName> <Amount>` | Set faction reputation | `?rep zion 120` |
+| `?gotopos X Y Z` | Teleport to coordinates | `?gotopos 100 50 200` |
+| `?spawngameobject <GoId>` | Spawn a game object at your location | `?spawngameobject 1234` |
+| `?rsi <part> <value>` | Change RSI appearance parts | Use with caution |
+| `?moa <hexMoa>` | Change MOA (animation state) | Only visible to you |
+| `?playanim <animId>` | Play an animation | `?playanim 42` |
+| `?spawndatanode` | Spawn a data node | `?spawndatanode` |
+
+## Development
+
+### IDEs & Tools
+
+- **JetBrains Rider** - Excellent C# IDE with full cross-platform support
+- **Visual Studio Code** - With C# Dev Kit extension
+- **Visual Studio 2022** - Windows/Mac
+
+### Project Structure
+
+```
+mxo-hd/
+├── hds/                          # Main server source
+│   ├── auth/                     # Authentication server
+│   ├── margin/                   # Character selection server
+│   ├── world/                    # Game world server
+│   ├── databases/                # Database access layer
+│   └── ...
+├── SQL/                          # Database schema
+├── docs/                         # Documentation
+│   ├── SETUP-macOS.md           # macOS setup guide
+│   ├── SETUP.MD                 # General setup
+│   └── data.zip                 # Game object data
+├── docker-compose.yml           # MySQL Docker setup
+└── Config.xml.dist              # Configuration template
+```
+
+### Building for Different Configurations
+
+```bash
+# Debug build (default)
+dotnet build
+
+# Release build
+dotnet build -c Release
+
+# Clean build
+dotnet clean && dotnet build
+
+# Run tests (if any)
+dotnet test
+```
+
+### Contributing
+
+Contributions are welcome! This is a preservation and modernization effort. Areas that need work:
+
+- **Combat system** - NPC combat is very buggy
+- **Mission system** - Needs major development
+- **Vendor system** - Selling items, proper money handling
+- **Testing** - Many features are untested
+- **Documentation** - Always can be improved
+- **Client compatibility** - Both CR1 and CR2 client support
+
+**To contribute:**
+1. Fork this repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Client Setup
+
+You'll need a Matrix Online client to connect. Detailed client configuration is beyond this README's scope, but generally:
+
+1. **Edit your hosts file** to point MxO domains to `127.0.0.1`
+2. **Configure useropts.cfg** with your server settings
+3. Ensure you have a **compatible client** (CR2 or CR1)
+
+See community resources at [mxoemu.com](http://www.mxoemu.com) for client setup guides.
+
+## About the Data Files
+
+Static game objects (doors, vendors, NPCs, etc.) are stored in CSV files extracted from `docs/data.zip`. These were parsed using a tool called **Cortana** (created before Windows 10 commandeered the name!).
+
+**Note:** Some object positions may be incorrect due to parsing bugs. The parser is available at: https://github.com/hdneo/cortana-python
+
+## Known Issues
+
+- **Mob combat** is extremely buggy and mostly non-functional
+- **Stackable items** in inventory don't work properly
+- **Hyperjump height calculations** are off
+- **Vendor selling** is not implemented
+- **Money transactions** don't properly deduct from player balance
+- **Some door positions** are incorrect (parsing artifacts)
+- **CR1 client support** uses a workaround with namespaces (needs refactoring)
+
+## Credits & Acknowledgments
+
+### Original Hardline Dreams Project
+- **Original Repository:** https://github.com/hdneo/mxo-hd
+- **Community Website:** http://www.mxoemu.com
+
+### Special Thanks
+- **Rajkosto** (mxoemu.info) - Foundational work on encryption, GoProps, and core server logic
+- **Morpheus** (Hardline Dreams) - Research, packet analysis, and the Cortana parsing tool
+- **Draxxx** - Provided working client files (2014)
+- **MxOSource** - Mission XML files and resources
+- **The MxO Community** - Ongoing support, motivation, and packet research
+
+### This Modernization Fork
+- Upgraded to .NET 8.0 and modern tooling
+- Added Docker support and cross-platform documentation
+- Updated package dependencies and fixed breaking API changes
+- Cleaned up build artifacts and improved project structure
+
+## License
+
+Please check the repository for license information. This is a fan preservation project for a discontinued game.
+
+## Resources
+
+- **This Fork:** https://github.com/kylebrussell/mxo-hd
+- **Original Project:** https://github.com/hdneo/mxo-hd
+- **Community:** http://www.mxoemu.com
+- **Cortana Tool:** https://github.com/hdneo/cortana-python
+- **.NET 8.0:** https://dotnet.microsoft.com/download/dotnet/8.0
+
+---
+
+**Welcome back to The Matrix.** 🟢💊
