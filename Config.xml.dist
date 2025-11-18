@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+  <!-- Database Configuration -->
+  <Database>
+    <Host>localhost</Host>
+    <Port>3306</Port>
+    <Username>mxo</Username>
+    <Password>mxopassword</Password>
+    <Database>reality_hd</Database>
+  </Database>
+
+  <!-- Server Configuration -->
+  <Server>
+    <!-- Auth Server (Login) -->
+    <Auth>
+      <Host>0.0.0.0</Host>
+      <Port>10000</Port>
+    </Auth>
+
+    <!-- Margin Server (Character Selection) -->
+    <Margin>
+      <Host>0.0.0.0</Host>
+      <Port>10001</Port>
+    </Margin>
+
+    <!-- World Server (In-Game) -->
+    <World>
+      <Host>0.0.0.0</Host>
+      <Port>10002</Port>
+    </World>
+  </Server>
+
+  <!-- World Configuration -->
+  <Worlds>
+    <World id="1" name="Syntax">
+      <Description>The Syntax World</Description>
+    </World>
+  </Worlds>
+
+  <!-- Logging Configuration -->
+  <Logging>
+    <Level>INFO</Level>
+    <File>server.log</File>
+  </Logging>
+</Config>

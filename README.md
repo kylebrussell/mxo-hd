@@ -104,27 +104,84 @@ If we dont commit here, it doesnt mean that we didnt something on it. We want ju
 Also check out our other repositories for helpful stuff like packets tools etc.
 
 
-## Development Enviroment Setup
-You can use Visual Studio 2017 (which we recommend currently and use it). 
-However - Mono Develop should work too.
+## Development Environment Setup
 
-Rider works again too - i used Rider as its the best C# IDE out there :).
+This project has been modernized to use **.NET 8.0** and supports cross-platform development on Windows, macOS, and Linux.
 
-## Get the Server running
-First you should extract the data.zip file in the "Debug/data" directory (there are 3 CSV Files).
-These files holds all static gameobjects for the 3 worlds files (constructs are missing currently).
+### Recommended Setup
 
-So you should be able to open doors.
-Please Note: they are parsed using a tool we called "Cortana" in the past (before windows 10 exists :)). 
-We had some bugs parsing it so some doors position are not correctly currently.
-You can checkout the tool here https://github.com/hdneo/cortana-python.git
+**For macOS users:** See the comprehensive [macOS Setup Guide](docs/SETUP-macOS.md) for detailed instructions including Docker setup.
 
-Second install a MySQL Server somewhere.
-Import the SQL which is placed in the SQL Folder. 
+**For all platforms:**
+- Install [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- Use any modern IDE:
+  - **JetBrains Rider** (recommended) - Best C# IDE with excellent cross-platform support
+  - **Visual Studio 2022** (Windows/Mac)
+  - **Visual Studio Code** with C# Dev Kit extension
+  - **MonoDevelop** also works
 
-Copy Debug/Config.xml.dist to Debug/Config.xml and change the Settings to your server. 
+## Getting the Server Running
 
-Start the Server and if everything is right it should take some minutes and end with "I am running :D".
+### Quick Start (macOS with Docker)
+
+For the fastest setup on macOS, see the [macOS Setup Guide](docs/SETUP-macOS.md) which includes:
+- Automated Docker MySQL setup with `docker-compose.yml`
+- One-command database initialization
+- Step-by-step build and run instructions
+
+### Manual Setup (All Platforms)
+
+**1. Set up the Database**
+
+Install MySQL 8.0 and import the schema:
+```bash
+mysql -u root -p
+CREATE DATABASE reality_hd CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mxo'@'localhost' IDENTIFIED BY 'mxopassword';
+GRANT ALL PRIVILEGES ON reality_hd.* TO 'mxo'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+# Import the database schema
+mysql -u mxo -p reality_hd < SQL/reality_hd.sql
+```
+
+**2. Configure the Server**
+
+Copy the configuration template:
+```bash
+cp Config.xml.dist Config.xml
+```
+
+Edit `Config.xml` to match your database settings if needed.
+
+**3. Build and Run**
+
+```bash
+# Restore dependencies
+dotnet restore
+
+# Build the project
+dotnet build
+
+# Copy config to output directory
+cp Config.xml hds/bin/Debug/net8.0/
+
+# Extract data files (static game objects)
+# Note: Extract docs/data.zip to hds/bin/Debug/net8.0/data/
+# These CSV files contain static gameobjects for the 3 world files
+
+# Run the server
+dotnet run --project "hds/Hardline Dreams MxO server.csproj"
+```
+
+**Expected Output:** The server should initialize and end with **"I am running :D"**
+
+### About the Data Files
+
+The data files (CSV) contain static game objects for the 3 world files (constructs are missing currently). These enable features like opening doors.
+
+**Note:** The objects were parsed using a tool called "Cortana" (created before Windows 10 existed!). Some door positions may be incorrect due to parsing bugs. You can check out the tool here: https://github.com/hdneo/cortana-python.git
 
 ## Thanks & Credits
 Just as i forgot i want to give some thanks and credits.
