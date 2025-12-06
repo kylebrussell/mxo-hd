@@ -50,13 +50,31 @@ namespace hds
 
         /// <summary>
         /// Bullet hit FX IDs for ranged combat.
+        /// Includes body hits from multiple angles for visual variety.
         /// </summary>
         private static readonly uint[] RangedHitFxIds = new uint[]
         {
-            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_MF,
-            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_HF,
-            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_LF,
-            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_MB,
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_MF,   // Mid front
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_HF,   // High front
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_LF,   // Low front
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_MB,   // Mid back
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_HB,   // High back
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_HR,   // High right
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_HL,   // High left
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_MR,   // Mid right
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_ML,   // Mid left
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_LR,   // Low right
+            (uint)FXList.FX_BULLET_BODY_HITS_BULLETHIT_LL,   // Low left
+        };
+
+        /// <summary>
+        /// Muzzle flash FX IDs for ranged combat.
+        /// TODO: Send muzzle flash to attacker on ranged attacks.
+        /// </summary>
+        private static readonly uint[] MuzzleFlashFxIds = new uint[]
+        {
+            (uint)FXList.FX_WEAPON_SEMIAUTO_PISTOL1_MUZZLE_FLASH,
+            (uint)FXList.FX_WEAPON_SEMIAUTO_PISTOL3_MUZZLE_FLASH,
         };
 
         /// <summary>
@@ -93,8 +111,9 @@ namespace hds
         /// </summary>
         /// <param name="attackerLevel">Level of the attacker</param>
         /// <param name="defenderLevel">Level of the defender</param>
+        /// <param name="distance">Optional distance to target (affects damage falloff)</param>
         /// <returns>Calculated damage value</returns>
-        public static UInt16 CalculateRangedDamage(UInt16 attackerLevel, UInt16 defenderLevel)
+        public static UInt16 CalculateRangedDamage(UInt16 attackerLevel, UInt16 defenderLevel, float distance = 0f)
         {
             if (defenderLevel == 0) defenderLevel = 1;
             if (attackerLevel == 0) attackerLevel = 1;
@@ -105,7 +124,69 @@ namespace hds
             float variance = MIN_VARIANCE + (float)random.NextDouble() * (MAX_VARIANCE - MIN_VARIANCE);
             float damage = BASE_RANGED_DAMAGE * levelRatio * variance;
 
+            // Apply distance falloff for ranged combat
+            // Optimal range is 10-30 meters, damage falls off beyond that
+            if (distance > 0f)
+            {
+                float distanceModifier = CalculateDistanceModifier(distance);
+                damage *= distanceModifier;
+            }
+
             return (UInt16)Math.Max(1, (int)damage);
+        }
+
+        /// <summary>
+        /// Calculates a damage modifier based on distance.
+        /// - Close range (under 5m): 90% damage (too close for good aim)
+        /// - Optimal range (5-30m): 100% damage
+        /// - Medium range (30-50m): 80% damage
+        /// - Long range (50m+): 60% damage minimum
+        /// </summary>
+        private static float CalculateDistanceModifier(float distance)
+        {
+            if (distance < 5f)
+            {
+                return 0.9f; // Too close
+            }
+            else if (distance <= 30f)
+            {
+                return 1.0f; // Optimal range
+            }
+            else if (distance <= 50f)
+            {
+                // Linear falloff from 100% to 80%
+                return 1.0f - ((distance - 30f) / 20f) * 0.2f;
+            }
+            else
+            {
+                // Beyond 50m, minimum 60% damage
+                return Math.Max(0.6f, 0.8f - ((distance - 50f) / 100f) * 0.2f);
+            }
+        }
+
+        /// <summary>
+        /// Calculates distance between player and mob positions.
+        /// </summary>
+        /// <param name="playerPositionBytes">Player position as LtVector3d byte array</param>
+        /// <param name="mobX">Mob X coordinate</param>
+        /// <param name="mobY">Mob Y coordinate</param>
+        /// <param name="mobZ">Mob Z coordinate</param>
+        /// <returns>Distance in game units (meters)</returns>
+        public static float CalculateDistance(byte[] playerPositionBytes, double mobX, double mobY, double mobZ)
+        {
+            if (playerPositionBytes == null || playerPositionBytes.Length < 24)
+            {
+                return 0f; // Invalid position data
+            }
+
+            double playerX = 0, playerY = 0, playerZ = 0;
+            NumericalUtils.LtVector3dToDoubles(playerPositionBytes, ref playerX, ref playerY, ref playerZ);
+
+            double dx = playerX - mobX;
+            double dy = playerY - mobY;
+            double dz = playerZ - mobZ;
+
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
         }
 
         /// <summary>
@@ -122,6 +203,15 @@ namespace hds
         public static uint GetRandomRangedHitFx()
         {
             return RangedHitFxIds[random.Next(RangedHitFxIds.Length)];
+        }
+
+        /// <summary>
+        /// Gets a random muzzle flash FX ID.
+        /// TODO: Wire this up to play on the attacker during ranged attacks.
+        /// </summary>
+        public static uint GetRandomMuzzleFlashFx()
+        {
+            return MuzzleFlashFxIds[random.Next(MuzzleFlashFxIds.Length)];
         }
 
         /// <summary>

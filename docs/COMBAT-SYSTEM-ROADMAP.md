@@ -10,7 +10,8 @@ The combat system is functional with bidirectional combat:
 - **CombatCalculator.cs** provides damage formulas with level scaling
 - **Mob.updateCombat()** attacks player back during combat (Phase 3 complete)
 - **Player death** triggers death state, respawn via hardline
-- **Range combat** is still a stub method (Phase 4)
+- **Range combat** is fully implemented (Phase 4 complete)
+- **Distance-based damage** for ranged combat with falloff
 - **Loot system** works - shows money reward on mob kill
 
 ### What Works
@@ -26,6 +27,8 @@ The combat system is functional with bidirectional combat:
 - Loot window shows on mob death, awards money based on level
 - FX system has 100+ combat effects ready (randomly selected)
 - Combat ends properly: player death, mob death, or player flees
+- **Ranged combat** fully functional with distance-based damage falloff
+- **Bullet hit FX** from multiple angles for visual variety
 
 ### Key Files
 
@@ -182,29 +185,39 @@ The combat system is functional with bidirectional combat:
 
 ---
 
-## Phase 4: Range Combat
+## Phase 4: Range Combat ✅ COMPLETE
 
 **Goal:** Implement ranged/gun combat.
 
+**Completed:** 2024-12-06
+
 ### Tasks
 
-- [ ] **4.1 Implement ProcessRangeCombatRequest()**
-  - File: `CombatHandler.cs:105-108`
-  - Currently empty stub
-  - Similar flow to close combat but:
-    - Different animations
-    - Range checking
-    - Ammo considerations?
+- [x] **4.1 Implement ProcessRangeCombatRequest()**
+  - File: `CombatHandler.cs:333-399`
+  - Full implementation matching close combat flow
+  - Creates CombatSession with `CombatType.Ranged`
+  - Faster tick rate (2 seconds vs 3 for melee)
 
-- [ ] **4.2 Range-specific damage calculation**
-  - Factor in distance
-  - Different weapon types (pistol, SMG, rifle)
-  - Cover/line of sight (future)
+- [x] **4.2 Range-specific damage calculation**
+  - `CombatCalculator.CalculateRangedDamage()` with distance parameter
+  - `CombatCalculator.CalculateDistance()` computes player-mob distance
+  - Distance-based damage falloff:
+    - Close (< 5m): 90% damage (too close)
+    - Optimal (5-30m): 100% damage
+    - Medium (30-50m): 80% damage
+    - Long (50m+): 60% minimum damage
 
-- [ ] **4.3 Range combat animations**
-  - Shooting animations for player
-  - Hit reactions for mobs
-  - Muzzle flash FX
+- [x] **4.3 Range combat FX**
+  - 11 bullet hit FX variations from multiple angles (HF, HB, MF, MB, etc.)
+  - Muzzle flash FX defined (ready for future attacker FX)
+  - All angles: front, back, left, right, high, mid, low
+
+### New Methods Added
+- `CombatCalculator.CalculateRangedDamage(level, level, distance)` - Distance-aware damage
+- `CombatCalculator.CalculateDistance(playerPos, mobX, mobY, mobZ)` - 3D distance calculation
+- `CombatCalculator.CalculateDistanceModifier(distance)` - Damage falloff curve
+- `CombatCalculator.GetRandomMuzzleFlashFx()` - For future attacker FX
 
 ---
 

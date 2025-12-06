@@ -207,8 +207,16 @@ namespace hds
                 }
                 else
                 {
-                    damage = CombatCalculator.CalculateRangedDamage(playerLevel, mobLevel);
+                    // For ranged combat, calculate distance and apply falloff
+                    float distance = CombatCalculator.CalculateDistance(
+                        session.Attacker.playerInstance.Position.getValue(),
+                        session.DefenderMob.getXPos(),
+                        session.DefenderMob.getYPos(),
+                        session.DefenderMob.getZPos()
+                    );
+                    damage = CombatCalculator.CalculateRangedDamage(playerLevel, mobLevel, distance);
                     fxId = CombatCalculator.GetRandomRangedHitFx();
+                    Output.WriteDebugLog($"[COMBAT] Range combat: distance={distance:F1}m");
                 }
 
                 Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
@@ -337,9 +345,65 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
 
-            // TODO: Implement ranged combat properly
-            // For now, could fall back to melee combat
-            // ProcessRequestCloseCombat(ref packet);
+            // Find the target mob
+            Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
+
+            // Create combat session with Ranged type
+            currentSession = new CombatSession(
+                Store.currentClient,
+                targetMob,
+                targetViewWithSpawnId,
+                CombatSession.CombatType.Ranged
+            );
+
+            // Set this player as the mob's combat target so mob can attack back
+            if (targetMob != null)
+            {
+                targetMob.setCombatTarget(Store.currentClient);
+            }
+
+            // Subscribe to combat events
+            currentSession.OnCombatTick += HandleCombatTick;
+            currentSession.OnCombatEnd += HandleCombatEnd;
+
+            // Send combat mode packet to player
+            ServerPackets packets = new ServerPackets();
+            packets.SendEnterCombatMode(Store.currentClient);
+
+            // Spawn the ILCombatHandler game object (same as melee)
+            var ilCombatHandler = new GameObjectDefinitions().Object55;
+            ilCombatHandler.DisableAllAttributes();
+            ilCombatHandler.StartTime.enable();
+            ilCombatHandler.Position.enable();
+
+            ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
+            ilCombatHandler.Position.setValue(Store.currentClient.playerInstance.Position.getValue());
+
+            UInt64 currentEntityId = WorldServer.entityIdCounter;
+            WorldServer.entityIdCounter++;
+            WorldServer.gameServerEntities.Add(ilCombatHandler);
+
+            packets.SendSpawnGameObject(Store.currentClient, ilCombatHandler, currentEntityId);
+
+            ClientView theView = Store.currentClient.viewMan.GetViewForEntityAndGo(currentEntityId,
+                NumericalUtils.ByteArrayToUint16(ilCombatHandler.GetGoid(), 1));
+
+            // Store view IDs in session
+            currentSession.CombatHandlerViewId = theView.ViewID;
+            currentSession.CombatHandlerEntityId = currentEntityId;
+            ilCombatViewId = theView.ViewID; // Legacy field
+
+            // Send combat initialization packet
+            packets.SendCombatInitialize(Store.currentClient, theView.ViewID, targetViewWithSpawnId);
+
+            // Send the combat state data
+            SendCombatStateBlob(Store.currentClient, theView.ViewID);
+
+            Store.currentClient.FlushQueue();
+
+            // Start combat session - ranged combat uses faster tick rate (2 seconds vs 3 for melee)
+            currentSession.Start(2000);
+            isCombatRunning = true;
         }
 
         /// <summary>
