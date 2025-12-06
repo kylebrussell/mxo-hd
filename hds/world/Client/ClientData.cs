@@ -47,7 +47,11 @@ namespace hds
 
 		public UInt32 jackoutStartTime;
 		public bool isJackoutInProgress;
-		
+
+		// Pending loot from killed mob (cleared after accepting)
+		public UInt32 pendingLootMoney = 0;
+		public bool hasLootPending = false;
+
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
 	    public UInt32 lastSaveTime;

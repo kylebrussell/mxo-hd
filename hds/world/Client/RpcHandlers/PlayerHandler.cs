@@ -224,20 +224,31 @@ namespace hds
 
         public void ProcessLootAccepted()
         {
-             
             ClientView F = Store.currentClient.viewMan.getViewById(Store.currentClient.playerData.currentSelectedTargetViewId);
 
-            // ToDo: we currently not know what items and money we should have - we give everytime 5000 currently
-            UInt32 value = 5000; 
-            UInt32 newMoneyAmount = (UInt32) Store.currentClient.playerData.getInfo() + value;
-            // Update Info
-            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient,newMoneyAmount);
-            Store.currentClient.playerData.setInfo(newMoneyAmount);
-                        
+            // Use pending loot amount from combat kill, or default to 0 if none
+            UInt32 value = 0;
+            if (Store.currentClient.playerData.hasLootPending)
+            {
+                value = Store.currentClient.playerData.pendingLootMoney;
+                // Clear pending loot
+                Store.currentClient.playerData.hasLootPending = false;
+                Store.currentClient.playerData.pendingLootMoney = 0;
+            }
+
+            if (value > 0)
+            {
+                UInt32 newMoneyAmount = (UInt32)Store.currentClient.playerData.getInfo() + value;
+                // Update Info in DB and player data
+                Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newMoneyAmount);
+                Store.currentClient.playerData.setInfo(newMoneyAmount);
+
+                Output.WriteDebugLog($"[LOOT] Player received {value} info. Total: {newMoneyAmount}");
+            }
+
             ServerPackets packet = new ServerPackets();
             packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
             packet.SendLootAccepted(Store.currentClient);
-            // ToDo: send "loot disabled" 
         }
 
         public void ProcessPlayerGetDetails(ref byte[] rpcData)

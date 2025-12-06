@@ -10,7 +10,7 @@ The combat system has been restructured and player damage is now functional:
 - **CombatCalculator.cs** provides damage formulas with level scaling
 - **Mob.updateCombat()** is still empty - NPCs don't fight back yet (Phase 3)
 - **Range combat** is still a stub method (Phase 4)
-- **Loot system** is disabled - needs wiring (Phase 2.4)
+- **Loot system** works - shows money reward on mob kill
 
 ### What Works
 
@@ -20,6 +20,7 @@ The combat system has been restructured and player damage is now functional:
 - **NEW:** `FindMobByViewSpawnId()` looks up target mob from client's view
 - **NEW:** `CombatCalculator` applies damage with level-based scaling
 - **NEW:** Mobs die when health reaches 0, marked as lootable
+- **NEW:** Loot window shows on mob death, awards money based on level
 - FX system has 100+ combat effects ready (now randomly selected)
 - Message queue infrastructure is solid
 
@@ -82,7 +83,7 @@ The combat system has been restructured and player damage is now functional:
 
 ---
 
-## Phase 2: Player Attacks Mob ✅ MOSTLY COMPLETE
+## Phase 2: Player Attacks Mob ✅ COMPLETE
 
 **Goal:** Player can hit mobs, deal damage, and kill them.
 
@@ -110,14 +111,18 @@ The combat system has been restructured and player damage is now functional:
     - `SendNpcDies()` sends death animation using correct mob view ID
     - Combat session ends automatically
 
-- [ ] **2.4 Enable loot system**
-  - File: `hds/world/Client/RpcHandlers/PlayerHandler.cs:240`
-  - Currently disabled with "send loot disabled" message
-  - Wire up `SendLootWindow()` when mob dies
-  - Implement `ProcessLootAccepted()` to give items
+- [x] **2.4 Enable loot system**
+  - Added `pendingLootMoney` and `hasLootPending` to `ClientData.cs`
+  - `HandleCombatEnd()` calculates loot money (50-150 per mob level)
+  - `SendLootWindow()` called automatically when mob dies
+  - `ProcessLootAccepted()` uses pending loot amount instead of hardcoded 5000
+  - Money saved to DB and UI updated
 
 ### New Files Created
 - `hds/world/Structures/CombatCalculator.cs` - Damage formulas and FX selection
+
+### Modified Files
+- `hds/world/Client/ClientData.cs` - Added pending loot tracking fields
 
 ---
 

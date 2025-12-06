@@ -277,8 +277,18 @@ namespace hds
                 Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
                 // TODO: Actually add exp to player via Store.currentClient.playerData or similar
 
-                // TODO: Trigger loot window
-                // packets.SendLootWindow(...);
+                // Calculate loot money based on mob level (50-150 per level)
+                Random rand = new Random();
+                UInt32 lootMoney = (UInt32)(mobLevel * (50 + rand.Next(100)));
+
+                // Store pending loot for when player accepts
+                Store.currentClient.playerData.pendingLootMoney = lootMoney;
+                Store.currentClient.playerData.hasLootPending = true;
+
+                // Send loot window to player (empty item array for now)
+                UInt32[] emptyItems = new UInt32[0];
+                packets.SendLootWindow(lootMoney, Store.currentClient, emptyItems);
+                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info");
             }
 
             Store.currentClient.FlushQueue();
