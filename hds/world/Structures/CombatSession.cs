@@ -257,5 +257,26 @@ namespace hds
             // TODO: Check player death for PvP
             return false;
         }
+
+        /// <summary>
+        /// Gets the defender's view ID (lower 16 bits of TargetViewSpawnId).
+        /// </summary>
+        public UInt16 GetDefenderViewId()
+        {
+            return (UInt16)(TargetViewSpawnId & 0xFFFF);
+        }
+
+        /// <summary>
+        /// Marks the defender mob as dead and lootable.
+        /// </summary>
+        public void MarkDefenderDead()
+        {
+            if (DefenderMob != null)
+            {
+                DefenderMob.setIsDead(true);
+                DefenderMob.setIsLootable(true);
+                DefenderMob.isUpdateable = false; // Stop AI updates
+            }
+        }
     }
 }

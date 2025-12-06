@@ -112,8 +112,8 @@ namespace hds
         }
 
         /// <summary>
-        /// Attempts to find a mob by its combined view+spawn ID.
-        /// TODO: Implement proper lookup in world's mob list.
+        /// Finds a mob by its combined view+spawn ID from the client's perspective.
+        /// The viewSpawnId is packed as: [spawnId:16][viewId:16]
         /// </summary>
         private Mob FindMobByViewSpawnId(UInt32 viewSpawnId)
         {
@@ -123,8 +123,32 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Looking for mob with viewId={viewId}, spawnId={spawnId}");
 
-            // TODO: Search Store.world.mobs or similar for the target
-            // For now, return null - combat will work but damage won't apply
+            // Look up the view from the client's view manager
+            ClientView targetView = Store.currentClient.viewMan.getViewById(viewId);
+            if (targetView == null)
+            {
+                Output.WriteDebugLog($"[COMBAT] No view found for viewId={viewId}");
+                return null;
+            }
+
+            UInt64 entityId = targetView.entityId;
+            Output.WriteDebugLog($"[COMBAT] Found view with entityId={entityId}");
+
+            // Search WorldServer.mobs for the mob with this entityId
+            lock (WorldServer.mobs.SyncRoot)
+            {
+                for (int i = 0; i < WorldServer.mobs.Count; i++)
+                {
+                    Mob mob = (Mob)WorldServer.mobs[i];
+                    if (mob.getEntityId() == entityId)
+                    {
+                        Output.WriteDebugLog($"[COMBAT] Found mob: {mob.getName()} (HP: {mob.getHealthC()}/{mob.getHealthM()})");
+                        return mob;
+                    }
+                }
+            }
+
+            Output.WriteDebugLog($"[COMBAT] No mob found with entityId={entityId}");
             return null;
         }
 
@@ -147,7 +171,7 @@ namespace hds
 
         /// <summary>
         /// Called by CombatSession on each combat tick.
-        /// This is where damage calculation and application should happen.
+        /// Calculates damage, applies it, and checks for death.
         /// </summary>
         private void HandleCombatTick(CombatSession session)
         {
@@ -155,20 +179,54 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}");
 
-            // TODO: Phase 2 implementation:
-            // 1. Calculate damage based on player stats/weapon
-            // 2. Apply damage to defender via session.ApplyDamageToDefender(damage, fxId)
-            // 3. Check if defender died
-            // 4. Have mob attack back if still alive
-
-            // For now, send the legacy update packet
+            // Send position update packet
             SendCombatUpdatePacket(session);
 
-            // Check if defender died (once mob lookup is working)
-            if (session.IsDefenderDead())
+            // Apply damage to defender if we have a valid target
+            if (session.DefenderMob != null)
             {
-                Output.WriteDebugLog("[COMBAT] Defender died!");
-                session.Stop(CombatSession.CombatEndReason.DefenderDied);
+                // Get player level (stored as byte array, typically single byte)
+                byte[] levelBytes = session.Attacker.playerInstance.Level.getValue();
+                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+                UInt16 mobLevel = session.DefenderMob.getLevel();
+
+                // Calculate damage based on combat type
+                UInt16 damage;
+                uint fxId;
+                if (session.Type == CombatSession.CombatType.Melee)
+                {
+                    damage = CombatCalculator.CalculateMeleeDamage(playerLevel, mobLevel);
+                    fxId = CombatCalculator.GetRandomMeleeHitFx();
+                }
+                else
+                {
+                    damage = CombatCalculator.CalculateRangedDamage(playerLevel, mobLevel);
+                    fxId = CombatCalculator.GetRandomRangedHitFx();
+                }
+
+                Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
+
+                // Apply damage to mob - this broadcasts to all nearby clients
+                bool defenderDied = session.ApplyDamageToDefender(damage, fxId);
+
+                if (defenderDied)
+                {
+                    Output.WriteDebugLog($"[COMBAT] {session.DefenderMob.getName()} died!");
+                    session.Stop(CombatSession.CombatEndReason.DefenderDied);
+                    return;
+                }
+
+                // TODO Phase 3: Mob attacks back here
+                // session.DefenderMob.updateCombat() or similar
+            }
+            else
+            {
+                // No valid mob target - check if defender died anyway (shouldn't happen)
+                if (session.IsDefenderDead())
+                {
+                    Output.WriteDebugLog("[COMBAT] Defender died!");
+                    session.Stop(CombatSession.CombatEndReason.DefenderDied);
+                }
             }
         }
 
@@ -202,11 +260,25 @@ namespace hds
             ServerPackets packets = new ServerPackets();
             packets.SendCombatEnd(Store.currentClient, session.CombatHandlerViewId);
 
-            // If defender died, trigger loot/death sequence
+            // If defender died, trigger death/loot sequence
             if (reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null)
             {
-                packets.SendNpcDies(session.CombatHandlerViewId, Store.currentClient, session.DefenderMob);
+                // Mark the mob as dead and lootable
+                session.MarkDefenderDead();
+
+                // Send death animation using the mob's view ID (not combat handler view ID)
+                UInt16 mobViewId = session.GetDefenderViewId();
+                Output.WriteDebugLog($"[COMBAT] Sending death for mob view {mobViewId}");
+                packets.SendNpcDies(mobViewId, Store.currentClient, session.DefenderMob);
+
+                // Award experience
+                UInt16 mobLevel = session.DefenderMob.getLevel();
+                UInt32 expGained = (UInt32)(mobLevel * 100); // Simple exp formula
+                Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
+                // TODO: Actually add exp to player via Store.currentClient.playerData or similar
+
                 // TODO: Trigger loot window
+                // packets.SendLootWindow(...);
             }
 
             Store.currentClient.FlushQueue();

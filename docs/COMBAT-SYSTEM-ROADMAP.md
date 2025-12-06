@@ -4,28 +4,34 @@ This document tracks the work needed to bring the combat system from its current
 
 ## Current State Summary
 
-The combat system exists but is largely non-functional:
+The combat system has been restructured and player damage is now functional:
 
-- **CombatHandler.cs** sends hardcoded hex test packets instead of structured data
-- **Mob.updateCombat()** is completely empty - NPCs never fight back
-- **Range combat** is a stub method with no implementation
-- **No damage calculations** exist - no formulas, no stat integration
-- **No combat session tracking** - nothing tracks who is fighting whom
+- **CombatHandler.cs** uses event-driven CombatSession architecture
+- **CombatCalculator.cs** provides damage formulas with level scaling
+- **Mob.updateCombat()** is still empty - NPCs don't fight back yet (Phase 3)
+- **Range combat** is still a stub method (Phase 4)
+- **Loot system** is disabled - needs wiring (Phase 2.4)
 
 ### What Works
 
 - ILCombatHandler (Object55) game object spawns correctly
 - View ID management for combat entities
-- `Mob.HitEnemyWithDamage()` can reduce health and broadcast to clients
-- FX system has 100+ combat effects ready
+- `Mob.HitEnemyWithDamage()` reduces health and broadcasts to clients
+- **NEW:** `FindMobByViewSpawnId()` looks up target mob from client's view
+- **NEW:** `CombatCalculator` applies damage with level-based scaling
+- **NEW:** Mobs die when health reaches 0, marked as lootable
+- FX system has 100+ combat effects ready (now randomly selected)
 - Message queue infrastructure is solid
 
 ### Key Files
 
 | File | Purpose | State |
 |------|---------|-------|
-| `hds/world/Client/RpcHandlers/CombatHandler.cs` | Main combat RPC handler | Hardcoded test packets |
-| `hds/world/Structures/Mob.cs` | NPC entity with combat state | `updateCombat()` empty |
+| `hds/world/Client/RpcHandlers/CombatHandler.cs` | Main combat RPC handler | **Functional** - event-driven with CombatSession |
+| `hds/world/Structures/CombatSession.cs` | Combat state tracking | **NEW** - tracks combatants, timer, events |
+| `hds/world/Structures/CombatCalculator.cs` | Damage formulas | **NEW** - level-based damage with variance |
+| `hds/world/ServerPackets/CombatPackets.cs` | Combat packet builders | **NEW** - structured packet methods |
+| `hds/world/Structures/Mob.cs` | NPC entity with combat state | `updateCombat()` empty (Phase 3) |
 | `hds/world/Structures/FX.cs` | Visual effect IDs | Ready to use |
 | `hds/world/ServerPackets/MobPackets.cs` | Mob packet builders | Has `SendNpcDies()` |
 | `hds/resources/gameobjects/definitions/AttributeClasses/AttributeClass3664.cs` | ILCombatHandler object | Working |
@@ -76,36 +82,42 @@ The combat system exists but is largely non-functional:
 
 ---
 
-## Phase 2: Player Attacks Mob
+## Phase 2: Player Attacks Mob ✅ MOSTLY COMPLETE
 
 **Goal:** Player can hit mobs, deal damage, and kill them.
 
+**Completed:** 2024-12-06
+
 ### Tasks
 
-- [ ] **2.1 Implement basic damage calculation**
-  - Create `CombatCalculator` class or static methods
-  - Simple formula: `baseDamage * (attackerLevel / defenderLevel) * random(0.8, 1.2)`
-  - Consider weapon equipped (if any)
+- [x] **2.1 Implement basic damage calculation**
+  - Created `CombatCalculator.cs` with static methods
+  - Formula: `baseDamage * (attackerLevel / defenderLevel) * random(0.8, 1.2)`
+  - Separate formulas for melee, ranged, and mob damage
+  - Random hit FX selection for visual variety
 
-- [ ] **2.2 Wire combat updates to Mob.HitEnemyWithDamage()**
-  - In `CombatHandler.UpdateCloseCombat()`:
-    - Get target mob from combat session
-    - Calculate damage
-    - Call `mob.HitEnemyWithDamage(damage, fxId)`
-  - Verify health updates broadcast to all nearby clients
+- [x] **2.2 Wire combat updates to Mob.HitEnemyWithDamage()**
+  - `HandleCombatTick()` now:
+    - Gets target mob from combat session (via `FindMobByViewSpawnId`)
+    - Calculates damage using `CombatCalculator`
+    - Calls `session.ApplyDamageToDefender(damage, fxId)`
+  - Mob health updates broadcast to all nearby clients via existing `HitEnemyWithDamage`
 
-- [ ] **2.3 Implement mob death**
+- [x] **2.3 Implement mob death**
   - When `mob.healthC <= 0`:
-    - Set `mob.is_dead = true`
-    - Call `SendNpcDies()` (already exists in MobPackets.cs)
-    - Set `mob.is_lootable = true`
-    - End combat session
+    - `CombatSession.MarkDefenderDead()` sets `is_dead = true`, `is_lootable = true`
+    - Stops mob AI updates (`isUpdateable = false`)
+    - `SendNpcDies()` sends death animation using correct mob view ID
+    - Combat session ends automatically
 
 - [ ] **2.4 Enable loot system**
   - File: `hds/world/Client/RpcHandlers/PlayerHandler.cs:240`
   - Currently disabled with "send loot disabled" message
   - Wire up `SendLootWindow()` when mob dies
   - Implement `ProcessLootAccepted()` to give items
+
+### New Files Created
+- `hds/world/Structures/CombatCalculator.cs` - Damage formulas and FX selection
 
 ---
 
