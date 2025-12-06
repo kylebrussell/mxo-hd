@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Timers;
 using hds.shared;
 
@@ -66,6 +67,12 @@ namespace hds
                 targetViewWithSpawnId,
                 CombatSession.CombatType.Melee
             );
+
+            // Set this player as the mob's combat target so mob can attack back
+            if (targetMob != null)
+            {
+                targetMob.setCombatTarget(Store.currentClient);
+            }
 
             // Subscribe to combat events
             currentSession.OnCombatTick += HandleCombatTick;
@@ -216,8 +223,15 @@ namespace hds
                     return;
                 }
 
-                // TODO Phase 3: Mob attacks back here
-                // session.DefenderMob.updateCombat() or similar
+                // Phase 3: Mob attacks the player back
+                bool playerDied = session.DefenderMob.updateCombat();
+                if (playerDied)
+                {
+                    Output.WriteDebugLog("[COMBAT] Player died in combat!");
+                    session.Stop(CombatSession.CombatEndReason.AttackerDied);
+                    HandlePlayerDeath(session.Attacker);
+                    return;
+                }
             }
             else
             {
@@ -256,6 +270,12 @@ namespace hds
             Output.WriteDebugLog($"[COMBAT] Combat ended: {reason}");
 
             isCombatRunning = false;
+
+            // Clear the mob's combat target
+            if (session.DefenderMob != null)
+            {
+                session.DefenderMob.clearCombatTarget();
+            }
 
             ServerPackets packets = new ServerPackets();
             packets.SendCombatEnd(Store.currentClient, session.CombatHandlerViewId);
@@ -320,6 +340,43 @@ namespace hds
             // TODO: Implement ranged combat properly
             // For now, could fall back to melee combat
             // ProcessRequestCloseCombat(ref packet);
+        }
+
+        /// <summary>
+        /// Handles player death - sets death state and triggers respawn flow.
+        /// </summary>
+        private void HandlePlayerDeath(WorldClient player)
+        {
+            Output.WriteDebugLog("[COMBAT] Processing player death");
+
+            // Set the IsDead attribute on player
+            player.playerInstance.IsDead.setValue(true);
+
+            // Send death packet to player
+            ServerPackets packets = new ServerPackets();
+
+            // Build player death state update - marks player as dead
+            // This uses the same self-view update pattern
+            PacketContent deathPacket = new PacketContent();
+            deathPacket.AddUint16(2, 1); // Self-view ID
+
+            // Update flags to include death state
+            // Format: attribute group flags + IsDead value
+            // IsDead is in the self-view attributes array
+            var updateAttributes = new System.Collections.Generic.List<Attribute>();
+            updateAttributes.Add(player.playerInstance.IsDead);
+            updateAttributes.Add(player.playerInstance.Health);
+
+            byte[] updateData = player.playerInstance.GetSelfUpdateAttributes(updateAttributes, true);
+            deathPacket.AddByteArray(updateData);
+
+            player.messageQueue.addObjectMessage(deathPacket.ReturnFinalPacket(), false);
+
+            // TODO: Send proper death animation/effects
+            // TODO: Start respawn timer or show hardline respawn prompt
+            // For now, just leave player in dead state - they can respawn via hardline
+
+            Output.WriteDebugLog("[COMBAT] Player death state set - respawn via hardline");
         }
 
         /// <summary>

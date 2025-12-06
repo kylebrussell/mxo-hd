@@ -4,11 +4,12 @@ This document tracks the work needed to bring the combat system from its current
 
 ## Current State Summary
 
-The combat system has been restructured and player damage is now functional:
+The combat system is functional with bidirectional combat:
 
 - **CombatHandler.cs** uses event-driven CombatSession architecture
 - **CombatCalculator.cs** provides damage formulas with level scaling
-- **Mob.updateCombat()** is still empty - NPCs don't fight back yet (Phase 3)
+- **Mob.updateCombat()** attacks player back during combat (Phase 3 complete)
+- **Player death** triggers death state, respawn via hardline
 - **Range combat** is still a stub method (Phase 4)
 - **Loot system** works - shows money reward on mob kill
 
@@ -16,13 +17,15 @@ The combat system has been restructured and player damage is now functional:
 
 - ILCombatHandler (Object55) game object spawns correctly
 - View ID management for combat entities
-- `Mob.HitEnemyWithDamage()` reduces health and broadcasts to clients
-- **NEW:** `FindMobByViewSpawnId()` looks up target mob from client's view
-- **NEW:** `CombatCalculator` applies damage with level-based scaling
-- **NEW:** Mobs die when health reaches 0, marked as lootable
-- **NEW:** Loot window shows on mob death, awards money based on level
-- FX system has 100+ combat effects ready (now randomly selected)
-- Message queue infrastructure is solid
+- `Mob.HitEnemyWithDamage()` reduces mob health and broadcasts to clients
+- `Mob.updateCombat()` reduces player health and sends damage packet
+- `FindMobByViewSpawnId()` looks up target mob from client's view
+- `CombatCalculator` applies damage with level-based scaling for both directions
+- Mobs die when health reaches 0, marked as lootable
+- Players die when health reaches 0, can respawn via hardline
+- Loot window shows on mob death, awards money based on level
+- FX system has 100+ combat effects ready (randomly selected)
+- Combat ends properly: player death, mob death, or player flees
 
 ### Key Files
 
@@ -32,7 +35,7 @@ The combat system has been restructured and player damage is now functional:
 | `hds/world/Structures/CombatSession.cs` | Combat state tracking | **NEW** - tracks combatants, timer, events |
 | `hds/world/Structures/CombatCalculator.cs` | Damage formulas | **NEW** - level-based damage with variance |
 | `hds/world/ServerPackets/CombatPackets.cs` | Combat packet builders | **NEW** - structured packet methods |
-| `hds/world/Structures/Mob.cs` | NPC entity with combat state | `updateCombat()` empty (Phase 3) |
+| `hds/world/Structures/Mob.cs` | NPC entity with combat state | **Functional** - `updateCombat()` attacks player |
 | `hds/world/Structures/FX.cs` | Visual effect IDs | Ready to use |
 | `hds/world/ServerPackets/MobPackets.cs` | Mob packet builders | Has `SendNpcDies()` |
 | `hds/resources/gameobjects/definitions/AttributeClasses/AttributeClass3664.cs` | ILCombatHandler object | Working |
@@ -126,37 +129,56 @@ The combat system has been restructured and player damage is now functional:
 
 ---
 
-## Phase 3: Mob Fights Back
+## Phase 3: Mob Fights Back ✅ COMPLETE
 
 **Goal:** Mobs attack the player during combat.
 
+**Completed:** 2024-12-06
+
 ### Tasks
 
-- [ ] **3.1 Implement Mob.updateCombat()**
-  - File: `hds/world/Structures/Mob.cs:449`
-  - Currently empty method
-  - On timer tick:
-    - Check if still in combat
-    - Calculate damage to player
-    - Send damage packet to player
-    - Update player health
+- [x] **3.1 Implement Mob.updateCombat()**
+  - File: `hds/world/Structures/Mob.cs:485`
+  - Mob tracks its combat target (`WorldClient combatTarget`)
+  - On combat tick:
+    - Gets player health from `playerInstance.Health`
+    - Calculates damage via `CombatCalculator.CalculateMobDamage()`
+    - Updates player health attribute
+    - Sends damage packet to player self-view (view ID 2)
+    - Returns true if player died
 
-- [ ] **3.2 Player health updates**
-  - Reduce player HP when hit
-  - Broadcast health change to client
-  - Use existing `Health` attribute on player instance
+- [x] **3.2 Player health updates**
+  - Player HP reduced on each combat tick
+  - Health packet sent to player's self-view
+  - Same packet format as mob damage: `04 80 80 80 c0 <health> c0 <fxId> 01 <hitCounter>`
+  - `playerInstance.Health.setValue()` keeps server state in sync
 
-- [ ] **3.3 Implement player death**
+- [x] **3.3 Implement player death**
   - When player health <= 0:
-    - Set death state
-    - End combat
-    - Trigger respawn flow (hardline?)
+    - `HandlePlayerDeath()` called from `HandleCombatTick()`
+    - Sets `playerInstance.IsDead` to true
+    - Sends self-view update with death state
+    - Player can respawn via hardline
+    - TODO: Proper death animation/effects, respawn timer
 
-- [ ] **3.4 Combat end conditions**
-  - Player dies -> combat ends
-  - Mob dies -> combat ends
-  - Player leaves range -> combat ends (ProcessLeaveCloseCombat)
-  - Timeout -> combat ends
+- [x] **3.4 Combat end conditions**
+  - Player dies -> `CombatEndReason.AttackerDied`
+  - Mob dies -> `CombatEndReason.DefenderDied`
+  - Player leaves range -> `CombatEndReason.AttackerFled`
+  - `ProcessLeaveCloseCombat()` stops session
+  - Mob's combat target cleared on end (`clearCombatTarget()`)
+
+### New Methods Added
+- `Mob.setCombatTarget(WorldClient)` - Sets mob's attack target
+- `Mob.getCombatTarget()` - Gets current target
+- `Mob.clearCombatTarget()` - Clears target on combat end
+- `Mob.updateCombat()` - Calculates and applies damage to player
+- `Mob.SendPlayerDamagePacket()` - Sends health update to player
+- `CombatHandler.HandlePlayerDeath()` - Handles player death state
+
+### Modified Files
+- `hds/world/Structures/Mob.cs` - Added combat target tracking and updateCombat()
+- `hds/world/Client/RpcHandlers/CombatHandler.cs` - Wired mob attacks, player death handling
 
 ---
 

@@ -33,6 +33,10 @@ namespace hds
         private bool is_spawned = true;
         public bool isUpdateable = false;
 
+        // Combat tracking - which player is this mob fighting
+        private WorldClient combatTarget = null;
+        private UInt16 mobHitCounter = 0;
+
         public enum statusList
         {
             WALKING = 0x00,
@@ -446,8 +450,121 @@ namespace hds
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this);
         }
 
-        public void updateCombat()
+        /// <summary>
+        /// Sets the combat target for this mob.
+        /// </summary>
+        public void setCombatTarget(WorldClient target)
         {
+            combatTarget = target;
+        }
+
+        /// <summary>
+        /// Gets the current combat target.
+        /// </summary>
+        public WorldClient getCombatTarget()
+        {
+            return combatTarget;
+        }
+
+        /// <summary>
+        /// Clears the combat target when combat ends.
+        /// </summary>
+        public void clearCombatTarget()
+        {
+            combatTarget = null;
+            if (!is_dead)
+            {
+                currentState = (int)statusList.STANDING;
+            }
+        }
+
+        /// <summary>
+        /// Called on combat tick to make this mob attack its target.
+        /// Returns true if the player died from this attack.
+        /// </summary>
+        public bool updateCombat()
+        {
+            if (combatTarget == null || is_dead)
+            {
+                return false;
+            }
+
+            // Get player's current health
+            byte[] healthBytes = combatTarget.playerInstance.Health.getValue();
+            UInt16 playerHealth = NumericalUtils.ByteArrayToUint16(healthBytes, 1);
+
+            // Get player's max health for reference
+            byte[] maxHealthBytes = combatTarget.playerInstance.MaxHealth.getValue();
+            UInt16 playerMaxHealth = NumericalUtils.ByteArrayToUint16(maxHealthBytes, 1);
+
+            // Get player level
+            byte[] levelBytes = combatTarget.playerInstance.Level.getValue();
+            UInt16 playerLevel = (levelBytes != null && levelBytes.Length > 0) ? levelBytes[0] : (UInt16)1;
+
+            // Calculate damage using mob's level vs player's level
+            UInt16 damage = CombatCalculator.CalculateMobDamage(level, playerLevel);
+            uint fxId = CombatCalculator.GetRandomMeleeHitFx();
+
+            Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}) for {damage} damage");
+
+            // Apply damage to player
+            UInt16 newHealth;
+            if (playerHealth <= damage)
+            {
+                newHealth = 0;
+            }
+            else
+            {
+                newHealth = (UInt16)(playerHealth - damage);
+            }
+
+            // Update player's health attribute
+            combatTarget.playerInstance.Health.setValue(newHealth);
+
+            // Increment hit counter for animation sequencing
+            mobHitCounter++;
+
+            // Send health update packet to the player (view ID 2 is self-view)
+            SendPlayerDamagePacket(combatTarget, newHealth, fxId, mobHitCounter);
+
+            Output.WriteDebugLog($"[COMBAT] Player health: {playerHealth} -> {newHealth}");
+
+            // Check if player died
+            if (newHealth <= 0)
+            {
+                Output.WriteDebugLog($"[COMBAT] Player died!");
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sends a damage/health update packet to the player.
+        /// Uses same format as HitEnemyWithDamage but for player self-view.
+        /// </summary>
+        private void SendPlayerDamagePacket(WorldClient client, UInt16 newHealth, uint fxId, UInt16 hitCounter)
+        {
+            // Format: 04 80 80 80 c0 <uint16 health> c0 <uint32 fxid> 01 <uint16 hitCounter>
+            // This updates the player's self-view (view ID 2) with new health and hit FX
+            var hitPacket = new PacketContent();
+            hitPacket.AddByte(0x04);
+            hitPacket.AddByte(0x80);
+            hitPacket.AddByte(0x80);
+            hitPacket.AddByte(0x80);
+            hitPacket.AddByte(0xc0);
+            hitPacket.AddUint16(newHealth, 1);
+            hitPacket.AddByte(0xc0);
+            hitPacket.AddUint32(fxId, 1);
+            hitPacket.AddByte(0x01);
+            hitPacket.AddUShort(hitCounter);
+
+            // Send to player's self-view (view ID 2)
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1); // Self-view is always view ID 2
+            pak.AddByteArray(hitPacket.ReturnFinalPacket());
+
+            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
         }
     }
 }
