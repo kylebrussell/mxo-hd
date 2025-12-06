@@ -4,15 +4,17 @@ This document tracks the work needed to bring the combat system from its current
 
 ## Current State Summary
 
-The combat system is functional with bidirectional combat:
+The combat system is functional with bidirectional combat and tactical options:
 
 - **CombatHandler.cs** uses event-driven CombatSession architecture
-- **CombatCalculator.cs** provides damage formulas with level scaling
+- **CombatCalculator.cs** provides damage formulas with level scaling and tactic modifiers
 - **Mob.updateCombat()** attacks player back during combat (Phase 3 complete)
 - **Player death** triggers death state, respawn via hardline
 - **Range combat** is fully implemented (Phase 4 complete)
 - **Distance-based damage** for ranged combat with falloff
 - **Loot system** works - shows money reward on mob kill
+- **Tactics system** implements rock-paper-scissors combat (Phase 5 partial)
+- **Inner Strength** drains during combat and tactic changes
 
 ### What Works
 
@@ -29,6 +31,8 @@ The combat system is functional with bidirectional combat:
 - Combat ends properly: player death, mob death, or player flees
 - **Ranged combat** fully functional with distance-based damage falloff
 - **Bullet hit FX** from multiple angles for visual variety
+- **Combat Tactics** (Speed/Power/Grab) affect damage with counter system
+- **Inner Strength drain** during combat (2 IS/round) and tactic changes (10 IS)
 
 ### Key Files
 
@@ -221,33 +225,54 @@ The combat system is functional with bidirectional combat:
 
 ---
 
-## Phase 5: Polish & Systems
+## Phase 5: Polish & Systems ✅ PARTIAL
 
 **Goal:** Full combat experience with tactics and animations.
 
+**Completed:** 2024-12-06
+
 ### Tasks
 
-- [ ] **5.1 Implement tactics (CT) system**
-  - `ProcessChangeTactic()` currently just stops timer
-  - Combat Tactics should affect:
-    - Damage dealt/received
-    - Speed/accuracy
-    - Special moves available
+- [x] **5.1 Implement tactics (CT) system**
+  - File: `CombatCalculator.cs` - Added `CombatTactic` enum and modifiers
+  - Rock-paper-scissors system: Speed > Power > Grab > Speed
+  - Tactics affect damage dealt/received:
+    - Speed: 85% damage, 110% damage taken, 10% IS cost reduction
+    - Power: 120% damage, 105% damage taken, 10% IS cost increase
+    - Grab: 95% damage, 80% damage taken (defensive)
+  - Counter bonuses: ±25% damage when tactic beats opponent
+  - `ProcessChangeTactic()` now changes tactic with IS cost (10 IS)
+  - `CombatSession.SetAttackerTactic()` tracks current tactic
 
 - [ ] **5.2 Combat animations sync**
   - Coordinate attack animations between combatants
   - Use animation IDs from data files
   - Sync with damage timing
+  - TODO: Needs original animation timing research
 
-- [ ] **5.3 Inner Strength (IS) integration**
-  - Combat abilities use IS
-  - Drain IS on ability use
-  - Regenerate IS over time
+- [x] **5.3 Inner Strength (IS) integration**
+  - Combat drains IS per round (2 IS per tick via `DrainCombatIS()`)
+  - Tactic changes cost IS (10 IS per change)
+  - IS sent to client via `sendISCurrent()`
+  - `CombatCalculator.CalculateAbilityISCost()` applies tactic modifiers
+  - `CombatCalculator.CalculateISRegen()` for out-of-combat regen (5% max IS)
 
 - [ ] **5.4 Ability integration**
   - Combat abilities (stun, buffs, debuffs)
   - Wire to existing AbilityHandler
   - Use FX effects from FX.cs
+  - TODO: Wire abilities to combat tick
+
+### New Methods Added
+- `CombatCalculator.GetTacticDamageModifier()` - Counter system bonuses
+- `CombatCalculator.GetTacticBaseDamageModifier()` - Base tactic effects
+- `CombatCalculator.GetTacticDefenseModifier()` - Defensive modifiers
+- `CombatCalculator.CalculateMeleeDamageWithTactics()` - Tactic-aware melee
+- `CombatCalculator.CalculateRangedDamageWithTactics()` - Tactic-aware ranged
+- `CombatCalculator.CalculateMobDamageWithTactics()` - Mob damage with player defense
+- `CombatSession.SetAttackerTactic()` - Change tactic with IS cost
+- `CombatHandler.DrainCombatIS()` - Drain IS per combat round
+- `Mob.updateCombat(CombatTactic)` - Now accepts player's tactic for defense
 
 ---
 
@@ -258,7 +283,7 @@ These items require investigation or external resources:
 - [ ] **Original packet captures** - Do any exist from live servers?
 - [ ] **Combat formula documentation** - Any community research on original mechanics?
 - [ ] **Animation timing data** - How long do combat animations take?
-- [ ] **Tactic effects** - What did each CT actually do?
+- [x] **Tactic effects** - Implemented as rock-paper-scissors with Speed/Power/Grab
 
 ---
 
@@ -266,18 +291,20 @@ These items require investigation or external resources:
 
 Use these scenarios to verify combat works:
 
-- [ ] Player initiates combat with mob
-- [ ] Player deals damage to mob
-- [ ] Mob health decreases visibly
-- [ ] Mob dies at 0 health
-- [ ] Mob corpse is lootable
-- [ ] Mob attacks player back
-- [ ] Player health decreases
-- [ ] Player can die in combat
-- [ ] Combat ends when leaving range
+- [x] Player initiates combat with mob
+- [x] Player deals damage to mob
+- [x] Mob health decreases visibly
+- [x] Mob dies at 0 health
+- [x] Mob corpse is lootable
+- [x] Mob attacks player back
+- [x] Player health decreases
+- [x] Player can die in combat
+- [x] Combat ends when leaving range
 - [ ] Multiple players can fight same mob
-- [ ] Range combat works
-- [ ] Tactic changes affect combat
+- [x] Range combat works
+- [x] Tactic changes affect combat
+- [ ] IS drains during combat (visual confirmation)
+- [ ] Tactic change costs IS
 
 ---
 

@@ -106,12 +106,28 @@ This emulator is a **work-in-progress** and implements partial functionality of 
 | **Inventory System** | ⚠️ Partial | Can equip items, stackables need work |
 | **Ability System** | ⚠️ Partial | Loadout changes work, some bugs with multiple abilities |
 | **Vendors** | ⚠️ Partial | Buying works (doesn't decrease money), selling not implemented |
-| **NPCs/Mobs** | ⚠️ Partial | Spawn and move, combat is very buggy |
+| **Combat System** | ✅ Working | Melee & ranged combat, tactics, death/respawn, loot |
+| **NPCs/Mobs** | ✅ Working | Spawn, move, fight back, die, drop loot |
 | **Doors & Static Objects** | ⚠️ Partial | Can open doors (requires data files) |
 | **Mission System** | 🚧 Early stage | Basic framework only |
 | **Crews & Factions** | 🚧 Early stage | Creation works, management incomplete |
 | **Hyperjump** | ⚠️ Needs work | Implemented but height calculations are off |
 | **Friend List** | ⚠️ Untested | Code exists, needs testing |
+
+### Combat System Details
+
+The combat system has been significantly overhauled with a complete rewrite:
+
+- **Bidirectional Combat** - Players attack mobs, mobs fight back with damage calculations
+- **Melee & Ranged** - Both close combat and gun combat fully functional
+- **Distance-Based Damage** - Ranged attacks have optimal range (5-30m) with falloff
+- **Combat Tactics** - Rock-paper-scissors system (Speed/Power/Grab) affects damage
+- **Inner Strength** - IS drains during combat and when changing tactics
+- **Death & Respawn** - Both player and mob death handled; respawn via hardline
+- **Loot System** - Mobs drop money based on level when killed
+- **Visual FX** - 100+ combat effects with hit animations from multiple angles
+
+See [docs/COMBAT-SYSTEM-ROADMAP.md](docs/COMBAT-SYSTEM-ROADMAP.md) for technical details.
 
 ### Technical Architecture
 
@@ -188,9 +204,10 @@ dotnet test
 
 Contributions are welcome! This is a preservation and modernization effort. Areas that need work:
 
-- **Combat system** - NPC combat is very buggy
 - **Mission system** - Needs major development
 - **Vendor system** - Selling items, proper money handling
+- **Combat abilities** - Wire special abilities to combat system
+- **Combat animations** - Sync attack animations with damage timing
 - **Testing** - Many features are untested
 - **Documentation** - Always can be improved
 - **Client compatibility** - Both CR1 and CR2 client support
@@ -220,13 +237,13 @@ Static game objects (doors, vendors, NPCs, etc.) are stored in CSV files extract
 
 ## Known Issues
 
-- **Mob combat** is extremely buggy and mostly non-functional
 - **Stackable items** in inventory don't work properly
 - **Hyperjump height calculations** are off
 - **Vendor selling** is not implemented
 - **Money transactions** don't properly deduct from player balance
 - **Some door positions** are incorrect (parsing artifacts)
 - **CR1 client support** uses a workaround with namespaces (needs refactoring)
+- **Combat animations** not yet synced with damage timing
 
 ## Credits & Acknowledgments
 

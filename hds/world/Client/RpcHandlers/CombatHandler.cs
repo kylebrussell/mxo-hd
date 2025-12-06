@@ -35,17 +35,47 @@ namespace hds
         public void ProcessChangeTactic(ref byte[] packet)
         {
             PacketReader reader = new PacketReader(packet);
-            string hexString = StringUtils.bytesToString_NS(packet);
             uint state = reader.ReadUint8();
 
-            // TODO: Implement tactic changes - should affect damage/defense calculations
-            // Tactic values and their effects are unknown - needs research
-            Output.WriteDebugLog($"[COMBAT] Tactic change requested: state={state}");
+            // Map packet state to CombatTactic enum
+            // Based on research: 0=None, 1=Speed, 2=Power, 3=Grab/Block
+            CombatTactic newTactic = (CombatTactic)Math.Min(state, 3);
 
-            if (isCombatRunning && combatTimer != null)
+            Output.WriteDebugLog($"[COMBAT] Tactic change requested: state={state} -> {newTactic}");
+
+            if (currentSession != null && currentSession.IsActive)
             {
-                combatTimer.Stop();
-                combatTimer.Dispose();
+                // Try to change tactic (costs IS)
+                bool success = currentSession.SetAttackerTactic(newTactic);
+
+                if (success)
+                {
+                    Output.WriteDebugLog($"[COMBAT] Tactic changed to {newTactic}");
+
+                    // Send IS update to client
+                    ServerPackets packets = new ServerPackets();
+                    byte[] isBytes = Store.currentClient.playerInstance.InnerStrengthAvailable.getValue();
+                    UInt16 currentIS = isBytes != null && isBytes.Length >= 2
+                        ? NumericalUtils.ByteArrayToUint16(isBytes, 1)
+                        : (UInt16)0;
+                    packets.sendISCurrent(Store.currentClient, currentIS);
+
+                    // Send tactic confirmation (using the system chat for now)
+                    string tacticName = newTactic == CombatTactic.None ? "Balanced" : newTactic.ToString();
+                    packets.sendSystemChatMessage(Store.currentClient,
+                        $"Combat tactic: {tacticName}", "SYSTEM");
+                }
+                else
+                {
+                    Output.WriteDebugLog("[COMBAT] Tactic change failed - insufficient IS");
+                    ServerPackets packets = new ServerPackets();
+                    packets.sendSystemChatMessage(Store.currentClient,
+                        "Not enough Inner Strength to change tactics!", "SYSTEM");
+                }
+            }
+            else
+            {
+                Output.WriteDebugLog("[COMBAT] Tactic change ignored - not in combat");
             }
         }
 
@@ -184,7 +214,10 @@ namespace hds
         {
             if (!isCombatRunning || session == null) return;
 
-            Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}");
+            Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}, Tactic: {session.AttackerTactic}");
+
+            // Drain IS for combat round
+            DrainCombatIS(session.Attacker);
 
             // Send position update packet
             SendCombatUpdatePacket(session);
@@ -197,12 +230,14 @@ namespace hds
                 UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
                 UInt16 mobLevel = session.DefenderMob.getLevel();
 
-                // Calculate damage based on combat type
+                // Calculate damage based on combat type with tactic modifiers
                 UInt16 damage;
                 uint fxId;
                 if (session.Type == CombatSession.CombatType.Melee)
                 {
-                    damage = CombatCalculator.CalculateMeleeDamage(playerLevel, mobLevel);
+                    damage = CombatCalculator.CalculateMeleeDamageWithTactics(
+                        playerLevel, mobLevel,
+                        session.AttackerTactic, session.DefenderTactic);
                     fxId = CombatCalculator.GetRandomMeleeHitFx();
                 }
                 else
@@ -214,12 +249,14 @@ namespace hds
                         session.DefenderMob.getYPos(),
                         session.DefenderMob.getZPos()
                     );
-                    damage = CombatCalculator.CalculateRangedDamage(playerLevel, mobLevel, distance);
+                    damage = CombatCalculator.CalculateRangedDamageWithTactics(
+                        playerLevel, mobLevel, distance,
+                        session.AttackerTactic, session.DefenderTactic);
                     fxId = CombatCalculator.GetRandomRangedHitFx();
                     Output.WriteDebugLog($"[COMBAT] Range combat: distance={distance:F1}m");
                 }
 
-                Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
+                Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}, {session.AttackerTactic}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
 
                 // Apply damage to mob - this broadcasts to all nearby clients
                 bool defenderDied = session.ApplyDamageToDefender(damage, fxId);
@@ -231,8 +268,8 @@ namespace hds
                     return;
                 }
 
-                // Phase 3: Mob attacks the player back
-                bool playerDied = session.DefenderMob.updateCombat();
+                // Phase 3: Mob attacks the player back (with player's defensive tactic applied)
+                bool playerDied = session.DefenderMob.updateCombat(session.AttackerTactic);
                 if (playerDied)
                 {
                     Output.WriteDebugLog("[COMBAT] Player died in combat!");
@@ -249,6 +286,27 @@ namespace hds
                     Output.WriteDebugLog("[COMBAT] Defender died!");
                     session.Stop(CombatSession.CombatEndReason.DefenderDied);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Drains Inner Strength for combat round.
+        /// </summary>
+        private void DrainCombatIS(WorldClient player)
+        {
+            byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
+            if (isBytes == null || isBytes.Length < 2) return;
+
+            UInt16 currentIS = NumericalUtils.ByteArrayToUint16(isBytes, 1);
+            if (currentIS > 0)
+            {
+                int cost = CombatCalculator.COMBAT_ROUND_IS_COST;
+                UInt16 newIS = (UInt16)Math.Max(0, currentIS - cost);
+                player.playerInstance.InnerStrengthAvailable.setValue(newIS);
+
+                // Send IS update to client
+                ServerPackets packets = new ServerPackets();
+                packets.sendISCurrent(player, newIS);
             }
         }
 

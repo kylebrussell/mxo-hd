@@ -482,7 +482,8 @@ namespace hds
         /// Called on combat tick to make this mob attack its target.
         /// Returns true if the player died from this attack.
         /// </summary>
-        public bool updateCombat()
+        /// <param name="playerTactic">Player's current combat tactic for defensive modifiers</param>
+        public bool updateCombat(CombatTactic playerTactic = CombatTactic.None)
         {
             if (combatTarget == null || is_dead)
             {
@@ -501,11 +502,11 @@ namespace hds
             byte[] levelBytes = combatTarget.playerInstance.Level.getValue();
             UInt16 playerLevel = (levelBytes != null && levelBytes.Length > 0) ? levelBytes[0] : (UInt16)1;
 
-            // Calculate damage using mob's level vs player's level
-            UInt16 damage = CombatCalculator.CalculateMobDamage(level, playerLevel);
+            // Calculate damage using mob's level vs player's level, with player's tactic modifier
+            UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(level, playerLevel, playerTactic);
             uint fxId = CombatCalculator.GetRandomMeleeHitFx();
 
-            Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}) for {damage} damage");
+            Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}, {playerTactic}) for {damage} damage");
 
             // Apply damage to player
             UInt16 newHealth;

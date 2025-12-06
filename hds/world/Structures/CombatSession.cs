@@ -74,6 +74,17 @@ namespace hds
         public CombatType Type { get; private set; }
 
         /// <summary>
+        /// Current combat tactic for the attacker (player).
+        /// </summary>
+        public CombatTactic AttackerTactic { get; private set; }
+
+        /// <summary>
+        /// Current combat tactic for the defender (mob or player).
+        /// Mobs default to None (no tactic).
+        /// </summary>
+        public CombatTactic DefenderTactic { get; private set; }
+
+        /// <summary>
         /// Timer for combat update ticks.
         /// </summary>
         private Timer combatTimer;
@@ -121,6 +132,8 @@ namespace hds
             RoundNumber = 0;
             HitCounter = 0;
             IsActive = false;
+            AttackerTactic = CombatTactic.None;
+            DefenderTactic = CombatTactic.None; // Mobs don't use tactics
         }
 
         /// <summary>
@@ -138,6 +151,44 @@ namespace hds
             RoundNumber = 0;
             HitCounter = 0;
             IsActive = false;
+            AttackerTactic = CombatTactic.None;
+            DefenderTactic = CombatTactic.None;
+        }
+
+        /// <summary>
+        /// Changes the attacker's combat tactic.
+        /// Returns false if the player doesn't have enough IS.
+        /// </summary>
+        /// <param name="newTactic">New tactic to use</param>
+        /// <returns>True if tactic was changed, false if insufficient IS</returns>
+        public bool SetAttackerTactic(CombatTactic newTactic)
+        {
+            if (newTactic == AttackerTactic)
+                return true; // No change needed
+
+            // Check if player has enough IS
+            byte[] isBytes = Attacker.playerInstance.InnerStrengthAvailable.getValue();
+            UInt16 currentIS = isBytes != null && isBytes.Length >= 2
+                ? NumericalUtils.ByteArrayToUint16(isBytes, 1)
+                : (UInt16)0;
+
+            if (currentIS < CombatCalculator.TACTIC_CHANGE_IS_COST)
+                return false; // Not enough IS
+
+            // Deduct IS cost
+            UInt16 newIS = (UInt16)(currentIS - CombatCalculator.TACTIC_CHANGE_IS_COST);
+            Attacker.playerInstance.InnerStrengthAvailable.setValue(newIS);
+
+            AttackerTactic = newTactic;
+            return true;
+        }
+
+        /// <summary>
+        /// Sets the defender's tactic (for PvP).
+        /// </summary>
+        public void SetDefenderTactic(CombatTactic newTactic)
+        {
+            DefenderTactic = newTactic;
         }
 
         /// <summary>

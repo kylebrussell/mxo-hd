@@ -3,6 +3,24 @@ using System;
 namespace hds
 {
     /// <summary>
+    /// Combat tactics follow a rock-paper-scissors system:
+    /// - Speed beats Power (faster attacks land first)
+    /// - Power beats Grab (raw damage breaks through)
+    /// - Grab beats Speed (catches quick attacks)
+    /// </summary>
+    public enum CombatTactic
+    {
+        /// <summary>No tactic selected - balanced combat</summary>
+        None = 0,
+        /// <summary>Speed tactic - faster attacks, higher evasion, lower damage</summary>
+        Speed = 1,
+        /// <summary>Power tactic - higher damage, slower attacks</summary>
+        Power = 2,
+        /// <summary>Grab/Block tactic - defensive, reduces incoming damage</summary>
+        Grab = 3
+    }
+
+    /// <summary>
     /// Calculates combat damage and selects visual effects.
     ///
     /// See docs/COMBAT-SYSTEM-ROADMAP.md for combat system documentation.
@@ -237,5 +255,202 @@ namespace hds
 
             return (UInt16)Math.Max(1, (int)damage);
         }
+
+        #region Tactic System
+
+        /// <summary>
+        /// IS (Inner Strength) cost for changing combat tactics.
+        /// </summary>
+        public const int TACTIC_CHANGE_IS_COST = 10;
+
+        /// <summary>
+        /// IS cost per combat round while in combat.
+        /// </summary>
+        public const int COMBAT_ROUND_IS_COST = 2;
+
+        /// <summary>
+        /// Gets the damage modifier for the attacker's tactic.
+        /// </summary>
+        /// <param name="attackerTactic">Attacker's current tactic</param>
+        /// <param name="defenderTactic">Defender's current tactic</param>
+        /// <returns>Damage multiplier (1.0 = normal, >1 = bonus, <1 = penalty)</returns>
+        public static float GetTacticDamageModifier(CombatTactic attackerTactic, CombatTactic defenderTactic)
+        {
+            // No tactic = no modifier
+            if (attackerTactic == CombatTactic.None)
+                return 1.0f;
+
+            // Same tactic = neutral
+            if (attackerTactic == defenderTactic)
+                return 1.0f;
+
+            // Rock-paper-scissors: Speed > Power > Grab > Speed
+            switch (attackerTactic)
+            {
+                case CombatTactic.Speed:
+                    if (defenderTactic == CombatTactic.Power)
+                        return 1.25f; // Speed beats Power - land hits faster
+                    if (defenderTactic == CombatTactic.Grab)
+                        return 0.75f; // Grab catches Speed
+                    break;
+
+                case CombatTactic.Power:
+                    if (defenderTactic == CombatTactic.Grab)
+                        return 1.25f; // Power breaks through Grab
+                    if (defenderTactic == CombatTactic.Speed)
+                        return 0.75f; // Speed evades Power
+                    break;
+
+                case CombatTactic.Grab:
+                    if (defenderTactic == CombatTactic.Speed)
+                        return 1.25f; // Grab catches Speed
+                    if (defenderTactic == CombatTactic.Power)
+                        return 0.75f; // Power breaks Grab
+                    break;
+            }
+
+            return 1.0f;
+        }
+
+        /// <summary>
+        /// Gets the base damage modifier for a tactic (independent of opponent).
+        /// Speed: Less damage but more attacks
+        /// Power: More damage per hit
+        /// Grab: Balanced damage
+        /// </summary>
+        public static float GetTacticBaseDamageModifier(CombatTactic tactic)
+        {
+            switch (tactic)
+            {
+                case CombatTactic.Speed:
+                    return 0.85f; // Less damage per hit, but faster
+                case CombatTactic.Power:
+                    return 1.20f; // More damage per hit
+                case CombatTactic.Grab:
+                    return 0.95f; // Slightly less damage, defensive focus
+                default:
+                    return 1.0f;
+            }
+        }
+
+        /// <summary>
+        /// Gets the defense modifier for a tactic (reduces incoming damage).
+        /// </summary>
+        public static float GetTacticDefenseModifier(CombatTactic tactic)
+        {
+            switch (tactic)
+            {
+                case CombatTactic.Speed:
+                    return 1.10f; // Take 10% more damage (offense focus)
+                case CombatTactic.Power:
+                    return 1.05f; // Take 5% more damage
+                case CombatTactic.Grab:
+                    return 0.80f; // Take 20% less damage (defensive)
+                default:
+                    return 1.0f;
+            }
+        }
+
+        /// <summary>
+        /// Calculates melee damage with tactic modifiers applied.
+        /// </summary>
+        public static UInt16 CalculateMeleeDamageWithTactics(
+            UInt16 attackerLevel,
+            UInt16 defenderLevel,
+            CombatTactic attackerTactic,
+            CombatTactic defenderTactic)
+        {
+            // Get base damage
+            UInt16 baseDamage = CalculateMeleeDamage(attackerLevel, defenderLevel);
+
+            // Apply tactic modifiers
+            float tacticMod = GetTacticDamageModifier(attackerTactic, defenderTactic);
+            float baseTacticMod = GetTacticBaseDamageModifier(attackerTactic);
+            float defenseMod = GetTacticDefenseModifier(defenderTactic);
+
+            float finalDamage = baseDamage * tacticMod * baseTacticMod * defenseMod;
+
+            return (UInt16)Math.Max(1, (int)finalDamage);
+        }
+
+        /// <summary>
+        /// Calculates ranged damage with tactic modifiers applied.
+        /// </summary>
+        public static UInt16 CalculateRangedDamageWithTactics(
+            UInt16 attackerLevel,
+            UInt16 defenderLevel,
+            float distance,
+            CombatTactic attackerTactic,
+            CombatTactic defenderTactic)
+        {
+            // Get base damage
+            UInt16 baseDamage = CalculateRangedDamage(attackerLevel, defenderLevel, distance);
+
+            // Apply tactic modifiers
+            float tacticMod = GetTacticDamageModifier(attackerTactic, defenderTactic);
+            float baseTacticMod = GetTacticBaseDamageModifier(attackerTactic);
+            float defenseMod = GetTacticDefenseModifier(defenderTactic);
+
+            float finalDamage = baseDamage * tacticMod * baseTacticMod * defenseMod;
+
+            return (UInt16)Math.Max(1, (int)finalDamage);
+        }
+
+        /// <summary>
+        /// Calculates mob damage to player with player's defensive tactic applied.
+        /// </summary>
+        public static UInt16 CalculateMobDamageWithTactics(
+            UInt16 mobLevel,
+            UInt16 playerLevel,
+            CombatTactic playerTactic)
+        {
+            UInt16 baseDamage = CalculateMobDamage(mobLevel, playerLevel);
+
+            // Apply player's defensive tactic
+            float defenseMod = GetTacticDefenseModifier(playerTactic);
+
+            return (UInt16)Math.Max(1, (int)(baseDamage * defenseMod));
+        }
+
+        #endregion
+
+        #region Inner Strength
+
+        /// <summary>
+        /// Calculates IS regeneration per tick (out of combat).
+        /// </summary>
+        /// <param name="maxIS">Player's maximum IS</param>
+        /// <returns>Amount of IS to regenerate</returns>
+        public static UInt16 CalculateISRegen(UInt16 maxIS)
+        {
+            // Regenerate 5% of max IS per tick, minimum 1
+            return (UInt16)Math.Max(1, maxIS / 20);
+        }
+
+        /// <summary>
+        /// Calculates IS cost for using an ability in combat.
+        /// </summary>
+        /// <param name="baseCost">Base IS cost of the ability</param>
+        /// <param name="tactic">Current combat tactic</param>
+        /// <returns>Modified IS cost</returns>
+        public static UInt16 CalculateAbilityISCost(UInt16 baseCost, CombatTactic tactic)
+        {
+            // Speed tactic reduces IS costs (quicker abilities)
+            // Power tactic increases IS costs (more powerful)
+            float modifier = 1.0f;
+            switch (tactic)
+            {
+                case CombatTactic.Speed:
+                    modifier = 0.9f;
+                    break;
+                case CombatTactic.Power:
+                    modifier = 1.1f;
+                    break;
+            }
+
+            return (UInt16)Math.Max(1, (int)(baseCost * modifier));
+        }
+
+        #endregion
     }
 }
