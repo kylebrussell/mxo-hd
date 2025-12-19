@@ -19,6 +19,8 @@ namespace hds
     /// </summary>
     public class CombatHandler
     {
+        private readonly WorldClient client;
+
         /// <summary>
         /// Active combat session for this handler instance.
         /// </summary>
@@ -29,8 +31,21 @@ namespace hds
         /// TODO: Remove once CombatSession is fully integrated.
         /// </summary>
         public Timer combatTimer;
-        public bool isCombatRunning = true;
+        public bool isCombatRunning = false;
         public UInt16 ilCombatViewId = 0;
+
+        public CombatHandler(WorldClient client)
+        {
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        public void StopCombatIfActive(CombatSession.CombatEndReason reason)
+        {
+            if (currentSession != null && currentSession.IsActive)
+            {
+                currentSession.Stop(reason);
+            }
+        }
 
         public void ProcessChangeTactic(ref byte[] packet)
         {
@@ -54,22 +69,22 @@ namespace hds
 
                     // Send IS update to client
                     ServerPackets packets = new ServerPackets();
-                    byte[] isBytes = Store.currentClient.playerInstance.InnerStrengthAvailable.getValue();
+                    byte[] isBytes = client.playerInstance.InnerStrengthAvailable.getValue();
                     UInt16 currentIS = isBytes != null && isBytes.Length >= 2
                         ? NumericalUtils.ByteArrayToUint16(isBytes, 1)
                         : (UInt16)0;
-                    packets.sendISCurrent(Store.currentClient, currentIS);
+                    packets.sendISCurrent(client, currentIS);
 
                     // Send tactic confirmation (using the system chat for now)
                     string tacticName = newTactic == CombatTactic.None ? "Balanced" : newTactic.ToString();
-                    packets.sendSystemChatMessage(Store.currentClient,
+                    packets.sendSystemChatMessage(client,
                         $"Combat tactic: {tacticName}", "SYSTEM");
                 }
                 else
                 {
                     Output.WriteDebugLog("[COMBAT] Tactic change failed - insufficient IS");
                     ServerPackets packets = new ServerPackets();
-                    packets.sendSystemChatMessage(Store.currentClient,
+                    packets.sendSystemChatMessage(client,
                         "Not enough Inner Strength to change tactics!", "SYSTEM");
                 }
             }
@@ -81,6 +96,9 @@ namespace hds
 
         public void ProcessRequestCloseCombat(ref byte[] packet)
         {
+#if DEBUG
+            Output.WriteRpcLog($"[COMBAT] Close combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
+#endif
             PacketReader reader = new PacketReader(packet);
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
@@ -90,9 +108,17 @@ namespace hds
             // For now, create session without mob reference
             Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
 
+            if (targetMob == null)
+            {
+                Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found");
+                return;
+            }
+
+            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+
             // Create combat session
             currentSession = new CombatSession(
-                Store.currentClient,
+                client,
                 targetMob,
                 targetViewWithSpawnId,
                 CombatSession.CombatType.Melee
@@ -101,7 +127,7 @@ namespace hds
             // Set this player as the mob's combat target so mob can attack back
             if (targetMob != null)
             {
-                targetMob.setCombatTarget(Store.currentClient);
+                targetMob.setCombatTarget(client);
             }
 
             // Subscribe to combat events
@@ -110,7 +136,7 @@ namespace hds
 
             // Send combat mode packet to player
             ServerPackets packets = new ServerPackets();
-            packets.SendEnterCombatMode(Store.currentClient);
+            packets.SendEnterCombatMode(client);
 
             // Spawn the ILCombatHandler game object
             var ilCombatHandler = new GameObjectDefinitions().Object55;
@@ -119,15 +145,15 @@ namespace hds
             ilCombatHandler.Position.enable();
 
             ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
-            ilCombatHandler.Position.setValue(Store.currentClient.playerInstance.Position.getValue());
+            ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
 
             UInt64 currentEntityId = WorldServer.entityIdCounter;
             WorldServer.entityIdCounter++;
             WorldServer.gameServerEntities.Add(ilCombatHandler);
 
-            packets.SendSpawnGameObject(Store.currentClient, ilCombatHandler, currentEntityId);
+            packets.SendSpawnGameObject(client, ilCombatHandler, currentEntityId);
 
-            ClientView theView = Store.currentClient.viewMan.GetViewForEntityAndGo(currentEntityId,
+            ClientView theView = client.viewMan.GetViewForEntityAndGo(currentEntityId,
                 NumericalUtils.ByteArrayToUint16(ilCombatHandler.GetGoid(), 1));
 
             // Store view IDs in session
@@ -136,12 +162,12 @@ namespace hds
             ilCombatViewId = theView.ViewID; // Legacy field
 
             // Send combat initialization packet
-            packets.SendCombatInitialize(Store.currentClient, theView.ViewID, targetViewWithSpawnId);
+            packets.SendCombatInitialize(client, theView.ViewID, targetViewWithSpawnId);
 
             // Send the combat state data (still using hardcoded blob until we understand it better)
-            SendCombatStateBlob(Store.currentClient, theView.ViewID);
+            SendCombatStateBlob(client, theView.ViewID);
 
-            Store.currentClient.FlushQueue();
+            client.FlushQueue();
 
             // Start combat session
             currentSession.Start(3000); // 3 second ticks
@@ -161,7 +187,7 @@ namespace hds
             Output.WriteDebugLog($"[COMBAT] Looking for mob with viewId={viewId}, spawnId={spawnId}");
 
             // Look up the view from the client's view manager
-            ClientView targetView = Store.currentClient.viewMan.getViewById(viewId);
+            ClientView targetView = client.viewMan.getViewById(viewId);
             if (targetView == null)
             {
                 Output.WriteDebugLog($"[COMBAT] No view found for viewId={viewId}");
@@ -318,14 +344,14 @@ namespace hds
             PacketContent pak = new PacketContent();
             pak.AddUint16(session.CombatHandlerViewId, 1);
             pak.AddUShort(3); // Position update flag
-            pak.AddByteArray(Store.currentClient.playerInstance.Position.getValue());
+            pak.AddByteArray(session.Attacker.playerInstance.Position.getValue());
 
             // COMBAT UPDATE BLOB - Still hardcoded until structure is understood
             // See CombatHandler documentation for byte breakdown
             pak.AddHexBytes("030000000000000001020100000000002869C00000000000CF8B42002869400000000000CF8BC2000003006E290000A6009C0FF60E0200000000000000000000000000000000E54E00008B0B002400000000000000000000000000000000350000005200000000100010000000000000000000000000000000000000000000000000010000005864EBD9C000000000004491C000000040AF08EA400000");
 
-            Store.currentClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            Store.currentClient.FlushQueue();
+            session.Attacker.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            session.Attacker.FlushQueue();
         }
 
         /// <summary>
@@ -344,7 +370,7 @@ namespace hds
             }
 
             ServerPackets packets = new ServerPackets();
-            packets.SendCombatEnd(Store.currentClient, session.CombatHandlerViewId);
+            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId);
 
             // If defender died, trigger death/loot sequence
             if (reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null)
@@ -355,29 +381,29 @@ namespace hds
                 // Send death animation using the mob's view ID (not combat handler view ID)
                 UInt16 mobViewId = session.GetDefenderViewId();
                 Output.WriteDebugLog($"[COMBAT] Sending death for mob view {mobViewId}");
-                packets.SendNpcDies(mobViewId, Store.currentClient, session.DefenderMob);
+                packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
 
                 // Award experience
                 UInt16 mobLevel = session.DefenderMob.getLevel();
                 UInt32 expGained = (UInt32)(mobLevel * 100); // Simple exp formula
                 Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
-                // TODO: Actually add exp to player via Store.currentClient.playerData or similar
+                // TODO: Actually add exp to player via session.Attacker.playerData or similar
 
                 // Calculate loot money based on mob level (50-150 per level)
                 Random rand = new Random();
                 UInt32 lootMoney = (UInt32)(mobLevel * (50 + rand.Next(100)));
 
                 // Store pending loot for when player accepts
-                Store.currentClient.playerData.pendingLootMoney = lootMoney;
-                Store.currentClient.playerData.hasLootPending = true;
+                session.Attacker.playerData.pendingLootMoney = lootMoney;
+                session.Attacker.playerData.hasLootPending = true;
 
                 // Send loot window to player (empty item array for now)
                 UInt32[] emptyItems = new UInt32[0];
-                packets.SendLootWindow(lootMoney, Store.currentClient, emptyItems);
+                packets.SendLootWindow(lootMoney, session.Attacker, emptyItems);
                 Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info");
             }
 
-            Store.currentClient.FlushQueue();
+            session.Attacker.FlushQueue();
             currentSession = null;
         }
 
@@ -398,6 +424,9 @@ namespace hds
         /// </summary>
         public void ProcessRangeCombatRequest(ref byte[] packet)
         {
+#if DEBUG
+            Output.WriteRpcLog($"[COMBAT] Range combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
+#endif
             PacketReader reader = new PacketReader(packet);
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
@@ -406,9 +435,17 @@ namespace hds
             // Find the target mob
             Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
 
+            if (targetMob == null)
+            {
+                Output.WriteDebugLog("[COMBAT] Range combat aborted - target mob not found");
+                return;
+            }
+
+            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+
             // Create combat session with Ranged type
             currentSession = new CombatSession(
-                Store.currentClient,
+                client,
                 targetMob,
                 targetViewWithSpawnId,
                 CombatSession.CombatType.Ranged
@@ -417,7 +454,7 @@ namespace hds
             // Set this player as the mob's combat target so mob can attack back
             if (targetMob != null)
             {
-                targetMob.setCombatTarget(Store.currentClient);
+                targetMob.setCombatTarget(client);
             }
 
             // Subscribe to combat events
@@ -426,7 +463,7 @@ namespace hds
 
             // Send combat mode packet to player
             ServerPackets packets = new ServerPackets();
-            packets.SendEnterCombatMode(Store.currentClient);
+            packets.SendEnterCombatMode(client);
 
             // Spawn the ILCombatHandler game object (same as melee)
             var ilCombatHandler = new GameObjectDefinitions().Object55;
@@ -435,15 +472,15 @@ namespace hds
             ilCombatHandler.Position.enable();
 
             ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
-            ilCombatHandler.Position.setValue(Store.currentClient.playerInstance.Position.getValue());
+            ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
 
             UInt64 currentEntityId = WorldServer.entityIdCounter;
             WorldServer.entityIdCounter++;
             WorldServer.gameServerEntities.Add(ilCombatHandler);
 
-            packets.SendSpawnGameObject(Store.currentClient, ilCombatHandler, currentEntityId);
+            packets.SendSpawnGameObject(client, ilCombatHandler, currentEntityId);
 
-            ClientView theView = Store.currentClient.viewMan.GetViewForEntityAndGo(currentEntityId,
+            ClientView theView = client.viewMan.GetViewForEntityAndGo(currentEntityId,
                 NumericalUtils.ByteArrayToUint16(ilCombatHandler.GetGoid(), 1));
 
             // Store view IDs in session
@@ -452,12 +489,12 @@ namespace hds
             ilCombatViewId = theView.ViewID; // Legacy field
 
             // Send combat initialization packet
-            packets.SendCombatInitialize(Store.currentClient, theView.ViewID, targetViewWithSpawnId);
+            packets.SendCombatInitialize(client, theView.ViewID, targetViewWithSpawnId);
 
             // Send the combat state data
-            SendCombatStateBlob(Store.currentClient, theView.ViewID);
+            SendCombatStateBlob(client, theView.ViewID);
 
-            Store.currentClient.FlushQueue();
+            client.FlushQueue();
 
             // Start combat session - ranged combat uses faster tick rate (2 seconds vs 3 for melee)
             currentSession.Start(2000);
@@ -520,8 +557,8 @@ namespace hds
                 combatTimer?.Dispose();
 
                 ServerPackets packets = new ServerPackets();
-                packets.SendCombatEnd(Store.currentClient, ilCombatViewId);
-                Store.currentClient.FlushQueue();
+                packets.SendCombatEnd(client, ilCombatViewId);
+                client.FlushQueue();
             }
         }
     }

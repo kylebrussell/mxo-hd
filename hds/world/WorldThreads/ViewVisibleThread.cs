@@ -354,6 +354,7 @@ namespace hds
             foreach (string key in deadPlayers)
             {
                 WorldClient deadClient = WorldServer.Clients[key] as WorldClient;
+                CombatManager.RemoveClient(deadClient);
                 foreach (string client in WorldServer.Clients.Keys)
                 {
                     WorldClient otherclient = WorldServer.Clients[client] as WorldClient;

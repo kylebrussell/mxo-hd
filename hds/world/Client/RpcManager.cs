@@ -30,17 +30,17 @@ namespace hds{
 					#if DEBUG
 		            Output.WriteRpcLog("CLOSE COMBAT REQUEST");
 					#endif
-		            new CombatHandler().ProcessRequestCloseCombat(ref rpcData);
+		            CombatManager.GetHandler(Store.currentClient).ProcessRequestCloseCombat(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_LEAVE_COMBAT:
-			        new CombatHandler().ProcessLeaveCloseCombat(ref rpcData);
+			        CombatManager.GetHandler(Store.currentClient).ProcessLeaveCloseCombat(ref rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
 		            Output.WriteRpcLog("RANGE COMBAT REQUEST");
 					#endif
-		            new CombatHandler().ProcessRangeCombatRequest(ref rpcData);
+		            CombatManager.GetHandler(Store.currentClient).ProcessRangeCombatRequest(ref rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_CHAT:
@@ -117,7 +117,7 @@ namespace hds{
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_CHANGE_CT:
 			        // ToDo: Implement Change of CT
-			        new CombatHandler().ProcessChangeTactic(ref rpcData);
+			        CombatManager.GetHandler(Store.currentClient).ProcessChangeTactic(ref rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_ABILITY_LOADER:
