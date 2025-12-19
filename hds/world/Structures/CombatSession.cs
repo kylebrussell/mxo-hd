@@ -49,6 +49,11 @@ namespace hds
         public UInt64 CombatHandlerEntityId { get; set; }
 
         /// <summary>
+        /// ILCombatHandler game object instance for cleanup.
+        /// </summary>
+        public GameObject CombatHandlerObject { get; set; }
+
+        /// <summary>
         /// When combat started.
         /// </summary>
         public DateTime StartTime { get; private set; }

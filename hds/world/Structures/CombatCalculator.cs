@@ -27,7 +27,7 @@ namespace hds
     /// </summary>
     public static class CombatCalculator
     {
-        private static Random random = new Random();
+        private static readonly Random random = Random.Shared;
 
         /// <summary>
         /// Base damage for unarmed melee attacks.

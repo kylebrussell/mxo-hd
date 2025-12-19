@@ -146,6 +146,7 @@ namespace hds
 
             ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
             ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
+            currentSession.CombatHandlerObject = ilCombatHandler;
 
             UInt64 currentEntityId = WorldServer.entityIdCounter;
             WorldServer.entityIdCounter++;
@@ -371,6 +372,7 @@ namespace hds
 
             ServerPackets packets = new ServerPackets();
             packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId);
+            RemoveCombatHandlerEntity(session);
 
             // If defender died, trigger death/loot sequence
             if (reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null)
@@ -473,6 +475,7 @@ namespace hds
 
             ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
             ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
+            currentSession.CombatHandlerObject = ilCombatHandler;
 
             UInt64 currentEntityId = WorldServer.entityIdCounter;
             WorldServer.entityIdCounter++;
@@ -536,6 +539,19 @@ namespace hds
             // For now, just leave player in dead state - they can respawn via hardline
 
             Output.WriteDebugLog("[COMBAT] Player death state set - respawn via hardline");
+        }
+
+        private void RemoveCombatHandlerEntity(CombatSession session)
+        {
+            if (session == null || session.CombatHandlerObject == null)
+            {
+                return;
+            }
+
+            lock (WorldServer.gameServerEntities)
+            {
+                WorldServer.gameServerEntities.Remove(session.CombatHandlerObject);
+            }
         }
 
         /// <summary>
