@@ -9,9 +9,13 @@ namespace hds
     public partial class WorldThreads
     {
         private const float ViewRange = 5000f;
+        private const ushort SubwayTypeId = 6568;
         private static readonly object StaticIndexLock = new object();
+        private static readonly object SubwayIndexLock = new object();
         private static Dictionary<ushort, SpatialGrid<StaticWorldObject>> staticObjectsByDistrict;
         private static HashSet<uint> signpostStaticIds;
+        private static Dictionary<ushort, SpatialGrid<Subway>> subwaysByDistrict;
+        private static int subwayIndexCount;
 
         public void ViewVisibleThread()
         {
@@ -247,58 +251,142 @@ namespace hds
             }
         }
 
-        public static void CheckForStaticSubways(List<WorldClient> clients, List<Subway> subways)
+        private static void EnsureSubwayIndex(List<Subway> subways)
         {
-            Maths mathUtils = new Maths();
-            foreach (Subway thisSubway in subways)
+            if (subwaysByDistrict != null && subwayIndexCount == subways.Count)
             {
-                foreach (WorldClient thisclient in clients)
+                return;
+            }
+
+            lock (SubwayIndexLock)
+            {
+                if (subwaysByDistrict != null && subwayIndexCount == subways.Count)
                 {
-                    if (thisclient == null || thisclient.Alive == false)
+                    return;
+                }
+
+                Dictionary<ushort, SpatialGrid<Subway>> index = new Dictionary<ushort, SpatialGrid<Subway>>();
+
+                foreach (Subway subway in subways)
+                {
+                    if (subway == null)
                     {
                         continue;
                     }
 
-                    if (thisclient.playerData.getOnWorld() == true &&
-                        thisclient.playerData.waitForRPCShutDown == false)
+                    ushort districtId = subway.worldObject.metrId;
+                    if (!index.TryGetValue(districtId, out SpatialGrid<Subway> grid))
                     {
-                        double playerX = 0;
-                        double playerY = 0;
-                        double playerZ = 0;
-                        NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
-                            ref playerX, ref playerY, ref playerZ);
+                        grid = new SpatialGrid<Subway>(ViewRange);
+                        index.Add(districtId, grid);
+                    }
+
+                    grid.Add((float)subway.worldObject.pos_x, (float)subway.worldObject.pos_z, subway);
+                }
+
+                subwaysByDistrict = index;
+                subwayIndexCount = subways.Count;
+            }
+        }
+
+        private static UInt64 GetSubwayEntityId(Subway subway)
+        {
+            String entityHackString = "" + subway.worldObject.metrId + "" + subway.worldObject.mxoStaticId;
+            return UInt64.Parse(entityHackString);
+        }
+
+        public static void CheckForStaticSubways(List<WorldClient> clients, List<Subway> subways)
+        {
+            EnsureSubwayIndex(subways);
+            if (subwaysByDistrict == null)
+            {
+                return;
+            }
+
+            Maths mathUtils = new Maths();
+            foreach (WorldClient thisclient in clients)
+            {
+                if (thisclient == null || thisclient.Alive == false)
+                {
+                    continue;
+                }
+
+                if (thisclient.playerData.getOnWorld() == false ||
+                    thisclient.playerData.waitForRPCShutDown)
+                {
+                    continue;
+                }
+
+                ushort districtId = (ushort)thisclient.playerData.getDistrictId();
+                if (!subwaysByDistrict.TryGetValue(districtId, out SpatialGrid<Subway> grid))
+                {
+                    continue;
+                }
+
+                double playerX = 0;
+                double playerY = 0;
+                double playerZ = 0;
+                NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
+                    ref playerX, ref playerY, ref playerZ);
+
+                HashSet<ulong> nearbySubwayEntities = new HashSet<ulong>();
+                foreach (List<Subway> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
+                {
+                    foreach (Subway thisSubway in cell)
+                    {
+                        if (thisSubway == null)
+                        {
+                            continue;
+                        }
+
                         bool objectInCircle = mathUtils.IsInCircle((float)playerX, (float)playerZ,
                             (float)thisSubway.worldObject.pos_x, (float)thisSubway.worldObject.pos_z, ViewRange);
+                        if (!objectInCircle)
+                        {
+                            continue;
+                        }
 
-                        // EntityHackString
-                        String entityHackString =
-                            "" + thisSubway.worldObject.metrId + "" + thisSubway.worldObject.mxoStaticId;
-                        UInt64 entityStaticId = UInt64.Parse(entityHackString);
+                        UInt64 entityStaticId = GetSubwayEntityId(thisSubway);
+                        nearbySubwayEntities.Add(entityStaticId);
 
                         ClientView view = thisclient.viewMan.GetViewForEntityAndGo(entityStaticId,
                             NumericalUtils.ByteArrayToUint16(thisSubway.worldObject.type, 1));
 
-                        if (!view.viewCreated &&
-                            thisSubway.worldObject.metrId == thisclient.playerData.getDistrictId() &&
-                            thisclient.playerData.getOnWorld() &&
-                            objectInCircle)
+                        if (!view.viewCreated && thisclient.playerData.getOnWorld())
                         {
                             ServerPackets pak = new ServerPackets();
                             pak.SendSpawnGameObject(thisclient, thisSubway.gameObjectData, entityStaticId);
                             view.spawnId = thisclient.playerData.spawnViewUpdateCounter;
                             view.viewCreated = true;
                         }
-
-
-                        // Delete SubwayView 
-                        if (view.viewCreated && !objectInCircle &&
-                            thisSubway.worldObject.metrId == thisclient.playerData.getDistrictId())
-                        {
-                            ServerPackets packets = new ServerPackets();
-                            packets.sendDeleteViewPacket(thisclient, view.ViewID);
-                            thisclient.viewMan.removeViewByViewId(view.ViewID);
-                        }
                     }
+                }
+
+                if (thisclient.viewMan.views.Count == 0)
+                {
+                    continue;
+                }
+
+                List<UInt16> viewsToRemove = new List<UInt16>();
+                List<ClientView> viewSnapshot = new List<ClientView>(thisclient.viewMan.views);
+                foreach (ClientView view in viewSnapshot)
+                {
+                    if (!view.viewCreated || view.GoID != SubwayTypeId)
+                    {
+                        continue;
+                    }
+
+                    if (!nearbySubwayEntities.Contains(view.entityId))
+                    {
+                        ServerPackets packets = new ServerPackets();
+                        packets.sendDeleteViewPacket(thisclient, view.ViewID);
+                        viewsToRemove.Add(view.ViewID);
+                    }
+                }
+
+                foreach (UInt16 viewId in viewsToRemove)
+                {
+                    thisclient.viewMan.removeViewByViewId(viewId);
                 }
             }
         }

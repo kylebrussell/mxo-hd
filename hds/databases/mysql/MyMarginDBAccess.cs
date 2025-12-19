@@ -17,13 +17,12 @@ namespace hds.databases{
 		private IDbCommand queryExecuter;
 		private IDataReader dr;
 		private XmlParser xmlParser;
-		
-		private MatrixDbContext dbContext;
+		private DbParams dbParams;
 		
 		public MyMarginDBAccess(){
 
             var config = Store.config;
-            dbContext = new MatrixDbContext(config.dbParams);
+            dbParams = config.dbParams;
 			/* Params: Host, port, database, user, password */
             conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" +
                 "Port=" + config.dbParams.Port + ";" +
@@ -34,80 +33,100 @@ namespace hds.databases{
 			
 		}
 
+		private MatrixDbContext CreateDbContext()
+		{
+			return new MatrixDbContext(dbParams);
+		}
+
         public Character GetCharInfo(int charId)
         {
-	        return dbContext.Characters.SingleOrDefault(c => c.CharId == (ulong) charId);
+	        using (MatrixDbContext dbContext = CreateDbContext())
+	        {
+		        return dbContext.Characters.SingleOrDefault(c => c.CharId == (ulong) charId);
+	        }
         }
 
         public List<MarginInventoryItem> LoadInventory(int charId)
         {
-	        var items = dbContext.Inventories.Where(i => i.CharId == (ulong) charId);
-	        List<MarginInventoryItem> Inventory = new List<MarginInventoryItem>();
-            foreach (var inventoryItem in items)
-            {
-	            MarginInventoryItem item = new MarginInventoryItem();
-	            item.setItemID((uint) inventoryItem.Goid);
-	            item.setPurity((UInt16)inventoryItem.Purity);
-	            item.setAmount((UInt16)inventoryItem.Count);
-	            item.setSlot(inventoryItem.Slot);
-	            Inventory.Add(item);
-            }
-            
-            return Inventory;
+	        using (MatrixDbContext dbContext = CreateDbContext())
+	        {
+		        var items = dbContext.Inventories.Where(i => i.CharId == (ulong) charId);
+		        List<MarginInventoryItem> Inventory = new List<MarginInventoryItem>();
+		        foreach (var inventoryItem in items)
+		        {
+			        MarginInventoryItem item = new MarginInventoryItem();
+			        item.setItemID((uint) inventoryItem.Goid);
+			        item.setPurity((UInt16)inventoryItem.Purity);
+			        item.setAmount((UInt16)inventoryItem.Count);
+			        item.setSlot(inventoryItem.Slot);
+			        Inventory.Add(item);
+		        }
+
+		        return Inventory;
+	        }
         }
 
         public string LoadAllHardlines()
         {
-	        var hardLines = dbContext.DataHardlines.ToList();
+	        using (MatrixDbContext dbContext = CreateDbContext())
+	        {
+		        var hardLines = dbContext.DataHardlines.ToList();
 
-            string hexpacket = "";
-            foreach (var hardline in hardLines)
-            {
-	            string districtHex =  StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArrayShort((UInt16)hardline.DistrictId));
-	            string hardlineHex = StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArray((UInt16)hardline.HardLineId,1));
-	            hexpacket = hexpacket + districtHex + hardlineHex + "0000";
-            }
-            
-            return hexpacket;
+		        string hexpacket = "";
+		        foreach (var hardline in hardLines)
+		        {
+			        string districtHex =  StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArrayShort((UInt16)hardline.DistrictId));
+			        string hardlineHex = StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArray((UInt16)hardline.HardLineId,1));
+			        hexpacket = hexpacket + districtHex + hardlineHex + "0000";
+		        }
+
+		        return hexpacket;
+	        }
         }
 
         public List<MarginAbilityItem> LoadAbilities(int charId)
         {
-	        List<CharAbility> charAbilities =
-		        dbContext.CharAbilities.Where(ca => ca.CharId == charId).OrderBy(ca => ca.Slot).ToList();
-
-	        List<MarginAbilityItem> abilities = new List<MarginAbilityItem>();
-	        foreach (var charAbility in charAbilities)
+	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
-		        MarginAbilityItem ability = new MarginAbilityItem();
-		        ability.setSlot((ushort) charAbility.Slot);
-		        ability.setAbilityID((Int32)charAbility.AbilityId);
-		        ability.setLevel((UInt16)charAbility.Level);
-		        ability.setLoaded(charAbility.IsLoaded);
-		        abilities.Add(ability);
+		        List<CharAbility> charAbilities =
+			        dbContext.CharAbilities.Where(ca => ca.CharId == charId).OrderBy(ca => ca.Slot).ToList();
+
+		        List<MarginAbilityItem> abilities = new List<MarginAbilityItem>();
+		        foreach (var charAbility in charAbilities)
+		        {
+			        MarginAbilityItem ability = new MarginAbilityItem();
+			        ability.setSlot((ushort) charAbility.Slot);
+			        ability.setAbilityID((Int32)charAbility.AbilityId);
+			        ability.setLevel((UInt16)charAbility.Level);
+			        ability.setLoaded(charAbility.IsLoaded);
+			        abilities.Add(ability);
+		        }
+
+		        return abilities;
 	        }
-	        
-            return abilities;
         }
 
 
         public UInt32 getNewCharnameID(string handle, UInt32 userId)
         {
-	        var character =  dbContext.Characters.FirstOrDefault(c => c.Handle == handle && c.IsDeleted == 0);
+	        using (MatrixDbContext dbContext = CreateDbContext())
+	        {
+		        var character =  dbContext.Characters.FirstOrDefault(c => c.Handle == handle && c.IsDeleted == 0);
 
-			int number=0;
-			if (character != null)
-			{
-				number = (int) character.CharId;
-			}
+				int number=0;
+				if (character != null)
+				{
+					number = (int) character.CharId;
+				}
 
-			// It does exist... hence... invent a new one
-			if(number!=0){
-				return 0;
-			}
+				// It does exist... hence... invent a new one
+				if(number!=0){
+					return 0;
+				}
             
-            UInt32 charId = CreateNewCharacter(handle, userId,1);
-            return charId;
+	            UInt32 charId = CreateNewCharacter(handle, userId,1);
+	            return charId;
+	        }
 			
 		}
 		
@@ -118,10 +137,20 @@ namespace hds.databases{
 			//TODO: Complete with real data from a hashtable (or something to do it faster);
 			//TODO: find values for uria starting place
 			var character = new Character {Handle = handle, UserId = userid, WorldId = (ushort) worldId};
-			dbContext.Characters.Add(character);
+			using (MatrixDbContext dbContext = CreateDbContext())
+			{
+				dbContext.Characters.Add(character);
+				dbContext.SaveChanges();
+			}
 
 
 			//As i didnt find a solution for "last_insert_id" in C# we must fetch the last row by a normal query
+			charId = (UInt32)character.CharId;
+			if (charId != 0)
+			{
+				return charId;
+			}
+
 			conn.Open();
             string sqlQuery = "SELECT charId FROM characters WHERE userId='" + userid.ToString() + "' AND worldId='" + worldId.ToString() + "' AND is_deleted='0' ORDER BY charId DESC LIMIT 1";
             queryExecuter = conn.CreateCommand();

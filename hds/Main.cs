@@ -1,6 +1,5 @@
 using System;
 using hds.auth;
-using hds.databases.Entities;
 using hds.shared;
 using hds.world.scripting;
 
@@ -35,7 +34,6 @@ namespace hds{
                 /* Initialize DB Stuff */
 
                 Store.dbManager = new databases.DatabaseManager();
-                Store.matrixDbContext = new MatrixDbContext(Store.config.dbParams);
 
                 if (Store.config.dbParams.DbType == "mysql"){
                     Store.dbManager.AuthDbHandler = new databases.MyAuthDBAccess();

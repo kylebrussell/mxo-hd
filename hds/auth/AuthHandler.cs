@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using HDS.Network;
+using hds.databases.Entities;
 using hds.shared;
 
 namespace hds.auth
@@ -206,16 +207,19 @@ namespace hds.auth
             
             try
             {
-                var user = Store.matrixDbContext.Users
-                    .Where(u => u.Username ==
-                                wl.getUsername())
-                    .Single(u => u.Passwordmd5 ==
-                                 StringUtils.bytesToString_NS(md5.digest(passwordB)));
-
-                if (user.AccountStatus.Equals(1))
+                using (var dbContext = new MatrixDbContext(Store.config.dbParams))
                 {
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTISBANNED);
-                    return;
+                    var user = dbContext.Users
+                        .Where(u => u.Username ==
+                                    wl.getUsername())
+                        .Single(u => u.Passwordmd5 ==
+                                     StringUtils.bytesToString_NS(md5.digest(passwordB)));
+
+                    if (user.AccountStatus.Equals(1))
+                    {
+                        SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTISBANNED);
+                        return;
+                    }
                 }
             }
             catch (Exception ex)

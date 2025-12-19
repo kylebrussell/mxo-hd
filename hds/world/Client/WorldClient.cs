@@ -23,6 +23,10 @@ namespace hds
         private bool flushingQueueInProgress = false;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
+        private readonly object flushLock = new object();
+        private long lastFlushTick;
+        private volatile bool flushPending;
+        public const int FlushIntervalMs = 50;
 
         public ClientData playerData { get; set; }
         public MessageQueue messageQueue;
@@ -145,11 +149,30 @@ namespace hds
         }
 
         // Flush the MessageQueue Lists to the Client
-        public void FlushQueue(bool sent = false)
+        public void FlushQueue(bool sent = false, bool force = false)
         {
+            if (!force && !sent)
+            {
+                long now = Environment.TickCount64;
+                if (now - lastFlushTick < FlushIntervalMs)
+                {
+                    flushPending = true;
+                    return;
+                }
+            }
+
+            lock (flushLock)
+            {
+                if (flushingQueueInProgress)
+                {
+                    flushPending = true;
+                    return;
+                }
+                flushingQueueInProgress = true;
+            }
+
             // This resend the MessageQueue - should be called after parsing or after sending something out
             // or in a timed interval (keep alive for example)
-
 
             // Sends RAW MEssages
             SendRawMessages();
@@ -158,9 +181,8 @@ namespace hds
             WorldPacket packet = new WorldPacket(playerData);
 
             // Init encrypted Packet if we have MPM Messages
-            if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0 && flushingQueueInProgress == false)
+            if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0)
             {
-                flushingQueueInProgress = true;
                 // we currently dont know if we send something out so we need to proove that in a way
                 if (messageQueue.ObjectMessagesQueue.Count > 0)
                 {
@@ -288,6 +310,8 @@ namespace hds
             }
 
             flushingQueueInProgress = false;
+            lastFlushTick = Environment.TickCount64;
+            flushPending = false;
         }
 
         private void SendRawMessages()
@@ -436,6 +460,50 @@ namespace hds
                     Store.currentClient = previousClient;
                 }
             }
+        }
+
+        public bool HasPendingMessages()
+        {
+            if (messageQueue.ackOnlyCount > 0)
+            {
+                return true;
+            }
+
+            lock (messageQueue.rawMessages.SyncRoot)
+            {
+                if (messageQueue.rawMessages.Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            lock (messageQueue.ObjectMessagesQueue.SyncRoot)
+            {
+                if (messageQueue.ObjectMessagesQueue.Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            lock (messageQueue.RPCMessagesQueue.SyncRoot)
+            {
+                if (messageQueue.RPCMessagesQueue.Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void TickFlush()
+        {
+            if (!flushPending && !HasPendingMessages())
+            {
+                return;
+            }
+
+            FlushQueue(false, true);
         }
 
 
