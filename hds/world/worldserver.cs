@@ -18,7 +18,6 @@ namespace hds
         private IPEndPoint udplistener;
         private Thread listenThread;
         private int serverport;
-        private bool mainThreadWorking;    
         private Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             
         public const int SIO_UDP_CONNRESET = -1744830452;
@@ -43,19 +42,16 @@ namespace hds
             objMan = new ObjectManager();
 
             listenThread = new Thread(ListenForAllClients);
-            mainThreadWorking = true;
             Output.WriteLine("[World Server] Set and ready at UDP port 10000");
         }
 
         public void StartServer()
         {
             listenThread.Start();
-            mainThreadWorking = true;
         }
 
         public void StopServer()
         {
-            mainThreadWorking = false;
         }
         
         

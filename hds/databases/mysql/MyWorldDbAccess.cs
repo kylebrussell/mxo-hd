@@ -752,8 +752,6 @@ namespace hds.databases{
             queryExecuter.CommandText = sqlQuery;
             dr = queryExecuter.ExecuteReader();
 
-            UInt16 freeSlot = 0;
-
             if (dr.Read())
             {
                 isSlotInUse = true;
@@ -818,8 +816,6 @@ namespace hds.databases{
 		    queryExecuter = conn.CreateCommand();
 		    queryExecuter.CommandText = sqlQuery;
 		    dr = queryExecuter.ExecuteReader();
-
-		    string factionName = "";
 
 		    if (dr.Read())
 		    {

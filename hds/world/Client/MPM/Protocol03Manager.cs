@@ -7,8 +7,6 @@ namespace hds{
 	public class Protocol03Manager
 	{
 
-		private PacketReader reader;
-			
 		public int parse(int _offset, ref byte[] packetData){
 			
 			PacketReader reader = new PacketReader(packetData);

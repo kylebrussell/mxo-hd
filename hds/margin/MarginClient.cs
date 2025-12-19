@@ -309,10 +309,6 @@ namespace hds{
 	        reader.IncrementOffsetByValue(3);
 
             
-	        UInt16 body = 0;
-	        UInt16 gender = 0;
-
-	        
 	        UInt16 skintone = reader.ReadUInt16(1);
 	        reader.SetOffsetOverrideValue(7);
 	        UInt16 bodyTypeId = reader.ReadUInt16(1);

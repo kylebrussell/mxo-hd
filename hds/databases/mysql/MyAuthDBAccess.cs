@@ -44,7 +44,7 @@ namespace hds.databases
                     wl.setTimeCreated((int) dateTimeCreated);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 String msg = "Player not found on DB with #" + wl.getUsername() + "# and #" + wl.getPassword() + "#";
                 Output.WriteLine(msg);

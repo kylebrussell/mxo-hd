@@ -14,8 +14,6 @@ namespace hds.auth
 
         int status;
 
-        byte[] response;
-
         byte[] challenge;
         byte[] blankIV;
         byte[] md5edChallenge;
@@ -222,7 +220,7 @@ namespace hds.auth
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTDOESNOTEXIST);
                 return;

@@ -16,7 +16,6 @@ namespace hds.databases{
 		private IDbConnection conn;
 		private IDbCommand queryExecuter;
 		private IDataReader dr;
-		private XmlParser xmlParser;
 		private DbParams dbParams;
 		
 		public MyMarginDBAccess(){

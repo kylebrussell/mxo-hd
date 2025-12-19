@@ -92,7 +92,7 @@ namespace hds.databases.Entities
                     .HasColumnName("ability_name")
                     .HasDefaultValueSql("''")
                     .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
+                    .UseCollation("utf8_general_ci");
 
                 entity.Property(e => e.Added)
                     .HasColumnType("datetime")
@@ -161,7 +161,7 @@ namespace hds.databases.Entities
                     .HasColumnName("background")
                     .HasDefaultValueSql("''")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Cash)
                     .HasColumnType("int(11)")
@@ -187,7 +187,7 @@ namespace hds.databases.Entities
                     .HasColumnName("district")
                     .HasDefaultValueSql("'slums'")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.DistrictId)
                     .HasColumnType("tinyint(3) unsigned")
@@ -210,14 +210,14 @@ namespace hds.databases.Entities
                     .HasColumnName("firstName")
                     .HasDefaultValueSql("''")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Handle)
                     .IsRequired()
                     .HasColumnType("varchar(32)")
                     .HasColumnName("handle")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.HealthC)
                     .HasColumnType("mediumint(11)")
@@ -253,7 +253,7 @@ namespace hds.databases.Entities
                     .HasColumnName("lastName")
                     .HasDefaultValueSql("''")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Level)
                     .HasColumnType("mediumint(11)")
@@ -346,7 +346,7 @@ namespace hds.databases.Entities
                     .HasColumnName("crew_name")
                     .HasDefaultValueSql("'0'")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.DeletedAt)
                     .HasColumnType("datetime")
@@ -365,7 +365,7 @@ namespace hds.databases.Entities
                     .HasColumnName("master_player_handle")
                     .HasDefaultValueSql("''")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Money)
                     .HasColumnType("int(10) unsigned")
@@ -422,7 +422,7 @@ namespace hds.databases.Entities
                     .IsRequired()
                     .HasColumnType("varchar(45)")
                     .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
+                    .UseCollation("utf8_general_ci");
 
                 entity.Property(e => e.ObjectId)
                     .HasColumnType("bigint(20)")
@@ -444,14 +444,14 @@ namespace hds.databases.Entities
                     .HasColumnType("text")
                     .HasColumnName("key")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Path)
                     .IsRequired()
                     .HasColumnType("text")
                     .HasColumnName("path")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
             });
 
             modelBuilder.Entity<Faction>(entity =>
@@ -476,7 +476,7 @@ namespace hds.databases.Entities
                     .HasColumnName("master_player_handle")
                     .HasDefaultValueSql("'0'")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Money)
                     .HasColumnType("int(11)")
@@ -487,7 +487,7 @@ namespace hds.databases.Entities
                     .HasColumnName("name")
                     .HasDefaultValueSql("'0'")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
             });
 
             modelBuilder.Entity<Inventory>(entity =>
@@ -545,7 +545,7 @@ namespace hds.databases.Entities
                     .IsRequired()
                     .HasColumnType("varchar(45)")
                     .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
+                    .UseCollation("utf8_general_ci");
 
                 entity.Property(e => e.District).HasColumnType("tinyint(3) unsigned");
             });
@@ -565,7 +565,7 @@ namespace hds.databases.Entities
                     .HasColumnName("category")
                     .HasDefaultValueSql("'0'")
                     .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
+                    .UseCollation("utf8_general_ci");
 
                 entity.Property(e => e.CharId)
                     .HasColumnType("int(10)")
@@ -724,25 +724,25 @@ namespace hds.databases.Entities
                     .HasColumnType("varchar(255)")
                     .HasColumnName("email_adress")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.PasswordHash)
                     .HasColumnType("varchar(40)")
                     .HasColumnName("passwordHash")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.PasswordSalt)
                     .HasColumnType("varchar(32)")
                     .HasColumnName("passwordSalt")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.Passwordmd5)
                     .HasColumnType("varchar(40)")
                     .HasColumnName("passwordmd5")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.PrivateExponent)
                     .HasColumnType("tinyblob")
@@ -760,7 +760,7 @@ namespace hds.databases.Entities
                     .HasColumnType("varchar(100)")
                     .HasColumnName("sessionid")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.TimeCreated)
                     .HasColumnType("timestamp")
@@ -772,7 +772,7 @@ namespace hds.databases.Entities
                     .HasColumnType("varchar(32)")
                     .HasColumnName("username")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
             });
 
             modelBuilder.Entity<World>(entity =>
@@ -793,7 +793,7 @@ namespace hds.databases.Entities
                     .HasColumnType("varchar(20)")
                     .HasColumnName("name")
                     .HasCharSet("latin1")
-                    .HasCollation("latin1_swedish_ci");
+                    .UseCollation("latin1_swedish_ci");
 
                 entity.Property(e => e.NumPlayers)
                     .HasColumnType("int(10) unsigned")

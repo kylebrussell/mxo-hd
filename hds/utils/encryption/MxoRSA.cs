@@ -27,7 +27,7 @@ namespace hds
 
             rsa.FromXmlString(privKeyXML);
 			
-			return rsa.SignData(md5fromStructure, new MD5CryptoServiceProvider());
+			return rsa.SignData(md5fromStructure, HashAlgorithmName.MD5, RSASignaturePadding.Pkcs1);
 			
 		}		
 		

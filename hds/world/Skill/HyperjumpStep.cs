@@ -11,7 +11,6 @@ namespace hds.world.Skill
         public LtVector3f ToPos;
         public float JumpHeight;
         public UInt32 endTime;
-        public UInt16 NeededAckSeq;
         public ushort jumpId;
         public UInt32 maybeTimeBasedValue;
 

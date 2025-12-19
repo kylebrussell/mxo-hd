@@ -10,7 +10,6 @@ namespace hds
         public byte[] content;
         public UInt16 sendCounter;
         private int resendTime;
-        private int lastSentTime;
         private UInt16 neededAck;
         public bool isTimed;
         public bool isSent = false;

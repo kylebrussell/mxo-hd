@@ -8,15 +8,14 @@ namespace hds
 	public class Md5
 	{
 		
-		MD5CryptoServiceProvider hasher;
+		private readonly MD5 hasher;
 		
 		public Md5(){
-			hasher = new MD5CryptoServiceProvider();
+			hasher = MD5.Create();
 		}
 		
 		public byte[] digest(byte[] data){
-			byte [] result = hasher.ComputeHash(data);
-			return result;
+			return hasher.ComputeHash(data);
 		}
 	}
 }

@@ -58,8 +58,6 @@ namespace hds
                     tempThread.Interrupt();
                 }
             }
-
-            listenThread.Abort();
         }
 
 
@@ -70,7 +68,37 @@ namespace hds
             while (mainThreadWorking)
             {
                 // Create a new object when a client arrives
-                TcpClient client = this.tcpListener.AcceptTcpClient();
+                TcpClient client = null;
+                try
+                {
+                    client = this.tcpListener.AcceptTcpClient();
+                }
+                catch (SocketException ex)
+                {
+                    if (!mainThreadWorking)
+                    {
+                        break;
+                    }
+
+                    Output.WriteLine("Margin listener socket error: " + ex.Message);
+                    continue;
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (!mainThreadWorking)
+                    {
+                        break;
+                    }
+
+                    Output.WriteLine("Margin listener stopped unexpectedly.");
+                    break;
+                }
+
+                if (!mainThreadWorking)
+                {
+                    client?.Close();
+                    break;
+                }
                 MarginClient marClient = new MarginClient(client.GetHashCode());
 
                 // Define a new thread with the handling method as main loop and start it

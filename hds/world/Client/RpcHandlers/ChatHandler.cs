@@ -17,25 +17,6 @@ namespace hds
             PacketReader reader = new PacketReader(packetData);
             UInt16 typeId = reader.ReadUInt16(1);
 
-            string typeString = "AREA";
-
-            switch (typeId)
-            {
-                case 19:
-                    typeString = "FACTION";
-                    break;
-                case 18:
-                    typeString = "CREW";
-                    break;
-                case 21:
-                    typeString = "TEAM";
-                    break;
-                default:
-                    typeString = "AREA";
-                    break;
-                
-            }
-            
             chatCommands = new ChatCommandsHelper();
             int offset = 0;
 
