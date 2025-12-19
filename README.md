@@ -202,6 +202,8 @@ dotnet test
 
 ### Contributing
 
+This fork is actively maintained by Kyle Russell. Please open issues and pull requests against this repository.
+
 Contributions are welcome! This is a preservation and modernization effort. Areas that need work:
 
 - **Mission system** - Needs major development
