@@ -29,6 +29,11 @@ namespace hds
             return view;
         }
 
+        public ClientView FindViewForEntity(UInt64 entityId)
+        {
+            return views.Find(delegate(ClientView cv) { return cv.entityId == entityId; });
+        }
+
         public void removeViewByViewId(UInt16 viewId)
         {
             ClientView view = getViewById(viewId);

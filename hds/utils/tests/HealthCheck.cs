@@ -31,7 +31,12 @@ namespace hds
 				XmlParser xmlParser = new XmlParser();
 							
 				/* Params: Host, port, database, user, password */
-                IDbConnection conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" + "Database=" + config.dbParams.DatabaseName + ";" + "User ID=" + config.dbParams.Username + ";" + "Password=" + config.dbParams.Password + ";" + "Pooling=false;");
+                IDbConnection conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" +
+                    "Port=" + config.dbParams.Port + ";" +
+                    "Database=" + config.dbParams.DatabaseName + ";" +
+                    "User ID=" + config.dbParams.Username + ";" +
+                    "Password=" + config.dbParams.Password + ";" +
+                    "Pooling=true;");
 				conn.Open();
 				IDbCommand queryExecuter;
 				IDataReader dr;

@@ -27,8 +27,9 @@ namespace hds.shared{
         public static MatrixDbContext matrixDbContext { get; set; }
 
         /* Protocol Handling */
-        public static WorldClient currentClient { get; set; }
-        public static MultiProtocolManager Mpm { get; set; }
+        [ThreadStatic]
+        private static WorldClient threadCurrentClient;
+        public static WorldClient currentClient { get { return threadCurrentClient; } set { threadCurrentClient = value; } }
 
         /* Scripting Handling */
 

@@ -43,9 +43,7 @@ namespace hds{
                     Store.dbManager.WorldDbHandler = new databases.MyWorldDbAccess();
                 }                
 				
-                /* Initialize the MPM object */
 				Store.dbManager.WorldDbHandler.ResetOnlineStatus();
-                Store.Mpm = new MultiProtocolManager();
 
                 /* Initialize the scripting server */
                 Store.rpcScriptManager = new ScriptManager();

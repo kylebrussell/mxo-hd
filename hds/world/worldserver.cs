@@ -66,6 +66,7 @@ namespace hds
             EndPoint Remote = new IPEndPoint(IPAddress.Any, 0);
             
             int msgLen = 0;
+            WorldClient currentClient = null;
 
             try
             {
@@ -73,45 +74,42 @@ namespace hds
                 byte[] finalMessage = new byte[msgLen];
                 ArrayUtils.fastCopy(buffer, finalMessage, msgLen);
 
+                EndPoint newClientEP = new IPEndPoint(IPAddress.Any, 0);
+                try
+                {
+                    socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref newClientEP,
+                        finalReceiveFrom, socket);
+                }
+                catch (SocketException ex)
+                {
+                    if (ex.ErrorCode == 10054 && currentClient != null)
+                    {
+                        currentClient.Alive = false;
+                    }
+                }
+
                 // TODO CLIENT CHECK AND HANDLING
+                string remoteKey = Remote.ToString();
                 lock (Clients)
                 {
-                    WorldClient value;
-                    if (Clients.ContainsKey(Remote.ToString()))
+                    if (Clients.TryGetValue(remoteKey, out currentClient))
                     {
-                        value = Clients[Remote.ToString()] as WorldClient;
-                        Store.currentClient = Clients[Remote.ToString()] as WorldClient;
                     }
                     else
                     {
 
-                        objMan.PushClient(Remote.ToString()); // Push first, then create it
-                        value = new WorldClient(Remote, socket, Remote.ToString());
-                        gameServerEntities.Add(objMan.GetAssignedObject(Remote.ToString()));
-                        value.playerData.setEntityId(entityIdCounter++);
+                        objMan.PushClient(remoteKey); // Push first, then create it
+                        currentClient = new WorldClient(Remote, socket, remoteKey);
+                        gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
+                        currentClient.playerData.setEntityId(entityIdCounter++);
 
-                        Clients.Add(Remote.ToString(), value);
+                        Clients.Add(remoteKey, currentClient);
                     }
-                    // Once one player enters, clean all 
-                    Store.currentClient = value; // BEFORE processing
+                }
 
-                    value.processPacket(finalMessage);
-                }
-                // Listening for a new message
-                EndPoint newClientEP = new IPEndPoint(IPAddress.Any, 0);
-                try
+                if (currentClient != null)
                 {
-                    socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref Remote, finalReceiveFrom, socket);
-                }
-                catch (SocketException ex)
-                {
-                    // if we get exception - remove the client
-                    // ToDo:
-                    if (ex.ErrorCode == 10054)
-                    {
-                        // Client got removed by timeout
-                        Store.currentClient.Alive = false;
-                    }
+                    currentClient.processPacket(finalMessage);
                 }
 
             }
@@ -121,7 +119,10 @@ namespace hds
                 if (ex.ErrorCode == 10054)
                 {
                     // Client got removed by timeout
-                    Store.currentClient.Alive = false;
+                    if (currentClient != null)
+                    {
+                        currentClient.Alive = false;
+                    }
                 }
             }
                 

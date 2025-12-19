@@ -21,6 +21,8 @@ namespace hds
         private int deadSignals;
         private bool alive;
         private bool flushingQueueInProgress = false;
+        private readonly MultiProtocolManager protocolManager;
+        private readonly object processLock = new object();
 
         public ClientData playerData { get; set; }
         public MessageQueue messageQueue;
@@ -33,6 +35,7 @@ namespace hds
             socket = _socket;
             key = _key;
             cypher = new WorldEncryption();
+            protocolManager = new MultiProtocolManager();
 
             messageQueue = new MessageQueue();
 
@@ -387,39 +390,51 @@ namespace hds
 
         public void processPacket(byte[] packet)
         {
-            // Update the last time we are called
-            lastUsedTime = TimeUtils.getUnixTimeUint32();
-
-            // Decryption start
-            bool encrypted = false;
-
-            byte[] processedPacket = null;
-            Stopwatch stopwatch = new Stopwatch();
-            if (packet.Length > 0)
+            lock (processLock)
             {
-                if (packet[0] == 0x00)
+                WorldClient previousClient = Store.currentClient;
+                Store.currentClient = this;
+                try
                 {
-                    // Plain text packet
-                    processedPacket = packet;
-                    Output.WritePacketLog(processedPacket, "CLIENT",
-                        playerData.getPss().ToString(), playerData.getCseq().ToString(),
-                        playerData.getACK().ToString());
+                    // Update the last time we are called
+                    lastUsedTime = TimeUtils.getUnixTimeUint32();
+
+                    // Decryption start
+                    bool encrypted = false;
+
+                    byte[] processedPacket = null;
+                    Stopwatch stopwatch = new Stopwatch();
+                    if (packet.Length > 0)
+                    {
+                        if (packet[0] == 0x00)
+                        {
+                            // Plain text packet
+                            processedPacket = packet;
+                            Output.WritePacketLog(processedPacket, "CLIENT",
+                                playerData.getPss().ToString(), playerData.getCseq().ToString(),
+                                playerData.getACK().ToString());
+                        }
+                        else
+                        {
+                            encrypted = true;
+                            stopwatch.Start();
+                            processedPacket = DecryptReceivedPacket(packet);
+                            stopwatch.Stop();
+                            TimeSpan ts = stopwatch.Elapsed;
+
+                            Output.WritePacketLog(this, processedPacket, "CLIENT",
+                                playerData.getPss().ToString(), playerData.getCseq().ToString(), playerData.getACK().ToString(),
+                                ts.TotalMilliseconds.ToString(), "DECRYPT");
+                        }
+
+                        protocolManager.Parse(encrypted, processedPacket);
+                        FlushQueue();
+                    }
                 }
-                else
+                finally
                 {
-                    encrypted = true;
-                    stopwatch.Start();
-                    processedPacket = DecryptReceivedPacket(packet);
-                    stopwatch.Stop();
-                    TimeSpan ts = stopwatch.Elapsed;
-
-                    Output.WritePacketLog(this, processedPacket, "CLIENT",
-                        playerData.getPss().ToString(), playerData.getCseq().ToString(), playerData.getACK().ToString(),
-                        ts.TotalMilliseconds.ToString(), "DECRYPT");
+                    Store.currentClient = previousClient;
                 }
-
-                Store.Mpm.Parse(encrypted, processedPacket);
-                FlushQueue();
             }
         }
 

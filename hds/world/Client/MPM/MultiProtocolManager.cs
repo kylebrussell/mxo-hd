@@ -8,11 +8,11 @@ namespace hds{
 
 	public class MultiProtocolManager{
 
-		private static int offset;
-		private static byte[] buffer;
+		private int offset;
+		private byte[] buffer;
 		
-		private static Protocol03Manager man03;
-		private static Protocol04Manager man04;
+		private readonly Protocol03Manager man03;
+		private readonly Protocol04Manager man04;
 
         public MultiProtocolManager() {
 
@@ -24,12 +24,12 @@ namespace hds{
         }
 
 		
-		private static void ParsePlainContent(ref byte[] packetData){
+		private void ParsePlainContent(ref byte[] packetData){
 			
 			Store.currentClient.messageQueue.addRawMessage(packetData);
 		}
 		
-		private static void ParseContent(ref byte[] packetData){
+		private void ParseContent(ref byte[] packetData){
 
 			buffer = null;
 			buffer = packetData;

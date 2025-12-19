@@ -25,7 +25,12 @@ namespace hds.databases{
             var config = Store.config;
             dbContext = new MatrixDbContext(config.dbParams);
 			/* Params: Host, port, database, user, password */
-            conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" + "Database=" + config.dbParams.DatabaseName + ";" + "User ID=" + config.dbParams.Username + ";" + "Password=" + config.dbParams.Password + ";" + "Pooling=false;");
+            conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" +
+                "Port=" + config.dbParams.Port + ";" +
+                "Database=" + config.dbParams.DatabaseName + ";" +
+                "User ID=" + config.dbParams.Username + ";" +
+                "Password=" + config.dbParams.Password + ";" +
+                "Pooling=true;");
 			
 		}
 

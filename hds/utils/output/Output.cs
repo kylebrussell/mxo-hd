@@ -11,8 +11,39 @@ namespace hds
 	public class Output{
 		
 		static int verbose = 0;
+		// Environment-variable toggles to avoid per-packet disk I/O in production.
+		private static readonly bool EnablePacketLogs = GetEnvFlag("MXO_PACKET_LOG", false);
+		private static readonly bool EnableDebugLogs = GetEnvFlag("MXO_DEBUG_LOG", false);
+		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
+		private static readonly bool EnableClientViewRequestLog = GetEnvFlag("MXO_CLIENT_VIEW_LOG", false);
+		private static readonly bool EnableServerLog = GetEnvFlag("MXO_SERVER_LOG", true);
 		
 		public Output (){}
+
+		private static bool GetEnvFlag(string name, bool defaultValue)
+		{
+			string value = Environment.GetEnvironmentVariable(name);
+			if (string.IsNullOrEmpty(value))
+			{
+				return defaultValue;
+			}
+
+			switch (value.Trim().ToLowerInvariant())
+			{
+				case "1":
+				case "true":
+				case "yes":
+				case "on":
+					return true;
+				case "0":
+				case "false":
+				case "no":
+				case "off":
+					return false;
+				default:
+					return defaultValue;
+			}
+		}
 		
 		static public void OptWriteLine(Object obj){
 			if (verbose==1)
@@ -27,6 +58,10 @@ namespace hds
 		
 		static public void WriteClientViewRequestLog(Object obj)
 		{
+			if (!EnableClientViewRequestLog)
+			{
+				return;
+			}
 
 			try
 			{
@@ -44,6 +79,10 @@ namespace hds
 
         static public void WriteRpcLog(Object obj)
         {
+			if (!EnableRpcLogs)
+			{
+				return;
+			}
 
             try
             {
@@ -61,6 +100,10 @@ namespace hds
 		
         static public void WriteDebugLog(Object obj)
         {
+			if (!EnableDebugLogs)
+			{
+				return;
+			}
 
             try
             {
@@ -130,6 +173,10 @@ namespace hds
 	    static public void WritePacketLog(WorldClient client, byte[] obj, string type, string pss, string cseq, string sseq,
 	        string timeConsuming, string cryptType)
 	    {
+		    if (!EnablePacketLogs)
+		    {
+			    return;
+		    }
 
 		    string charName = null;
 		    UInt32 charId = 0;
@@ -193,6 +240,10 @@ namespace hds
 
 		static public void WriteUnencryptedPacketLog(byte[] obj, string type)
 		{
+			if (!EnablePacketLogs)
+			{
+				return;
+			}
 			string messageConverted = ConvertByteToReadablePacket(obj);
 			string header = "";
 
@@ -241,6 +292,10 @@ namespace hds
 		
 	    
         static public void WritePacketLog(byte[] obj, string type, string pss, string cseq, string sseq){
+	        if (!EnablePacketLogs)
+	        {
+		        return;
+	        }
 	        
 	        // Format Packet Data
 
@@ -298,6 +353,10 @@ namespace hds
 
         static public void writeToLogForConsole(Object obj)
         {
+			if (!EnableServerLog)
+			{
+				return;
+			}
             try
             {
                 StreamWriter w = File.AppendText("ServerLog.txt");
