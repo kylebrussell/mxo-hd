@@ -689,6 +689,7 @@ public class PacketResearcherTests
         Assert.Equal(19, lead.PayloadBytes);
         Assert.Equal(2, lead.MarkerOffset);
         Assert.Equal("00 0b", lead.LeadPrefixHex);
+        Assert.Equal("02", lead.MarkerModeHex);
         Assert.Equal("0e", lead.InnerSelector);
         Assert.Equal(14, lead.InnerPayloadBytes);
         Assert.Equal(2, lead.InnerPositionOffset);
@@ -697,6 +698,32 @@ public class PacketResearcherTests
         Assert.InRange(lead.Y, -1105f, -1103f);
         Assert.InRange(lead.Z, -453f, -452f);
         Assert.Equal("", lead.SuffixHex);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_ExtractsNestedMovementLeadWithNonDefaultMarkerMode()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 01 00 02 0c 00 00 00 00 00 00 00 00 00 00 00 00 00 03 00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46 ff 00 00 00 10 00 00 00 80 80 80 80 c0 4c 0a 00")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 529, "server").Single();
+
+        Assert.False(sample.Complete);
+        Protocol03NestedMovementLead lead = Assert.Single(sample.NestedMovementLeads);
+        Assert.Equal("03", lead.OuterSelector);
+        Assert.Equal(0, lead.MarkerOffset);
+        Assert.Equal("", lead.LeadPrefixHex);
+        Assert.Equal("06", lead.MarkerModeHex);
+        Assert.Equal("0e", lead.InnerSelector);
+        Assert.Equal(14, lead.InnerPayloadBytes);
+        Assert.Equal(2, lead.InnerPositionOffset);
+        Assert.Equal("58 3a f6 c6 00 00 be 42 44 35 af 46", lead.PositionHex);
+        Assert.Equal("ff 00 00 00 10 00 00 00", lead.SuffixHex);
+        Assert.Equal("80 80 80 80 c0 4c 0a 00", lead.PostSuffixHex);
+        Assert.True(lead.X < 0);
+        Assert.InRange(lead.Y, 94f, 96f);
+        Assert.True(lead.Z > 0);
     }
 
     [Fact]
@@ -834,6 +861,10 @@ public class PacketResearcherTests
             "02 03 01 00 02 14 00 0b 00 02 0e 01 6a 48 b1 29 47 00 20 8a c4 20 73 e2 c3 00")
             .ToArray();
         Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 520, "server").Single();
+        byte[] mode06Bytes = PacketResearcher.ParseHexBytes(
+            "02 03 01 00 02 0c 00 00 00 00 00 00 00 00 00 00 00 00 00 03 00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46 ff 00 00 00 10 00 00 00 80 80 80 80 c0 4c 0a 00")
+            .ToArray();
+        Protocol03ObjectViewSample mode06Sample = PacketResearcher.DetectProtocol03ObjectViews(mode06Bytes, 529, "server").Single();
         PacketDumpFileSummary dump = new(
             "selector14.txt",
             1,
@@ -842,7 +873,7 @@ public class PacketResearcherTests
             new Dictionary<string, int>(),
             new Dictionary<string, IReadOnlyList<int>>(),
             Array.Empty<Protocol04PacketSequenceSample>(),
-            new[] { sample },
+            new[] { sample, mode06Sample },
             Array.Empty<Protocol04InteractionPayloadSample>(),
             Array.Empty<PlayerAttributePayloadSample>(),
             Array.Empty<ManageBonusPayloadSample>());
@@ -867,8 +898,12 @@ public class PacketResearcherTests
         string markdown = ReportWriter.ToMarkdown(report);
 
         Assert.Contains("### Protocol 03 Embedded Movement Leads", markdown);
-        Assert.Contains("Across 1 embedded movement windows, 1 outer selectors contain a plausible movement window.", markdown);
-        Assert.Contains("| `14` | unclassified object-view update | `00 0b` | 2 | `0e` | 1 | 19 |", markdown);
+        Assert.Contains("Across 2 embedded movement windows, 2 outer selectors contain a plausible movement window.", markdown);
+        Assert.Contains("| `02` | `0e` | 1 | 1 | 0 | unclassified object-view update | 14 | - | `selector14.txt:520` |", markdown);
+        Assert.Contains("| `06` | `0e` | 1 | 0 | 1 | object state update | 03 | ff 00 00 00 10 00 00 00 | `selector14.txt:529` |", markdown);
+        Assert.Contains("| `06` | `0e` | `ff 00 00 00 10 00 00 00` | `80 80 80 80 c0 4c 0a 00` | 1 | 0 | 1 | object state update | 03 | 33 | `selector14.txt:529` |", markdown);
+        Assert.Contains("| `14` | unclassified object-view update | `00 0b` | 2 | `02` | `0e` | 1 | 19 |", markdown);
+        Assert.Contains("| `03` | object state update | `-` | 0 | `06` | `0e` | 1 | 33 |", markdown);
     }
 
     [Fact]

@@ -1951,7 +1951,7 @@ public static partial class PacketResearcher
         for (int markerOffset = 0; markerOffset <= maxMarkerOffset; markerOffset++)
         {
             if (payload[markerOffset] != 0x00 ||
-                payload[markerOffset + 1] != 0x02 ||
+                !IsProtocol03NestedMovementMode(payload[markerOffset + 1]) ||
                 !TryGetProtocol03MovementPayloadInfo(payload[markerOffset + 2], out int innerPayloadBytes, out int innerPositionOffset))
             {
                 continue;
@@ -1975,6 +1975,7 @@ public static partial class PacketResearcher
                 payload.Length,
                 markerOffset,
                 FormatHeader(payload.Take(markerOffset)),
+                payload[markerOffset + 1].ToString("x2", CultureInfo.InvariantCulture),
                 payload[markerOffset + 2].ToString("x2", CultureInfo.InvariantCulture),
                 innerPayloadBytes,
                 innerPositionOffset,
@@ -1983,9 +1984,15 @@ public static partial class PacketResearcher
                 y,
                 z,
                 FormatHeader(payload.Skip(innerPayloadEnd).Take(Math.Min(8, Math.Max(0, payload.Length - innerPayloadEnd)))),
+                FormatHeader(payload.Skip(innerPayloadEnd + 8).Take(Math.Min(8, Math.Max(0, payload.Length - innerPayloadEnd - 8)))),
                 FormatHeader(payload));
             yield break;
         }
+    }
+
+    private static bool IsProtocol03NestedMovementMode(byte value)
+    {
+        return value is 0x01 or 0x02 or 0x03 or 0x04 or 0x06;
     }
 
     private static Protocol03MovementStateTailLead CreateProtocol03MovementStateTailLead(

@@ -791,13 +791,58 @@ public static class ReportWriter
 
         builder.AppendLine("### Protocol 03 Embedded Movement Leads");
         builder.AppendLine();
-        builder.AppendLine("This scans unresolved selector payloads and bounded primary movement wrappers for embedded movement windows that carry plausible little-endian xyz positions. Rows from unresolved payloads are layout leads only; rows from primary wrappers use a known bounded prefix length.");
+        builder.AppendLine("This scans unresolved selector payloads and bounded primary movement wrappers for embedded `00 <mode> <movement selector>` windows that carry plausible little-endian xyz positions. Rows from unresolved payloads are layout leads only; rows from primary wrappers use a known bounded prefix length.");
         builder.AppendLine();
         builder.AppendLine($"Across {leads.Length} embedded movement windows, {leads.Select(entry => entry.Lead.OuterSelector).Distinct(StringComparer.OrdinalIgnoreCase).Count()} outer selectors contain a plausible movement window.");
-        builder.AppendLine("The table lists the top grouped leads by record count.");
+        builder.AppendLine("The first table groups the marker mode and inner movement selector; the second table lists the top grouped leads by record count.");
         builder.AppendLine();
-        builder.AppendLine("| Outer selector | Object classification | Lead prefix | Marker offset | Inner selector | Records | Payload bytes | Position samples | Suffix samples | Sample |");
-        builder.AppendLine("| --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |");
+        builder.AppendLine("| Marker mode | Inner selector | Records | Bounded primary wrappers | Unresolved payload leads | Object classifications | Outer selectors | Suffix samples | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.MarkerModeHex,
+                entry.Lead.InnerSelector
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.MarkerModeHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.InnerSelector, StringComparer.OrdinalIgnoreCase))
+        {
+            Protocol03NestedMovementLeadWithFile sample = group.First();
+            int boundedWrappers = group.Count(IsProtocol03BoundedPrimaryMovementWrapper);
+            builder.AppendLine(
+                $"| `{group.Key.MarkerModeHex}` | `{group.Key.InnerSelector}` | {group.Count()} | {boundedWrappers} | {group.Count() - boundedWrappers} | {FormatDistinct(group.Select(entry => entry.Sample.Classification), 5)} | {FormatDistinct(group.Select(entry => entry.Lead.OuterSelector), 10)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixHex)), 5)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("The suffix table groups the first bytes after the embedded movement payload. Repeated non-empty suffixes are body-boundary leads only; they are not decoded tail lengths yet.");
+        builder.AppendLine();
+        builder.AppendLine("| Marker mode | Inner selector | Suffix prefix | Next bytes | Records | Bounded primary wrappers | Unresolved payload leads | Object classifications | Outer selectors | Payload bytes | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.MarkerModeHex,
+                entry.Lead.InnerSelector,
+                SuffixHex = FormatEmptyHex(entry.Lead.SuffixHex),
+                PostSuffixHex = FormatEmptyHex(entry.Lead.PostSuffixHex)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.MarkerModeHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.InnerSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.SuffixHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.PostSuffixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(20))
+        {
+            Protocol03NestedMovementLeadWithFile sample = group.First();
+            int boundedWrappers = group.Count(IsProtocol03BoundedPrimaryMovementWrapper);
+            builder.AppendLine(
+                $"| `{group.Key.MarkerModeHex}` | `{group.Key.InnerSelector}` | `{group.Key.SuffixHex}` | `{group.Key.PostSuffixHex}` | {group.Count()} | {boundedWrappers} | {group.Count() - boundedWrappers} | {FormatDistinct(group.Select(entry => entry.Sample.Classification), 5)} | {FormatDistinct(group.Select(entry => entry.Lead.OuterSelector), 10)} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("| Outer selector | Object classification | Lead prefix | Marker offset | Marker mode | Inner selector | Records | Payload bytes | Position samples | Suffix samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | --- | ---: | --- | --- | --- | --- |");
         var groups = leads
             .GroupBy(entry => new
             {
@@ -805,21 +850,31 @@ public static class ReportWriter
                 entry.Sample.Classification,
                 entry.Lead.LeadPrefixHex,
                 entry.Lead.MarkerOffset,
+                entry.Lead.MarkerModeHex,
                 entry.Lead.InnerSelector
             })
             .OrderByDescending(group => group.Count())
             .ThenBy(group => group.Key.OuterSelector, StringComparer.OrdinalIgnoreCase)
             .ThenBy(group => group.Key.MarkerOffset)
+            .ThenBy(group => group.Key.MarkerModeHex, StringComparer.OrdinalIgnoreCase)
             .ThenBy(group => group.Key.InnerSelector, StringComparer.OrdinalIgnoreCase)
             .Take(25);
         foreach (var group in groups)
         {
             Protocol03NestedMovementLeadWithFile sample = group.First();
             builder.AppendLine(
-                $"| `{group.Key.OuterSelector}` | {FormatTableText(group.Key.Classification)} | `{FormatEmptyHex(group.Key.LeadPrefixHex)}` | {group.Key.MarkerOffset} | `{group.Key.InnerSelector}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatNestedMovementPosition(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixHex)), 4)} | `{sample.File}:{sample.Line}` |");
+                $"| `{group.Key.OuterSelector}` | {FormatTableText(group.Key.Classification)} | `{FormatEmptyHex(group.Key.LeadPrefixHex)}` | {group.Key.MarkerOffset} | `{group.Key.MarkerModeHex}` | `{group.Key.InnerSelector}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatNestedMovementPosition(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixHex)), 4)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
+    }
+
+    private static bool IsProtocol03BoundedPrimaryMovementWrapper(Protocol03NestedMovementLeadWithFile entry)
+    {
+        return entry.Sample.Segments.Any(segment =>
+            segment.Classification.Equals("primary movement wrapper", StringComparison.Ordinal) &&
+            segment.Selector.Equals(entry.Lead.OuterSelector, StringComparison.OrdinalIgnoreCase) &&
+            segment.Offset + 1 == entry.Lead.Offset);
     }
 
     private static void AppendProtocol03MovementStateTailLeads(

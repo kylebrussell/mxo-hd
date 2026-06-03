@@ -216,6 +216,7 @@ public sealed record Protocol03NestedMovementLead(
     int PayloadBytes,
     int MarkerOffset,
     string LeadPrefixHex,
+    string MarkerModeHex,
     string InnerSelector,
     int InnerPayloadBytes,
     int InnerPositionOffset,
@@ -224,6 +225,7 @@ public sealed record Protocol03NestedMovementLead(
     float Y,
     float Z,
     string SuffixHex,
+    string PostSuffixHex,
     string PayloadHex);
 
 public sealed record Protocol03MovementStateTailLead(
