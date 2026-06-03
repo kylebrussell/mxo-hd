@@ -49,20 +49,24 @@ This checklist tracks the current modernization push from "builds locally" to "f
   - `data/vendor_prices.csv` has 41,788 price rows generated from public `goprops.7z`; `VendorPricing` now uses decoded `VendorPrice` and `NonSellable` values with the previous default as fallback.
 - [x] Decode normal vendor buyback pricing from public MxOEmu Python resources.
   - `pythonMXO.zip` contains `resource/Python/Monolith.ltp/rshooks.py`; normal buyback is `VendorPrice / 10`, recycle info is `VendorPrice / 20`, and the default vendor price is `1000`. Runtime normal-item sell pricing now follows the one-tenth rule.
+- [x] Implement full ability-code vendor buyback semantics.
+  - Runtime sell pricing now follows the high-bit ability-code branch from public `rshooks.py`, including base ability-code lookup, level-based premiums, and the mapped full-price exception list for specific abilities.
 - [x] Decode protocol 04 object-interaction payload fields used by the local static/dynamic interaction handlers.
   - Current generated report finds 10 top-level object-interaction payloads, all CR2 static door interactions (`80 c8`, object type `3`) across three object ids. No parsed human-NPC/vendor-path interaction (`object type 2`) appears in the imported corpus.
 - [x] Mine raw external `HandleCommand` debug logs for object-interaction command examples.
   - TasteeWheat's `Reality.log` contributes two raw CR2 static interaction commands (`80 c8 02 00 20 4e 03 00`), confirming the same payload shape outside the top-level packet dump corpus.
 - [x] Correlate decoded object-interaction ids with tracked vendor inventory rows.
   - `data/vendor_items.csv` has 44 parser-derived vendor inventory rows from HD_Neo's old log parser. The generated packet report now flags two matching object ids: `888143880` from packet dumps and `1310720002` from TasteeWheat's raw command examples.
+- [x] Correlate decoded object-interaction ids with tracked static object rows.
+  - The generated packet report now resolves all four decoded static interaction ids to eight `data/staticObjects_*.csv` rows using the same little-endian `mxoId` interpretation as the runtime loader. Object ids `888143880` and `1310720002` both have static table rows, door-like type symbols, and vendor inventory rows, preserving them as high-priority vendor-open capture targets rather than final vendor semantics.
 - [ ] Acquire or capture vendor buy/sell packet dumps.
   - Current imported dumps do not show top-level `CLIENT_VENDOR_BUY`, `CLIENT_VENDOR_SELL`, or `SERVER_VENDOR_OPEN`.
   - Current imported dumps also do not show a parsed static human-NPC/vendor-path interaction payload (`80 c8` or CR1 `80 c3` with object type `2`).
-  - Current object-id/vendor-list correlations suggest some vendor-related static interactions may appear with object type `3`, so future capture requests should include static interaction payloads with object type `2` or `3`.
+  - Current object-id/vendor-list/static-object correlations suggest some vendor-related static interactions may appear with object type `3`, so future capture requests should include static interaction payloads with object type `2` or `3`.
   - Current imported dumps have one embedded `CLIENT_VENDOR_SELL` candidate inside an `MRGN->Client` packet body, which is not useful evidence yet.
   - Current imported dumps have three embedded `SERVER_VENDOR_OPEN` candidates; two are confirmed as `80 bc` payload fields and one is inside an MRGN packet body, so they are not a decoded vendor window exchange.
-- [ ] Implement full ability-code vendor buyback semantics.
-  - Public `rshooks.py` adds level-based ability-code pricing and a full-price exception list for specific abilities; normal item buyback is implemented, but these ability exceptions still need constant mapping.
+- [ ] Implement recycle-info pricing if a decoded packet path needs it.
+  - Public `rshooks.py` defines recycle info as `VendorPrice / 20`, but no current decoded gameplay handler uses that path.
 - [x] Group repeated `80 bc` server payload structures and validate whether embedded `81 0d` values are headers or payload fields.
 - [x] Mine Rajko and local hardcoded queued command examples and compare `80 bc` startup/world-state payloads against the imported corpus.
   - Current generated report finds 59 hardcoded command examples, including 37 `80 bc` examples. The strongest corpus field-group overlap is `45 03 / 11 00 / 00 02` with 105 imported dump hits, and one local `15 00 / 45 00 / 00 f7` payload has 20 exact corpus hits.
@@ -74,22 +78,62 @@ This checklist tracks the current modernization push from "builds locally" to "f
   - Current generated report finds six shared-field links. The strongest are `3d 04` in 20 packets and `35 04`, `3e 04`, `3f 04` in 19 packets each.
 - [x] Validate linked short/long field-value consistency between `80 b2` and `80 bc`.
   - Current generated report finds 210 same-packet field links; 208 repeat the linked field at `80 bc` payload byte offset 9 and repeat the `80 b2` field 1 value at `80 bc` payload byte offset 11. The two exceptions are duplicate `55 00 / 35 04` payloads in `ikeburo_northeast.txt:372`.
+- [x] Cross-reference linked `80 b2`/`80 bc` state fields with tracked gameobject symbols.
+  - Current generated report loads 44,406 `data/gameobjects.csv` entries and maps repeated shared fields to clothing GoIDs: `3d 04` / 1085 to `Mclothing_Pants_A8_C1`, `35 04` / 1077 to `Mclothing_Pants_A6_C8`, and `3e 04` through `40 04` to adjacent `Mclothing_Pants_A8_C2` through `Mclothing_Pants_A8_C4`.
 - [x] Group `80 bc` internal field layout by leading field.
   - Current generated report separates 20-byte `80 bc` payloads into leading-field families: `56 00` (4,044), `15 00` (2,782), `55 00` (2,647), `45 03` (625), and smaller families. All 625 `45 03` payloads repeat field 1 at payload byte offset 9; all 54 `11 00` payloads repeat field 2 at payload byte offset 11.
 - [x] Tie hardcoded `80 bc` constants back to corpus layout families.
   - Current generated report shows `45 03` has four hardcoded examples and one corpus-backed field group with 105 hits; `45 00` has 18 hardcoded examples, seven corpus-backed field groups, and 28 total field-group hits; `15 00` has 13 hardcoded examples and one corpus-backed field group with 23 hits.
+- [x] Add layout-strength evidence for `80 bc` interaction attribute candidates.
+  - Current generated report combines interaction-looking field 1 candidates with the byte-offset layout. Field 1 `11 00` / 17 as `SecureTradeFlag` is the strongest current lead: 108 payloads match that candidate and 105 repeat field 1 at payload byte offset 9, mostly in the `45 03` family. Candidate `TalkActiveTracker` and `BuyActiveTracker` rows remain capture targets but do not currently show the byte-9 repeat pattern.
 - [ ] Validate `80 bc` field 1 interaction tracker candidates against paired NPC, vendor, inventory, trade, and loot captures.
   - Current candidate labels include `BuyActiveTracker`, `TalkActiveTracker`, `GiverActiveTracker`, `TakerActiveTracker`, `PutActiveTracker`, `SecureTradeFlag`, and `CurrentState`.
 - [ ] Semantically decode `80 bc` field families and map them to object attributes, bonus state, or gameplay actions.
 - [x] Extend packet tooling to classify protocol 03 object/state packet families, not only protocol headers.
-  - Current generated report parses 5,062 protocol 03 object messages, fully segments 1,472 messages, and identifies 5,463 known selector segments across movement, object state, spawn/self-view, emote/effect, delete-view, and static object/door families.
+  - Current generated report parses 8,456 protocol 03 object messages, fully segments 6,776 messages, and identifies 14,468 known selector segments across movement, object state, spawn/profile, emote/effect, compact terminal selector `28` markers, selector `80` self-view attributes, primary/secondary/adjacent movement wrappers, selector `9b` state blocks, delete-view, and static object/door families.
 - [x] Extend protocol 03 tooling from first object-view signature classification into conservative object-message segmentation and known per-selector payload sizing.
 - [x] Treat protocol 03 selector `00` as a one-byte state marker.
   - This counted 696 selector `00` segments and raised full protocol 03 segmentation from 326 to 990 messages before the secondary movement wrapper pass.
 - [x] Decode secondary movement wrappers in two-update protocol 03 object packets.
-  - Current generated report counts 570 secondary movement wrapper segments and raises full protocol 03 segmentation from 990 to 1,472 messages.
+  - Current generated report counts 1,367 terminated secondary movement wrapper segments, including rows exposed after adjacent object-view parsing.
+- [x] Decode primary movement wrappers in two-update protocol 03 object packets.
+  - Current generated report counts 167 bounded primary movement wrappers whose first selector is `12`, `13`, or `14` and whose payload starts `00 <id> 00 <mode> <movement selector>`. Selector `12` uses 17-byte payloads, selector `13` uses 18-byte payloads, and selector `14` uses 19-byte payloads.
+- [x] Decode adjacent movement wrappers at protocol 03 object-view boundaries.
+  - Current generated report counts 3,348 adjacent movement wrapper segments. These second segments start `00 02 <movement selector>`, carry plausible position data, omit the terminated-wrapper `00 00`, and are immediately followed by another plausible object-view header.
+- [x] Decode one-update protocol 03 selector `9b` state blocks.
+  - Current generated report counts 22 one-update selector `9b` records with fixed 10-byte payload `01 08 80 fd 00 00 00 00 00 00`. Longer selector `9b` contexts remain unresolved.
+- [x] Extract embedded movement-window leads from protocol 03 selector payloads.
+  - Current generated report finds 361 embedded movement windows across 43 outer selectors after adjacent wrappers are bounded. The remaining grouped leads are mostly primary-wrapper variants and larger unclassified tails that still need body-length evidence.
+- [x] Extract string leads from variable-length protocol 03 object-view packets.
+  - Current generated report extracts printable strings from unresolved variable blocks. The strongest family initially appeared as update count `12`, selector `57`; creation-aware parsing now identifies it as Object599 / `NPC_BASE` dynamic creation records with repeated names such as `A.S.P. Major`, `Gold Blood Champion`, and `Sisters of Fate Student`.
+- [x] Correlate protocol 03 variable-block strings with tracked mob/NPC rows.
+  - Current generated report loads 14,642 world entity rows from `data/mob_parsed_untouched.csv` and `data/NPC_COLLECTION.xml`, then exact-matches protocol 03 string leads to known entity names. Top matches include `A.S.P. Major`, `Gold Blood Champion`, `Sisters of Fate Student`, and `Black Tiger Pupil` with level, zone, RSI samples, and bounded prefix/suffix byte context.
+- [x] Parse Object12 / `PlayerCharacter` dynamic creation records.
+  - Current generated report directly extracts all 176 protocol 03 update count `12`, selector `0c` player spawn/profile records as GoID 12 / `PlayerCharacter` creation packets. The Object12 fixed-width creation table decodes `RealLastName`, `RealFirstName`, `CharacterName`, `Level`, `Health`, `MaxHealth`, `RSIDescription`, `CombatantMode`, and 24-byte position values. The corpus has 175 `AfterWhoruNeo` records and one `platinumfox` record.
+- [x] Aggregate Object599 / `NPC_BASE` dynamic creation record-prefix candidates.
+  - Current generated report directly extracts records matching the observed `0c 57 02 <spawn counter> cd ab <attribute count> 8e <name>` prefix shape. It maps `57 02` to tracked GoID 599 / `NPC_BASE`, records spawn counters, creation attribute counts, first masks, and entity-row counts for repeated names.
+  - Spawn counter bytes are reused across different names, as expected for packet-local creation state. The byte after `cd ab` is now treated as creation attribute count rather than a name/entity id candidate.
+- [x] Identify Object599 / `NPC_BASE` `CharacterName` slot size.
+  - All 433 directly extracted Object599 / `NPC_BASE` creation records in the current corpus have a 32-byte fixed `CharacterName` attribute after first creation mask `8e`.
+- [x] Identify Object599 / `NPC_BASE` attributes after `CharacterName`.
+  - All 433 directly extracted Object599 / `NPC_BASE` creation records in the current corpus share `TitleAbility = 00 10 00 00` and `CombatantMode = 22`, matching the local mob creation defaults.
+- [x] Parse Object599 / `NPC_BASE` creation masks into fixed-width attributes.
+  - The current generated report walks the creation mask stream with local fixed-width Object599 attribute definitions. All 433 directly extracted records have matching declared and parsed attribute counts, covering 14 through 21 attributes and grouping raw values for core fields such as `CharacterName`, `TitleAbility`, `CombatantMode`, `StopFollowActiveTracker`, `Description`, `Position`, `IsEnemy`, `Level`, `Health`, `MaxHealth`, and `CurrentState`.
+- [x] Correlate typed Object599 / `NPC_BASE` creation attributes with tracked mob rows.
+  - Among 423 creation records with same-name mob rows, decoded `Level`, `Health` plus `MaxHealth`, `NPCRank`, `DebuffState`, and `CurrentState` all match 423/423, while `Description`/RSI-like ids match 417/423. Decoded `Position` values exact-match 0/423 old mob rows, but nearest same-name row distances put 328/423 within 1k units, 373/423 within 2.5k, and 405/423 within 5k.
+- [x] Resolve Object599 / `NPC_BASE` equipment and effect symbol leads.
+  - Current generated report decodes `EquippedItemID` as a little-endian gameobject id and maps all 313 observed records across 12 values to imported gameobject symbols plus MxOEmu `&gib` command names from 41,696 imported item rows. `EffectID` appears in 97 records across three values, and all three now resolve through imported FX definitions: adrenaline booster loop, fast healing, and accelerated Oligarch spawn.
+- [x] Extract protocol 03 selector `28` effect/emote prefix leads.
+  - Current generated report finds 97 selector `28` payloads, including 14 first-selector records and additional non-first occurrences exposed after bounded selector `80` self-view attribute and adjacent movement-wrapper decoding. Nineteen non-first records now parse as compact terminal marker `01 <01|02|03> 00 00`; 78 expose a 12-byte little-endian float position prefix, and 42 contain imported FX ID windows.
+- [x] Extract protocol 03 selector `2a`/`2e` position-like prefix leads.
+  - Current generated report finds 138 selector `2a`/`2e` variable tails and extracts 130 repeated lead families with plausible little-endian xyz triples. The strongest groups are `2e` prefix `00 40 00 00 00 10` at position offset 8 with 33 records, and `2a` prefix `00 40 00 00 00 10` at position offset 7 with 16 records.
+- [x] Decode protocol 03 selector `80` self-view attribute mask/value blocks.
+  - Current generated report parses 164 selector `80` payload starts with the local Object12 self-view attribute table, yielding 173 fixed-width attributes. The largest group is 68 `Health` updates; the previous `4c 0a 00 28` FX-looking window is now decoded as `Health = 0a4c`, a zero mask terminator, and then the next selector `28`. Only one selector `80` tail remains outside this mask/value layout.
+- [x] Extract protocol 03 static object/door spawn prefix leads.
+  - Current generated report finds seven selector `9e`/`a0` static object leads with a stable `cd ab` separator. Selector `a0` carries static object id `888143880` across six records, protocol object type `3`, six instance bytes, two matching static rows, one vendor inventory row, and quaternion sample `0,-0.707,0,0.707`. Selector `9e` carries static object id `888143885` in one record, protocol object type `3`, instance byte `ea`, two matching static rows, no vendor inventory row, and quaternion sample `0,0.707,0,-0.707`.
 - [x] Mine external hardcoded protocol 03 object-message examples from MxOEmu forks.
   - Current generated report finds 34 hardcoded protocol 03 examples from local code, Rajko MxOEmu, and the TasteeWheat door/hardline fork.
-- [ ] Resolve variable-length protocol 03 spawn/profile, appearance/attribute, effect/emote, static object/door, and unknown selector payloads.
+- [ ] Resolve variable-length protocol 03 spawn/profile, Object599 / `NPC_BASE`, appearance/attribute, effect/emote, static object/door, and unknown payload layouts.
+  - Object12 / `PlayerCharacter` and Object599 / `NPC_BASE` creation parsing now names fixed-width attributes and decodes core identity, health, RSI/effect, state, and position fields. Selector `80` now decodes Object12 self-view attribute mask/value blocks, while selector `2a`/`2e` and `28` parsing extracts stable prefix, compact terminal markers, position, and FX-window leads. Static interaction ids now resolve to static object rows and type symbols, selector `9e`/`a0` static object records now expose a stable object-id prefix, and movement wrapper parsing now bounds selector `12`/`13`/`14` primary wrappers, terminated secondary wrappers, and adjacent boundary wrappers. The unresolved work is remaining creation/profile tails, effect/equipment behavior validation, selector `2a`, `2e`, and longer `28` variable tails, the one residual selector `80` tail, static object view payload bodies, full unknown selector body lengths, and before/after gameplay captures.
 - [ ] Follow up on public Hardline Dreams/RaGEZONE lead for combat packet logs and request logs with object serialization, ability state, FX, and before/after attribute context.
 - [ ] Use new packet evidence to implement vendor selling.

@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -42,7 +44,11 @@ public static class ReportWriter
         builder.AppendLine();
         builder.AppendLine($"- Local RPC headers: {report.LocalHeaders.Count}");
         builder.AppendLine($"- Local attribute definitions: {report.AttributeDefinitions.Count}");
-        builder.AppendLine($"- Community FX definitions: {report.FxDefinitions.Count}");
+        builder.AppendLine($"- Imported FX definitions: {report.FxDefinitions.Count}");
+        builder.AppendLine($"- Game object symbol entries: {report.GameObjectEntries.Count}");
+        builder.AppendLine($"- Inventory command item entries: {report.ItemCommandEntries.Count}");
+        builder.AppendLine($"- Static object correlation rows: {report.StaticObjectEntries.Count}");
+        builder.AppendLine($"- World entity rows: {report.WorldEntityEntries.Count}");
         builder.AppendLine($"- Rajko RPC dispatch entries: {report.RajkoRpcHeaders.Count}");
         builder.AppendLine($"- Hardcoded command examples: {report.HardcodedCommands.Count}");
         builder.AppendLine($"- Hardcoded protocol 03 examples: {report.HardcodedProtocol03Examples.Count}");
@@ -57,6 +63,7 @@ public static class ReportWriter
         AppendPacketDumpSummary(builder, report);
         AppendProtocol04InteractionSummary(builder, report);
         AppendProtocol04InteractionCommandExamples(builder, report);
+        AppendStaticObjectCorrelations(builder, report);
         AppendVendorInventoryCorrelations(builder, report);
         AppendProtocol04SequenceSummary(builder, report);
         AppendProtocol03ObjectViewSummary(builder, report);
@@ -292,6 +299,66 @@ public static class ReportWriter
         builder.AppendLine();
     }
 
+    private static void AppendStaticObjectCorrelations(StringBuilder builder, PacketResearchReport report)
+    {
+        if (report.StaticObjectEntries.Count == 0)
+        {
+            return;
+        }
+
+        Dictionary<uint, int> dumpInteractionCounts = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04InteractionPayloads)
+            .GroupBy(payload => payload.ObjectId)
+            .ToDictionary(group => group.Key, group => group.Count());
+        Dictionary<uint, int> externalCommandCounts = report.Protocol04InteractionCommandExamples
+            .GroupBy(example => example.ObjectId)
+            .ToDictionary(group => group.Key, group => group.Count());
+        Dictionary<uint, int> vendorRowCounts = report.VendorInventoryEntries
+            .GroupBy(entry => entry.VendorStaticId)
+            .ToDictionary(group => group.Key, group => group.Count());
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+
+        builder.AppendLine("## Static Object Table Correlations");
+        builder.AppendLine();
+        builder.AppendLine("This joins decoded object-interaction object ids against tracked `data/staticObjects_*.csv` rows using the same little-endian `mxoId` decoding as the runtime static object loader. Multiple rows for one object id are important evidence: they can indicate duplicate old static rows, district/sector reuse, or local type ambiguity that must be resolved before assigning final object-interaction semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Object id | Packet-dump interactions | External command interactions | Static rows | Vendor rows | Sectors | Type ids / symbols | Position samples | Sample static row |");
+        builder.AppendLine("| ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |");
+
+        foreach (var group in report.StaticObjectEntries
+            .GroupBy(entry => entry.MxoId)
+            .OrderByDescending(group => dumpInteractionCounts.GetValueOrDefault(group.Key) + externalCommandCounts.GetValueOrDefault(group.Key))
+            .ThenBy(group => group.Key))
+        {
+            StaticObjectEntry sample = group.First();
+            string sectors = FormatDistinct(group.Select(entry => $"{entry.MetrId}/{entry.SectorId}"), 8);
+            string types = FormatCandidateList(group
+                .GroupBy(entry => entry.TypeId)
+                .OrderByDescending(typeGroup => typeGroup.Count())
+                .ThenBy(typeGroup => typeGroup.Key)
+                .Select(typeGroup =>
+                {
+                    string[] symbols = gameObjectsById[typeGroup.Key]
+                        .Select(entry => FormatTableText(entry.CodeName))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                        .Take(3)
+                        .ToArray();
+                    string symbolText = symbols.Length == 0
+                        ? "-"
+                        : string.Join(", ", symbols);
+                    return $"{typeGroup.Key} {symbolText} ({typeGroup.Count()})";
+                })
+                .ToArray());
+            string positions = FormatDistinct(group.Select(FormatStaticObjectPosition), 4);
+
+            builder.AppendLine(
+                $"| {group.Key} | {dumpInteractionCounts.GetValueOrDefault(group.Key)} | {externalCommandCounts.GetValueOrDefault(group.Key)} | {group.Count()} | {vendorRowCounts.GetValueOrDefault(group.Key)} | {sectors} | {types} | {positions} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendVendorInventoryCorrelations(StringBuilder builder, PacketResearchReport report)
     {
         if (report.VendorInventoryEntries.Count == 0)
@@ -306,6 +373,7 @@ public static class ReportWriter
         Dictionary<uint, int> externalCommandCounts = report.Protocol04InteractionCommandExamples
             .GroupBy(example => example.ObjectId)
             .ToDictionary(group => group.Key, group => group.Count());
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
         HashSet<uint> interactionObjectIds = new(dumpInteractionCounts.Keys.Concat(externalCommandCounts.Keys));
         VendorInventoryEntry[] matches = report.VendorInventoryEntries
             .Where(entry => interactionObjectIds.Contains(entry.VendorStaticId))
@@ -318,6 +386,11 @@ public static class ReportWriter
         builder.AppendLine("## Vendor Inventory Object Correlations");
         builder.AppendLine();
         builder.AppendLine("This joins decoded object-interaction object ids against tracked `data/vendor_items.csv` rows. The vendor list was parser-derived from old logs and is incomplete, so a match is a lead that the static id may be vendor-related, not proof of a complete vendor exchange.");
+        if (itemsById.Count > 0)
+        {
+            builder.AppendLine("Item samples are resolved through the imported MxOEmu `&gib` command list when possible.");
+        }
+
         builder.AppendLine();
         builder.AppendLine("| Static object id | Metr ids | Vendor rows | Packet-dump interactions | External command interactions | Item counts | Sample items | Sample vendor row |");
         builder.AppendLine("| ---: | --- | ---: | ---: | ---: | --- | --- | --- |");
@@ -329,9 +402,9 @@ public static class ReportWriter
             VendorInventoryEntry sample = group.First();
             string metrIds = string.Join(", ", group.Select(entry => entry.MetrId).Distinct().OrderBy(value => value));
             string itemCounts = string.Join(", ", group.Select(entry => entry.Items.Count).Distinct().OrderBy(value => value));
-            string sampleItems = string.Join(", ", group.SelectMany(entry => entry.Items).Distinct().Take(8));
+            string sampleItems = FormatItemReferences(group.SelectMany(entry => entry.Items).Distinct().Take(8), itemsById);
             builder.AppendLine(
-                $"| {group.Key} | {metrIds} | {group.Count()} | {dumpInteractionCounts.GetValueOrDefault(group.Key)} | {externalCommandCounts.GetValueOrDefault(group.Key)} | {itemCounts} | `{sampleItems}` | `{sample.File}:{sample.Line}` |");
+                $"| {group.Key} | {metrIds} | {group.Count()} | {dumpInteractionCounts.GetValueOrDefault(group.Key)} | {externalCommandCounts.GetValueOrDefault(group.Key)} | {itemCounts} | {sampleItems} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -445,6 +518,7 @@ public static class ReportWriter
 
         builder.AppendLine();
         AppendLinkedStateValueConsistency(builder, links);
+        AppendLinkedStateGameObjectMatches(builder, report, links);
     }
 
     private static void AppendLinkedStateValueConsistency(StringBuilder builder, IReadOnlyList<StateFieldLink> links)
@@ -497,6 +571,63 @@ public static class ReportWriter
         builder.AppendLine();
     }
 
+    private static void AppendLinkedStateGameObjectMatches(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<StateFieldLink> links)
+    {
+        if (report.GameObjectEntries.Count == 0)
+        {
+            return;
+        }
+
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+        var matches = links
+            .Where(link => gameObjectsById.Contains(link.B2.Payload.Field0Value))
+            .GroupBy(link => new
+            {
+                link.B2.Payload.Field0Value,
+                link.B2.Payload.Field0
+            })
+            .Select(group => new
+            {
+                group.Key.Field0Value,
+                group.Key.Field0,
+                PacketCount = group.Select(link => link.Packet).Distinct().Count(),
+                PairCount = group.Count(),
+                Sample = group.First(),
+                Symbols = gameObjectsById[group.Key.Field0Value]
+                    .Select(entry => entry.CodeName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value)
+                    .Take(6)
+                    .ToArray()
+            })
+            .OrderByDescending(match => match.PacketCount)
+            .ThenBy(match => match.Field0Value)
+            .Take(20)
+            .ToArray();
+
+        if (matches.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Linked State GameObject Symbol Matches");
+        builder.AppendLine();
+        builder.AppendLine("This compares shared `80 b2` field 0 / `80 bc` field 1 values with `data/gameobjects.csv`. Matches are symbolic leads, not proof that the field is always a GoID, but repeated same-packet links give stronger provenance than isolated manual constants.");
+        builder.AppendLine();
+        builder.AppendLine("| Shared field | Game object symbols | Packet count | Pair count | Sample | `80 b2` payload | `80 bc` payload |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- |");
+        foreach (var match in matches)
+        {
+            builder.AppendLine(
+                $"| `{match.Field0}` ({match.Field0Value}) | {FormatCandidateList(match.Symbols)} | {match.PacketCount} | {match.PairCount} | `{match.Sample.Packet.File}:{match.Sample.Packet.Line}` | `{match.Sample.B2.Payload.PayloadHex}` | `{match.Sample.Bc.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendProtocol03ObjectViewSummary(StringBuilder builder, PacketResearchReport report)
     {
         var samples = report.PacketDumpFiles
@@ -515,10 +646,12 @@ public static class ReportWriter
         int completeSamples = samples.Count(entry => entry.Sample.Complete);
         int knownSegments = samples.Sum(entry => entry.Sample.ParsedUpdateCount);
         int secondaryMovementWrappers = samples.Sum(entry => entry.Sample.Segments.Count(segment => segment.Classification == "secondary movement wrapper"));
+        int adjacentMovementWrappers = samples.Sum(entry => entry.Sample.Segments.Count(segment => segment.Classification == "adjacent movement wrapper"));
         builder.AppendLine($"- Object messages parsed: {samples.Length}");
         builder.AppendLine($"- Fully segmented messages: {completeSamples}");
         builder.AppendLine($"- Known selector segments: {knownSegments}");
         builder.AppendLine($"- Secondary movement wrapper segments: {secondaryMovementWrappers}");
+        builder.AppendLine($"- Adjacent movement wrapper segments: {adjacentMovementWrappers}");
         builder.AppendLine();
         builder.AppendLine("| Classification | Update count | First selector | Count | Fully segmented | Sample | Prefix |");
         builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- |");
@@ -566,6 +699,15 @@ public static class ReportWriter
         }
 
         builder.AppendLine();
+        AppendProtocol03StaticObjectLeads(builder, report, samples);
+        AppendProtocol03NestedMovementLeads(builder, samples);
+        AppendProtocol03Selector2a2ePositionLeads(builder, samples);
+        AppendProtocol03Selector80SelfViewAttributeLeads(builder, report, samples);
+        AppendProtocol03Selector80Leads(builder, report, samples);
+        AppendProtocol03EffectEmoteLeads(builder, report, samples);
+        AppendProtocol03StringLeads(builder, report, samples);
+        AppendProtocol03PlayerCharacterCreationRecords(builder, report, samples);
+
         builder.AppendLine("### Protocol 03 Files");
         builder.AppendLine();
         builder.AppendLine("| File | Parsed object-view packets | Fully segmented | Top classification |");
@@ -582,6 +724,991 @@ public static class ReportWriter
                 .ThenBy(group => group.Key)
                 .First();
             builder.AppendLine($"| `{fileGroup.Key}` | {fileGroup.Count()} | {fileGroup.Count(entry => entry.Sample.Complete)} | {topClassification.Key} ({topClassification.Count()}) |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03StaticObjectLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03StaticObjectLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.StaticObjectLeads.Select(lead => new Protocol03StaticObjectLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        ILookup<uint, StaticObjectEntry> staticObjectsByMxoId = report.StaticObjectEntries.ToLookup(entry => entry.MxoId);
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+        Dictionary<uint, int> vendorRowCounts = report.VendorInventoryEntries
+            .GroupBy(entry => entry.VendorStaticId)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        builder.AppendLine("### Protocol 03 Static Object/Door Spawn Leads");
+        builder.AppendLine();
+        builder.AppendLine("This extracts the stable prefix from selector `9e`/`a0` static object variable blocks: a lead byte, little-endian static `mxoId`, instance byte, `cd ab` separator, protocol object-type byte, and a bounded transform/quaternion window. The tail remains undecoded.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} selector `9e`/`a0` tails, {leads.Select(entry => entry.Lead.ObjectId).Distinct().Count()} distinct static object ids appear.");
+        builder.AppendLine();
+        builder.AppendLine("| Selector | Static object id | Protocol object type | Records | Static rows | Vendor rows | Static type symbols | Instance bytes | Separator | Quaternion samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.Selector,
+                entry.Lead.ObjectId,
+                entry.Lead.ObjectType
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Selector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.ObjectId))
+        {
+            Protocol03StaticObjectLeadWithFile sample = group.First();
+            StaticObjectEntry[] staticRows = staticObjectsByMxoId[group.Key.ObjectId].ToArray();
+            builder.AppendLine(
+                $"| `{group.Key.Selector}` | {group.Key.ObjectId} | {group.Key.ObjectType} | {group.Count()} | {staticRows.Length} | {vendorRowCounts.GetValueOrDefault(group.Key.ObjectId)} | {FormatStaticTypeSymbols(staticRows, gameObjectsById)} | {FormatDistinct(group.Select(entry => entry.Lead.InstanceByteHex), 8)} | {FormatDistinct(group.Select(entry => entry.Lead.SeparatorHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectQuaternion(entry.Lead)), 4)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03NestedMovementLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.NestedMovementLeads.Select(lead => new Protocol03NestedMovementLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Embedded Movement Leads");
+        builder.AppendLine();
+        builder.AppendLine("This scans unresolved selector payloads and bounded primary movement wrappers for embedded movement windows that carry plausible little-endian xyz positions. Rows from unresolved payloads are layout leads only; rows from primary wrappers use a known bounded prefix length.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} embedded movement windows, {leads.Select(entry => entry.Lead.OuterSelector).Distinct(StringComparer.OrdinalIgnoreCase).Count()} outer selectors contain a plausible movement window.");
+        builder.AppendLine("The table lists the top grouped leads by record count.");
+        builder.AppendLine();
+        builder.AppendLine("| Outer selector | Object classification | Lead prefix | Marker offset | Inner selector | Records | Payload bytes | Position samples | Suffix samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |");
+        var groups = leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.OuterSelector,
+                entry.Sample.Classification,
+                entry.Lead.LeadPrefixHex,
+                entry.Lead.MarkerOffset,
+                entry.Lead.InnerSelector
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.OuterSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.MarkerOffset)
+            .ThenBy(group => group.Key.InnerSelector, StringComparer.OrdinalIgnoreCase)
+            .Take(25);
+        foreach (var group in groups)
+        {
+            Protocol03NestedMovementLeadWithFile sample = group.First();
+            builder.AppendLine(
+                $"| `{group.Key.OuterSelector}` | {FormatTableText(group.Key.Classification)} | `{FormatEmptyHex(group.Key.LeadPrefixHex)}` | {group.Key.MarkerOffset} | `{group.Key.InnerSelector}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatNestedMovementPosition(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixHex)), 4)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03Selector2a2ePositionLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03PositionLikeLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.PositionLikeLeads.Select(lead => new Protocol03PositionLikeLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        int candidateTails = samples
+            .SelectMany(entry => entry.Sample.Segments)
+            .Count(segment => !segment.IsKnownLength &&
+                (segment.Selector.Equals("2a", StringComparison.OrdinalIgnoreCase) ||
+                    segment.Selector.Equals("2e", StringComparison.OrdinalIgnoreCase)));
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Selector 2a/2e Position-Like Leads");
+        builder.AppendLine();
+        builder.AppendLine("This decodes only the repeated selector `2a`/`2e` lead families that carry a plausible little-endian xyz triple. The surrounding variable tails are still not fully decoded.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {candidateTails} selector `2a`/`2e` variable tails, {leads.Length} expose a known position-like lead.");
+        builder.AppendLine();
+        builder.AppendLine("| Selector | Classification | Lead prefix | Position offset | Records | Payload bytes | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.Selector,
+                entry.Sample.Classification,
+                entry.Lead.LeadPrefixHex,
+                entry.Lead.PositionOffset
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Selector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.LeadPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03PositionLikeLeadWithFile sample = group.First();
+            builder.AppendLine(
+                $"| `{group.Key.Selector}` | {FormatTableText(group.Key.Classification)} | `{group.Key.LeadPrefixHex}` | {group.Key.PositionOffset} | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatPositionLikePosition(entry.Lead)), 4)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03Selector80Leads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03VariableSelectorLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.VariableSelectorLeads
+                .Where(lead => lead.Selector.Equals("80", StringComparison.OrdinalIgnoreCase))
+                .Select(lead => new Protocol03VariableSelectorLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
+        int leadsWithFxMatches = leads.Count(lead => FindFxMatches(lead.File, lead.Line, lead.Lead.PayloadHex, fxByHex).Any());
+
+        builder.AppendLine("### Protocol 03 Selector 80 Attribute/Effect Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups remaining selector `80` variable tails that did not fit the local Object12 self-view mask/value layout, then scans each tail for imported FX definitions. These rows are layout leads only: repeated embedded movement selectors may still be nested protocol 03 data.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} selector `80` tails, {leadsWithFxMatches} contain at least one imported FX ID window.");
+        builder.AppendLine();
+        builder.AppendLine("| Classification | Update count | Lead prefix | Records | Payload bytes | Lead FX | FX windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Sample.Classification,
+                entry.Sample.UpdateCount,
+                entry.Lead.PrefixHex
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Classification, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.UpdateCount)
+            .ThenBy(group => group.Key.PrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03VariableSelectorLeadWithFile sample = group.First();
+            FxMatch[] fxMatches = group
+                .SelectMany(entry => FindFxMatches(entry.File, entry.Line, entry.Lead.PayloadHex, fxByHex))
+                .ToArray();
+            FxMatch[] leadFxMatches = group
+                .Select(entry => FindFxMatchAtOffset(entry.File, entry.Line, entry.Lead.PayloadHex, fxByHex, 4))
+                .Where(match => match is not null)
+                .Select(match => match!)
+                .ToArray();
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key.Classification)} | {group.Key.UpdateCount} | `{group.Key.PrefixHex}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatFxMatchSummary(leadFxMatches)} | {FormatFxMatchSummary(fxMatches)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03Selector80SelfViewAttributeLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03SelfViewAttributeLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.SelfViewAttributeLeads.Select(lead => new Protocol03SelfViewAttributeLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+
+        builder.AppendLine("### Protocol 03 Selector 80 Self-View Attribute Leads");
+        builder.AppendLine();
+        builder.AppendLine("This parses selector `80` payload starts with the local `PlayerCharacter.GetSelfUpdateAttributes(..., false)` mask/value layout. Parsed bytes are treated as a bounded self-view attribute block; any suffix prefix shown is the next unresolved selector or tail, not part of the decoded attribute value.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} selector `80` self-view blocks, {leads.Sum(entry => entry.Lead.Attributes.Count)} fixed-width Object12 self-view attributes decode.");
+        builder.AppendLine();
+        builder.AppendLine("| Classification | Update count | Attribute signature | Records | Payload bytes | Value samples | Symbol leads | Suffix prefixes | Sample | Decoded prefix |");
+        builder.AppendLine("| --- | ---: | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Sample.Classification,
+                entry.Sample.UpdateCount,
+                Signature = FormatAttributeSignature(entry.Lead.Attributes)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Classification, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.UpdateCount)
+            .Take(25))
+        {
+            Protocol03SelfViewAttributeLeadWithFile sample = group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key.Classification)} | {group.Key.UpdateCount} | {group.Key.Signature} | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatSelfViewAttributeSummary(entry.Lead)), 4)} | {FormatSelfViewSymbolLeads(group.Select(entry => entry.Lead), fxByHex, gameObjectsById, itemsById)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixPrefixHex)), 8)} | `{sample.File}:{sample.Line}` | `{sample.Lead.MaskPrefixHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03EffectEmoteLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03EffectEmoteLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.EffectEmoteLeads.Select(lead => new Protocol03EffectEmoteLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
+        int firstSelectorLeads = leads.Count(lead => lead.Sample.FirstSelector.Equals("28", StringComparison.OrdinalIgnoreCase));
+        int leadsWithFxMatches = leads.Count(lead => FindFxMatches(lead.File, lead.Line, lead.Lead.PayloadHex, fxByHex).Any());
+        int leadsWithPositions = leads.Count(lead => lead.Lead.X is not null && lead.Lead.Y is not null && lead.Lead.Z is not null);
+
+        builder.AppendLine("### Protocol 03 Selector 28 Effect/Emote Leads");
+        builder.AppendLine();
+        builder.AppendLine("This parses the stable prefix observed in selector `28` payloads wherever they appear in a protocol 03 object-view message: two leading bytes, a four-byte field, and a 12-byte little-endian float position when enough bytes are present. Longer payload tails are still variable; FX matches are four-byte window leads against imported FX definitions, not proof that the whole tail is decoded.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} selector `28` payloads ({firstSelectorLeads} first-selector records), {leadsWithPositions} have a decodable position prefix and {leadsWithFxMatches} contain at least one imported FX ID window.");
+        builder.AppendLine();
+        builder.AppendLine("| Classification | Update count | First selector | Lead bytes | Field 2 | Records | Payload bytes | Position samples | FX windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Sample.Classification,
+                entry.Sample.UpdateCount,
+                entry.Sample.FirstSelector,
+                entry.Lead.LeadByte0Hex,
+                entry.Lead.LeadByte1Hex,
+                entry.Lead.Field2Hex
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Classification, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.UpdateCount)
+            .ThenBy(group => group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.LeadByte0Hex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.LeadByte1Hex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Field2Hex, StringComparer.OrdinalIgnoreCase))
+        {
+            Protocol03EffectEmoteLeadWithFile sample = group.First();
+            FxMatch[] fxMatches = group
+                .SelectMany(entry => FindFxMatches(entry.File, entry.Line, entry.Lead.PayloadHex, fxByHex))
+                .ToArray();
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key.Classification)} | {group.Key.UpdateCount} | `{group.Key.FirstSelector}` | `{group.Key.LeadByte0Hex}` / `{group.Key.LeadByte1Hex}` | `{group.Key.Field2Hex}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatEffectEmotePosition(entry.Lead)), 4)} | {FormatFxMatchSummary(fxMatches)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03StringLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03StringLead[] stringLeads = BuildProtocol03StringLeads(samples);
+
+        if (stringLeads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Variable Block String Leads");
+        builder.AppendLine();
+        builder.AppendLine("This extracts printable ASCII runs from parsed protocol 03 object-view messages that still contain variable-length segments. These strings are object/profile leads, not full layout decodes.");
+        builder.AppendLine();
+        builder.AppendLine("| Classification | Update count | First selector | Text | Count | Sample | Offset |");
+        builder.AppendLine("| --- | ---: | --- | --- | ---: | --- | ---: |");
+        foreach (Protocol03StringLead lead in stringLeads.Take(25))
+        {
+            builder.AppendLine(
+                $"| {lead.Classification} | {lead.UpdateCount} | `{lead.FirstSelector}` | {FormatTableText(lead.Text)} | {lead.Count} | `{lead.Sample.File}:{lead.Sample.Line}` | {lead.Sample.String.Offset} |");
+        }
+
+        builder.AppendLine();
+        AppendProtocol03StringEntityCorrelations(builder, report, stringLeads);
+        AppendProtocol03NamedProfileRecordCandidates(builder, report, samples);
+    }
+
+    private static Protocol03StringLead[] BuildProtocol03StringLeads(IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        return samples
+            .Where(entry => entry.Sample.Segments.Any(segment => !segment.IsKnownLength))
+            .SelectMany(entry => entry.Sample.Strings.Select(text => new Protocol03StringWithFile(entry.File, entry.Sample.Line, entry.Sample, text)))
+            .GroupBy(entry => new
+            {
+                entry.Sample.Classification,
+                entry.Sample.UpdateCount,
+                entry.Sample.FirstSelector,
+                entry.String.Text
+            })
+            .Select(group => new Protocol03StringLead(
+                group.Key.Classification,
+                group.Key.UpdateCount,
+                group.Key.FirstSelector,
+                group.Key.Text,
+                group.Count(),
+                group.First()))
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Classification)
+            .ThenBy(group => group.Text, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static void AppendProtocol03PlayerCharacterCreationRecords(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        IReadOnlyDictionary<int, string> gameObjectsById = report.GameObjectEntries
+            .GroupBy(entry => entry.GoId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(entry => entry.CodeName).OrderBy(value => value, StringComparer.OrdinalIgnoreCase).First());
+        Protocol03PlayerCharacterCreationRecordWithFile[] records = samples
+            .Where(entry => entry.Sample.Classification.Equals("player spawn/self-view candidate", StringComparison.OrdinalIgnoreCase))
+            .Where(entry => entry.Sample.UpdateCount == 12 && entry.Sample.FirstSelector.Equals("0c", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(entry => entry.Sample.PlayerCharacterCreationRecords.Select(record => new Protocol03PlayerCharacterCreationRecordWithFile(entry.File, entry.Sample.Line, record)))
+            .ToArray();
+        if (records.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 PlayerCharacter Creation Records");
+        builder.AppendLine();
+        builder.AppendLine("This parses selector `0c` player spawn/profile variable blocks against local Object12/PlayerCharacter creation attributes. The stable prefix matches `GenerateCreationPacket`: dynamic flag, little-endian GoID, spawn counter, `cd ab`, attribute count, then creation masks and fixed-width values. The full outer selector tail remains unresolved.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {records.Length} PlayerCharacter creation records, {records.Count(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 37) is not null)} include a decoded `CharacterName` attribute.");
+        builder.AppendLine();
+        builder.AppendLine("| Dynamic flag | GoID bytes | GoID | Game object | Attribute count | First mask | Parsed attrs | Records | Real last names | Real first names | Character names | Decoded samples | Sample | Creation prefix |");
+        builder.AppendLine("| --- | --- | ---: | --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in records
+            .GroupBy(entry => new
+            {
+                entry.Record.CreationFlagHex,
+                entry.Record.GameObjectIdHex,
+                entry.Record.GameObjectId,
+                GameObjectName = gameObjectsById.TryGetValue(entry.Record.GameObjectId, out string? name) ? name : "-",
+                entry.Record.CreationAttributeCount,
+                entry.Record.FirstAttributeMaskHex,
+                ParsedAttributeCount = entry.Record.CreationAttributes.Count
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.GameObjectId)
+            .ThenBy(group => group.Key.CreationAttributeCount)
+            .ThenBy(group => group.Key.ParsedAttributeCount))
+        {
+            Protocol03PlayerCharacterCreationRecordWithFile sample = group.First();
+            builder.AppendLine(
+                $"| {group.Key.CreationFlagHex} | {group.Key.GameObjectIdHex} | {group.Key.GameObjectId} | {FormatTableText(group.Key.GameObjectName)} | {group.Key.CreationAttributeCount} | {group.Key.FirstAttributeMaskHex} | {group.Key.ParsedAttributeCount} | {group.Count()} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 3)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 11)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 37)), 5)} | {FormatDistinct(group.Select(entry => FormatPlayerCharacterCreationSummary(entry.Record)), 4)} | `{sample.File}:{sample.Line}` | `{sample.Record.CreationFlagHex} {sample.Record.GameObjectIdHex} {sample.Record.SpawnCounterHex} {sample.Record.SeparatorHex} {sample.Record.CreationAttributeCount:x2} {sample.Record.FirstAttributeMaskHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03StringEntityCorrelations(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03StringLead> stringLeads)
+    {
+        if (report.WorldEntityEntries.Count == 0)
+        {
+            return;
+        }
+
+        ILookup<string, WorldEntityEntry> entitiesByName = report.WorldEntityEntries
+            .ToLookup(entry => entry.Name, StringComparer.OrdinalIgnoreCase);
+        var correlations = stringLeads
+            .GroupBy(lead => lead.Text, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                WorldEntityEntry[] entities = entitiesByName[group.Key].ToArray();
+                return new
+                {
+                    Text = group.First().Text,
+                    PacketStringCount = group.Sum(lead => lead.Count),
+                    Sample = group.OrderByDescending(lead => lead.Count).First().Sample,
+                    Entities = entities
+                };
+            })
+            .Where(correlation => correlation.Entities.Length > 0)
+            .OrderByDescending(correlation => correlation.PacketStringCount)
+            .ThenBy(correlation => correlation.Text, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        if (correlations.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 String Entity Correlations");
+        builder.AppendLine();
+        builder.AppendLine("This exact-name match compares protocol 03 variable-block strings with tracked mob and NPC rows. It identifies likely entity/profile strings while leaving the surrounding variable-length packet layout as a separate decode problem.");
+        builder.AppendLine();
+        builder.AppendLine("| Text | Packet strings | Entity rows | Sources | Levels | Zones/types | RSI samples | Packet sample | Prefix bytes | Suffix bytes | Entity sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (var correlation in correlations)
+        {
+            WorldEntityEntry sampleEntity = correlation.Entities
+                .OrderBy(entry => entry.Source, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.Line)
+                .First();
+            builder.AppendLine(
+                $"| {FormatTableText(correlation.Text)} | {correlation.PacketStringCount} | {correlation.Entities.Length} | {FormatDistinct(correlation.Entities.Select(entry => entry.Source))} | {FormatDistinct(correlation.Entities.Select(entry => entry.Level?.ToString()))} | {FormatDistinct(correlation.Entities.Select(FormatWorldEntityScope))} | {FormatDistinct(correlation.Entities.Select(entry => entry.Rsi), 3)} | `{correlation.Sample.File}:{correlation.Sample.Line}` | `{correlation.Sample.String.PrefixHex}` | `{correlation.Sample.String.SuffixHex}` | `{sampleEntity.File}:{sampleEntity.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfileRecordCandidates(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        ILookup<string, WorldEntityEntry> entityRowsByName = report.WorldEntityEntries
+            .ToLookup(entry => entry.Name, StringComparer.OrdinalIgnoreCase);
+        IReadOnlyDictionary<string, int> entityRowCounts = entityRowsByName
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
+        IReadOnlyDictionary<int, string> gameObjectsById = report.GameObjectEntries
+            .GroupBy(entry => entry.GoId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(entry => entry.CodeName).OrderBy(value => value, StringComparer.OrdinalIgnoreCase).First());
+        Protocol03NamedProfileRecordCandidate[] candidates = samples
+            .Where(entry => entry.Sample.Classification.Equals("NPC_BASE dynamic creation candidate", StringComparison.OrdinalIgnoreCase))
+            .Where(entry => entry.Sample.UpdateCount == 12 && entry.Sample.FirstSelector.Equals("57", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(entry => entry.Sample.NamedProfileRecords.Select(record => new Protocol03NamedProfileRecordWithFile(entry.File, entry.Sample.Line, record)))
+            .Select(entry => CreateProtocol03NamedProfileRecordCandidate(entry, entityRowsByName, gameObjectsById))
+            .ToArray();
+
+        if (candidates.Length == 0)
+        {
+            return;
+        }
+
+        AppendProtocol03NpcBaseCreationHeaders(builder, candidates);
+
+        builder.AppendLine("### Protocol 03 NPC_BASE CharacterName Records");
+        builder.AppendLine();
+        builder.AppendLine("This aggregates Object599/NPC_BASE creation strings from records that match the local `0c <goid> <spawn counter> cd ab <attribute count> <mask> <name>` creation-packet shape.");
+        builder.AppendLine();
+        builder.AppendLine("| Text | Occurrences | Entity rows | Spawn counters | Attribute counts | First masks | CharacterName zero padding | Sample | Record prefix |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => candidate.Text, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key)} | {group.Count()} | {sample.EntityRowCount} | {FormatDistinct(group.Select(candidate => candidate.SpawnCounterHex), 8)} | {FormatDistinct(group.Select(candidate => candidate.CreationAttributeCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.FirstAttributeMaskHex), 3)} | {FormatDistinct(group.Select(candidate => candidate.SuffixZeroBytes.ToString(CultureInfo.InvariantCulture)), 5)} | `{sample.File}:{sample.Line}` | `{sample.CreationPrefixHex}` |");
+        }
+
+        builder.AppendLine();
+        AppendProtocol03NamedProfileSpawnCounterReuse(builder, candidates);
+        AppendProtocol03NamedProfileAttributeCountDistribution(builder, candidates);
+        AppendProtocol03NamedProfileNameSlotDistribution(builder, candidates);
+        AppendProtocol03NamedProfilePostSlotDistribution(builder, candidates);
+        AppendProtocol03NamedProfilePostSlotPrefixDistribution(builder, candidates);
+        AppendProtocol03NpcBaseCreationAttributeParseConsistency(builder, candidates);
+        AppendProtocol03NpcBaseCreationAttributePresence(builder, candidates);
+        AppendProtocol03NpcBaseCreationEntityCorrelation(builder, candidates);
+        AppendProtocol03NpcBaseCreationSymbolLeads(builder, report, candidates);
+    }
+
+    private static void AppendProtocol03NpcBaseCreationHeaders(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Dynamic Creation Headers");
+        builder.AppendLine();
+        builder.AppendLine("This compares the observed protocol 03 prefix with the local `ObjectManager.GenerateCreationPacket` layout: dynamic flag, little-endian GoID, spawn counter, `cd ab` separator, attribute count, then creation attribute masks and values.");
+        builder.AppendLine();
+        builder.AppendLine("| Dynamic flag | GoID bytes | GoID | Game object | Attribute count | First mask | Records | Distinct names | Spawn counters | Sample | Creation prefix |");
+        builder.AppendLine("| --- | --- | ---: | --- | ---: | --- | ---: | ---: | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => new
+            {
+                candidate.CreationFlagHex,
+                candidate.GameObjectIdHex,
+                candidate.GameObjectId,
+                candidate.GameObjectName,
+                candidate.CreationAttributeCount,
+                candidate.FirstAttributeMaskHex
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.GameObjectId))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.CreationFlagHex} | {group.Key.GameObjectIdHex} | {group.Key.GameObjectId} | {FormatTableText(group.Key.GameObjectName)} | {group.Key.CreationAttributeCount} | {group.Key.FirstAttributeMaskHex} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.SpawnCounterHex), 8)} | `{sample.File}:{sample.Line}` | `{sample.CreationPrefixHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfileSpawnCounterReuse(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Spawn Counter Reuse");
+        builder.AppendLine();
+        builder.AppendLine("This groups the creation-record spawn counter byte before the stable `cd ab` separator. Reuse across names is expected because this is packet-local view creation state, not a unique entity id.");
+        builder.AppendLine();
+        builder.AppendLine("| Spawn counter | Occurrences | Distinct names | Text samples | Attribute counts | First masks | CharacterName zero padding | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => candidate.SpawnCounterHex, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count())
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | {FormatDistinct(group.Select(candidate => candidate.CreationAttributeCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.FirstAttributeMaskHex), 3)} | {FormatDistinct(group.Select(candidate => candidate.SuffixZeroBytes.ToString(CultureInfo.InvariantCulture)), 5)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfileAttributeCountDistribution(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Creation Attribute Count Distribution");
+        builder.AppendLine();
+        builder.AppendLine("This groups the creation attribute count byte immediately before the first attribute mask. Name byte lengths are ASCII string lengths from the same Object599 records.");
+        builder.AppendLine();
+        builder.AppendLine("| Attribute count | Occurrences | Distinct names | Spawn counters | Name byte lengths | Text samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => candidate.CreationAttributeCount)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.SpawnCounterHex), 8)} | {FormatDistinct(group.Select(candidate => candidate.NameBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfileNameSlotDistribution(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE CharacterName Slot Distribution");
+        builder.AppendLine();
+        builder.AppendLine("This groups the fixed-width Object599 `CharacterName` attribute bytes after the first creation attribute mask. The earlier zero-run heuristic counted the first zero byte of `TitleAbility`; this creation-aware grouping keeps that next attribute separate.");
+        builder.AppendLine();
+        builder.AppendLine("| CharacterName slot bytes | Occurrences | Distinct names | Name byte lengths | CharacterName zero padding | Text samples | Sample |");
+        builder.AppendLine("| ---: | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => candidate.NameSlotBytes)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.NameBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.SuffixZeroBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfilePostSlotDistribution(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Post-CharacterName Attribute Bytes");
+        builder.AppendLine();
+        builder.AppendLine("This groups the first bytes after the fixed Object599 `CharacterName` attribute. The first four bytes align with local `TitleAbility`; the next byte aligns with `CombatantMode`.");
+        builder.AppendLine();
+        builder.AppendLine("| Post-CharacterName bytes | Occurrences | Distinct names | TitleAbility | CombatantMode | Attribute counts | Text samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => candidate.PostNameSlotHex, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            string postSlotBytes = string.IsNullOrWhiteSpace(group.Key) ? "-" : $"`{group.Key}`";
+            builder.AppendLine(
+                $"| {postSlotBytes} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.TitleAbilityHex), 5)} | {FormatDistinct(group.Select(candidate => candidate.CombatantModeHex), 5)} | {FormatDistinct(group.Select(candidate => candidate.CreationAttributeCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NamedProfilePostSlotPrefixDistribution(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE TitleAbility and CombatantMode Distribution");
+        builder.AppendLine();
+        builder.AppendLine("This groups the first two attributes after Object599 `CharacterName`. The repeated values match the local mob creation defaults for `TitleAbility` (`00 10 00 00`) and `CombatantMode` (`22`).");
+        builder.AppendLine();
+        builder.AppendLine("| TitleAbility | CombatantMode | Occurrences | Distinct names | Attribute counts | Post-combat samples | Text samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => new
+            {
+                candidate.TitleAbilityHex,
+                candidate.CombatantModeHex
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.TitleAbilityHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.CombatantModeHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            string titleAbility = string.IsNullOrWhiteSpace(group.Key.TitleAbilityHex) ? "-" : $"`{group.Key.TitleAbilityHex}`";
+            string combatantMode = string.IsNullOrWhiteSpace(group.Key.CombatantModeHex) ? "-" : group.Key.CombatantModeHex;
+            builder.AppendLine(
+                $"| {titleAbility} | {combatantMode} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.CreationAttributeCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(candidate => candidate.PostCombatantModeHex), 5)} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static Protocol03NamedProfileRecordCandidate CreateProtocol03NamedProfileRecordCandidate(
+        Protocol03NamedProfileRecordWithFile entry,
+        ILookup<string, WorldEntityEntry> entityRowsByName,
+        IReadOnlyDictionary<int, string> gameObjectsById)
+    {
+        WorldEntityEntry[] entityRows = entityRowsByName[entry.Record.Text].ToArray();
+        string gameObjectName = gameObjectsById.TryGetValue(entry.Record.GameObjectId, out string? name)
+            ? name
+            : "-";
+        return new Protocol03NamedProfileRecordCandidate(
+            entry.File,
+            entry.Line,
+            entry.Record.Text,
+            entry.Record.NameBytes,
+            entry.Record.NameSlotBytes,
+            entry.Record.RecordPrefixHex,
+            entry.Record.CreationFlagHex,
+            entry.Record.GameObjectIdHex,
+            entry.Record.GameObjectId,
+            gameObjectName,
+            entry.Record.SpawnCounterHex,
+            entry.Record.SeparatorHex,
+            entry.Record.CreationAttributeCount,
+            entry.Record.FirstAttributeMaskHex,
+            $"{entry.Record.CreationFlagHex} {entry.Record.GameObjectIdHex} {entry.Record.SpawnCounterHex} {entry.Record.SeparatorHex} {entry.Record.CreationAttributeCount:x2} {entry.Record.FirstAttributeMaskHex}",
+            entry.Record.SuffixZeroBytes,
+            entry.Record.TitleAbilityHex,
+            entry.Record.CombatantModeHex,
+            entry.Record.PostNameSlotHex,
+            entry.Record.PostCombatantModeHex,
+            entry.Record.CreationAttributes,
+            entityRows.Length,
+            entityRows);
+    }
+
+    private static void AppendProtocol03NpcBaseCreationAttributeParseConsistency(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Creation Attribute Parse Consistency");
+        builder.AppendLine();
+        builder.AppendLine("This compares the declared creation attribute count with the number of fixed-width Object599 attributes parsed from the mask stream.");
+        builder.AppendLine();
+        builder.AppendLine("| Declared attributes | Parsed attributes | Records | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | ---: | ---: | ---: | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => new
+            {
+                candidate.CreationAttributeCount,
+                ParsedAttributeCount = candidate.CreationAttributes.Count
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.CreationAttributeCount)
+            .ThenBy(group => group.Key.ParsedAttributeCount))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.CreationAttributeCount} | {group.Key.ParsedAttributeCount} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NpcBaseCreationEntityCorrelation(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        var allCorrelations = candidates
+            .Where(candidate => candidate.EntityRows.Count > 0)
+            .GroupBy(candidate => candidate.Text, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                Protocol03NamedProfileRecordCandidate[] records = group.ToArray();
+                WorldEntityEntry[] entityRows = records
+                    .SelectMany(candidate => candidate.EntityRows)
+                    .Distinct()
+                    .ToArray();
+
+                var level = CountEntityMatches(records, candidate => TryReadAttributeByte(candidate, 45), entityRows, row => row.Level);
+                var health = CountHealthMatches(records, entityRows);
+                var description = CountDescriptionMatches(records, entityRows);
+                var position = SummarizeNearestPositions(records, entityRows);
+                var npcRank = CountEntityMatches(records, candidate => TryReadAttributeByte(candidate, 36), entityRows, row => row.NpcRank);
+                var debuffState = CountEntityMatches(records, candidate => TryReadAttributeByte(candidate, 50), entityRows, row => row.DebuffState);
+                var currentState = CountCurrentStateMatches(records, entityRows);
+
+                return new
+                {
+                    Text = group.Key,
+                    Records = records,
+                    EntityRows = entityRows,
+                    Level = level,
+                    Health = health,
+                    Description = description,
+                    Position = position,
+                    NpcRank = npcRank,
+                    DebuffState = debuffState,
+                    CurrentState = currentState,
+                    Sample = records[0]
+                };
+            })
+            .Where(correlation => correlation.Level.Comparable > 0
+                || correlation.Health.Comparable > 0
+                || correlation.Description.Comparable > 0
+                || correlation.Position.Comparable > 0
+                || correlation.NpcRank.Comparable > 0
+                || correlation.DebuffState.Comparable > 0
+                || correlation.CurrentState.Comparable > 0)
+            .ToArray();
+
+        if (allCorrelations.Length == 0)
+        {
+            return;
+        }
+
+        var correlations = allCorrelations
+            .OrderByDescending(correlation => correlation.Position.Within2500)
+            .ThenByDescending(correlation => correlation.Position.Within5000)
+            .ThenByDescending(correlation => correlation.Description.Matches)
+            .ThenByDescending(correlation => correlation.Health.Matches)
+            .ThenByDescending(correlation => correlation.Level.Matches)
+            .ThenByDescending(correlation => correlation.Records.Length)
+            .ThenBy(correlation => correlation.Text, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        builder.AppendLine("### Protocol 03 NPC_BASE Creation Attribute Entity Correlation");
+        builder.AppendLine();
+        builder.AppendLine("This decodes selected Object599 creation attributes into typed values, then checks whether any tracked mob row with the same `CharacterName` has the same value. Matches are evidence for field semantics; misses may reflect duplicate names, different districts, or incomplete captures.");
+        builder.AppendLine();
+        PositionMatchSummary positionSummary = SumPositionSummaries(allCorrelations.Select(correlation => correlation.Position));
+        builder.AppendLine($"Across {allCorrelations.Sum(correlation => correlation.Records.Length)} creation records with tracked same-name mob rows, matches are: level {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.Level)))}, health/max-health {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.Health)))}, description/RSI {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.Description)))}, NPC rank {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.NpcRank)))}, debuff state {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.DebuffState)))}, current state {FormatMatchCount(SumMatchCounts(allCorrelations.Select(correlation => correlation.CurrentState)))}, exact position {FormatPositionExact(positionSummary)}, nearest position within 1k {FormatPositionWithin(positionSummary, 1000)}, within 2.5k {FormatPositionWithin(positionSummary, 2500)}, and within 5k {FormatPositionWithin(positionSummary, 5000)}.");
+        builder.AppendLine();
+        builder.AppendLine("| Text | Records | Entity rows | Level | Health | Description/RSI | NPC rank | Debuff state | Current state | Exact position | Nearest <=2.5k | Median nearest | Decoded samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |");
+        foreach (var correlation in correlations)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(correlation.Text)} | {correlation.Records.Length} | {correlation.EntityRows.Length} | {FormatMatchCount(correlation.Level)} | {FormatMatchCount(correlation.Health)} | {FormatMatchCount(correlation.Description)} | {FormatMatchCount(correlation.NpcRank)} | {FormatMatchCount(correlation.DebuffState)} | {FormatMatchCount(correlation.CurrentState)} | {FormatPositionExact(correlation.Position)} | {FormatPositionWithin(correlation.Position, 2500)} | {FormatDistance(correlation.Position.MedianNearest)} | {FormatDistinct(correlation.Records.Select(FormatNpcBaseDecodedSummary), 3)} | `{correlation.Sample.File}:{correlation.Sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NpcBaseCreationSymbolLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries
+            .ToLookup(entry => entry.GoId);
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
+
+        var equipmentGroups = candidates
+            .Select(candidate => new
+            {
+                Candidate = candidate,
+                Hex = TryGetAttributeHex(candidate, 56),
+                RawId = TryReadAttributeUInt32(candidate, 56)
+            })
+            .Where(row => row.Hex is not null && row.RawId is not null)
+            .GroupBy(row => new
+            {
+                Hex = row.Hex!,
+                Id = unchecked((int)row.RawId!.Value)
+            })
+            .Select(group => new
+            {
+                group.Key.Hex,
+                group.Key.Id,
+                Count = group.Count(),
+                Texts = group.Select(row => row.Candidate.Text),
+                Sample = group.First().Candidate,
+                Symbols = gameObjectsById[group.Key.Id]
+                    .Select(entry => entry.CodeName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                ItemCommands = itemsById.TryGetValue(unchecked((uint)group.Key.Id), out ItemCommandEntry? item)
+                    ? new[] { FormatItemReference(item.ItemId, itemsById) }
+                    : Array.Empty<string>()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Id)
+            .Take(25)
+            .ToArray();
+
+        var effectGroups = candidates
+            .Select(candidate =>
+            {
+                string? hex = TryGetAttributeHex(candidate, 22);
+                string? normalizedHex = NormalizeHex(hex);
+                fxByHex.TryGetValue(normalizedHex ?? string.Empty, out FxDefinition? fx);
+                return new
+                {
+                    Candidate = candidate,
+                    Hex = hex,
+                    NormalizedHex = normalizedHex,
+                    Fx = fx,
+                    Counter = TryGetAttributeHex(candidate, 7)
+                };
+            })
+            .Where(row => row.Hex is not null && row.NormalizedHex is not null)
+            .GroupBy(row => row.NormalizedHex!, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var sample = group.First();
+                return new
+                {
+                    Hex = sample.Hex!,
+                    Count = group.Count(),
+                    FxNames = group
+                        .Select(row => row.Fx?.Name)
+                        .Where(value => !string.IsNullOrWhiteSpace(value))
+                        .Select(value => value!)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                        .ToArray(),
+                    Counters = group.Select(row => row.Counter),
+                    Texts = group.Select(row => row.Candidate.Text),
+                    Sample = sample.Candidate
+                };
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Hex, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        if (equipmentGroups.Length == 0 && effectGroups.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 NPC_BASE Equipment and Effect Symbol Leads");
+        builder.AppendLine();
+        builder.AppendLine("This resolves Object599 `EquippedItemID` through imported `gameobjects.csv` rows and the MxOEmu `&gib` command list, then resolves `EffectID` through imported FX definitions. Any unmatched values remain raw packet leads for targeted capture work.");
+        builder.AppendLine();
+
+        if (equipmentGroups.Length > 0)
+        {
+            builder.AppendLine("| EquippedItemID | GameObject id | GameObject symbols | Inventory command item | Records | Text samples | Sample |");
+            builder.AppendLine("| --- | ---: | --- | --- | ---: | --- | --- |");
+            foreach (var group in equipmentGroups)
+            {
+                builder.AppendLine(
+                    $"| `{group.Hex}` | {group.Id} | {FormatCandidateList(group.Symbols.Select(FormatTableText).ToArray())} | {FormatCandidateList(group.ItemCommands)} | {group.Count} | {FormatDistinct(group.Texts, 8)} | `{group.Sample.File}:{group.Sample.Line}` |");
+            }
+
+            builder.AppendLine();
+        }
+
+        if (effectGroups.Length > 0)
+        {
+            builder.AppendLine("| EffectID | FX name | Effect counters | Records | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | --- | --- |");
+            foreach (var group in effectGroups)
+            {
+                builder.AppendLine(
+                    $"| `{group.Hex}` | {FormatCandidateList(group.FxNames.Select(FormatTableText).ToArray())} | {FormatDistinct(group.Counters, 8)} | {group.Count} | {FormatDistinct(group.Texts, 8)} | `{group.Sample.File}:{group.Sample.Line}` |");
+            }
+
+            builder.AppendLine();
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseCreationAttributePresence(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        var attributes = candidates
+            .SelectMany(candidate => candidate.CreationAttributes.Select(attribute => new
+            {
+                Candidate = candidate,
+                Attribute = attribute
+            }))
+            .ToArray();
+        if (attributes.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 NPC_BASE Creation Attribute Presence");
+        builder.AppendLine();
+        builder.AppendLine("This walks Object599 creation masks using local fixed attribute sizes, then groups every decoded attribute by creation index and value. Values are still raw bytes; names come from the local Object599 definition.");
+        builder.AppendLine();
+        builder.AppendLine("| Index | Attribute | Size | Records | Distinct values | Value samples | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | ---: | ---: | --- | --- | --- |");
+        foreach (var group in attributes
+            .GroupBy(entry => new
+            {
+                entry.Attribute.Index,
+                entry.Attribute.Name,
+                entry.Attribute.Size
+            })
+            .OrderBy(group => group.Key.Index))
+        {
+            var sample = group.First();
+            int distinctValues = group.Select(entry => entry.Attribute.ValueHex).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.Index} | {group.Key.Name} | {group.Key.Size} | {group.Count()} | {distinctValues} | {FormatDistinct(group.Select(entry => entry.Attribute.ValueHex), 5)} | {FormatDistinct(group.Select(entry => entry.Candidate.Text), 8)} | `{sample.Candidate.File}:{sample.Candidate.Line}` |");
         }
 
         builder.AppendLine();
@@ -798,6 +1925,7 @@ public static class ReportWriter
         AppendHardcodedManageBonusExamples(builder, report, payloads);
         AppendManageBonusAttributeCandidates(builder, report, payloads);
         AppendManageBonusInteractionAttributeCandidates(builder, report, payloads);
+        AppendManageBonusInteractionLayoutLeads(builder, report, payloads);
         AppendManageBonusFxCandidates(builder, report, payloads);
 
         var vendorOpenCandidates = payloads
@@ -1038,12 +2166,7 @@ public static class ReportWriter
             return;
         }
 
-        Dictionary<string, FxDefinition> fxByHex = new(StringComparer.OrdinalIgnoreCase);
-        foreach (FxDefinition fx in report.FxDefinitions)
-        {
-            fxByHex.TryAdd(fx.LittleEndianHex, fx);
-            fxByHex.TryAdd(fx.BigEndianHex, fx);
-        }
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
 
         var matches = payloads
             .SelectMany(entry => FindFxMatches(entry.File, entry.Payload, fxByHex))
@@ -1069,14 +2192,14 @@ public static class ReportWriter
 
         builder.AppendLine("### Candidate FX ID Matches");
         builder.AppendLine();
-        builder.AppendLine("This scans each `80 bc` payload for four-byte windows that match imported `fxlisthex.txt` IDs. Some hits may be coincidental, but repeated matches are useful leads for effect-bearing fields.");
+        builder.AppendLine("This scans each `80 bc` payload for four-byte windows that match imported FX definitions. Some hits may be coincidental, but repeated matches are useful leads for effect-bearing fields.");
         builder.AppendLine();
         builder.AppendLine("| Offset | FX hex | FX name | Count | Sample | Sample payload |");
         builder.AppendLine("| ---: | --- | --- | ---: | --- | --- |");
         foreach (var match in matches)
         {
             builder.AppendLine(
-                $"| {match.Offset} | `{match.Hex}` | {match.Name} | {match.Count} | `{match.Sample.File}:{match.Sample.Line}` | `{match.Sample.PayloadHex}` |");
+                $"| {match.Offset} | `{match.Hex}` | {FormatTableText(match.Name)} | {match.Count} | `{match.Sample.File}:{match.Sample.Line}` | `{match.Sample.PayloadHex}` |");
         }
 
         builder.AppendLine();
@@ -1142,6 +2265,87 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| {candidate.FieldValue} | {candidate.PayloadCount} | {candidate.IndexKind} | {candidate.AttributeName} | {candidate.DefinitionCount} | {FormatCandidateList(candidate.Classes)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusInteractionLayoutLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<PayloadWithFile> payloads)
+    {
+        Dictionary<int, PayloadWithFile[]> payloadsByField = payloads
+            .GroupBy(entry => (int)entry.Payload.Field1Value)
+            .ToDictionary(group => group.Key, group => group.ToArray());
+
+        var candidates = report.AttributeDefinitions
+            .SelectMany(attribute => new[]
+            {
+                new AttributeCandidateHit(attribute.CreationIndex, "creation", attribute),
+                new AttributeCandidateHit(attribute.UpdateIndex, "update", attribute)
+            })
+            .Where(hit => payloadsByField.ContainsKey(hit.FieldValue))
+            .Where(hit => IsInteractionAttributeName(hit.Attribute.AttributeName))
+            .GroupBy(hit => new
+            {
+                hit.FieldValue,
+                hit.IndexKind,
+                hit.Attribute.AttributeName
+            })
+            .Select(group =>
+            {
+                PayloadWithFile[] fieldPayloads = payloadsByField[group.Key.FieldValue];
+                PayloadWithFile sample = fieldPayloads.First();
+                string fieldHex = sample.Payload.Field1;
+                int repeatedByte9 = fieldPayloads.Count(entry =>
+                    entry.Payload.Field1.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase));
+                int repeatedByte11 = fieldPayloads.Count(entry =>
+                    entry.Payload.Field2.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 11), StringComparison.OrdinalIgnoreCase));
+                string[] field0Families = fieldPayloads
+                    .GroupBy(entry => entry.Payload.Field0, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(family => family.Count())
+                    .ThenBy(family => family.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(family => $"`{family.Key}` ({family.Count()})")
+                    .ToArray();
+
+                return new
+                {
+                    group.Key.FieldValue,
+                    FieldHex = fieldHex,
+                    PayloadCount = fieldPayloads.Length,
+                    group.Key.IndexKind,
+                    group.Key.AttributeName,
+                    DefinitionCount = group.Count(),
+                    RepeatedByte9 = repeatedByte9,
+                    RepeatedByte11 = repeatedByte11,
+                    Field0Families = field0Families,
+                    Sample = sample
+                };
+            })
+            .OrderByDescending(candidate => candidate.RepeatedByte9)
+            .ThenByDescending(candidate => candidate.PayloadCount)
+            .ThenBy(candidate => candidate.FieldValue)
+            .ThenBy(candidate => candidate.AttributeName)
+            .Take(25)
+            .ToArray();
+
+        if (candidates.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor and Interaction `80 bc` Layout Leads");
+        builder.AppendLine();
+        builder.AppendLine("This combines interaction-looking field 1 attribute candidates with the observed `80 bc` payload layout. A high byte-9 repeat count means the candidate field is repeated later in the payload, which makes it a stronger target for paired vendor, NPC, inventory, trade, and loot captures.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 1 | Candidate attribute | Index kind | Definitions | Payloads | Byte 9 repeats field 1 | Byte 11 repeats field 2 | Field 0 families | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |");
+        foreach (var candidate in candidates)
+        {
+            builder.AppendLine(
+                $"| `{candidate.FieldHex}` ({candidate.FieldValue}) | {FormatTableText(candidate.AttributeName)} | {candidate.IndexKind} | {candidate.DefinitionCount} | {candidate.PayloadCount} | {candidate.RepeatedByte9} | {candidate.RepeatedByte11} | {FormatCandidateList(candidate.Field0Families)} | `{candidate.Sample.File}:{candidate.Sample.Payload.Line}` |");
         }
 
         builder.AppendLine();
@@ -1238,6 +2442,729 @@ public static class ReportWriter
             : string.Join("<br>", candidates);
     }
 
+    private static string FormatItemReferences(IEnumerable<uint> itemIds, IReadOnlyDictionary<uint, ItemCommandEntry> itemsById)
+    {
+        string[] references = itemIds
+            .Select(id => FormatItemReference(id, itemsById))
+            .ToArray();
+        return FormatCandidateList(references);
+    }
+
+    private static string FormatItemReference(uint itemId, IReadOnlyDictionary<uint, ItemCommandEntry> itemsById)
+    {
+        if (!itemsById.TryGetValue(itemId, out ItemCommandEntry? item))
+        {
+            return itemId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        string reference = $"{itemId.ToString(CultureInfo.InvariantCulture)} {FormatTableText(item.Symbol)}";
+        return string.IsNullOrWhiteSpace(item.DisplayName)
+            ? reference
+            : $"{reference}: {FormatTableText(item.DisplayName)}";
+    }
+
+    private static string FormatTableText(string value)
+    {
+        return value
+            .Replace("|", "\\|", StringComparison.Ordinal)
+            .Replace("`", "'", StringComparison.Ordinal);
+    }
+
+    private static string FormatDistinct(IEnumerable<string?> values, int take = 5)
+    {
+        string[] distinct = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinct.Length == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", distinct.Take(take).Select(FormatTableText));
+        return distinct.Length > take
+            ? $"{formatted}<br>+{distinct.Length - take} more"
+            : formatted;
+    }
+
+    private static AttributeMatchCount CountEntityMatches(
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates,
+        Func<Protocol03NamedProfileRecordCandidate, int?> packetValue,
+        IReadOnlyList<WorldEntityEntry> rows,
+        Func<WorldEntityEntry, int?> rowValue)
+    {
+        int comparable = 0;
+        int matches = 0;
+        foreach (Protocol03NamedProfileRecordCandidate candidate in candidates)
+        {
+            int? decoded = packetValue(candidate);
+            if (decoded is null || !rows.Any(row => rowValue(row) is not null))
+            {
+                continue;
+            }
+
+            comparable++;
+            if (rows.Any(row => rowValue(row) == decoded))
+            {
+                matches++;
+            }
+        }
+
+        return new AttributeMatchCount(matches, comparable);
+    }
+
+    private static AttributeMatchCount CountHealthMatches(
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates,
+        IReadOnlyList<WorldEntityEntry> rows)
+    {
+        int comparable = 0;
+        int matches = 0;
+        foreach (Protocol03NamedProfileRecordCandidate candidate in candidates)
+        {
+            int? health = TryReadAttributeUInt16(candidate, 47);
+            int? maxHealth = TryReadAttributeUInt16(candidate, 53);
+            if (health is null || maxHealth is null || !rows.Any(row => row.Health is not null || row.MaxHealth is not null))
+            {
+                continue;
+            }
+
+            comparable++;
+            if (rows.Any(row => (row.Health is null || row.Health == health) && (row.MaxHealth is null || row.MaxHealth == maxHealth)))
+            {
+                matches++;
+            }
+        }
+
+        return new AttributeMatchCount(matches, comparable);
+    }
+
+    private static AttributeMatchCount CountDescriptionMatches(
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates,
+        IReadOnlyList<WorldEntityEntry> rows)
+    {
+        string[] rowRsiValues = rows
+            .Select(row => NormalizeHex(row.Rsi))
+            .Where(value => value is not null)
+            .Select(value => value!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (rowRsiValues.Length == 0)
+        {
+            return new AttributeMatchCount(0, 0);
+        }
+
+        int comparable = 0;
+        int matches = 0;
+        foreach (Protocol03NamedProfileRecordCandidate candidate in candidates)
+        {
+            string? description = NormalizeHex(TryGetAttributeHex(candidate, 21) ?? TryGetAttributeHex(candidate, 11));
+            if (description is null)
+            {
+                continue;
+            }
+
+            comparable++;
+            if (rowRsiValues.Contains(description, StringComparer.OrdinalIgnoreCase))
+            {
+                matches++;
+            }
+        }
+
+        return new AttributeMatchCount(matches, comparable);
+    }
+
+    private static PositionMatchSummary SummarizeNearestPositions(
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates,
+        IReadOnlyList<WorldEntityEntry> rows)
+    {
+        WorldEntityEntry[] positionedRows = rows
+            .Where(row => row.X is not null && row.Y is not null && row.Z is not null)
+            .ToArray();
+        if (positionedRows.Length == 0)
+        {
+            return new PositionMatchSummary(0, 0, 0, 0, 0, null);
+        }
+
+        int comparable = 0;
+        int exactMatches = 0;
+        int within1000 = 0;
+        int within2500 = 0;
+        int within5000 = 0;
+        List<double> nearestDistances = new();
+        foreach (Protocol03NamedProfileRecordCandidate candidate in candidates)
+        {
+            Vector3d? position = TryReadAttributeVector3d(candidate, 27);
+            if (position is null)
+            {
+                continue;
+            }
+
+            comparable++;
+            double nearest = positionedRows
+                .Select(row => Distance(position.Value, new Vector3d(row.X!.Value, row.Y!.Value, row.Z!.Value)))
+                .Min();
+            nearestDistances.Add(nearest);
+            if (nearest < 0.001)
+            {
+                exactMatches++;
+            }
+
+            if (nearest <= 1000)
+            {
+                within1000++;
+            }
+
+            if (nearest <= 2500)
+            {
+                within2500++;
+            }
+
+            if (nearest <= 5000)
+            {
+                within5000++;
+            }
+        }
+
+        return new PositionMatchSummary(
+            comparable,
+            exactMatches,
+            within1000,
+            within2500,
+            within5000,
+            Median(nearestDistances));
+    }
+
+    private static AttributeMatchCount CountCurrentStateMatches(
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates,
+        IReadOnlyList<WorldEntityEntry> rows)
+    {
+        string[] rowStates = rows
+            .Select(row => NormalizeHex(row.CurrentStateHex))
+            .Where(value => value is not null)
+            .Select(value => value!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (rowStates.Length == 0)
+        {
+            return new AttributeMatchCount(0, 0);
+        }
+
+        int comparable = 0;
+        int matches = 0;
+        foreach (Protocol03NamedProfileRecordCandidate candidate in candidates)
+        {
+            string? state = NormalizeHex(TryGetAttributeHex(candidate, 54));
+            if (state is null)
+            {
+                continue;
+            }
+
+            comparable++;
+            if (rowStates.Contains(state, StringComparer.OrdinalIgnoreCase))
+            {
+                matches++;
+            }
+        }
+
+        return new AttributeMatchCount(matches, comparable);
+    }
+
+    private static string FormatMatchCount(AttributeMatchCount count)
+    {
+        return count.Comparable == 0
+            ? "-"
+            : $"{count.Matches}/{count.Comparable}";
+    }
+
+    private static AttributeMatchCount SumMatchCounts(IEnumerable<AttributeMatchCount> counts)
+    {
+        int matches = 0;
+        int comparable = 0;
+        foreach (AttributeMatchCount count in counts)
+        {
+            matches += count.Matches;
+            comparable += count.Comparable;
+        }
+
+        return new AttributeMatchCount(matches, comparable);
+    }
+
+    private static PositionMatchSummary SumPositionSummaries(IEnumerable<PositionMatchSummary> summaries)
+    {
+        int comparable = 0;
+        int exactMatches = 0;
+        int within1000 = 0;
+        int within2500 = 0;
+        int within5000 = 0;
+        foreach (PositionMatchSummary summary in summaries)
+        {
+            comparable += summary.Comparable;
+            exactMatches += summary.ExactMatches;
+            within1000 += summary.Within1000;
+            within2500 += summary.Within2500;
+            within5000 += summary.Within5000;
+        }
+
+        return new PositionMatchSummary(comparable, exactMatches, within1000, within2500, within5000, null);
+    }
+
+    private static string FormatPositionExact(PositionMatchSummary summary)
+    {
+        return summary.Comparable == 0
+            ? "-"
+            : $"{summary.ExactMatches}/{summary.Comparable}";
+    }
+
+    private static string FormatPositionWithin(PositionMatchSummary summary, int radius)
+    {
+        if (summary.Comparable == 0)
+        {
+            return "-";
+        }
+
+        int matches = radius switch
+        {
+            1000 => summary.Within1000,
+            2500 => summary.Within2500,
+            5000 => summary.Within5000,
+            _ => 0
+        };
+        return $"{matches}/{summary.Comparable}";
+    }
+
+    private static double? Median(IReadOnlyList<double> values)
+    {
+        if (values.Count == 0)
+        {
+            return null;
+        }
+
+        double[] sorted = values.OrderBy(value => value).ToArray();
+        int middle = sorted.Length / 2;
+        return sorted.Length % 2 == 0
+            ? (sorted[middle - 1] + sorted[middle]) / 2
+            : sorted[middle];
+    }
+
+    private static string? FormatNpcBaseDecodedSummary(Protocol03NamedProfileRecordCandidate candidate)
+    {
+        List<string> parts = new();
+        if (TryReadAttributeByte(candidate, 45) is int level)
+        {
+            parts.Add($"L{level}");
+        }
+
+        int? health = TryReadAttributeUInt16(candidate, 47);
+        int? maxHealth = TryReadAttributeUInt16(candidate, 53);
+        if (health is not null && maxHealth is not null)
+        {
+            parts.Add($"HP{health}/{maxHealth}");
+        }
+
+        string? description = NormalizeHex(TryGetAttributeHex(candidate, 21) ?? TryGetAttributeHex(candidate, 11));
+        if (description is not null)
+        {
+            parts.Add($"RSI {description}");
+        }
+
+        if (TryReadAttributeByte(candidate, 36) is int npcRank)
+        {
+            parts.Add($"rank {npcRank}");
+        }
+
+        if (TryReadAttributeByte(candidate, 50) is int debuffState)
+        {
+            parts.Add($"debuff {debuffState}");
+        }
+
+        string? currentState = NormalizeHex(TryGetAttributeHex(candidate, 54));
+        if (currentState is not null)
+        {
+            parts.Add($"state {currentState}");
+        }
+
+        if (TryReadAttributeVector3d(candidate, 27) is Vector3d position)
+        {
+            parts.Add($"pos {FormatCoordinate(position.X)},{FormatCoordinate(position.Y)},{FormatCoordinate(position.Z)}");
+        }
+
+        return parts.Count == 0 ? null : string.Join(" ", parts);
+    }
+
+    private static string? FormatPlayerCharacterCreationSummary(Protocol03PlayerCharacterCreationRecord record)
+    {
+        List<string> parts = new();
+        string? firstName = TryDecodeAttributeAscii(record.CreationAttributes, 11);
+        string? lastName = TryDecodeAttributeAscii(record.CreationAttributes, 3);
+        if (firstName is not null || lastName is not null)
+        {
+            parts.Add($"name {string.Join(" ", new[] { firstName, lastName }.Where(value => value is not null))}");
+        }
+
+        if (TryDecodeAttributeAscii(record.CreationAttributes, 37) is string characterName)
+        {
+            parts.Add($"handle {characterName}");
+        }
+
+        if (TryReadAttributeByte(record.CreationAttributes, 52) is int level)
+        {
+            parts.Add($"L{level}");
+        }
+
+        int? health = TryReadAttributeUInt16(record.CreationAttributes, 41);
+        int? maxHealth = TryReadAttributeUInt16(record.CreationAttributes, 24);
+        if (health is not null && maxHealth is not null)
+        {
+            parts.Add($"HP{health}/{maxHealth}");
+        }
+
+        string? rsiDescription = NormalizeHex(TryGetAttributeHex(record.CreationAttributes, 47));
+        if (rsiDescription is not null)
+        {
+            parts.Add($"RSI {rsiDescription}");
+        }
+
+        if (TryReadAttributeByte(record.CreationAttributes, 53) is int combatantMode)
+        {
+            parts.Add($"mode {combatantMode}");
+        }
+
+        if (TryReadAttributeVector3d(record.CreationAttributes, 49) is Vector3d position)
+        {
+            parts.Add($"pos {FormatCoordinate(position.X)},{FormatCoordinate(position.Y)},{FormatCoordinate(position.Z)}");
+        }
+
+        return parts.Count == 0 ? null : string.Join(" ", parts);
+    }
+
+    private static string FormatAttributeSignature(IReadOnlyList<Protocol03CreationAttributeSample> attributes)
+    {
+        string[] signature = attributes
+            .Select(attribute => $"{attribute.Index} {FormatTableText(attribute.Name)}")
+            .ToArray();
+        return FormatCandidateList(signature);
+    }
+
+    private static string? FormatSelfViewAttributeSummary(Protocol03SelfViewAttributeLead lead)
+    {
+        string[] values = lead.Attributes
+            .Select(attribute => $"{attribute.Name}={FormatSelfViewAttributeValue(attribute)}")
+            .ToArray();
+        return values.Length == 0 ? null : string.Join(" ", values);
+    }
+
+    private static string FormatSelfViewAttributeValue(Protocol03CreationAttributeSample attribute)
+    {
+        byte[] bytes = ParseHexBytes(attribute.ValueHex);
+        if (bytes.Length == 1)
+        {
+            return bytes[0].ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (bytes.Length == 2)
+        {
+            return BinaryPrimitives.ReadUInt16LittleEndian(bytes).ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (attribute.Name.Equals("Position", StringComparison.OrdinalIgnoreCase) && bytes.Length == 24)
+        {
+            Vector3d position = new(
+                ReadDoubleLittleEndian(bytes, 0),
+                ReadDoubleLittleEndian(bytes, 8),
+                ReadDoubleLittleEndian(bytes, 16));
+            return $"{FormatCoordinate(position.X)},{FormatCoordinate(position.Y)},{FormatCoordinate(position.Z)}";
+        }
+
+        return NormalizeHex(attribute.ValueHex) ?? attribute.ValueHex;
+    }
+
+    private static string FormatSelfViewSymbolLeads(
+        IEnumerable<Protocol03SelfViewAttributeLead> leads,
+        IReadOnlyDictionary<string, FxDefinition> fxByHex,
+        ILookup<int, GameObjectEntry> gameObjectsById,
+        IReadOnlyDictionary<uint, ItemCommandEntry> itemsById)
+    {
+        List<string> symbols = new();
+        foreach (Protocol03SelfViewAttributeLead lead in leads)
+        {
+            foreach (int fxIndex in new[] { 32, 34 })
+            {
+                string? hex = NormalizeHex(TryGetAttributeHex(lead.Attributes, fxIndex));
+                if (hex is not null && fxByHex.TryGetValue(hex, out FxDefinition? fx))
+                {
+                    symbols.Add($"{FormatTableText(lead.Attributes.First(attribute => attribute.Index == fxIndex).Name)} `{hex}` {FormatTableText(fx.Name)}");
+                }
+            }
+
+            if (TryReadAttributeUInt32(lead.Attributes, 31) is uint itemId)
+            {
+                string[] objectSymbols = gameObjectsById[unchecked((int)itemId)]
+                    .Select(entry => FormatTableText(entry.CodeName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .Take(3)
+                    .ToArray();
+                if (objectSymbols.Length > 0)
+                {
+                    symbols.Add($"EquippedItemID `{itemId}` {string.Join(", ", objectSymbols)}");
+                }
+
+                if (itemsById.ContainsKey(itemId))
+                {
+                    symbols.Add($"EquippedItemID {FormatItemReference(itemId, itemsById)}");
+                }
+            }
+        }
+
+        string[] distinct = symbols
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .ToArray();
+        return FormatCandidateList(distinct);
+    }
+
+    private static string? TryGetAttributeHex(Protocol03NamedProfileRecordCandidate candidate, int index)
+    {
+        return TryGetAttributeHex(candidate.CreationAttributes, index);
+    }
+
+    private static string? TryGetAttributeHex(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        return attributes.FirstOrDefault(attribute => attribute.Index == index)?.ValueHex;
+    }
+
+    private static string? TryDecodeAttributeAscii(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        byte[] bytes = ParseHexBytes(TryGetAttributeHex(attributes, index));
+        int textLength = Array.FindIndex(bytes, value => value == 0);
+        if (textLength < 0)
+        {
+            textLength = bytes.Length;
+        }
+
+        if (textLength == 0 || bytes.Take(textLength).Any(value => value < 0x20 || value > 0x7e))
+        {
+            return null;
+        }
+
+        string text = Encoding.ASCII.GetString(bytes, 0, textLength).Trim();
+        return string.IsNullOrWhiteSpace(text) || !text.Any(char.IsLetter) ? null : text;
+    }
+
+    private static int? TryReadAttributeByte(Protocol03NamedProfileRecordCandidate candidate, int index)
+    {
+        return TryReadAttributeByte(candidate.CreationAttributes, index);
+    }
+
+    private static int? TryReadAttributeByte(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        byte[] bytes = ParseHexBytes(TryGetAttributeHex(attributes, index));
+        return bytes.Length == 1 ? bytes[0] : null;
+    }
+
+    private static int? TryReadAttributeUInt16(Protocol03NamedProfileRecordCandidate candidate, int index)
+    {
+        return TryReadAttributeUInt16(candidate.CreationAttributes, index);
+    }
+
+    private static int? TryReadAttributeUInt16(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        byte[] bytes = ParseHexBytes(TryGetAttributeHex(attributes, index));
+        return bytes.Length == 2 ? BinaryPrimitives.ReadUInt16LittleEndian(bytes) : null;
+    }
+
+    private static uint? TryReadAttributeUInt32(Protocol03NamedProfileRecordCandidate candidate, int index)
+    {
+        return TryReadAttributeUInt32(candidate.CreationAttributes, index);
+    }
+
+    private static uint? TryReadAttributeUInt32(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        byte[] bytes = ParseHexBytes(TryGetAttributeHex(attributes, index));
+        return bytes.Length == 4 ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : null;
+    }
+
+    private static Vector3d? TryReadAttributeVector3d(Protocol03NamedProfileRecordCandidate candidate, int index)
+    {
+        return TryReadAttributeVector3d(candidate.CreationAttributes, index);
+    }
+
+    private static Vector3d? TryReadAttributeVector3d(IReadOnlyList<Protocol03CreationAttributeSample> attributes, int index)
+    {
+        byte[] bytes = ParseHexBytes(TryGetAttributeHex(attributes, index));
+        if (bytes.Length != 24)
+        {
+            return null;
+        }
+
+        return new Vector3d(
+            ReadDoubleLittleEndian(bytes, 0),
+            ReadDoubleLittleEndian(bytes, 8),
+            ReadDoubleLittleEndian(bytes, 16));
+    }
+
+    private static double ReadDoubleLittleEndian(byte[] bytes, int offset)
+    {
+        long bits = BinaryPrimitives.ReadInt64LittleEndian(bytes.AsSpan(offset, 8));
+        return BitConverter.Int64BitsToDouble(bits);
+    }
+
+    private static double Distance(Vector3d left, Vector3d right)
+    {
+        double x = left.X - right.X;
+        double y = left.Y - right.Y;
+        double z = left.Z - right.Z;
+        return Math.Sqrt(x * x + y * y + z * z);
+    }
+
+    private static byte[] ParseHexBytes(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Array.Empty<byte>();
+        }
+
+        return value
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(part => byte.TryParse(part, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte result) ? result : (byte)0)
+            .ToArray();
+    }
+
+    private static string? NormalizeHex(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        string normalized = value.Replace(" ", string.Empty, StringComparison.Ordinal).Trim().ToLowerInvariant();
+        return normalized.Length == 0 ? null : normalized;
+    }
+
+    private static string FormatCoordinate(double value)
+    {
+        double rounded = Math.Round(value);
+        return Math.Abs(value - rounded) < 0.001
+            ? rounded.ToString(CultureInfo.InvariantCulture)
+            : value.ToString("0.###", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatDistance(double? value)
+    {
+        if (value is null)
+        {
+            return "-";
+        }
+
+        double rounded = Math.Round(value.Value);
+        return Math.Abs(value.Value - rounded) < 0.001
+            ? rounded.ToString(CultureInfo.InvariantCulture)
+            : value.Value.ToString("0.#", CultureInfo.InvariantCulture);
+    }
+
+    private static string? FormatEffectEmotePosition(Protocol03EffectEmoteLead lead)
+    {
+        return lead.X is null || lead.Y is null || lead.Z is null
+            ? null
+            : $"{FormatCoordinate(lead.X.Value)},{FormatCoordinate(lead.Y.Value)},{FormatCoordinate(lead.Z.Value)}";
+    }
+
+    private static string FormatPositionLikePosition(Protocol03PositionLikeLead lead)
+    {
+        return $"{FormatCoordinate(lead.X)},{FormatCoordinate(lead.Y)},{FormatCoordinate(lead.Z)}";
+    }
+
+    private static string FormatNestedMovementPosition(Protocol03NestedMovementLead lead)
+    {
+        return $"{FormatCoordinate(lead.X)},{FormatCoordinate(lead.Y)},{FormatCoordinate(lead.Z)}";
+    }
+
+    private static string FormatEmptyHex(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
+
+    private static string FormatStaticObjectPosition(StaticObjectEntry entry)
+    {
+        return $"{entry.MetrId}/{entry.SectorId} {FormatCoordinate(entry.X)},{FormatCoordinate(entry.Y)},{FormatCoordinate(entry.Z)} type {entry.TypeId}";
+    }
+
+    private static string? FormatStaticObjectQuaternion(Protocol03StaticObjectLead lead)
+    {
+        if (lead.Q0 is null || lead.Q1 is null || lead.Q2 is null || lead.Q3 is null)
+        {
+            return null;
+        }
+
+        return $"{FormatCoordinate(lead.Q0.Value)},{FormatCoordinate(lead.Q1.Value)},{FormatCoordinate(lead.Q2.Value)},{FormatCoordinate(lead.Q3.Value)}";
+    }
+
+    private static string FormatStaticTypeSymbols(
+        IReadOnlyList<StaticObjectEntry> staticRows,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        if (staticRows.Count == 0)
+        {
+            return "-";
+        }
+
+        string[] symbols = staticRows
+            .GroupBy(entry => entry.TypeId)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Select(group =>
+            {
+                string[] names = gameObjectsById[group.Key]
+                    .Select(entry => FormatTableText(entry.CodeName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .Take(3)
+                    .ToArray();
+                string symbolText = names.Length == 0
+                    ? "-"
+                    : string.Join(", ", names);
+                return $"{group.Key} {symbolText} ({group.Count()})";
+            })
+            .ToArray();
+        return FormatCandidateList(symbols);
+    }
+
+    private static string FormatFxMatchSummary(IReadOnlyList<FxMatch> matches)
+    {
+        if (matches.Count == 0)
+        {
+            return "-";
+        }
+
+        string[] summaries = matches
+            .GroupBy(match => new
+            {
+                match.Hex,
+                match.Name
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Hex, StringComparer.OrdinalIgnoreCase)
+            .Take(5)
+            .Select(group => $"`{group.Key.Hex}` {FormatTableText(group.Key.Name)} ({group.Count()})")
+            .ToArray();
+        return FormatCandidateList(summaries);
+    }
+
+    private static string? FormatWorldEntityScope(WorldEntityEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.Zone) && !string.IsNullOrWhiteSpace(entry.Kind))
+        {
+            return $"{entry.Zone} / {entry.Kind}";
+        }
+
+        return !string.IsNullOrWhiteSpace(entry.Zone)
+            ? entry.Zone
+            : entry.Kind;
+    }
+
     private static string FormatDominantManageBonusLayout(IReadOnlyList<PayloadWithFile> payloads)
     {
         if (payloads.Count == 0)
@@ -1293,17 +3220,59 @@ public static class ReportWriter
         return terms.Any(term => name.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
+    private static Dictionary<string, FxDefinition> BuildFxDictionary(IReadOnlyList<FxDefinition> fxDefinitions)
+    {
+        Dictionary<string, FxDefinition> fxByHex = new(StringComparer.OrdinalIgnoreCase);
+        foreach (FxDefinition fx in fxDefinitions)
+        {
+            fxByHex.TryAdd(fx.LittleEndianHex, fx);
+            fxByHex.TryAdd(fx.BigEndianHex, fx);
+        }
+
+        return fxByHex;
+    }
+
+    private static Dictionary<uint, ItemCommandEntry> BuildItemCommandDictionary(IReadOnlyList<ItemCommandEntry> itemCommandEntries)
+    {
+        Dictionary<uint, ItemCommandEntry> itemsById = new();
+        foreach (ItemCommandEntry entry in itemCommandEntries)
+        {
+            itemsById.TryAdd(entry.ItemId, entry);
+        }
+
+        return itemsById;
+    }
+
     private static IEnumerable<FxMatch> FindFxMatches(string file, ManageBonusPayloadSample payload, IReadOnlyDictionary<string, FxDefinition> fxByHex)
     {
-        string[] bytes = payload.PayloadHex.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return FindFxMatches(file, payload.Line, payload.PayloadHex, fxByHex);
+    }
+
+    private static IEnumerable<FxMatch> FindFxMatches(string file, int line, string payloadHex, IReadOnlyDictionary<string, FxDefinition> fxByHex)
+    {
+        string[] bytes = payloadHex.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         for (int offset = 0; offset <= bytes.Length - 4; offset++)
         {
             string hex = string.Concat(bytes.Skip(offset).Take(4)).ToLowerInvariant();
             if (fxByHex.TryGetValue(hex, out FxDefinition? fx))
             {
-                yield return new FxMatch(file, payload.Line, offset, hex, fx.Name, payload.PayloadHex);
+                yield return new FxMatch(file, line, offset, hex, fx.Name, payloadHex);
             }
         }
+    }
+
+    private static FxMatch? FindFxMatchAtOffset(string file, int line, string payloadHex, IReadOnlyDictionary<string, FxDefinition> fxByHex, int offset)
+    {
+        string[] bytes = payloadHex.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (offset < 0 || offset > bytes.Length - 4)
+        {
+            return null;
+        }
+
+        string hex = string.Concat(bytes.Skip(offset).Take(4)).ToLowerInvariant();
+        return fxByHex.TryGetValue(hex, out FxDefinition? fx)
+            ? new FxMatch(file, line, offset, hex, fx.Name, payloadHex)
+            : null;
     }
 
     private static string FormatList(IReadOnlyList<string> values)
@@ -1377,6 +3346,69 @@ public static class ReportWriter
     private sealed record Protocol03SampleWithFile(string File, Protocol03ObjectViewSample Sample);
 
     private sealed record Protocol03SegmentWithFile(string File, int Line, Protocol03ObjectUpdateSegment Segment);
+
+    private sealed record Protocol03EffectEmoteLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03EffectEmoteLead Lead);
+
+    private sealed record Protocol03StaticObjectLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03StaticObjectLead Lead);
+
+    private sealed record Protocol03NestedMovementLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03NestedMovementLead Lead);
+
+    private sealed record Protocol03PositionLikeLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03PositionLikeLead Lead);
+
+    private sealed record Protocol03VariableSelectorLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03VariableSelectorLead Lead);
+
+    private sealed record Protocol03SelfViewAttributeLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03SelfViewAttributeLead Lead);
+
+    private sealed record Protocol03StringWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03StringSample String);
+
+    private sealed record Protocol03StringLead(
+        string Classification,
+        int UpdateCount,
+        string FirstSelector,
+        string Text,
+        int Count,
+        Protocol03StringWithFile Sample);
+
+    private sealed record Protocol03PlayerCharacterCreationRecordWithFile(string File, int Line, Protocol03PlayerCharacterCreationRecord Record);
+
+    private sealed record Protocol03NamedProfileRecordWithFile(string File, int Line, Protocol03NamedProfileRecord Record);
+
+    private sealed record Protocol03NamedProfileRecordCandidate(
+        string File,
+        int Line,
+        string Text,
+        int NameBytes,
+        int NameSlotBytes,
+        string RecordPrefixHex,
+        string CreationFlagHex,
+        string GameObjectIdHex,
+        int GameObjectId,
+        string GameObjectName,
+        string SpawnCounterHex,
+        string SeparatorHex,
+        int CreationAttributeCount,
+        string FirstAttributeMaskHex,
+        string CreationPrefixHex,
+        int SuffixZeroBytes,
+        string TitleAbilityHex,
+        string CombatantModeHex,
+        string PostNameSlotHex,
+        string PostCombatantModeHex,
+        IReadOnlyList<Protocol03CreationAttributeSample> CreationAttributes,
+        int EntityRowCount,
+        IReadOnlyList<WorldEntityEntry> EntityRows);
+
+    private readonly record struct AttributeMatchCount(int Matches, int Comparable);
+
+    private readonly record struct PositionMatchSummary(
+        int Comparable,
+        int ExactMatches,
+        int Within1000,
+        int Within2500,
+        int Within5000,
+        double? MedianNearest);
+
+    private readonly record struct Vector3d(double X, double Y, double Z);
 
     private sealed record PlayerAttributePayloadWithFile(string File, PlayerAttributePayloadSample Payload);
 

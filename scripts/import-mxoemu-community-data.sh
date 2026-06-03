@@ -4,8 +4,13 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 work_dir="${MXOEMU_DATA_WORKDIR:-/tmp/mxo-research/mxoemu-files}"
 source_url="${MXOEMU_GOPROPS_URL:-https://files.mxoemu.info/goprops.7z}"
+invitems_url="${MXOEMU_INVITEMS_URL:-https://files.mxoemu.info/invitems_command.txt}"
 
 mkdir -p "$work_dir"
+mkdir -p "$repo_root/research/community-data"
+
+curl -fSLo "$repo_root/research/community-data/invitems_command.txt" "$invitems_url"
+
 curl -fSLo "$work_dir/goprops.7z" "$source_url"
 rm -rf "$work_dir/goprops"
 mkdir -p "$work_dir/goprops"
@@ -32,4 +37,4 @@ if (/^TypeInfo:/) {
 END { flush(); }
 ' "$work_dir/goprops/goprops.txt" > "$repo_root/data/vendor_prices.csv"
 
-wc -l "$repo_root/data/vendor_prices.csv"
+wc -l "$repo_root/data/vendor_prices.csv" "$repo_root/research/community-data/invitems_command.txt"

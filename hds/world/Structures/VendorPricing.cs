@@ -8,7 +8,30 @@ namespace hds
     public static class VendorPricing
     {
         public const UInt32 DefaultBuyPrice = 100;
-        public const UInt32 DefaultBuybackPrice = 100;
+        public const UInt32 DefaultVendorPrice = 1000;
+        public const UInt32 DefaultBuybackPrice = DefaultVendorPrice / 10;
+        public const UInt32 NoBuyBackPrice = 1;
+        private const UInt32 AbilityCodeFlag = 0x80000000;
+        private const UInt32 AbilityCodeMask = 0xfffffc00;
+        private const UInt32 AbilityLevelMask = 0x000003ff;
+        private static readonly HashSet<UInt32> FullPriceAbilityCodes = new HashSet<UInt32>
+        {
+            2148365312, // BalanceAbility
+            2147490816, // DetectVulnerabilityAbility
+            2147605504, // DisarmTrapsAbility
+            2147492864, // EnergizedAttacksAbility
+            2147496960, // HyperStrengthAbility
+            2147684352, // IgnorePainAbility
+            2147858432, // ImpartInvisibilityAbility
+            2147497984, // PowerShotAbility
+            2147499008, // PreciseBlowAbility
+            2147500032, // PunishingBlowsAbility
+            2148372480, // PurityAbility
+            2148374528, // SpinningFlowerAbility
+            2148373504, // SweepTheFloorAbility
+            2148364288, // TechniqueAbility
+            2148375552  // ZenMasterAbility
+        };
         private static readonly Lazy<IReadOnlyDictionary<UInt32, VendorPriceEntry>> PriceData =
             new Lazy<IReadOnlyDictionary<UInt32, VendorPriceEntry>>(() => LoadPriceData(DataLoader.DataPath("vendor_prices.csv")));
 
@@ -24,6 +47,16 @@ namespace hds
 
         public static UInt32 GetSellPrice(UInt32 itemGoId)
         {
+            if (itemGoId == 0)
+            {
+                return NoBuyBackPrice;
+            }
+
+            if ((itemGoId & AbilityCodeFlag) != 0)
+            {
+                return GetAbilityBuybackPrice(itemGoId);
+            }
+
             if (PriceData.Value.TryGetValue(itemGoId, out VendorPriceEntry entry))
             {
                 return entry.NonSellable
@@ -32,6 +65,43 @@ namespace hds
             }
 
             return DefaultBuybackPrice;
+        }
+
+        private static UInt32 GetAbilityBuybackPrice(UInt32 itemGoId)
+        {
+            UInt32 abilityCodeData = itemGoId & AbilityCodeMask;
+            UInt32 level = itemGoId & AbilityLevelMask;
+            UInt64 buyback = DefaultVendorPrice;
+            bool hasDecodedPrice = false;
+
+            if (PriceData.Value.TryGetValue(abilityCodeData, out VendorPriceEntry entry))
+            {
+                if (entry.VendorPrice > 0)
+                {
+                    buyback = entry.VendorPrice;
+                    hasDecodedPrice = true;
+                }
+            }
+
+            if (hasDecodedPrice)
+            {
+                for (UInt32 i = 1; i < level; i++)
+                {
+                    UInt64 nextLevel = i + 1;
+                    buyback += nextLevel * nextLevel * 200;
+                }
+            }
+
+            return FullPriceAbilityCodes.Contains(abilityCodeData)
+                ? ClampPrice(buyback)
+                : ClampPrice(buyback / 10);
+        }
+
+        private static UInt32 ClampPrice(UInt64 price)
+        {
+            return price > UInt32.MaxValue
+                ? UInt32.MaxValue
+                : (UInt32)price;
         }
 
         public static bool TryApplyBuy(long currentCash, UInt32 itemGoId, out UInt32 newCash, out UInt32 price)

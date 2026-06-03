@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MxoHd.PacketResearch;
 
 public enum RpcMatchKind
@@ -98,10 +100,147 @@ public sealed record Protocol03ObjectViewSample(
     string FirstSelector,
     string Classification,
     string PrefixHex,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03StringSample> Strings,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03NamedProfileRecord> NamedProfileRecords,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03PlayerCharacterCreationRecord> PlayerCharacterCreationRecords,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03EffectEmoteLead> EffectEmoteLeads,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03PositionLikeLead> PositionLikeLeads,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03NestedMovementLead> NestedMovementLeads,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03VariableSelectorLead> VariableSelectorLeads,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03SelfViewAttributeLead> SelfViewAttributeLeads,
+    [property: JsonIgnore]
+    IReadOnlyList<Protocol03StaticObjectLead> StaticObjectLeads,
     int ParsedUpdateCount,
     int UnparsedBytes,
     bool Complete,
     IReadOnlyList<Protocol03ObjectUpdateSegment> Segments);
+
+public sealed record Protocol03StringSample(
+    int Offset,
+    string Text,
+    string PrefixHex,
+    string SuffixHex);
+
+public sealed record Protocol03NamedProfileRecord(
+    int Offset,
+    string Text,
+    int NameBytes,
+    int NameSlotBytes,
+    string RecordPrefixHex,
+    string CreationFlagHex,
+    string GameObjectIdHex,
+    int GameObjectId,
+    string SpawnCounterHex,
+    string SeparatorHex,
+    int CreationAttributeCount,
+    string FirstAttributeMaskHex,
+    int SuffixZeroBytes,
+    string TitleAbilityHex,
+    string CombatantModeHex,
+    string PostNameSlotHex,
+    string PostCombatantModeHex,
+    IReadOnlyList<Protocol03CreationAttributeSample> CreationAttributes);
+
+public sealed record Protocol03PlayerCharacterCreationRecord(
+    int Offset,
+    string RecordPrefixHex,
+    string CreationFlagHex,
+    string GameObjectIdHex,
+    int GameObjectId,
+    string SpawnCounterHex,
+    string SeparatorHex,
+    int CreationAttributeCount,
+    string FirstAttributeMaskHex,
+    IReadOnlyList<Protocol03CreationAttributeSample> CreationAttributes);
+
+public sealed record Protocol03CreationAttributeSample(
+    int Index,
+    string Name,
+    int Size,
+    int Offset,
+    string ValueHex);
+
+public sealed record Protocol03EffectEmoteLead(
+    int Offset,
+    int PayloadBytes,
+    string LeadByte0Hex,
+    string LeadByte1Hex,
+    string Field2Hex,
+    string PositionHex,
+    float? X,
+    float? Y,
+    float? Z,
+    string PayloadHex);
+
+public sealed record Protocol03PositionLikeLead(
+    string Selector,
+    int Offset,
+    int PayloadBytes,
+    string LeadPrefixHex,
+    int PositionOffset,
+    string PositionHex,
+    float X,
+    float Y,
+    float Z,
+    string PayloadHex);
+
+public sealed record Protocol03VariableSelectorLead(
+    string Selector,
+    int Offset,
+    int PayloadBytes,
+    string PrefixHex,
+    string PayloadHex);
+
+public sealed record Protocol03SelfViewAttributeLead(
+    string Selector,
+    int Offset,
+    int PayloadBytes,
+    string MaskPrefixHex,
+    IReadOnlyList<Protocol03CreationAttributeSample> Attributes,
+    string SuffixPrefixHex,
+    string PayloadHex);
+
+public sealed record Protocol03NestedMovementLead(
+    string OuterSelector,
+    int Offset,
+    int PayloadBytes,
+    int MarkerOffset,
+    string LeadPrefixHex,
+    string InnerSelector,
+    int InnerPayloadBytes,
+    int InnerPositionOffset,
+    string PositionHex,
+    float X,
+    float Y,
+    float Z,
+    string SuffixHex,
+    string PayloadHex);
+
+public sealed record Protocol03StaticObjectLead(
+    string Selector,
+    int Offset,
+    int PayloadBytes,
+    string LeadByteHex,
+    string ObjectIdHex,
+    uint ObjectId,
+    string InstanceByteHex,
+    string SeparatorHex,
+    int ObjectType,
+    string UnknownByteHex,
+    string TransformHex,
+    float? Q0,
+    float? Q1,
+    float? Q2,
+    float? Q3,
+    string PayloadHex);
 
 public sealed record Protocol03ObjectUpdateSegment(
     string Selector,
@@ -143,6 +282,30 @@ public sealed record VendorInventoryEntry(
     string File,
     int Line);
 
+public sealed record ItemCommandEntry(
+    uint ItemId,
+    string Symbol,
+    string? DisplayName,
+    string File,
+    int Line);
+
+public sealed record StaticObjectEntry(
+    ushort MetrId,
+    ushort SectorId,
+    uint MxoId,
+    string MxoIdHex,
+    uint StaticId,
+    string StaticIdHex,
+    ushort TypeId,
+    string TypeHex,
+    bool Exterior,
+    double X,
+    double Y,
+    double Z,
+    double Rotation,
+    string File,
+    int Line);
+
 public sealed record AttributeDefinition(
     string Source,
     string ClassName,
@@ -160,6 +323,30 @@ public sealed record FxDefinition(
     string Name,
     string File,
     int Line);
+
+public sealed record GameObjectEntry(
+    string CodeName,
+    int GoId,
+    string File,
+    int Line);
+
+public sealed record WorldEntityEntry(
+    string Source,
+    string Name,
+    string? Zone,
+    int? Level,
+    string? Kind,
+    string? Rsi,
+    string File,
+    int Line,
+    int? Health = null,
+    int? MaxHealth = null,
+    double? X = null,
+    double? Y = null,
+    double? Z = null,
+    int? NpcRank = null,
+    int? DebuffState = null,
+    string? CurrentStateHex = null);
 
 public sealed record PacketDumpFileSummary(
     string File,
@@ -182,10 +369,21 @@ public sealed record PacketResearchReport(
     IReadOnlyList<RpcHeaderEntry> LocalHeaders,
     IReadOnlyList<AttributeDefinition> AttributeDefinitions,
     IReadOnlyList<FxDefinition> FxDefinitions,
+    [property: JsonIgnore]
+    IReadOnlyList<GameObjectEntry> GameObjectEntries,
+    [property: JsonIgnore]
+    IReadOnlyList<WorldEntityEntry> WorldEntityEntries,
     IReadOnlyList<RajkoRpcEntry> RajkoRpcHeaders,
     IReadOnlyList<HardcodedCommandExample> HardcodedCommands,
     IReadOnlyList<Protocol03HardcodedExample> HardcodedProtocol03Examples,
     IReadOnlyList<Protocol04InteractionCommandExample> Protocol04InteractionCommandExamples,
     IReadOnlyList<VendorInventoryEntry> VendorInventoryEntries,
     IReadOnlyList<RpcComparison> RajkoComparisons,
-    IReadOnlyList<PacketDumpFileSummary> PacketDumpFiles);
+    IReadOnlyList<PacketDumpFileSummary> PacketDumpFiles)
+{
+    [JsonIgnore]
+    public IReadOnlyList<ItemCommandEntry> ItemCommandEntries { get; init; } = Array.Empty<ItemCommandEntry>();
+
+    [JsonIgnore]
+    public IReadOnlyList<StaticObjectEntry> StaticObjectEntries { get; init; } = Array.Empty<StaticObjectEntry>();
+}

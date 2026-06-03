@@ -1,10 +1,213 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace MxoHd.PacketResearch;
 
 public static partial class PacketResearcher
 {
+    private static readonly Protocol03AttributeDescriptor[] Object599CreationAttributes =
+    {
+        new(0, "EvadeShieldHealth", 1),
+        new(1, "CharacterName", 32),
+        new(2, "TitleAbility", 4),
+        new(3, "CombatantMode", 1),
+        new(4, "JumpFlags", 2),
+        new(5, "ConditionStateFlags", 4),
+        new(6, "Jumping", 1),
+        new(7, "EffectCounter", 1),
+        new(8, "UseRSIDescription", 1),
+        new(9, "YawInterval", 1),
+        new(10, "MasterCharacterID", 4),
+        new(11, "MoreInfoID", 4),
+        new(12, "StealthLevel", 1),
+        new(13, "StopFollowActiveTracker", 1),
+        new(14, "IsDead", 1),
+        new(15, "DissemblingType", 2),
+        new(16, "JumpEndTime", 4),
+        new(17, "HalfExtents", 12),
+        new(18, "WanderRange", 4),
+        new(19, "ScriptCounter", 1),
+        new(20, "EvadeShieldDamageScale", 4),
+        new(21, "Description", 4),
+        new(22, "EffectID", 4),
+        new(23, "FactionID", 4),
+        new(24, "DontAttack", 1),
+        new(25, "NoiseLevel", 1),
+        new(26, "ExclusiveLocator", 18),
+        new(27, "Position", 24),
+        new(28, "ProneState", 4),
+        new(29, "CancelAbility", 4),
+        new(30, "UseCount", 1),
+        new(31, "MissionKey", 4),
+        new(32, "Stance", 1),
+        new(33, "OrganizationID", 1),
+        new(34, "IsEnemy", 1),
+        new(35, "Action", 1),
+        new(36, "NPCRank", 1),
+        new(37, "IsFriendly", 1),
+        new(38, "Demeanor", 1),
+        new(39, "MovementScale", 4),
+        new(40, "CancelAbilityCounter", 1),
+        new(41, "JumpPeakHeight", 4),
+        new(42, "FollowActiveTracker", 1),
+        new(43, "GuardType", 1),
+        new(44, "ExclusiveType", 1),
+        new(45, "Level", 1),
+        new(46, "GiverActiveTracker", 1),
+        new(47, "Health", 2),
+        new(48, "EffectCommand", 4),
+        new(49, "JumpDestination", 24),
+        new(50, "DebuffState", 1),
+        new(51, "TakerActiveTracker", 1),
+        new(52, "RSIDescription", 15),
+        new(53, "MaxHealth", 2),
+        new(54, "CurrentState", 4),
+        new(55, "IsEscortable", 1),
+        new(56, "EquippedItemID", 4),
+        new(57, "SpawnFX", 4),
+        new(58, "DuelID", 4),
+        new(59, "TalkDefaultable", 1),
+        new(60, "OwnerCharacterID", 4),
+        new(61, "PutActiveTracker", 1),
+        new(62, "RelevancyFlags", 1),
+        new(63, "TalkActiveTracker", 1),
+        new(64, "StealthAwareness", 1),
+        new(65, "CurrentStateContainer", 4)
+    };
+
+    private static readonly Protocol03AttributeDescriptor[] Object12CreationAttributes =
+    {
+        new(0, "ReputationMerovingian", 2),
+        new(1, "ConquestPoints", 4),
+        new(2, "CancelAbilityCounter", 1),
+        new(3, "RealLastName", 32),
+        new(4, "ScriptCounter", 1),
+        new(5, "MissionTypeFlags", 1),
+        new(6, "IsHeadless", 1),
+        new(7, "IsDead", 1),
+        new(8, "AbandonedState", 1),
+        new(9, "CancelAbility", 4),
+        new(10, "JumpEndTime", 4),
+        new(11, "RealFirstName", 32),
+        new(12, "TeleportCounter", 1),
+        new(13, "MovementScale", 4),
+        new(14, "EvadeShieldDamageScale", 4),
+        new(15, "EffectCommand", 4),
+        new(16, "EvadeShieldHealth", 1),
+        new(17, "SecureTradeFlag", 4),
+        new(18, "InteractionFlags", 4),
+        new(19, "StealthLevel", 1),
+        new(20, "RippleMagnitude", 1),
+        new(21, "HeavyLuggableID", 4),
+        new(22, "AFK", 1),
+        new(23, "MissionTeamID", 4),
+        new(24, "MaxHealth", 2),
+        new(25, "StealthAwareness", 1),
+        new(26, "JumpPeakHeight", 4),
+        new(27, "ConditionStateFlags", 4),
+        new(28, "InnerStrengthCommitted", 2),
+        new(29, "ReputationMachines", 2),
+        new(30, "InnerStrengthAvailable", 2),
+        new(31, "FactionID", 4),
+        new(32, "DeathPenalty", 4),
+        new(33, "FollowingPath", 1),
+        new(34, "EffectCounter", 1),
+        new(35, "Description", 4),
+        new(36, "ReputationNiobe", 2),
+        new(37, "CharacterName", 32),
+        new(38, "JumpDestination", 24),
+        new(39, "SelectionRangeDebuff", 4),
+        new(40, "RepelDistance", 4),
+        new(41, "Health", 2),
+        new(42, "TitleAbility", 4),
+        new(43, "Demeanor", 1),
+        new(44, "ReputationPluribusNeo", 2),
+        new(45, "CharacterID", 4),
+        new(46, "CrewID", 4),
+        new(47, "RSIDescription", 15),
+        new(48, "InnerStrengthMax", 2),
+        new(49, "Position", 24),
+        new(50, "IsDuelDeath", 1),
+        new(51, "ReputationCypherites", 2),
+        new(52, "Level", 1),
+        new(53, "CombatantMode", 1),
+        new(54, "ReputationGMOrganization", 2),
+        new(55, "EffectID", 4),
+        new(56, "DuelID", 4),
+        new(57, "HasLuggable", 1),
+        new(58, "Jumping", 1),
+        new(59, "MissionKey", 4),
+        new(60, "DissemblingType", 2),
+        new(61, "JumpFlags", 2),
+        new(62, "CurExclusiveAbility", 4),
+        new(63, "ZoneInTime", 4),
+        new(64, "NoiseLevel", 1),
+        new(65, "HalfExtents", 12),
+        new(66, "YawInterval", 1),
+        new(67, "RelevancyFlags", 1),
+        new(68, "Stance", 1),
+        new(69, "UseRSIDescription", 1),
+        new(70, "EquippedItemID", 4),
+        new(71, "Action", 1),
+        new(72, "OrganizationID", 1),
+        new(73, "CurCombatExclusiveAbility", 4),
+        new(74, "ReputationZionMilitary", 2)
+    };
+
+    private static readonly Protocol03AttributeDescriptor[] Object12SelfViewAttributes =
+    {
+        new(0, "UseRSIDescription", 1),
+        new(1, "TitleAbility", 4),
+        new(2, "SelectionRangeDebuff", 4),
+        new(3, "RippleMagnitude", 1),
+        new(4, "RepelDistance", 4),
+        new(5, "RealLastName", 32),
+        new(6, "RealFirstName", 32),
+        new(7, "RSIDescription", 15),
+        new(8, "OrganizationID", 1),
+        new(9, "NoiseLevel", 1),
+        new(10, "MovementScale", 4),
+        new(11, "MissionTypeFlags", 1),
+        new(12, "MissionTeamID", 4),
+        new(13, "MissionKey", 4),
+        new(14, "MaxHealth", 2),
+        new(15, "Level", 1),
+        new(16, "JumpPeakHeight", 4),
+        new(17, "JumpFlags", 2),
+        new(18, "JumpEndTime", 4),
+        new(19, "JumpDestination", 24),
+        new(20, "IsDuelDeath", 1),
+        new(21, "IsDead", 1),
+        new(22, "InteractionFlags", 4),
+        new(23, "InnerStrengthMax", 2),
+        new(24, "InnerStrengthCommitted", 2),
+        new(25, "InnerStrengthAvailable", 2),
+        new(26, "HeavyLuggableID", 4),
+        new(27, "Health", 2),
+        new(28, "FollowingPath", 1),
+        new(29, "FactionID", 4),
+        new(30, "EvadeShieldHealth", 1),
+        new(31, "EquippedItemID", 4),
+        new(32, "EffectID", 4),
+        new(33, "EffectCounter", 1),
+        new(34, "EffectCommand", 4),
+        new(35, "DuelID", 4),
+        new(36, "DissemblingType", 2),
+        new(37, "Description", 4),
+        new(38, "DeathPenalty", 4),
+        new(39, "CurCombatExclusiveAbility", 4),
+        new(40, "CrewID", 4),
+        new(41, "ConquestPoints", 4),
+        new(42, "ConditionStateFlags", 4),
+        new(43, "CombatantMode", 1),
+        new(44, "CancelAbilityCounter", 1),
+        new(45, "CancelAbility", 4),
+        new(46, "AbandonedState", 1),
+        new(47, "AFK", 1)
+    };
+
     public static PacketResearchReport BuildReport(
         string repositoryRoot,
         IEnumerable<string> packetDumpRoots,
@@ -32,6 +235,9 @@ public static partial class PacketResearcher
         List<RpcHeaderEntry> localHeaders = LoadLocalHeaders(repositoryRoot).ToList();
         List<AttributeDefinition> attributeDefinitions = LoadAttributeDefinitions(repositoryRoot).ToList();
         List<FxDefinition> fxDefinitions = LoadFxDefinitions(repositoryRoot).ToList();
+        List<GameObjectEntry> gameObjectEntries = LoadGameObjectEntries(repositoryRoot).ToList();
+        List<ItemCommandEntry> itemCommandEntries = LoadItemCommandEntries(repositoryRoot).ToList();
+        List<WorldEntityEntry> worldEntityEntries = LoadWorldEntityEntries(repositoryRoot).ToList();
         List<RajkoRpcEntry> rajkoRpcHeaders = Directory.Exists(normalizedRajkoRoot)
             ? LoadRajkoRpcHeaders(normalizedRajkoRoot).ToList()
             : new List<RajkoRpcEntry>();
@@ -58,6 +264,13 @@ public static partial class PacketResearcher
             .SelectMany(root => LoadPacketDumpSummaries(root, localHeaders, repositoryRoot))
             .OrderBy(summary => summary.File, StringComparer.OrdinalIgnoreCase)
             .ToList();
+        uint[] interactionObjectIds = dumpSummaries
+            .SelectMany(summary => summary.Protocol04InteractionPayloads.Select(payload => payload.ObjectId))
+            .Concat(protocol04InteractionCommandExamples.Select(example => example.ObjectId))
+            .Concat(dumpSummaries.SelectMany(summary => summary.Protocol03ObjectViews.SelectMany(view => view.StaticObjectLeads.Select(lead => lead.ObjectId))))
+            .Distinct()
+            .ToArray();
+        List<StaticObjectEntry> staticObjectEntries = LoadStaticObjectEntries(repositoryRoot, interactionObjectIds).ToList();
 
         return new PacketResearchReport(
             ".",
@@ -67,13 +280,19 @@ public static partial class PacketResearcher
             localHeaders,
             attributeDefinitions,
             fxDefinitions,
+            gameObjectEntries,
+            worldEntityEntries,
             rajkoRpcHeaders,
             hardcodedCommands,
             hardcodedProtocol03Examples,
             protocol04InteractionCommandExamples,
             vendorInventoryEntries,
             comparisons,
-            dumpSummaries);
+            dumpSummaries)
+        {
+            ItemCommandEntries = itemCommandEntries,
+            StaticObjectEntries = staticObjectEntries
+        };
     }
 
     public static IEnumerable<RpcHeaderEntry> LoadLocalHeaders(string repositoryRoot)
@@ -303,6 +522,62 @@ public static partial class PacketResearcher
         }
     }
 
+    public static IEnumerable<ItemCommandEntry> LoadItemCommandEntries(string repositoryRoot)
+    {
+        string[] paths =
+        {
+            Path.Combine(repositoryRoot, "research", "community-data", "invitems_command.txt"),
+            Path.Combine(repositoryRoot, "data", "invitems_command.txt")
+        };
+
+        HashSet<uint> seen = new();
+        foreach (string path in paths.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (ItemCommandEntry entry in ParseItemCommandText(File.ReadAllLines(path), RelativePath(path, repositoryRoot)))
+            {
+                if (seen.Add(entry.ItemId))
+                {
+                    yield return entry;
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<ItemCommandEntry> ParseItemCommandText(IReadOnlyList<string> lines, string file)
+    {
+        for (int i = 0; i < lines.Count; i++)
+        {
+            Match match = ItemCommandRegex().Match(lines[i]);
+            if (!match.Success
+                || !uint.TryParse(match.Groups["id"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint itemId))
+            {
+                continue;
+            }
+
+            string body = match.Groups["body"].Value.Trim();
+            string symbol = body;
+            string displayName = string.Empty;
+            int quotedNameStart = body.IndexOf('"', StringComparison.Ordinal);
+            if (quotedNameStart >= 0 && body.EndsWith("\"", StringComparison.Ordinal))
+            {
+                symbol = body[..quotedNameStart].Trim();
+                displayName = body[(quotedNameStart + 1)..^1].Trim();
+            }
+
+            if (symbol.Length == 0)
+            {
+                continue;
+            }
+
+            yield return new ItemCommandEntry(
+                itemId,
+                symbol,
+                displayName.Length == 0 ? null : displayName,
+                file,
+                i + 1);
+        }
+    }
+
     public static IEnumerable<VendorInventoryEntry> ParseVendorInventoryText(IReadOnlyList<string> lines, string file)
     {
         for (int i = 0; i < lines.Count; i++)
@@ -332,6 +607,84 @@ public static partial class PacketResearcher
             }
 
             yield return new VendorInventoryEntry(metrId, vendorStaticId, items, file, i + 1);
+        }
+    }
+
+    public static IEnumerable<StaticObjectEntry> LoadStaticObjectEntries(string repositoryRoot, IEnumerable<uint> objectIds)
+    {
+        string dataRoot = Path.Combine(repositoryRoot, "data");
+        if (!Directory.Exists(dataRoot))
+        {
+            yield break;
+        }
+
+        HashSet<uint> wantedObjectIds = objectIds.ToHashSet();
+        if (wantedObjectIds.Count == 0)
+        {
+            yield break;
+        }
+
+        foreach (string path in Directory.EnumerateFiles(dataRoot, "staticObjects_*.csv", SearchOption.TopDirectoryOnly)
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (StaticObjectEntry entry in ParseStaticObjectText(File.ReadLines(path), RelativePath(path, repositoryRoot), wantedObjectIds))
+            {
+                yield return entry;
+            }
+        }
+    }
+
+    public static IEnumerable<StaticObjectEntry> ParseStaticObjectText(
+        IEnumerable<string> lines,
+        string file,
+        IReadOnlySet<uint>? wantedObjectIds = null)
+    {
+        int lineNumber = 0;
+        foreach (string line in lines)
+        {
+            lineNumber++;
+            if (lineNumber == 1 && line.StartsWith("metr_id,", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            string[] columns = line.Split(',');
+            if (columns.Length < 10
+                || !ushort.TryParse(columns[0].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ushort metrId)
+                || !ushort.TryParse(columns[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ushort sectorId)
+                || !TryParseLittleEndianHexUInt32(columns[2].Trim(), out uint mxoId)
+                || !TryParseLittleEndianHexUInt32(columns[3].Trim(), out uint staticId)
+                || !TryParseLittleEndianHexUInt16(columns[4].Trim(), out ushort typeId)
+                || !bool.TryParse(columns[5].Trim(), out bool exterior)
+                || !double.TryParse(columns[6].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                || !double.TryParse(columns[7].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
+                || !double.TryParse(columns[8].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double z)
+                || !double.TryParse(columns[9].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double rotation))
+            {
+                continue;
+            }
+
+            if (wantedObjectIds is not null && !wantedObjectIds.Contains(mxoId))
+            {
+                continue;
+            }
+
+            yield return new StaticObjectEntry(
+                metrId,
+                sectorId,
+                mxoId,
+                columns[2].Trim().ToLowerInvariant(),
+                staticId,
+                columns[3].Trim().ToLowerInvariant(),
+                typeId,
+                columns[4].Trim().ToLowerInvariant(),
+                exterior,
+                x,
+                y,
+                z,
+                rotation,
+                file,
+                lineNumber);
         }
     }
 
@@ -498,15 +851,172 @@ public static partial class PacketResearcher
 
     public static IEnumerable<FxDefinition> LoadFxDefinitions(string repositoryRoot)
     {
-        string fxListPath = Path.Combine(repositoryRoot, "research", "community-data", "fxlisthex.txt");
-        if (!File.Exists(fxListPath))
+        string[] fxListPaths =
+        {
+            Path.Combine(repositoryRoot, "research", "community-data", "fxlisthex.txt"),
+            Path.Combine(repositoryRoot, "data", "fxlisthex.txt"),
+            Path.Combine(repositoryRoot, "data", "fxlistreal.txt")
+        };
+
+        HashSet<(string Little, string Big, string Name)> seen = new();
+        foreach (string fxListPath in fxListPaths.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (FxDefinition entry in ParseFxDefinitionText(File.ReadAllLines(fxListPath), RelativePath(fxListPath, repositoryRoot)))
+            {
+                if (seen.Add((entry.LittleEndianHex, entry.BigEndianHex, entry.Name)))
+                {
+                    yield return entry;
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<GameObjectEntry> LoadGameObjectEntries(string repositoryRoot)
+    {
+        string gameObjectsPath = Path.Combine(repositoryRoot, "data", "gameobjects.csv");
+        if (!File.Exists(gameObjectsPath))
         {
             yield break;
         }
 
-        foreach (FxDefinition entry in ParseFxDefinitionText(File.ReadAllLines(fxListPath), RelativePath(fxListPath, repositoryRoot)))
+        foreach (GameObjectEntry entry in ParseGameObjectText(File.ReadAllLines(gameObjectsPath), RelativePath(gameObjectsPath, repositoryRoot)))
         {
             yield return entry;
+        }
+    }
+
+    public static IEnumerable<GameObjectEntry> ParseGameObjectText(IReadOnlyList<string> lines, string file)
+    {
+        for (int i = 0; i < lines.Count; i++)
+        {
+            string line = lines[i].Trim();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            string[] columns = line.Split(',');
+            if (columns.Length < 2)
+            {
+                continue;
+            }
+
+            string codeName = columns[0].Trim();
+            if (codeName.Length == 0
+                || !int.TryParse(columns[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int goId))
+            {
+                continue;
+            }
+
+            yield return new GameObjectEntry(codeName, goId, file, i + 1);
+        }
+    }
+
+    public static IEnumerable<WorldEntityEntry> LoadWorldEntityEntries(string repositoryRoot)
+    {
+        string mobPath = Path.Combine(repositoryRoot, "data", "mob_parsed_untouched.csv");
+        if (File.Exists(mobPath))
+        {
+            foreach (WorldEntityEntry entry in ParseMobEntityText(File.ReadAllLines(mobPath), RelativePath(mobPath, repositoryRoot)))
+            {
+                yield return entry;
+            }
+        }
+
+        string npcCollectionPath = Path.Combine(repositoryRoot, "data", "NPC_COLLECTION.xml");
+        if (File.Exists(npcCollectionPath))
+        {
+            foreach (WorldEntityEntry entry in ParseNpcCollectionText(File.ReadAllLines(npcCollectionPath), RelativePath(npcCollectionPath, repositoryRoot)))
+            {
+                yield return entry;
+            }
+        }
+    }
+
+    public static IEnumerable<WorldEntityEntry> ParseMobEntityText(IReadOnlyList<string> lines, string file)
+    {
+        string source = Path.GetFileName(file);
+        for (int i = 0; i < lines.Count; i++)
+        {
+            string line = lines[i].Trim();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            string[] columns = line.Split(';');
+            if (columns.Length < 7)
+            {
+                continue;
+            }
+
+            string name = columns[2].Trim();
+            if (name.Length == 0)
+            {
+                continue;
+            }
+
+            yield return new WorldEntityEntry(
+                source,
+                name,
+                NormalizeOptionalText(columns[1]),
+                ParseOptionalInt(columns[3]),
+                "mob spawn",
+                NormalizeOptionalText(columns[6]),
+                file,
+                i + 1,
+                ParseOptionalInt(columns.ElementAtOrDefault(5)) ?? ParseOptionalInt(columns.ElementAtOrDefault(4)),
+                ParseOptionalInt(columns.ElementAtOrDefault(4)),
+                ParseOptionalDouble(columns.ElementAtOrDefault(7)),
+                ParseOptionalDouble(columns.ElementAtOrDefault(8)),
+                ParseOptionalDouble(columns.ElementAtOrDefault(9)),
+                ParseOptionalInt(columns.ElementAtOrDefault(17)),
+                ParseOptionalInt(columns.ElementAtOrDefault(18)),
+                NormalizeOptionalText(columns.ElementAtOrDefault(19)));
+        }
+    }
+
+    public static IEnumerable<WorldEntityEntry> ParseNpcCollectionText(IReadOnlyList<string> lines, string file)
+    {
+        XDocument document;
+        try
+        {
+            document = XDocument.Parse(string.Join("\n", lines), LoadOptions.SetLineInfo);
+        }
+        catch (XmlException)
+        {
+            yield break;
+        }
+
+        string source = Path.GetFileName(file);
+        foreach (XElement element in document.Descendants().Where(element => element.Name.LocalName.StartsWith("npc", StringComparison.OrdinalIgnoreCase)))
+        {
+            string? name = NormalizeOptionalText(element.Attribute("handle")?.Value);
+            if (name is null)
+            {
+                continue;
+            }
+
+            int line = 0;
+            if (element is IXmlLineInfo lineInfo && lineInfo.HasLineInfo())
+            {
+                line = lineInfo.LineNumber;
+            }
+
+            yield return new WorldEntityEntry(
+                source,
+                name,
+                NormalizeOptionalText(element.Attribute("DISTRICT")?.Value),
+                ParseOptionalInt(element.Attribute("level")?.Value),
+                NormalizeOptionalText(element.Attribute("type")?.Value),
+                NormalizeOptionalText(element.Attribute("RSI")?.Value),
+                file,
+                line,
+                null,
+                null,
+                ParseOptionalDouble(element.Attribute("x_pos")?.Value),
+                ParseOptionalDouble(element.Attribute("y_pos")?.Value),
+                ParseOptionalDouble(element.Attribute("z_pos")?.Value));
         }
     }
 
@@ -515,17 +1025,28 @@ public static partial class PacketResearcher
         for (int i = 0; i < lines.Count; i++)
         {
             Match match = FxDefinitionRegex().Match(lines[i]);
-            if (!match.Success)
+            if (match.Success)
             {
+                yield return new FxDefinition(
+                    match.Groups["little"].Value.ToLowerInvariant(),
+                    match.Groups["big"].Value.ToLowerInvariant(),
+                    match.Groups["name"].Value.Trim(),
+                    file,
+                    i + 1);
                 continue;
             }
 
-            yield return new FxDefinition(
-                match.Groups["little"].Value.ToLowerInvariant(),
-                match.Groups["big"].Value.ToLowerInvariant(),
-                match.Groups["name"].Value,
-                file,
-                i + 1);
+            match = SingleEndianFxDefinitionRegex().Match(lines[i]);
+            if (match.Success)
+            {
+                string bigEndianHex = match.Groups["big"].Value.ToLowerInvariant();
+                yield return new FxDefinition(
+                    ReverseCompactHexByteOrder(bigEndianHex),
+                    bigEndianHex,
+                    match.Groups["name"].Value.Trim(),
+                    file,
+                    i + 1);
+            }
         }
     }
 
@@ -757,6 +1278,13 @@ public static partial class PacketResearcher
         {
             yield return byte.Parse(text.Substring(i, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
         }
+    }
+
+    private static string ReverseCompactHexByteOrder(string hex)
+    {
+        return string.Concat(Enumerable.Range(0, hex.Length / 2)
+            .Reverse()
+            .Select(index => hex.Substring(index * 2, 2)));
     }
 
     public static IEnumerable<PacketDumpHeaderHit> DetectProtocol04Headers(
@@ -1023,6 +1551,15 @@ public static partial class PacketResearcher
         byte firstSelector = bytes[offset + 3];
         int cursor = offset + 3;
         List<Protocol03ObjectUpdateSegment> segments = new();
+        List<Protocol03StringSample> stringSamples = new();
+        List<Protocol03NamedProfileRecord> namedProfileRecords = new();
+        List<Protocol03PlayerCharacterCreationRecord> playerCharacterCreationRecords = new();
+        List<Protocol03EffectEmoteLead> effectEmoteLeads = new();
+        List<Protocol03PositionLikeLead> positionLikeLeads = new();
+        List<Protocol03NestedMovementLead> nestedMovementLeads = new();
+        List<Protocol03VariableSelectorLead> variableSelectorLeads = new();
+        List<Protocol03SelfViewAttributeLead> selfViewAttributeLeads = new();
+        List<Protocol03StaticObjectLead> staticObjectLeads = new();
         int unparsedBytes = 0;
         bool complete = true;
 
@@ -1039,6 +1576,15 @@ public static partial class PacketResearcher
             Protocol03SelectorLayout layout = GetProtocol03SelectorLayout(updateCount, i, selector, bytes, cursor);
             int payloadBytes = layout.PayloadBytes ?? Math.Max(0, bytes.Count - cursor);
             int availableBytes = Math.Max(0, bytes.Count - cursor);
+            Protocol03SelfViewAttributeLead? selfViewAttributeLead = null;
+            if (selector == 0x80 &&
+                TryCreateProtocol03SelfViewAttributeLead(selector, bytes, cursor, availableBytes, cursor - offset, out selfViewAttributeLead) &&
+                selfViewAttributeLead is not null)
+            {
+                payloadBytes = selfViewAttributeLead.PayloadBytes;
+                layout = new Protocol03SelectorLayout("self-view attribute mask/value block", payloadBytes);
+            }
+
             int sampleBytes = Math.Min(payloadBytes, availableBytes);
 
             segments.Add(new Protocol03ObjectUpdateSegment(
@@ -1048,6 +1594,49 @@ public static partial class PacketResearcher
                 selectorOffset,
                 FormatHeader(bytes.Skip(cursor).Take(Math.Min(sampleBytes, 16))),
                 layout.PayloadBytes is not null));
+            if (selector == 0x28)
+            {
+                effectEmoteLeads.Add(CreateProtocol03EffectEmoteLead(bytes, cursor, sampleBytes, cursor - offset));
+            }
+
+            if (selector is 0x2a or 0x2e &&
+                TryCreateProtocol03PositionLikeLead(selector, bytes, cursor, sampleBytes, cursor - offset, out Protocol03PositionLikeLead? positionLikeLead) &&
+                positionLikeLead is not null)
+            {
+                positionLikeLeads.Add(positionLikeLead);
+            }
+
+            if (selfViewAttributeLead is not null)
+            {
+                selfViewAttributeLeads.Add(selfViewAttributeLead);
+            }
+            else if (selector == 0x80)
+            {
+                variableSelectorLeads.Add(CreateProtocol03VariableSelectorLead(selector, bytes, cursor, sampleBytes, cursor - offset));
+            }
+
+            if (layout.Classification is "unknown selector payload" or "primary movement wrapper")
+            {
+                nestedMovementLeads.AddRange(ExtractProtocol03NestedMovementLeads(selector, bytes, cursor, sampleBytes, cursor - offset));
+            }
+
+            if (selector is 0x9e or 0xa0 &&
+                TryCreateProtocol03StaticObjectLead(selector, bytes, cursor, sampleBytes, cursor - offset, out Protocol03StaticObjectLead? staticObjectLead) &&
+                staticObjectLead is not null)
+            {
+                staticObjectLeads.Add(staticObjectLead);
+            }
+
+            stringSamples.AddRange(ExtractProtocol03AsciiStrings(bytes, cursor, sampleBytes, cursor - offset));
+            if (updateCount == 0x0c && selector == 0x0c)
+            {
+                playerCharacterCreationRecords.AddRange(ExtractProtocol03PlayerCharacterCreationRecords(bytes, cursor, sampleBytes, cursor - offset, updateCount, selector));
+            }
+
+            if (updateCount == 0x0c && selector == 0x57)
+            {
+                namedProfileRecords.AddRange(ExtractProtocol03NamedProfileRecords(bytes, cursor, sampleBytes, cursor - offset, updateCount, selector));
+            }
 
             if (layout.PayloadBytes is null || payloadBytes > availableBytes)
             {
@@ -1076,11 +1665,668 @@ public static partial class PacketResearcher
             firstSelector.ToString("x2", CultureInfo.InvariantCulture),
             ClassifyProtocol03ObjectView(updateCount, firstSelector),
             FormatHeader(bytes.Skip(offset).Take(Math.Min(24, bytes.Count - offset))),
+            stringSamples
+                .GroupBy(text => text.Text, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .Take(4)
+                .ToArray(),
+            namedProfileRecords.ToArray(),
+            playerCharacterCreationRecords.ToArray(),
+            effectEmoteLeads.ToArray(),
+            positionLikeLeads.ToArray(),
+            nestedMovementLeads.ToArray(),
+            variableSelectorLeads.ToArray(),
+            selfViewAttributeLeads.ToArray(),
+            staticObjectLeads.ToArray(),
             parsedUpdateCount,
             unparsedBytes,
             complete,
             segments);
         return true;
+    }
+
+    private static Protocol03EffectEmoteLead CreateProtocol03EffectEmoteLead(
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset)
+    {
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        float? x = TryReadSingleLittleEndian(payload, 6, out float decodedX) ? decodedX : null;
+        float? y = TryReadSingleLittleEndian(payload, 10, out float decodedY) ? decodedY : null;
+        float? z = TryReadSingleLittleEndian(payload, 14, out float decodedZ) ? decodedZ : null;
+        return new Protocol03EffectEmoteLead(
+            relativeOffset,
+            payload.Length,
+            payload.Length > 0 ? FormatHeader(payload.Take(1)) : "-",
+            payload.Length > 1 ? FormatHeader(payload.Skip(1).Take(1)) : "-",
+            payload.Length >= 6 ? FormatHeader(payload.Skip(2).Take(4)) : "-",
+            payload.Length >= 18 ? FormatHeader(payload.Skip(6).Take(12)) : "-",
+            x,
+            y,
+            z,
+            FormatHeader(payload));
+    }
+
+    private static bool TryCreateProtocol03PositionLikeLead(
+        byte selector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset,
+        out Protocol03PositionLikeLead? lead)
+    {
+        lead = null;
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        if (!TryGetProtocol03PositionLikeOffset(selector, payload, out int positionOffset) ||
+            !TryReadSingleLittleEndian(payload, positionOffset, out float x) ||
+            !TryReadSingleLittleEndian(payload, positionOffset + 4, out float y) ||
+            !TryReadSingleLittleEndian(payload, positionOffset + 8, out float z) ||
+            !IsPlausibleProtocol03Position(x, y, z))
+        {
+            return false;
+        }
+
+        lead = new Protocol03PositionLikeLead(
+            selector.ToString("x2", CultureInfo.InvariantCulture),
+            relativeOffset,
+            payload.Length,
+            FormatHeader(payload.Take(Math.Min(6, payload.Length))),
+            positionOffset,
+            FormatHeader(payload.Skip(positionOffset).Take(12)),
+            x,
+            y,
+            z,
+            FormatHeader(payload));
+        return true;
+    }
+
+    private static bool TryGetProtocol03PositionLikeOffset(byte selector, IReadOnlyList<byte> payload, out int positionOffset)
+    {
+        positionOffset = 0;
+        if (payload.Count < 19)
+        {
+            return false;
+        }
+
+        if (StartsWith(payload, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10) ||
+            StartsWith(payload, 0x01, 0xc0, 0x00, 0x00, 0x96, 0x00))
+        {
+            positionOffset = selector == 0x2a ? 7 : 8;
+            return positionOffset + 12 <= payload.Count;
+        }
+
+        if (selector == 0x2e && StartsWith(payload, 0x02, 0xc0, 0x00, 0x27, 0x31, 0x00))
+        {
+            positionOffset = 8;
+            return positionOffset + 12 <= payload.Count;
+        }
+
+        if (payload.Count >= 6 &&
+            payload[1] == 0x81 &&
+            payload[2] == 0x00 &&
+            payload[3] == 0x8c &&
+            payload[4] == 0x2e &&
+            payload[5] == 0x00)
+        {
+            positionOffset = selector == 0x2a ? 11 : 12;
+            return positionOffset + 12 <= payload.Count;
+        }
+
+        if (selector == 0x2a &&
+            payload.Count >= 11 &&
+            payload[1] == 0x01 &&
+            payload[2] == 0x0c &&
+            payload[3] == 0x39 &&
+            payload[4] is 0x00 or 0x81 &&
+            payload[5] is 0x00 or 0x10 &&
+            payload[6] == 0x0d &&
+            payload[7] == 0x00 &&
+            payload[8] == 0xbe &&
+            payload[9] == 0x00 &&
+            payload[10] == 0x00)
+        {
+            positionOffset = 11;
+            return positionOffset + 12 <= payload.Count;
+        }
+
+        return false;
+    }
+
+    private static bool StartsWith(IReadOnlyList<byte> bytes, params byte[] prefix)
+    {
+        if (bytes.Count < prefix.Length)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < prefix.Length; index++)
+        {
+            if (bytes[index] != prefix[index])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsPlausibleProtocol03Position(float x, float y, float z)
+    {
+        return float.IsFinite(x) &&
+            float.IsFinite(y) &&
+            float.IsFinite(z) &&
+            Math.Abs(x) < 100000 &&
+            Math.Abs(y) < 5000 &&
+            Math.Abs(z) < 100000;
+    }
+
+    private static Protocol03VariableSelectorLead CreateProtocol03VariableSelectorLead(
+        byte selector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset)
+    {
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        return new Protocol03VariableSelectorLead(
+            selector.ToString("x2", CultureInfo.InvariantCulture),
+            relativeOffset,
+            payload.Length,
+            FormatHeader(payload.Take(Math.Min(8, payload.Length))),
+            FormatHeader(payload));
+    }
+
+    private static bool TryCreateProtocol03SelfViewAttributeLead(
+        byte selector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset,
+        out Protocol03SelfViewAttributeLead? lead)
+    {
+        lead = null;
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        if (!TryParseObject12SelfViewAttributes(
+                bytes,
+                payloadOffset,
+                payloadEnd,
+                payloadOffset,
+                relativeOffset,
+                out IReadOnlyList<Protocol03CreationAttributeSample> attributes,
+                out int consumedBytes) ||
+            attributes.Count == 0 ||
+            consumedBytes <= 0)
+        {
+            return false;
+        }
+
+        lead = new Protocol03SelfViewAttributeLead(
+            selector.ToString("x2", CultureInfo.InvariantCulture),
+            relativeOffset,
+            consumedBytes,
+            FormatHeader(bytes.Skip(payloadOffset).Take(Math.Min(consumedBytes, 8))),
+            attributes,
+            FormatHeader(bytes.Skip(payloadOffset + consumedBytes).Take(Math.Min(8, Math.Max(0, payloadEnd - payloadOffset - consumedBytes)))),
+            FormatHeader(bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset))));
+        return true;
+    }
+
+    private static bool TryParseObject12SelfViewAttributes(
+        IReadOnlyList<byte> bytes,
+        int maskOffset,
+        int end,
+        int payloadOffset,
+        int relativeOffset,
+        out IReadOnlyList<Protocol03CreationAttributeSample> attributes,
+        out int consumedBytes)
+    {
+        List<Protocol03CreationAttributeSample> parsedAttributes = new();
+        attributes = parsedAttributes;
+        consumedBytes = 0;
+        int cursor = maskOffset;
+        for (int group = 0; group <= Object12SelfViewAttributes[^1].Index / 7 && cursor < end; group++)
+        {
+            byte mask = bytes[cursor++];
+            bool hasMoreGroups = (mask & 0x80) != 0;
+            int activeBits = mask & 0x7f;
+            for (int bit = 0; bit < 7; bit++)
+            {
+                if ((activeBits & (1 << bit)) == 0)
+                {
+                    continue;
+                }
+
+                int index = group * 7 + bit;
+                Protocol03AttributeDescriptor? descriptor = Object12SelfViewAttributes.FirstOrDefault(attribute => attribute.Index == index);
+                if (descriptor is null || cursor + descriptor.Size > end)
+                {
+                    attributes = Array.Empty<Protocol03CreationAttributeSample>();
+                    consumedBytes = 0;
+                    return false;
+                }
+
+                parsedAttributes.Add(new Protocol03CreationAttributeSample(
+                    descriptor.Index,
+                    descriptor.Name,
+                    descriptor.Size,
+                    relativeOffset + cursor - payloadOffset,
+                    FormatHeader(bytes.Skip(cursor).Take(descriptor.Size))));
+                cursor += descriptor.Size;
+            }
+
+            if (!hasMoreGroups)
+            {
+                consumedBytes = cursor - maskOffset;
+                return parsedAttributes.Count > 0;
+            }
+        }
+
+        attributes = Array.Empty<Protocol03CreationAttributeSample>();
+        consumedBytes = 0;
+        return false;
+    }
+
+    private static IEnumerable<Protocol03NestedMovementLead> ExtractProtocol03NestedMovementLeads(
+        byte outerSelector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset)
+    {
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        int maxMarkerOffset = Math.Min(16, payload.Length - 4);
+        for (int markerOffset = 0; markerOffset <= maxMarkerOffset; markerOffset++)
+        {
+            if (payload[markerOffset] != 0x00 ||
+                payload[markerOffset + 1] != 0x02 ||
+                !TryGetProtocol03MovementPayloadInfo(payload[markerOffset + 2], out int innerPayloadBytes, out int innerPositionOffset))
+            {
+                continue;
+            }
+
+            int innerPayloadOffset = markerOffset + 3;
+            int absolutePositionOffset = innerPayloadOffset + innerPositionOffset;
+            int innerPayloadEnd = innerPayloadOffset + innerPayloadBytes;
+            if (innerPayloadEnd > payload.Length ||
+                !TryReadSingleLittleEndian(payload, absolutePositionOffset, out float x) ||
+                !TryReadSingleLittleEndian(payload, absolutePositionOffset + 4, out float y) ||
+                !TryReadSingleLittleEndian(payload, absolutePositionOffset + 8, out float z) ||
+                !IsPlausibleProtocol03Position(x, y, z))
+            {
+                continue;
+            }
+
+            yield return new Protocol03NestedMovementLead(
+                outerSelector.ToString("x2", CultureInfo.InvariantCulture),
+                relativeOffset,
+                payload.Length,
+                markerOffset,
+                FormatHeader(payload.Take(markerOffset)),
+                payload[markerOffset + 2].ToString("x2", CultureInfo.InvariantCulture),
+                innerPayloadBytes,
+                innerPositionOffset,
+                FormatHeader(payload.Skip(absolutePositionOffset).Take(12)),
+                x,
+                y,
+                z,
+                FormatHeader(payload.Skip(innerPayloadEnd).Take(Math.Min(8, Math.Max(0, payload.Length - innerPayloadEnd)))),
+                FormatHeader(payload));
+            yield break;
+        }
+    }
+
+    private static bool TryGetProtocol03MovementPayloadInfo(byte selector, out int payloadBytes, out int positionOffset)
+    {
+        (payloadBytes, positionOffset) = selector switch
+        {
+            0x08 => (12, 0),
+            0x0a or 0x0c => (13, 1),
+            0x0e => (14, 2),
+            _ => (-1, -1)
+        };
+
+        return payloadBytes > 0;
+    }
+
+    private static bool TryCreateProtocol03StaticObjectLead(
+        byte selector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset,
+        out Protocol03StaticObjectLead? lead)
+    {
+        lead = null;
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        if (payload.Length < 10)
+        {
+            return false;
+        }
+
+        if (payload[6] != 0xcd || payload[7] != 0xab)
+        {
+            return false;
+        }
+
+        float? q0 = TryReadSingleLittleEndian(payload, 10, out float q0Value) ? q0Value : null;
+        float? q1 = TryReadSingleLittleEndian(payload, 14, out float q1Value) ? q1Value : null;
+        float? q2 = TryReadSingleLittleEndian(payload, 18, out float q2Value) ? q2Value : null;
+        float? q3 = TryReadSingleLittleEndian(payload, 22, out float q3Value) ? q3Value : null;
+
+        lead = new Protocol03StaticObjectLead(
+            selector.ToString("x2", CultureInfo.InvariantCulture),
+            relativeOffset,
+            payload.Length,
+            FormatHeader(payload.Take(1)),
+            FormatHeader(payload.Skip(1).Take(4)),
+            ReadUInt32LittleEndian(payload, 1),
+            FormatHeader(payload.Skip(5).Take(1)),
+            FormatHeader(payload.Skip(6).Take(2)),
+            payload[8],
+            FormatHeader(payload.Skip(9).Take(1)),
+            FormatHeader(payload.Skip(10).Take(Math.Min(16, Math.Max(0, payload.Length - 10)))),
+            q0,
+            q1,
+            q2,
+            q3,
+            FormatHeader(payload));
+        return true;
+    }
+
+    private static IEnumerable<Protocol03StringSample> ExtractProtocol03AsciiStrings(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int length,
+        int relativeOffset)
+    {
+        int end = Math.Min(bytes.Count, offset + length);
+        List<Protocol03StringSample> samples = new();
+        int cursor = offset;
+        while (cursor < end)
+        {
+            if (!IsPrintableAscii(bytes[cursor]))
+            {
+                cursor++;
+                continue;
+            }
+
+            int runStart = cursor;
+            while (cursor < end && IsPrintableAscii(bytes[cursor]))
+            {
+                cursor++;
+            }
+
+            int runLength = cursor - runStart;
+            if (runLength < 4)
+            {
+                continue;
+            }
+
+            string text = new string(Enumerable.Range(runStart, runLength)
+                .Select(index => (char)bytes[index])
+                .ToArray())
+                .Trim();
+            if (text.Length < 4 || !text.Any(char.IsLetter))
+            {
+                continue;
+            }
+
+            if (text.Length > 48)
+            {
+                text = text[..48];
+            }
+
+            int prefixStart = Math.Max(offset, runStart - 8);
+            string prefixHex = FormatHeader(bytes.Skip(prefixStart).Take(runStart - prefixStart));
+            string suffixHex = FormatHeader(bytes.Skip(cursor).Take(Math.Min(8, end - cursor)));
+            samples.Add(new Protocol03StringSample(relativeOffset + runStart - offset, text, prefixHex, suffixHex));
+            if (samples.Count >= 4)
+            {
+                break;
+            }
+        }
+
+        return samples;
+    }
+
+    private static IEnumerable<Protocol03PlayerCharacterCreationRecord> ExtractProtocol03PlayerCharacterCreationRecords(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int length,
+        int relativeOffset,
+        byte creationFlag,
+        byte gameObjectIdLowByte)
+    {
+        int end = Math.Min(bytes.Count, offset + length);
+        for (int cursor = offset; cursor + 6 < end; cursor++)
+        {
+            if (bytes[cursor] != 0x00
+                || bytes[cursor + 2] != 0xcd
+                || bytes[cursor + 3] != 0xab)
+            {
+                continue;
+            }
+
+            int gameObjectId = gameObjectIdLowByte | (bytes[cursor] << 8);
+            if (gameObjectId != 12 || bytes[cursor + 4] == 0)
+            {
+                continue;
+            }
+
+            IReadOnlyList<Protocol03CreationAttributeSample> creationAttributes =
+                ParseObject12CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset);
+            if (creationAttributes.Count == 0)
+            {
+                continue;
+            }
+
+            yield return new Protocol03PlayerCharacterCreationRecord(
+                relativeOffset + cursor - offset,
+                FormatHeader(bytes.Skip(cursor).Take(6)),
+                creationFlag.ToString("x2", CultureInfo.InvariantCulture),
+                $"{gameObjectIdLowByte:x2} {bytes[cursor]:x2}",
+                gameObjectId,
+                bytes[cursor + 1].ToString("x2", CultureInfo.InvariantCulture),
+                FormatHeader(bytes.Skip(cursor + 2).Take(2)),
+                bytes[cursor + 4],
+                bytes[cursor + 5].ToString("x2", CultureInfo.InvariantCulture),
+                creationAttributes);
+        }
+    }
+
+    private static IEnumerable<Protocol03NamedProfileRecord> ExtractProtocol03NamedProfileRecords(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int length,
+        int relativeOffset,
+        byte creationFlag,
+        byte gameObjectIdLowByte)
+    {
+        int end = Math.Min(bytes.Count, offset + length);
+        for (int cursor = offset; cursor + 6 < end; cursor++)
+        {
+            if (bytes[cursor] != 0x02
+                || bytes[cursor + 2] != 0xcd
+                || bytes[cursor + 3] != 0xab
+                || bytes[cursor + 5] != 0x8e)
+            {
+                continue;
+            }
+
+            int gameObjectId = gameObjectIdLowByte | (bytes[cursor] << 8);
+            int textStart = cursor + 6;
+            int textEnd = textStart;
+            while (textEnd < end && IsPrintableAscii(bytes[textEnd]))
+            {
+                textEnd++;
+            }
+
+            int textLength = textEnd - textStart;
+            if (textLength < 4)
+            {
+                continue;
+            }
+
+            string text = new string(Enumerable.Range(textStart, textLength)
+                .Select(index => (char)bytes[index])
+                .ToArray())
+                .Trim();
+            if (text.Length < 4 || !text.Any(char.IsLetter))
+            {
+                continue;
+            }
+
+            IReadOnlyList<Protocol03CreationAttributeSample> creationAttributes = gameObjectId == 599
+                ? ParseObject599CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset)
+                : Array.Empty<Protocol03CreationAttributeSample>();
+            Protocol03CreationAttributeSample? titleAbility = creationAttributes.FirstOrDefault(attribute => attribute.Index == 2);
+            Protocol03CreationAttributeSample? combatantMode = creationAttributes.FirstOrDefault(attribute => attribute.Index == 3);
+            int suffixZeroBytes;
+            int nameSlotBytes;
+            int postNameSlotOffset;
+            if (creationFlag == 0x0c
+                && gameObjectId == 599
+                && bytes[cursor + 5] == 0x8e
+                && textStart + 32 <= end)
+            {
+                nameSlotBytes = 32;
+                suffixZeroBytes = Math.Max(0, Math.Min(nameSlotBytes - textLength, CountZeroBytes(bytes, textEnd, textStart + nameSlotBytes)));
+                postNameSlotOffset = textStart + nameSlotBytes;
+            }
+            else
+            {
+                suffixZeroBytes = CountZeroBytes(bytes, textEnd, end);
+                nameSlotBytes = text.Length + suffixZeroBytes;
+                postNameSlotOffset = textEnd + suffixZeroBytes;
+            }
+
+            int postCombatantModeOffset = Math.Min(end, postNameSlotOffset + 5);
+            yield return new Protocol03NamedProfileRecord(
+                relativeOffset + cursor - offset,
+                text,
+                text.Length,
+                nameSlotBytes,
+                FormatHeader(bytes.Skip(cursor).Take(6)),
+                creationFlag.ToString("x2", CultureInfo.InvariantCulture),
+                $"{gameObjectIdLowByte:x2} {bytes[cursor]:x2}",
+                gameObjectId,
+                bytes[cursor + 1].ToString("x2", CultureInfo.InvariantCulture),
+                FormatHeader(bytes.Skip(cursor + 2).Take(2)),
+                bytes[cursor + 4],
+                bytes[cursor + 5].ToString("x2", CultureInfo.InvariantCulture),
+                suffixZeroBytes,
+                titleAbility?.ValueHex ?? FormatHeader(bytes.Skip(postNameSlotOffset).Take(Math.Min(4, end - postNameSlotOffset))),
+                combatantMode?.ValueHex ?? (postNameSlotOffset + 4 < end
+                    ? bytes[postNameSlotOffset + 4].ToString("x2", CultureInfo.InvariantCulture)
+                    : string.Empty),
+                FormatHeader(bytes.Skip(postNameSlotOffset).Take(Math.Min(8, end - postNameSlotOffset))),
+                FormatHeader(bytes.Skip(postCombatantModeOffset).Take(Math.Min(8, end - postCombatantModeOffset))),
+                creationAttributes);
+        }
+    }
+
+    private static IReadOnlyList<Protocol03CreationAttributeSample> ParseObject599CreationAttributes(
+        IReadOnlyList<byte> bytes,
+        int attributeCountOffset,
+        int end,
+        int payloadOffset,
+        int relativeOffset)
+    {
+        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object599CreationAttributes);
+    }
+
+    private static IReadOnlyList<Protocol03CreationAttributeSample> ParseObject12CreationAttributes(
+        IReadOnlyList<byte> bytes,
+        int attributeCountOffset,
+        int end,
+        int payloadOffset,
+        int relativeOffset)
+    {
+        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object12CreationAttributes);
+    }
+
+    private static IReadOnlyList<Protocol03CreationAttributeSample> ParseProtocol03CreationAttributes(
+        IReadOnlyList<byte> bytes,
+        int attributeCountOffset,
+        int end,
+        int payloadOffset,
+        int relativeOffset,
+        IReadOnlyList<Protocol03AttributeDescriptor> descriptors)
+    {
+        List<Protocol03CreationAttributeSample> attributes = new();
+        if (attributeCountOffset >= end || descriptors.Count == 0)
+        {
+            return attributes;
+        }
+
+        int cursor = attributeCountOffset + 1;
+        int declaredAttributeCount = bytes[attributeCountOffset];
+        if (declaredAttributeCount == 0)
+        {
+            return attributes;
+        }
+
+        for (int group = 0; group <= descriptors[^1].Index / 7 && cursor < end; group++)
+        {
+            byte mask = bytes[cursor++];
+            bool hasMoreGroups = (mask & 0x80) != 0;
+            int activeBits = mask & 0x7f;
+            for (int bit = 0; bit < 7; bit++)
+            {
+                if ((activeBits & (1 << bit)) == 0)
+                {
+                    continue;
+                }
+
+                int index = group * 7 + bit;
+                Protocol03AttributeDescriptor? descriptor = descriptors.FirstOrDefault(attribute => attribute.Index == index);
+                if (descriptor is null || cursor + descriptor.Size > end)
+                {
+                    return attributes;
+                }
+
+                attributes.Add(new Protocol03CreationAttributeSample(
+                    descriptor.Index,
+                    descriptor.Name,
+                    descriptor.Size,
+                    relativeOffset + cursor - payloadOffset,
+                    FormatHeader(bytes.Skip(cursor).Take(descriptor.Size))));
+                cursor += descriptor.Size;
+                if (attributes.Count >= declaredAttributeCount)
+                {
+                    return attributes;
+                }
+            }
+
+            if (!hasMoreGroups)
+            {
+                break;
+            }
+        }
+
+        return attributes;
+    }
+
+    private static int CountZeroBytes(IReadOnlyList<byte> bytes, int offset, int end)
+    {
+        int count = 0;
+        while (offset + count < end && bytes[offset + count] == 0)
+        {
+            count++;
+        }
+
+        return count;
+    }
+
+    private static bool IsPrintableAscii(byte value)
+    {
+        return value is >= 0x20 and <= 0x7e;
     }
 
     public static IEnumerable<string> DetectKnownEncodedHeaders(
@@ -1214,6 +2460,7 @@ public static partial class PacketResearcher
             (0x08, 0x9e) => "static object/door spawn candidate",
             (0x08, 0xa0) => "static object/door spawn candidate",
             (0x0c, 0x0c) => "player spawn/self-view candidate",
+            (0x0c, 0x57) => "NPC_BASE dynamic creation candidate",
             _ => "unclassified object-view update"
         };
     }
@@ -1226,6 +2473,23 @@ public static partial class PacketResearcher
         int payloadOffset)
     {
         if (TryGetSecondaryMovementWrapperLayout(updateCount, segmentIndex, bytes, payloadOffset, out Protocol03SelectorLayout layout))
+        {
+            return layout;
+        }
+
+        if (TryGetAdjacentMovementWrapperLayout(updateCount, segmentIndex, selector, bytes, payloadOffset, out layout))
+        {
+            return layout;
+        }
+
+        if (selector is 0x12 or 0x13 or 0x14 &&
+            TryGetPrimaryMovementWrapperLayout(updateCount, segmentIndex, bytes, payloadOffset, out layout))
+        {
+            return layout;
+        }
+
+        if (selector == 0x28 &&
+            TryGetCompactEffectEmoteMarkerLayout(updateCount, segmentIndex, bytes, payloadOffset, out layout))
         {
             return layout;
         }
@@ -1244,10 +2508,77 @@ public static partial class PacketResearcher
             0x28 when updateCount == 1 => new Protocol03SelectorLayout("emote payload", 26),
             0x28 => new Protocol03SelectorLayout("effect/emote variable block", null),
             0x80 => new Protocol03SelectorLayout("appearance/attribute variable block", null),
+            0x9b when updateCount == 1 => new Protocol03SelectorLayout("fixed selector 9b state block", 10),
             0x9e or 0xa0 => new Protocol03SelectorLayout("static object/door variable block", null),
             _ when updateCount >= 0x08 => new Protocol03SelectorLayout("spawn/profile variable block", null),
             _ => new Protocol03SelectorLayout("unknown selector payload", null)
         };
+    }
+
+    private static bool TryGetCompactEffectEmoteMarkerLayout(
+        byte updateCount,
+        int segmentIndex,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        out Protocol03SelectorLayout layout)
+    {
+        layout = null!;
+        if (updateCount <= 1 ||
+            payloadOffset + 4 != bytes.Count)
+        {
+            return false;
+        }
+
+        if (bytes[payloadOffset] != 0x01 ||
+            bytes[payloadOffset + 1] is not (0x01 or 0x02 or 0x03) ||
+            bytes[payloadOffset + 2] != 0x00 ||
+            bytes[payloadOffset + 3] != 0x00)
+        {
+            return false;
+        }
+
+        layout = new Protocol03SelectorLayout("compact effect/emote terminal marker", 4);
+        return true;
+    }
+
+    private static bool TryGetPrimaryMovementWrapperLayout(
+        byte updateCount,
+        int segmentIndex,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        out Protocol03SelectorLayout layout)
+    {
+        layout = null!;
+        if (updateCount != 2 || segmentIndex != 0 || payloadOffset + 5 > bytes.Count)
+        {
+            return false;
+        }
+
+        if (bytes[payloadOffset] != 0x00 ||
+            bytes[payloadOffset + 2] != 0x00 ||
+            bytes[payloadOffset + 3] is not (0x01 or 0x02))
+        {
+            return false;
+        }
+
+        if (!TryGetProtocol03MovementPayloadInfo(bytes[payloadOffset + 4], out int innerPayloadBytes, out int innerPositionOffset))
+        {
+            return false;
+        }
+
+        int payloadBytes = 5 + innerPayloadBytes;
+        int absolutePositionOffset = payloadOffset + 5 + innerPositionOffset;
+        if (payloadOffset + payloadBytes > bytes.Count ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset, out float x) ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset + 4, out float y) ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset + 8, out float z) ||
+            !IsPlausibleProtocol03Position(x, y, z))
+        {
+            return false;
+        }
+
+        layout = new Protocol03SelectorLayout("primary movement wrapper", payloadBytes);
+        return true;
     }
 
     private static bool TryGetSecondaryMovementWrapperLayout(
@@ -1293,6 +2624,74 @@ public static partial class PacketResearcher
 
         layout = new Protocol03SelectorLayout("secondary movement wrapper", payloadBytes);
         return true;
+    }
+
+    private static bool TryGetAdjacentMovementWrapperLayout(
+        byte updateCount,
+        int segmentIndex,
+        byte selector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        out Protocol03SelectorLayout layout)
+    {
+        layout = null!;
+        if (updateCount != 2 ||
+            segmentIndex != 1 ||
+            IsKnownProtocol03DirectSelector(selector) ||
+            payloadOffset + 3 > bytes.Count)
+        {
+            return false;
+        }
+
+        if (bytes[payloadOffset] != 0x00 ||
+            bytes[payloadOffset + 1] != 0x02 ||
+            !TryGetProtocol03MovementPayloadInfo(bytes[payloadOffset + 2], out int innerPayloadBytes, out int innerPositionOffset))
+        {
+            return false;
+        }
+
+        int payloadBytes = 3 + innerPayloadBytes;
+        int nextObjectOffset = payloadOffset + payloadBytes;
+        int absolutePositionOffset = payloadOffset + 3 + innerPositionOffset;
+        if (nextObjectOffset >= bytes.Count ||
+            !LooksLikeProtocol03ObjectViewHeader(bytes, nextObjectOffset) ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset, out float x) ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset + 4, out float y) ||
+            !TryReadSingleLittleEndian(bytes, absolutePositionOffset + 8, out float z) ||
+            !IsPlausibleProtocol03Position(x, y, z))
+        {
+            return false;
+        }
+
+        layout = new Protocol03SelectorLayout("adjacent movement wrapper", payloadBytes);
+        return true;
+    }
+
+    private static bool IsKnownProtocol03DirectSelector(byte selector)
+    {
+        return selector is
+            0x00 or 0x01 or 0x02 or 0x04 or 0x06 or 0x08 or 0x0a or 0x0c or 0x0e or
+            0x28 or 0x80 or 0x9b or 0x9e or 0xa0;
+    }
+
+    private static bool LooksLikeProtocol03ObjectViewHeader(IReadOnlyList<byte> bytes, int offset)
+    {
+        if (offset + 3 >= bytes.Count)
+        {
+            return false;
+        }
+
+        int viewId = ReadUInt16LittleEndian(bytes, offset);
+        byte updateCount = bytes[offset + 2];
+        byte firstSelector = bytes[offset + 3];
+        if (viewId == 0 || updateCount == 0 || updateCount > 0x20)
+        {
+            return false;
+        }
+
+        return firstSelector is
+            0x00 or 0x01 or 0x02 or 0x04 or 0x06 or 0x08 or 0x09 or 0x0a or 0x0c or 0x0e or
+            0x12 or 0x13 or 0x14 or 0x28 or 0x2a or 0x2e or 0x57 or 0x80 or 0x9b or 0x9e or 0xa0;
     }
 
     public static byte[] EncodeHeader(int value, string direction)
@@ -1431,6 +2830,26 @@ public static partial class PacketResearcher
             : int.Parse(value, CultureInfo.InvariantCulture);
     }
 
+    private static int? ParseOptionalInt(string? value)
+    {
+        return int.TryParse(value?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int result)
+            ? result
+            : null;
+    }
+
+    private static double? ParseOptionalDouble(string? value)
+    {
+        return double.TryParse(value?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result)
+            ? result
+            : null;
+    }
+
+    private static string? NormalizeOptionalText(string? value)
+    {
+        string? trimmed = value?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+    }
+
     private static string RelativePath(string file, string root)
     {
         if (string.IsNullOrWhiteSpace(root))
@@ -1531,6 +2950,47 @@ public static partial class PacketResearcher
                 | (payload[offset + 2] << 16)
                 | (payload[offset + 3] << 24))
             : 0;
+    }
+
+    private static bool TryParseLittleEndianHexUInt16(string hex, out ushort value)
+    {
+        value = 0;
+        if (hex.Length < 4 || !hex.Take(4).All(Uri.IsHexDigit))
+        {
+            return false;
+        }
+
+        byte[] bytes = ParseCompactHexBytes(hex[..4]).ToArray();
+        value = (ushort)(bytes[0] | (bytes[1] << 8));
+        return true;
+    }
+
+    private static bool TryParseLittleEndianHexUInt32(string hex, out uint value)
+    {
+        value = 0;
+        if (hex.Length != 8 || !hex.All(Uri.IsHexDigit))
+        {
+            return false;
+        }
+
+        byte[] bytes = ParseCompactHexBytes(hex).ToArray();
+        value = (uint)(bytes[0]
+            | (bytes[1] << 8)
+            | (bytes[2] << 16)
+            | (bytes[3] << 24));
+        return true;
+    }
+
+    private static bool TryReadSingleLittleEndian(IReadOnlyList<byte> payload, int offset, out float value)
+    {
+        value = 0;
+        if (offset + 3 >= payload.Count)
+        {
+            return false;
+        }
+
+        value = BitConverter.Int32BitsToSingle((int)ReadUInt32LittleEndian(payload, offset));
+        return true;
     }
 
     private static bool TryGetObjectInteractionKind(string rawHeader, out string interactionKind)
@@ -1659,6 +3119,8 @@ public static partial class PacketResearcher
 
     private sealed record Protocol03SelectorLayout(string Classification, int? PayloadBytes);
 
+    private sealed record Protocol03AttributeDescriptor(int Index, string Name, int Size);
+
     [GeneratedRegex(@"public\s+enum\s+(?<name>[A-Za-z0-9_]+)")]
     private static partial Regex EnumStartRegex();
 
@@ -1689,8 +3151,14 @@ public static partial class PacketResearcher
     [GeneratedRegex(@"AddAttribute\s*\(\s*ref\s+(?<var>[A-Za-z0-9_]+)\s*,\s*(?<creation>-?\d+)\s*,\s*(?<update>-?\d+)\s*\)")]
     private static partial Regex AddAttributeRegex();
 
-    [GeneratedRegex(@"^(?<little>[0-9a-fA-F]{8})\s+(?<big>[0-9a-fA-F]{8})\s+=\s+(?<name>\S+)")]
+    [GeneratedRegex(@"^(?<little>[0-9a-fA-F]{8})\s+(?<big>[0-9a-fA-F]{8})\s+=\s+(?<name>.+?)\s*$")]
     private static partial Regex FxDefinitionRegex();
+
+    [GeneratedRegex(@"^(?<big>[0-9a-fA-F]{8})\s+=\s+(?<name>.+?)\s*$")]
+    private static partial Regex SingleEndianFxDefinitionRegex();
+
+    [GeneratedRegex(@"^&gib\s+(?<id>\d+)\s+(?<body>.+?)\s*$")]
+    private static partial Regex ItemCommandRegex();
 
     [GeneratedRegex(@"(?<number>\d+)$")]
     private static partial Regex TrailingNumberRegex();

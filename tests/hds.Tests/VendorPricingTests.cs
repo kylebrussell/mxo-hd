@@ -35,6 +35,42 @@ public class VendorPricingTests
     }
 
     [Fact]
+    public void SellPriceForZeroUsesNoBuyBackListFallback()
+    {
+        Assert.Equal((uint)1, VendorPricing.GetSellPrice(0));
+    }
+
+    [Fact]
+    public void SellPriceForFullPriceAbilityReturnsDecodedVendorPrice()
+    {
+        Assert.Equal((uint)72000, VendorPricing.GetSellPrice(2147497984));
+    }
+
+    [Fact]
+    public void SellPriceForFullPriceAbilityIncludesLevelPremium()
+    {
+        Assert.Equal((uint)74600, VendorPricing.GetSellPrice(2147497984 + 3));
+    }
+
+    [Fact]
+    public void SellPriceForNormalAbilityUsesOneTenthBuybackWithLevelPremium()
+    {
+        Assert.Equal((uint)29380, VendorPricing.GetSellPrice(2147867648 + 4));
+    }
+
+    [Fact]
+    public void SellPriceForAbilityUsesVendorPriceEvenWhenAbilityRowIsNonSellable()
+    {
+        Assert.Equal((uint)100, VendorPricing.GetSellPrice(2148473856));
+    }
+
+    [Fact]
+    public void SellPriceForUnknownAbilityFallsBackToDefaultBuyback()
+    {
+        Assert.Equal((uint)100, VendorPricing.GetSellPrice(0x80000001));
+    }
+
+    [Fact]
     public void TryApplyBuyDeductsPriceWhenCashIsAvailable()
     {
         bool result = VendorPricing.TryApplyBuy(7000, 11666, out uint newCash, out uint price);
