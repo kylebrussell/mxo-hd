@@ -1557,6 +1557,7 @@ public static partial class PacketResearcher
         List<Protocol03EffectEmoteLead> effectEmoteLeads = new();
         List<Protocol03PositionLikeLead> positionLikeLeads = new();
         List<Protocol03NestedMovementLead> nestedMovementLeads = new();
+        List<Protocol03MovementStateTailLead> movementStateTailLeads = new();
         List<Protocol03VariableSelectorLead> variableSelectorLeads = new();
         List<Protocol03SelfViewAttributeLead> selfViewAttributeLeads = new();
         List<Protocol03StaticObjectLead> staticObjectLeads = new();
@@ -1573,11 +1574,12 @@ public static partial class PacketResearcher
 
             int selectorOffset = cursor - offset;
             byte selector = bytes[cursor++];
-            Protocol03SelectorLayout layout = GetProtocol03SelectorLayout(updateCount, i, selector, bytes, cursor);
+            Protocol03SelectorLayout layout = GetProtocol03SelectorLayout(updateCount, i, firstSelector, selector, bytes, cursor);
             int payloadBytes = layout.PayloadBytes ?? Math.Max(0, bytes.Count - cursor);
             int availableBytes = Math.Max(0, bytes.Count - cursor);
             Protocol03SelfViewAttributeLead? selfViewAttributeLead = null;
-            if (selector == 0x80 &&
+            if (!layout.Classification.Contains("movement tail lead", StringComparison.Ordinal) &&
+                selector == 0x80 &&
                 TryCreateProtocol03SelfViewAttributeLead(selector, bytes, cursor, availableBytes, cursor - offset, out selfViewAttributeLead) &&
                 selfViewAttributeLead is not null)
             {
@@ -1618,6 +1620,11 @@ public static partial class PacketResearcher
             if (layout.Classification is "unknown selector payload" or "primary movement wrapper")
             {
                 nestedMovementLeads.AddRange(ExtractProtocol03NestedMovementLeads(selector, bytes, cursor, sampleBytes, cursor - offset));
+            }
+
+            if (layout.Classification.Contains("movement tail lead", StringComparison.Ordinal))
+            {
+                movementStateTailLeads.Add(CreateProtocol03MovementStateTailLead(firstSelector, selector, bytes, cursor, sampleBytes, cursor - offset));
             }
 
             if (selector is 0x9e or 0xa0 &&
@@ -1675,6 +1682,7 @@ public static partial class PacketResearcher
             effectEmoteLeads.ToArray(),
             positionLikeLeads.ToArray(),
             nestedMovementLeads.ToArray(),
+            movementStateTailLeads.ToArray(),
             variableSelectorLeads.ToArray(),
             selfViewAttributeLeads.ToArray(),
             staticObjectLeads.ToArray(),
@@ -1978,6 +1986,35 @@ public static partial class PacketResearcher
                 FormatHeader(payload));
             yield break;
         }
+    }
+
+    private static Protocol03MovementStateTailLead CreateProtocol03MovementStateTailLead(
+        byte firstSelector,
+        byte tailSelector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        int payloadBytes,
+        int relativeOffset)
+    {
+        int payloadEnd = Math.Min(bytes.Count, payloadOffset + payloadBytes);
+        byte[] payload = bytes.Skip(payloadOffset).Take(Math.Max(0, payloadEnd - payloadOffset)).ToArray();
+        uint tagValue = payload.Length >= 3
+            ? (uint)(tailSelector | (payload[0] << 8) | (payload[1] << 16) | (payload[2] << 24))
+            : tailSelector;
+        string markerHex = payload.Length >= 7 && payload[3] == 0xff && payload[4] == 0x01
+            ? FormatHeader(payload.Skip(3).Take(4))
+            : FormatHeader(payload.Skip(3).Take(Math.Min(2, Math.Max(0, payload.Length - 3))));
+
+        return new Protocol03MovementStateTailLead(
+            firstSelector.ToString("x2", CultureInfo.InvariantCulture),
+            tailSelector.ToString("x2", CultureInfo.InvariantCulture),
+            relativeOffset,
+            payload.Length,
+            tagValue.ToString("x8", CultureInfo.InvariantCulture),
+            tagValue,
+            markerHex,
+            FormatHeader(payload.Take(Math.Min(8, payload.Length))),
+            FormatHeader(payload));
     }
 
     private static bool TryGetProtocol03MovementPayloadInfo(byte selector, out int payloadBytes, out int positionOffset)
@@ -2468,6 +2505,7 @@ public static partial class PacketResearcher
     private static Protocol03SelectorLayout GetProtocol03SelectorLayout(
         byte updateCount,
         int segmentIndex,
+        byte firstSelector,
         byte selector,
         IReadOnlyList<byte> bytes,
         int payloadOffset)
@@ -2484,6 +2522,17 @@ public static partial class PacketResearcher
 
         if (selector is 0x12 or 0x13 or 0x14 &&
             TryGetPrimaryMovementWrapperLayout(updateCount, segmentIndex, bytes, payloadOffset, out layout))
+        {
+            return layout;
+        }
+
+        if (TryGetMovementStateTailLayout(updateCount, segmentIndex, firstSelector, bytes, payloadOffset, out layout))
+        {
+            return layout;
+        }
+
+        if (selector == 0x09 &&
+            TryGetSelector09MovementLayout(updateCount, segmentIndex, bytes, payloadOffset, out layout))
         {
             return layout;
         }
@@ -2538,6 +2587,65 @@ public static partial class PacketResearcher
         }
 
         layout = new Protocol03SelectorLayout("compact effect/emote terminal marker", 4);
+        return true;
+    }
+
+    private static bool TryGetMovementStateTailLayout(
+        byte updateCount,
+        int segmentIndex,
+        byte firstSelector,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        out Protocol03SelectorLayout layout)
+    {
+        layout = null!;
+        if (updateCount != 3 ||
+            segmentIndex != 1 ||
+            firstSelector is not (0x08 or 0x09) ||
+            payloadOffset + 5 > bytes.Count)
+        {
+            return false;
+        }
+
+        if ((bytes[payloadOffset + 3] == 0xff && bytes[payloadOffset + 4] == 0x01) ||
+            (bytes[payloadOffset + 3] == 0x80 && bytes[payloadOffset + 4] == 0x80))
+        {
+            layout = new Protocol03SelectorLayout($"selector {firstSelector:x2} movement tail lead", null);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSelector09MovementLayout(
+        byte updateCount,
+        int segmentIndex,
+        IReadOnlyList<byte> bytes,
+        int payloadOffset,
+        out Protocol03SelectorLayout layout)
+    {
+        layout = null!;
+        if (updateCount != 3 || segmentIndex != 0 || payloadOffset + 14 > bytes.Count)
+        {
+            return false;
+        }
+
+        if (bytes[payloadOffset] is not (0x00 or 0x08) ||
+            bytes[payloadOffset + 1] != 0x00)
+        {
+            return false;
+        }
+
+        int positionOffset = payloadOffset + 2;
+        if (!TryReadSingleLittleEndian(bytes, positionOffset, out float x) ||
+            !TryReadSingleLittleEndian(bytes, positionOffset + 4, out float y) ||
+            !TryReadSingleLittleEndian(bytes, positionOffset + 8, out float z) ||
+            !IsPlausibleProtocol03Position(x, y, z))
+        {
+            return false;
+        }
+
+        layout = new Protocol03SelectorLayout("position xyz + two-byte prefix", 14);
         return true;
     }
 

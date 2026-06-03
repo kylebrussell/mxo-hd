@@ -113,6 +113,8 @@ public sealed record Protocol03ObjectViewSample(
     [property: JsonIgnore]
     IReadOnlyList<Protocol03NestedMovementLead> NestedMovementLeads,
     [property: JsonIgnore]
+    IReadOnlyList<Protocol03MovementStateTailLead> MovementStateTailLeads,
+    [property: JsonIgnore]
     IReadOnlyList<Protocol03VariableSelectorLead> VariableSelectorLeads,
     [property: JsonIgnore]
     IReadOnlyList<Protocol03SelfViewAttributeLead> SelfViewAttributeLeads,
@@ -222,6 +224,17 @@ public sealed record Protocol03NestedMovementLead(
     float Y,
     float Z,
     string SuffixHex,
+    string PayloadHex);
+
+public sealed record Protocol03MovementStateTailLead(
+    string FirstSelector,
+    string TailSelector,
+    int Offset,
+    int PayloadBytes,
+    string TagHex,
+    uint TagValue,
+    string MarkerHex,
+    string PrefixHex,
     string PayloadHex);
 
 public sealed record Protocol03StaticObjectLead(

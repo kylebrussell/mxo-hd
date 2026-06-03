@@ -1128,6 +1128,123 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectProtocol03ObjectViews_SegmentsSelector09MovementPrefix()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 02 00 03 09 08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 4b b1 13 04 ff 01 64 01")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 14, "server").Single();
+
+        Assert.Equal("movement state bundle", sample.Classification);
+        Assert.Equal(3, sample.UpdateCount);
+        Assert.Equal("09", sample.FirstSelector);
+        Assert.False(sample.Complete);
+        Assert.Equal(1, sample.ParsedUpdateCount);
+        Assert.Equal(new[] { "09", "4b" }, sample.Segments.Select(segment => segment.Selector));
+        Assert.Equal("position xyz + two-byte prefix", sample.Segments[0].Classification);
+        Assert.Equal(14, sample.Segments[0].PayloadBytes);
+        Assert.Equal("08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46", sample.Segments[0].PayloadPrefixHex);
+        Assert.True(sample.Segments[0].IsKnownLength);
+        Assert.Equal("selector 09 movement tail lead", sample.Segments[1].Classification);
+        Assert.False(sample.Segments[1].IsKnownLength);
+        Protocol03MovementStateTailLead tail = Assert.Single(sample.MovementStateTailLeads);
+        Assert.Equal("09", tail.FirstSelector);
+        Assert.Equal("4b", tail.TailSelector);
+        Assert.Equal("0413b14b", tail.TagHex);
+        Assert.Equal((uint)0x0413b14b, tail.TagValue);
+        Assert.Equal("ff 01 64 01", tail.MarkerHex);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_SegmentsSelector08MovementTailLead()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 02 00 03 08 73 62 84 c7 34 35 94 43 8f ec 7e 46 c8 b1 13 04 ff 01 64 01")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 30, "server").Single();
+
+        Assert.Equal("movement state bundle", sample.Classification);
+        Assert.Equal(3, sample.UpdateCount);
+        Assert.Equal("08", sample.FirstSelector);
+        Assert.False(sample.Complete);
+        Assert.Equal(1, sample.ParsedUpdateCount);
+        Assert.Equal(new[] { "08", "c8" }, sample.Segments.Select(segment => segment.Selector));
+        Assert.Equal("position xyz", sample.Segments[0].Classification);
+        Assert.Equal(12, sample.Segments[0].PayloadBytes);
+        Assert.True(sample.Segments[0].IsKnownLength);
+        Assert.Equal("selector 08 movement tail lead", sample.Segments[1].Classification);
+        Assert.False(sample.Segments[1].IsKnownLength);
+        Protocol03MovementStateTailLead tail = Assert.Single(sample.MovementStateTailLeads);
+        Assert.Equal("08", tail.FirstSelector);
+        Assert.Equal("c8", tail.TailSelector);
+        Assert.Equal("0413b1c8", tail.TagHex);
+        Assert.Equal((uint)0x0413b1c8, tail.TagValue);
+        Assert.Equal("ff 01 64 01", tail.MarkerHex);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_TreatsSelector08KnownByteCollisionAsTailLead()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 02 00 03 08 9c d4 85 c7 93 69 22 46 2d e0 73 46 0e 6b e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 595, "server").Single();
+
+        Assert.False(sample.Complete);
+        Assert.Equal(1, sample.ParsedUpdateCount);
+        Assert.Equal(new[] { "08", "0e" }, sample.Segments.Select(segment => segment.Selector));
+        Assert.Equal("position xyz", sample.Segments[0].Classification);
+        Assert.Equal("selector 08 movement tail lead", sample.Segments[1].Classification);
+        Assert.False(sample.Segments[1].IsKnownLength);
+        Protocol03MovementStateTailLead tail = Assert.Single(sample.MovementStateTailLeads);
+        Assert.Equal("08", tail.FirstSelector);
+        Assert.Equal("0e", tail.TailSelector);
+        Assert.Equal("19e46b0e", tail.TagHex);
+        Assert.Equal((uint)0x19e46b0e, tail.TagValue);
+        Assert.Equal("ff 01 4e 01", tail.MarkerHex);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_SegmentsSelector09ZeroPrefixMovement()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 97 b4 13 04 ff 01")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 126, "server").Single();
+
+        Assert.False(sample.Complete);
+        Assert.Equal(1, sample.ParsedUpdateCount);
+        Assert.Equal("09", sample.Segments[0].Selector);
+        Assert.Equal("position xyz + two-byte prefix", sample.Segments[0].Classification);
+        Assert.Equal(14, sample.Segments[0].PayloadBytes);
+        Assert.Equal("00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46", sample.Segments[0].PayloadPrefixHex);
+        Assert.True(sample.Segments[0].IsKnownLength);
+        Assert.Equal("selector 09 movement tail lead", sample.Segments[1].Classification);
+        Assert.False(sample.Segments[1].IsKnownLength);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_TreatsSelector09KnownByteCollisionAsTailLead()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 02 00 03 09 08 00 6d 5b 73 c7 15 02 0d 43 64 6a 7e c7 08 ca 68 05 80 80 b8 14 00 71 f3 68 05 00")
+            .ToArray();
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 26855, "server").Single();
+
+        Assert.False(sample.Complete);
+        Assert.Equal(1, sample.ParsedUpdateCount);
+        Assert.Equal(new[] { "09", "08" }, sample.Segments.Select(segment => segment.Selector));
+        Assert.Equal("position xyz + two-byte prefix", sample.Segments[0].Classification);
+        Assert.Equal("selector 09 movement tail lead", sample.Segments[1].Classification);
+        Assert.False(sample.Segments[1].IsKnownLength);
+    }
+
+    [Fact]
     public void DetectProtocol03ObjectViews_TreatsSelector00AsOneByteStateMarker()
     {
         byte[] bytes = PacketResearcher.ParseHexBytes(

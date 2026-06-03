@@ -301,8 +301,8 @@ This compares shared `80 b2` field 0 / `80 bc` field 1 values with `data/gameobj
 This decodes object-view updates in top-level protocol 03 packets using local `WorldPacket` framing, Rajko `MessageTypes.cpp` examples, and Rajko client movement parsing. It is intentionally conservative: classifications are packet-family labels, not full attribute decodes, and variable-length selectors stay marked as partial.
 
 - Object messages parsed: 8456
-- Fully segmented messages: 6776
-- Known selector segments: 14468
+- Fully segmented messages: 6770
+- Known selector segments: 14471
 - Secondary movement wrapper segments: 1367
 - Adjacent movement wrapper segments: 3348
 
@@ -311,7 +311,7 @@ This decodes object-view updates in top-level protocol 03 packets using local `W
 | object state update | 2 | `0c` | 3036 | 2897 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:1` | `0b 00 02 0c c4 f2 18 95 47 00 60 8b c4 e6 59 e3 44 0a 00 02 08 c2 81 97` |
 | object state update | 2 | `0e` | 2775 | 2640 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:74` | `0b 00 02 0e 01 14 f2 18 95 47 00 60 8b c4 e6 59 e3 44 0a 00 02 0c ef c2` |
 | position/object state update | 2 | `08` | 937 | 902 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:28` | `0f 00 02 08 90 71 96 47 00 60 8b c4 46 2e de 44 0b 00 02 0c e2 f2 18 95` |
-| movement state bundle | 3 | `08` | 263 | 6 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | `02 00 03 08 73 62 84 c7 34 35 94 43 8f ec 7e 46 c8 b1 13 04 ff 01 64 01` |
+| movement state bundle | 3 | `08` | 263 | 0 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | `02 00 03 08 73 62 84 c7 34 35 94 43 8f ec 7e 46 c8 b1 13 04 ff 01 64 01` |
 | player spawn/self-view candidate | 12 | `0c` | 176 | 0 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:388` | `01 00 0c 0c 00 dd cd ab 23 9b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e` |
 | NPC_BASE dynamic creation candidate | 12 | `57` | 153 | 0 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:739` | `01 00 0c 57 02 e2 cd ab 11 8e 47 6f 6c 64 20 42 6c 6f 6f 64 20 43 68 61` |
 | delete view candidate | 1 | `01` | 106 | 106 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ueno_northwest.txt:5` | `01 00 01 01 00 06 00 01 00 02 13 00 03 00 02 0c f5 d9 ee bc 46 00 80 fc` |
@@ -338,13 +338,13 @@ This decodes object-view updates in top-level protocol 03 packets using local `W
 
 | Selector | Segment classification | Payload/tail bytes | Known length | Count | Sample | Payload prefix |
 | --- | --- | ---: | --- | ---: | --- | --- |
-| `0c` | position xyz + flag | 13 | yes | 3158 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:1` | `c4 f2 18 95 47 00 60 8b c4 e6 59 e3 44` |
-| `0e` | position xyz + two flags | 14 | yes | 2881 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:74` | `01 14 f2 18 95 47 00 60 8b c4 e6 59 e3 44` |
-| `00` | one-byte state marker | 1 | yes | 1679 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:28` | `00` |
+| `0c` | position xyz + flag | 13 | yes | 3155 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:1` | `c4 f2 18 95 47 00 60 8b c4 e6 59 e3 44` |
+| `0e` | position xyz + two flags | 14 | yes | 2880 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:74` | `01 14 f2 18 95 47 00 60 8b c4 e6 59 e3 44` |
+| `00` | one-byte state marker | 1 | yes | 1671 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:28` | `00` |
 | `08` | position xyz | 12 | yes | 1289 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/dance1emote3.txt:22` | `5b 62 84 c7 00 00 be 42 3a ed 7e 46` |
-| `0a` | position xyz + flag | 13 | yes | 114 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:37` | `00 02 0c c7 c2 81 97 47 00 20 8a c4 85` |
+| `0a` | position xyz + flag | 13 | yes | 112 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:37` | `00 02 0c c7 c2 81 97 47 00 20 8a c4 85` |
 | `01` | animation/delete payload | 4 | yes | 106 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ueno_northwest.txt:5` | `00 06 00 01` |
-| `02` | empty state marker | 0 | yes | 105 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:19` | `` |
+| `02` | empty state marker | 0 | yes | 103 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:19` | `` |
 | `1b` | adjacent movement wrapper | 16 | yes | 97 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/Ikeburo_Southwest.txt:637` | `00 02 0c dd f8 22 2d 47 00 c0 5f 44 26 62 45 c7` |
 | `1e` | adjacent movement wrapper | 16 | yes | 96 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2:3766` | `00 02 0c 5a ec 6c 76 c7 00 80 fc c3 45 cf 83 c7` |
 | `22` | adjacent movement wrapper | 16 | yes | 96 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2:3620` | `00 02 0c f3 f0 63 75 c7 00 80 fc c3 d7 e8 77 c7` |
@@ -379,7 +379,7 @@ Across 7 selector `9e`/`a0` tails, 2 distinct static object ids appear.
 
 This scans unresolved selector payloads and bounded primary movement wrappers for embedded movement windows that carry plausible little-endian xyz positions. Rows from unresolved payloads are layout leads only; rows from primary wrappers use a known bounded prefix length.
 
-Across 361 embedded movement windows, 43 outer selectors contain a plausible movement window.
+Across 355 embedded movement windows, 37 outer selectors contain a plausible movement window.
 The table lists the top grouped leads by record count.
 
 | Outer selector | Object classification | Lead prefix | Marker offset | Inner selector | Records | Payload bytes | Position samples | Suffix samples | Sample |
@@ -409,6 +409,21 @@ The table lists the top grouped leads by record count.
 | `12` | unclassified object-view update | `00 05` | 2 | `08` | 3 | 17 | -43488.586,95,23071.9<br>-68004.578,-505,-70271.914 | - | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/murasaki_central.txt:379` |
 | `12` | unclassified object-view update | `00 19` | 2 | `08` | 3 | 17 | -64363.094,-1105,-59777.617<br>46804.922,-1105,-979.215 | - | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/saikung_central2.txt:291` |
 | `13` | unclassified object-view update | `00 05` | 2 | `0c` | 3 | 18 | -68242.109,-505,-70843.82<br>48100.945,-1105,-56080.043 | - | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/Ikeburo_Southwest.txt:414` |
+
+### Protocol 03 Movement State Tail Leads
+
+This groups unresolved tails that follow update-count-3 movement-state position segments. The tail selector byte plus the first three payload bytes form a little-endian tag that advances across adjacent movement samples; this is a tag/marker lead only, and no body length is claimed yet.
+
+Across 283 movement-state tails, 175 distinct tail selector bytes appear after first selectors 08<br>09.
+
+| First selector | Tail family | Records | Tail selectors | Tag range | Tag delta samples | Payload/tail bytes | Prefix samples | Text leads | Sample |
+| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |
+| `08` | variable selector + 3-byte tag + ff 01 64 01 | 172 | 00<br>02<br>04<br>06<br>07<br>09<br>0a<br>0b<br>0c<br>0d<br>+119 more | `0411e1eb`..`1f969fd6` | 1000<br>107<br>109<br>110<br>124<br>125<br>126<br>1328<br>+36 more | 13<br>184<br>200<br>201<br>202<br>205<br>218<br>219<br>+54 more | 20 94 1e ff 01 64 01 00<br>23 64 05 ff 01 64 01 00<br>24 64 05 ff 01 64 01 00<br>24 af 05 ff 01 64 01 00<br>+97 more | #nEX<br>%5,h<br>.K1F<br>//HED<br>1s5i<br>40AF<br>+34 more | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` |
+| `08` | variable selector + 3-byte tag + ff 01 4e 01 | 67 | 02<br>09<br>0e<br>14<br>19<br>1a<br>1f<br>20<br>25<br>26<br>+55 more | `19e458fd`..`19e47e19` | 124<br>125<br>126<br>156<br>250<br>251<br>93 | 184<br>282<br>301<br>308<br>441 | 58 e4 19 ff 01 4e 01 00<br>59 e4 19 ff 01 4e 01 00<br>5a e4 19 ff 01 4e 01 00<br>5b e4 19 ff 01 4e 01 00<br>+35 more | :^V=<br>Anderson<br>E)ViF<br>E5VlF<br>FBVoF<br>FlPhF<br>+9 more | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt:32` |
+| `08` | variable selector + 3-byte tag + 80 80 | 19 | 29<br>3b<br>3f<br>4e<br>52<br>74<br>81<br>83<br>89<br>8a<br>+7 more | `05642652`..`1f968c4e` | 1000<br>1001<br>1015<br>1016<br>1031<br>1124<br>250<br>299866<br>+4 more | 100<br>11<br>163<br>179<br>188<br>271<br>333<br>357<br>+5 more | 26 64 05 80 80 80 10 e6<br>2a 64 05 80 80 80 10 ea<br>3a 64 05 80 80 b8 14 00<br>5b e4 19 80 80 80 10 e6<br>+15 more | )Enjr<br>)K6G<br>;$ub<br>="Fg<br>BU1F;<br>E!hu<br>+8 more | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/abilities/evadecombat001.txt:147` |
+| `09` | variable selector + 3-byte tag + ff 01 64 01 | 18 | 14<br>17<br>41<br>44<br>4b<br>65<br>85<br>8d<br>91<br>97<br>+8 more | `0411e18d`..`05af26cc` | 10562<br>110<br>125<br>294944<br>42671<br>750<br>781<br>844<br>+2 more | 11<br>184<br>218<br>235<br>259<br>267<br>311<br>424<br>+2 more | 22 64 05 ff 01 64 01 00<br>23 af 05 ff 01 64 01 00<br>26 af 05 ff 01 64 01 00<br>49 64 05 ff 01 64 01 00<br>+13 more | A.S.P. Major<br>A.S.P. Master Sergeant<br>A.S.P. Warrant<br>Anderson<br>pAE:v<br>Thomas | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:14` |
+| `09` | variable selector + 3-byte tag + 80 80 | 4 | 03<br>08<br>49<br>61 | `0568ca08`..`19e45803` | 1000 | 11<br>51<br>57<br>91 | 23 af 05 80 80 b0 cc 26<br>27 af 05 80 80 80 10 e7<br>58 e4 19 80 80 bc 00 f0<br>ca 68 05 80 80 b8 14 00 | Cdj~ | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt:6` |
+| `09` | variable selector + 3-byte tag + ff 01 4e 01 | 3 | 13<br>80<br>97 | `19e45880`..`19e47f13` | 124<br>9751 | 184 | 58 e4 19 ff 01 4e 01 00<br>7e e4 19 ff 01 4e 01 00<br>7f e4 19 ff 01 4e 01 00 | Anderson<br>Thomas | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt:16` |
 
 ### Protocol 03 Selector 2a/2e Position-Like Leads
 
@@ -467,11 +482,12 @@ Across 164 selector `80` self-view blocks, 173 fixed-width Object12 self-view at
 
 This groups remaining selector `80` variable tails that did not fit the local Object12 self-view mask/value layout, then scans each tail for imported FX definitions. These rows are layout leads only: repeated embedded movement selectors may still be nested protocol 03 data.
 
-Across 1 selector `80` tails, 0 contain at least one imported FX ID window.
+Across 2 selector `80` tails, 1 contain at least one imported FX ID window.
 
 | Classification | Update count | Lead prefix | Records | Payload bytes | Lead FX | FX windows | Sample |
 | --- | ---: | --- | ---: | --- | --- | --- | --- |
 | appearance/attribute update candidate | 2 | `04 00 00 00` | 1 | 4 | - | - | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2:26106` |
+| movement state bundle | 3 | `58 e4 19 ff 01 4e 01 00` | 1 | 184 | - | `00000008` fx_cryptos.fxl \| dialog_3_2_agent (1) | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt:16` |
 
 ### Protocol 03 Selector 28 Effect/Emote Leads
 
@@ -552,8 +568,8 @@ This extracts printable ASCII runs from parsed protocol 03 object-view messages 
 
 | Classification | Update count | First selector | Text | Count | Sample | Offset |
 | --- | ---: | --- | --- | ---: | --- | ---: |
-| movement state bundle | 3 | `08` | Anderson | 227 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | 36 |
-| movement state bundle | 3 | `08` | Thomas | 227 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | 45 |
+| movement state bundle | 3 | `08` | Anderson | 233 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | 36 |
+| movement state bundle | 3 | `08` | Thomas | 233 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/jump2.txt:30` | 45 |
 | player spawn/self-view candidate | 12 | `0c` | AfterWhoruNeo | 175 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:388` | 111 |
 | player spawn/self-view candidate | 12 | `0c` | Anderson | 175 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:388` | 16 |
 | player spawn/self-view candidate | 12 | `0c` | Thomas | 175 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt:388` | 50 |
@@ -877,9 +893,9 @@ Across 176 PlayerCharacter creation records, 176 include a decoded `CharacterNam
 
 | File | Parsed object-view packets | Fully segmented | Top classification |
 | --- | ---: | ---: | --- |
-| `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2` | 7156 | 6148 | object state update (5291) |
+| `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2` | 7156 | 6143 | object state update (5291) |
 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/abilities/evadecombat001.txt` | 103 | 93 | object state update (70) |
-| `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt` | 83 | 3 | movement state bundle (78) |
+| `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt` | 83 | 2 | movement state bundle (78) |
 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/loot.txt` | 78 | 66 | object state update (58) |
 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/actions/teleportosaikungcentral.txt` | 58 | 44 | object state update (35) |
 | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/logins/login_stamos_new.txt` | 53 | 23 | unclassified object-view update (27) |

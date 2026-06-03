@@ -701,6 +701,7 @@ public static class ReportWriter
         builder.AppendLine();
         AppendProtocol03StaticObjectLeads(builder, report, samples);
         AppendProtocol03NestedMovementLeads(builder, samples);
+        AppendProtocol03MovementStateTailLeads(builder, samples);
         AppendProtocol03Selector2a2ePositionLeads(builder, samples);
         AppendProtocol03Selector80SelfViewAttributeLeads(builder, report, samples);
         AppendProtocol03Selector80Leads(builder, report, samples);
@@ -816,6 +817,44 @@ public static class ReportWriter
             Protocol03NestedMovementLeadWithFile sample = group.First();
             builder.AppendLine(
                 $"| `{group.Key.OuterSelector}` | {FormatTableText(group.Key.Classification)} | `{FormatEmptyHex(group.Key.LeadPrefixHex)}` | {group.Key.MarkerOffset} | `{group.Key.InnerSelector}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatNestedMovementPosition(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.SuffixHex)), 4)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03MovementStateTailLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Protocol03MovementStateTailLeadWithFile[] leads = samples
+            .SelectMany(entry => entry.Sample.MovementStateTailLeads.Select(lead => new Protocol03MovementStateTailLeadWithFile(entry.File, entry.Sample.Line, entry.Sample, lead)))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Movement State Tail Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups unresolved tails that follow update-count-3 movement-state position segments. The tail selector byte plus the first three payload bytes form a little-endian tag that advances across adjacent movement samples; this is a tag/marker lead only, and no body length is claimed yet.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leads.Length} movement-state tails, {leads.Select(entry => entry.Lead.TailSelector).Distinct(StringComparer.OrdinalIgnoreCase).Count()} distinct tail selector bytes appear after first selectors {FormatDistinct(leads.Select(entry => entry.Lead.FirstSelector), 4)}.");
+        builder.AppendLine();
+        builder.AppendLine("| First selector | Tail family | Records | Tail selectors | Tag range | Tag delta samples | Payload/tail bytes | Prefix samples | Text leads | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in leads
+            .GroupBy(entry => new
+            {
+                entry.Lead.FirstSelector,
+                Family = FormatMovementStateTailFamily(entry.Lead)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Family, StringComparer.OrdinalIgnoreCase))
+        {
+            Protocol03MovementStateTailLeadWithFile sample = group.First();
+            builder.AppendLine(
+                $"| `{group.Key.FirstSelector}` | {FormatTableText(group.Key.Family)} | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.TailSelector), 10)} | {FormatMovementStateTailTagRange(group)} | {FormatMovementStateTailTagDeltas(group)} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.PrefixHex)), 4)} | {FormatDistinct(group.SelectMany(entry => entry.Sample.Strings.Select(text => text.Text)), 6)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -3082,6 +3121,57 @@ public static class ReportWriter
         return $"{FormatCoordinate(lead.X)},{FormatCoordinate(lead.Y)},{FormatCoordinate(lead.Z)}";
     }
 
+    private static string FormatMovementStateTailFamily(Protocol03MovementStateTailLead lead)
+    {
+        if (lead.MarkerHex.StartsWith("ff 01", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"variable selector + 3-byte tag + {lead.MarkerHex}";
+        }
+
+        if (lead.MarkerHex.Equals("80 80", StringComparison.OrdinalIgnoreCase))
+        {
+            return "variable selector + 3-byte tag + 80 80";
+        }
+
+        return $"selector {lead.TailSelector} + {FormatEmptyHex(lead.PrefixHex)}";
+    }
+
+    private static string FormatMovementStateTailTagRange(IEnumerable<Protocol03MovementStateTailLeadWithFile> leads)
+    {
+        uint[] values = leads.Select(entry => entry.Lead.TagValue).ToArray();
+        if (values.Length == 0)
+        {
+            return "-";
+        }
+
+        uint min = values.Min();
+        uint max = values.Max();
+        string minHex = min.ToString("x8", CultureInfo.InvariantCulture);
+        string maxHex = max.ToString("x8", CultureInfo.InvariantCulture);
+        return min == max ? $"`{minHex}`" : $"`{minHex}`..`{maxHex}`";
+    }
+
+    private static string FormatMovementStateTailTagDeltas(IEnumerable<Protocol03MovementStateTailLeadWithFile> leads)
+    {
+        List<string> deltas = new();
+        foreach (var group in leads.GroupBy(entry => entry.File, StringComparer.OrdinalIgnoreCase))
+        {
+            Protocol03MovementStateTailLeadWithFile[] ordered = group
+                .OrderBy(entry => entry.Line)
+                .ToArray();
+            for (int i = 1; i < ordered.Length; i++)
+            {
+                long delta = (long)ordered[i].Lead.TagValue - ordered[i - 1].Lead.TagValue;
+                if (delta > 0)
+                {
+                    deltas.Add(delta.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+        }
+
+        return FormatDistinct(deltas, 8);
+    }
+
     private static string FormatEmptyHex(string value)
     {
         return string.IsNullOrWhiteSpace(value) ? "-" : value;
@@ -3352,6 +3442,8 @@ public static class ReportWriter
     private sealed record Protocol03StaticObjectLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03StaticObjectLead Lead);
 
     private sealed record Protocol03NestedMovementLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03NestedMovementLead Lead);
+
+    private sealed record Protocol03MovementStateTailLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03MovementStateTailLead Lead);
 
     private sealed record Protocol03PositionLikeLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03PositionLikeLead Lead);
 

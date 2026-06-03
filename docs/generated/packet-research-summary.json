@@ -102406,7 +102406,7 @@
             },
             {
               "Selector": "33",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "f9 83 28 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106725,16 +106725,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 4b b1 13 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 4b b1",
+              "PayloadPrefixHex": "08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "4b",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "b1 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -106762,7 +106770,7 @@
             },
             {
               "Selector": "c8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b1 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106793,7 +106801,7 @@
             },
             {
               "Selector": "45",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b2 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106824,7 +106832,7 @@
             },
             {
               "Selector": "c3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b2 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106855,7 +106863,7 @@
             },
             {
               "Selector": "3f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b3 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106886,7 +106894,7 @@
             },
             {
               "Selector": "bc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b3 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106917,7 +106925,7 @@
             },
             {
               "Selector": "39",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b4 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -106934,16 +106942,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 97 b4 13 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 97 b4",
+              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "97",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "b4 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -106957,16 +106973,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 14 b5 13 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 14 b5",
+              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "14",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "b5 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -106980,16 +107004,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 91 b5 13 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 91 b5",
+              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "91",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "b5 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107040,7 +107072,7 @@
             },
             {
               "Selector": "e9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b6 13 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -107085,16 +107117,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 8d e1 11 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 22,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 7,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 22,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 8d e1",
+              "PayloadPrefixHex": "08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "8d",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 7,
+              "Offset": 18,
+              "PayloadPrefixHex": "e1 11 04 ff 01 64 01",
               "IsKnownLength": false
             }
           ]
@@ -107122,7 +107162,7 @@
             },
             {
               "Selector": "eb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e1 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107153,7 +107193,7 @@
             },
             {
               "Selector": "68",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107184,7 +107224,7 @@
             },
             {
               "Selector": "e5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107215,7 +107255,7 @@
             },
             {
               "Selector": "42",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107246,7 +107286,7 @@
             },
             {
               "Selector": "c0",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107277,7 +107317,7 @@
             },
             {
               "Selector": "3d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 13,
               "Offset": 16,
               "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00 00 00",
@@ -107294,16 +107334,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 9a e4 11 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 26,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 9a e4",
+              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "9a",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 11,
+              "Offset": 18,
+              "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107317,16 +107365,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 17 e5 11 04 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 26,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 17 e5",
+              "PayloadPrefixHex": "00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "17",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 11,
+              "Offset": 18,
+              "PayloadPrefixHex": "e5 11 04 ff 01 64 01 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -182503,7 +182559,7 @@
             },
             {
               "Selector": "ea",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "20 94 1e ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -183103,7 +183159,7 @@
             },
             {
               "Selector": "d1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "8b 96 1f ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -183134,7 +183190,7 @@
             },
             {
               "Selector": "4e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 163,
               "Offset": 16,
               "PayloadPrefixHex": "8c 96 1f 80 80 80 80 80 80 0c 01 d9 00 00 00 01",
@@ -184451,7 +184507,7 @@
             },
             {
               "Selector": "d6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "9f 96 1f ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -188880,16 +188936,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 08 61 84 c7 b2 13 0c 44 5b ee 7e 46 03 58 e4 19 80 80",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 72,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 57,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 72,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 08 61 84 c7 b2 13 0c 44 5b ee 7e 46 03 58",
+              "PayloadPrefixHex": "08 00 08 61 84 c7 b2 13 0c 44 5b ee 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "03",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 57,
+              "Offset": 18,
+              "PayloadPrefixHex": "58 e4 19 80 80 bc 00 f0 20 46 04 00 57 7e e4 19",
               "IsKnownLength": false
             }
           ]
@@ -188903,16 +188967,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 1d 86 84 c7 ad 04 86 44 eb d3 7d 46 80 58 e4 19 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 1d 86 84 c7 ad 04 86 44 eb d3 7d 46 80 58",
+              "PayloadPrefixHex": "08 00 1d 86 84 c7 ad 04 86 44 eb d3 7d 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "80",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "58 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -188940,7 +189012,7 @@
             },
             {
               "Selector": "fd",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "58 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -188971,7 +189043,7 @@
             },
             {
               "Selector": "7a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 301,
               "Offset": 16,
               "PayloadPrefixHex": "59 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189002,7 +189074,7 @@
             },
             {
               "Selector": "f7",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "59 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189033,7 +189105,7 @@
             },
             {
               "Selector": "74",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189064,7 +189136,7 @@
             },
             {
               "Selector": "f2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189095,7 +189167,7 @@
             },
             {
               "Selector": "6e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5b e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189126,7 +189198,7 @@
             },
             {
               "Selector": "eb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "5b e4 19 80 80 80 10 e6 00 00 00",
@@ -189157,7 +189229,7 @@
             },
             {
               "Selector": "68",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189188,7 +189260,7 @@
             },
             {
               "Selector": "e5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189219,7 +189291,7 @@
             },
             {
               "Selector": "62",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189250,7 +189322,7 @@
             },
             {
               "Selector": "df",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189281,7 +189353,7 @@
             },
             {
               "Selector": "5d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189312,7 +189384,7 @@
             },
             {
               "Selector": "d9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189343,7 +189415,7 @@
             },
             {
               "Selector": "56",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "5f e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189374,7 +189446,7 @@
             },
             {
               "Selector": "d3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "5f e4 19 80 80 80 10 ea 00 00 00",
@@ -189405,7 +189477,7 @@
             },
             {
               "Selector": "50",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "60 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189436,7 +189508,7 @@
             },
             {
               "Selector": "cd",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "60 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189467,7 +189539,7 @@
             },
             {
               "Selector": "4a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "61 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189498,7 +189570,7 @@
             },
             {
               "Selector": "c8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "61 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189529,7 +189601,7 @@
             },
             {
               "Selector": "44",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "62 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189560,7 +189632,7 @@
             },
             {
               "Selector": "c1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 38,
               "Offset": 16,
               "PayloadPrefixHex": "62 e4 19 80 80 38 14 00 4d 7e e4 19 00 00 00 60",
@@ -189591,7 +189663,7 @@
             },
             {
               "Selector": "3e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "63 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189622,7 +189694,7 @@
             },
             {
               "Selector": "bb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "63 e4 19 80 80 80 10 ee 00 00 00",
@@ -189653,7 +189725,7 @@
             },
             {
               "Selector": "38",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "64 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189684,7 +189756,7 @@
             },
             {
               "Selector": "b5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "64 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189715,7 +189787,7 @@
             },
             {
               "Selector": "32",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "65 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189746,7 +189818,7 @@
             },
             {
               "Selector": "af",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "65 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189777,7 +189849,7 @@
             },
             {
               "Selector": "2c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "66 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189808,7 +189880,7 @@
             },
             {
               "Selector": "a9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "66 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189839,7 +189911,7 @@
             },
             {
               "Selector": "26",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "67 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189870,7 +189942,7 @@
             },
             {
               "Selector": "a3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "67 e4 19 80 80 80 10 f1 00 00 00",
@@ -189901,7 +189973,7 @@
             },
             {
               "Selector": "20",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "68 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189932,7 +190004,7 @@
             },
             {
               "Selector": "9d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "68 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189963,7 +190035,7 @@
             },
             {
               "Selector": "1a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "69 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -189994,7 +190066,7 @@
             },
             {
               "Selector": "97",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "69 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190025,7 +190097,7 @@
             },
             {
               "Selector": "14",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190056,7 +190128,7 @@
             },
             {
               "Selector": "91",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190073,9 +190145,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 9c d4 85 c7 93 69 22 46 2d e0 73 46 0e 6b e4 19 ff 01 4e 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -190087,19 +190159,11 @@
             },
             {
               "Selector": "0e",
-              "Classification": "position xyz \u002B two flags",
-              "PayloadBytes": 14,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "6b e4 19 ff 01 4e 01 00 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 31,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "6b e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -190126,7 +190190,7 @@
             },
             {
               "Selector": "8b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "6b e4 19 80 80 80 10 f5 00 00 00",
@@ -190157,7 +190221,7 @@
             },
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190188,7 +190252,7 @@
             },
             {
               "Selector": "85",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190205,8 +190269,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 fb fd 85 c7 a8 72 20 46 14 a5 72 46 02 6d e4 19 ff 01 4e 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 183,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -190219,18 +190283,10 @@
             },
             {
               "Selector": "02",
-              "Classification": "empty state marker",
-              "PayloadBytes": 0,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "6d",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 183,
-              "Offset": 17,
-              "PayloadPrefixHex": "e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "6d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -190304,7 +190360,7 @@
             },
             {
               "Selector": "fc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190335,7 +190391,7 @@
             },
             {
               "Selector": "79",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190366,7 +190422,7 @@
             },
             {
               "Selector": "f6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190397,7 +190453,7 @@
             },
             {
               "Selector": "74",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 11,
               "Offset": 16,
               "PayloadPrefixHex": "6f e4 19 80 80 80 10 f7 00 00 00",
@@ -190428,7 +190484,7 @@
             },
             {
               "Selector": "f0",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "6f e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190459,7 +190515,7 @@
             },
             {
               "Selector": "6d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "70 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190490,7 +190546,7 @@
             },
             {
               "Selector": "ea",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "70 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190567,7 +190623,7 @@
             },
             {
               "Selector": "e4",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "71 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190598,7 +190654,7 @@
             },
             {
               "Selector": "61",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "72 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190629,7 +190685,7 @@
             },
             {
               "Selector": "df",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "72 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190660,7 +190716,7 @@
             },
             {
               "Selector": "3c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "73 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190691,7 +190747,7 @@
             },
             {
               "Selector": "d8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "73 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190722,7 +190778,7 @@
             },
             {
               "Selector": "55",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "74 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190753,7 +190809,7 @@
             },
             {
               "Selector": "d2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "74 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190807,7 +190863,7 @@
             },
             {
               "Selector": "cc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "75 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190838,7 +190894,7 @@
             },
             {
               "Selector": "49",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "76 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190869,7 +190925,7 @@
             },
             {
               "Selector": "c6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "76 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190900,7 +190956,7 @@
             },
             {
               "Selector": "43",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "77 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190931,7 +190987,7 @@
             },
             {
               "Selector": "c0",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "77 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190962,7 +191018,7 @@
             },
             {
               "Selector": "3d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "78 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -190993,7 +191049,7 @@
             },
             {
               "Selector": "ba",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 441,
               "Offset": 16,
               "PayloadPrefixHex": "78 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191024,7 +191080,7 @@
             },
             {
               "Selector": "37",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 282,
               "Offset": 16,
               "PayloadPrefixHex": "79 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191055,7 +191111,7 @@
             },
             {
               "Selector": "b5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "79 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191086,7 +191142,7 @@
             },
             {
               "Selector": "31",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191117,7 +191173,7 @@
             },
             {
               "Selector": "ae",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7a e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191148,7 +191204,7 @@
             },
             {
               "Selector": "2b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7b e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191179,7 +191235,7 @@
             },
             {
               "Selector": "a8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7b e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191210,7 +191266,7 @@
             },
             {
               "Selector": "25",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191241,7 +191297,7 @@
             },
             {
               "Selector": "a2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 308,
               "Offset": 16,
               "PayloadPrefixHex": "7c e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191272,7 +191328,7 @@
             },
             {
               "Selector": "1f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191303,7 +191359,7 @@
             },
             {
               "Selector": "9c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7d e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191334,7 +191390,7 @@
             },
             {
               "Selector": "19",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "7e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
@@ -191351,16 +191407,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46 97 7e e4 19 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46 97 7e",
+              "PayloadPrefixHex": "00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "97",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "7e e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -191374,16 +191438,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46 13 7f e4 19 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46 13 7f",
+              "PayloadPrefixHex": "00 00 cb 62 87 c7 00 f0 1b 45 5f 07 68 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "13",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "7f e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -191449,16 +191521,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 d2 62 84 c7 98 59 01 44 de 3e 81 46 61 23 af 05 80 80",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 66,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 51,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 66,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 d2 62 84 c7 98 59 01 44 de 3e 81 46 61 23",
+              "PayloadPrefixHex": "08 00 d2 62 84 c7 98 59 01 44 de 3e 81 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "61",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 51,
+              "Offset": 18,
+              "PayloadPrefixHex": "23 af 05 80 80 b0 cc 26 af 05 00 00 00 00 36 8c",
               "IsKnownLength": false
             }
           ]
@@ -191472,16 +191552,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 a8 62 84 c7 f9 3e 52 44 aa 41 81 46 de 23 af 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 a8 62 84 c7 f9 3e 52 44 aa 41 81 46 de 23",
+              "PayloadPrefixHex": "08 00 a8 62 84 c7 f9 3e 52 44 aa 41 81 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "de",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "23 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -191509,7 +191597,7 @@
             },
             {
               "Selector": "5b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "24 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -191540,7 +191628,7 @@
             },
             {
               "Selector": "d8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "24 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -191571,7 +191659,7 @@
             },
             {
               "Selector": "55",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "25 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -191602,7 +191690,7 @@
             },
             {
               "Selector": "d2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "25 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -191633,7 +191721,7 @@
             },
             {
               "Selector": "50",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "26 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -191650,16 +191738,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46 cc 26 af 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46 cc 26",
+              "PayloadPrefixHex": "00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "cc",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "26 af 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -191673,16 +191769,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46 49 27 af 05 80 80",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 26,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46 49 27",
+              "PayloadPrefixHex": "00 00 b0 61 84 c7 00 00 be 42 1c 52 81 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "49",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 11,
+              "Offset": 18,
+              "PayloadPrefixHex": "27 af 05 80 80 80 10 e7 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -191813,7 +191917,7 @@
             },
             {
               "Selector": "e3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "3d 99 1e ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196570,16 +196674,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 1d ea 77 c7 fc 6c 12 c4 31 e0 6f c7 f7 22 64 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 274,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 259,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 274,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 1d ea 77 c7 fc 6c 12 c4 31 e0 6f c7 f7 22",
+              "PayloadPrefixHex": "08 00 1d ea 77 c7 fc 6c 12 c4 31 e0 6f c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "f7",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 259,
+              "Offset": 18,
+              "PayloadPrefixHex": "22 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -196607,7 +196719,7 @@
             },
             {
               "Selector": "74",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 218,
               "Offset": 16,
               "PayloadPrefixHex": "23 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196638,7 +196750,7 @@
             },
             {
               "Selector": "e2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 219,
               "Offset": 16,
               "PayloadPrefixHex": "23 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196669,7 +196781,7 @@
             },
             {
               "Selector": "5f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 301,
               "Offset": 16,
               "PayloadPrefixHex": "24 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196700,7 +196812,7 @@
             },
             {
               "Selector": "dc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 237,
               "Offset": 16,
               "PayloadPrefixHex": "24 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196731,7 +196843,7 @@
             },
             {
               "Selector": "59",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 280,
               "Offset": 16,
               "PayloadPrefixHex": "25 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196762,7 +196874,7 @@
             },
             {
               "Selector": "d6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 277,
               "Offset": 16,
               "PayloadPrefixHex": "25 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196793,7 +196905,7 @@
             },
             {
               "Selector": "52",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 100,
               "Offset": 16,
               "PayloadPrefixHex": "26 64 05 80 80 80 10 e6 00 1d 00 02 0e 05 78 f1",
@@ -196824,7 +196936,7 @@
             },
             {
               "Selector": "d0",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 340,
               "Offset": 16,
               "PayloadPrefixHex": "26 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196855,7 +196967,7 @@
             },
             {
               "Selector": "4c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 326,
               "Offset": 16,
               "PayloadPrefixHex": "27 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196886,7 +196998,7 @@
             },
             {
               "Selector": "c9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 342,
               "Offset": 16,
               "PayloadPrefixHex": "27 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196917,7 +197029,7 @@
             },
             {
               "Selector": "46",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 411,
               "Offset": 16,
               "PayloadPrefixHex": "28 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196948,7 +197060,7 @@
             },
             {
               "Selector": "c4",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 332,
               "Offset": 16,
               "PayloadPrefixHex": "28 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -196979,7 +197091,7 @@
             },
             {
               "Selector": "41",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 326,
               "Offset": 16,
               "PayloadPrefixHex": "29 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -197010,7 +197122,7 @@
             },
             {
               "Selector": "bd",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 342,
               "Offset": 16,
               "PayloadPrefixHex": "29 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -197041,7 +197153,7 @@
             },
             {
               "Selector": "3b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 333,
               "Offset": 16,
               "PayloadPrefixHex": "2a 64 05 80 80 80 10 ea 00 2f 00 02 0c 96 b0 a9",
@@ -197072,7 +197184,7 @@
             },
             {
               "Selector": "b8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 315,
               "Offset": 16,
               "PayloadPrefixHex": "2a 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -197373,7 +197485,7 @@
             },
             {
               "Selector": "e8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "2f 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -197519,7 +197631,7 @@
             },
             {
               "Selector": "dc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "31 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -197619,7 +197731,7 @@
             },
             {
               "Selector": "52",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 393,
               "Offset": 16,
               "PayloadPrefixHex": "33 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198202,7 +198314,7 @@
             },
             {
               "Selector": "29",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 41,
               "Offset": 16,
               "PayloadPrefixHex": "3a 64 05 80 80 b8 14 00 9d 49 64 05 00 00 00 a0",
@@ -198233,7 +198345,7 @@
             },
             {
               "Selector": "a5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "3a 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198264,7 +198376,7 @@
             },
             {
               "Selector": "22",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 200,
               "Offset": 16,
               "PayloadPrefixHex": "3b 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198295,7 +198407,7 @@
             },
             {
               "Selector": "a0",
-              "Classification": "static object/door variable block",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 200,
               "Offset": 16,
               "PayloadPrefixHex": "3b 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198326,7 +198438,7 @@
             },
             {
               "Selector": "1c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "3c 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198403,7 +198515,7 @@
             },
             {
               "Selector": "16",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "3d 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198503,7 +198615,7 @@
             },
             {
               "Selector": "8d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "3e 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198534,7 +198646,7 @@
             },
             {
               "Selector": "0b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "3f 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198565,7 +198677,7 @@
             },
             {
               "Selector": "87",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "3f 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198582,8 +198694,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 96 d2 73 c7 7a d0 da 45 1a 43 7c c7 04 40 64 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 182,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -198596,18 +198708,10 @@
             },
             {
               "Selector": "04",
-              "Classification": "rotation",
-              "PayloadBytes": 1,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "40",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "64",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 182,
-              "Offset": 18,
-              "PayloadPrefixHex": "05 ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "40 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -198681,7 +198785,7 @@
             },
             {
               "Selector": "fe",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "40 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198712,7 +198816,7 @@
             },
             {
               "Selector": "7b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "41 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198743,7 +198847,7 @@
             },
             {
               "Selector": "f8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "41 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198774,7 +198878,7 @@
             },
             {
               "Selector": "76",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "42 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198805,7 +198909,7 @@
             },
             {
               "Selector": "f2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "42 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198836,7 +198940,7 @@
             },
             {
               "Selector": "6f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "43 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198867,7 +198971,7 @@
             },
             {
               "Selector": "ec",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "43 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198898,7 +199002,7 @@
             },
             {
               "Selector": "69",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "44 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198929,7 +199033,7 @@
             },
             {
               "Selector": "e6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "44 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198960,7 +199064,7 @@
             },
             {
               "Selector": "63",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "45 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -198991,7 +199095,7 @@
             },
             {
               "Selector": "e1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "45 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199022,7 +199126,7 @@
             },
             {
               "Selector": "5e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "46 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199039,9 +199143,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 ed d2 72 c7 e1 ad d0 44 01 49 7f c7 0a 47 64 05 ff 01 64 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -199053,19 +199157,11 @@
             },
             {
               "Selector": "0a",
-              "Classification": "position xyz \u002B flag",
-              "PayloadBytes": 13,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "47 64 05 ff 01 64 01 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 30,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "47 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -199092,7 +199188,7 @@
             },
             {
               "Selector": "77",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "47 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199123,7 +199219,7 @@
             },
             {
               "Selector": "f4",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 408,
               "Offset": 16,
               "PayloadPrefixHex": "47 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199154,7 +199250,7 @@
             },
             {
               "Selector": "71",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 429,
               "Offset": 16,
               "PayloadPrefixHex": "48 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199185,7 +199281,7 @@
             },
             {
               "Selector": "ee",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 205,
               "Offset": 16,
               "PayloadPrefixHex": "48 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199216,7 +199312,7 @@
             },
             {
               "Selector": "6b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "49 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -199233,16 +199329,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7 e8 49 64 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7 e8 49",
+              "PayloadPrefixHex": "00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "e8",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "49 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -199256,16 +199360,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7 65 4a 64 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 199,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7 65 4a",
+              "PayloadPrefixHex": "00 00 35 71 72 c7 00 80 fc c3 67 38 80 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "65",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "4a 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -339050,16 +339162,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 6d 5b 73 c7 15 02 0d 43 64 6a 7e c7 08 ca 68 05 80 80",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 106,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 91,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 106,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 6d 5b 73 c7 15 02 0d 43 64 6a 7e c7 08 ca",
+              "PayloadPrefixHex": "08 00 6d 5b 73 c7 15 02 0d 43 64 6a 7e c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "08",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 91,
+              "Offset": 18,
+              "PayloadPrefixHex": "ca 68 05 80 80 b8 14 00 71 f3 68 05 00 00 00 20",
               "IsKnownLength": false
             }
           ]
@@ -339073,16 +339193,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 a1 0a 73 c7 98 e9 48 44 61 a0 7e c7 85 ca 68 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 326,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 311,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 326,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 a1 0a 73 c7 98 e9 48 44 61 a0 7e c7 85 ca",
+              "PayloadPrefixHex": "08 00 a1 0a 73 c7 98 e9 48 44 61 a0 7e c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "85",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 311,
+              "Offset": 18,
+              "PayloadPrefixHex": "ca 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -339096,8 +339224,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 a3 0a 73 c7 d6 7f b0 44 5f a0 7e c7 02 cb 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 300,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 301,
           "Complete": false,
           "Segments": [
             {
@@ -339110,18 +339238,10 @@
             },
             {
               "Selector": "02",
-              "Classification": "empty state marker",
-              "PayloadBytes": 0,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 301,
               "Offset": 16,
-              "PayloadPrefixHex": "",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "cb",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 300,
-              "Offset": 17,
-              "PayloadPrefixHex": "68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "cb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -339149,7 +339269,7 @@
             },
             {
               "Selector": "7f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 255,
               "Offset": 16,
               "PayloadPrefixHex": "cb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339180,7 +339300,7 @@
             },
             {
               "Selector": "fc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 285,
               "Offset": 16,
               "PayloadPrefixHex": "cb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339211,7 +339331,7 @@
             },
             {
               "Selector": "79",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 252,
               "Offset": 16,
               "PayloadPrefixHex": "cc 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339242,7 +339362,7 @@
             },
             {
               "Selector": "f6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 304,
               "Offset": 16,
               "PayloadPrefixHex": "cc 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339273,7 +339393,7 @@
             },
             {
               "Selector": "83",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 188,
               "Offset": 16,
               "PayloadPrefixHex": "cd 68 05 80 80 80 10 e6 00 2b 00 02 0c 55 b1 d0",
@@ -339290,8 +339410,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 b2 0a 73 c7 3f e8 96 45 55 a0 7e c7 00 ce 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 339,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 341,
           "Complete": false,
           "Segments": [
             {
@@ -339304,18 +339424,10 @@
             },
             {
               "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 341,
               "Offset": 16,
-              "PayloadPrefixHex": "ce",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "68",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 339,
-              "Offset": 18,
-              "PayloadPrefixHex": "05 ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "ce 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -339343,7 +339455,7 @@
             },
             {
               "Selector": "ab",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 320,
               "Offset": 16,
               "PayloadPrefixHex": "ce 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339374,7 +339486,7 @@
             },
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 341,
               "Offset": 16,
               "PayloadPrefixHex": "cf 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339405,7 +339517,7 @@
             },
             {
               "Selector": "a5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 424,
               "Offset": 16,
               "PayloadPrefixHex": "cf 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339436,7 +339548,7 @@
             },
             {
               "Selector": "22",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 451,
               "Offset": 16,
               "PayloadPrefixHex": "d0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339467,7 +339579,7 @@
             },
             {
               "Selector": "90",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 450,
               "Offset": 16,
               "PayloadPrefixHex": "d0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339498,7 +339610,7 @@
             },
             {
               "Selector": "0d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 357,
               "Offset": 16,
               "PayloadPrefixHex": "d1 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339529,7 +339641,7 @@
             },
             {
               "Selector": "8a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 271,
               "Offset": 16,
               "PayloadPrefixHex": "d1 68 05 80 80 80 10 ea 00 01 00 02 14 00 06 00",
@@ -339560,7 +339672,7 @@
             },
             {
               "Selector": "07",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 269,
               "Offset": 16,
               "PayloadPrefixHex": "d2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339591,7 +339703,7 @@
             },
             {
               "Selector": "94",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 269,
               "Offset": 16,
               "PayloadPrefixHex": "d2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339622,7 +339734,7 @@
             },
             {
               "Selector": "10",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 269,
               "Offset": 16,
               "PayloadPrefixHex": "d3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339653,7 +339765,7 @@
             },
             {
               "Selector": "8d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 330,
               "Offset": 16,
               "PayloadPrefixHex": "d3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339670,9 +339782,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 d2 0a 73 c7 5f bc 22 46 40 a0 7e c7 0a d4 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 293,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -339684,19 +339796,11 @@
             },
             {
               "Selector": "0a",
-              "Classification": "position xyz \u002B flag",
-              "PayloadBytes": 13,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 293,
               "Offset": 16,
-              "PayloadPrefixHex": "d4 68 05 ff 01 64 01 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 30,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "d4 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -339723,7 +339827,7 @@
             },
             {
               "Selector": "87",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 273,
               "Offset": 16,
               "PayloadPrefixHex": "d4 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -339740,8 +339844,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 d7 0a 73 c7 e8 e9 2c 46 3d a0 7e c7 04 d5 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 382,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 384,
           "Complete": false,
           "Segments": [
             {
@@ -339754,18 +339858,10 @@
             },
             {
               "Selector": "04",
-              "Classification": "rotation",
-              "PayloadBytes": 1,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 384,
               "Offset": 16,
-              "PayloadPrefixHex": "d5",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "68",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 382,
-              "Offset": 18,
-              "PayloadPrefixHex": "05 ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "d5 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -339793,7 +339889,7 @@
             },
             {
               "Selector": "81",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 392,
               "Offset": 16,
               "PayloadPrefixHex": "d5 68 05 80 80 80 10 ee 00 30 00 02 0c 7c 9f 55",
@@ -339893,7 +339989,7 @@
             },
             {
               "Selector": "e9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 413,
               "Offset": 16,
               "PayloadPrefixHex": "d6 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341098,7 +341194,7 @@
             },
             {
               "Selector": "95",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e4 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341129,7 +341225,7 @@
             },
             {
               "Selector": "12",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e5 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341160,7 +341256,7 @@
             },
             {
               "Selector": "8f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e5 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341177,9 +341273,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 2d 0b 73 c7 16 74 3d 46 03 a0 7e c7 0c e6 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -341191,19 +341287,11 @@
             },
             {
               "Selector": "0c",
-              "Classification": "position xyz \u002B flag",
-              "PayloadBytes": 13,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e6 68 05 ff 01 64 01 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 30,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "e6 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -341230,7 +341318,7 @@
             },
             {
               "Selector": "89",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e6 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341247,8 +341335,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 32 0b 73 c7 9d 7d 35 46 00 a0 7e c7 06 e7 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 181,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -341261,18 +341349,10 @@
             },
             {
               "Selector": "06",
-              "Classification": "animation \u002B rotation",
-              "PayloadBytes": 2,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e7 68",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "05",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 181,
-              "Offset": 19,
-              "PayloadPrefixHex": "ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00 08",
+              "PayloadPrefixHex": "e7 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -341300,7 +341380,7 @@
             },
             {
               "Selector": "83",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e7 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341317,8 +341397,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 36 0b 73 c7 cc 91 2c 46 fd 9f 7e c7 00 e8 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 182,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -341331,18 +341411,10 @@
             },
             {
               "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e8",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "68",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 182,
-              "Offset": 18,
-              "PayloadPrefixHex": "05 ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e8 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -341370,7 +341442,7 @@
             },
             {
               "Selector": "7d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e8 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341401,7 +341473,7 @@
             },
             {
               "Selector": "fa",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e8 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341432,7 +341504,7 @@
             },
             {
               "Selector": "77",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e9 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341463,7 +341535,7 @@
             },
             {
               "Selector": "f4",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "e9 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341494,7 +341566,7 @@
             },
             {
               "Selector": "71",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ea 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341525,7 +341597,7 @@
             },
             {
               "Selector": "ee",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ea 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341556,7 +341628,7 @@
             },
             {
               "Selector": "6b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "eb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341587,7 +341659,7 @@
             },
             {
               "Selector": "e8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "eb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341618,7 +341690,7 @@
             },
             {
               "Selector": "64",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ec 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341649,7 +341721,7 @@
             },
             {
               "Selector": "f1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ec 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341680,7 +341752,7 @@
             },
             {
               "Selector": "4f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ed 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341711,7 +341783,7 @@
             },
             {
               "Selector": "dc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 407,
               "Offset": 16,
               "PayloadPrefixHex": "ed 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341742,7 +341814,7 @@
             },
             {
               "Selector": "49",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 429,
               "Offset": 16,
               "PayloadPrefixHex": "ee 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341773,7 +341845,7 @@
             },
             {
               "Selector": "c6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 451,
               "Offset": 16,
               "PayloadPrefixHex": "ee 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341804,7 +341876,7 @@
             },
             {
               "Selector": "43",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 427,
               "Offset": 16,
               "PayloadPrefixHex": "ef 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341821,8 +341893,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 60 0b 73 c7 7b d4 6d 45 e1 9f 7e c7 06 f0 68 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 273,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 276,
           "Complete": false,
           "Segments": [
             {
@@ -341835,18 +341907,10 @@
             },
             {
               "Selector": "06",
-              "Classification": "animation \u002B rotation",
-              "PayloadBytes": 2,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 276,
               "Offset": 16,
-              "PayloadPrefixHex": "f0 68",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "05",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 273,
-              "Offset": 19,
-              "PayloadPrefixHex": "ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00 08",
+              "PayloadPrefixHex": "f0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -341874,7 +341938,7 @@
             },
             {
               "Selector": "1e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "f0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341905,7 +341969,7 @@
             },
             {
               "Selector": "3d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 321,
               "Offset": 16,
               "PayloadPrefixHex": "f0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341936,7 +342000,7 @@
             },
             {
               "Selector": "d9",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 320,
               "Offset": 16,
               "PayloadPrefixHex": "f0 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341967,7 +342031,7 @@
             },
             {
               "Selector": "56",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 255,
               "Offset": 16,
               "PayloadPrefixHex": "f1 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -341998,7 +342062,7 @@
             },
             {
               "Selector": "d3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 423,
               "Offset": 16,
               "PayloadPrefixHex": "f1 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -342029,7 +342093,7 @@
             },
             {
               "Selector": "50",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 451,
               "Offset": 16,
               "PayloadPrefixHex": "f2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -342060,7 +342124,7 @@
             },
             {
               "Selector": "cd",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 329,
               "Offset": 16,
               "PayloadPrefixHex": "f2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -342091,7 +342155,7 @@
             },
             {
               "Selector": "4a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 252,
               "Offset": 16,
               "PayloadPrefixHex": "f3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -342108,16 +342172,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 c7 f3 68 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 235,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 250,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 c7 f3",
+              "PayloadPrefixHex": "00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "c7",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 235,
+              "Offset": 18,
+              "PayloadPrefixHex": "f3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -342131,16 +342203,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 44 f4 68 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 282,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 267,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 282,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 44 f4",
+              "PayloadPrefixHex": "00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "44",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 267,
+              "Offset": 18,
+              "PayloadPrefixHex": "f4 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -342253,7 +342333,7 @@
             },
             {
               "Selector": "bb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 424,
               "Offset": 16,
               "PayloadPrefixHex": "f5 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362084,16 +362164,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 1c 47 73 c7 70 0c 08 c1 61 53 7e c7 f3 9a 69 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 233,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 218,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 233,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "08 00 1c 47 73 c7 70 0c 08 c1 61 53 7e c7 f3 9a",
+              "PayloadPrefixHex": "08 00 1c 47 73 c7 70 0c 08 c1 61 53 7e c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "f3",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 218,
+              "Offset": 18,
+              "PayloadPrefixHex": "9a 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -362121,7 +362209,7 @@
             },
             {
               "Selector": "70",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 254,
               "Offset": 16,
               "PayloadPrefixHex": "9b 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362152,7 +362240,7 @@
             },
             {
               "Selector": "ed",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 274,
               "Offset": 16,
               "PayloadPrefixHex": "9b 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362183,7 +362271,7 @@
             },
             {
               "Selector": "6a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 255,
               "Offset": 16,
               "PayloadPrefixHex": "9c 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362214,7 +362302,7 @@
             },
             {
               "Selector": "c7",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 277,
               "Offset": 16,
               "PayloadPrefixHex": "9c 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362245,7 +362333,7 @@
             },
             {
               "Selector": "44",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 236,
               "Offset": 16,
               "PayloadPrefixHex": "9d 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362276,7 +362364,7 @@
             },
             {
               "Selector": "c1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 236,
               "Offset": 16,
               "PayloadPrefixHex": "9d 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362307,7 +362395,7 @@
             },
             {
               "Selector": "3f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 45,
               "Offset": 16,
               "PayloadPrefixHex": "9e 69 05 80 80 80 10 e7 00 07 00 02 0e 01 e5 fe",
@@ -362338,7 +362426,7 @@
             },
             {
               "Selector": "cb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "9e 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362369,7 +362457,7 @@
             },
             {
               "Selector": "49",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 229,
               "Offset": 16,
               "PayloadPrefixHex": "9f 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362400,7 +362488,7 @@
             },
             {
               "Selector": "c5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 412,
               "Offset": 16,
               "PayloadPrefixHex": "9f 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362431,7 +362519,7 @@
             },
             {
               "Selector": "42",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 429,
               "Offset": 16,
               "PayloadPrefixHex": "a0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362462,7 +362550,7 @@
             },
             {
               "Selector": "bf",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 341,
               "Offset": 16,
               "PayloadPrefixHex": "a0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362493,7 +362581,7 @@
             },
             {
               "Selector": "68",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 327,
               "Offset": 16,
               "PayloadPrefixHex": "a1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362524,7 +362612,7 @@
             },
             {
               "Selector": "8c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "a1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362555,7 +362643,7 @@
             },
             {
               "Selector": "aa",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 236,
               "Offset": 16,
               "PayloadPrefixHex": "a1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362586,7 +362674,7 @@
             },
             {
               "Selector": "26",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 311,
               "Offset": 16,
               "PayloadPrefixHex": "a2 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362617,7 +362705,7 @@
             },
             {
               "Selector": "a3",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 179,
               "Offset": 16,
               "PayloadPrefixHex": "a2 69 05 80 80 80 10 ea 00 32 00 02 08 05 fe 85",
@@ -362648,7 +362736,7 @@
             },
             {
               "Selector": "21",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 327,
               "Offset": 16,
               "PayloadPrefixHex": "a3 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362679,7 +362767,7 @@
             },
             {
               "Selector": "9d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 332,
               "Offset": 16,
               "PayloadPrefixHex": "a3 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362710,7 +362798,7 @@
             },
             {
               "Selector": "1a",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 342,
               "Offset": 16,
               "PayloadPrefixHex": "a4 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362741,7 +362829,7 @@
             },
             {
               "Selector": "97",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 301,
               "Offset": 16,
               "PayloadPrefixHex": "a4 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362772,7 +362860,7 @@
             },
             {
               "Selector": "15",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 256,
               "Offset": 16,
               "PayloadPrefixHex": "a5 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362803,7 +362891,7 @@
             },
             {
               "Selector": "91",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 256,
               "Offset": 16,
               "PayloadPrefixHex": "a5 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362834,7 +362922,7 @@
             },
             {
               "Selector": "0f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 365,
               "Offset": 16,
               "PayloadPrefixHex": "a6 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -362865,7 +362953,7 @@
             },
             {
               "Selector": "9b",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 412,
               "Offset": 16,
               "PayloadPrefixHex": "a6 69 05 80 80 80 10 ee 00 10 00 02 0c 8a 44 68",
@@ -363011,7 +363099,7 @@
             },
             {
               "Selector": "8f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 218,
               "Offset": 16,
               "PayloadPrefixHex": "a8 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -363028,9 +363116,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 a3 4a 7a c7 46 ab 0f 46 b2 56 75 c7 0c a9 69 05 ff 01 64 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 242,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -363042,19 +363130,11 @@
             },
             {
               "Selector": "0c",
-              "Classification": "position xyz \u002B flag",
-              "PayloadBytes": 13,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 242,
               "Offset": 16,
-              "PayloadPrefixHex": "a9 69 05 ff 01 64 01 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 30,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "a9 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -363081,7 +363161,7 @@
             },
             {
               "Selector": "89",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "a9 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -363098,8 +363178,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 b3 c4 7a c7 71 25 13 46 4a ba 74 c7 06 aa 69 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 349,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 352,
           "Complete": false,
           "Segments": [
             {
@@ -363112,18 +363192,10 @@
             },
             {
               "Selector": "06",
-              "Classification": "animation \u002B rotation",
-              "PayloadBytes": 2,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 352,
               "Offset": 16,
-              "PayloadPrefixHex": "aa 69",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "05",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 349,
-              "Offset": 19,
-              "PayloadPrefixHex": "ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00 08",
+              "PayloadPrefixHex": "aa 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -363151,7 +363223,7 @@
             },
             {
               "Selector": "83",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 357,
               "Offset": 16,
               "PayloadPrefixHex": "aa 69 05 80 80 80 10 f2 00 22 00 07 00 27 00 40",
@@ -363573,7 +363645,7 @@
             },
             {
               "Selector": "49",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 348,
               "Offset": 16,
               "PayloadPrefixHex": "b1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -363880,7 +363952,7 @@
             },
             {
               "Selector": "31",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b5 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -363920,9 +363992,9 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 54 58 80 c7 8f 04 f7 45 d3 23 6d c7 0c b6 69 05 ff 01 64 01",
-          "ParsedUpdateCount": 3,
-          "UnparsedBytes": 0,
-          "Complete": true,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
+          "Complete": false,
           "Segments": [
             {
               "Selector": "08",
@@ -363934,19 +364006,11 @@
             },
             {
               "Selector": "0c",
-              "Classification": "position xyz \u002B flag",
-              "PayloadBytes": 13,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "b6 69 05 ff 01 64 01 00 00 00 00 00 00",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "00",
-              "Classification": "one-byte state marker",
-              "PayloadBytes": 1,
-              "Offset": 30,
-              "PayloadPrefixHex": "00",
-              "IsKnownLength": true
+              "PayloadPrefixHex": "b6 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
             }
           ]
         },
@@ -363973,7 +364037,7 @@
             },
             {
               "Selector": "89",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 38,
               "Offset": 16,
               "PayloadPrefixHex": "b6 69 05 80 80 38 14 00 29 c1 69 05 00 00 00 40",
@@ -363990,8 +364054,8 @@
           "FirstSelector": "08",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 72 d9 7c c7 c8 6d e8 45 b4 0f 72 c7 06 b7 69 05 ff 01 64 01",
-          "ParsedUpdateCount": 2,
-          "UnparsedBytes": 181,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -364004,18 +364068,10 @@
             },
             {
               "Selector": "06",
-              "Classification": "animation \u002B rotation",
-              "PayloadBytes": 2,
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "b7 69",
-              "IsKnownLength": true
-            },
-            {
-              "Selector": "05",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 181,
-              "Offset": 19,
-              "PayloadPrefixHex": "ff 01 64 01 00 00 00 00 00 00 00 00 00 00 00 08",
+              "PayloadPrefixHex": "b7 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -364043,7 +364099,7 @@
             },
             {
               "Selector": "d1",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b7 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364074,7 +364130,7 @@
             },
             {
               "Selector": "4e",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b8 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364105,7 +364161,7 @@
             },
             {
               "Selector": "cb",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b8 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364136,7 +364192,7 @@
             },
             {
               "Selector": "48",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b9 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364167,7 +364223,7 @@
             },
             {
               "Selector": "c5",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "b9 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364198,7 +364254,7 @@
             },
             {
               "Selector": "42",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ba 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364229,7 +364285,7 @@
             },
             {
               "Selector": "bf",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "ba 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364260,7 +364316,7 @@
             },
             {
               "Selector": "3c",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 184,
               "Offset": 16,
               "PayloadPrefixHex": "bb 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364291,7 +364347,7 @@
             },
             {
               "Selector": "d8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 461,
               "Offset": 16,
               "PayloadPrefixHex": "bb 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364322,7 +364378,7 @@
             },
             {
               "Selector": "56",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 452,
               "Offset": 16,
               "PayloadPrefixHex": "bc 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364353,7 +364409,7 @@
             },
             {
               "Selector": "d2",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 247,
               "Offset": 16,
               "PayloadPrefixHex": "bc 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364384,7 +364440,7 @@
             },
             {
               "Selector": "4f",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 219,
               "Offset": 16,
               "PayloadPrefixHex": "bd 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364415,7 +364471,7 @@
             },
             {
               "Selector": "cc",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "bd 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364446,7 +364502,7 @@
             },
             {
               "Selector": "49",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "be 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364477,7 +364533,7 @@
             },
             {
               "Selector": "e6",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 201,
               "Offset": 16,
               "PayloadPrefixHex": "be 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364508,7 +364564,7 @@
             },
             {
               "Selector": "62",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 202,
               "Offset": 16,
               "PayloadPrefixHex": "bf 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364539,7 +364595,7 @@
             },
             {
               "Selector": "23",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 422,
               "Offset": 16,
               "PayloadPrefixHex": "c0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364570,7 +364626,7 @@
             },
             {
               "Selector": "3d",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 402,
               "Offset": 16,
               "PayloadPrefixHex": "c0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364601,7 +364657,7 @@
             },
             {
               "Selector": "a8",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 407,
               "Offset": 16,
               "PayloadPrefixHex": "c0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364632,7 +364688,7 @@
             },
             {
               "Selector": "ba",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 429,
               "Offset": 16,
               "PayloadPrefixHex": "c0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364663,7 +364719,7 @@
             },
             {
               "Selector": "da",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 391,
               "Offset": 16,
               "PayloadPrefixHex": "c0 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364694,7 +364750,7 @@
             },
             {
               "Selector": "57",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 422,
               "Offset": 16,
               "PayloadPrefixHex": "c1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
@@ -364711,16 +364767,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7 d3 c1 69 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 439,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 424,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 439,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7 d3 c1",
+              "PayloadPrefixHex": "00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "d3",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 424,
+              "Offset": 18,
+              "PayloadPrefixHex": "c1 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -364734,16 +364798,24 @@
           "FirstSelector": "09",
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7 41 c2 69 05 ff 01",
-          "ParsedUpdateCount": 0,
-          "UnparsedBytes": 467,
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 452,
           "Complete": false,
           "Segments": [
             {
               "Selector": "09",
-              "Classification": "unknown selector payload",
-              "PayloadBytes": 467,
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
               "Offset": 3,
-              "PayloadPrefixHex": "00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7 41 c2",
+              "PayloadPrefixHex": "00 00 92 27 80 c7 00 20 8a c4 d7 a0 6d c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "41",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 452,
+              "Offset": 18,
+              "PayloadPrefixHex": "c2 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -396783,7 +396855,7 @@
             },
             {
               "Selector": "c4",
-              "Classification": "unknown selector payload",
+              "Classification": "selector 08 movement tail lead",
               "PayloadBytes": 233,
               "Offset": 16,
               "PayloadPrefixHex": "b8 6a 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
