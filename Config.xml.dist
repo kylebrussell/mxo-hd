@@ -7,10 +7,15 @@
     <Username>mxo</Username>
     <Password>mxopassword</Password>
     <Database>reality_hd</Database>
+    <DbType>mysql</DbType>
+    <Motd></Motd>
   </Database>
 
   <!-- Server Configuration -->
   <Server>
+    <ServerType>cr2</ServerType>
+    <AdminConsoleEnabled>false</AdminConsoleEnabled>
+
     <!-- Auth Server (Login) -->
     <Auth>
       <Host>0.0.0.0</Host>

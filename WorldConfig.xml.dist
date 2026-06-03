@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorldConfig>
+  <serverName>Syntax</serverName>
+  <IsPvPServer>false</IsPvPServer>
+  <PvPMaxSafeLevel>16</PvPMaxSafeLevel>
+  <FixedBinkIDOverride>0</FixedBinkIDOverride>
+  <WorldEvents>
+    <weather>bluesky2</weather>
+  </WorldEvents>
+</WorldConfig>

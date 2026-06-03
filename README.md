@@ -39,16 +39,8 @@ The original Hardline Dreams project laid excellent groundwork but hasn't been a
 git clone https://github.com/kylebrussell/mxo-hd.git
 cd mxo-hd
 
-# Start MySQL with Docker Compose
-docker-compose up -d
-
-# Configure the server
-cp Config.xml.dist Config.xml
-
-# Build and run
-dotnet restore
-dotnet build
-dotnet run --project "hds/Hardline Dreams MxO server.csproj"
+# Start MySQL, build, test, and verify the server reaches ready state
+scripts/smoke-local.sh
 ```
 
 **See the detailed [macOS Setup Guide](docs/SETUP-macOS.md) for complete instructions.**
@@ -76,14 +68,7 @@ dotnet restore
 dotnet build
 ```
 
-**3. Extract data files:**
-```bash
-# Extract docs/data.zip to hds/bin/Debug/net8.0/data/
-unzip docs/data.zip -d hds/bin/Debug/net8.0/data/
-cp Config.xml hds/bin/Debug/net8.0/
-```
-
-**4. Run the server:**
+**3. Run the server:**
 ```bash
 dotnet run --project "hds/Hardline Dreams MxO server.csproj"
 ```
@@ -105,7 +90,7 @@ This emulator is a **work-in-progress** and implements partial functionality of 
 | **Movement & Navigation** | ✅ Working | Basic player movement |
 | **Inventory System** | ⚠️ Partial | Can equip items, stackables need work |
 | **Ability System** | ⚠️ Partial | Loadout changes work, some bugs with multiple abilities |
-| **Vendors** | ⚠️ Partial | Buying works (doesn't decrease money), selling not implemented |
+| **Vendors** | ⚠️ Partial | Buying deducts decoded prices, selling needs packet-format research |
 | **Combat System** | ✅ Working | Melee & ranged combat, tactics, death/respawn, loot |
 | **NPCs/Mobs** | ✅ Working | Spawn, move, fight back, die, drop loot |
 | **Doors & Static Objects** | ⚠️ Partial | Can open doors (requires data files) |
@@ -179,7 +164,6 @@ mxo-hd/
 ├── docs/                         # Documentation
 │   ├── SETUP-macOS.md           # macOS setup guide
 │   ├── SETUP.MD                 # General setup
-│   └── data.zip                 # Game object data
 ├── docker-compose.yml           # MySQL Docker setup
 └── Config.xml.dist              # Configuration template
 ```
@@ -198,6 +182,12 @@ dotnet clean && dotnet build
 
 # Run tests (if any)
 dotnet test
+
+# Full local smoke test with Docker MySQL
+scripts/smoke-local.sh
+
+# Lightweight UDP load test against a running world server
+scripts/load-test.sh --clients 50 --messages 20
 ```
 
 ### Contributing
@@ -207,7 +197,7 @@ This fork is actively maintained by Kyle Russell. Please open issues and pull re
 Contributions are welcome! This is a preservation and modernization effort. Areas that need work:
 
 - **Mission system** - Needs major development
-- **Vendor system** - Selling items, proper money handling
+- **Vendor system** - Selling items still needs packet-format research
 - **Combat abilities** - Wire special abilities to combat system
 - **Combat animations** - Sync attack animations with damage timing
 - **Testing** - Many features are untested
@@ -233,7 +223,7 @@ See community resources at [mxoemu.com](http://www.mxoemu.com) for client setup 
 
 ## About the Data Files
 
-Static game objects (doors, vendors, NPCs, etc.) are stored in CSV files extracted from `docs/data.zip`. These were parsed using a tool called **Cortana** (created before Windows 10 commandeered the name!).
+Static game objects (doors, vendors, NPCs, etc.) are stored in tracked CSV files under `data/`. These were parsed using a tool called **Cortana** (created before Windows 10 commandeered the name!).
 
 **Note:** Some object positions may be incorrect due to parsing bugs. The parser is available at: https://github.com/hdneo/cortana-python
 
@@ -242,7 +232,9 @@ Static game objects (doors, vendors, NPCs, etc.) are stored in CSV files extract
 - **Stackable items** in inventory don't work properly
 - **Hyperjump height calculations** are off
 - **Vendor selling** is not implemented
-- **Money transactions** don't properly deduct from player balance
+- **Vendor selling** needs packet-format research
+- **Vendor buy/sell prices** use decoded MxOEmu `goprops` `VendorPrice` data with a default fallback
+- **Packet research workflow** is documented in [docs/PACKET-RESEARCH.md](docs/PACKET-RESEARCH.md)
 - **Some door positions** are incorrect (parsing artifacts)
 - **CR1 client support** uses a workaround with namespaces (needs refactoring)
 - **Combat animations** not yet synced with damage timing

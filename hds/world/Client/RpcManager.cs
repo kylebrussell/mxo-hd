@@ -164,6 +164,10 @@ namespace hds{
 		            new VendorHandler().processBuyItem(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_VENDOR_SELL:
+		            new VendorHandler().processSellItem(ref rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_ADD_FRIEND:
 			        new BuddylistHandler().ProcessAddFriend(ref rpcData);
 			        break;

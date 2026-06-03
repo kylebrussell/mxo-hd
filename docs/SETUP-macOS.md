@@ -19,16 +19,38 @@ dotnet --version
 # Should show 8.0.x or higher
 ```
 
-### 2. Install Docker Desktop (Recommended)
+### 2. Install Docker Runtime (Recommended)
 
 Docker provides the easiest way to run MySQL locally.
 
-**Install via Homebrew:**
+**Option A: Docker CLI with Colima**
+
+This is a lightweight Homebrew-based setup that does not require Docker Desktop:
+
+```bash
+brew install colima docker docker-compose
+colima start --cpu 4 --memory 4 --disk 30 --vm-type=vz
+docker context use colima
+```
+
+If `docker compose` is not found after installing `docker-compose`, add Homebrew's plugin directory to `~/.docker/config.json`:
+
+```json
+{
+  "cliPluginsExtraDirs": [
+    "/opt/homebrew/lib/docker/cli-plugins"
+  ],
+  "currentContext": "colima"
+}
+```
+
+**Option B: Docker Desktop**
+
+Install via Homebrew or download from Docker:
+
 ```bash
 brew install --cask docker
 ```
-
-**Or download from:** https://www.docker.com/products/docker-desktop
 
 After installation, launch Docker Desktop from Applications.
 
@@ -59,13 +81,13 @@ The repository includes a `docker-compose.yml` that automatically:
 - Sets up a user `mxo` with password `mxopassword`
 
 ```bash
-docker-compose up -d
+docker compose up -d mysql
 ```
 
 **Wait for MySQL to initialize:**
 ```bash
 # Check if MySQL is ready
-docker-compose logs -f mysql
+docker compose logs -f mysql
 
 # You should see: "ready for connections"
 # Press Ctrl+C to exit logs
@@ -73,9 +95,10 @@ docker-compose logs -f mysql
 
 ### 3. Configure the Server
 
-Copy the example configuration:
+The server can use `Config.xml.dist` and `WorldConfig.xml.dist` directly for local Docker defaults. If you need local overrides, copy the templates:
 ```bash
 cp Config.xml.dist Config.xml
+cp WorldConfig.xml.dist WorldConfig.xml
 ```
 
 The default `Config.xml` is already configured for the Docker MySQL setup. If you need to customize it, edit the database section:
@@ -107,28 +130,14 @@ dotnet build "hds/Hardline Dreams MxO server.csproj"
 ```
 
 **Expected output:**
-- The build should complete with warnings but **0 errors**
+- The build should complete with **0 errors**
 - Output will be in `hds/bin/Debug/net8.0/`
 
-### 6. Extract Data Files
+### 6. Data Files
 
-The server requires static game object data files:
+The required data files are tracked in `data/` and copied to build output automatically.
 
-```bash
-# Download and extract data.zip from the docs folder
-# (Note: You may need to download this separately if it's not in the repo)
-unzip docs/data.zip -d hds/bin/Debug/net8.0/data/
-```
-
-If `data.zip` is not available, check the [project documentation](../README.md) or releases.
-
-### 7. Copy Config to Output Directory
-
-```bash
-cp Config.xml hds/bin/Debug/net8.0/
-```
-
-### 8. Run the Server
+### 7. Run the Server
 
 ```bash
 # Navigate to the output directory
@@ -143,7 +152,7 @@ dotnet hds.dll
 dotnet run --project "hds/Hardline Dreams MxO server.csproj"
 ```
 
-### 9. Expected Output
+### 8. Expected Output
 
 The server will initialize and you should see logs indicating:
 - Database connection successful
@@ -178,7 +187,7 @@ mysql -u mxo -p reality_hd < SQL/reality_hd.sql
 # Enter password: mxopassword
 ```
 
-### 3. Continue with steps 3-9 from Quick Start
+### 3. Continue with steps 3-8 from Quick Start
 
 ## Development Workflow
 
@@ -216,6 +225,12 @@ docker-compose logs -f mysql
 
 # Access MySQL shell in Docker
 docker exec -it mxo-hd-mysql mysql -u mxo -p reality_hd
+
+# Run the local smoke test
+scripts/smoke-local.sh
+
+# Send lightweight UDP load to the world server
+scripts/load-test.sh --clients 50 --messages 20
 ```
 
 ### Database Management
@@ -276,9 +291,10 @@ dotnet restore
 
 ### "Could not find data files"
 
-Make sure you've extracted `data.zip` to the output directory:
+Make sure the tracked `data/` folder exists and the project has been rebuilt:
 ```bash
-ls -la hds/bin/Debug/net8.0/data/
+dotnet build
+ls -la data/
 # Should show CSV files for game objects
 ```
 

@@ -34,32 +34,39 @@ namespace hds
         {
             loadEmotes();
             LoadMissions();
-            loadNewRSIIDs("data\\newrsiIDs.csv");
-            loadGODB("data\\gameobjects.csv");
+            loadNewRSIIDs(DataPath("newrsiIDs.csv"));
+            loadGODB(DataPath("gameobjects.csv"));
 #if !DEBUG
-            loadMobs("data\\mob.csv");
-            loadMobs("data\\mob_parsed.csv");
+            loadMobs(DataPath("mob.csv"));
+            loadMobs(DataPath("mob_parsed.csv"));
 #else
-            loadMobs("data\\mob_just_some_and_winter.csv");
+            loadMobs(DataPath("mob_just_some_and_winter.csv"));
 #endif
 
 
-            loadAbilityDB("data\\abilityIDs.csv");
-            loadClothingDB("data\\mxoClothing.csv");
+            loadAbilityDB(DataPath("abilityIDs.csv"));
+            loadClothingDB(DataPath("mxoClothing.csv"));
 
-            loadVendorItems("data\\vendor_items.csv");
-            loadNPCSignPosts("data\\npcsign_parsed.csv");
+            loadVendorItems(DataPath("vendor_items.csv"));
+            loadNPCSignPosts(DataPath("npcsign_parsed.csv"));
             // Disabled for Debugging
-            loadWorldObjectsDb("data\\staticObjects_slums_1.csv");
-            loadWorldObjectsDb("data\\staticObjects_slums_2.csv");
-            loadWorldObjectsDb("data\\staticObjects_it.csv");
-            loadWorldObjectsDb("data\\staticObjects_dt_1.csv");
-            loadWorldObjectsDb("data\\staticObjects_dt_2.csv");
+            loadWorldObjectsDb(DataPath("staticObjects_slums_1.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_slums_2.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_it.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_dt_1.csv"));
+            loadWorldObjectsDb(DataPath("staticObjects_dt_2.csv"));
         }
 
         public void LoadMissions()
         {
-            string[] xmlMissionFiles = Directory.GetFiles(@".\data\missions", "*.xml");
+            string missionsPath = DataPath("missions");
+            if (!Directory.Exists(missionsPath))
+            {
+                Output.WriteLine("Mission data folder not found: " + missionsPath);
+                return;
+            }
+
+            string[] xmlMissionFiles = Directory.GetFiles(missionsPath, "*.xml");
 
             foreach (string file in xmlMissionFiles)
             {
@@ -145,6 +152,12 @@ namespace hds
 
         private void loadNPCSignPosts(string path)
         {
+            if (!File.Exists(path))
+            {
+                Output.WriteLine("NPC signpost data not found, skipping: " + path);
+                return;
+            }
+
             ArrayList csvData = loadCSV(path, ';');
             int linecount = 1;
             foreach (string[] data in csvData)
@@ -310,25 +323,60 @@ namespace hds
 
         public ArrayList loadCSV(string path, char seperator)
         {
+            path = ResolveDataPath(path);
             ArrayList rows = new ArrayList();
-            StreamReader sr = new StreamReader(path);
-
-            string line;
-            int i = 0;
-            while ((line = sr.ReadLine()) != null)
+            using (StreamReader sr = new StreamReader(path))
             {
-                if (line.Length == 0) continue;
-                string[] Colum = line.Split(seperator);
-                rows.Add(Colum);
-                //Console.Write("\r{0}%   ", i);
-                i++;
-            }
+                string line;
+                int i = 0;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Length == 0) continue;
+                    string[] Colum = line.Split(seperator);
+                    rows.Add(Colum);
+                    //Console.Write("\r{0}%   ", i);
+                    i++;
+                }
 
-            Output.Write(i + " Entrys added !\n");
+                Output.Write(i + " Entrys added !\n");
+            }
             // lets test a little bit to see what data is there
 
 
             return rows;
+        }
+
+        internal static string DataPath(params string[] parts)
+        {
+            string[] dataParts = new string[parts.Length + 1];
+            dataParts[0] = "data";
+            Array.Copy(parts, 0, dataParts, 1, parts.Length);
+            return ResolveDataPath(Path.Combine(dataParts));
+        }
+
+        internal static string ResolveDataPath(string path)
+        {
+            string normalized = path.Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar);
+
+            if (Path.IsPathRooted(normalized))
+            {
+                return normalized;
+            }
+
+            string workingDirectoryPath = Path.GetFullPath(normalized);
+            if (File.Exists(workingDirectoryPath) || Directory.Exists(workingDirectoryPath))
+            {
+                return workingDirectoryPath;
+            }
+
+            string outputDirectoryPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, normalized));
+            if (File.Exists(outputDirectoryPath) || Directory.Exists(outputDirectoryPath))
+            {
+                return outputDirectoryPath;
+            }
+
+            return workingDirectoryPath;
         }
 
         public void loadGODB(string path)

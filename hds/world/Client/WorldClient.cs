@@ -70,9 +70,7 @@ namespace hds
                 }
                 catch (Exception ex)
                 {
-                    #if DEBUG
                     Output.WriteDebugLog("Socket Error " + ex.Message);
-                    #endif
                     alive = false;
                 }
             }

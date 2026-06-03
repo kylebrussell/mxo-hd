@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace hds
@@ -21,6 +22,7 @@ namespace hds
         {
             this.filename = filename;
             var xDoc = new XmlDocument();
+            filename = ResolveConfigFile(filename);
             xDoc.Load(filename);
             
             serverName = xDoc.GetElementsByTagName("serverName")[0].InnerText;
@@ -38,6 +40,37 @@ namespace hds
                 
             }
 
+        }
+
+        private static string ResolveConfigFile(string filename)
+        {
+            if (File.Exists(filename))
+            {
+                return filename;
+            }
+
+            if (filename.Equals("WorldConfig.xml", StringComparison.OrdinalIgnoreCase) &&
+                File.Exists("WorldConfig.xml.dist"))
+            {
+                return "WorldConfig.xml.dist";
+            }
+
+            string outputPath = Path.Combine(AppContext.BaseDirectory, filename);
+            if (File.Exists(outputPath))
+            {
+                return outputPath;
+            }
+
+            if (filename.Equals("WorldConfig.xml", StringComparison.OrdinalIgnoreCase))
+            {
+                string outputDistPath = Path.Combine(AppContext.BaseDirectory, "WorldConfig.xml.dist");
+                if (File.Exists(outputDistPath))
+                {
+                    return outputDistPath;
+                }
+            }
+
+            return filename;
         }
         
     }

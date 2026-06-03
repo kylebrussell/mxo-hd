@@ -412,6 +412,7 @@ namespace hds
             {
                 Store.currentClient.messageQueue.addRpcMessage(
                     PacketsUtils.createSystemMessage("Error parsing command!", Store.currentClient));
+                Output.WriteLine("[CHAT COMMAND PARSER] Error parsing request: " + e.Message);
 #if DEBUG
                 Output.WriteLine("[CHAT COMMAND PARSER] Error parsing request: " + data);
                 Output.WriteLine("[CHAT COMMAND PARSER] DEBUG: " + e.Message + "\n" + e.StackTrace);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using hds.databases.Entities;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 using hds.databases.interfaces;
 using hds.shared;

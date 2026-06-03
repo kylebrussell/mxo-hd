@@ -6,7 +6,7 @@ using hds.databases.interfaces;
 using hds.shared;
 using System.Collections.Generic;
 using hds.world.Structures;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace hds.databases{
 	
