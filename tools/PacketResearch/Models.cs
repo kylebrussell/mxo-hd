@@ -91,6 +91,37 @@ public sealed record PlayerAttributePayloadSample(
     int Field2Value,
     string PayloadHex);
 
+public sealed record AbilityUnloadPayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string PayloadHex);
+
+public sealed record FriendListStatusPayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    int? TextBytes,
+    string? Text,
+    string PayloadHex);
+
+public sealed record CoderAttributePayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string PayloadHex);
+
 public sealed record Protocol03ObjectViewSample(
     int Line,
     string? Direction,
@@ -374,7 +405,17 @@ public sealed record PacketDumpFileSummary(
     IReadOnlyList<Protocol03ObjectViewSample> Protocol03ObjectViews,
     IReadOnlyList<Protocol04InteractionPayloadSample> Protocol04InteractionPayloads,
     IReadOnlyList<PlayerAttributePayloadSample> PlayerAttributePayloads,
-    IReadOnlyList<ManageBonusPayloadSample> ManageBonusPayloads);
+    IReadOnlyList<ManageBonusPayloadSample> ManageBonusPayloads)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AbilityUnloadPayloadSample>? AbilityUnloadPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FriendListStatusPayloadSample>? FriendListStatusPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<CoderAttributePayloadSample>? CoderAttributePayloads { get; init; }
+}
 
 public sealed record PacketResearchReport(
     string RepositoryRoot,

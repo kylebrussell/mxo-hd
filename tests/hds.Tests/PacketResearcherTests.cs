@@ -218,6 +218,64 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectCoderAttributePayloads_GroupsTopLevelPayloadFields()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 08 80 bd 21 00 01 00 00 00")
+            .ToArray();
+
+        CoderAttributePayloadSample payload = PacketResearcher.DetectCoderAttributePayloads(bytes, 14, "server").Single();
+
+        Assert.Equal(14, payload.Line);
+        Assert.Equal(6, payload.PayloadLength);
+        Assert.Equal("21 00", payload.Field0);
+        Assert.Equal(0x21, payload.Field0Value);
+        Assert.Equal("01 00", payload.Field1);
+        Assert.Equal(0x01, payload.Field1Value);
+        Assert.Equal("00 00", payload.Field2);
+        Assert.Equal(0, payload.Field2Value);
+        Assert.Equal("21 00 01 00 00 00", payload.PayloadHex);
+    }
+
+    [Fact]
+    public void DetectAbilityUnloadPayloads_GroupsTopLevelPayloadFields()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 04 80 b3 11 00")
+            .ToArray();
+
+        AbilityUnloadPayloadSample payload = PacketResearcher.DetectAbilityUnloadPayloads(bytes, 15, "server").Single();
+
+        Assert.Equal(15, payload.Line);
+        Assert.Equal(2, payload.PayloadLength);
+        Assert.Equal("11 00", payload.Field0);
+        Assert.Equal(0x11, payload.Field0Value);
+        Assert.Equal("11 00", payload.PayloadHex);
+    }
+
+    [Fact]
+    public void DetectFriendListStatusPayloads_GroupsTopLevelPayloadFields()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 0f 80 d7 08 00 3c 00 00 8e 05 00 41 6c 69 63 65")
+            .ToArray();
+
+        FriendListStatusPayloadSample payload = PacketResearcher.DetectFriendListStatusPayloads(bytes, 16, "server").Single();
+
+        Assert.Equal(16, payload.Line);
+        Assert.Equal(13, payload.PayloadLength);
+        Assert.Equal("08 00", payload.Field0);
+        Assert.Equal(8, payload.Field0Value);
+        Assert.Equal("3c 00", payload.Field1);
+        Assert.Equal(0x3c, payload.Field1Value);
+        Assert.Equal("00 8e", payload.Field2);
+        Assert.Equal(0x8e00, payload.Field2Value);
+        Assert.Equal(5, payload.TextBytes);
+        Assert.Equal("Alice", payload.Text);
+        Assert.Equal("08 00 3c 00 00 8e 05 00 41 6c 69 63 65", payload.PayloadHex);
+    }
+
+    [Fact]
     public void DetectProtocol04InteractionPayloads_DecodesStaticObjectShape()
     {
         byte[] bytes = PacketResearcher.ParseHexBytes(
@@ -519,6 +577,156 @@ public class PacketResearcherTests
         Assert.Contains("| `3d 04` (1085) | Mclothing_Pants_A8_C1 | 1 | 1 | `sample.txt:10` | `3d 04 00 00 08 02` | `45 03 3d 04 00 43 00 00 00 3d 04 00 00 00 00 01 00 00 00 00` |", markdown);
         Assert.Contains("### Vendor and Interaction `80 bc` Layout Leads", markdown);
         Assert.Contains("| `3d 04` (1085) | TalkActiveTracker | creation | 1 | 1 | 1 | 0 | `45 03` (1) | `sample.txt:10` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesCoderAttributePayloadSummary()
+    {
+        PacketDumpFileSummary dump = new(
+            "state.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "80 bc", "80 bd", "80 bc" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>())
+        {
+            CoderAttributePayloads = new[]
+            {
+                new CoderAttributePayloadSample(42, 6, "21 00", 0x21, "01 00", 1, "00 00", 0, "21 00 01 00 00 00")
+            }
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("## SERVER_CODER_ATTRIBUTE_UNKNOWN Payload Groups", markdown);
+        Assert.Contains("| 6 | `21 00` | `01 00` | `00 00` | 1 | state.txt (1) | 80 bc -> 80 bd -> 80 bc (1) | `state.txt:42` | `21 00 01 00 00 00` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesAbilityUnloadPayloadSummary()
+    {
+        PacketDumpFileSummary dump = new(
+            "state.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "80 b3", "80 bc" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            new[]
+            {
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00")
+            })
+        {
+            AbilityUnloadPayloads = new[]
+            {
+                new AbilityUnloadPayloadSample(42, 2, "11 00", 0x11, "11 00")
+            }
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("## SERVER_ABILITY_UNLOAD Payload Groups", markdown);
+        Assert.Contains("| 2 | `11 00` | 1 | 1 | state.txt (1) | 80 b3 -> 80 bc (1) | `state.txt:42` | `11 00` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesFriendListStatusPayloadSummary()
+    {
+        PacketDumpFileSummary dump = new(
+            "state.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "80 d7", "80 bc" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            new[]
+            {
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "3d 04", 0x043d, "00 02", 0x0200, "45 03 3d 04 00 02 00 00 00 3d 04 32 00 00 00 01 00 00 00 00")
+            })
+        {
+            FriendListStatusPayloads = new[]
+            {
+                new FriendListStatusPayloadSample(42, 13, "08 00", 8, "3c 00", 0x3c, "00 8e", 0x8e00, 5, "Alice", "08 00 3c 00 00 8e 05 00 41 6c 69 63 65")
+            }
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("## SERVER_FRIENDLIST_STATUS Payload Groups", markdown);
+        Assert.Contains("| 13 | `08 00` | `3c 00` | `00 8e` | 5 | Alice | 1 | 0 | state.txt (1) | 80 d7 -> 80 bc (1) | `state.txt:42` | `08 00 3c 00 00 8e 05 00 41 6c 69 63 65` |", markdown);
     }
 
     [Fact]

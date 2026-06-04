@@ -55,6 +55,9 @@ public static class ReportWriter
         builder.AppendLine($"- External object-interaction command examples: {report.Protocol04InteractionCommandExamples.Count}");
         builder.AppendLine($"- Vendor inventory rows: {report.VendorInventoryEntries.Count}");
         builder.AppendLine($"- Protocol 04 interaction payloads: {report.PacketDumpFiles.Sum(file => file.Protocol04InteractionPayloads.Count)}");
+        builder.AppendLine($"- Protocol 04 ability unload payloads: {report.PacketDumpFiles.Sum(file => file.AbilityUnloadPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 friend list status payloads: {report.PacketDumpFiles.Sum(file => file.FriendListStatusPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 coder attribute payloads: {report.PacketDumpFiles.Sum(file => file.CoderAttributePayloads?.Count ?? 0)}");
         builder.AppendLine($"- Packet dump files with packet-like lines: {report.PacketDumpFiles.Count}");
         builder.AppendLine($"- Packet-like lines: {packetLines}");
         builder.AppendLine();
@@ -69,6 +72,9 @@ public static class ReportWriter
         AppendProtocol03ObjectViewSummary(builder, report);
         AppendHardcodedProtocol03Examples(builder, report);
         AppendPlayerAttributePayloadSummary(builder, report);
+        AppendAbilityUnloadPayloadSummary(builder, report);
+        AppendFriendListStatusPayloadSummary(builder, report);
+        AppendCoderAttributePayloadSummary(builder, report);
         AppendManageBonusPayloadSummary(builder, report);
         AppendVendorSignals(builder, report);
 
@@ -1894,6 +1900,253 @@ public static class ReportWriter
         AppendPlayerAttributeIndexCandidates(builder, report, payloads);
     }
 
+    private static void AppendAbilityUnloadPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        var payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.AbilityUnloadPayloads ?? Array.Empty<AbilityUnloadPayloadSample>())
+                .Select(payload => new AbilityUnloadPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, PayloadWithFile[]> bcByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.ManageBonusPayloads.Select(payload => new PayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new PacketLocation(entry.File, entry.Payload.Line))
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                Count = group.Count(),
+                SamePacketManageBonusField1Matches = group.Sum(entry =>
+                    bcByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out PayloadWithFile[]? bcEntries)
+                        ? bcEntries.Count(bc => bc.Payload.Field1.Equals(entry.Payload.Field0, StringComparison.OrdinalIgnoreCase))
+                        : 0),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ThenBy(group => group.Field0, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_ABILITY_UNLOAD Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This groups top-level protocol 04 `80 b3` payloads. The local protocol map names this packet `SERVER_ABILITY_UNLOAD`; same-packet `80 bc` field-1 matches are treated as layout links, not final ability semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Count | Same-packet `80 bc` field 1 matches | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            AbilityUnloadPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | {group.Count} | {group.SamePacketManageBonusField1Matches} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFriendListStatusPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        var payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FriendListStatusPayloads ?? Array.Empty<FriendListStatusPayloadSample>())
+                .Select(payload => new FriendListStatusPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, PayloadWithFile[]> bcByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.ManageBonusPayloads.Select(payload => new PayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new PacketLocation(entry.File, entry.Payload.Line))
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field2
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.Field2,
+                Count = group.Count(),
+                SamePacketManageBonusField1Matches = group.Sum(entry =>
+                    bcByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out PayloadWithFile[]? bcEntries)
+                        ? bcEntries.Count(bc => bc.Payload.Field1.Equals(entry.Payload.Field0, StringComparison.OrdinalIgnoreCase))
+                        : 0),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                TextBytes = FormatDistinct(group.Select(entry => entry.Payload.TextBytes?.ToString(CultureInfo.InvariantCulture)), 5),
+                TextSamples = FormatDistinct(group.Select(entry => entry.Payload.Text), 5),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ThenBy(group => group.Field0, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Field1, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FRIENDLIST_STATUS Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This groups top-level protocol 04 `80 d7` payloads. The local protocol map aliases it as CR1 `SERVER_FRIENDLIST_STATUS` and CR2 `SERVER_FRIENDLIST_STATUS_ADD`; same-packet `80 bc` field-1 matches are layout links only.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Field 2 | Text bytes | Text samples | Count | Same-packet `80 bc` field 1 matches | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FriendListStatusPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | {group.TextBytes} | {group.TextSamples} | {group.Count} | {group.SamePacketManageBonusField1Matches} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendCoderAttributePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        var payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.CoderAttributePayloads ?? Array.Empty<CoderAttributePayloadSample>())
+                .Select(payload => new CoderAttributePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field2
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.Field2,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ThenBy(group => group.Field0, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Field1, StringComparer.OrdinalIgnoreCase)
+            .Take(25)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_CODER_ATTRIBUTE_UNKNOWN Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This groups top-level protocol 04 `80 bd` payloads. The local map names this CR2 server packet `SERVER_CODER_ATTRIBUTE_UNKNOWN`, and the current corpus mostly places it inside repeated `80 bc` state bundles.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Field 2 | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            CoderAttributePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendPlayerAttributeHardcodedExamples(
         StringBuilder builder,
         IReadOnlyList<PlayerAttributePayloadWithFile> payloads,
@@ -3705,6 +3958,12 @@ public static class ReportWriter
     private readonly record struct Vector3d(double X, double Y, double Z);
 
     private sealed record PlayerAttributePayloadWithFile(string File, PlayerAttributePayloadSample Payload);
+
+    private sealed record AbilityUnloadPayloadWithFile(string File, AbilityUnloadPayloadSample Payload);
+
+    private sealed record FriendListStatusPayloadWithFile(string File, FriendListStatusPayloadSample Payload);
+
+    private sealed record CoderAttributePayloadWithFile(string File, CoderAttributePayloadSample Payload);
 
     private sealed record PayloadWithFile(string File, ManageBonusPayloadSample Payload);
 }

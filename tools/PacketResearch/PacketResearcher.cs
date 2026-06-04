@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -1144,6 +1145,9 @@ public static partial class PacketResearcher
         List<Protocol03ObjectViewSample> protocol03ObjectViews = new();
         List<Protocol04InteractionPayloadSample> protocol04InteractionPayloads = new();
         List<PlayerAttributePayloadSample> playerAttributePayloads = new();
+        List<AbilityUnloadPayloadSample> abilityUnloadPayloads = new();
+        List<FriendListStatusPayloadSample> friendListStatusPayloads = new();
+        List<CoderAttributePayloadSample> coderAttributePayloads = new();
         List<ManageBonusPayloadSample> manageBonusPayloads = new();
         Dictionary<string, RpcHeaderEntry[]> localByEncodedHeader = localHeaders
             .Where(entry => entry.EncodedHeader.Contains(" ", StringComparison.Ordinal))
@@ -1223,7 +1227,12 @@ public static partial class PacketResearcher
             protocol03ObjectViews,
             protocol04InteractionPayloads,
             playerAttributePayloads,
-            manageBonusPayloads);
+            manageBonusPayloads)
+        {
+            AbilityUnloadPayloads = abilityUnloadPayloads.Count == 0 ? null : abilityUnloadPayloads,
+            FriendListStatusPayloads = friendListStatusPayloads.Count == 0 ? null : friendListStatusPayloads,
+            CoderAttributePayloads = coderAttributePayloads.Count == 0 ? null : coderAttributePayloads
+        };
 
         void AnalyzeCurrentPacket()
         {
@@ -1255,6 +1264,9 @@ public static partial class PacketResearcher
             protocol03ObjectViews.AddRange(DetectProtocol03ObjectViews(bytes, sampleLine, directionHint));
             protocol04InteractionPayloads.AddRange(DetectProtocol04InteractionPayloads(bytes, sampleLine, directionHint));
             playerAttributePayloads.AddRange(DetectPlayerAttributePayloads(bytes, sampleLine, directionHint));
+            abilityUnloadPayloads.AddRange(DetectAbilityUnloadPayloads(bytes, sampleLine, directionHint));
+            friendListStatusPayloads.AddRange(DetectFriendListStatusPayloads(bytes, sampleLine, directionHint));
+            coderAttributePayloads.AddRange(DetectCoderAttributePayloads(bytes, sampleLine, directionHint));
             manageBonusPayloads.AddRange(DetectManageBonusPayloads(bytes, sampleLine, directionHint));
         }
     }
@@ -1398,6 +1410,96 @@ public static partial class PacketResearcher
                 ReadUInt16LittleEndian(block.Payload, 2),
                 FormatPayloadWord(block.Payload, 4),
                 ReadUInt16LittleEndian(block.Payload, 4),
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<CoderAttributePayloadSample> DetectCoderAttributePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 bd", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            yield return new CoderAttributePayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                FormatPayloadWord(block.Payload, 4),
+                ReadUInt16LittleEndian(block.Payload, 4),
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FriendListStatusPayloadSample> DetectFriendListStatusPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 d7", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            (int? textBytes, string? text) = DecodeLengthPrefixedAscii(block.Payload, 6, 8);
+
+            yield return new FriendListStatusPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                FormatPayloadWord(block.Payload, 4),
+                ReadUInt16LittleEndian(block.Payload, 4),
+                textBytes,
+                text,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<AbilityUnloadPayloadSample> DetectAbilityUnloadPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 b3", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            yield return new AbilityUnloadPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
                 FormatHeader(block.Payload));
         }
     }
@@ -2371,6 +2473,42 @@ public static partial class PacketResearcher
     private static bool IsPrintableAscii(byte value)
     {
         return value is >= 0x20 and <= 0x7e;
+    }
+
+    private static (int? Bytes, string? Text) DecodeLengthPrefixedAscii(IReadOnlyList<byte> payload, int lengthOffset, int textOffset)
+    {
+        if (payload.Count < lengthOffset + 2)
+        {
+            return (null, null);
+        }
+
+        int bytes = ReadUInt16LittleEndian(payload, lengthOffset);
+        if (bytes <= 0 || textOffset + bytes > payload.Count)
+        {
+            return (bytes, null);
+        }
+
+        int textBytes = bytes;
+        while (textBytes > 0 && payload[textOffset + textBytes - 1] == 0)
+        {
+            textBytes--;
+        }
+
+        for (int i = 0; i < textBytes; i++)
+        {
+            if (!IsPrintableAscii(payload[textOffset + i]))
+            {
+                return (bytes, null);
+            }
+        }
+
+        byte[] raw = new byte[textBytes];
+        for (int i = 0; i < textBytes; i++)
+        {
+            raw[i] = payload[textOffset + i];
+        }
+
+        return (bytes, Encoding.ASCII.GetString(raw));
     }
 
     public static IEnumerable<string> DetectKnownEncodedHeaders(

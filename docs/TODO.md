@@ -72,8 +72,14 @@ This checklist tracks the current modernization push from "builds locally" to "f
   - Current generated report finds 59 hardcoded command examples, including 37 `80 bc` examples. The strongest corpus field-group overlap is `45 03 / 11 00 / 00 02` with 105 imported dump hits, and one local `15 00 / 45 00 / 00 f7` payload has 20 exact corpus hits.
 - [x] Group top-level `80 b2` server payloads and compare them against hardcoded player attribute / ability load constants.
   - Current generated report finds 106 top-level `80 b2` payloads and 13 hardcoded `80 b2` examples. Local hardcoded payload `35 04 00 00 08 02` has 19 exact corpus hits.
+- [x] Group top-level `80 b3` ability-unload payloads and same-packet `80 bc` links.
+  - Current generated report finds 408 top-level `80 b3` / `SERVER_ABILITY_UNLOAD` payloads. All are 2 payload bytes. Six dominant fields (`3d 04`, `35 04`, `3e 04`, `3f 04`, `11 00`, and `40 04`) account for 406 samples, are mostly teleport/state-bundle traffic, and have same-packet `80 bc` field-1 matches.
+- [x] Group top-level `80 d7` friend-list status payloads and decode handle text.
+  - Current generated report finds 594 top-level `80 d7` / `SERVER_FRIENDLIST_STATUS` payloads. They share leading fields `08 00`, status `3c 00` or rare `3b 00`, and `00 8e`, followed by a two-byte little-endian text length and ASCII `SOE+MXO+Vector-Hostile+...` handle text.
 - [x] Group protocol 04 server-state header sequences to identify repeated state bundles.
   - Current generated report finds 484 protocol 04 packets containing `80 b2` and/or `80 bc`; 51 of those packets contain both families in the same top-level packet.
+- [x] Group top-level `80 bd` coder-attribute payloads and sequence context.
+  - Current generated report finds 185 top-level `80 bd` / `SERVER_CODER_ATTRIBUTE_UNKNOWN` payloads. All are 9 payload bytes. The dominant shape is `05 11 00 00 00 00 00 00 00` with 179 hits, mostly in teleport captures and repeated `80 bc` state bundles. Two rare `saikungnorthwestbroken.txt` shapes appear in a distinct sequence with `80 c1`, making them special-case state-bundle leads.
 - [x] Link `80 b2` field 0 to `80 bc` field 1 inside the same protocol 04 state bundles.
   - Current generated report finds six shared-field links. The strongest are `3d 04` in 20 packets and `35 04`, `3e 04`, `3f 04` in 19 packets each.
 - [x] Validate linked short/long field-value consistency between `80 b2` and `80 bc`.
