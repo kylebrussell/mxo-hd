@@ -2015,6 +2015,7 @@ public static class ReportWriter
         builder.AppendLine();
 
         AppendManageBonusFieldLayoutSummary(builder, payloads);
+        AppendManageBonusFixedOffsetShapeSummary(builder, report, payloads);
         AppendHardcodedManageBonusFamilyCoverage(builder, report, payloads);
         AppendHardcodedManageBonusExamples(builder, report, payloads);
         AppendManageBonusAttributeCandidates(builder, report, payloads);
@@ -2096,6 +2097,98 @@ public static class ReportWriter
                 layout.Field2.Equals(layout.Byte11Value, StringComparison.OrdinalIgnoreCase));
             builder.AppendLine(
                 $"| `{group.Key}` | {group.Count()} | {repeatedFieldCount} | {repeatedField2Count} | `{dominantLayout.Key.Byte9Field}` / `{dominantLayout.Key.Byte11Value}` / `{dominantLayout.Key.Byte15Value}` | {dominantLayout.Count()} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusFixedOffsetShapeSummary(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<PayloadWithFile> payloads)
+    {
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var shapes = payloads
+            .Where(entry => entry.Payload.PayloadLength == 20)
+            .GroupBy(entry => new
+            {
+                entry.Payload.Field0,
+                Bytes6To8 = PayloadBytesAtByteOffset(entry.Payload.PayloadHex, 6, 3),
+                Byte11Value = PayloadWordAtByteOffset(entry.Payload.PayloadHex, 11),
+                Byte15Value = PayloadWordAtByteOffset(entry.Payload.PayloadHex, 15)
+            })
+            .Select(group => new
+            {
+                group.Key.Field0,
+                group.Key.Bytes6To8,
+                group.Key.Byte11Value,
+                group.Key.Byte15Value,
+                Count = group.Count(),
+                DistinctField1 = group.Select(entry => entry.Payload.Field1).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                Field2Samples = group
+                    .Select(entry => entry.Payload.Field2)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .Take(6)
+                    .ToArray(),
+                Byte9Samples = group
+                    .Select(entry => PayloadWordAtByteOffset(entry.Payload.PayloadHex, 9))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .Take(6)
+                    .ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                RepeatedByte9 = group.Count(entry =>
+                    entry.Payload.Field1.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase)),
+                RepeatedByte11 = group.Count(entry =>
+                    entry.Payload.Field2.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 11), StringComparison.OrdinalIgnoreCase)),
+                Sample = group.First()
+            })
+            .OrderByDescending(shape => shape.Count)
+            .ThenBy(shape => shape.Field0, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(shape => shape.Bytes6To8, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+
+        if (shapes.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Fixed-Offset Schema Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups 20-byte `80 bc` payloads by the fixed bytes after the first three two-byte fields. Stable shapes separate repeated packet schemas from changing field ids and candidate values.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 0 | Bytes 6-8 | Byte 11 value | Byte 15 value | Records | Distinct field 1 | Field 2 samples | Byte 9 field samples | Capture scopes | Top packet sequences | Field 1 repeats at byte 9 | Field 2 repeats at byte 11 | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | ---: | ---: | --- |");
+        foreach (var shape in shapes)
+        {
+            builder.AppendLine(
+                $"| `{shape.Field0}` | `{shape.Bytes6To8}` | `{shape.Byte11Value}` | `{shape.Byte15Value}` | {shape.Count} | {shape.DistinctField1} | {FormatDistinct(shape.Field2Samples, 6)} | {FormatDistinct(shape.Byte9Samples, 6)} | {FormatDistinct(shape.CaptureScopes, 5)} | {FormatDistinct(shape.Sequences, 5)} | {shape.RepeatedByte9} | {shape.RepeatedByte11} | `{shape.Sample.File}:{shape.Sample.Payload.Line}` |");
         }
 
         builder.AppendLine();
@@ -3337,6 +3430,60 @@ public static class ReportWriter
         return byteOffset >= 0 && byteOffset + 1 < bytes.Length
             ? $"{bytes[byteOffset]} {bytes[byteOffset + 1]}"
             : "-";
+    }
+
+    private static string PayloadBytesAtByteOffset(string payloadHex, int byteOffset, int byteCount)
+    {
+        string[] bytes = payloadHex.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return byteOffset >= 0 && byteCount > 0 && byteOffset + byteCount <= bytes.Length
+            ? string.Join(" ", bytes.Skip(byteOffset).Take(byteCount))
+            : "-";
+    }
+
+    private static string FormatPacketCaptureScope(string file)
+    {
+        string normalized = file.Replace('\\', '/');
+        if (normalized.Contains("/actions/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "actions";
+        }
+
+        if (normalized.Contains("/teleport/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "teleport";
+        }
+
+        if (normalized.Contains("/logins/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "logins";
+        }
+
+        if (normalized.Contains("/abilities/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "abilities";
+        }
+
+        if (normalized.Contains("/movement/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "movement";
+        }
+
+        if (normalized.Contains("/others/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "others";
+        }
+
+        if (normalized.Contains("/trinitys/proxy_second_pc/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "inventory proxy";
+        }
+
+        if (normalized.Contains("doors", StringComparison.OrdinalIgnoreCase))
+        {
+            return "doors";
+        }
+
+        return Path.GetFileName(normalized);
     }
 
     private static bool IsInteractionAttributeName(string name)

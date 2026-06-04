@@ -505,6 +505,9 @@ public class PacketResearcherTests
         Assert.Contains("### `80 bc` Field Layout by Leading Field", markdown);
         Assert.Contains("| `45 03` | 1 | 1 | 0 | `3d 04` / `00 00` / `01 00` | 1 | `sample.txt:10` |", markdown);
         Assert.Contains("| `55 00` | 1 | 0 | 0 | `15 04` / `01 00` / `00 00` | 1 | `sample.txt:11` |", markdown);
+        Assert.Contains("### `80 bc` Fixed-Offset Schema Shapes", markdown);
+        Assert.Contains("| `45 03` | `00 00 00` | `00 00` | `01 00` | 1 | 1 | 00 43 | 3d 04 | sample.txt (1) | 80 b2 -> 80 bc (1) | 1 | 0 | `sample.txt:10` |", markdown);
+        Assert.Contains("| `55 00` | `00 00 00` | `01 00` | `00 00` | 1 | 1 | 00 62 | 15 04 | sample.txt (1) | 80 b2 -> 80 bc (1) | 0 | 0 | `sample.txt:11` |", markdown);
         Assert.Contains("### Hardcoded `80 bc` Family Coverage", markdown);
         Assert.Contains("| `45 03` | 1 | 1 | 1 | 1 | 1 | `3d 04` / `00 00` / `01 00` (1) | mxo-hd PlayerHandler.cs:122 |", markdown);
         Assert.Contains("### Linked Short/Long Field-Value Consistency", markdown);
