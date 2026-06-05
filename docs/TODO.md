@@ -82,8 +82,20 @@ This checklist tracks the current modernization push from "builds locally" to "f
   - Current generated report finds 185 top-level `80 bd` / `SERVER_CODER_ATTRIBUTE_UNKNOWN` payloads. All are 9 payload bytes. The dominant shape is `05 11 00 00 00 00 00 00 00` with 179 hits, mostly in teleport captures and repeated `80 bc` state bundles. Two rare `saikungnorthwestbroken.txt` shapes appear in a distinct sequence with `80 c1`, making them special-case state-bundle leads.
 - [x] Decode unknown top-level `81 67` protocol 04 server payload shape.
   - Current generated report finds 89 samples, all 63 payload bytes, with stable prefix fields `17 00`, `27 00`, and `1c 22`; two 14-byte text slots that both contain `AfterWhoruNeo`; tail field `02 00`; and tail values `4b 00` (78 samples), `4d 00` (7 samples), or `44 00` (4 samples).
+- [x] Decode protocol 04 teleport startup `SERVER_LOAD_WORLD`, `SERVER_PLAYER_EXP`, and `SERVER_PLAYER_INFO` payloads.
+  - Current generated report finds 41 `06` / `SERVER_LOAD_WORLD` payloads with marker `0e 00`, district ids 1 or 3, simulation-time bytes, flag `01`, an environment-string offset, world path, and environment options. It also finds 41 `80 e5` / `SERVER_PLAYER_EXP` payloads and 41 `80 e4` / `SERVER_PLAYER_INFO` payloads, each carrying a little-endian 32-bit value and four zero tail bytes.
+- [x] Decode protocol 04 flash-traffic and feature/event setting payloads.
+  - Current generated report finds 23 `81 a9` / `SERVER_FLASH_TRAFFIC` payloads with fixed leading fields and a sized URL slot, plus 35 `3a` / `SERVER_FEATURE_EVENT` payloads with prefix `05 00`, declared byte counts, sized setting keys, and typed string or numeric values for `PvPServer`, `PvPMaxSafeLevel`, `FixedBinkIDOverride`, `EventSlot*_Effect`, and `WR_RezEvents`.
+- [x] Decode protocol 04 social/faction payloads.
+  - Current generated report finds 25 `7c` / `SERVER_FACTION_PLAYER_INFO` payloads split between mode 1 faction summaries and mode 2 fixed-width crew records. It decodes faction `The Duality`, seven crew names with leader handles, seven `80 86` / `SERVER_CREW_MEMBERS_LIST` payloads for crew `Reservoir Dogs` with six member handles, and three `80 de` / `SERVER_FRIEND_ONLINE` payloads with sized `SOE+MXO+Vector-Hostile+...` handles.
+- [x] Isolate unknown protocol 04 `47` as a dedicated structural group.
+  - Current generated report finds 21 identical 46-byte `47` payloads, all with leading words `00 00`, `04 01`, `00 00`, mid words `1a 00` and `06 00`, and a repeated 21-byte tail. They commonly appear after `80 bc` state bundles and sometimes before `2e`, `81 a9`, and social/faction responses.
+- [x] Decode named protocol 04 chat/faction response payloads.
+  - Current generated report finds 24 `2e` / `SERVER_CHAT_MESSAGE_RESPONSE` system-style response samples, three `81 54` / `SERVER_CHAT_WHEREAMI_RESPONSE` coordinate samples, and one `80 f5` / `SERVER_FACTION_NAME_RESPONSE` sample for faction id `46734` with fixed name `Twisted Titans - {c:FFD42D}EPN{/c}`.
+- [x] Isolate unknown protocol 04 `6d` and `80 c1` as dedicated structural groups.
+  - Current generated report finds four `6d` list-bearing payloads split between 147-byte mode `03 00` records with 23 entries and 321-byte mode `01 00` records with 52 entries. It also finds two fixed four-byte `80 c1` payloads with fields `00 00` and `c8 00`.
 - [x] Group additional protocol 04 server payload shapes that do not yet have specialized decoders.
-  - Current generated report adds 271 non-specialized server payload shape samples. It surfaces fixed `80 e5` / `SERVER_PLAYER_EXP` and `80 e4` / `SERVER_PLAYER_INFO` payloads after `SERVER_LOAD_WORLD`, `06` / `SERVER_LOAD_WORLD` international world-resource strings, `81 a9` Flash URL payloads, `80 86` crew-member names, `80 de` friend-online handle text, and unknown `3a` feature/event strings.
+  - Current generated report has zero non-specialized server payload shape samples after the specialized `6d` and `80 c1` structural groups are applied.
 - [x] Link `80 b2` field 0 to `80 bc` field 1 inside the same protocol 04 state bundles.
   - Current generated report finds six shared-field links. The strongest are `3d 04` in 20 packets and `35 04`, `3e 04`, `3f 04` in 19 packets each.
 - [x] Validate linked short/long field-value consistency between `80 b2` and `80 bc`.

@@ -57,6 +57,19 @@ public static class ReportWriter
         builder.AppendLine($"- Protocol 04 interaction payloads: {report.PacketDumpFiles.Sum(file => file.Protocol04InteractionPayloads.Count)}");
         builder.AppendLine($"- Protocol 04 additional server payload shape samples: {report.PacketDumpFiles.Sum(file => file.Protocol04ServerPayloadShapes?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 unknown `81 67` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown8167Payloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 unknown `47` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown47Payloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 unknown `6d` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown6dPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 unknown `80 c1` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown80c1Payloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 load-world payloads: {report.PacketDumpFiles.Sum(file => file.LoadWorldPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 player value payloads: {report.PacketDumpFiles.Sum(file => file.PlayerValuePayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 flash traffic payloads: {report.PacketDumpFiles.Sum(file => file.FlashTrafficPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 feature/event payloads: {report.PacketDumpFiles.Sum(file => file.FeatureEventPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 faction/player-info payloads: {report.PacketDumpFiles.Sum(file => file.FactionPlayerInfoPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 crew-member payloads: {report.PacketDumpFiles.Sum(file => file.CrewMembersListPayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 friend-online payloads: {report.PacketDumpFiles.Sum(file => file.FriendOnlinePayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 chat message response payloads: {report.PacketDumpFiles.Sum(file => file.ChatMessageResponsePayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 whereami response payloads: {report.PacketDumpFiles.Sum(file => file.WhereamiResponsePayloads?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 faction-name response payloads: {report.PacketDumpFiles.Sum(file => file.FactionNameResponsePayloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 ability unload payloads: {report.PacketDumpFiles.Sum(file => file.AbilityUnloadPayloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 friend list status payloads: {report.PacketDumpFiles.Sum(file => file.FriendListStatusPayloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 coder attribute payloads: {report.PacketDumpFiles.Sum(file => file.CoderAttributePayloads?.Count ?? 0)}");
@@ -72,6 +85,19 @@ public static class ReportWriter
         AppendVendorInventoryCorrelations(builder, report);
         AppendProtocol04SequenceSummary(builder, report);
         AppendUnknown8167PayloadSummary(builder, report);
+        AppendUnknown47PayloadSummary(builder, report);
+        AppendUnknown6dPayloadSummary(builder, report);
+        AppendUnknown80c1PayloadSummary(builder, report);
+        AppendLoadWorldPayloadSummary(builder, report);
+        AppendPlayerValuePayloadSummary(builder, report);
+        AppendFlashTrafficPayloadSummary(builder, report);
+        AppendFeatureEventPayloadSummary(builder, report);
+        AppendFactionPlayerInfoPayloadSummary(builder, report);
+        AppendCrewMembersListPayloadSummary(builder, report);
+        AppendFriendOnlinePayloadSummary(builder, report);
+        AppendChatMessageResponsePayloadSummary(builder, report);
+        AppendWhereamiResponsePayloadSummary(builder, report);
+        AppendFactionNameResponsePayloadSummary(builder, report);
         AppendProtocol04ServerPayloadShapeSummary(builder, report);
         AppendProtocol03ObjectViewSummary(builder, report);
         AppendHardcodedProtocol03Examples(builder, report);
@@ -551,6 +577,807 @@ public static class ReportWriter
         builder.AppendLine();
     }
 
+    private static void AppendLoadWorldPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        LoadWorldPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.LoadWorldPayloads ?? Array.Empty<LoadWorldPayloadSample>())
+                .Select(payload => new LoadWorldPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.MarkerHex,
+                entry.Payload.DistrictId,
+                entry.Payload.FlagHex,
+                entry.Payload.EnvironmentOffset,
+                entry.Payload.WorldPathBytes,
+                WorldPath = entry.Payload.WorldPath ?? "-",
+                entry.Payload.EnvironmentBytes,
+                Environment = entry.Payload.Environment ?? "-"
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.MarkerHex,
+                group.Key.DistrictId,
+                group.Key.FlagHex,
+                group.Key.EnvironmentOffset,
+                WorldPathBytes = group.Key.WorldPathBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.WorldPath,
+                EnvironmentBytes = group.Key.EnvironmentBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.Environment,
+                Count = group.Count(),
+                SimTimes = group
+                    .Select(entry => $"{entry.Payload.SimTimeHex} ({entry.Payload.SimTimeValue})")
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.DistrictId)
+            .ThenBy(group => group.WorldPath, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_LOAD_WORLD Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `06` load-world payloads using the local `sendWorldCMD` writer as a structural reference: marker, district id, simulation-time bytes, flag byte, environment-string offset, world path, and environment options.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Marker | District id | Flag | Environment offset | World path bytes | World path | Environment bytes | Environment | Count | Sim time samples | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | ---: | --- | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            LoadWorldPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.MarkerHex}` | {group.DistrictId} | `{group.FlagHex}` | {group.EnvironmentOffset} | {group.WorldPathBytes} | {FormatTableText(group.WorldPath)} | {group.EnvironmentBytes} | {FormatTableText(group.Environment)} | {group.Count} | {FormatDistinct(group.SimTimes, 5)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendPlayerValuePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        PlayerValuePayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.PlayerValuePayloads ?? Array.Empty<PlayerValuePayloadSample>())
+                .Select(payload => new PlayerValuePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.Header,
+                entry.Payload.LocalName,
+                entry.Payload.PayloadLength,
+                entry.Payload.Value,
+                entry.Payload.ValueHex,
+                entry.Payload.TailHex
+            })
+            .Select(group => new
+            {
+                group.Key.Header,
+                group.Key.LocalName,
+                group.Key.PayloadLength,
+                group.Key.Value,
+                group.Key.ValueHex,
+                group.Key.TailHex,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderBy(group => group.Header, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(group => group.Count)
+            .ThenBy(group => group.Value)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_PLAYER_EXP / SERVER_PLAYER_INFO Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `80 e5` / `SERVER_PLAYER_EXP` and `80 e4` / `SERVER_PLAYER_INFO` payloads. Local writers emit a little-endian 32-bit value followed by four trailing bytes, which are zero in the current corpus.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Local name | Payload bytes | Value hex | Value | Tail | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| --- | --- | ---: | --- | ---: | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            PlayerValuePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| `{group.Header}` | {FormatTableText(group.LocalName)} | {group.PayloadLength} | `{group.ValueHex}` | {group.Value} | `{group.TailHex}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFlashTrafficPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        FlashTrafficPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FlashTrafficPayloads ?? Array.Empty<FlashTrafficPayloadSample>())
+                .Select(payload => new FlashTrafficPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.MarkerHex,
+                entry.Payload.UrlBytes,
+                Url = entry.Payload.Url ?? "-"
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.MarkerHex,
+                UrlBytes = group.Key.UrlBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.Url,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Url, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FLASH_TRAFFIC Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `81 a9` payloads. The local `createFlashTraffic` writer emits fixed leading fields, a marker byte, a sized URL string, and a final zero byte.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Marker | URL bytes | URL | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FlashTrafficPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.MarkerHex}` | {group.UrlBytes} | {FormatTableText(group.Url)} | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFeatureEventPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        FeatureEventPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FeatureEventPayloads ?? Array.Empty<FeatureEventPayloadSample>())
+                .Select(payload => new FeatureEventPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.PrefixHex,
+                entry.Payload.DeclaredPayloadBytes,
+                entry.Payload.KeyBytes,
+                Key = entry.Payload.Key ?? "-",
+                entry.Payload.ValueBytes,
+                ValueText = entry.Payload.ValueText ?? "-",
+                entry.Payload.ValueUInt32,
+                entry.Payload.ValueHex
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.PrefixHex,
+                group.Key.DeclaredPayloadBytes,
+                KeyBytes = group.Key.KeyBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.Key,
+                ValueBytes = group.Key.ValueBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.ValueText,
+                ValueUInt32 = group.Key.ValueUInt32?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.ValueHex,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FEATURE_EVENT Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `3a` payloads. The local protocol enum is `0x3a05`, so the observed one-byte header is followed by marker/prefix bytes; key and value fields remain structural because local writer methods differ on terminated versus unterminated strings.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Prefix | Declared bytes | Key bytes | Key | Value bytes | Value text | Value number | Value hex | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FeatureEventPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.PrefixHex}` | {group.DeclaredPayloadBytes} | {group.KeyBytes} | {FormatTableText(group.Key)} | {group.ValueBytes} | {FormatTableText(group.ValueText)} | {group.ValueUInt32} | `{group.ValueHex}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFactionPlayerInfoPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        FactionPlayerInfoPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FactionPlayerInfoPayloads ?? Array.Empty<FactionPlayerInfoPayloadSample>())
+                .Select(payload => new FactionPlayerInfoPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.PrefixHex,
+                entry.Payload.Mode,
+                entry.Payload.DataBytes
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.PrefixHex,
+                group.Key.Mode,
+                group.Key.DataBytes,
+                Count = group.Count(),
+                FactionNames = group.Select(entry => entry.Payload.FactionName).ToArray(),
+                CrewCounts = group.Select(entry => entry.Payload.CrewCount?.ToString(CultureInfo.InvariantCulture)).ToArray(),
+                CrewNames = group.SelectMany(entry => entry.Payload.CrewNames).ToArray(),
+                CrewLeaderNames = group.SelectMany(entry => entry.Payload.CrewLeaderNames).ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FACTION_PLAYER_INFO Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `7c` payloads using local faction packet writers as structural references. Mode `1` carries faction summary data; mode `2` carries fixed-width crew records.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Prefix | Mode | Data bytes | Count | Faction names | Crew counts | Crew names | Crew leader names | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FactionPlayerInfoPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.PrefixHex}` | {group.Mode} | {group.DataBytes} | {group.Count} | {FormatDistinct(group.FactionNames, 5)} | {FormatDistinct(group.CrewCounts, 5)} | {FormatDistinct(group.CrewNames, 8)} | {FormatDistinct(group.CrewLeaderNames, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendCrewMembersListPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        CrewMembersListPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.CrewMembersListPayloads ?? Array.Empty<CrewMembersListPayloadSample>())
+                .Select(payload => new CrewMembersListPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Organization,
+                entry.Payload.CrewNameOffset,
+                entry.Payload.MemberListOffset,
+                entry.Payload.ConstantHex,
+                entry.Payload.FullSize,
+                CrewName = entry.Payload.CrewName ?? "-",
+                entry.Payload.MemberCount
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Organization,
+                group.Key.CrewNameOffset,
+                group.Key.MemberListOffset,
+                group.Key.ConstantHex,
+                group.Key.FullSize,
+                group.Key.CrewName,
+                MemberCount = group.Key.MemberCount?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                Count = group.Count(),
+                MemberHandles = group.SelectMany(entry => entry.Payload.MemberHandles).ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.CrewName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_CREW_MEMBERS_LIST Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `80 86` payloads using the local crew-info writer: character/crew ids, organization, packet-coordinate offsets, crew name, member count, and fixed-width member handles.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Org | Crew name offset | Member list offset | Constant | Full size | Crew name | Member count | Count | Member handles | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | ---: | ---: | ---: | --- | ---: | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            CrewMembersListPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | {group.Organization} | {group.CrewNameOffset} | {group.MemberListOffset} | `{group.ConstantHex}` | {group.FullSize} | {FormatTableText(group.CrewName)} | {group.MemberCount} | {group.Count} | {FormatDistinct(group.MemberHandles, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFriendOnlinePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        FriendOnlinePayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FriendOnlinePayloads ?? Array.Empty<FriendOnlinePayloadSample>())
+                .Select(payload => new FriendOnlinePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.StatusCode,
+                entry.Payload.FlagHex,
+                entry.Payload.HandleBytes
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.StatusCode,
+                group.Key.FlagHex,
+                HandleBytes = group.Key.HandleBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                Count = group.Count(),
+                Handles = group.Select(entry => entry.Payload.Handle).ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FRIEND_ONLINE Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `80 de` payloads from the local friend-online writer: status code, flag byte, and sized SOE+MXO handle.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Status | Flag | Handle bytes | Count | Handles | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FriendOnlinePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | {group.StatusCode} | `{group.FlagHex}` | {group.HandleBytes} | {group.Count} | {FormatDistinct(group.Handles, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendChatMessageResponsePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        ChatMessageResponsePayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.ChatMessageResponsePayloads ?? Array.Empty<ChatMessageResponsePayloadSample>())
+                .Select(payload => new ChatMessageResponsePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.TypeHex,
+                entry.Payload.TypeName,
+                entry.Payload.Field12Hex,
+                entry.Payload.Field15Hex,
+                entry.Payload.TextBytes
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.TypeHex,
+                group.Key.TypeName,
+                group.Key.Field12Hex,
+                group.Key.Field15Hex,
+                TextBytes = group.Key.TextBytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                Count = group.Count(),
+                Texts = group.Select(entry => entry.Payload.Text).ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_CHAT_MESSAGE_RESPONSE Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `2e` payloads using local chat/system-message writers as structural references. The captured rows are system-style response packets with a type byte and optional sized text at payload offset 35.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Type | Type name | Field @12 | Field @15 | Text bytes | Count | Text samples | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            ChatMessageResponsePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.TypeHex}` | {FormatTableText(group.TypeName)} | `{group.Field12Hex}` | `{group.Field15Hex}` | {group.TextBytes} | {group.Count} | {FormatDistinct(group.Texts, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendWhereamiResponsePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        WhereamiResponsePayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.WhereamiResponsePayloads ?? Array.Empty<WhereamiResponsePayloadSample>())
+                .Select(payload => new WhereamiResponsePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.TailHex
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.TailHex,
+                Count = group.Count(),
+                Positions = group.Select(entry => FormatWhereamiPosition(entry.Payload)).ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_CHAT_WHEREAMI_RESPONSE Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `81 54` payloads using the local whereami writer: three little-endian float coordinates followed by a fixed response tail.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Tail | Count | Positions | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            WhereamiResponsePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.TailHex}` | {group.Count} | {FormatDistinct(group.Positions, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendFactionNameResponsePayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        FactionNameResponsePayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.FactionNameResponsePayloads ?? Array.Empty<FactionNameResponsePayloadSample>())
+                .Select(payload => new FactionNameResponsePayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.FactionId,
+                FactionName = entry.Payload.FactionName ?? "-"
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                FactionId = group.Key.FactionId.ToString(CultureInfo.InvariantCulture),
+                group.Key.FactionName,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.FactionName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        builder.AppendLine("## SERVER_FACTION_NAME_RESPONSE Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes top-level protocol 04 `80 f5` payloads using the local faction-name writer: little-endian faction id followed by a 42-byte fixed faction-name slot.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Faction id | Faction name | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | ---: | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            FactionNameResponsePayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | {group.FactionId} | {FormatTableText(group.FactionName)} | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendUnknown8167PayloadSummary(StringBuilder builder, PacketResearchReport report)
     {
         Unknown8167PayloadWithFile[] payloads = report.PacketDumpFiles
@@ -635,6 +1462,242 @@ public static class ReportWriter
             Unknown8167PayloadWithFile sample = group.Sample;
             builder.AppendLine(
                 $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | {group.Text0Bytes} | {FormatTableText(group.Text0)} | {group.Text1Bytes} | {FormatTableText(group.Text1)} | `{group.TailField0}` | `{group.TailField1}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{group.PrefixHex}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendUnknown47PayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        Unknown47PayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.Unknown47Payloads ?? Array.Empty<Unknown47PayloadSample>())
+                .Select(payload => new Unknown47PayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field2,
+                entry.Payload.MidField0,
+                entry.Payload.MidField1,
+                entry.Payload.TailHex
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.Field2,
+                group.Key.MidField0,
+                group.Key.MidField1,
+                group.Key.TailHex,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## Unknown `47` Protocol 04 Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This isolates top-level protocol 04 `47` server payloads as an unknown but stable structural group. All current samples are fixed-size and commonly appear after `80 bc` state bundles, sometimes immediately before `2e`, `81 a9`, and social/faction responses.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Field 2 | Mid field 0 | Mid field 1 | Tail | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            Unknown47PayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | `{group.MidField0}` | `{group.MidField1}` | `{group.TailHex}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendUnknown6dPayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        Unknown6dPayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .Select(payload => new Unknown6dPayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.ModeHex,
+                entry.Payload.Field1,
+                entry.Payload.ListOffset,
+                entry.Payload.ListFlag,
+                entry.Payload.EntryCount,
+                entry.Payload.ParsedEntryCount
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.ModeHex,
+                group.Key.Field1,
+                group.Key.ListOffset,
+                ListFlag = group.Key.ListFlag?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                EntryCount = group.Key.EntryCount?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                ParsedEntryCount = group.Key.ParsedEntryCount?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                EntryIds = FormatEntryIds(group.SelectMany(entry => entry.Payload.EntryIds)),
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## Unknown `6d` Protocol 04 Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This isolates top-level protocol 04 `6d` server payloads as an unknown list-bearing structure. The third word is a packet-coordinate offset to a list descriptor: flag byte, little-endian entry count, then six-byte records with ids at record offset +1.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Mode | Field 1 | List offset | List flag | Entry count | Parsed entries | Entry ids | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            Unknown6dPayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.ModeHex}` | `{group.Field1}` | {group.ListOffset} | {group.ListFlag} | {group.EntryCount} | {group.ParsedEntryCount} | {group.EntryIds} | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendUnknown80c1PayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        Unknown80c1PayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.Unknown80c1Payloads ?? Array.Empty<Unknown80c1PayloadSample>())
+                .Select(payload => new Unknown80c1PayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.PayloadLength)
+            .ToArray();
+
+        builder.AppendLine("## Unknown `80 c1` Protocol 04 Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This isolates top-level protocol 04 `80 c1` server payloads as a short unknown structure. The current corpus only has a repeated two-word payload in the `saikungnorthwestbroken` state-bundle sequence.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            Unknown80c1PayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
         }
 
         builder.AppendLine();
@@ -3671,6 +4734,40 @@ public static class ReportWriter
             : value.ToString("0.###", CultureInfo.InvariantCulture);
     }
 
+    private static string FormatEntryIds(IEnumerable<int> values)
+    {
+        int[] distinct = values
+            .Distinct()
+            .OrderBy(value => value)
+            .ToArray();
+        if (distinct.Length == 0)
+        {
+            return "-";
+        }
+
+        List<string> ranges = new();
+        int start = distinct[0];
+        int previous = distinct[0];
+        for (int i = 1; i < distinct.Length; i++)
+        {
+            if (distinct[i] == previous + 1)
+            {
+                previous = distinct[i];
+                continue;
+            }
+
+            ranges.Add(start == previous
+                ? start.ToString(CultureInfo.InvariantCulture)
+                : $"{start.ToString(CultureInfo.InvariantCulture)}-{previous.ToString(CultureInfo.InvariantCulture)}");
+            start = previous = distinct[i];
+        }
+
+        ranges.Add(start == previous
+            ? start.ToString(CultureInfo.InvariantCulture)
+            : $"{start.ToString(CultureInfo.InvariantCulture)}-{previous.ToString(CultureInfo.InvariantCulture)}");
+        return string.Join("<br>", ranges.Take(8));
+    }
+
     private static string FormatDistance(double? value)
     {
         if (value is null)
@@ -3689,6 +4786,13 @@ public static class ReportWriter
         return lead.X is null || lead.Y is null || lead.Z is null
             ? null
             : $"{FormatCoordinate(lead.X.Value)},{FormatCoordinate(lead.Y.Value)},{FormatCoordinate(lead.Z.Value)}";
+    }
+
+    private static string? FormatWhereamiPosition(WhereamiResponsePayloadSample payload)
+    {
+        return payload.X is null || payload.Y is null || payload.Z is null
+            ? null
+            : $"{FormatCoordinate(payload.X.Value)},{FormatCoordinate(payload.Y.Value)},{FormatCoordinate(payload.Z.Value)}";
     }
 
     private static string FormatPositionLikePosition(Protocol03PositionLikeLead lead)
@@ -4068,6 +5172,32 @@ public static class ReportWriter
     private sealed record Protocol04ServerPayloadShapeWithFile(string File, Protocol04ServerPayloadShapeSample Payload);
 
     private sealed record Unknown8167PayloadWithFile(string File, Unknown8167PayloadSample Payload);
+
+    private sealed record Unknown47PayloadWithFile(string File, Unknown47PayloadSample Payload);
+
+    private sealed record Unknown6dPayloadWithFile(string File, Unknown6dPayloadSample Payload);
+
+    private sealed record Unknown80c1PayloadWithFile(string File, Unknown80c1PayloadSample Payload);
+
+    private sealed record LoadWorldPayloadWithFile(string File, LoadWorldPayloadSample Payload);
+
+    private sealed record PlayerValuePayloadWithFile(string File, PlayerValuePayloadSample Payload);
+
+    private sealed record FlashTrafficPayloadWithFile(string File, FlashTrafficPayloadSample Payload);
+
+    private sealed record FeatureEventPayloadWithFile(string File, FeatureEventPayloadSample Payload);
+
+    private sealed record FactionPlayerInfoPayloadWithFile(string File, FactionPlayerInfoPayloadSample Payload);
+
+    private sealed record CrewMembersListPayloadWithFile(string File, CrewMembersListPayloadSample Payload);
+
+    private sealed record FriendOnlinePayloadWithFile(string File, FriendOnlinePayloadSample Payload);
+
+    private sealed record ChatMessageResponsePayloadWithFile(string File, ChatMessageResponsePayloadSample Payload);
+
+    private sealed record WhereamiResponsePayloadWithFile(string File, WhereamiResponsePayloadSample Payload);
+
+    private sealed record FactionNameResponsePayloadWithFile(string File, FactionNameResponsePayloadSample Payload);
 
     private sealed record Protocol04InteractionWithFile(string File, Protocol04InteractionPayloadSample Payload);
 

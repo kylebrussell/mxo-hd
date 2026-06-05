@@ -10,13 +10,27 @@ public static partial class PacketResearcher
 {
     private static readonly HashSet<string> SpecializedProtocol04PayloadHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
+        "3a",
+        "06",
+        "7c",
+        "2e",
+        "47",
+        "6d",
         "80 b2",
         "80 b3",
         "80 bc",
         "80 bd",
+        "80 c1",
         "80 c3",
         "80 c8",
         "80 d7",
+        "80 de",
+        "80 86",
+        "80 e4",
+        "80 e5",
+        "80 f5",
+        "81 a9",
+        "81 54",
         "81 67"
     };
 
@@ -1156,6 +1170,19 @@ public static partial class PacketResearcher
         List<Protocol04PacketSequenceSample> protocol04PacketSequences = new();
         List<Protocol04ServerPayloadShapeSample> protocol04ServerPayloadShapes = new();
         List<Unknown8167PayloadSample> unknown8167Payloads = new();
+        List<Unknown47PayloadSample> unknown47Payloads = new();
+        List<Unknown6dPayloadSample> unknown6dPayloads = new();
+        List<Unknown80c1PayloadSample> unknown80c1Payloads = new();
+        List<LoadWorldPayloadSample> loadWorldPayloads = new();
+        List<PlayerValuePayloadSample> playerValuePayloads = new();
+        List<FlashTrafficPayloadSample> flashTrafficPayloads = new();
+        List<FeatureEventPayloadSample> featureEventPayloads = new();
+        List<FactionPlayerInfoPayloadSample> factionPlayerInfoPayloads = new();
+        List<CrewMembersListPayloadSample> crewMembersListPayloads = new();
+        List<FriendOnlinePayloadSample> friendOnlinePayloads = new();
+        List<ChatMessageResponsePayloadSample> chatMessageResponsePayloads = new();
+        List<WhereamiResponsePayloadSample> whereamiResponsePayloads = new();
+        List<FactionNameResponsePayloadSample> factionNameResponsePayloads = new();
         List<Protocol03ObjectViewSample> protocol03ObjectViews = new();
         List<Protocol04InteractionPayloadSample> protocol04InteractionPayloads = new();
         List<PlayerAttributePayloadSample> playerAttributePayloads = new();
@@ -1245,6 +1272,19 @@ public static partial class PacketResearcher
         {
             Protocol04ServerPayloadShapes = protocol04ServerPayloadShapes.Count == 0 ? null : protocol04ServerPayloadShapes,
             Unknown8167Payloads = unknown8167Payloads.Count == 0 ? null : unknown8167Payloads,
+            Unknown47Payloads = unknown47Payloads.Count == 0 ? null : unknown47Payloads,
+            Unknown6dPayloads = unknown6dPayloads.Count == 0 ? null : unknown6dPayloads,
+            Unknown80c1Payloads = unknown80c1Payloads.Count == 0 ? null : unknown80c1Payloads,
+            LoadWorldPayloads = loadWorldPayloads.Count == 0 ? null : loadWorldPayloads,
+            PlayerValuePayloads = playerValuePayloads.Count == 0 ? null : playerValuePayloads,
+            FlashTrafficPayloads = flashTrafficPayloads.Count == 0 ? null : flashTrafficPayloads,
+            FeatureEventPayloads = featureEventPayloads.Count == 0 ? null : featureEventPayloads,
+            FactionPlayerInfoPayloads = factionPlayerInfoPayloads.Count == 0 ? null : factionPlayerInfoPayloads,
+            CrewMembersListPayloads = crewMembersListPayloads.Count == 0 ? null : crewMembersListPayloads,
+            FriendOnlinePayloads = friendOnlinePayloads.Count == 0 ? null : friendOnlinePayloads,
+            ChatMessageResponsePayloads = chatMessageResponsePayloads.Count == 0 ? null : chatMessageResponsePayloads,
+            WhereamiResponsePayloads = whereamiResponsePayloads.Count == 0 ? null : whereamiResponsePayloads,
+            FactionNameResponsePayloads = factionNameResponsePayloads.Count == 0 ? null : factionNameResponsePayloads,
             AbilityUnloadPayloads = abilityUnloadPayloads.Count == 0 ? null : abilityUnloadPayloads,
             FriendListStatusPayloads = friendListStatusPayloads.Count == 0 ? null : friendListStatusPayloads,
             CoderAttributePayloads = coderAttributePayloads.Count == 0 ? null : coderAttributePayloads
@@ -1279,6 +1319,19 @@ public static partial class PacketResearcher
             protocol04PacketSequences.AddRange(DetectProtocol04PacketSequences(bytes, sampleLine, directionHint));
             protocol04ServerPayloadShapes.AddRange(DetectProtocol04ServerPayloadShapes(bytes, localHeaders, sampleLine, directionHint));
             unknown8167Payloads.AddRange(DetectUnknown8167Payloads(bytes, sampleLine, directionHint));
+            unknown47Payloads.AddRange(DetectUnknown47Payloads(bytes, sampleLine, directionHint));
+            unknown6dPayloads.AddRange(DetectUnknown6dPayloads(bytes, sampleLine, directionHint));
+            unknown80c1Payloads.AddRange(DetectUnknown80c1Payloads(bytes, sampleLine, directionHint));
+            loadWorldPayloads.AddRange(DetectLoadWorldPayloads(bytes, sampleLine, directionHint));
+            playerValuePayloads.AddRange(DetectPlayerValuePayloads(bytes, sampleLine, directionHint));
+            flashTrafficPayloads.AddRange(DetectFlashTrafficPayloads(bytes, sampleLine, directionHint));
+            featureEventPayloads.AddRange(DetectFeatureEventPayloads(bytes, sampleLine, directionHint));
+            factionPlayerInfoPayloads.AddRange(DetectFactionPlayerInfoPayloads(bytes, sampleLine, directionHint));
+            crewMembersListPayloads.AddRange(DetectCrewMembersListPayloads(bytes, sampleLine, directionHint));
+            friendOnlinePayloads.AddRange(DetectFriendOnlinePayloads(bytes, sampleLine, directionHint));
+            chatMessageResponsePayloads.AddRange(DetectChatMessageResponsePayloads(bytes, sampleLine, directionHint));
+            whereamiResponsePayloads.AddRange(DetectWhereamiResponsePayloads(bytes, sampleLine, directionHint));
+            factionNameResponsePayloads.AddRange(DetectFactionNameResponsePayloads(bytes, sampleLine, directionHint));
             protocol03ObjectViews.AddRange(DetectProtocol03ObjectViews(bytes, sampleLine, directionHint));
             protocol04InteractionPayloads.AddRange(DetectProtocol04InteractionPayloads(bytes, sampleLine, directionHint));
             playerAttributePayloads.AddRange(DetectPlayerAttributePayloads(bytes, sampleLine, directionHint));
@@ -1460,6 +1513,547 @@ public static partial class PacketResearcher
                 ReadUInt16LittleEndian(block.Payload, 53),
                 FormatPayloadWord(block.Payload, 55),
                 ReadUInt16LittleEndian(block.Payload, 55),
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<Unknown47PayloadSample> DetectUnknown47Payloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("47", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            yield return new Unknown47PayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                FormatPayloadWord(block.Payload, 4),
+                ReadUInt16LittleEndian(block.Payload, 4),
+                FormatPayloadWord(block.Payload, 19),
+                ReadUInt16LittleEndian(block.Payload, 19),
+                FormatPayloadWord(block.Payload, 21),
+                ReadUInt16LittleEndian(block.Payload, 21),
+                block.Payload.Length > 25 ? FormatHeader(block.Payload.Skip(25)) : "-",
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<Unknown6dPayloadSample> DetectUnknown6dPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("6d", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 9)
+            {
+                continue;
+            }
+
+            int listOffset = ReadUInt16LittleEndian(block.Payload, 4);
+            int listPayloadOffset = PacketOffsetToPayloadOffset(listOffset);
+            int? listFlag = null;
+            int? entryCount = null;
+            int? parsedEntryCount = null;
+            List<int> entryIds = new();
+            if (listPayloadOffset >= 0 && listPayloadOffset + 3 <= block.Payload.Length)
+            {
+                listFlag = block.Payload[listPayloadOffset];
+                entryCount = ReadUInt16LittleEndian(block.Payload, listPayloadOffset + 1);
+                int recordsOffset = listPayloadOffset + 3;
+                int availableRecords = Math.Max(0, block.Payload.Length - recordsOffset) / 6;
+                parsedEntryCount = Math.Min(entryCount.Value, availableRecords);
+                for (int i = 0; i < parsedEntryCount.Value; i++)
+                {
+                    int recordOffset = recordsOffset + (i * 6);
+                    entryIds.Add(ReadUInt16LittleEndian(block.Payload, recordOffset + 1));
+                }
+            }
+
+            yield return new Unknown6dPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                listOffset,
+                listFlag,
+                entryCount,
+                parsedEntryCount,
+                entryIds,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<Unknown80c1PayloadSample> DetectUnknown80c1Payloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 c1", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            yield return new Unknown80c1PayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<LoadWorldPayloadSample> DetectLoadWorldPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("06", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 15)
+            {
+                continue;
+            }
+
+            (int? worldPathBytes, string? worldPath, int environmentLengthOffset) = DecodeSizedTerminatedAscii(block.Payload, 13);
+            (int? environmentBytes, string? environment, _) = environmentLengthOffset >= 0
+                ? DecodeSizedTerminatedAscii(block.Payload, environmentLengthOffset)
+                : (null, null, -1);
+
+            yield return new LoadWorldPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                ReadUInt32LittleEndian(block.Payload, 2),
+                FormatHeader(block.Payload.Skip(6).Take(Math.Min(4, Math.Max(0, block.Payload.Length - 6)))),
+                ReadUInt32LittleEndian(block.Payload, 6),
+                block.Payload.Length > 10 ? FormatHeader(block.Payload.Skip(10).Take(1)) : "-",
+                ReadUInt16LittleEndian(block.Payload, 11),
+                worldPathBytes,
+                worldPath,
+                environmentBytes,
+                environment,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<PlayerValuePayloadSample> DetectPlayerValuePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 e4", StringComparison.OrdinalIgnoreCase)
+                && !block.RawHeader.Equals("80 e5", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            string localName = block.RawHeader.Equals("80 e4", StringComparison.OrdinalIgnoreCase)
+                ? "SERVER_PLAYER_INFO"
+                : "SERVER_PLAYER_EXP";
+            yield return new PlayerValuePayloadSample(
+                lineNumber,
+                block.RawHeader,
+                localName,
+                block.Payload.Length,
+                ReadUInt32LittleEndian(block.Payload, 0),
+                FormatHeader(block.Payload.Take(Math.Min(4, block.Payload.Length))),
+                block.Payload.Length > 4 ? FormatHeader(block.Payload.Skip(4)) : "-",
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FlashTrafficPayloadSample> DetectFlashTrafficPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("81 a9", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            (int? urlBytes, string? url) = DecodeLengthPrefixedAscii(block.Payload, 5, 7);
+            yield return new FlashTrafficPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatPayloadWord(block.Payload, 0),
+                ReadUInt16LittleEndian(block.Payload, 0),
+                FormatPayloadWord(block.Payload, 2),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                block.Payload.Length > 4 ? FormatHeader(block.Payload.Skip(4).Take(1)) : "-",
+                urlBytes,
+                url,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FeatureEventPayloadSample> DetectFeatureEventPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("3a", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 6)
+            {
+                continue;
+            }
+
+            (int? keyBytes, string? key, int valueLengthOffset) = DecodeSizedTerminatedAscii(block.Payload, 4);
+            int? valueBytes = null;
+            string? valueText = null;
+            uint? valueUInt32 = null;
+            string valueHex = "-";
+            if (valueLengthOffset >= 0 && valueLengthOffset + 2 <= block.Payload.Length)
+            {
+                valueBytes = ReadUInt16LittleEndian(block.Payload, valueLengthOffset);
+                int valueOffset = valueLengthOffset + 2;
+                int availableValueBytes = Math.Max(0, block.Payload.Length - valueOffset);
+                int capturedValueBytes = Math.Min(valueBytes.Value, availableValueBytes);
+                valueHex = capturedValueBytes > 0
+                    ? FormatHeader(block.Payload.Skip(valueOffset).Take(capturedValueBytes))
+                    : "-";
+                if (valueBytes == 4 && availableValueBytes >= 4)
+                {
+                    valueUInt32 = ReadUInt32LittleEndian(block.Payload, valueOffset);
+                }
+                else if (valueBytes == 2 && availableValueBytes >= 2)
+                {
+                    valueUInt32 = (uint)ReadUInt16LittleEndian(block.Payload, valueOffset);
+                }
+                else if (valueBytes > 0 && availableValueBytes >= valueBytes)
+                {
+                    (_, valueText) = DecodeLengthPrefixedAscii(block.Payload, valueLengthOffset, valueOffset);
+                }
+            }
+
+            yield return new FeatureEventPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatHeader(block.Payload.Take(Math.Min(2, block.Payload.Length))),
+                ReadUInt16LittleEndian(block.Payload, 2),
+                keyBytes,
+                key,
+                valueBytes,
+                valueText,
+                valueUInt32,
+                valueHex,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FactionPlayerInfoPayloadSample> DetectFactionPlayerInfoPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("7c", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 16)
+            {
+                continue;
+            }
+
+            int mode = block.Payload[8];
+            int dataBytes = ReadUInt16LittleEndian(block.Payload, 14);
+            int? alignment = null;
+            string? factionName = null;
+            uint? masterCharacterId = null;
+            uint? money = null;
+            int? crewCount = null;
+            List<string> crewNames = new();
+            List<string> crewLeaderNames = new();
+
+            if (mode == 1 && block.Payload.Length >= 68)
+            {
+                alignment = block.Payload[16];
+                factionName = DecodeFixedAscii(block.Payload, 17, 43);
+                masterCharacterId = ReadUInt32LittleEndian(block.Payload, 60);
+                money = ReadUInt32LittleEndian(block.Payload, 64);
+            }
+            else if (mode == 2)
+            {
+                crewCount = dataBytes > 0 ? dataBytes / 81 : null;
+                int recordCount = crewCount is null
+                    ? 0
+                    : Math.Min(crewCount.Value, Math.Max(0, block.Payload.Length - 16) / 81);
+                for (int i = 0; i < recordCount; i++)
+                {
+                    int recordOffset = 16 + (i * 81);
+                    string? crewName = DecodeFixedAscii(block.Payload, recordOffset + 4, 39);
+                    if (!string.IsNullOrWhiteSpace(crewName))
+                    {
+                        crewNames.Add(crewName);
+                    }
+
+                    string? leaderName = DecodeFixedAscii(block.Payload, recordOffset + 47, 32);
+                    if (!string.IsNullOrWhiteSpace(leaderName))
+                    {
+                        crewLeaderNames.Add(leaderName);
+                    }
+                }
+            }
+
+            yield return new FactionPlayerInfoPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                ReadUInt32LittleEndian(block.Payload, 0),
+                ReadUInt32LittleEndian(block.Payload, 4),
+                FormatHeader(block.Payload.Skip(8).Take(Math.Min(6, Math.Max(0, block.Payload.Length - 8)))),
+                mode,
+                dataBytes,
+                alignment,
+                factionName,
+                masterCharacterId,
+                money,
+                crewCount,
+                crewNames,
+                crewLeaderNames,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<CrewMembersListPayloadSample> DetectCrewMembersListPayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 86", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 31)
+            {
+                continue;
+            }
+
+            int crewNameOffset = ReadUInt16LittleEndian(block.Payload, 9);
+            int memberListOffset = ReadUInt16LittleEndian(block.Payload, 23);
+            var crewNameDecoded = DecodeSizedTerminatedAsciiAtPacketOffset(block.Payload, crewNameOffset);
+            string? crewName = crewNameDecoded.Text;
+            int? memberCount = null;
+            List<string> memberHandles = new();
+            int memberCountOffset = PacketOffsetToPayloadOffset(memberListOffset);
+            if (memberCountOffset >= 0 && memberCountOffset + 1 < block.Payload.Length)
+            {
+                memberCount = ReadUInt16LittleEndian(block.Payload, memberCountOffset);
+                int memberOffset = memberCountOffset + 2;
+                int recordCount = Math.Min(memberCount.Value, Math.Max(0, block.Payload.Length - memberOffset) / 38);
+                for (int i = 0; i < recordCount; i++)
+                {
+                    int recordOffset = memberOffset + (i * 38);
+                    string? handle = DecodeFixedAscii(block.Payload, recordOffset + 5, 32);
+                    if (!string.IsNullOrWhiteSpace(handle))
+                    {
+                        memberHandles.Add(handle);
+                    }
+                }
+            }
+
+            yield return new CrewMembersListPayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                ReadUInt32LittleEndian(block.Payload, 0),
+                ReadUInt32LittleEndian(block.Payload, 4),
+                block.Payload[8],
+                crewNameOffset,
+                ReadUInt32LittleEndian(block.Payload, 11),
+                ReadUInt32LittleEndian(block.Payload, 15),
+                ReadUInt32LittleEndian(block.Payload, 19),
+                memberListOffset,
+                FormatHeader(block.Payload.Skip(25).Take(Math.Min(4, Math.Max(0, block.Payload.Length - 25)))),
+                ReadUInt16LittleEndian(block.Payload, 29),
+                crewName,
+                memberCount,
+                memberHandles,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FriendOnlinePayloadSample> DetectFriendOnlinePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 de", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            (int? handleBytes, string? handle) = DecodeLengthPrefixedAscii(block.Payload, 3, 5);
+            yield return new FriendOnlinePayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                ReadUInt16LittleEndian(block.Payload, 0),
+                block.Payload.Length > 2 ? FormatHeader(block.Payload.Skip(2).Take(1)) : "-",
+                handleBytes,
+                handle,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<ChatMessageResponsePayloadSample> DetectChatMessageResponsePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("2e", StringComparison.OrdinalIgnoreCase) || block.Payload.Length == 0)
+            {
+                continue;
+            }
+
+            (int? textBytes, string? text, _) = block.Payload.Length >= 37
+                ? DecodeSizedTerminatedAscii(block.Payload, 35)
+                : (null, null, -1);
+
+            yield return new ChatMessageResponsePayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                FormatHeader(block.Payload.Take(1)),
+                block.Payload[0],
+                DescribeChatMessageType(block.Payload[0]),
+                FormatPayloadWord(block.Payload, 12),
+                ReadUInt16LittleEndian(block.Payload, 12),
+                FormatPayloadWord(block.Payload, 15),
+                ReadUInt16LittleEndian(block.Payload, 15),
+                textBytes,
+                text,
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<WhereamiResponsePayloadSample> DetectWhereamiResponsePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("81 54", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            float? x = TryReadSingleLittleEndian(block.Payload, 0, out float decodedX) ? decodedX : null;
+            float? y = TryReadSingleLittleEndian(block.Payload, 4, out float decodedY) ? decodedY : null;
+            float? z = TryReadSingleLittleEndian(block.Payload, 8, out float decodedZ) ? decodedZ : null;
+
+            yield return new WhereamiResponsePayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                x,
+                y,
+                z,
+                block.Payload.Length > 12 ? FormatHeader(block.Payload.Skip(12)) : "-",
+                FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<FactionNameResponsePayloadSample> DetectFactionNameResponsePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        if (directionHint == "client")
+        {
+            yield break;
+        }
+
+        foreach (Protocol04RpcBlock block in EnumerateProtocol04RpcBlocks(bytes))
+        {
+            if (!block.RawHeader.Equals("80 f5", StringComparison.OrdinalIgnoreCase) || block.Payload.Length < 4)
+            {
+                continue;
+            }
+
+            yield return new FactionNameResponsePayloadSample(
+                lineNumber,
+                block.Payload.Length,
+                ReadUInt32LittleEndian(block.Payload, 0),
+                DecodeFixedAscii(block.Payload, 4, 42),
                 FormatHeader(block.Payload));
         }
     }
@@ -2619,6 +3213,110 @@ public static partial class PacketResearcher
         }
 
         return (bytes, Encoding.ASCII.GetString(raw));
+    }
+
+    private static (int? Bytes, string? Text, int NextOffset) DecodeSizedTerminatedAscii(IReadOnlyList<byte> payload, int lengthOffset)
+    {
+        if (payload.Count < lengthOffset + 2)
+        {
+            return (null, null, -1);
+        }
+
+        int bytes = ReadUInt16LittleEndian(payload, lengthOffset);
+        int textOffset = lengthOffset + 2;
+        if (bytes <= 0 || textOffset + bytes > payload.Count)
+        {
+            return (bytes, null, -1);
+        }
+
+        int textBytes = bytes;
+        while (textBytes > 0 && payload[textOffset + textBytes - 1] == 0)
+        {
+            textBytes--;
+        }
+
+        for (int i = 0; i < textBytes; i++)
+        {
+            if (!IsPrintableAscii(payload[textOffset + i]))
+            {
+                return (bytes, null, textOffset + bytes);
+            }
+        }
+
+        byte[] raw = new byte[textBytes];
+        for (int i = 0; i < textBytes; i++)
+        {
+            raw[i] = payload[textOffset + i];
+        }
+
+        return (bytes, Encoding.ASCII.GetString(raw), textOffset + bytes);
+    }
+
+    private static (int? Bytes, string? Text, int NextOffset) DecodeSizedTerminatedAsciiAtPacketOffset(IReadOnlyList<byte> payload, int packetOffset)
+    {
+        int payloadOffset = PacketOffsetToPayloadOffset(packetOffset);
+        return payloadOffset >= 0
+            ? DecodeSizedTerminatedAscii(payload, payloadOffset)
+            : (null, null, -1);
+    }
+
+    private static string DescribeChatMessageType(byte type)
+    {
+        return type switch
+        {
+            0x02 => "CREW",
+            0x03 => "FACTION",
+            0x05 => "TEAM",
+            0x07 => "SYSTEM",
+            0x10 => "AREA",
+            0x11 => "WHISPER",
+            0x17 => "MODAL",
+            0xc7 => "BROADCAST",
+            0xd7 => "FRAMEMODAL",
+            _ => "unknown"
+        };
+    }
+
+    private static int PacketOffsetToPayloadOffset(int packetOffset)
+    {
+        // Local protocol 04 writers often store offsets that include the two-byte RPC header.
+        return packetOffset >= 2 ? packetOffset - 2 : -1;
+    }
+
+    private static string? DecodeFixedAscii(IReadOnlyList<byte> payload, int offset, int bytes)
+    {
+        if (offset < 0 || bytes <= 0 || offset >= payload.Count)
+        {
+            return null;
+        }
+
+        int availableBytes = Math.Min(bytes, payload.Count - offset);
+        int textBytes = 0;
+        while (textBytes < availableBytes && payload[offset + textBytes] != 0)
+        {
+            textBytes++;
+        }
+
+        if (textBytes == 0)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < textBytes; i++)
+        {
+            if (!IsPrintableAscii(payload[offset + i]))
+            {
+                return null;
+            }
+        }
+
+        byte[] raw = new byte[textBytes];
+        for (int i = 0; i < textBytes; i++)
+        {
+            raw[i] = payload[offset + i];
+        }
+
+        return Encoding.ASCII.GetString(raw);
     }
 
     private static IReadOnlyList<string> ExtractPrintableAsciiRuns(IReadOnlyList<byte> payload, int minimumLength = 4)

@@ -104,6 +104,170 @@ public sealed record Unknown8167PayloadSample(
     int TailField1Value,
     string PayloadHex);
 
+public sealed record Unknown47PayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string MidField0,
+    int MidField0Value,
+    string MidField1,
+    int MidField1Value,
+    string TailHex,
+    string PayloadHex);
+
+public sealed record Unknown6dPayloadSample(
+    int Line,
+    int PayloadLength,
+    string ModeHex,
+    int ModeValue,
+    string Field1,
+    int Field1Value,
+    int ListOffset,
+    int? ListFlag,
+    int? EntryCount,
+    int? ParsedEntryCount,
+    IReadOnlyList<int> EntryIds,
+    string PayloadHex);
+
+public sealed record Unknown80c1PayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string PayloadHex);
+
+public sealed record LoadWorldPayloadSample(
+    int Line,
+    int PayloadLength,
+    string MarkerHex,
+    int MarkerValue,
+    uint DistrictId,
+    string SimTimeHex,
+    uint SimTimeValue,
+    string FlagHex,
+    int EnvironmentOffset,
+    int? WorldPathBytes,
+    string? WorldPath,
+    int? EnvironmentBytes,
+    string? Environment,
+    string PayloadHex);
+
+public sealed record PlayerValuePayloadSample(
+    int Line,
+    string Header,
+    string LocalName,
+    int PayloadLength,
+    uint Value,
+    string ValueHex,
+    string TailHex,
+    string PayloadHex);
+
+public sealed record FlashTrafficPayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string MarkerHex,
+    int? UrlBytes,
+    string? Url,
+    string PayloadHex);
+
+public sealed record FeatureEventPayloadSample(
+    int Line,
+    int PayloadLength,
+    string PrefixHex,
+    int DeclaredPayloadBytes,
+    int? KeyBytes,
+    string? Key,
+    int? ValueBytes,
+    string? ValueText,
+    uint? ValueUInt32,
+    string ValueHex,
+    string PayloadHex);
+
+public sealed record FactionPlayerInfoPayloadSample(
+    int Line,
+    int PayloadLength,
+    uint CharacterId,
+    uint FactionId,
+    string PrefixHex,
+    int Mode,
+    int DataBytes,
+    int? Alignment,
+    string? FactionName,
+    uint? MasterCharacterId,
+    uint? Money,
+    int? CrewCount,
+    IReadOnlyList<string> CrewNames,
+    IReadOnlyList<string> CrewLeaderNames,
+    string PayloadHex);
+
+public sealed record CrewMembersListPayloadSample(
+    int Line,
+    int PayloadLength,
+    uint CharacterId,
+    uint CrewId,
+    int Organization,
+    int CrewNameOffset,
+    uint CaptainCharacterId,
+    uint FirstMateCharacterId,
+    uint Money,
+    int MemberListOffset,
+    string ConstantHex,
+    int FullSize,
+    string? CrewName,
+    int? MemberCount,
+    IReadOnlyList<string> MemberHandles,
+    string PayloadHex);
+
+public sealed record FriendOnlinePayloadSample(
+    int Line,
+    int PayloadLength,
+    int StatusCode,
+    string FlagHex,
+    int? HandleBytes,
+    string? Handle,
+    string PayloadHex);
+
+public sealed record ChatMessageResponsePayloadSample(
+    int Line,
+    int PayloadLength,
+    string TypeHex,
+    int TypeValue,
+    string TypeName,
+    string Field12Hex,
+    int Field12Value,
+    string Field15Hex,
+    int Field15Value,
+    int? TextBytes,
+    string? Text,
+    string PayloadHex);
+
+public sealed record WhereamiResponsePayloadSample(
+    int Line,
+    int PayloadLength,
+    float? X,
+    float? Y,
+    float? Z,
+    string TailHex,
+    string PayloadHex);
+
+public sealed record FactionNameResponsePayloadSample(
+    int Line,
+    int PayloadLength,
+    uint FactionId,
+    string? FactionName,
+    string PayloadHex);
+
 public sealed record ManageBonusPayloadSample(
     int Line,
     int PayloadLength,
@@ -447,6 +611,45 @@ public sealed record PacketDumpFileSummary(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Unknown8167PayloadSample>? Unknown8167Payloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Unknown47PayloadSample>? Unknown47Payloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Unknown6dPayloadSample>? Unknown6dPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Unknown80c1PayloadSample>? Unknown80c1Payloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<LoadWorldPayloadSample>? LoadWorldPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<PlayerValuePayloadSample>? PlayerValuePayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FlashTrafficPayloadSample>? FlashTrafficPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FeatureEventPayloadSample>? FeatureEventPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FactionPlayerInfoPayloadSample>? FactionPlayerInfoPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<CrewMembersListPayloadSample>? CrewMembersListPayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FriendOnlinePayloadSample>? FriendOnlinePayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<ChatMessageResponsePayloadSample>? ChatMessageResponsePayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<WhereamiResponsePayloadSample>? WhereamiResponsePayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<FactionNameResponsePayloadSample>? FactionNameResponsePayloads { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<AbilityUnloadPayloadSample>? AbilityUnloadPayloads { get; init; }
