@@ -80,6 +80,10 @@ This checklist tracks the current modernization push from "builds locally" to "f
   - Current generated report finds 484 protocol 04 packets containing `80 b2` and/or `80 bc`; 51 of those packets contain both families in the same top-level packet.
 - [x] Group top-level `80 bd` coder-attribute payloads and sequence context.
   - Current generated report finds 185 top-level `80 bd` / `SERVER_CODER_ATTRIBUTE_UNKNOWN` payloads. All are 9 payload bytes. The dominant shape is `05 11 00 00 00 00 00 00 00` with 179 hits, mostly in teleport captures and repeated `80 bc` state bundles. Two rare `saikungnorthwestbroken.txt` shapes appear in a distinct sequence with `80 c1`, making them special-case state-bundle leads.
+- [x] Decode unknown top-level `81 67` protocol 04 server payload shape.
+  - Current generated report finds 89 samples, all 63 payload bytes, with stable prefix fields `17 00`, `27 00`, and `1c 22`; two 14-byte text slots that both contain `AfterWhoruNeo`; tail field `02 00`; and tail values `4b 00` (78 samples), `4d 00` (7 samples), or `44 00` (4 samples).
+- [x] Group additional protocol 04 server payload shapes that do not yet have specialized decoders.
+  - Current generated report adds 271 non-specialized server payload shape samples. It surfaces fixed `80 e5` / `SERVER_PLAYER_EXP` and `80 e4` / `SERVER_PLAYER_INFO` payloads after `SERVER_LOAD_WORLD`, `06` / `SERVER_LOAD_WORLD` international world-resource strings, `81 a9` Flash URL payloads, `80 86` crew-member names, `80 de` friend-online handle text, and unknown `3a` feature/event strings.
 - [x] Link `80 b2` field 0 to `80 bc` field 1 inside the same protocol 04 state bundles.
   - Current generated report finds six shared-field links. The strongest are `3d 04` in 20 packets and `35 04`, `3e 04`, `3f 04` in 19 packets each.
 - [x] Validate linked short/long field-value consistency between `80 b2` and `80 bc`.

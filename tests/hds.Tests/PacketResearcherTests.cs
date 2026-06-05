@@ -501,6 +501,64 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectProtocol04ServerPayloadShapes_GroupsAdditionalServerPayloads()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 0a 81 68 17 00 27 00 41 42 43 44")
+            .ToArray();
+        RpcHeaderEntry[] localHeaders =
+        {
+            new("mxo-hd", "CR2", "server", "RPCResponseHeader", "SERVER_TEST", 0x0168, "81 68", "local.cs", 1)
+        };
+
+        Protocol04ServerPayloadShapeSample payload = PacketResearcher
+            .DetectProtocol04ServerPayloadShapes(bytes, localHeaders, 26, "server")
+            .Single();
+
+        Assert.Equal(26, payload.Line);
+        Assert.Equal("81 68", payload.Header);
+        Assert.Equal("CR2:SERVER_TEST", payload.LocalName);
+        Assert.Equal(8, payload.PayloadLength);
+        Assert.Equal("17 00", payload.Field0);
+        Assert.Equal(0x17, payload.Field0Value);
+        Assert.Equal("27 00", payload.Field1);
+        Assert.Equal(0x27, payload.Field1Value);
+        Assert.Equal("41 42", payload.Field2);
+        Assert.Equal(0x4241, payload.Field2Value);
+        Assert.Equal("17 00 27 00 41 42 43 44", payload.PayloadPrefixHex);
+        Assert.Equal("-", payload.PayloadSuffixHex);
+        Assert.Equal(new[] { "ABCD" }, payload.Texts);
+    }
+
+    [Fact]
+    public void DetectUnknown8167Payloads_DecodesDuplicatedTextAndTail()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 41 81 67 17 00 27 00 1c 22 00 c6 01 11 00 00 00 00 00 00 00 37 00 00 08 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 02 00 4b 00 00 00 00 00 00 00")
+            .ToArray();
+
+        Unknown8167PayloadSample payload = PacketResearcher.DetectUnknown8167Payloads(bytes, 31, "server").Single();
+
+        Assert.Equal(31, payload.Line);
+        Assert.Equal(63, payload.PayloadLength);
+        Assert.Equal("17 00", payload.Field0);
+        Assert.Equal(0x17, payload.Field0Value);
+        Assert.Equal("27 00", payload.Field1);
+        Assert.Equal(0x27, payload.Field1Value);
+        Assert.Equal("1c 22", payload.Field2);
+        Assert.Equal(0x221c, payload.Field2Value);
+        Assert.Equal("17 00 27 00 1c 22 00 c6 01 11 00 00 00 00 00 00 00 37 00 00 08", payload.PrefixHex);
+        Assert.Equal(14, payload.Text0Bytes);
+        Assert.Equal("AfterWhoruNeo", payload.Text0);
+        Assert.Equal(14, payload.Text1Bytes);
+        Assert.Equal("AfterWhoruNeo", payload.Text1);
+        Assert.Equal("02 00", payload.TailField0);
+        Assert.Equal(2, payload.TailField0Value);
+        Assert.Equal("4b 00", payload.TailField1);
+        Assert.Equal(0x4b, payload.TailField1Value);
+    }
+
+    [Fact]
     public void ReportWriter_LinksB2Field0ToBcField1InSamePacket()
     {
         PacketDumpFileSummary dump = new(
@@ -577,6 +635,133 @@ public class PacketResearcherTests
         Assert.Contains("| `3d 04` (1085) | Mclothing_Pants_A8_C1 | 1 | 1 | `sample.txt:10` | `3d 04 00 00 08 02` | `45 03 3d 04 00 43 00 00 00 3d 04 00 00 00 00 01 00 00 00 00` |", markdown);
         Assert.Contains("### Vendor and Interaction `80 bc` Layout Leads", markdown);
         Assert.Contains("| `3d 04` (1085) | TalkActiveTracker | creation | 1 | 1 | 1 | 0 | `45 03` (1) | `sample.txt:10` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesAdditionalProtocol04ServerPayloadShapes()
+    {
+        PacketDumpFileSummary dump = new(
+            "state.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "81 68" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>())
+        {
+            Protocol04ServerPayloadShapes = new[]
+            {
+                new Protocol04ServerPayloadShapeSample(
+                    42,
+                    "81 68",
+                    "CR2:SERVER_TEST",
+                    8,
+                    "17 00",
+                    0x17,
+                    "27 00",
+                    0x27,
+                    "41 42",
+                    0x4241,
+                    "17 00 27 00 41 42 43 44",
+                    "-",
+                    new[] { "ABCD" })
+            }
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("## Protocol 04 Additional Server Payload Shapes", markdown);
+        Assert.Contains("| `81 68` | CR2:SERVER_TEST | 8 | `17 00` | `27 00` | `41 42` | 1 | ABCD | state.txt (1) | 81 68 (1) | `state.txt:42` | `17 00 27 00 41 42 43 44` | `-` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesUnknown8167PayloadSummary()
+    {
+        PacketDumpFileSummary dump = new(
+            "state.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "81 67" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>())
+        {
+            Unknown8167Payloads = new[]
+            {
+                new Unknown8167PayloadSample(
+                    42,
+                    63,
+                    "17 00",
+                    0x17,
+                    "27 00",
+                    0x27,
+                    "1c 22",
+                    0x221c,
+                    "17 00 27 00 1c 22 00 c6 01 11 00 00 00 00 00 00 00 37 00 00 08",
+                    14,
+                    "AfterWhoruNeo",
+                    14,
+                    "AfterWhoruNeo",
+                    "02 00",
+                    2,
+                    "4b 00",
+                    0x4b,
+                    "17 00 27 00 1c 22 00 c6 01 11 00 00 00 00 00 00 00 37 00 00 08 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 0e 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 02 00 4b 00 00 00 00 00 00 00")
+            }
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("## Unknown 81 67 Payload Groups", markdown);
+        Assert.Contains("| 63 | `17 00` | `27 00` | `1c 22` | 14 | AfterWhoruNeo | 14 | AfterWhoruNeo | `02 00` | `4b 00` | 1 | state.txt (1) | 81 67 (1) | `state.txt:42` | `17 00 27 00 1c 22 00 c6 01 11 00 00 00 00 00 00 00 37 00 00 08` |", markdown);
     }
 
     [Fact]

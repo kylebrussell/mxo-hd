@@ -55,6 +55,8 @@ public static class ReportWriter
         builder.AppendLine($"- External object-interaction command examples: {report.Protocol04InteractionCommandExamples.Count}");
         builder.AppendLine($"- Vendor inventory rows: {report.VendorInventoryEntries.Count}");
         builder.AppendLine($"- Protocol 04 interaction payloads: {report.PacketDumpFiles.Sum(file => file.Protocol04InteractionPayloads.Count)}");
+        builder.AppendLine($"- Protocol 04 additional server payload shape samples: {report.PacketDumpFiles.Sum(file => file.Protocol04ServerPayloadShapes?.Count ?? 0)}");
+        builder.AppendLine($"- Protocol 04 unknown `81 67` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown8167Payloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 ability unload payloads: {report.PacketDumpFiles.Sum(file => file.AbilityUnloadPayloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 friend list status payloads: {report.PacketDumpFiles.Sum(file => file.FriendListStatusPayloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 coder attribute payloads: {report.PacketDumpFiles.Sum(file => file.CoderAttributePayloads?.Count ?? 0)}");
@@ -69,6 +71,8 @@ public static class ReportWriter
         AppendStaticObjectCorrelations(builder, report);
         AppendVendorInventoryCorrelations(builder, report);
         AppendProtocol04SequenceSummary(builder, report);
+        AppendUnknown8167PayloadSummary(builder, report);
+        AppendProtocol04ServerPayloadShapeSummary(builder, report);
         AppendProtocol03ObjectViewSummary(builder, report);
         AppendHardcodedProtocol03Examples(builder, report);
         AppendPlayerAttributePayloadSummary(builder, report);
@@ -459,6 +463,181 @@ public static class ReportWriter
 
         builder.AppendLine();
         AppendProtocol04StateFieldLinks(builder, report);
+    }
+
+    private static void AppendProtocol04ServerPayloadShapeSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol04ServerPayloadShapeWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.Protocol04ServerPayloadShapes ?? Array.Empty<Protocol04ServerPayloadShapeSample>())
+                .Select(payload => new Protocol04ServerPayloadShapeWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.Header,
+                LocalName = entry.Payload.LocalName ?? "(unknown)",
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field2
+            })
+            .Select(group => new
+            {
+                group.Key.Header,
+                group.Key.LocalName,
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.Field2,
+                Count = group.Count(),
+                Texts = group
+                    .SelectMany(entry => entry.Payload.Texts)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(text => text, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Header, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.PayloadLength)
+            .Take(40)
+            .ToArray();
+
+        builder.AppendLine("## Protocol 04 Additional Server Payload Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups non-client protocol 04 payloads that do not yet have a specialized decoder. It is a triage table: leading words and printable strings are layout evidence, not final field semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Local name | Payload bytes | Field 0 | Field 1 | Field 2 | Count | Text samples | Capture scopes | Top packet sequences | Sample | Prefix | Suffix |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            Protocol04ServerPayloadShapeWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| `{group.Header}` | {FormatTableText(group.LocalName)} | {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | {group.Count} | {FormatDistinct(group.Texts, 8)} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadPrefixHex}` | `{sample.Payload.PayloadSuffixHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendUnknown8167PayloadSummary(StringBuilder builder, PacketResearchReport report)
+    {
+        Unknown8167PayloadWithFile[] payloads = report.PacketDumpFiles
+            .SelectMany(file => (file.Unknown8167Payloads ?? Array.Empty<Unknown8167PayloadSample>())
+                .Select(payload => new Unknown8167PayloadWithFile(file.File, payload)))
+            .ToArray();
+
+        if (payloads.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = FormatSequence(sequence.Headers)
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        var groups = payloads
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field2,
+                entry.Payload.PrefixHex,
+                entry.Payload.Text0Bytes,
+                Text0 = entry.Payload.Text0 ?? "-",
+                entry.Payload.Text1Bytes,
+                Text1 = entry.Payload.Text1 ?? "-",
+                entry.Payload.TailField0,
+                entry.Payload.TailField1
+            })
+            .Select(group => new
+            {
+                group.Key.PayloadLength,
+                group.Key.Field0,
+                group.Key.Field1,
+                group.Key.Field2,
+                group.Key.PrefixHex,
+                Text0Bytes = group.Key.Text0Bytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.Text0,
+                Text1Bytes = group.Key.Text1Bytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                group.Key.Text1,
+                group.Key.TailField0,
+                group.Key.TailField1,
+                Count = group.Count(),
+                CaptureScopes = group
+                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(scope => scope.Count())
+                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(scope => $"{scope.Key} ({scope.Count()})")
+                    .ToArray(),
+                Sequences = group
+                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                        ? sequence
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray(),
+                Sample = group.First()
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.TailField1, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        builder.AppendLine("## Unknown 81 67 Payload Groups");
+        builder.AppendLine();
+        builder.AppendLine("This decodes the repeated top-level protocol 04 `81 67` server payload shape. The header is not named in the local protocol map yet, so field names remain positional; the two text slots and tail words are structural evidence only.");
+        builder.AppendLine();
+        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Field 2 | Text 0 bytes | Text 0 | Text 1 bytes | Text 1 | Tail 0 | Tail 1 | Count | Capture scopes | Top packet sequences | Sample | Prefix | Sample payload |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (var group in groups)
+        {
+            Unknown8167PayloadWithFile sample = group.Sample;
+            builder.AppendLine(
+                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | `{group.Field2}` | {group.Text0Bytes} | {FormatTableText(group.Text0)} | {group.Text1Bytes} | {FormatTableText(group.Text1)} | `{group.TailField0}` | `{group.TailField1}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{group.PrefixHex}` | `{sample.Payload.PayloadHex}` |");
+        }
+
+        builder.AppendLine();
     }
 
     private static void AppendProtocol04StateFieldLinks(StringBuilder builder, PacketResearchReport report)
@@ -3885,6 +4064,10 @@ public static class ReportWriter
     private sealed record AttributeCandidateHit(int FieldValue, string IndexKind, AttributeDefinition Attribute);
 
     private sealed record Protocol04SequenceWithFile(string File, Protocol04PacketSequenceSample Sequence);
+
+    private sealed record Protocol04ServerPayloadShapeWithFile(string File, Protocol04ServerPayloadShapeSample Payload);
+
+    private sealed record Unknown8167PayloadWithFile(string File, Unknown8167PayloadSample Payload);
 
     private sealed record Protocol04InteractionWithFile(string File, Protocol04InteractionPayloadSample Payload);
 

@@ -69,6 +69,41 @@ public sealed record Protocol04PacketSequenceSample(
     string? Direction,
     IReadOnlyList<string> Headers);
 
+public sealed record Protocol04ServerPayloadShapeSample(
+    int Line,
+    string Header,
+    string? LocalName,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string PayloadPrefixHex,
+    string PayloadSuffixHex,
+    IReadOnlyList<string> Texts);
+
+public sealed record Unknown8167PayloadSample(
+    int Line,
+    int PayloadLength,
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string PrefixHex,
+    int? Text0Bytes,
+    string? Text0,
+    int? Text1Bytes,
+    string? Text1,
+    string TailField0,
+    int TailField0Value,
+    string TailField1,
+    int TailField1Value,
+    string PayloadHex);
+
 public sealed record ManageBonusPayloadSample(
     int Line,
     int PayloadLength,
@@ -407,6 +442,12 @@ public sealed record PacketDumpFileSummary(
     IReadOnlyList<PlayerAttributePayloadSample> PlayerAttributePayloads,
     IReadOnlyList<ManageBonusPayloadSample> ManageBonusPayloads)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Protocol04ServerPayloadShapeSample>? Protocol04ServerPayloadShapes { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Unknown8167PayloadSample>? Unknown8167Payloads { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<AbilityUnloadPayloadSample>? AbilityUnloadPayloads { get; init; }
 
