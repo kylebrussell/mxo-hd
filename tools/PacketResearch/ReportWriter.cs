@@ -1999,12 +1999,12 @@ public static class ReportWriter
 
         builder.AppendLine("### Protocol 03 Static Object/Door Spawn Leads");
         builder.AppendLine();
-        builder.AppendLine("This extracts the stable prefix from selector `9e`/`a0` static object variable blocks: a lead byte, little-endian static `mxoId`, instance byte, `cd ab` separator, protocol object-type byte, a bounded quaternion window, and post-quaternion body bytes when full compact/headered packet samples are available. The first post-quaternion byte is followed by three little-endian doubles that land near matching static table coordinates; field semantics are still not claimed.");
+        builder.AppendLine("This extracts the stable prefix from selector `3c`/`9e`/`9f`/`a0` static object variable blocks: a lead byte, little-endian static `mxoId`, instance byte, `cd ab` separator, protocol object-type byte `3`, a bounded quaternion window, and post-quaternion body bytes when full compact/headered packet samples are available. The first post-quaternion byte is followed by three little-endian doubles that land near matching static table coordinates; field semantics are still not claimed.");
         builder.AppendLine();
-        builder.AppendLine($"Across {leads.Length} selector `9e`/`a0` tails, {leads.Select(entry => entry.Lead.ObjectId).Distinct().Count()} distinct static object ids appear.");
+        builder.AppendLine($"Across {leads.Length} selector `3c`/`9e`/`9f`/`a0` tails, {leads.Select(entry => entry.Lead.ObjectId).Distinct().Count()} distinct static object ids appear.");
         builder.AppendLine();
-        builder.AppendLine("| Selector | Static object id | Protocol object type | Records | Full payloads | Payload bytes | Static rows | Vendor rows | Static type symbols | Instance bytes | Separator | Quaternion samples | Post-quat bytes | Marker | Vector samples | Nearest static distance | Tail samples | Sample |");
-        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        builder.AppendLine("| Selector | Static object id | Protocol object type | Records | Full payloads | Payload bytes | Static rows | Vendor rows | Static type symbols | Instance bytes | Separator | Quaternion samples | Post-quat bytes | Marker | Vector samples | Nearest static distance | Tail field 0 | Tail field 1 | Tail suffix | Tail samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
         foreach (var group in leads
             .GroupBy(entry => new
             {
@@ -2020,7 +2020,7 @@ public static class ReportWriter
             StaticObjectEntry[] staticRows = staticObjectsByMxoId[group.Key.ObjectId].ToArray();
             int fullPayloads = group.Count(entry => entry.Lead.PostQuaternionBytes > 0);
             builder.AppendLine(
-                $"| `{group.Key.Selector}` | {group.Key.ObjectId} | {group.Key.ObjectType} | {group.Count()} | {fullPayloads} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {staticRows.Length} | {vendorRowCounts.GetValueOrDefault(group.Key.ObjectId)} | {FormatStaticTypeSymbols(staticRows, gameObjectsById)} | {FormatDistinct(group.Select(entry => entry.Lead.InstanceByteHex), 8)} | {FormatDistinct(group.Select(entry => entry.Lead.SeparatorHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectQuaternion(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => entry.Lead.PostQuaternionBytes > 0 ? entry.Lead.PostQuaternionBytes.ToString(CultureInfo.InvariantCulture) : null), 8)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionMarkerHex) ? null : entry.Lead.PostQuaternionMarkerHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectPostQuaternionVector(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectNearestDistance(entry.Lead, staticRows)), 4)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionTailHex) ? null : entry.Lead.PostQuaternionTailHex), 4)} | `{sample.File}:{sample.Line}` |");
+                $"| `{group.Key.Selector}` | {group.Key.ObjectId} | {group.Key.ObjectType} | {group.Count()} | {fullPayloads} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {staticRows.Length} | {vendorRowCounts.GetValueOrDefault(group.Key.ObjectId)} | {FormatStaticTypeSymbols(staticRows, gameObjectsById)} | {FormatDistinct(group.Select(entry => entry.Lead.InstanceByteHex), 8)} | {FormatDistinct(group.Select(entry => entry.Lead.SeparatorHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectQuaternion(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => entry.Lead.PostQuaternionBytes > 0 ? entry.Lead.PostQuaternionBytes.ToString(CultureInfo.InvariantCulture) : null), 8)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionMarkerHex) ? null : entry.Lead.PostQuaternionMarkerHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectPostQuaternionVector(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectNearestDistance(entry.Lead, staticRows)), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectTailField(entry.Lead.PostQuaternionTailField0Hex, entry.Lead.PostQuaternionTailField0)), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectTailField(entry.Lead.PostQuaternionTailField1Hex, entry.Lead.PostQuaternionTailField1)), 8)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionTailSuffixHex) ? null : entry.Lead.PostQuaternionTailSuffixHex), 4)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionTailHex) ? null : entry.Lead.PostQuaternionTailHex), 4)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -2140,12 +2140,12 @@ public static class ReportWriter
 
         builder.AppendLine("### Protocol 03 Movement State Tail Leads");
         builder.AppendLine();
-        builder.AppendLine("This groups unresolved tails that follow update-count-3 movement-state position segments. The tail selector byte plus the first three payload bytes form a little-endian tag that advances across adjacent movement samples; this is a tag/marker lead only, and no body length is claimed yet.");
+        builder.AppendLine("This groups unresolved tails that follow update-count-3 movement-state position segments. The tail selector byte plus the first three payload bytes form a little-endian tag that advances across adjacent movement samples; the following marker and post-marker prefix are exposed as layout leads only, and no body length is claimed yet.");
         builder.AppendLine();
         builder.AppendLine($"Across {leads.Length} movement-state tails, {leads.Select(entry => entry.Lead.TailSelector).Distinct(StringComparer.OrdinalIgnoreCase).Count()} distinct tail selector bytes appear after first selectors {FormatDistinct(leads.Select(entry => entry.Lead.FirstSelector), 4)}.");
         builder.AppendLine();
-        builder.AppendLine("| First selector | Tail family | Records | Tail selectors | Tag range | Tag delta samples | Payload/tail bytes | Prefix samples | Text leads | Sample |");
-        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        builder.AppendLine("| First selector | Tail family | Records | Tail selectors | Tag bytes | Tag range | Tag delta samples | Marker | Post-marker prefix | Payload/tail bytes | Prefix samples | Text leads | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
         foreach (var group in leads
             .GroupBy(entry => new
             {
@@ -2158,7 +2158,7 @@ public static class ReportWriter
         {
             Protocol03MovementStateTailLeadWithFile sample = group.First();
             builder.AppendLine(
-                $"| `{group.Key.FirstSelector}` | {FormatTableText(group.Key.Family)} | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.TailSelector), 10)} | {FormatMovementStateTailTagRange(group)} | {FormatMovementStateTailTagDeltas(group)} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.PrefixHex)), 4)} | {FormatDistinct(group.SelectMany(entry => entry.Sample.Strings.Select(text => text.Text)), 6)} | `{sample.File}:{sample.Line}` |");
+                $"| `{group.Key.FirstSelector}` | {FormatTableText(group.Key.Family)} | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Lead.TailSelector), 10)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.TagPayloadHex)), 6)} | {FormatMovementStateTailTagRange(group)} | {FormatMovementStateTailTagDeltas(group)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.MarkerHex)), 4)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.PostMarkerPrefixHex)), 4)} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Lead.PrefixHex)), 4)} | {FormatDistinct(group.SelectMany(entry => entry.Sample.Strings.Select(text => text.Text)), 6)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -4899,6 +4899,13 @@ public static class ReportWriter
             .Select(entry => Distance(vector, new Vector3d(entry.X, entry.Y, entry.Z)))
             .Min();
         return FormatDistance(nearest);
+    }
+
+    private static string? FormatStaticObjectTailField(string fieldHex, uint? value)
+    {
+        return value is null || string.IsNullOrWhiteSpace(fieldHex)
+            ? null
+            : $"{value.Value} ({fieldHex})";
     }
 
     private static string FormatStaticTypeSymbols(

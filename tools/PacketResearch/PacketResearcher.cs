@@ -2464,7 +2464,7 @@ public static partial class PacketResearcher
                 movementStateTailLeads.Add(CreateProtocol03MovementStateTailLead(firstSelector, selector, bytes, cursor, sampleBytes, cursor - offset));
             }
 
-            if (selector is 0x9e or 0xa0 &&
+            if (IsProtocol03StaticObjectSelector(selector) &&
                 TryCreateProtocol03StaticObjectLead(selector, bytes, cursor, sampleBytes, cursor - offset, out Protocol03StaticObjectLead? staticObjectLead) &&
                 staticObjectLead is not null)
             {
@@ -2845,9 +2845,13 @@ public static partial class PacketResearcher
         uint tagValue = payload.Length >= 3
             ? (uint)(tailSelector | (payload[0] << 8) | (payload[1] << 16) | (payload[2] << 24))
             : tailSelector;
-        string markerHex = payload.Length >= 7 && payload[3] == 0xff && payload[4] == 0x01
-            ? FormatHeader(payload.Skip(3).Take(4))
-            : FormatHeader(payload.Skip(3).Take(Math.Min(2, Math.Max(0, payload.Length - 3))));
+        int markerBytes = payload.Length >= 7 && payload[3] == 0xff && payload[4] == 0x01
+            ? 4
+            : Math.Min(2, Math.Max(0, payload.Length - 3));
+        string markerHex = FormatHeader(payload.Skip(3).Take(markerBytes));
+        string postMarkerPrefixHex = payload.Length > 3 + markerBytes
+            ? FormatHeader(payload.Skip(3 + markerBytes).Take(Math.Min(8, payload.Length - 3 - markerBytes)))
+            : string.Empty;
 
         return new Protocol03MovementStateTailLead(
             firstSelector.ToString("x2", CultureInfo.InvariantCulture),
@@ -2856,7 +2860,9 @@ public static partial class PacketResearcher
             payload.Length,
             tagValue.ToString("x8", CultureInfo.InvariantCulture),
             tagValue,
+            FormatHeader(payload.Take(Math.Min(3, payload.Length))),
             markerHex,
+            postMarkerPrefixHex,
             FormatHeader(payload.Take(Math.Min(8, payload.Length))),
             FormatHeader(payload));
     }
@@ -2895,6 +2901,11 @@ public static partial class PacketResearcher
             return false;
         }
 
+        if (payload[8] != 0x03)
+        {
+            return false;
+        }
+
         float? q0 = TryReadSingleLittleEndian(payload, 10, out float q0Value) ? q0Value : null;
         float? q1 = TryReadSingleLittleEndian(payload, 14, out float q1Value) ? q1Value : null;
         float? q2 = TryReadSingleLittleEndian(payload, 18, out float q2Value) ? q2Value : null;
@@ -2903,6 +2914,22 @@ public static partial class PacketResearcher
         double? postQuaternionX = TryReadDoubleLittleEndian(postQuaternion, 1, out double postQuaternionXValue) ? postQuaternionXValue : null;
         double? postQuaternionY = TryReadDoubleLittleEndian(postQuaternion, 9, out double postQuaternionYValue) ? postQuaternionYValue : null;
         double? postQuaternionZ = TryReadDoubleLittleEndian(postQuaternion, 17, out double postQuaternionZValue) ? postQuaternionZValue : null;
+        byte[] postQuaternionTail = postQuaternion.Skip(25).ToArray();
+        string postQuaternionTailField0Hex = postQuaternionTail.Length >= 4
+            ? FormatHeader(postQuaternionTail.Take(4))
+            : string.Empty;
+        uint? postQuaternionTailField0 = postQuaternionTail.Length >= 4
+            ? ReadUInt32LittleEndian(postQuaternionTail, 0)
+            : null;
+        string postQuaternionTailField1Hex = postQuaternionTail.Length >= 8
+            ? FormatHeader(postQuaternionTail.Skip(4).Take(4))
+            : string.Empty;
+        uint? postQuaternionTailField1 = postQuaternionTail.Length >= 8
+            ? ReadUInt32LittleEndian(postQuaternionTail, 4)
+            : null;
+        string postQuaternionTailSuffixHex = postQuaternionTail.Length > 8
+            ? FormatHeader(postQuaternionTail.Skip(8))
+            : string.Empty;
 
         lead = new Protocol03StaticObjectLead(
             selector.ToString("x2", CultureInfo.InvariantCulture),
@@ -2925,10 +2952,20 @@ public static partial class PacketResearcher
             postQuaternionX,
             postQuaternionY,
             postQuaternionZ,
-            postQuaternion.Length > 25 ? FormatHeader(postQuaternion.Skip(25)) : string.Empty,
+            FormatHeader(postQuaternionTail),
+            postQuaternionTailField0Hex,
+            postQuaternionTailField0,
+            postQuaternionTailField1Hex,
+            postQuaternionTailField1,
+            postQuaternionTailSuffixHex,
             FormatHeader(postQuaternion),
             FormatHeader(payload));
         return true;
+    }
+
+    private static bool IsProtocol03StaticObjectSelector(byte selector)
+    {
+        return selector is 0x3c or 0x9e or 0x9f or 0xa0;
     }
 
     private static IEnumerable<Protocol03StringSample> ExtractProtocol03AsciiStrings(
@@ -3526,7 +3563,9 @@ public static partial class PacketResearcher
             (0x03, 0x09) => "movement state bundle",
             (0x03, 0x28) => "effect/emote state bundle",
             (0x04, 0x80) => "attribute/effect bundle",
+            (0x08, 0x3c) => "static object/door spawn candidate",
             (0x08, 0x9e) => "static object/door spawn candidate",
+            (0x08, 0x9f) => "static object/door spawn candidate",
             (0x08, 0xa0) => "static object/door spawn candidate",
             (0x0c, 0x0c) => "player spawn/self-view candidate",
             (0x0c, 0x57) => "NPC_BASE dynamic creation candidate",
@@ -3590,7 +3629,7 @@ public static partial class PacketResearcher
             0x28 => new Protocol03SelectorLayout("effect/emote variable block", null),
             0x80 => new Protocol03SelectorLayout("appearance/attribute variable block", null),
             0x9b when updateCount == 1 => new Protocol03SelectorLayout("fixed selector 9b state block", 10),
-            0x9e or 0xa0 => new Protocol03SelectorLayout("static object/door variable block", null),
+            _ when IsProtocol03StaticObjectSelector(selector) => new Protocol03SelectorLayout("static object/door variable block", null),
             _ when updateCount >= 0x08 => new Protocol03SelectorLayout("spawn/profile variable block", null),
             _ => new Protocol03SelectorLayout("unknown selector payload", null)
         };
@@ -3811,7 +3850,7 @@ public static partial class PacketResearcher
     {
         return selector is
             0x00 or 0x01 or 0x02 or 0x04 or 0x06 or 0x08 or 0x0a or 0x0c or 0x0e or
-            0x28 or 0x80 or 0x9b or 0x9e or 0xa0;
+            0x28 or 0x3c or 0x80 or 0x9b or 0x9e or 0x9f or 0xa0;
     }
 
     private static bool LooksLikeProtocol03ObjectViewHeader(IReadOnlyList<byte> bytes, int offset)
@@ -3831,7 +3870,7 @@ public static partial class PacketResearcher
 
         return firstSelector is
             0x00 or 0x01 or 0x02 or 0x04 or 0x06 or 0x08 or 0x09 or 0x0a or 0x0c or 0x0e or
-            0x12 or 0x13 or 0x14 or 0x28 or 0x2a or 0x2e or 0x57 or 0x80 or 0x9b or 0x9e or 0xa0;
+            0x12 or 0x13 or 0x14 or 0x28 or 0x2a or 0x2e or 0x3c or 0x57 or 0x80 or 0x9b or 0x9e or 0x9f or 0xa0;
     }
 
     public static byte[] EncodeHeader(int value, string direction)

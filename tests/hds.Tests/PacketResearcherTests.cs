@@ -203,6 +203,11 @@ public class PacketResearcherTests
             Assert.Equal(145.0, lead.PostQuaternionY);
             Assert.Equal(17100.0, lead.PostQuaternionZ);
             Assert.Equal("34 08 00 00 04 00 00 00 00", lead.PostQuaternionTailHex);
+            Assert.Equal("34 08 00 00", lead.PostQuaternionTailField0Hex);
+            Assert.Equal((uint)2100, lead.PostQuaternionTailField0);
+            Assert.Equal("04 00 00 00", lead.PostQuaternionTailField1Hex);
+            Assert.Equal((uint)4, lead.PostQuaternionTailField1);
+            Assert.Equal("00", lead.PostQuaternionTailSuffixHex);
             Assert.Equal("41 00 00 00 00 80 a6 f0 c0 00 00 00 00 00 20 62 40 00 00 00 00 00 b3 d0 40 34 08 00 00 04 00 00 00 00", lead.PostQuaternionHex);
         }
         finally
@@ -236,6 +241,9 @@ public class PacketResearcherTests
             Assert.Equal(145.0, lead.PostQuaternionY);
             Assert.Equal(13100.0, lead.PostQuaternionZ);
             Assert.Equal("34 08 00 00 12 00 00 00 00", lead.PostQuaternionTailHex);
+            Assert.Equal((uint)2100, lead.PostQuaternionTailField0);
+            Assert.Equal((uint)18, lead.PostQuaternionTailField1);
+            Assert.Equal("00", lead.PostQuaternionTailSuffixHex);
         }
         finally
         {
@@ -269,6 +277,7 @@ public class PacketResearcherTests
             Assert.Equal("e5", lead.InstanceByteHex);
             Assert.Equal(34, lead.PostQuaternionBytes);
             Assert.Equal("34 08 00 00 12 00 00 00 00", lead.PostQuaternionTailHex);
+            Assert.Equal((uint)18, lead.PostQuaternionTailField1);
             Assert.Single(summary.Protocol04InteractionPayloads);
         }
         finally
@@ -297,6 +306,76 @@ public class PacketResearcherTests
             Assert.Equal("82", sample.TransportHeader);
             Assert.Equal("1b", lead.InstanceByteHex);
             Assert.Equal("34 08 00 00 03 00 00 00 00", lead.PostQuaternionTailHex);
+            Assert.Equal((uint)3, lead.PostQuaternionTailField1);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void SummarizePacketDump_ParsesSelector3cStaticDoorPacketBlocks()
+    {
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllLines(tempFile, new[]
+            {
+                "Answer 1:",
+                "02 03 01 00 08 3c 1b 06 00 f0 34 04 cd ab 03 84 00 00 00 00 00 00 80 3f 00 00 00 00 00 00 00 00",
+                "41 00 00 00 00 40 a0 f0 c0 00 00 00 00 00 20 62 40 00 00 00 00 00 f2 d2 40 34 08 00 00 0e 00 00",
+                "00 00"
+            });
+
+            PacketDumpFileSummary summary = PacketResearcher.SummarizePacketDump(tempFile, Array.Empty<RpcHeaderEntry>());
+
+            Protocol03ObjectViewSample sample = Assert.Single(summary.Protocol03ObjectViews);
+            Assert.Equal("static object/door spawn candidate", sample.Classification);
+            Protocol03StaticObjectLead lead = Assert.Single(sample.StaticObjectLeads);
+            Assert.Equal("3c", lead.Selector);
+            Assert.Equal((uint)888143878, lead.ObjectId);
+            Assert.Equal("04", lead.InstanceByteHex);
+            Assert.Equal(60, lead.PayloadBytes);
+            Assert.Equal(-68100.0, lead.PostQuaternionX);
+            Assert.Equal(145.0, lead.PostQuaternionY);
+            Assert.Equal(19400.0, lead.PostQuaternionZ);
+            Assert.Equal((uint)2100, lead.PostQuaternionTailField0);
+            Assert.Equal((uint)14, lead.PostQuaternionTailField1);
+            Assert.Equal("00", lead.PostQuaternionTailSuffixHex);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void SummarizePacketDump_ParsesSelector9fLabeledStaticDoorPacket()
+    {
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllLines(tempFile, new[]
+            {
+                "Answer 1:829782D648 030100089F010E00F034F9CD AB038400000000F204353F00000000F40435BF41000000008074F0C0000000000020624000000000005ECA40340800001000000000"
+            });
+
+            PacketDumpFileSummary summary = PacketResearcher.SummarizePacketDump(tempFile, Array.Empty<RpcHeaderEntry>());
+
+            Protocol03ObjectViewSample sample = Assert.Single(summary.Protocol03ObjectViews);
+            Protocol03StaticObjectLead lead = Assert.Single(sample.StaticObjectLeads);
+            Assert.Equal("82 + simtime", sample.TransportHeader);
+            Assert.Equal("9f", lead.Selector);
+            Assert.Equal((uint)888143886, lead.ObjectId);
+            Assert.Equal("f9", lead.InstanceByteHex);
+            Assert.Equal(60, lead.PayloadBytes);
+            Assert.Equal(-67400.0, lead.PostQuaternionX);
+            Assert.Equal(145.0, lead.PostQuaternionY);
+            Assert.Equal(13500.0, lead.PostQuaternionZ);
+            Assert.Equal((uint)2100, lead.PostQuaternionTailField0);
+            Assert.Equal((uint)16, lead.PostQuaternionTailField1);
+            Assert.Equal("00", lead.PostQuaternionTailSuffixHex);
         }
         finally
         {
@@ -1930,6 +2009,11 @@ public class PacketResearcherTests
         Assert.Null(lead.PostQuaternionY);
         Assert.Null(lead.PostQuaternionZ);
         Assert.Equal(string.Empty, lead.PostQuaternionTailHex);
+        Assert.Equal(string.Empty, lead.PostQuaternionTailField0Hex);
+        Assert.Null(lead.PostQuaternionTailField0);
+        Assert.Equal(string.Empty, lead.PostQuaternionTailField1Hex);
+        Assert.Null(lead.PostQuaternionTailField1);
+        Assert.Equal(string.Empty, lead.PostQuaternionTailSuffixHex);
         Assert.Equal(string.Empty, lead.PostQuaternionHex);
     }
 
@@ -2127,8 +2211,8 @@ public class PacketResearcherTests
         string markdown = ReportWriter.ToMarkdown(report);
 
         Assert.Contains("### Protocol 03 Static Object/Door Spawn Leads", markdown);
-        Assert.Contains("Across 1 selector `9e`/`a0` tails, 1 distinct static object ids appear.", markdown);
-        Assert.Contains("| `a0` | 888143880 | 3 | 1 | 0 | 26 | 1 | 1 | 416 Door SL Push Knob Metal1texvar (1) | 80 | cd ab | 0,-0.707,0,0.707 | - | - | - | - | - | `doors.txt:13` |", markdown);
+        Assert.Contains("Across 1 selector `3c`/`9e`/`9f`/`a0` tails, 1 distinct static object ids appear.", markdown);
+        Assert.Contains("| `a0` | 888143880 | 3 | 1 | 0 | 26 | 1 | 1 | 416 Door SL Push Knob Metal1texvar (1) | 80 | cd ab | 0,-0.707,0,0.707 | - | - | - | - | - | - | - | - | `doors.txt:13` |", markdown);
     }
 
     [Fact]
@@ -2465,7 +2549,9 @@ public class PacketResearcherTests
         Assert.Equal("4b", tail.TailSelector);
         Assert.Equal("0413b14b", tail.TagHex);
         Assert.Equal((uint)0x0413b14b, tail.TagValue);
+        Assert.Equal("b1 13 04", tail.TagPayloadHex);
         Assert.Equal("ff 01 64 01", tail.MarkerHex);
+        Assert.Equal("", tail.PostMarkerPrefixHex);
     }
 
     [Fact]
@@ -2493,7 +2579,9 @@ public class PacketResearcherTests
         Assert.Equal("c8", tail.TailSelector);
         Assert.Equal("0413b1c8", tail.TagHex);
         Assert.Equal((uint)0x0413b1c8, tail.TagValue);
+        Assert.Equal("b1 13 04", tail.TagPayloadHex);
         Assert.Equal("ff 01 64 01", tail.MarkerHex);
+        Assert.Equal("", tail.PostMarkerPrefixHex);
     }
 
     [Fact]
@@ -2516,7 +2604,9 @@ public class PacketResearcherTests
         Assert.Equal("0e", tail.TailSelector);
         Assert.Equal("19e46b0e", tail.TagHex);
         Assert.Equal((uint)0x19e46b0e, tail.TagValue);
+        Assert.Equal("6b e4 19", tail.TagPayloadHex);
         Assert.Equal("ff 01 4e 01", tail.MarkerHex);
+        Assert.Equal("00 00 00 00 00 00 00 00", tail.PostMarkerPrefixHex);
     }
 
     [Fact]

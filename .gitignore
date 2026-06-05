@@ -86,4 +86,6 @@ PacketLog.txt
 ServerLog.txt
 UnknownRPC.txt
 UnknownClient03Request.txt
+DebugLog.txt
+data/experiment_artifacts/packet-captures/
 Config*.xml

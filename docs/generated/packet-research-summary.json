@@ -424503,7 +424503,7 @@
           "ViewId": 1,
           "UpdateCount": 8,
           "FirstSelector": "9f",
-          "Classification": "unclassified object-view update",
+          "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 9f 01 0e 00 f0 34 f9 cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
           "ParsedUpdateCount": 0,
           "UnparsedBytes": 60,
@@ -424511,7 +424511,7 @@
           "Segments": [
             {
               "Selector": "9f",
-              "Classification": "spawn/profile variable block",
+              "Classification": "static object/door variable block",
               "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 0e 00 f0 34 f9 cd ab 03 84 00 00 00 00 f2 04",
@@ -525351,7 +525351,7 @@
           "ViewId": 1,
           "UpdateCount": 8,
           "FirstSelector": "3c",
-          "Classification": "unclassified object-view update",
+          "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 3c 1b 06 00 f0 34 04 cd ab 03 84 00 00 00 00 00 00 80 3f 00 00",
           "ParsedUpdateCount": 0,
           "UnparsedBytes": 60,
@@ -525359,7 +525359,7 @@
           "Segments": [
             {
               "Selector": "3c",
-              "Classification": "spawn/profile variable block",
+              "Classification": "static object/door variable block",
               "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "1b 06 00 f0 34 04 cd ab 03 84 00 00 00 00 00 00",
@@ -525374,7 +525374,7 @@
           "ViewId": 1,
           "UpdateCount": 8,
           "FirstSelector": "3c",
-          "Classification": "unclassified object-view update",
+          "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 3c 1b 06 00 f0 34 05 cd ab 03 84 00 00 00 00 00 00 80 3f 00 00",
           "ParsedUpdateCount": 0,
           "UnparsedBytes": 60,
@@ -525382,7 +525382,7 @@
           "Segments": [
             {
               "Selector": "3c",
-              "Classification": "spawn/profile variable block",
+              "Classification": "static object/door variable block",
               "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "1b 06 00 f0 34 05 cd ab 03 84 00 00 00 00 00 00",

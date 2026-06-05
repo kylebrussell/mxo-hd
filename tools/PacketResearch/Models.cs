@@ -465,7 +465,9 @@ public sealed record Protocol03MovementStateTailLead(
     int PayloadBytes,
     string TagHex,
     uint TagValue,
+    string TagPayloadHex,
     string MarkerHex,
+    string PostMarkerPrefixHex,
     string PrefixHex,
     string PayloadHex);
 
@@ -491,6 +493,11 @@ public sealed record Protocol03StaticObjectLead(
     double? PostQuaternionY,
     double? PostQuaternionZ,
     string PostQuaternionTailHex,
+    string PostQuaternionTailField0Hex,
+    uint? PostQuaternionTailField0,
+    string PostQuaternionTailField1Hex,
+    uint? PostQuaternionTailField1,
+    string PostQuaternionTailSuffixHex,
     string PostQuaternionHex,
     string PayloadHex);
 
