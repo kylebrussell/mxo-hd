@@ -976,6 +976,74 @@ This compares the declared creation attribute count with the number of fixed-wid
 | 20 | 20 | 8 | 4 | A.S.P. Master Sergeant<br>A.S.P. Trainee<br>A.S.P. Warrant<br>Bathary Boys Gunsel | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/westview/bartharyrow_west.txt:303` |
 | 14 | 14 | 4 | 1 | Sisters of Fate Student | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_SW.txt:426` |
 
+### Protocol 03 NPC_BASE Post-Creation Attribute Suffix Leads
+
+This records how many bytes the declared Object599 creation mask/value stream consumes, then groups the first bytes after that parsed stream. Non-empty suffixes are remaining tail leads only; they are not separate decoded records yet.
+
+Across 433 Object599 creation records, 433 have bytes after the declared attribute stream, and 256 include `00 0c 57 02` inside the first eight suffix bytes.
+
+| Declared attributes | Parsed attributes | Parsed bytes | Suffix prefix | Records | Distinct names | Text samples | Sample |
+| ---: | ---: | ---: | --- | ---: | ---: | --- | --- |
+| 18 | 18 | 97 | `17 00 00 01 00 0c 57 02` | 8 | 4 | Black Tiger Pupil<br>Black Tiger Street Fighter<br>Chang Wing Initiate<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:265` |
+| 17 | 17 | 99 | `11 00 00 01 00 0c 57 02` | 6 | 3 | Bathary Boys Rustler<br>Brothers of Destiny Novice<br>Phoenix Ash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_west.txt:524` |
+| 17 | 17 | 99 | `23 00 00 01 00 0c 57 02` | 5 | 3 | A.S.P. Trainee<br>Brothers of Destiny Frater<br>Gold Blood Enthusiast | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/shirabaka_west.txt:232` |
+| 19 | 19 | 101 | `21 00 00 01 00 0c 57 02` | 5 | 3 | A.S.P. Master Sergeant<br>Brothers of Destiny Novice<br>Gold Blood Champion | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/shirabaka_west.txt:232` |
+| 15 | 15 | 94 | `1b 00 00 01 00 0c 57 02` | 4 | 2 | Black Tiger Pupil<br>Chang Wing Initiate | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_southwest.txt:237` |
+| 17 | 17 | 93 | `2d 00 00 01 00 0c 57 02` | 4 | 1 | Sisters of Fate Student | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+| 17 | 17 | 99 | `13 00 00 01 00 0c 57 02` | 4 | 2 | Bathary Boys Angler<br>Phoenix Initiate | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ikeburo_northeast.txt:408` |
+| 17 | 17 | 99 | `15 00 00 01 00 0c 57 02` | 4 | 2 | Destitute Remnant<br>Destitute Trash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/jurong_central.txt:592` |
+| 17 | 17 | 99 | `1d 00 00 01 00 0c 57 02` | 4 | 2 | Gold Blood Enthusiast<br>Phoenix Pyre | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/Ikeburo_Southwest.txt:266` |
+| 18 | 18 | 97 | `11 00 00 01 00 08 50 02` | 4 | 2 | Black Tiger Black Stripe<br>Black Tiger Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/murasaki_central.txt:264` |
+| 18 | 18 | 97 | `19 00 00 01 00 0c 57 02` | 4 | 2 | Black Tiger Pupil<br>Chang Wing Initiate | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_southwest.txt:237` |
+| 18 | 18 | 97 | `1d 00 00 01 00 0c 57 02` | 4 | 2 | Black Tiger Street Fighter<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:232` |
+| 18 | 18 | 100 | `13 00 00 01 00 0c 57 02` | 4 | 2 | Brothers of Destiny Doom<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_southeast.txt:294` |
+| 18 | 18 | 100 | `1b 00 00 01 00 0c 57 02` | 4 | 3 | A.S.P. Master Sergeant<br>A.S.P. Warrant<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:232` |
+| 18 | 18 | 100 | `1f 00 00 01 00 0c 57 02` | 4 | 2 | Gold Blood Brother<br>Phoenix Ash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/Ikeburo_Southwest.txt:266` |
+| 18 | 18 | 100 | `2b 00 00 01 00 0c 57 02` | 4 | 3 | A.S.P. Major<br>A.S.P. Master Sergeant<br>Sisters of Fate Mistress | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+| 19 | 19 | 101 | `09 00 00 01 00 0c 57 02` | 4 | 2 | Jade Moon Enforcer<br>Phoenix Ash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/saikung_southwest.txt:264` |
+| 19 | 19 | 101 | `0d 00 00 00 00 04 02 00` | 4 | 2 | Bathary Boys Gunsel<br>Brothers of Destiny Frater | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_southeast.txt:294` |
+| 19 | 19 | 101 | `0d 00 00 01 00 0c 57 02` | 4 | 2 | Jade Moon Tekiyo<br>Shuriken Teppan | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_west.txt:524` |
+| 19 | 19 | 101 | `11 00 00 01 00 0c 57 02` | 4 | 2 | Bathary Boys Rustler<br>Brothers of Destiny Frater | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_southeast.txt:294` |
+| 19 | 19 | 101 | `1b 00 00 01 00 0c 57 02` | 4 | 2 | Jade Moon Yoi<br>Phoenix Ember | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/Ikeburo_Southwest.txt:266` |
+| 19 | 19 | 104 | `0f 00 00 01 00 0c 57 02` | 4 | 2 | Brothers of Destiny Initiate<br>Destitute Trash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_west.txt:524` |
+| 19 | 19 | 104 | `1f 00 00 01 00 0c 57 02` | 4 | 2 | Destitute Trash<br>Gold Blood Enthusiast | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:422` |
+| 17 | 17 | 99 | `17 00 00 01 00 0c 57 02` | 3 | 2 | A.S.P. Major<br>Gold Blood Champion | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/saikung_central2.txt:254` |
+| 18 | 18 | 100 | `29 00 00 01 00 0c 57 02` | 3 | 2 | A.S.P. Master Sergeant<br>Sisters of Fate Mistress | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+
+### Protocol 03 NPC_BASE Post-Creation Object-View Boundary Leads
+
+This scans the first eight bytes after each parsed Object599 creation attribute stream for a plausible protocol 03 object-view header. These are boundary leads for future segmentation work, not consumed nested records yet.
+
+Across 433 Object599 creation records, 304 expose a plausible next object-view header inside the first eight post-attribute suffix bytes.
+
+| Header offset | Header prefix | Header classification | Records | Suffix prefixes | Distinct names | Text samples | Sample |
+| ---: | --- | --- | ---: | --- | ---: | --- | --- |
+| 3 | `01 00 0c 57 02 0d cd ab` | NPC_BASE dynamic creation candidate | 6 | 1b 00 00 01 00 0c 57 02<br>1f 00 00 01 00 0c 57 02<br>21 00 00 01 00 0c 57 02 | 3 | Black Tiger Pupil<br>Gold Blood Champion<br>Gold Blood Enthusiast | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/murasaki_southwest.txt:464` |
+| 3 | `01 00 0c 57 02 3e cd ab` | NPC_BASE dynamic creation candidate | 5 | 09 00 00 01 00 0c 57 02<br>0d 00 00 01 00 0c 57 02<br>1e 00 00 01 00 0c 57 02 | 3 | A.S.P. Warrant<br>Phoenix Ash<br>Shuriken Teppan | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_west.txt:524` |
+| 3 | `01 00 0c 57 02 0f cd ab` | NPC_BASE dynamic creation candidate | 4 | 17 00 00 01 00 0c 57 02<br>2d 00 00 01 00 0c 57 02 | 2 | Gold Blood Champion<br>Sisters of Fate Student | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+| 3 | `01 00 0c 57 02 10 cd ab` | NPC_BASE dynamic creation candidate | 4 | 23 00 00 01 00 0c 57 02<br>2b 00 00 01 00 0c 57 02 | 2 | Gold Blood Enthusiast<br>Sisters of Fate Mistress | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+| 3 | `01 00 0c 57 02 11 cd ab` | NPC_BASE dynamic creation candidate | 4 | 1f 00 00 01 00 0c 57 02<br>29 00 00 01 00 0c 57 02 | 2 | Gold Blood Enthusiast<br>Sisters of Fate Mistress | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kaede_central.txt:451` |
+| 3 | `01 00 0c 57 02 34 cd ab` | NPC_BASE dynamic creation candidate | 4 | 0f 00 00 01 00 0c 57 02<br>11 00 00 01 00 0c 57 02 | 2 | Brothers of Destiny Nemesis<br>Sisters of Fate Student | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_southeast.txt:294` |
+| 3 | `01 00 0c 57 02 35 cd ab` | NPC_BASE dynamic creation candidate | 4 | 0f 00 00 01 00 0c 57 02<br>13 00 00 01 00 0c 57 02 | 2 | Brothers of Destiny Doom<br>Sisters of Fate Student | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/akaska_southeast.txt:294` |
+| 3 | `01 00 0c 57 02 47 cd ab` | NPC_BASE dynamic creation candidate | 4 | 15 00 00 01 00 0c 57 02<br>1f 00 00 01 00 0c 57 02<br>29 00 00 01 00 0c 57 02 | 2 | A.S.P. Major<br>Phoenix Conflagration | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ikeburo_northeast.txt:408` |
+| 3 | `01 00 0c 57 02 53 cd ab` | NPC_BASE dynamic creation candidate | 4 | 0b 00 00 01 00 0c 57 02<br>0c 00 00 01 00 0c 57 02<br>2b 00 00 01 00 0c 57 02 | 2 | A.S.P. Major<br>Destitute Trash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:500` |
+| 3 | `01 00 0c 57 02 fa cd ab` | NPC_BASE dynamic creation candidate | 4 | 09 00 00 01 00 0c 57 02<br>15 00 00 01 00 0c 57 02 | 2 | Bathary Boys Rustler<br>Black Tiger Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/murasaki_central.txt:305` |
+| 3 | `01 00 0c 57 02 48 cd ab` | NPC_BASE dynamic creation candidate | 3 | 13 00 00 01 00 0c 57 02<br>1d 00 00 01 00 0c 57 02 | 2 | A.S.P. Master Sergeant<br>Phoenix Initiate | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ikeburo_northeast.txt:408` |
+| 3 | `01 00 0c 57 02 49 cd ab` | NPC_BASE dynamic creation candidate | 3 | 11 00 00 01 00 0c 57 02<br>1b 00 00 01 00 0c 57 02 | 2 | A.S.P. Warrant<br>Phoenix Ash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/ikeburo_northeast.txt:408` |
+| 3 | `01 00 0c 57 02 55 cd ab` | NPC_BASE dynamic creation candidate | 3 | 20 00 00 01 00 0c 57 02<br>27 00 00 01 00 0c 57 02 | 2 | A.S.P. Trainee<br>Destitute Debris | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:385` |
+| 3 | `01 00 0c 57 02 5f cd ab` | NPC_BASE dynamic creation candidate | 3 | 0a 00 00 01 00 0c 57 02<br>39 00 00 01 00 0c 57 02 | 2 | A.S.P. Warrant<br>Destitute Trash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:311` |
+| 3 | `01 00 0c 57 02 6b cd ab` | NPC_BASE dynamic creation candidate | 3 | 09 00 00 01 00 0c 57 02<br>0f 00 00 01 00 0c 57 02 | 2 | A.S.P. Master Sergeant<br>Destitute Trash | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:500` |
+| 3 | `01 00 0c 57 02 6e cd ab` | NPC_BASE dynamic creation candidate | 3 | 07 00 00 01 00 0c 57 02<br>17 00 00 01 00 0c 57 02 | 2 | Destitute Trash<br>Gold Blood Enthusiast | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/juron_NE.txt:537` |
+| 3 | `01 00 0c 57 02 78 cd ab` | NPC_BASE dynamic creation candidate | 3 | 17 00 00 01 00 0c 57 02<br>23 00 00 01 00 0c 57 02 | 2 | A.S.P. Trainee<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:265` |
+| 3 | `01 00 0c 57 02 79 cd ab` | NPC_BASE dynamic creation candidate | 3 | 15 00 00 01 00 0c 57 02<br>29 00 00 01 00 0c 57 02 | 2 | A.S.P. Master Sergeant<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:265` |
+| 3 | `01 00 0c 57 02 7a cd ab` | NPC_BASE dynamic creation candidate | 3 | 13 00 00 01 00 0c 57 02<br>2b 00 00 01 00 0c 57 02 | 2 | A.S.P. Master Sergeant<br>Chang Wing Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_northeast.txt:265` |
+| 3 | `01 00 0c 57 02 88 cd ab` | NPC_BASE dynamic creation candidate | 3 | 13 00 00 01 00 0c 57 02<br>1e 00 00 01 00 0c 57 02 | 2 | A.S.P. Trainee<br>Chang Wing Initiate | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_southwest.txt:274` |
+| 3 | `01 00 0c 57 02 89 cd ab` | NPC_BASE dynamic creation candidate | 3 | 08 00 00 01 00 0c 57 02<br>11 00 00 01 00 0c 57 02 | 2 | A.S.P. Major<br>Accelerated Machine | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/kowloon_southwest.txt:274` |
+| 3 | `01 00 0c 57 02 ce cd ab` | NPC_BASE dynamic creation candidate | 3 | 24 00 00 01 00 0c 57 02<br>25 00 00 01 00 0c 57 02 | 2 | A.S.P. Major<br>Jade Moon Tekiyo | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/shirabaka_west.txt:232` |
+| 3 | `01 00 0c 57 02 06 cd ab` | NPC_BASE dynamic creation candidate | 2 | 15 00 00 01 00 0c 57 02 | 1 | Destitute Remnant | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/jurong_central.txt:592` |
+| 3 | `01 00 0c 57 02 08 cd ab` | NPC_BASE dynamic creation candidate | 2 | 19 00 00 01 00 0c 57 02 | 1 | Gold Blood Enthusiast | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/saikung_central2.txt:254` |
+| 3 | `01 00 0c 57 02 0b cd ab` | NPC_BASE dynamic creation candidate | 2 | 1f 00 00 01 00 0c 57 02 | 1 | Black Tiger Pupil | `research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets/teleport/murasaki_southwest.txt:464` |
+
 ### Protocol 03 NPC_BASE Creation Attribute Presence
 
 This walks Object599 creation masks using local fixed attribute sizes, then groups every decoded attribute by creation index and value. Values are still raw bytes; names come from the local Object599 definition.

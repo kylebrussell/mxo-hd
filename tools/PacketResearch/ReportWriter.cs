@@ -2579,6 +2579,8 @@ public static class ReportWriter
         AppendProtocol03NamedProfilePostSlotDistribution(builder, candidates);
         AppendProtocol03NamedProfilePostSlotPrefixDistribution(builder, candidates);
         AppendProtocol03NpcBaseCreationAttributeParseConsistency(builder, candidates);
+        AppendProtocol03NpcBasePostCreationAttributeSuffixLeads(builder, candidates);
+        AppendProtocol03NpcBasePostCreationObjectViewBoundaryLeads(builder, candidates);
         AppendProtocol03NpcBaseCreationAttributePresence(builder, candidates);
         AppendProtocol03NpcBaseCreationEntityCorrelation(builder, candidates);
         AppendProtocol03NpcBaseCreationSymbolLeads(builder, report, candidates);
@@ -2775,6 +2777,11 @@ public static class ReportWriter
             entry.Record.CreationAttributeCount,
             entry.Record.FirstAttributeMaskHex,
             $"{entry.Record.CreationFlagHex} {entry.Record.GameObjectIdHex} {entry.Record.SpawnCounterHex} {entry.Record.SeparatorHex} {entry.Record.CreationAttributeCount:x2} {entry.Record.FirstAttributeMaskHex}",
+            entry.Record.CreationAttributeBytes,
+            entry.Record.PostCreationAttributePrefixHex,
+            entry.Record.PostCreationObjectViewHeaderOffset,
+            entry.Record.PostCreationObjectViewHeaderHex,
+            entry.Record.PostCreationObjectViewHeaderClassification,
             entry.Record.SuffixZeroBytes,
             entry.Record.TitleAbilityHex,
             entry.Record.CombatantModeHex,
@@ -2809,6 +2816,86 @@ public static class ReportWriter
             int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
             builder.AppendLine(
                 $"| {group.Key.CreationAttributeCount} | {group.Key.ParsedAttributeCount} | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NpcBasePostCreationAttributeSuffixLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        builder.AppendLine("### Protocol 03 NPC_BASE Post-Creation Attribute Suffix Leads");
+        builder.AppendLine();
+        builder.AppendLine("This records how many bytes the declared Object599 creation mask/value stream consumes, then groups the first bytes after that parsed stream. Non-empty suffixes are remaining tail leads only; they are not separate decoded records yet.");
+        builder.AppendLine();
+        int nonEmptySuffixes = candidates.Count(candidate => !string.IsNullOrWhiteSpace(candidate.PostCreationAttributePrefixHex));
+        int suffixesWithNpcBaseLead = candidates.Count(candidate =>
+            NormalizeHex(candidate.PostCreationAttributePrefixHex)?.Contains("000c5702", StringComparison.Ordinal) == true);
+        builder.AppendLine($"Across {candidates.Count} Object599 creation records, {nonEmptySuffixes} have bytes after the declared attribute stream, and {suffixesWithNpcBaseLead} include `00 0c 57 02` inside the first eight suffix bytes.");
+        builder.AppendLine();
+        builder.AppendLine("| Declared attributes | Parsed attributes | Parsed bytes | Suffix prefix | Records | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | ---: | ---: | --- | ---: | ---: | --- | --- |");
+        foreach (var group in candidates
+            .GroupBy(candidate => new
+            {
+                candidate.CreationAttributeCount,
+                ParsedAttributeCount = candidate.CreationAttributes.Count,
+                candidate.CreationAttributeBytes,
+                SuffixPrefix = FormatEmptyHex(candidate.PostCreationAttributePrefixHex)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.CreationAttributeCount)
+            .ThenBy(group => group.Key.ParsedAttributeCount)
+            .ThenBy(group => group.Key.CreationAttributeBytes)
+            .ThenBy(group => group.Key.SuffixPrefix, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.CreationAttributeCount} | {group.Key.ParsedAttributeCount} | {group.Key.CreationAttributeBytes} | `{group.Key.SuffixPrefix}` | {group.Count()} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NpcBasePostCreationObjectViewBoundaryLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> candidates)
+    {
+        Protocol03NamedProfileRecordCandidate[] boundaryLeads = candidates
+            .Where(candidate => candidate.PostCreationObjectViewHeaderOffset is not null)
+            .ToArray();
+        if (boundaryLeads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 NPC_BASE Post-Creation Object-View Boundary Leads");
+        builder.AppendLine();
+        builder.AppendLine("This scans the first eight bytes after each parsed Object599 creation attribute stream for a plausible protocol 03 object-view header. These are boundary leads for future segmentation work, not consumed nested records yet.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {candidates.Count} Object599 creation records, {boundaryLeads.Length} expose a plausible next object-view header inside the first eight post-attribute suffix bytes.");
+        builder.AppendLine();
+        builder.AppendLine("| Header offset | Header prefix | Header classification | Records | Suffix prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | --- | ---: | --- | ---: | --- | --- |");
+        foreach (var group in boundaryLeads
+            .GroupBy(candidate => new
+            {
+                candidate.PostCreationObjectViewHeaderOffset,
+                candidate.PostCreationObjectViewHeaderHex,
+                candidate.PostCreationObjectViewHeaderClassification
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PostCreationObjectViewHeaderOffset)
+            .ThenBy(group => group.Key.PostCreationObjectViewHeaderHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.PostCreationObjectViewHeaderOffset} | `{group.Key.PostCreationObjectViewHeaderHex}` | {FormatTableText(group.Key.PostCreationObjectViewHeaderClassification)} | {group.Count()} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationAttributePrefixHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -5281,6 +5368,11 @@ public static class ReportWriter
         int CreationAttributeCount,
         string FirstAttributeMaskHex,
         string CreationPrefixHex,
+        int CreationAttributeBytes,
+        string PostCreationAttributePrefixHex,
+        int? PostCreationObjectViewHeaderOffset,
+        string PostCreationObjectViewHeaderHex,
+        string PostCreationObjectViewHeaderClassification,
         int SuffixZeroBytes,
         string TitleAbilityHex,
         string CombatantModeHex,

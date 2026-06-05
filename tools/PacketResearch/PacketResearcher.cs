@@ -3049,12 +3049,13 @@ public static partial class PacketResearcher
             }
 
             IReadOnlyList<Protocol03CreationAttributeSample> creationAttributes =
-                ParseObject12CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset);
+                ParseObject12CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset, out int creationAttributeBytes);
             if (creationAttributes.Count == 0)
             {
                 continue;
             }
 
+            int postCreationAttributeOffset = cursor + 4 + creationAttributeBytes;
             yield return new Protocol03PlayerCharacterCreationRecord(
                 relativeOffset + cursor - offset,
                 FormatHeader(bytes.Skip(cursor).Take(6)),
@@ -3065,6 +3066,8 @@ public static partial class PacketResearcher
                 FormatHeader(bytes.Skip(cursor + 2).Take(2)),
                 bytes[cursor + 4],
                 bytes[cursor + 5].ToString("x2", CultureInfo.InvariantCulture),
+                creationAttributeBytes,
+                FormatHeader(bytes.Skip(postCreationAttributeOffset).Take(Math.Min(8, Math.Max(0, end - postCreationAttributeOffset)))),
                 creationAttributes);
         }
     }
@@ -3111,8 +3114,9 @@ public static partial class PacketResearcher
                 continue;
             }
 
+            int creationAttributeBytes = 0;
             IReadOnlyList<Protocol03CreationAttributeSample> creationAttributes = gameObjectId == 599
-                ? ParseObject599CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset)
+                ? ParseObject599CreationAttributes(bytes, cursor + 4, end, offset, relativeOffset, out creationAttributeBytes)
                 : Array.Empty<Protocol03CreationAttributeSample>();
             Protocol03CreationAttributeSample? titleAbility = creationAttributes.FirstOrDefault(attribute => attribute.Index == 2);
             Protocol03CreationAttributeSample? combatantMode = creationAttributes.FirstOrDefault(attribute => attribute.Index == 3);
@@ -3136,6 +3140,9 @@ public static partial class PacketResearcher
             }
 
             int postCombatantModeOffset = Math.Min(end, postNameSlotOffset + 5);
+            int postCreationAttributeOffset = cursor + 4 + creationAttributeBytes;
+            TryFindProtocol03ObjectViewHeader(bytes, postCreationAttributeOffset, end, 8, out int postCreationObjectViewHeaderOffset);
+            bool hasPostCreationObjectViewHeader = postCreationObjectViewHeaderOffset >= 0;
             yield return new Protocol03NamedProfileRecord(
                 relativeOffset + cursor - offset,
                 text,
@@ -3149,6 +3156,15 @@ public static partial class PacketResearcher
                 FormatHeader(bytes.Skip(cursor + 2).Take(2)),
                 bytes[cursor + 4],
                 bytes[cursor + 5].ToString("x2", CultureInfo.InvariantCulture),
+                creationAttributeBytes,
+                FormatHeader(bytes.Skip(postCreationAttributeOffset).Take(Math.Min(8, Math.Max(0, end - postCreationAttributeOffset)))),
+                hasPostCreationObjectViewHeader ? postCreationObjectViewHeaderOffset - postCreationAttributeOffset : null,
+                hasPostCreationObjectViewHeader
+                    ? FormatHeader(bytes.Skip(postCreationObjectViewHeaderOffset).Take(Math.Min(8, Math.Max(0, end - postCreationObjectViewHeaderOffset))))
+                    : string.Empty,
+                hasPostCreationObjectViewHeader
+                    ? ClassifyProtocol03ObjectView(bytes[postCreationObjectViewHeaderOffset + 2], bytes[postCreationObjectViewHeaderOffset + 3])
+                    : string.Empty,
                 suffixZeroBytes,
                 titleAbility?.ValueHex ?? FormatHeader(bytes.Skip(postNameSlotOffset).Take(Math.Min(4, end - postNameSlotOffset))),
                 combatantMode?.ValueHex ?? (postNameSlotOffset + 4 < end
@@ -3160,14 +3176,44 @@ public static partial class PacketResearcher
         }
     }
 
+    private static bool TryFindProtocol03ObjectViewHeader(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int end,
+        int maxRelativeOffset,
+        out int headerOffset)
+    {
+        headerOffset = -1;
+        int maxCandidate = Math.Min(end - 4, offset + maxRelativeOffset);
+        for (int candidate = offset; candidate <= maxCandidate; candidate++)
+        {
+            if (!LooksLikeProtocol03ObjectViewHeader(bytes, candidate))
+            {
+                continue;
+            }
+
+            string classification = ClassifyProtocol03ObjectView(bytes[candidate + 2], bytes[candidate + 3]);
+            if (classification.Equals("unclassified object-view update", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            headerOffset = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     private static IReadOnlyList<Protocol03CreationAttributeSample> ParseObject599CreationAttributes(
         IReadOnlyList<byte> bytes,
         int attributeCountOffset,
         int end,
         int payloadOffset,
-        int relativeOffset)
+        int relativeOffset,
+        out int consumedBytes)
     {
-        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object599CreationAttributes);
+        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object599CreationAttributes, out consumedBytes);
     }
 
     private static IReadOnlyList<Protocol03CreationAttributeSample> ParseObject12CreationAttributes(
@@ -3175,9 +3221,10 @@ public static partial class PacketResearcher
         int attributeCountOffset,
         int end,
         int payloadOffset,
-        int relativeOffset)
+        int relativeOffset,
+        out int consumedBytes)
     {
-        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object12CreationAttributes);
+        return ParseProtocol03CreationAttributes(bytes, attributeCountOffset, end, payloadOffset, relativeOffset, Object12CreationAttributes, out consumedBytes);
     }
 
     private static IReadOnlyList<Protocol03CreationAttributeSample> ParseProtocol03CreationAttributes(
@@ -3186,9 +3233,11 @@ public static partial class PacketResearcher
         int end,
         int payloadOffset,
         int relativeOffset,
-        IReadOnlyList<Protocol03AttributeDescriptor> descriptors)
+        IReadOnlyList<Protocol03AttributeDescriptor> descriptors,
+        out int consumedBytes)
     {
         List<Protocol03CreationAttributeSample> attributes = new();
+        consumedBytes = 0;
         if (attributeCountOffset >= end || descriptors.Count == 0)
         {
             return attributes;
@@ -3217,6 +3266,9 @@ public static partial class PacketResearcher
                 Protocol03AttributeDescriptor? descriptor = descriptors.FirstOrDefault(attribute => attribute.Index == index);
                 if (descriptor is null || cursor + descriptor.Size > end)
                 {
+                    consumedBytes = attributes.Count > 0
+                        ? cursor - attributeCountOffset
+                        : 0;
                     return attributes;
                 }
 
@@ -3229,6 +3281,7 @@ public static partial class PacketResearcher
                 cursor += descriptor.Size;
                 if (attributes.Count >= declaredAttributeCount)
                 {
+                    consumedBytes = cursor - attributeCountOffset;
                     return attributes;
                 }
             }
@@ -3239,6 +3292,9 @@ public static partial class PacketResearcher
             }
         }
 
+        consumedBytes = attributes.Count > 0
+            ? cursor - attributeCountOffset
+            : 0;
         return attributes;
     }
 

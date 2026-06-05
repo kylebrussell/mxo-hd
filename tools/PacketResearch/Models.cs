@@ -374,6 +374,11 @@ public sealed record Protocol03NamedProfileRecord(
     string SeparatorHex,
     int CreationAttributeCount,
     string FirstAttributeMaskHex,
+    int CreationAttributeBytes,
+    string PostCreationAttributePrefixHex,
+    int? PostCreationObjectViewHeaderOffset,
+    string PostCreationObjectViewHeaderHex,
+    string PostCreationObjectViewHeaderClassification,
     int SuffixZeroBytes,
     string TitleAbilityHex,
     string CombatantModeHex,
@@ -391,6 +396,8 @@ public sealed record Protocol03PlayerCharacterCreationRecord(
     string SeparatorHex,
     int CreationAttributeCount,
     string FirstAttributeMaskHex,
+    int CreationAttributeBytes,
+    string PostCreationAttributePrefixHex,
     IReadOnlyList<Protocol03CreationAttributeSample> CreationAttributes);
 
 public sealed record Protocol03CreationAttributeSample(

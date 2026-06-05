@@ -2755,6 +2755,8 @@ public class PacketResearcherTests
         Assert.Equal("cd ab", record.SeparatorHex);
         Assert.Equal(2, record.CreationAttributeCount);
         Assert.Equal("88", record.FirstAttributeMaskHex);
+        Assert.Equal(67, record.CreationAttributeBytes);
+        Assert.Equal(string.Empty, record.PostCreationAttributePrefixHex);
         Assert.Equal(new[] { 3, 11 }, record.CreationAttributes.Select(attribute => attribute.Index));
         Assert.Equal("RealLastName", record.CreationAttributes[0].Name);
         Assert.Equal("RealFirstName", record.CreationAttributes[1].Name);
@@ -2815,6 +2817,41 @@ public class PacketResearcherTests
         Assert.Equal("22", record.CombatantModeHex);
         Assert.Equal("00 10 00 00 22 12 34 56", record.PostNameSlotHex);
         Assert.Equal("12 34 56 78 9a bc", record.PostCombatantModeHex);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_CapturesNamedProfilePostCreationAttributeSuffix()
+    {
+        List<byte> bytes = PacketResearcher.ParseHexBytes("02 03 01 00 0c 57 02 e2 cd ab 04 8e").ToList();
+        bytes.AddRange(FixedAscii("Gold Blood Champion", 32));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 10 00 00 22 40 01 de ad be ef"));
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 59, "server").Single();
+
+        Protocol03NamedProfileRecord record = Assert.Single(sample.NamedProfileRecords);
+        Assert.Equal(4, record.CreationAttributeCount);
+        Assert.Equal(4, record.CreationAttributes.Count);
+        Assert.Equal(41, record.CreationAttributeBytes);
+        Assert.Equal("de ad be ef", record.PostCreationAttributePrefixHex);
+        Assert.Null(record.PostCreationObjectViewHeaderOffset);
+        Assert.Equal(string.Empty, record.PostCreationObjectViewHeaderHex);
+        Assert.Equal(string.Empty, record.PostCreationObjectViewHeaderClassification);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_CapturesNamedProfilePostCreationObjectViewBoundary()
+    {
+        List<byte> bytes = PacketResearcher.ParseHexBytes("02 03 01 00 0c 57 02 e2 cd ab 04 8e").ToList();
+        bytes.AddRange(FixedAscii("Gold Blood Champion", 32));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 10 00 00 22 40 01 de ad be 01 00 0c 57 02 e3 cd ab 04 8e"));
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 60, "server").Single();
+
+        Protocol03NamedProfileRecord record = Assert.Single(sample.NamedProfileRecords);
+        Assert.Equal("de ad be 01 00 0c 57 02", record.PostCreationAttributePrefixHex);
+        Assert.Equal(3, record.PostCreationObjectViewHeaderOffset);
+        Assert.Equal("01 00 0c 57 02 e3 cd ab", record.PostCreationObjectViewHeaderHex);
+        Assert.Equal("NPC_BASE dynamic creation candidate", record.PostCreationObjectViewHeaderClassification);
     }
 
     [Fact]
@@ -2882,8 +2919,58 @@ public class PacketResearcherTests
         Assert.Contains("| `00 10 00 00` | 22 | 2 | 2 | 4 | 40 01 | Gold Blood Champion<br>Gold Blood Enthusiast | `npc.txt:57` |", markdown);
         Assert.Contains("### Protocol 03 NPC_BASE Creation Attribute Parse Consistency", markdown);
         Assert.Contains("| 4 | 4 | 2 | 2 | Gold Blood Champion<br>Gold Blood Enthusiast | `npc.txt:57` |", markdown);
+        Assert.Contains("### Protocol 03 NPC_BASE Post-Creation Attribute Suffix Leads", markdown);
+        Assert.Contains("Across 2 Object599 creation records, 0 have bytes after the declared attribute stream, and 0 include `00 0c 57 02` inside the first eight suffix bytes.", markdown);
+        Assert.Contains("| 4 | 4 | 41 | `-` | 2 | 2 | Gold Blood Champion<br>Gold Blood Enthusiast | `npc.txt:57` |", markdown);
         Assert.Contains("### Protocol 03 NPC_BASE Creation Attribute Presence", markdown);
         Assert.Contains("| 13 | StopFollowActiveTracker | 1 | 2 | 1 | 01 | Gold Blood Champion<br>Gold Blood Enthusiast | `npc.txt:57` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesProtocol03NpcBasePostCreationObjectViewBoundaryLeads()
+    {
+        List<byte> bytes = PacketResearcher.ParseHexBytes("02 03 01 00 0c 57 02 e2 cd ab 04 8e").ToList();
+        bytes.AddRange(FixedAscii("Gold Blood Champion", 32));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 10 00 00 22 40 01 de ad be 01 00 0c 57 02 e3 cd ab 04 8e"));
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 60, "server").Single();
+        PacketDumpFileSummary dump = new(
+            "npc-boundary.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { sample },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            new[]
+            {
+                new GameObjectEntry("NPC_BASE", 599, "data/gameobjects.csv", 32012)
+            },
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("### Protocol 03 NPC_BASE Post-Creation Object-View Boundary Leads", markdown);
+        Assert.Contains("Across 1 Object599 creation records, 1 expose a plausible next object-view header inside the first eight post-attribute suffix bytes.", markdown);
+        Assert.Contains("| 3 | `01 00 0c 57 02 e3 cd ab` | NPC_BASE dynamic creation candidate | 1 | de ad be 01 00 0c 57 02 | 1 | Gold Blood Champion | `npc-boundary.txt:60` |", markdown);
     }
 
     [Fact]
