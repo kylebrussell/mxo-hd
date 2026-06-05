@@ -485,6 +485,13 @@ public sealed record Protocol03StaticObjectLead(
     float? Q1,
     float? Q2,
     float? Q3,
+    int PostQuaternionBytes,
+    string PostQuaternionMarkerHex,
+    double? PostQuaternionX,
+    double? PostQuaternionY,
+    double? PostQuaternionZ,
+    string PostQuaternionTailHex,
+    string PostQuaternionHex,
     string PayloadHex);
 
 public sealed record Protocol03ObjectUpdateSegment(

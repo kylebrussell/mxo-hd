@@ -194674,6 +194674,693 @@
       ]
     },
     {
+      "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpanalyze2.txt",
+      "PacketLikeLines": 19,
+      "ProtocolCounts": {
+        "0x04": 2,
+        "0x03": 9,
+        "unknown": 8
+      },
+      "RpcHeaderCounts": {
+        "80 c2 [unknown] CR1:CLIENT_JUMP/CR2:CLIENT_JUMP_START": 1,
+        "80 c4 [unknown] CR1:CLIENT_REGION_LOADED/CR2:CLIENT_JUMP_CANCEL": 1
+      },
+      "KnownHeaderCounts": {
+        "80 c2 CLIENT_JUMP_START [CR2 client]": 1,
+        "80 c2 CLIENT_JUMP [CR1 client]": 1,
+        "80 c4 CLIENT_JUMP_CANCEL [CR2 client]": 1,
+        "80 c4 CLIENT_REGION_LOADED [CR1 client]": 1,
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": 1,
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": 1,
+        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": 1,
+        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": 1,
+        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": 1,
+        "81 78 SERVER_CODER_UNKNOWN [CR2 server]": 1
+      },
+      "KnownHeaderSampleLines": {
+        "80 c2 CLIENT_JUMP_START [CR2 client]": [
+          3
+        ],
+        "80 c2 CLIENT_JUMP [CR1 client]": [
+          3
+        ],
+        "80 c4 CLIENT_JUMP_CANCEL [CR2 client]": [
+          4
+        ],
+        "80 c4 CLIENT_REGION_LOADED [CR1 client]": [
+          4
+        ],
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": [
+          10
+        ],
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": [
+          10
+        ],
+        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": [
+          10
+        ],
+        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": [
+          10
+        ],
+        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": [
+          10
+        ],
+        "81 78 SERVER_CODER_UNKNOWN [CR2 server]": [
+          83
+        ]
+      },
+      "Protocol04PacketSequences": [
+        {
+          "Line": 3,
+          "Direction": null,
+          "Headers": [
+            "80 c2"
+          ]
+        },
+        {
+          "Line": 4,
+          "Direction": null,
+          "Headers": [
+            "80 c4"
+          ]
+        }
+      ],
+      "Protocol03ObjectViews": [
+        {
+          "Line": 10,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "01",
+          "Classification": "unclassified object-view update",
+          "PrefixHex": "02 00 03 01 08 00 80 80 bc 01 e4 89 46 04 00 85 8c a1 04 00 00 00 c0 5c",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 63,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "01",
+              "Classification": "unknown selector payload",
+              "PayloadBytes": 63,
+              "Offset": 3,
+              "PayloadPrefixHex": "08 00 80 80 bc 01 e4 89 46 04 00 85 8c a1 04 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 41,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 09 aa 10 47 3d 12 94 46 64 f7 f5 c5 c3 6d a1 04 80 80 80 10",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 30,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "09 aa 10 47 3d 12 94 46 64 f7 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "c3",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 30,
+              "Offset": 16,
+              "PayloadPrefixHex": "6d a1 04 80 80 80 10 ea 00 11 00 01 80 04 ea 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 58,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 f2 a9 10 47 57 cf cf 46 25 f7 f5 c5 28 72 a1 04 80 80 80 10",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 30,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "f2 a9 10 47 57 cf cf 46 25 f7 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "28",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 30,
+              "Offset": 16,
+              "PayloadPrefixHex": "72 a1 04 80 80 80 10 ee 00 11 00 01 80 04 ee 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 66,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 e7 a9 10 47 32 d0 e3 46 0a f7 f5 c5 1c 74 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "e7 a9 10 47 32 d0 e3 46 0a f7 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "1c",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "74 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 74,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 dd a9 10 47 43 77 f3 46 ee f6 f5 c5 10 76 a1 04 80 80 80 10",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 30,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "dd a9 10 47 43 77 f3 46 ee f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "10",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 30,
+              "Offset": 16,
+              "PayloadPrefixHex": "76 a1 04 80 80 80 10 f2 00 11 00 01 80 04 f2 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 83,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 d0 a9 10 47 ca bc 00 47 cc f6 f5 c5 81 78 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "d0 a9 10 47 ca bc 00 47 cc f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "81",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "78 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 90,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 c8 a9 10 47 ee 6d 03 47 b7 f6 f5 c5 f8 79 a1 04 80 80 80 10",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 30,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "c8 a9 10 47 ee 6d 03 47 b7 f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "f8",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 30,
+              "Offset": 16,
+              "PayloadPrefixHex": "79 a1 04 80 80 80 10 f6 00 11 00 01 80 04 f6 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 100,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 b8 a9 10 47 50 5d 05 47 8e f6 f5 c5 e6 7c a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "b8 a9 10 47 50 5d 05 47 8e f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "e6",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "7c a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 112,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 1,
+          "UpdateCount": 1,
+          "FirstSelector": "05",
+          "Classification": "unclassified object-view update",
+          "PrefixHex": "01 00 01 05 00 03 00 06 00 07 00 0b 00 1b 00 02 00 03 08 ae a9 10 47 c5",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 229,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "05",
+              "Classification": "unknown selector payload",
+              "PayloadBytes": 229,
+              "Offset": 3,
+              "PayloadPrefixHex": "00 03 00 06 00 07 00 0b 00 1b 00 02 00 03 08 ae",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 121,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 a1 a9 10 47 50 4a ff 46 4f f6 f5 c5 4b 81 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "a1 a9 10 47 50 4a ff 46 4f f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "4b",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "81 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 134,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 89 a9 10 47 a0 75 df 46 11 f6 f5 c5 b0 85 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "89 a9 10 47 a0 75 df 46 11 f6 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "b0",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "85 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 147,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 72 a9 10 47 29 c8 aa 46 d3 f5 f5 c5 24 8a a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "72 a9 10 47 29 c8 aa 46 d3 f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "24",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "8a a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 160,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 5b a9 10 47 41 60 46 46 96 f5 f5 c5 89 8e a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "5b a9 10 47 41 60 46 46 96 f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "89",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "8e a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 174,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 46 a9 10 47 91 d6 09 45 5f f5 f5 c5 71 92 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 267,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "46 a9 10 47 91 d6 09 45 5f f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "71",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 267,
+              "Offset": 16,
+              "PayloadPrefixHex": "92 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 177,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "08",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 08 43 a9 10 47 76 15 32 44 58 f5 f5 c5 ee 92 a1 04 ff 01 64 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "08",
+              "Classification": "position xyz",
+              "PayloadBytes": 12,
+              "Offset": 3,
+              "PayloadPrefixHex": "43 a9 10 47 76 15 32 44 58 f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "ee",
+              "Classification": "selector 08 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 16,
+              "PayloadPrefixHex": "92 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 183,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "09",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 09 00 00 40 a9 10 47 00 20 8a c4 50 f5 f5 c5 e8 93 a1 04 ff 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 201,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "09",
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
+              "Offset": 3,
+              "PayloadPrefixHex": "00 00 40 a9 10 47 00 20 8a c4 50 f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "e8",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 201,
+              "Offset": 18,
+              "PayloadPrefixHex": "93 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 184,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "09",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 09 00 00 40 a9 10 47 00 20 8a c4 50 f5 f5 c5 65 94 a1 04 ff 01",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 184,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "09",
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
+              "Offset": 3,
+              "PayloadPrefixHex": "00 00 40 a9 10 47 00 20 8a c4 50 f5 f5 c5",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "65",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 184,
+              "Offset": 18,
+              "PayloadPrefixHex": "94 a1 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
+              "IsKnownLength": false
+            }
+          ]
+        }
+      ],
+      "Protocol04InteractionPayloads": [],
+      "PlayerAttributePayloads": [],
+      "ManageBonusPayloads": []
+    },
+    {
+      "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpanalzynew3.txt",
+      "PacketLikeLines": 5,
+      "ProtocolCounts": {
+        "0x03": 1,
+        "unknown": 3,
+        "0x04": 1
+      },
+      "RpcHeaderCounts": {},
+      "KnownHeaderCounts": {
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": 1,
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": 1,
+        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": 1,
+        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": 1,
+        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": 1
+      },
+      "KnownHeaderSampleLines": {
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": [
+          12
+        ],
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": [
+          12
+        ],
+        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": [
+          24
+        ],
+        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": [
+          24
+        ],
+        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": [
+          24
+        ]
+      },
+      "Protocol04PacketSequences": [],
+      "Protocol03ObjectViews": [
+        {
+          "Line": 10,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "09",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 09 08 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 2,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "09",
+              "Classification": "unknown selector payload",
+              "PayloadBytes": 2,
+              "Offset": 3,
+              "PayloadPrefixHex": "08 00",
+              "IsKnownLength": false
+            }
+          ]
+        }
+      ],
+      "Protocol04InteractionPayloads": [],
+      "PlayerAttributePayloads": [],
+      "ManageBonusPayloads": []
+    },
+    {
+      "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpcoding.txt",
+      "PacketLikeLines": 1,
+      "ProtocolCounts": {
+        "0x04": 1
+      },
+      "RpcHeaderCounts": {
+        "80 c2 [unknown] CR1:CLIENT_JUMP/CR2:CLIENT_JUMP_START": 1
+      },
+      "KnownHeaderCounts": {
+        "80 c2 CLIENT_JUMP_START [CR2 client]": 1,
+        "80 c2 CLIENT_JUMP [CR1 client]": 1
+      },
+      "KnownHeaderSampleLines": {
+        "80 c2 CLIENT_JUMP_START [CR2 client]": [
+          1
+        ],
+        "80 c2 CLIENT_JUMP [CR1 client]": [
+          1
+        ]
+      },
+      "Protocol04PacketSequences": [
+        {
+          "Line": 1,
+          "Direction": null,
+          "Headers": [
+            "80 c2"
+          ]
+        }
+      ],
+      "Protocol03ObjectViews": [],
+      "Protocol04InteractionPayloads": [],
+      "PlayerAttributePayloads": [],
+      "ManageBonusPayloads": []
+    },
+    {
       "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpstamos1.txt",
       "PacketLikeLines": 548,
       "ProtocolCounts": {
@@ -423272,10 +423959,10 @@
     },
     {
       "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/others/doors.txt",
-      "PacketLikeLines": 6,
+      "PacketLikeLines": 8,
       "ProtocolCounts": {
         "0x04": 4,
-        "0x03": 1,
+        "0x03": 3,
         "unknown": 1
       },
       "RpcHeaderCounts": {
@@ -423285,8 +423972,8 @@
       "KnownHeaderCounts": {
         "81 51 CLIENT_TARGET [CR2 client]": 1,
         "80 c8 CLIENT_OBJECTINTERACTION_STATIC [CR2 client]": 3,
-        "80 a6 CLIENT_MISSION_ABORT [CR2 client]": 1,
-        "80 a6 CLIENT_MISSION_ABORT [CR1 client]": 1
+        "80 a6 CLIENT_MISSION_ABORT [CR2 client]": 2,
+        "80 a6 CLIENT_MISSION_ABORT [CR1 client]": 2
       },
       "KnownHeaderSampleLines": {
         "81 51 CLIENT_TARGET [CR2 client]": [
@@ -423298,10 +423985,12 @@
           6
         ],
         "80 a6 CLIENT_MISSION_ABORT [CR2 client]": [
-          14
+          14,
+          18
         ],
         "80 a6 CLIENT_MISSION_ABORT [CR1 client]": [
-          14
+          14,
+          18
         ]
       },
       "Protocol04PacketSequences": [
@@ -423354,6 +424043,52 @@
               "PayloadBytes": 26,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 80 cd ab 03 84 00 00 00 00 f3 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 18,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "a0",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 a0 01 08 00 f0 34 80 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "a0",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 08 00 f0 34 80 cd ab 03 84 00 00 00 00 f3 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 20,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "9e",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 9e 01 0d 00 f0 34 93 cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "9e",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 0d 00 f0 34 93 cd ab 03 84 00 00 00 00 f2 04",
               "IsKnownLength": false
             }
           ]

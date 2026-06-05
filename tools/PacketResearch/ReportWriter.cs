@@ -1999,12 +1999,12 @@ public static class ReportWriter
 
         builder.AppendLine("### Protocol 03 Static Object/Door Spawn Leads");
         builder.AppendLine();
-        builder.AppendLine("This extracts the stable prefix from selector `9e`/`a0` static object variable blocks: a lead byte, little-endian static `mxoId`, instance byte, `cd ab` separator, protocol object-type byte, and a bounded transform/quaternion window. The tail remains undecoded.");
+        builder.AppendLine("This extracts the stable prefix from selector `9e`/`a0` static object variable blocks: a lead byte, little-endian static `mxoId`, instance byte, `cd ab` separator, protocol object-type byte, a bounded quaternion window, and post-quaternion body bytes when full compact/headered packet samples are available. The first post-quaternion byte is followed by three little-endian doubles that land near matching static table coordinates; field semantics are still not claimed.");
         builder.AppendLine();
         builder.AppendLine($"Across {leads.Length} selector `9e`/`a0` tails, {leads.Select(entry => entry.Lead.ObjectId).Distinct().Count()} distinct static object ids appear.");
         builder.AppendLine();
-        builder.AppendLine("| Selector | Static object id | Protocol object type | Records | Static rows | Vendor rows | Static type symbols | Instance bytes | Separator | Quaternion samples | Sample |");
-        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- |");
+        builder.AppendLine("| Selector | Static object id | Protocol object type | Records | Full payloads | Payload bytes | Static rows | Vendor rows | Static type symbols | Instance bytes | Separator | Quaternion samples | Post-quat bytes | Marker | Vector samples | Nearest static distance | Tail samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
         foreach (var group in leads
             .GroupBy(entry => new
             {
@@ -2018,8 +2018,9 @@ public static class ReportWriter
         {
             Protocol03StaticObjectLeadWithFile sample = group.First();
             StaticObjectEntry[] staticRows = staticObjectsByMxoId[group.Key.ObjectId].ToArray();
+            int fullPayloads = group.Count(entry => entry.Lead.PostQuaternionBytes > 0);
             builder.AppendLine(
-                $"| `{group.Key.Selector}` | {group.Key.ObjectId} | {group.Key.ObjectType} | {group.Count()} | {staticRows.Length} | {vendorRowCounts.GetValueOrDefault(group.Key.ObjectId)} | {FormatStaticTypeSymbols(staticRows, gameObjectsById)} | {FormatDistinct(group.Select(entry => entry.Lead.InstanceByteHex), 8)} | {FormatDistinct(group.Select(entry => entry.Lead.SeparatorHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectQuaternion(entry.Lead)), 4)} | `{sample.File}:{sample.Line}` |");
+                $"| `{group.Key.Selector}` | {group.Key.ObjectId} | {group.Key.ObjectType} | {group.Count()} | {fullPayloads} | {FormatDistinct(group.Select(entry => entry.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {staticRows.Length} | {vendorRowCounts.GetValueOrDefault(group.Key.ObjectId)} | {FormatStaticTypeSymbols(staticRows, gameObjectsById)} | {FormatDistinct(group.Select(entry => entry.Lead.InstanceByteHex), 8)} | {FormatDistinct(group.Select(entry => entry.Lead.SeparatorHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectQuaternion(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => entry.Lead.PostQuaternionBytes > 0 ? entry.Lead.PostQuaternionBytes.ToString(CultureInfo.InvariantCulture) : null), 8)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionMarkerHex) ? null : entry.Lead.PostQuaternionMarkerHex), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectPostQuaternionVector(entry.Lead)), 4)} | {FormatDistinct(group.Select(entry => FormatStaticObjectNearestDistance(entry.Lead, staticRows)), 4)} | {FormatDistinct(group.Select(entry => string.IsNullOrWhiteSpace(entry.Lead.PostQuaternionTailHex) ? null : entry.Lead.PostQuaternionTailHex), 4)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
@@ -4874,6 +4875,30 @@ public static class ReportWriter
         }
 
         return $"{FormatCoordinate(lead.Q0.Value)},{FormatCoordinate(lead.Q1.Value)},{FormatCoordinate(lead.Q2.Value)},{FormatCoordinate(lead.Q3.Value)}";
+    }
+
+    private static string? FormatStaticObjectPostQuaternionVector(Protocol03StaticObjectLead lead)
+    {
+        if (lead.PostQuaternionX is null || lead.PostQuaternionY is null || lead.PostQuaternionZ is null)
+        {
+            return null;
+        }
+
+        return $"{FormatCoordinate(lead.PostQuaternionX.Value)},{FormatCoordinate(lead.PostQuaternionY.Value)},{FormatCoordinate(lead.PostQuaternionZ.Value)}";
+    }
+
+    private static string? FormatStaticObjectNearestDistance(Protocol03StaticObjectLead lead, IReadOnlyList<StaticObjectEntry> staticRows)
+    {
+        if (lead.PostQuaternionX is null || lead.PostQuaternionY is null || lead.PostQuaternionZ is null || staticRows.Count == 0)
+        {
+            return null;
+        }
+
+        Vector3d vector = new(lead.PostQuaternionX.Value, lead.PostQuaternionY.Value, lead.PostQuaternionZ.Value);
+        double nearest = staticRows
+            .Select(entry => Distance(vector, new Vector3d(entry.X, entry.Y, entry.Z)))
+            .Min();
+        return FormatDistance(nearest);
     }
 
     private static string FormatStaticTypeSymbols(

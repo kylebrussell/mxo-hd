@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1212,13 +1213,7 @@ public static partial class PacketResearcher
                 currentPacketBytes.Clear();
             }
 
-            if (!LooksLikeHexDumpLine(line))
-            {
-                continue;
-            }
-
-            byte[] bytes = ParseHexBytes(line).ToArray();
-            if (bytes.Length < 4)
+            if (!TryParsePacketDumpLineBytes(line, out byte[] bytes))
             {
                 continue;
             }
@@ -2868,6 +2863,10 @@ public static partial class PacketResearcher
         float? q1 = TryReadSingleLittleEndian(payload, 14, out float q1Value) ? q1Value : null;
         float? q2 = TryReadSingleLittleEndian(payload, 18, out float q2Value) ? q2Value : null;
         float? q3 = TryReadSingleLittleEndian(payload, 22, out float q3Value) ? q3Value : null;
+        byte[] postQuaternion = payload.Skip(26).ToArray();
+        double? postQuaternionX = TryReadDoubleLittleEndian(postQuaternion, 1, out double postQuaternionXValue) ? postQuaternionXValue : null;
+        double? postQuaternionY = TryReadDoubleLittleEndian(postQuaternion, 9, out double postQuaternionYValue) ? postQuaternionYValue : null;
+        double? postQuaternionZ = TryReadDoubleLittleEndian(postQuaternion, 17, out double postQuaternionZValue) ? postQuaternionZValue : null;
 
         lead = new Protocol03StaticObjectLead(
             selector.ToString("x2", CultureInfo.InvariantCulture),
@@ -2885,6 +2884,13 @@ public static partial class PacketResearcher
             q1,
             q2,
             q3,
+            postQuaternion.Length,
+            postQuaternion.Length > 0 ? FormatHeader(postQuaternion.Take(1)) : string.Empty,
+            postQuaternionX,
+            postQuaternionY,
+            postQuaternionZ,
+            postQuaternion.Length > 25 ? FormatHeader(postQuaternion.Skip(25)) : string.Empty,
+            FormatHeader(postQuaternion),
             FormatHeader(payload));
         return true;
     }
@@ -3906,6 +3912,25 @@ public static partial class PacketResearcher
         return HexDumpLineStartRegex().IsMatch(line);
     }
 
+    private static bool TryParsePacketDumpLineBytes(string line, out byte[] bytes)
+    {
+        string trimmed = StripComment(line).Trim();
+        if (LooksLikeHexDumpLine(trimmed))
+        {
+            bytes = ParseHexBytes(trimmed).ToArray();
+            return bytes.Length >= 4;
+        }
+
+        if (trimmed.Length >= 8 && trimmed.Length % 2 == 0 && trimmed.All(Uri.IsHexDigit))
+        {
+            bytes = ParseCompactHexBytes(trimmed).ToArray();
+            return bytes.Length >= 4;
+        }
+
+        bytes = Array.Empty<byte>();
+        return false;
+    }
+
     private static string StripComment(string line)
     {
         int commentIndex = line.IndexOf("//", StringComparison.Ordinal);
@@ -4088,6 +4113,19 @@ public static partial class PacketResearcher
         }
 
         value = BitConverter.Int32BitsToSingle((int)ReadUInt32LittleEndian(payload, offset));
+        return true;
+    }
+
+    private static bool TryReadDoubleLittleEndian(byte[] payload, int offset, out double value)
+    {
+        value = 0;
+        if (offset + 7 >= payload.Length)
+        {
+            return false;
+        }
+
+        long bits = BinaryPrimitives.ReadInt64LittleEndian(payload.AsSpan(offset, 8));
+        value = BitConverter.Int64BitsToDouble(bits);
         return true;
     }
 
