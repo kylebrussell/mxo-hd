@@ -106584,7 +106584,7 @@
           "Classification": "emote update",
           "PrefixHex": "02 00 01 28 02 40 11 00 00 10 5b 62 84 c7 00 00 be 42 3a ed 7e 46 6a 64",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 22,
+          "UnparsedBytes": 24,
           "Complete": false,
           "Segments": [
             {
@@ -107093,7 +107093,9 @@
         "unknown": 48,
         "0x03": 8
       },
-      "RpcHeaderCounts": {},
+      "RpcHeaderCounts": {
+        "80 c2 [unknown] CR1:CLIENT_JUMP/CR2:CLIENT_JUMP_START": 1
+      },
       "KnownHeaderCounts": {
         "80 c2 CLIENT_JUMP_START [CR2 client]": 1,
         "80 c2 CLIENT_JUMP [CR1 client]": 1
@@ -107106,7 +107108,15 @@
           9
         ]
       },
-      "Protocol04PacketSequences": [],
+      "Protocol04PacketSequences": [
+        {
+          "Line": 9,
+          "Direction": null,
+          "Headers": [
+            "80 c2"
+          ]
+        }
+      ],
       "Protocol03ObjectViews": [
         {
           "Line": 13,
@@ -107118,7 +107128,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 08 00 67 62 84 c7 95 8b 57 43 e2 ec 7e 46 8d e1 11 04 ff 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 7,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107132,9 +107142,9 @@
             {
               "Selector": "8d",
               "Classification": "selector 09 movement tail lead",
-              "PayloadBytes": 7,
+              "PayloadBytes": 184,
               "Offset": 18,
-              "PayloadPrefixHex": "e1 11 04 ff 01 64 01",
+              "PayloadPrefixHex": "e1 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107149,7 +107159,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 73 62 84 c7 bd 59 96 43 8a ec 7e 46 eb e1 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107163,9 +107173,9 @@
             {
               "Selector": "eb",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e1 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e1 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107180,7 +107190,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 7f 62 84 c7 6c 32 ae 43 37 ec 7e 46 68 e2 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107194,9 +107204,9 @@
             {
               "Selector": "68",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107211,7 +107221,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 8b 62 84 c7 ca 7d b6 43 df eb 7e 46 e5 e2 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107225,9 +107235,9 @@
             {
               "Selector": "e5",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e2 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107242,7 +107252,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 96 62 84 c7 6c 32 ae 43 8d eb 7e 46 42 e3 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107256,9 +107266,9 @@
             {
               "Selector": "42",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107273,7 +107283,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 a2 62 84 c7 35 35 94 43 35 eb 7e 46 c0 e3 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107287,9 +107297,9 @@
             {
               "Selector": "c0",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e3 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107304,7 +107314,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 ae 62 84 c7 4a 0c 51 43 dd ea 7e 46 3d e4 11 04 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 184,
           "Complete": false,
           "Segments": [
             {
@@ -107318,9 +107328,9 @@
             {
               "Selector": "3d",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 13,
+              "PayloadBytes": 184,
               "Offset": 16,
-              "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00 00 00",
+              "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107335,7 +107345,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 9a e4 11 04 ff 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 11,
+          "UnparsedBytes": 43,
           "Complete": false,
           "Segments": [
             {
@@ -107349,9 +107359,9 @@
             {
               "Selector": "9a",
               "Classification": "selector 09 movement tail lead",
-              "PayloadBytes": 11,
+              "PayloadBytes": 43,
               "Offset": 18,
-              "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00",
+              "PayloadPrefixHex": "e4 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -107366,7 +107376,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 5b 62 84 c7 00 00 be 42 3a ed 7e 46 17 e5 11 04 ff 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 11,
+          "UnparsedBytes": 43,
           "Complete": false,
           "Segments": [
             {
@@ -107380,9 +107390,9 @@
             {
               "Selector": "17",
               "Classification": "selector 09 movement tail lead",
-              "PayloadBytes": 11,
+              "PayloadBytes": 43,
               "Offset": 18,
-              "PayloadPrefixHex": "e5 11 04 ff 01 64 01 00 00 00 00",
+              "PayloadPrefixHex": "e5 11 04 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
             }
           ]
@@ -108634,13 +108644,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "01 00 02 1b 00 02 00 02 e0 08 41 6e 64 65 72 73 6f 6e 06 54 68 6f 6d 61",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 28,
           "Complete": false,
           "Segments": [
             {
               "Selector": "1b",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 26,
+              "PayloadBytes": 28,
               "Offset": 3,
               "PayloadPrefixHex": "00 02 00 02 e0 08 41 6e 64 65 72 73 6f 6e 06 54",
               "IsKnownLength": false
@@ -140817,13 +140827,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 0d cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 700,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 700,
               "Offset": 3,
               "PayloadPrefixHex": "00 0d cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -145853,13 +145863,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 7e cd ab 10 8e 43 68 61 6e 67 20 57 69 6e 67 20 50 75 70",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "02 7e cd ab 10 8e 43 68 61 6e 67 20 57 69 6e 67",
               "IsKnownLength": false
@@ -165139,13 +165149,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 9e cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "00 9e cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -165378,7 +165388,7 @@
           "Classification": "object state update",
           "PrefixHex": "1b 00 02 0c 0d e7 83 04 46 00 00 be 42 12 29 ee 46 09 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 12,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -165392,9 +165402,9 @@
             {
               "Selector": "09",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 12,
+              "PayloadBytes": 15,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01 01 00 00",
               "IsKnownLength": false
             }
           ]
@@ -169480,7 +169490,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1d 00 06 0c 82 be 15 68 46 00 00 be 42 93 1f fa 46 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -169494,7 +169504,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -172502,13 +172512,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 b2 cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 700,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 700,
               "Offset": 3,
               "PayloadPrefixHex": "00 b2 cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -176322,13 +176332,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 0e cd ab 1d 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 214,
+          "UnparsedBytes": 215,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 214,
+              "PayloadBytes": 215,
               "Offset": 3,
               "PayloadPrefixHex": "00 0e cd ab 1d 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -178510,9 +178520,9 @@
           "UpdateCount": 19,
           "FirstSelector": "00",
           "Classification": "unclassified object-view update",
-          "PrefixHex": "00 02 13 00 03 00 02 0c f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00",
+          "PrefixHex": "00 02 13 00 03 00 02 0c f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00 00",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 14,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -178534,9 +178544,9 @@
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 14,
+              "PayloadBytes": 15,
               "Offset": 7,
-              "PayloadPrefixHex": "f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00",
+              "PayloadPrefixHex": "f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00 00",
               "IsKnownLength": false
             }
           ]
@@ -178574,13 +178584,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 22 cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "00 22 cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -184945,13 +184955,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "04 01 01 07 1e 16 80 bc 55 00 54 02 00 5a 01 00 00 1d 04 0f 00 00 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 679,
+          "UnparsedBytes": 680,
           "Complete": false,
           "Segments": [
             {
               "Selector": "07",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 679,
+              "PayloadBytes": 680,
               "Offset": 3,
               "PayloadPrefixHex": "1e 16 80 bc 55 00 54 02 00 5a 01 00 00 1d 04 0f",
               "IsKnownLength": false
@@ -188983,13 +188993,13 @@
           "Classification": "effect/emote state bundle",
           "PrefixHex": "02 00 03 28 02 c0 00 98 d9 00 00 30 27 47 00 20 8a c4 4f 7a b9 c5 59 9f",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 218,
+          "UnparsedBytes": 220,
           "Complete": false,
           "Segments": [
             {
               "Selector": "28",
               "Classification": "effect/emote variable block",
-              "PayloadBytes": 218,
+              "PayloadBytes": 220,
               "Offset": 3,
               "PayloadPrefixHex": "02 c0 00 98 d9 00 00 30 27 47 00 20 8a c4 4f 7a",
               "IsKnownLength": false
@@ -190396,7 +190406,7 @@
         "81 a9 [server] CR1:SERVER_FLASH_TRAFFIC/CR2:SERVER_FLASH_TRAFFIC": 3,
         "7c [server] CR2:SERVER_FACTION_PLAYER_INFO": 5,
         "80 86 [server] CR2:SERVER_CREW_MEMBERS_LIST": 2,
-        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 67,
+        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 68,
         "80 f4 [client] CR1:CLIENT_FACTION_INFO/CR2:CLIENT_FACTION_INFO": 1,
         "80 bd [server] CR2:SERVER_CODER_ATTRIBUTE_UNKNOWN": 1,
         "3a [server] (unknown)": 7,
@@ -190802,6 +190812,7 @@
             "80 d7",
             "80 d7",
             "80 d7",
+            "80 d7",
             "80 d7"
           ]
         },
@@ -190878,13 +190889,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 c6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 252,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 252,
               "Offset": 3,
               "PayloadPrefixHex": "00 c6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -190901,13 +190912,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 c6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 251,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 251,
               "Offset": 3,
               "PayloadPrefixHex": "00 c6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -191209,13 +191220,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "03 00 02 2a 10 01 0c 39 81 00 0d 00 be 00 00 59 c3 78 c7 80 03 a7 42 8d",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 681,
+          "UnparsedBytes": 684,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 681,
+              "PayloadBytes": 684,
               "Offset": 3,
               "PayloadPrefixHex": "10 01 0c 39 81 00 0d 00 be 00 00 59 c3 78 c7 80",
               "IsKnownLength": false
@@ -191951,13 +191962,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "03 00 02 2a 12 01 0c 39 81 00 0d 00 be 00 00 59 c3 78 c7 80 03 a7 42 8d",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 22,
+          "UnparsedBytes": 25,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 22,
+              "PayloadBytes": 25,
               "Offset": 3,
               "PayloadPrefixHex": "12 01 0c 39 81 00 0d 00 be 00 00 59 c3 78 c7 80",
               "IsKnownLength": false
@@ -194620,6 +194631,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 1e 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 54 61 75 72 6f 6e 00"
         },
         {
+          "Line": 490,
+          "PayloadLength": 37,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 29,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BCeJay",
+          "PayloadHex": "08 00 3c 00 00 8e 1d 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 43 65 4a 61 79 00"
+        },
+        {
           "Line": 523,
           "PayloadLength": 43,
           "Field0": "08 00",
@@ -195264,39 +195288,140 @@
     },
     {
       "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/movement/hyperjumpanalzynew3.txt",
-      "PacketLikeLines": 5,
+      "PacketLikeLines": 11,
       "ProtocolCounts": {
-        "0x03": 1,
-        "unknown": 3,
-        "0x04": 1
+        "0x04": 3,
+        "0x03": 3,
+        "unknown": 5
       },
-      "RpcHeaderCounts": {},
+      "RpcHeaderCounts": {
+        "80 c2 [unknown] CR1:CLIENT_JUMP/CR2:CLIENT_JUMP_START": 2
+      },
       "KnownHeaderCounts": {
-        "80 bc SERVER_MANAGE_BONUS [CR2 server]": 1,
-        "80 bc SERVER_MANAGE_BONUS [CR1 server]": 1,
-        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": 1,
-        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": 1,
-        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": 1
+        "80 c2 CLIENT_JUMP_START [CR2 client]": 2,
+        "80 c2 CLIENT_JUMP [CR1 client]": 2,
+        "80 b8 SERVER_PLAYER_UPGRADE_ABILITY [CR2 server]": 1,
+        "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": 3,
+        "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": 3,
+        "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": 3,
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": 2,
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": 2
       },
       "KnownHeaderSampleLines": {
-        "80 bc SERVER_MANAGE_BONUS [CR2 server]": [
-          12
+        "80 c2 CLIENT_JUMP_START [CR2 client]": [
+          1,
+          4
         ],
-        "80 bc SERVER_MANAGE_BONUS [CR1 server]": [
-          12
+        "80 c2 CLIENT_JUMP [CR1 client]": [
+          1,
+          4
+        ],
+        "80 b8 SERVER_PLAYER_UPGRADE_ABILITY [CR2 server]": [
+          2
         ],
         "80 c3 SERVER_PLAYER_JUMP_ID [CR2 server]": [
+          2,
+          5,
           24
         ],
         "80 c3 SERVER_HYPERJUMP_ID [CR2 server]": [
+          2,
+          5,
           24
         ],
         "80 c3 CLIENT_OBJECTINTERACTION_STATIC [CR1 client]": [
+          2,
+          5,
           24
+        ],
+        "80 bc SERVER_MANAGE_BONUS [CR2 server]": [
+          5,
+          12
+        ],
+        "80 bc SERVER_MANAGE_BONUS [CR1 server]": [
+          5,
+          12
         ]
       },
-      "Protocol04PacketSequences": [],
+      "Protocol04PacketSequences": [
+        {
+          "Line": 1,
+          "Direction": null,
+          "Headers": [
+            "80 c2"
+          ]
+        },
+        {
+          "Line": 4,
+          "Direction": null,
+          "Headers": [
+            "80 c2"
+          ]
+        }
+      ],
       "Protocol03ObjectViews": [
+        {
+          "Line": 2,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "09",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 09 08 00 67 40 87 c7 dc 9b 3a 45 b3 f4 68 46 e8 24 e5 19 80 80",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 53,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "09",
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
+              "Offset": 3,
+              "PayloadPrefixHex": "08 00 67 40 87 c7 dc 9b 3a 45 b3 f4 68 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "e8",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 53,
+              "Offset": 18,
+              "PayloadPrefixHex": "24 e5 19 80 80 b8 04 00 3c 4b e5 19 00 00 00 e0",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 5,
+          "Direction": null,
+          "TransportHeader": "02",
+          "ViewId": 2,
+          "UpdateCount": 3,
+          "FirstSelector": "09",
+          "Classification": "movement state bundle",
+          "PrefixHex": "02 00 03 09 08 00 08 61 84 c7 b2 13 0c 44 5b ee 7e 46 03 58 e4 19 80 80",
+          "ParsedUpdateCount": 1,
+          "UnparsedBytes": 57,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "09",
+              "Classification": "position xyz \u002B two-byte prefix",
+              "PayloadBytes": 14,
+              "Offset": 3,
+              "PayloadPrefixHex": "08 00 08 61 84 c7 b2 13 0c 44 5b ee 7e 46",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "03",
+              "Classification": "selector 09 movement tail lead",
+              "PayloadBytes": 57,
+              "Offset": 18,
+              "PayloadPrefixHex": "58 e4 19 80 80 bc 00 f0 20 46 04 00 57 7e e4 19",
+              "IsKnownLength": false
+            }
+          ]
+        },
         {
           "Line": 10,
           "Direction": null,
@@ -195542,7 +195667,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 46 d0 84 c7 a7 6c 00 45 0c 9f 7b 46 7a 59 e4 19 ff 01 4e 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 301,
+          "UnparsedBytes": 303,
           "Complete": false,
           "Segments": [
             {
@@ -195556,7 +195681,7 @@
             {
               "Selector": "7a",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 301,
+              "PayloadBytes": 303,
               "Offset": 16,
               "PayloadPrefixHex": "59 e4 19 ff 01 4e 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -199988,7 +200113,7 @@
           "Classification": "appearance/attribute update candidate",
           "PrefixHex": "02 00 02 80 04 05 45 00 02 2a 00 40 00 00 00 10 01 e6 7b 7c c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 212,
+          "UnparsedBytes": 213,
           "Complete": false,
           "Segments": [
             {
@@ -200002,7 +200127,7 @@
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 212,
+              "PayloadBytes": 213,
               "Offset": 9,
               "PayloadPrefixHex": "00 40 00 00 00 10 01 e6 7b 7c c7 00 20 8a c4 19",
               "IsKnownLength": false
@@ -202366,13 +202491,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 5c cd ab 13 8e 41 2e 53 2e 50 2e 20 4d 61 73 74 65 72 20",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 442,
+          "UnparsedBytes": 444,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 442,
+              "PayloadBytes": 444,
               "Offset": 3,
               "PayloadPrefixHex": "02 5c cd ab 13 8e 41 2e 53 2e 50 2e 20 4d 61 73",
               "IsKnownLength": false
@@ -202389,7 +202514,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "01 00 02 13 00 14 00 02 0c 70 d5 13 79 c7 00 20 8a c4 3e 8a 6a c7 01 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 327,
+          "UnparsedBytes": 330,
           "Complete": false,
           "Segments": [
             {
@@ -202403,7 +202528,7 @@
             {
               "Selector": "01",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 327,
+              "PayloadBytes": 330,
               "Offset": 22,
               "PayloadPrefixHex": "00 02 13 00 0a 00 02 0c c5 3d 47 78 c7 00 20 8a",
               "IsKnownLength": false
@@ -203280,7 +203405,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 c5 8f 77 c7 97 a2 5b 44 a8 f1 70 c7 5f 24 64 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 301,
+          "UnparsedBytes": 304,
           "Complete": false,
           "Segments": [
             {
@@ -203294,7 +203419,7 @@
             {
               "Selector": "5f",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 301,
+              "PayloadBytes": 304,
               "Offset": 16,
               "PayloadPrefixHex": "24 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -203652,7 +203777,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 59 16 76 c7 35 03 b5 45 21 68 75 c7 3b 2a 64 05 80 80 80 10",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 333,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -203666,7 +203791,7 @@
             {
               "Selector": "3b",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 333,
+              "PayloadBytes": 334,
               "Offset": 16,
               "PayloadPrefixHex": "2a 64 05 80 80 80 10 ea 00 2f 00 02 0c 96 b0 a9",
               "IsKnownLength": false
@@ -205749,7 +205874,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 ee a0 72 c7 b4 b8 96 43 58 e0 7f c7 71 48 64 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 429,
+          "UnparsedBytes": 430,
           "Complete": false,
           "Segments": [
             {
@@ -205763,7 +205888,7 @@
             {
               "Selector": "71",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 429,
+              "PayloadBytes": 430,
               "Offset": 16,
               "PayloadPrefixHex": "48 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -205780,7 +205905,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 c0 8e 72 c7 5e 62 5e c3 b0 0b 80 c7 ee 48 64 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 205,
+          "UnparsedBytes": 206,
           "Complete": false,
           "Segments": [
             {
@@ -205794,7 +205919,7 @@
             {
               "Selector": "ee",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 205,
+              "PayloadBytes": 206,
               "Offset": 16,
               "PayloadPrefixHex": "48 64 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -207956,7 +208081,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1f 00 07 00 27 00 40 00 00 00 10 00 00 00 5f ff 00 00 00 10 00 00 00 00",
           "ParsedUpdateCount": 6,
-          "UnparsedBytes": 397,
+          "UnparsedBytes": 400,
           "Complete": false,
           "Segments": [
             {
@@ -208010,7 +208135,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 397,
+              "PayloadBytes": 400,
               "Offset": 15,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 00 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -209907,10 +210032,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0e",
           "Classification": "object state update",
-          "PrefixHex": "08 00 02 0e 04 6d 7c 67 75 c7 00 80 fc c3 54 f0 84 c7",
-          "ParsedUpdateCount": 1,
+          "PrefixHex": "08 00 02 0e 04 6d 7c 67 75 c7 00 80 fc c3 54 f0 84 c7 00 00",
+          "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0e",
@@ -209918,6 +210043,14 @@
               "PayloadBytes": 14,
               "Offset": 3,
               "PayloadPrefixHex": "04 6d 7c 67 75 c7 00 80 fc c3 54 f0 84 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "00",
+              "Classification": "one-byte state marker",
+              "PayloadBytes": 1,
+              "Offset": 18,
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -210583,7 +210716,7 @@
           "Classification": "object state update",
           "PrefixHex": "27 00 02 0c f3 c0 67 84 c7 00 80 fc c3 7f fb 86 c7 1d 00 02 2a 01 81 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 108,
+          "UnparsedBytes": 110,
           "Complete": false,
           "Segments": [
             {
@@ -210597,7 +210730,7 @@
             {
               "Selector": "1d",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 108,
+              "PayloadBytes": 110,
               "Offset": 17,
               "PayloadPrefixHex": "00 02 2a 01 81 00 8c 2e 00 15 00 83 00 00 38 48",
               "IsKnownLength": false
@@ -210645,7 +210778,7 @@
           "Classification": "attribute/effect bundle",
           "PrefixHex": "2b 00 04 80 80 80 80 c0 4c 0a 00 28 01 01 27 00 02 0c df c0 67 84 c7 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 274,
+          "UnparsedBytes": 275,
           "Complete": false,
           "Segments": [
             {
@@ -210659,7 +210792,7 @@
             {
               "Selector": "28",
               "Classification": "effect/emote variable block",
-              "PayloadBytes": 274,
+              "PayloadBytes": 275,
               "Offset": 11,
               "PayloadPrefixHex": "01 01 27 00 02 0c df c0 67 84 c7 00 80 fc c3 7f",
               "IsKnownLength": false
@@ -210676,13 +210809,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "27 00 02 2c 01 81 00 8c 2e 00 19 00 7b 00 d5 c0 67 84 c7 00 80 fc c3 7f",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 252,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 250,
+              "PayloadBytes": 252,
               "Offset": 3,
               "PayloadPrefixHex": "01 81 00 8c 2e 00 19 00 7b 00 d5 c0 67 84 c7 00",
               "IsKnownLength": false
@@ -210753,7 +210886,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "15 00 06 0e 00 1f ff 6d 84 c7 00 80 fc c3 30 8b 71 c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 167,
+          "UnparsedBytes": 168,
           "Complete": false,
           "Segments": [
             {
@@ -210767,7 +210900,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 167,
+              "PayloadBytes": 168,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -212729,13 +212862,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "11 00 02 2e 01 81 00 8c 2e 00 18 00 6f 00 00 a1 dc d7 78 c7 00 20 8a c4",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 61,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 58,
+              "PayloadBytes": 61,
               "Offset": 3,
               "PayloadPrefixHex": "01 81 00 8c 2e 00 18 00 6f 00 00 a1 dc d7 78 c7",
               "IsKnownLength": false
@@ -214951,10 +215084,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0c",
           "Classification": "object state update",
-          "PrefixHex": "08 00 02 0c d0 44 39 76 c7 00 80 fc c3 62 03 85 c7",
-          "ParsedUpdateCount": 1,
+          "PrefixHex": "08 00 02 0c d0 44 39 76 c7 00 80 fc c3 62 03 85 c7 00 00",
+          "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0c",
@@ -214962,6 +215095,14 @@
               "PayloadBytes": 13,
               "Offset": 3,
               "PayloadPrefixHex": "d0 44 39 76 c7 00 80 fc c3 62 03 85 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "00",
+              "Classification": "one-byte state marker",
+              "PayloadBytes": 1,
+              "Offset": 17,
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -216409,7 +216550,7 @@
           "Classification": "object state update",
           "PrefixHex": "15 00 02 0e 05 12 ff 6d 84 c7 00 80 fc c3 30 8b 71 c7 11 00 02 2a 02 81",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 72,
+          "UnparsedBytes": 74,
           "Complete": false,
           "Segments": [
             {
@@ -216423,7 +216564,7 @@
             {
               "Selector": "11",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 72,
+              "PayloadBytes": 74,
               "Offset": 18,
               "PayloadPrefixHex": "00 02 2a 02 81 00 8c 2e 00 0d 00 73 00 00 83 c3",
               "IsKnownLength": false
@@ -217540,13 +217681,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1e 00 02 2e 02 81 00 8c 2e 00 13 00 89 00 00 e5 e7 61 77 c7 00 80 fc c3",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 58,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "02 81 00 8c 2e 00 13 00 89 00 00 e5 e7 61 77 c7",
               "IsKnownLength": false
@@ -217679,7 +217820,7 @@
           "Classification": "object state update",
           "PrefixHex": "1d 00 02 0c 33 d6 f9 82 c7 00 80 fc c3 e0 84 6d c7 17 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 12,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -217693,9 +217834,9 @@
             {
               "Selector": "17",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 12,
+              "PayloadBytes": 15,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 b5 07 00 28 01",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 b5 07 00 28 01 02 00 00",
               "IsKnownLength": false
             }
           ]
@@ -218020,13 +218161,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "04 00 02 2e 00 40 00 00 00 10 01 ed f2 de 84 c7 00 80 fc c3 49 e5 89 c7",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 21,
+          "UnparsedBytes": 22,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 21,
+              "PayloadBytes": 22,
               "Offset": 3,
               "PayloadPrefixHex": "00 40 00 00 00 10 01 ed f2 de 84 c7 00 80 fc c3",
               "IsKnownLength": false
@@ -218717,13 +218858,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "22 00 02 2e 02 81 00 8c 2e 00 24 00 7a 00 05 3a 2e 0d 75 c7 00 80 fc c3",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 58,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "02 81 00 8c 2e 00 24 00 7a 00 05 3a 2e 0d 75 c7",
               "IsKnownLength": false
@@ -220831,7 +220972,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "18 00 02 08 16 99 7b c7 00 20 8a c4 05 2d 6d c7 11 00 02 2e 02 81 00 8c",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 45,
+          "UnparsedBytes": 46,
           "Complete": false,
           "Segments": [
             {
@@ -220845,7 +220986,7 @@
             {
               "Selector": "11",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 45,
+              "PayloadBytes": 46,
               "Offset": 16,
               "PayloadPrefixHex": "00 02 2e 02 81 00 8c 2e 00 0d 00 73 00 00 94 05",
               "IsKnownLength": false
@@ -224054,13 +224195,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1e 00 02 2e 03 81 00 8c 2e 00 08 00 88 00 04 9b 99 5a 75 c7 00 80 fc c3",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 59,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 58,
+              "PayloadBytes": 59,
               "Offset": 3,
               "PayloadPrefixHex": "03 81 00 8c 2e 00 08 00 88 00 04 9b 99 5a 75 c7",
               "IsKnownLength": false
@@ -224472,7 +224613,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "29 00 02 08 7f ca 75 c7 00 80 fc c3 e4 fa 79 c7 1a 00 06 0e 01 b6 e9 21",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 201,
+          "UnparsedBytes": 204,
           "Complete": false,
           "Segments": [
             {
@@ -224486,7 +224627,7 @@
             {
               "Selector": "1a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 201,
+              "PayloadBytes": 204,
               "Offset": 16,
               "PayloadPrefixHex": "00 06 0e 01 b6 e9 21 63 c7 00 80 fc c3 18 93 6c",
               "IsKnownLength": false
@@ -227114,13 +227255,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "11 00 02 2e 03 81 00 8c 2e 00 06 00 76 00 00 ce 94 0b 79 c7 00 20 8a c4",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 23,
+          "UnparsedBytes": 26,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 23,
+              "PayloadBytes": 26,
               "Offset": 3,
               "PayloadPrefixHex": "03 81 00 8c 2e 00 06 00 76 00 00 ce 94 0b 79 c7",
               "IsKnownLength": false
@@ -238341,7 +238482,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "1a 00 02 08 8b b2 64 c7 00 80 fc c3 80 23 6e c7 0d 00 04 80 80 80 80 c0",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -238355,9 +238496,9 @@
             {
               "Selector": "0d",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 15,
               "Offset": 16,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01 03",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01 03 00 00",
               "IsKnownLength": false
             }
           ]
@@ -263999,13 +264140,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 02 0c 5e b6 44 64 c7 00 80 fc c3 c1 b2 6c c7 20 00 02 08 69 90 83 c7",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 46,
+          "UnparsedBytes": 47,
           "Complete": false,
           "Segments": [
             {
               "Selector": "5e",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 46,
+              "PayloadBytes": 47,
               "Offset": 3,
               "PayloadPrefixHex": "b6 44 64 c7 00 80 fc c3 c1 b2 6c c7 20 00 02 08",
               "IsKnownLength": false
@@ -267672,7 +267813,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "0a 00 02 08 1a 22 75 c7 00 80 fc c3 e5 83 79 c7 07 00 02 04 48 05 00 02",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 8,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
@@ -267686,9 +267827,9 @@
             {
               "Selector": "07",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 8,
+              "PayloadBytes": 11,
               "Offset": 16,
-              "PayloadPrefixHex": "00 02 04 48 05 00 02 02",
+              "PayloadPrefixHex": "00 02 04 48 05 00 02 02 01 00 00",
               "IsKnownLength": false
             }
           ]
@@ -268734,7 +268875,7 @@
           "Classification": "attribute/effect bundle",
           "PrefixHex": "0d 00 04 80 80 80 80 80 01 04 09 00 02 0e 01 5e 71 65 84 c7 00 80 fc c3",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 16,
+          "UnparsedBytes": 19,
           "Complete": false,
           "Segments": [
             {
@@ -268748,7 +268889,7 @@
             {
               "Selector": "09",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 16,
+              "PayloadBytes": 19,
               "Offset": 10,
               "PayloadPrefixHex": "00 02 0e 01 5e 71 65 84 c7 00 80 fc c3 26 40 6c",
               "IsKnownLength": false
@@ -269594,13 +269735,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 02 0c b3 68 2a 75 c7 00 80 fc c3 14 ce 7b c7 17 00 02 0c 1d 85 eb 62",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 82,
+          "UnparsedBytes": 85,
           "Complete": false,
           "Segments": [
             {
               "Selector": "b3",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 82,
+              "PayloadBytes": 85,
               "Offset": 3,
               "PayloadPrefixHex": "68 2a 75 c7 00 80 fc c3 14 ce 7b c7 17 00 02 0c",
               "IsKnownLength": false
@@ -270965,7 +271106,7 @@
           "Classification": "object state update",
           "PrefixHex": "2b 00 02 0c 96 8d 48 65 c7 00 80 fc c3 5d d3 6a c7 29 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 44,
+          "UnparsedBytes": 47,
           "Complete": false,
           "Segments": [
             {
@@ -270979,7 +271120,7 @@
             {
               "Selector": "29",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 44,
+              "PayloadBytes": 47,
               "Offset": 17,
               "PayloadPrefixHex": "00 04 80 80 80 80 80 01 04 18 00 02 0e 01 72 3e",
               "IsKnownLength": false
@@ -286309,13 +286450,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 02 0e 01 27 ba 94 76 c7 50 de 0e c4 71 51 79 c7 20 00 02 0e 00 de 42",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 50,
+          "UnparsedBytes": 51,
           "Complete": false,
           "Segments": [
             {
               "Selector": "01",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 50,
+              "PayloadBytes": 51,
               "Offset": 3,
               "PayloadPrefixHex": "27 ba 94 76 c7 50 de 0e c4 71 51 79 c7 20 00 02",
               "IsKnownLength": false
@@ -292074,7 +292215,7 @@
           "Classification": "object state update",
           "PrefixHex": "29 00 02 0c 36 15 d3 77 c7 00 80 fc c3 37 6b 7a c7 1a 00 02 2a 00 40 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 140,
+          "UnparsedBytes": 141,
           "Complete": false,
           "Segments": [
             {
@@ -292088,7 +292229,7 @@
             {
               "Selector": "1a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 140,
+              "PayloadBytes": 141,
               "Offset": 17,
               "PayloadPrefixHex": "00 02 2a 00 40 00 00 00 10 01 18 90 65 c7 00 80",
               "IsKnownLength": false
@@ -299132,7 +299273,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "26 00 06 0e 05 0a 94 3f 83 c7 00 80 fc c3 17 75 6e c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 203,
+          "UnparsedBytes": 204,
           "Complete": false,
           "Segments": [
             {
@@ -299146,7 +299287,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 203,
+              "PayloadBytes": 204,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -299248,13 +299389,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 06 0c ec 94 3f 83 c7 00 80 fc c3 17 75 6e c7 ff 00 00 00 10 00 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 178,
+          "UnparsedBytes": 179,
           "Complete": false,
           "Segments": [
             {
               "Selector": "ec",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 178,
+              "PayloadBytes": 179,
               "Offset": 3,
               "PayloadPrefixHex": "94 3f 83 c7 00 80 fc c3 17 75 6e c7 ff 00 00 00",
               "IsKnownLength": false
@@ -299302,7 +299443,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "26 00 06 0e 01 d8 4e 4c 83 c7 00 80 fc c3 23 5f 6e c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 235,
+          "UnparsedBytes": 238,
           "Complete": false,
           "Segments": [
             {
@@ -299316,7 +299457,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 235,
+              "PayloadBytes": 238,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -315280,17 +315421,25 @@
           "UpdateCount": 2,
           "FirstSelector": "0c",
           "Classification": "object state update",
-          "PrefixHex": "08 00 02 0c bd 82 60 77 c7 00 80 fc c3 34 ea 84",
-          "ParsedUpdateCount": 1,
-          "UnparsedBytes": 12,
-          "Complete": false,
+          "PrefixHex": "08 00 02 0c bd 82 60 77 c7 00 80 fc c3 34 ea 84 c7 00 00",
+          "ParsedUpdateCount": 2,
+          "UnparsedBytes": 0,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "position xyz \u002B flag",
               "PayloadBytes": 13,
               "Offset": 3,
-              "PayloadPrefixHex": "bd 82 60 77 c7 00 80 fc c3 34 ea 84",
+              "PayloadPrefixHex": "bd 82 60 77 c7 00 80 fc c3 34 ea 84 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "00",
+              "Classification": "one-byte state marker",
+              "PayloadBytes": 1,
+              "Offset": 17,
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -322775,7 +322924,7 @@
           "Classification": "attribute/effect bundle",
           "PrefixHex": "16 00 04 80 80 80 80 80 01 06 15 00 02 08 dc 1f 84 c7 00 80 fc c3 95 39",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 51,
+          "UnparsedBytes": 52,
           "Complete": false,
           "Segments": [
             {
@@ -322789,7 +322938,7 @@
             {
               "Selector": "15",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 51,
+              "PayloadBytes": 52,
               "Offset": 10,
               "PayloadPrefixHex": "00 02 08 dc 1f 84 c7 00 80 fc c3 95 39 6f c7 0a",
               "IsKnownLength": false
@@ -325131,7 +325280,7 @@
           "Classification": "object state update",
           "PrefixHex": "17 00 02 0c 1c 00 a9 62 c7 00 80 fc c3 b5 d5 6e c7 0d 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 9,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
@@ -325145,9 +325294,9 @@
             {
               "Selector": "0d",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 9,
+              "PayloadBytes": 11,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06",
+              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06 00 00",
               "IsKnownLength": false
             }
           ]
@@ -325379,7 +325528,7 @@
           "Classification": "object state update",
           "PrefixHex": "19 00 02 0c 8a 95 25 84 c7 00 80 fc c3 86 20 89 c7 0a 00 04 80 80 80 80",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 9,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
@@ -325395,7 +325544,7 @@
               "Classification": "position xyz \u002B flag",
               "PayloadBytes": 13,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06",
+              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06 00 00",
               "IsKnownLength": true
             }
           ]
@@ -325875,7 +326024,7 @@
           "Classification": "object state update",
           "PrefixHex": "1e 00 02 0e 05 d9 fe 8f 74 c7 00 80 fc c3 4d 5a 84 c7 08 00 04 80 80 80",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 9,
+          "UnparsedBytes": 11,
           "Complete": false,
           "Segments": [
             {
@@ -325891,7 +326040,7 @@
               "Classification": "position xyz",
               "PayloadBytes": 12,
               "Offset": 18,
-              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06",
+              "PayloadPrefixHex": "00 04 80 80 80 80 80 01 06 00 00",
               "IsKnownLength": true
             }
           ]
@@ -334374,10 +334523,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0e",
           "Classification": "object state update",
-          "PrefixHex": "08 00 02 0e 05 21 30 8f 74 c7 00 80 fc c3 db 9e 83 c7",
-          "ParsedUpdateCount": 1,
+          "PrefixHex": "08 00 02 0e 05 21 30 8f 74 c7 00 80 fc c3 db 9e 83 c7 00 00",
+          "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0e",
@@ -334385,6 +334534,14 @@
               "PayloadBytes": 14,
               "Offset": 3,
               "PayloadPrefixHex": "05 21 30 8f 74 c7 00 80 fc c3 db 9e 83 c7",
+              "IsKnownLength": true
+            },
+            {
+              "Selector": "00",
+              "Classification": "one-byte state marker",
+              "PayloadBytes": 1,
+              "Offset": 18,
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -334492,7 +334649,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "1e 00 02 08 e7 92 76 c7 00 80 fc c3 c3 99 84 c7 1a 00 02 28 00 40 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 140,
+          "UnparsedBytes": 142,
           "Complete": false,
           "Segments": [
             {
@@ -334506,7 +334663,7 @@
             {
               "Selector": "1a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 140,
+              "PayloadBytes": 142,
               "Offset": 16,
               "PayloadPrefixHex": "00 02 28 00 40 00 00 00 10 6c 8a 65 c7 00 80 fc",
               "IsKnownLength": false
@@ -342126,7 +342283,7 @@
           "Classification": "object state update",
           "PrefixHex": "2b 00 02 0e 04 3b df 8b 65 c7 00 80 fc c3 9f 12 6a c7 29 00 06 0e 01 1d",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 167,
+          "UnparsedBytes": 168,
           "Complete": false,
           "Segments": [
             {
@@ -342140,7 +342297,7 @@
             {
               "Selector": "29",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 167,
+              "PayloadBytes": 168,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0e 01 1d 81 60 76 c7 00 80 fc c3 e3 e2 7c",
               "IsKnownLength": false
@@ -342180,13 +342337,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 02 0c 45 df 8b 65 c7 00 80 fc c3 9f 12 6a c7 29 00 06 0e 01 13 33 55",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 178,
+          "UnparsedBytes": 181,
           "Complete": false,
           "Segments": [
             {
               "Selector": "45",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 178,
+              "PayloadBytes": 181,
               "Offset": 3,
               "PayloadPrefixHex": "df 8b 65 c7 00 80 fc c3 9f 12 6a c7 29 00 06 0e",
               "IsKnownLength": false
@@ -342265,7 +342422,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "22 00 06 0e 00 0f 58 b1 75 c7 00 80 fc c3 1b 57 7a c7 80 80 80 80 80 80",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 93,
+          "UnparsedBytes": 94,
           "Complete": false,
           "Segments": [
             {
@@ -342287,7 +342444,7 @@
             {
               "Selector": "1e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 93,
+              "PayloadBytes": 94,
               "Offset": 29,
               "PayloadPrefixHex": "00 06 0e 01 52 c2 f1 77 c7 00 80 fc c3 ee 51 84",
               "IsKnownLength": false
@@ -345737,7 +345894,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 a3 0a 73 c7 d6 7f b0 44 5f a0 7e c7 02 cb 68 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 301,
+          "UnparsedBytes": 303,
           "Complete": false,
           "Segments": [
             {
@@ -345751,7 +345908,7 @@
             {
               "Selector": "02",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 301,
+              "PayloadBytes": 303,
               "Offset": 16,
               "PayloadPrefixHex": "cb 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -346171,7 +346328,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 c7 0a 73 c7 04 51 0b 46 47 a0 7e c7 07 d2 68 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 269,
+          "UnparsedBytes": 270,
           "Complete": false,
           "Segments": [
             {
@@ -346185,7 +346342,7 @@
             {
               "Selector": "07",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 269,
+              "PayloadBytes": 270,
               "Offset": 16,
               "PayloadPrefixHex": "d2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -346202,7 +346359,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 ca 0a 73 c7 86 ef 11 46 45 a0 7e c7 94 d2 68 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 269,
+          "UnparsedBytes": 270,
           "Complete": false,
           "Segments": [
             {
@@ -346216,7 +346373,7 @@
             {
               "Selector": "94",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 269,
+              "PayloadBytes": 270,
               "Offset": 16,
               "PayloadPrefixHex": "d2 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -346233,7 +346390,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 cd 0a 73 c7 f5 e6 17 46 43 a0 7e c7 10 d3 68 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 269,
+          "UnparsedBytes": 272,
           "Complete": false,
           "Segments": [
             {
@@ -346247,7 +346404,7 @@
             {
               "Selector": "10",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 269,
+              "PayloadBytes": 272,
               "Offset": 16,
               "PayloadPrefixHex": "d3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -346442,13 +346599,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 03 08 db 0a 73 c7 b8 cc 35 46 3a a0 7e c7 ff d5 68 05 ff 01 64 01 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 398,
+          "UnparsedBytes": 399,
           "Complete": false,
           "Segments": [
             {
               "Selector": "db",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 398,
+              "PayloadBytes": 399,
               "Offset": 3,
               "PayloadPrefixHex": "0a 73 c7 b8 cc 35 46 3a a0 7e c7 ff d5 68 05 ff",
               "IsKnownLength": false
@@ -346703,13 +346860,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 03 08 ec 0a 73 c7 9f 1b 4d 46 2e a0 7e c7 5a d9 68 05 80 80 80 10 f2",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 370,
+          "UnparsedBytes": 372,
           "Complete": false,
           "Segments": [
             {
               "Selector": "ec",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 370,
+              "PayloadBytes": 372,
               "Offset": 3,
               "PayloadPrefixHex": "0a 73 c7 9f 1b 4d 46 2e a0 7e c7 5a d9 68 05 80",
               "IsKnownLength": false
@@ -348685,7 +348842,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 c7 f3 68 05 ff 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 235,
+          "UnparsedBytes": 236,
           "Complete": false,
           "Segments": [
             {
@@ -348699,7 +348856,7 @@
             {
               "Selector": "c7",
               "Classification": "selector 09 movement tail lead",
-              "PayloadBytes": 235,
+              "PayloadBytes": 236,
               "Offset": 18,
               "PayloadPrefixHex": "f3 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -348716,7 +348873,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 09 00 00 71 0b 73 c7 00 80 fc c3 d6 9f 7e c7 44 f4 68 05 ff 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 267,
+          "UnparsedBytes": 270,
           "Complete": false,
           "Segments": [
             {
@@ -348730,7 +348887,7 @@
             {
               "Selector": "44",
               "Classification": "selector 09 movement tail lead",
-              "PayloadBytes": 267,
+              "PayloadBytes": 270,
               "Offset": 18,
               "PayloadPrefixHex": "f4 68 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -349359,13 +349516,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 ca cd ab 13 8e 41 2e 53 2e 50 2e 20 54 72 61 69 6e 65 65",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 442,
+          "UnparsedBytes": 444,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 442,
+              "PayloadBytes": 444,
               "Offset": 3,
               "PayloadPrefixHex": "02 ca cd ab 13 8e 41 2e 53 2e 50 2e 20 54 72 61",
               "IsKnownLength": false
@@ -350341,10 +350498,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0c",
           "Classification": "object state update",
-          "PrefixHex": "0e 00 02 0c 70 89 0c 83 c7 00 80 fc c3 c2 94 6f c7 00",
+          "PrefixHex": "0e 00 02 0c 70 89 0c 83 c7 00 80 fc c3 c2 94 6f c7 00 00",
           "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0c",
@@ -350359,7 +350516,7 @@
               "Classification": "one-byte state marker",
               "PayloadBytes": 1,
               "Offset": 17,
-              "PayloadPrefixHex": "",
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -350560,13 +350717,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 de cd ab 13 8e 41 2e 53 2e 50 2e 20 4d 61 73 74 65 72 20",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 442,
+          "UnparsedBytes": 444,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 442,
+              "PayloadBytes": 444,
               "Offset": 3,
               "PayloadPrefixHex": "02 de cd ab 13 8e 41 2e 53 2e 50 2e 20 4d 61 73",
               "IsKnownLength": false
@@ -350832,7 +350989,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1d 00 07 00 27 00 40 00 00 00 10 00 00 01 8b ff 00 00 00 10 00 00 00 00",
           "ParsedUpdateCount": 5,
-          "UnparsedBytes": 201,
+          "UnparsedBytes": 202,
           "Complete": false,
           "Segments": [
             {
@@ -350878,7 +351035,7 @@
             {
               "Selector": "01",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 201,
+              "PayloadBytes": 202,
               "Offset": 13,
               "PayloadPrefixHex": "8b ff 00 00 00 10 00 00 00 00 00 00 ff 00 00 00",
               "IsKnownLength": false
@@ -350987,13 +351144,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "00 02 0c ec 2d ea 63 c7 00 80 fc c3 e6 e9 6c c7 32 00 02 0c d8 1e 0a 67",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 434,
+          "UnparsedBytes": 435,
           "Complete": false,
           "Segments": [
             {
               "Selector": "ec",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 434,
+              "PayloadBytes": 435,
               "Offset": 3,
               "PayloadPrefixHex": "2d ea 63 c7 00 80 fc c3 e6 e9 6c c7 32 00 02 0c",
               "IsKnownLength": false
@@ -351156,13 +351313,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "01 00 01 03 00 09 00 24 00 32 00 33 00 02 0e 05 e2 be 0a 64 c7 00 80 fc",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 474,
+          "UnparsedBytes": 475,
           "Complete": false,
           "Segments": [
             {
               "Selector": "03",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 474,
+              "PayloadBytes": 475,
               "Offset": 3,
               "PayloadPrefixHex": "00 09 00 24 00 32 00 33 00 02 0e 05 e2 be 0a 64",
               "IsKnownLength": false
@@ -352194,7 +352351,7 @@
           "Classification": "object state update",
           "PrefixHex": "25 00 02 0e 05 19 2d 4b 74 c7 00 80 fc c3 44 3b 83 c7 1c 00 06 0c 90 f6",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 136,
+          "UnparsedBytes": 139,
           "Complete": false,
           "Segments": [
             {
@@ -352208,7 +352365,7 @@
             {
               "Selector": "1c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 136,
+              "PayloadBytes": 139,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0c 90 f6 eb 81 c7 00 80 fc c3 77 b9 81 c7",
               "IsKnownLength": false
@@ -352279,7 +352436,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "1e 00 02 08 bf 45 78 c7 00 80 fc c3 b7 79 82 c7 1c 00 06 0c a4 f6 eb 81",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 330,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -352293,7 +352450,7 @@
             {
               "Selector": "1c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 330,
+              "PayloadBytes": 333,
               "Offset": 16,
               "PayloadPrefixHex": "00 06 0c a4 f6 eb 81 c7 00 80 fc c3 77 b9 81 c7",
               "IsKnownLength": false
@@ -352480,7 +352637,7 @@
           "Classification": "object state update",
           "PrefixHex": "31 00 02 0e 00 20 84 8e 84 c7 00 80 fc c3 68 3c 70 c7 18 00 06 0c ee 8b",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 199,
+          "UnparsedBytes": 201,
           "Complete": false,
           "Segments": [
             {
@@ -352494,7 +352651,7 @@
             {
               "Selector": "18",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "PayloadBytes": 201,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0c ee 8b 37 82 c7 00 80 fc c3 56 58 83 c7",
               "IsKnownLength": false
@@ -358903,13 +359060,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "33 00 02 2a 02 81 00 8c 2e 00 17 00 d3 00 00 04 26 65 c7 00 80 fc c3 3e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 58,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "02 81 00 8c 2e 00 17 00 d3 00 00 04 26 65 c7 00",
               "IsKnownLength": false
@@ -359908,7 +360065,7 @@
           "Classification": "object state update",
           "PrefixHex": "2f 00 02 0c f1 7d 93 71 c7 00 80 fc c3 ab 10 7a c7 2e 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 108,
+          "UnparsedBytes": 111,
           "Complete": false,
           "Segments": [
             {
@@ -359922,7 +360079,7 @@
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 108,
+              "PayloadBytes": 111,
               "Offset": 17,
               "PayloadPrefixHex": "00 04 80 80 80 80 c0 b5 07 00 28 01 02 25 00 06",
               "IsKnownLength": false
@@ -366618,13 +366775,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "29 00 02 2e 02 81 00 8c 2e 00 1b 00 e2 00 01 93 4f e3 79 c7 00 20 8a c4",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 145,
+          "UnparsedBytes": 146,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 145,
+              "PayloadBytes": 146,
               "Offset": 3,
               "PayloadPrefixHex": "02 81 00 8c 2e 00 1b 00 e2 00 01 93 4f e3 79 c7",
               "IsKnownLength": false
@@ -367647,7 +367804,7 @@
           "Classification": "object state update",
           "PrefixHex": "27 00 02 0e 04 a7 bb 96 72 c7 00 80 fc c3 34 03 79 c7 23 00 06 0c 6d 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 199,
+          "UnparsedBytes": 202,
           "Complete": false,
           "Segments": [
             {
@@ -367661,7 +367818,7 @@
             {
               "Selector": "23",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 199,
+              "PayloadBytes": 202,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0c 6d 01 b8 65 c7 00 80 fc c3 bc 05 6e c7",
               "IsKnownLength": false
@@ -368228,7 +368385,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "2e 00 02 08 e6 8a 84 c7 00 80 fc c3 79 6e 6f c7 11 00 04 80 80 80 80 c0",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -368242,9 +368399,9 @@
             {
               "Selector": "11",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 15,
               "Offset": 16,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 b5 07 00 28 01 02",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 b5 07 00 28 01 02 00 00",
               "IsKnownLength": false
             }
           ]
@@ -368894,7 +369051,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 3e f8 74 c7 16 be 49 45 64 28 7c c7 3f 9e 69 05 80 80 80 10",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 45,
+          "UnparsedBytes": 46,
           "Complete": false,
           "Segments": [
             {
@@ -368908,7 +369065,7 @@
             {
               "Selector": "3f",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 45,
+              "PayloadBytes": 46,
               "Offset": 16,
               "PayloadPrefixHex": "9e 69 05 80 80 80 10 e7 00 07 00 02 0e 01 e5 fe",
               "IsKnownLength": false
@@ -369328,7 +369485,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 51 e8 77 c7 49 82 e4 45 ba 64 78 c7 97 a4 69 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 301,
+          "UnparsedBytes": 303,
           "Complete": false,
           "Segments": [
             {
@@ -369342,7 +369499,7 @@
             {
               "Selector": "97",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 301,
+              "PayloadBytes": 303,
               "Offset": 16,
               "PayloadPrefixHex": "a4 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -370846,7 +371003,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 c2 70 7e c7 31 05 8c 45 ce 05 70 c7 d8 bb 69 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 461,
+          "UnparsedBytes": 464,
           "Complete": false,
           "Segments": [
             {
@@ -370860,7 +371017,7 @@
             {
               "Selector": "d8",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 461,
+              "PayloadBytes": 464,
               "Offset": 16,
               "PayloadPrefixHex": "bb 69 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -371590,7 +371747,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "5c c7 0b 00 02 0c 48 3c 8c 6a c7 00 80 fc c3 00 56 5b c7 09 00 02 0e 05",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 50,
+          "UnparsedBytes": 51,
           "Complete": false,
           "Segments": [
             {
@@ -371604,7 +371761,7 @@
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 50,
+              "PayloadBytes": 51,
               "Offset": 5,
               "PayloadPrefixHex": "48 3c 8c 6a c7 00 80 fc c3 00 56 5b c7 09 00 02",
               "IsKnownLength": false
@@ -372450,13 +372607,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 3b cd ab 12 8e 41 2e 53 2e 50 2e 20 4d 61 73 74 65 72 20",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 442,
+          "UnparsedBytes": 444,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 442,
+              "PayloadBytes": 444,
               "Offset": 3,
               "PayloadPrefixHex": "02 3b cd ab 12 8e 41 2e 53 2e 50 2e 20 4d 61 73",
               "IsKnownLength": false
@@ -374874,10 +375031,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0e",
           "Classification": "object state update",
-          "PrefixHex": "04 00 02 0e 00 f1 fd 2a 81 c7 00 20 8a c4 8e bd 5d c7 00",
+          "PrefixHex": "04 00 02 0e 00 f1 fd 2a 81 c7 00 20 8a c4 8e bd 5d c7 00 00",
           "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0e",
@@ -374892,7 +375049,7 @@
               "Classification": "one-byte state marker",
               "PayloadBytes": 1,
               "Offset": 18,
-              "PayloadPrefixHex": "",
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -376697,13 +376854,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "2d 00 02 2a 01 81 00 8c 2e 00 07 00 43 00 00 41 b5 88 c7 00 80 fc c3 ec",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 122,
+          "UnparsedBytes": 124,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 122,
+              "PayloadBytes": 124,
               "Offset": 3,
               "PayloadPrefixHex": "01 81 00 8c 2e 00 07 00 43 00 00 41 b5 88 c7 00",
               "IsKnownLength": false
@@ -377037,13 +377194,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "26 00 02 2a 01 81 00 8c 2e 00 17 00 4b 00 00 0d 81 84 c7 00 80 fc c3 8d",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 154,
+          "UnparsedBytes": 156,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 154,
+              "PayloadBytes": 156,
               "Offset": 3,
               "PayloadPrefixHex": "01 81 00 8c 2e 00 17 00 4b 00 00 0d 81 84 c7 00",
               "IsKnownLength": false
@@ -377602,7 +377759,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "27 00 06 0e 04 fc 61 28 69 c7 00 80 fc c3 6f ff 5c c7 80 80 80 80 80 80",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 92,
+          "UnparsedBytes": 94,
           "Complete": false,
           "Segments": [
             {
@@ -377624,7 +377781,7 @@
             {
               "Selector": "21",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 92,
+              "PayloadBytes": 94,
               "Offset": 29,
               "PayloadPrefixHex": "00 02 0c 96 8e a3 82 c7 00 80 fc c3 2a e6 81 c7",
               "IsKnownLength": false
@@ -378509,7 +378666,7 @@
           "Classification": "object state update",
           "PrefixHex": "21 00 02 0c c7 4e aa 83 c7 00 80 fc c3 10 c1 81 c7 1d 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 12,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -378523,9 +378680,9 @@
             {
               "Selector": "1d",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 12,
+              "PayloadBytes": 15,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01 02 00 00",
               "IsKnownLength": false
             }
           ]
@@ -378749,7 +378906,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 31 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -378763,7 +378920,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -378842,7 +378999,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 50 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -378856,7 +379013,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -378904,7 +379061,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 65 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -378918,7 +379075,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 334,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -379648,13 +379805,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "2d 00 02 2e 01 81 00 8c 2e 00 07 00 43 00 01 db a7 da 88 c7 00 80 fc c3",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 118,
+          "UnparsedBytes": 121,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 118,
+              "PayloadBytes": 121,
               "Offset": 3,
               "PayloadPrefixHex": "01 81 00 8c 2e 00 07 00 43 00 01 db a7 da 88 c7",
               "IsKnownLength": false
@@ -381213,7 +381370,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "10 00 03 0e 03 c0 00 2e 6a c7 00 00 be 42 69 31 58 c7 ff 01 02 00 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 136,
+          "UnparsedBytes": 138,
           "Complete": false,
           "Segments": [
             {
@@ -381227,7 +381384,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 136,
+              "PayloadBytes": 138,
               "Offset": 18,
               "PayloadPrefixHex": "01 02 00 00 00 00 00 00 00 40 28 00 08 00 00 12",
               "IsKnownLength": false
@@ -381864,7 +382021,7 @@
           "Classification": "appearance/attribute update candidate",
           "PrefixHex": "10 00 02 80 80 10 93 01 06 00 02 08 ba cd 83 c7 00 80 fc c3 2f fb 6a c7",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 51,
+          "UnparsedBytes": 53,
           "Complete": false,
           "Segments": [
             {
@@ -381878,7 +382035,7 @@
             {
               "Selector": "01",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 51,
+              "PayloadBytes": 53,
               "Offset": 7,
               "PayloadPrefixHex": "06 00 02 08 ba cd 83 c7 00 80 fc c3 2f fb 6a c7",
               "IsKnownLength": false
@@ -382143,7 +382300,7 @@
           "Classification": "object state update",
           "PrefixHex": "33 00 02 0c 3f 06 51 82 c7 00 80 fc c3 80 00 82 c7 31 00 06 0e 04 49 87",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 335,
           "Complete": false,
           "Segments": [
             {
@@ -382157,7 +382314,7 @@
             {
               "Selector": "31",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 335,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 0e 04 49 87 d7 6b c7 00 80 fc c3 f0 19 5e",
               "IsKnownLength": false
@@ -382205,7 +382362,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 5d 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -382219,7 +382376,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 334,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -382236,7 +382393,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 67 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 335,
           "Complete": false,
           "Segments": [
             {
@@ -382250,7 +382407,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 335,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -382298,7 +382455,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0e 00 7b 87 d7 6b c7 00 80 fc c3 f0 19 5e c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -382312,7 +382469,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 334,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -383864,7 +384021,7 @@
           "Classification": "object state update",
           "PrefixHex": "26 00 02 0c e5 55 0f 83 c7 00 80 fc c3 da 19 6e c7 1f 00 06 0e 05 cd c0",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 236,
+          "UnparsedBytes": 237,
           "Complete": false,
           "Segments": [
             {
@@ -383878,7 +384035,7 @@
             {
               "Selector": "1f",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 236,
+              "PayloadBytes": 237,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 0e 05 cd c0 d1 69 c7 00 80 fc c3 41 41 5b",
               "IsKnownLength": false
@@ -384732,7 +384889,7 @@
           "Classification": "attribute/effect bundle",
           "PrefixHex": "25 00 04 80 80 80 80 c0 b5 07 00 28 01 01 1d 00 02 0e 01 1b d3 33 8a c7",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 75,
+          "UnparsedBytes": 76,
           "Complete": false,
           "Segments": [
             {
@@ -384746,7 +384903,7 @@
             {
               "Selector": "28",
               "Classification": "effect/emote variable block",
-              "PayloadBytes": 75,
+              "PayloadBytes": 76,
               "Offset": 11,
               "PayloadPrefixHex": "01 01 1d 00 02 0e 01 1b d3 33 8a c7 00 80 fc c3",
               "IsKnownLength": false
@@ -384802,7 +384959,7 @@
           "Classification": "object state update",
           "PrefixHex": "31 00 02 0c 7f 2e 41 6c c7 00 80 fc c3 2b e1 61 c7 30 00 06 0e 01 d3 c9",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 335,
           "Complete": false,
           "Segments": [
             {
@@ -384816,7 +384973,7 @@
             {
               "Selector": "30",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 335,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 0e 01 d3 c9 be 76 c7 00 20 8a c4 76 99 6d",
               "IsKnownLength": false
@@ -384833,7 +384990,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "30 00 06 0c d8 7b d1 76 c7 00 20 8a c4 f8 8c 6d c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -384847,7 +385004,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 334,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -385135,7 +385292,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "30 00 02 08 73 54 77 c7 00 20 8a c4 75 35 6d c7 1f 00 04 80 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 45,
+          "UnparsedBytes": 48,
           "Complete": false,
           "Segments": [
             {
@@ -385149,7 +385306,7 @@
             {
               "Selector": "1f",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 45,
+              "PayloadBytes": 48,
               "Offset": 16,
               "PayloadPrefixHex": "00 04 80 80 80 80 80 80 01 07 08 00 00 15 00 02",
               "IsKnownLength": false
@@ -388102,7 +388259,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "10 00 03 0a ab 40 a8 81 c7 00 20 8a c4 d1 62 58 c7 80 80 10 a7 01 0d 00",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 191,
+          "UnparsedBytes": 194,
           "Complete": false,
           "Segments": [
             {
@@ -388124,7 +388281,7 @@
             {
               "Selector": "01",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 191,
+              "PayloadBytes": 194,
               "Offset": 21,
               "PayloadPrefixHex": "0d 00 06 2a 03 81 00 8d ee 00 10 00 78 00 8d 13",
               "IsKnownLength": false
@@ -388234,7 +388391,7 @@
           "Classification": "object state update",
           "PrefixHex": "30 00 02 0c b9 09 9a 7a c7 00 20 8a c4 e4 0b 6b c7 2c 00 06 2a 01 01 0c",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 364,
+          "UnparsedBytes": 366,
           "Complete": false,
           "Segments": [
             {
@@ -388248,7 +388405,7 @@
             {
               "Selector": "2c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 364,
+              "PayloadBytes": 366,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 2a 01 01 0c 39 81 00 10 00 78 00 00 df 06",
               "IsKnownLength": false
@@ -389163,13 +389320,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "2d 00 02 2a 03 81 00 8c 2e 00 05 00 42 00 00 a8 68 89 c7 00 80 fc c3 1f",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 23,
+          "UnparsedBytes": 25,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2a",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 23,
+              "PayloadBytes": 25,
               "Offset": 3,
               "PayloadPrefixHex": "03 81 00 8c 2e 00 05 00 42 00 00 a8 68 89 c7 00",
               "IsKnownLength": false
@@ -389217,13 +389374,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "2c 00 02 2e 02 01 0c 39 81 00 10 00 78 00 00 92 3b 59 81 c7 00 20 8a c4",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 23,
+          "UnparsedBytes": 26,
           "Complete": false,
           "Segments": [
             {
               "Selector": "2e",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 23,
+              "PayloadBytes": 26,
               "Offset": 3,
               "PayloadPrefixHex": "02 01 0c 39 81 00 10 00 78 00 00 92 3b 59 81 c7",
               "IsKnownLength": false
@@ -390084,7 +390241,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0e 04 46 e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -390098,7 +390255,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 334,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390115,7 +390272,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 50 e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -390129,7 +390286,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390146,7 +390303,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 5a e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -390160,7 +390317,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390177,7 +390334,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 64 e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -390191,7 +390348,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390208,7 +390365,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0e 00 6e e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -390222,7 +390379,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 334,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390239,7 +390396,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0e 00 79 e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -390253,7 +390410,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 334,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -390270,7 +390427,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 06 0c 81 e7 73 70 c7 00 20 8a c4 72 fa 5f c7 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 335,
           "Complete": false,
           "Segments": [
             {
@@ -390284,7 +390441,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 335,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -395165,10 +395322,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0c",
           "Classification": "object state update",
-          "PrefixHex": "04 00 02 0c 91 6f 8d 81 c7 00 40 62 c4 01 f9 60 c7 00",
+          "PrefixHex": "04 00 02 0c 91 6f 8d 81 c7 00 40 62 c4 01 f9 60 c7 00 00",
           "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0c",
@@ -395183,7 +395340,7 @@
               "Classification": "one-byte state marker",
               "PayloadBytes": 1,
               "Offset": 17,
-              "PayloadPrefixHex": "",
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -396360,7 +396517,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "23 00 02 02 01 21 00 02 0e 01 ab b4 09 84 c7 00 80 fc c3 e2 e8 80 c7 15",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 30,
+          "UnparsedBytes": 31,
           "Complete": false,
           "Segments": [
             {
@@ -396374,7 +396531,7 @@
             {
               "Selector": "01",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 30,
+              "PayloadBytes": 31,
               "Offset": 4,
               "PayloadPrefixHex": "21 00 02 0e 01 ab b4 09 84 c7 00 80 fc c3 e2 e8",
               "IsKnownLength": false
@@ -398328,7 +398485,7 @@
           "Classification": "object state update",
           "PrefixHex": "31 00 02 0e 01 f5 58 59 71 c7 00 20 8a c4 00 c0 5a c7 30 00 02 2c 00 40",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 334,
           "Complete": false,
           "Segments": [
             {
@@ -398342,7 +398499,7 @@
             {
               "Selector": "30",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 334,
               "Offset": 18,
               "PayloadPrefixHex": "00 02 2c 00 40 00 00 00 10 84 a6 16 79 c7 00 20",
               "IsKnownLength": false
@@ -398669,7 +398826,7 @@
           "Classification": "object state update",
           "PrefixHex": "16 00 02 0c 5e ae 2d 89 c7 00 80 fc c3 de 43 7c c7 15 00 06 0c 00 67 3b",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 200,
+          "UnparsedBytes": 202,
           "Complete": false,
           "Segments": [
             {
@@ -398683,7 +398840,7 @@
             {
               "Selector": "15",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 200,
+              "PayloadBytes": 202,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 0c 00 67 3b 7c c7 00 20 8a c4 2f bc 69 c7",
               "IsKnownLength": false
@@ -399475,7 +399632,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "14 00 02 08 1b e9 73 c7 00 80 fc c3 e5 9a 78 c7 0d 00 02 02 04 07 00 02",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 39,
+          "UnparsedBytes": 41,
           "Complete": false,
           "Segments": [
             {
@@ -399489,7 +399646,7 @@
             {
               "Selector": "0d",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 39,
+              "PayloadBytes": 41,
               "Offset": 16,
               "PayloadPrefixHex": "00 02 02 04 07 00 02 0c 20 e0 a3 8a c7 00 80 fc",
               "IsKnownLength": false
@@ -401893,7 +402050,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "26 00 06 0e 05 76 3e 8d 84 c7 00 80 fc c3 d6 ec 6e c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 235,
+          "UnparsedBytes": 236,
           "Complete": false,
           "Segments": [
             {
@@ -401907,7 +402064,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 235,
+              "PayloadBytes": 236,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -401978,7 +402135,7 @@
           "Classification": "object state update",
           "PrefixHex": "27 00 02 0e 04 2f 00 85 6f c7 00 20 8a c4 2e c4 57 c7 26 00 06 0c 62 3e",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 296,
+          "UnparsedBytes": 298,
           "Complete": false,
           "Segments": [
             {
@@ -401992,7 +402149,7 @@
             {
               "Selector": "26",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 296,
+              "PayloadBytes": 298,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0c 62 3e 8d 84 c7 00 80 fc c3 d6 ec 6e c7",
               "IsKnownLength": false
@@ -402952,7 +403109,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "30 00 06 0e 05 e5 a6 16 79 c7 00 20 8a c4 6a b3 6a c7 ff 00 00 00 10 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 331,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -402966,7 +403123,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 331,
+              "PayloadBytes": 333,
               "Offset": 18,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -403215,7 +403372,7 @@
           "Classification": "object state update",
           "PrefixHex": "2f 00 02 0e 00 fd a0 d7 6e c7 00 20 8a c4 ff 58 61 c7 2c 00 06 0c e7 da",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 363,
+          "UnparsedBytes": 365,
           "Complete": false,
           "Segments": [
             {
@@ -403229,7 +403386,7 @@
             {
               "Selector": "2c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 363,
+              "PayloadBytes": 365,
               "Offset": 18,
               "PayloadPrefixHex": "00 06 0c e7 da 15 81 c7 00 20 8a c4 aa d1 5d c7",
               "IsKnownLength": false
@@ -403354,7 +403511,7 @@
           "Classification": "movement state bundle",
           "PrefixHex": "02 00 03 08 93 2e 7c c7 00 20 8a c4 a5 c4 62 c7 c4 b8 6a 05 ff 01 64 01",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 233,
+          "UnparsedBytes": 236,
           "Complete": false,
           "Segments": [
             {
@@ -403368,7 +403525,7 @@
             {
               "Selector": "c4",
               "Classification": "selector 08 movement tail lead",
-              "PayloadBytes": 233,
+              "PayloadBytes": 236,
               "Offset": 16,
               "PayloadPrefixHex": "b8 6a 05 ff 01 64 01 00 00 00 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -406275,7 +406432,7 @@
           "Classification": "attribute/effect bundle",
           "PrefixHex": "30 00 04 80 80 80 80 c0 4c 0a 00 28 01 03 20 00 02 0c dc 4e 64 7c c7 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 82,
+          "UnparsedBytes": 83,
           "Complete": false,
           "Segments": [
             {
@@ -406289,7 +406446,7 @@
             {
               "Selector": "28",
               "Classification": "effect/emote variable block",
-              "PayloadBytes": 82,
+              "PayloadBytes": 83,
               "Offset": 11,
               "PayloadPrefixHex": "01 03 20 00 02 0c dc 4e 64 7c c7 00 20 8a c4 03",
               "IsKnownLength": false
@@ -406368,7 +406525,7 @@
           "Classification": "object state update",
           "PrefixHex": "31 00 02 0c 81 84 12 71 c7 00 20 8a c4 74 72 5c c7 30 00 06 0c 68 7d b7",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 300,
+          "UnparsedBytes": 302,
           "Complete": false,
           "Segments": [
             {
@@ -406382,7 +406539,7 @@
             {
               "Selector": "30",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 300,
+              "PayloadBytes": 302,
               "Offset": 17,
               "PayloadPrefixHex": "00 06 0c 68 7d b7 76 c7 00 20 8a c4 84 fd 6b c7",
               "IsKnownLength": false
@@ -409396,7 +409553,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "31 00 02 06 01 b5 2c 00 02 06 00 d0 27 00 02 0e 01 b4 88 8d 70 c7 00 20",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 23,
+          "UnparsedBytes": 25,
           "Complete": false,
           "Segments": [
             {
@@ -409410,7 +409567,7 @@
             {
               "Selector": "2c",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 23,
+              "PayloadBytes": 25,
               "Offset": 6,
               "PayloadPrefixHex": "00 02 06 00 d0 27 00 02 0e 01 b4 88 8d 70 c7 00",
               "IsKnownLength": false
@@ -411462,7 +411619,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "01 00 02 08 00 33 00 02 06 00 e7 31 00 02 0e 01 a1 5d 71 74 c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 14,
           "Complete": false,
           "Segments": [
             {
@@ -411476,9 +411633,9 @@
             {
               "Selector": "a1",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 14,
               "Offset": 16,
-              "PayloadPrefixHex": "5d 71 74 c7 00 20 8a c4 9f e8 62 c7 00",
+              "PayloadPrefixHex": "5d 71 74 c7 00 20 8a c4 9f e8 62 c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -411493,7 +411650,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "01 00 02 08 00 33 00 02 06 00 e7 31 00 02 0e 01 a1 ac 81 74 c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 14,
           "Complete": false,
           "Segments": [
             {
@@ -411507,9 +411664,9 @@
             {
               "Selector": "a1",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 14,
               "Offset": 16,
-              "PayloadPrefixHex": "ac 81 74 c7 00 20 8a c4 26 f8 62 c7 00",
+              "PayloadPrefixHex": "ac 81 74 c7 00 20 8a c4 26 f8 62 c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -411524,7 +411681,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "01 00 02 08 00 33 00 02 06 00 e7 31 00 02 0e 01 a1 f0 91 74 c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 14,
           "Complete": false,
           "Segments": [
             {
@@ -411538,9 +411695,9 @@
             {
               "Selector": "a1",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 14,
               "Offset": 16,
-              "PayloadPrefixHex": "f0 91 74 c7 00 20 8a c4 a2 07 63 c7 00",
+              "PayloadPrefixHex": "f0 91 74 c7 00 20 8a c4 a2 07 63 c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -411555,7 +411712,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "01 00 02 08 00 33 00 02 06 00 e7 31 00 02 0e 01 a1 3f a2 74 c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 14,
           "Complete": false,
           "Segments": [
             {
@@ -411569,9 +411726,9 @@
             {
               "Selector": "a1",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 14,
               "Offset": 16,
-              "PayloadPrefixHex": "3f a2 74 c7 00 20 8a c4 29 17 63 c7 00",
+              "PayloadPrefixHex": "3f a2 74 c7 00 20 8a c4 29 17 63 c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -411586,7 +411743,7 @@
           "Classification": "position/object state update",
           "PrefixHex": "01 00 02 08 00 33 00 02 06 00 e7 31 00 02 0e 01 a1 88 b2 74 c7 00 20 8a",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 13,
+          "UnparsedBytes": 14,
           "Complete": false,
           "Segments": [
             {
@@ -411600,9 +411757,9 @@
             {
               "Selector": "a1",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 13,
+              "PayloadBytes": 14,
               "Offset": 16,
-              "PayloadPrefixHex": "88 b2 74 c7 00 20 8a c4 aa 26 63 c7 00",
+              "PayloadPrefixHex": "88 b2 74 c7 00 20 8a c4 aa 26 63 c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -418017,9 +418174,9 @@
           "UpdateCount": 20,
           "FirstSelector": "00",
           "Classification": "unclassified object-view update",
-          "PrefixHex": "00 02 14 00 03 00 02 0e 00 82 fa 57 6c c7 00 80 fc c3 b1 44 4d c7",
+          "PrefixHex": "00 02 14 00 03 00 02 0e 00 82 fa 57 6c c7 00 80 fc c3 b1 44 4d c7 00 00",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 14,
+          "UnparsedBytes": 16,
           "Complete": false,
           "Segments": [
             {
@@ -418041,9 +418198,9 @@
             {
               "Selector": "0e",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 14,
+              "PayloadBytes": 16,
               "Offset": 7,
-              "PayloadPrefixHex": "00 82 fa 57 6c c7 00 80 fc c3 b1 44 4d c7",
+              "PayloadPrefixHex": "00 82 fa 57 6c c7 00 80 fc c3 b1 44 4d c7 00 00",
               "IsKnownLength": false
             }
           ]
@@ -418938,13 +419095,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 b6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 1334,
+          "UnparsedBytes": 1335,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 1334,
+              "PayloadBytes": 1335,
               "Offset": 3,
               "PayloadPrefixHex": "00 b6 cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -420066,10 +420223,10 @@
           "UpdateCount": 2,
           "FirstSelector": "0e",
           "Classification": "object state update",
-          "PrefixHex": "12 00 02 0e 05 97 cd fc 6d c7 00 80 fc c3 b4 bf 4b c7 00",
+          "PrefixHex": "12 00 02 0e 05 97 cd fc 6d c7 00 80 fc c3 b4 bf 4b c7 00 00",
           "ParsedUpdateCount": 2,
           "UnparsedBytes": 0,
-          "Complete": false,
+          "Complete": true,
           "Segments": [
             {
               "Selector": "0e",
@@ -420084,7 +420241,7 @@
               "Classification": "one-byte state marker",
               "PayloadBytes": 1,
               "Offset": 18,
-              "PayloadPrefixHex": "",
+              "PayloadPrefixHex": "00",
               "IsKnownLength": true
             }
           ]
@@ -424034,13 +424191,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 80 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 80 cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
@@ -424171,13 +424328,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 9e 01 0d 00 f0 34 ea cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 58,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "9e",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 58,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 0d 00 f0 34 ea cd ab 03 84 00 00 00 00 f2 04",
               "IsKnownLength": false
@@ -424203,6 +424360,255 @@
       "ManageBonusPayloads": []
     },
     {
+      "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/others/doorsanalzye.txt",
+      "PacketLikeLines": 10,
+      "ProtocolCounts": {
+        "0x04": 5,
+        "unknown": 5
+      },
+      "RpcHeaderCounts": {
+        "80 c8 [unknown] CR2:CLIENT_OBJECTINTERACTION_STATIC": 5
+      },
+      "KnownHeaderCounts": {
+        "80 c8 CLIENT_OBJECTINTERACTION_STATIC [CR2 client]": 5,
+        "80 a6 CLIENT_MISSION_ABORT [CR2 client]": 1,
+        "80 a6 CLIENT_MISSION_ABORT [CR1 client]": 1
+      },
+      "KnownHeaderSampleLines": {
+        "80 c8 CLIENT_OBJECTINTERACTION_STATIC [CR2 client]": [
+          6,
+          7,
+          8,
+          16,
+          21
+        ],
+        "80 a6 CLIENT_MISSION_ABORT [CR2 client]": [
+          23
+        ],
+        "80 a6 CLIENT_MISSION_ABORT [CR1 client]": [
+          23
+        ]
+      },
+      "Protocol04PacketSequences": [
+        {
+          "Line": 6,
+          "Direction": null,
+          "Headers": [
+            "80 c8"
+          ]
+        },
+        {
+          "Line": 7,
+          "Direction": null,
+          "Headers": [
+            "80 c8"
+          ]
+        },
+        {
+          "Line": 8,
+          "Direction": null,
+          "Headers": [
+            "80 c8"
+          ]
+        },
+        {
+          "Line": 16,
+          "Direction": null,
+          "Headers": [
+            "80 c8"
+          ]
+        },
+        {
+          "Line": 21,
+          "Direction": null,
+          "Headers": [
+            "80 c8"
+          ]
+        }
+      ],
+      "Protocol03ObjectViews": [
+        {
+          "Line": 10,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "9e",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 9e 01 0d 00 f0 34 eb cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "9e",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 0d 00 f0 34 eb cd ab 03 84 00 00 00 00 f2 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 11,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "9e",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 9e 01 0d 00 f0 34 ec cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "9e",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 0d 00 f0 34 ec cd ab 03 84 00 00 00 00 f2 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 12,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "9e",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 9e 01 0d 00 f0 34 f0 cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "9e",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 0d 00 f0 34 f0 cd ab 03 84 00 00 00 00 f2 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 17,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "9f",
+          "Classification": "unclassified object-view update",
+          "PrefixHex": "01 00 08 9f 01 0e 00 f0 34 f9 cd ab 03 84 00 00 00 00 f2 04 35 3f 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "9f",
+              "Classification": "spawn/profile variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 0e 00 f0 34 f9 cd ab 03 84 00 00 00 00 f2 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 23,
+          "Direction": null,
+          "TransportHeader": "82 \u002B simtime",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "a0",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 a0 01 08 00 f0 34 fa cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "a0",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 08 00 f0 34 fa cd ab 03 84 00 00 00 00 f3 04",
+              "IsKnownLength": false
+            }
+          ]
+        }
+      ],
+      "Protocol04InteractionPayloads": [
+        {
+          "Line": 6,
+          "Direction": null,
+          "RawHeader": "80 c8",
+          "InteractionKind": "static",
+          "PayloadLength": 6,
+          "ObjectId": 888143885,
+          "SectorId": 13552,
+          "ObjectType": 3,
+          "ObjectTypeName": "door",
+          "PayloadHex": "0d 00 f0 34 03 00"
+        },
+        {
+          "Line": 7,
+          "Direction": null,
+          "RawHeader": "80 c8",
+          "InteractionKind": "static",
+          "PayloadLength": 6,
+          "ObjectId": 888143885,
+          "SectorId": 13552,
+          "ObjectType": 3,
+          "ObjectTypeName": "door",
+          "PayloadHex": "0d 00 f0 34 03 00"
+        },
+        {
+          "Line": 8,
+          "Direction": null,
+          "RawHeader": "80 c8",
+          "InteractionKind": "static",
+          "PayloadLength": 6,
+          "ObjectId": 888143885,
+          "SectorId": 13552,
+          "ObjectType": 3,
+          "ObjectTypeName": "door",
+          "PayloadHex": "0d 00 f0 34 03 00"
+        },
+        {
+          "Line": 16,
+          "Direction": null,
+          "RawHeader": "80 c8",
+          "InteractionKind": "static",
+          "PayloadLength": 6,
+          "ObjectId": 888143886,
+          "SectorId": 13552,
+          "ObjectType": 3,
+          "ObjectTypeName": "door",
+          "PayloadHex": "0e 00 f0 34 03 00"
+        },
+        {
+          "Line": 21,
+          "Direction": null,
+          "RawHeader": "80 c8",
+          "InteractionKind": "static",
+          "PayloadLength": 6,
+          "ObjectId": 888143880,
+          "SectorId": 13552,
+          "ObjectType": 3,
+          "ObjectTypeName": "door",
+          "PayloadHex": "08 00 f0 34 03 00"
+        }
+      ],
+      "PlayerAttributePayloads": [],
+      "ManageBonusPayloads": []
+    },
+    {
       "File": "research/packet-dumps/mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/others/Vector.log2",
       "PacketLikeLines": 1618,
       "ProtocolCounts": {
@@ -424212,13 +424618,13 @@
         "0x05": 3
       },
       "RpcHeaderCounts": {
-        "80 bc [server] CR1:SERVER_MANAGE_BONUS/CR2:SERVER_MANAGE_BONUS": 277,
-        "47 [server] (unknown)": 10,
+        "80 bc [server] CR1:SERVER_MANAGE_BONUS/CR2:SERVER_MANAGE_BONUS": 293,
+        "47 [server] (unknown)": 11,
         "2e [server] CR2:SERVER_CHAT_MESSAGE_RESPONSE": 10,
         "81 a9 [server] CR1:SERVER_FLASH_TRAFFIC/CR2:SERVER_FLASH_TRAFFIC": 9,
-        "7c [server] CR2:SERVER_FACTION_PLAYER_INFO": 9,
+        "7c [server] CR2:SERVER_FACTION_PLAYER_INFO": 10,
         "80 86 [server] CR2:SERVER_CREW_MEMBERS_LIST": 1,
-        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 100
+        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 101
       },
       "KnownHeaderCounts": {
         "80 e6 SERVER_PLAYER_EXP_ANIM [CR2 server]": 1,
@@ -424443,7 +424849,8 @@
             "80 bc",
             "47",
             "2e",
-            "81 a9"
+            "81 a9",
+            "7c"
           ]
         },
         {
@@ -424495,6 +424902,7 @@
           "Line": 888,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7",
             "80 d7"
           ]
@@ -424731,7 +425139,8 @@
           "Headers": [
             "80 bc",
             "80 bc",
-            "80 bc"
+            "80 bc",
+            "47"
           ]
         },
         {
@@ -424769,6 +425178,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424779,6 +425189,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424786,6 +425197,7 @@
           "Line": 1529,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -424833,6 +425245,7 @@
           "Line": 1616,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -424884,6 +425297,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424905,6 +425319,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424912,6 +425327,7 @@
           "Line": 1770,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -424950,6 +425366,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424960,6 +425377,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -424967,6 +425385,7 @@
           "Line": 1889,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -425024,6 +425443,7 @@
           "Line": 2005,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -425144,6 +425564,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -425151,6 +425572,7 @@
           "Line": 2269,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -425219,6 +425641,7 @@
           "Line": 2394,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -425339,6 +425762,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -425346,6 +425770,7 @@
           "Line": 2657,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -425503,13 +425928,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 282,
+          "UnparsedBytes": 283,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 282,
+              "PayloadBytes": 283,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -425664,13 +426089,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 251,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 251,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -425802,13 +426227,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 282,
+          "UnparsedBytes": 283,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 282,
+              "PayloadBytes": 283,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -425963,13 +426388,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 251,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 251,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -426193,13 +426618,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 251,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 251,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -426423,13 +426848,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 251,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 251,
               "Offset": 3,
               "PayloadPrefixHex": "00 de cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -427776,6 +428201,17 @@
           "PayloadHex": "56 00 38 00 00 2c b3 00 00 17 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1489,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "39 00",
+          "Field1Value": 57,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 39 00 00 2c b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1498,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -427820,6 +428256,17 @@
           "PayloadHex": "56 00 3d 00 00 2c b3 00 00 b5 00 21 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1498,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3e 00",
+          "Field1Value": 62,
+          "Field2": "00 c3",
+          "Field2Value": 49920,
+          "PayloadHex": "56 00 3e 00 00 c3 b2 00 00 89 02 02 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1529,
           "PayloadLength": 20,
           "Field0": "15 00",
@@ -427862,6 +428309,17 @@
           "Field2": "00 f7",
           "Field2Value": 63232,
           "PayloadHex": "15 00 48 00 00 f7 03 00 00 51 04 f6 ff ff ff 00 00 00 00 00"
+        },
+        {
+          "Line": 1529,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "49 00",
+          "Field1Value": 73,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 49 00 00 f7 03 00 00 52 04 0f 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1608,
@@ -427961,6 +428419,17 @@
           "Field2": "00 2c",
           "Field2Value": 11264,
           "PayloadHex": "56 00 39 00 00 2c b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1616,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3a 00",
+          "Field1Value": 58,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1647,
@@ -428095,6 +428564,17 @@
           "PayloadHex": "56 00 2f 00 00 24 b3 00 00 1a 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1722,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "30 00",
+          "Field1Value": 48,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 30 00 00 24 b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1731,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -428192,6 +428672,17 @@
           "Field2": "00 c3",
           "Field2Value": 49920,
           "PayloadHex": "56 00 3f 00 00 c3 b2 00 00 21 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1761,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "40 00",
+          "Field1Value": 64,
+          "Field2": "00 c3",
+          "Field2Value": 49920,
+          "PayloadHex": "56 00 40 00 00 c3 b2 00 00 b4 00 1f 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1770,
@@ -428238,6 +428729,17 @@
           "PayloadHex": "15 00 44 00 00 f7 03 00 00 08 02 00 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1770,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "45 00",
+          "Field1Value": 69,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 45 00 00 f7 03 00 00 07 02 ec ff ff ff 00 00 00 00 00"
+        },
+        {
           "Line": 1849,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -428280,6 +428782,17 @@
           "Field2": "00 24",
           "Field2Value": 9216,
           "PayloadHex": "56 00 2f 00 00 24 b3 00 00 1a 04 01 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1849,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "30 00",
+          "Field1Value": 48,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 30 00 00 24 b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1880,
@@ -428326,6 +428839,17 @@
           "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1880,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3b 00",
+          "Field1Value": 59,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3b 00 00 2c b3 00 00 12 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1889,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -428368,6 +428892,17 @@
           "Field2": "00 c3",
           "Field2Value": 49920,
           "PayloadHex": "56 00 3f 00 00 c3 b2 00 00 21 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1889,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "40 00",
+          "Field1Value": 64,
+          "Field2": "00 c3",
+          "Field2Value": 49920,
+          "PayloadHex": "56 00 40 00 00 c3 b2 00 00 b4 00 1f 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1920,
@@ -428500,6 +429035,17 @@
           "Field2": "00 2c",
           "Field2Value": 11264,
           "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2005,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3b 00",
+          "Field1Value": 59,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3b 00 00 2c b3 00 00 12 04 02 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 2037,
@@ -428854,6 +429400,17 @@
           "PayloadHex": "56 00 2f 00 00 24 b3 00 00 1a 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2238,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "30 00",
+          "Field1Value": 48,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 30 00 00 24 b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2269,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -428896,6 +429453,17 @@
           "Field2": "00 2c",
           "Field2Value": 11264,
           "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2269,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3b 00",
+          "Field1Value": 59,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3b 00 00 2c b3 00 00 12 04 02 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 2278,
@@ -429083,6 +429651,17 @@
           "Field2": "00 2c",
           "Field2Value": 11264,
           "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2394,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3b 00",
+          "Field1Value": 59,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3b 00 00 2c b3 00 00 12 04 02 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 2425,
@@ -429448,6 +430027,17 @@
           "PayloadHex": "56 00 2f 00 00 24 b3 00 00 1a 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2626,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "30 00",
+          "Field1Value": 48,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 30 00 00 24 b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2657,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -429490,6 +430080,17 @@
           "Field2": "00 2c",
           "Field2Value": 11264,
           "PayloadHex": "56 00 3a 00 00 2c b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2657,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "3b 00",
+          "Field1Value": 59,
+          "Field2": "00 2c",
+          "Field2Value": 11264,
+          "PayloadHex": "56 00 3b 00 00 2c b3 00 00 12 04 02 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 2666,
@@ -429615,6 +430216,22 @@
         },
         {
           "Line": 1152,
+          "PayloadLength": 46,
+          "Field0": "00 00",
+          "Field0Value": 0,
+          "Field1": "04 01",
+          "Field1Value": 260,
+          "Field2": "00 00",
+          "Field2Value": 0,
+          "MidField0": "1a 00",
+          "MidField0Value": 26,
+          "MidField1": "06 00",
+          "MidField1Value": 6,
+          "TailHex": "01 00 00 00 00 01 01 00 00 00 00 00 80 00 00 00 00 00 00 00 00",
+          "PayloadHex": "00 00 04 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1a 00 06 00 00 00 01 00 00 00 00 01 01 00 00 00 00 00 80 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1408,
           "PayloadLength": 46,
           "Field0": "00 00",
           "Field0Value": 0,
@@ -429853,6 +430470,23 @@
         }
       ],
       "FactionPlayerInfoPayloads": [
+        {
+          "Line": 612,
+          "PayloadLength": 68,
+          "CharacterId": 119925,
+          "FactionId": 24113,
+          "PrefixHex": "01 00 00 01 0f 00",
+          "Mode": 1,
+          "DataBytes": 52,
+          "Alignment": 1,
+          "FactionName": "The Duality",
+          "MasterCharacterId": 120879,
+          "Money": 76011110,
+          "CrewCount": null,
+          "CrewNames": [],
+          "CrewLeaderNames": [],
+          "PayloadHex": "75 d4 01 00 31 5e 00 00 01 00 00 01 0f 00 34 00 01 54 68 65 20 44 75 61 6c 69 74 79 00 00 00 00 00 00 00 00 00 00 00 07 00 78 43 59 50 48 78 00 1f 00 49 20 74 68 69 6e 6b 67 20 02 2f d8 01 00 66 d6 87 04"
+        },
         {
           "Line": 658,
           "PayloadLength": 583,
@@ -430621,6 +431255,19 @@
           "TextBytes": 31,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002Bfabless",
           "PayloadHex": "08 00 3c 00 00 8e 1f 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 66 61 62 6c 65 73 73 00"
+        },
+        {
+          "Line": 888,
+          "PayloadLength": 37,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 29,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BSnobb",
+          "PayloadHex": "08 00 3c 00 00 8e 1d 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 53 6e 6f 62 62 00"
         },
         {
           "Line": 1066,
@@ -431505,13 +432152,13 @@
         "0x03": 41
       },
       "RpcHeaderCounts": {
-        "80 bc [server] CR1:SERVER_MANAGE_BONUS/CR2:SERVER_MANAGE_BONUS": 406,
+        "80 bc [server] CR1:SERVER_MANAGE_BONUS/CR2:SERVER_MANAGE_BONUS": 422,
         "47 [server] (unknown)": 6,
         "2e [server] CR2:SERVER_CHAT_MESSAGE_RESPONSE": 5,
         "81 a9 [server] CR1:SERVER_FLASH_TRAFFIC/CR2:SERVER_FLASH_TRAFFIC": 9,
-        "7c [server] CR2:SERVER_FACTION_PLAYER_INFO": 7,
-        "80 86 [server] CR2:SERVER_CREW_MEMBERS_LIST": 2,
-        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 323,
+        "7c [server] CR2:SERVER_FACTION_PLAYER_INFO": 8,
+        "80 86 [server] CR2:SERVER_CREW_MEMBERS_LIST": 3,
+        "80 d7 [server] CR1:SERVER_FRIENDLIST_STATUS/CR2:SERVER_FRIENDLIST_STATUS_ADD": 333,
         "80 b2 [server] CR1:SERVER_ABILITY_LOAD/CR1:SERVER_PLAYER_ATTRIBUTE/CR2:SERVER_ABILITY_LOAD/CR2:SERVER_PLAYER_ATTRIBUTE": 7,
         "81 09 [server] (unknown)": 1,
         "05 [client] CR1:CLIENT_SPAWN_READY/CR2:CLIENT_SPAWN_READY": 1,
@@ -431884,7 +432531,8 @@
             "80 bc",
             "47",
             "2e",
-            "81 a9"
+            "81 a9",
+            "7c"
           ]
         },
         {
@@ -431980,6 +432628,7 @@
           "Line": 911,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7",
             "80 d7",
             "80 d7",
@@ -432105,6 +432754,7 @@
           "Direction": "server",
           "Headers": [
             "80 d7",
+            "80 d7",
             "80 d7"
           ]
         },
@@ -432140,6 +432790,7 @@
           "Line": 1184,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432209,6 +432860,7 @@
           "Direction": "server",
           "Headers": [
             "80 d7",
+            "80 d7",
             "80 d7"
           ]
         },
@@ -432244,6 +432896,7 @@
           "Line": 1371,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432313,6 +432966,7 @@
           "Line": 1482,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7"
           ]
         },
@@ -432320,6 +432974,7 @@
           "Line": 1513,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7",
             "80 d7"
           ]
@@ -432356,6 +433011,7 @@
           "Line": 1563,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432435,6 +433091,7 @@
           "Direction": "server",
           "Headers": [
             "80 d7",
+            "80 d7",
             "80 d7"
           ]
         },
@@ -432473,6 +433130,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432491,6 +433149,7 @@
           "Line": 1793,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432587,6 +433246,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432608,6 +433268,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432615,6 +433276,7 @@
           "Line": 1995,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432724,6 +433386,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432814,6 +433477,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432843,6 +433507,7 @@
           "Line": 2374,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432927,6 +433592,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -432956,6 +433622,7 @@
           "Line": 2565,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -432991,6 +433658,7 @@
           "Line": 2628,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7"
           ]
         },
@@ -433016,6 +433684,7 @@
           "Line": 2677,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7"
           ]
         },
@@ -433035,6 +433704,7 @@
             "80 bc",
             "80 bc",
             "80 bc",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -433042,6 +433712,7 @@
           "Line": 2717,
           "Direction": "server",
           "Headers": [
+            "80 bc",
             "80 bc",
             "80 bc",
             "80 bc",
@@ -433191,6 +433862,13 @@
           ]
         },
         {
+          "Line": 3539,
+          "Direction": "server",
+          "Headers": [
+            "80 86"
+          ]
+        },
+        {
           "Line": 3559,
           "Direction": "server",
           "Headers": [
@@ -433302,6 +433980,7 @@
             "80 bc",
             "80 bc",
             "80 b2",
+            "80 bc",
             "80 bc"
           ]
         },
@@ -433352,6 +434031,7 @@
             "3a",
             "3a",
             "6d",
+            "80 d7",
             "80 d7",
             "80 d7",
             "80 d7"
@@ -433405,6 +434085,7 @@
           "Line": 3850,
           "Direction": "server",
           "Headers": [
+            "80 d7",
             "80 d7",
             "80 d7",
             "80 d7",
@@ -433601,13 +434282,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 282,
+          "UnparsedBytes": 283,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 282,
+              "PayloadBytes": 283,
               "Offset": 3,
               "PayloadPrefixHex": "00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -433808,13 +434489,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 253,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 253,
               "Offset": 3,
               "PayloadPrefixHex": "00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -433900,13 +434581,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 253,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 253,
               "Offset": 3,
               "PayloadPrefixHex": "00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -434337,13 +435018,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 282,
+          "UnparsedBytes": 283,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 282,
+              "PayloadBytes": 283,
               "Offset": 3,
               "PayloadPrefixHex": "00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -434360,13 +435041,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 250,
+          "UnparsedBytes": 253,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 250,
+              "PayloadBytes": 253,
               "Offset": 3,
               "PayloadPrefixHex": "00 5d cd ab 1a 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -435083,6 +435764,17 @@
           "PayloadHex": "56 00 31 00 00 24 b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1184,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "32 00",
+          "Field1Value": 50,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1214,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -435281,6 +435973,17 @@
           "PayloadHex": "56 00 31 00 00 24 b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1371,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "32 00",
+          "Field1Value": 50,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1380,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -435510,6 +436213,17 @@
           "Field2": "00 24",
           "Field2Value": 9216,
           "PayloadHex": "56 00 31 00 00 24 b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1563,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "32 00",
+          "Field1Value": 50,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1572,
@@ -435754,6 +436468,17 @@
           "PayloadHex": "56 00 31 00 00 24 b3 00 00 09 04 21 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1754,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "32 00",
+          "Field1Value": 50,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1763,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -435851,6 +436576,17 @@
           "Field2": "00 c3",
           "Field2Value": 49920,
           "PayloadHex": "56 00 41 00 00 c3 b2 00 00 09 04 1f 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1793,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "42 00",
+          "Field1Value": 66,
+          "Field2": "00 c3",
+          "Field2Value": 49920,
+          "PayloadHex": "56 00 42 00 00 c3 b2 00 00 1e 04 01 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 1802,
@@ -435985,6 +436721,17 @@
           "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1947,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "33 00",
+          "Field1Value": 51,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 33 00 00 24 b3 00 00 b5 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1956,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -436084,6 +436831,17 @@
           "PayloadHex": "56 00 42 00 00 c3 b2 00 00 1e 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 1986,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "43 00",
+          "Field1Value": 67,
+          "Field2": "00 c3",
+          "Field2Value": 49920,
+          "PayloadHex": "56 00 43 00 00 c3 b2 00 00 9d 00 1f 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 1995,
           "PayloadLength": 20,
           "Field0": "15 00",
@@ -436126,6 +436884,17 @@
           "Field2": "00 f7",
           "Field2Value": 63232,
           "PayloadHex": "15 00 47 00 00 f7 03 00 00 f4 03 00 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 1995,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "48 00",
+          "Field1Value": 72,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 48 00 00 f7 03 00 00 51 04 f6 ff ff ff 00 00 00 00 00"
         },
         {
           "Line": 2130,
@@ -436348,6 +437117,17 @@
           "PayloadHex": "15 00 45 00 00 f7 03 00 00 07 02 ec ff ff ff 00 00 00 00 00"
         },
         {
+          "Line": 2179,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "46 00",
+          "Field1Value": 70,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 46 00 00 f7 03 00 00 50 04 00 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2188,
           "PayloadLength": 20,
           "Field0": "15 00",
@@ -436458,6 +437238,17 @@
           "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2326,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "33 00",
+          "Field1Value": 51,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 33 00 00 24 b3 00 00 b5 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2335,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -436610,6 +437401,17 @@
           "Field2": "00 f7",
           "Field2Value": 63232,
           "PayloadHex": "15 00 47 00 00 f7 03 00 00 f4 03 00 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2374,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "48 00",
+          "Field1Value": 72,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 48 00 00 f7 03 00 00 51 04 f6 ff ff ff 00 00 00 00 00"
         },
         {
           "Line": 2509,
@@ -436689,6 +437491,17 @@
           "PayloadHex": "56 00 32 00 00 24 b3 00 00 15 04 02 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2517,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "33 00",
+          "Field1Value": 51,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 33 00 00 24 b3 00 00 b5 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2526,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -436843,6 +437656,17 @@
           "PayloadHex": "15 00 47 00 00 f7 03 00 00 f4 03 00 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2565,
+          "PayloadLength": 20,
+          "Field0": "15 00",
+          "Field0Value": 21,
+          "Field1": "48 00",
+          "Field1Value": 72,
+          "Field2": "00 f7",
+          "Field2Value": 63232,
+          "PayloadHex": "15 00 48 00 00 f7 03 00 00 51 04 f6 ff ff ff 00 00 00 00 00"
+        },
+        {
           "Line": 2708,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -436887,6 +437711,17 @@
           "PayloadHex": "56 00 2f 00 00 24 b3 00 00 1a 04 01 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 2708,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "30 00",
+          "Field1Value": 48,
+          "Field2": "00 24",
+          "Field2Value": 9216,
+          "PayloadHex": "56 00 30 00 00 24 b3 00 00 b4 00 21 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 2717,
           "PayloadLength": 20,
           "Field0": "56 00",
@@ -436929,6 +437764,17 @@
           "Field2": "00 95",
           "Field2Value": 38144,
           "PayloadHex": "56 00 34 00 00 95 a7 00 00 b4 00 12 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 2717,
+          "PayloadLength": 20,
+          "Field0": "56 00",
+          "Field0Value": 86,
+          "Field1": "35 00",
+          "Field1Value": 53,
+          "Field2": "00 95",
+          "Field2Value": 38144,
+          "PayloadHex": "56 00 35 00 00 95 a7 00 00 b5 00 12 00 00 00 00 00 00 00 00"
         },
         {
           "Line": 2748,
@@ -438625,6 +439471,17 @@
           "PayloadHex": "45 03 3f 04 00 64 01 00 00 3f 04 00 00 00 00 00 00 00 00 00"
         },
         {
+          "Line": 3668,
+          "PayloadLength": 20,
+          "Field0": "55 00",
+          "Field0Value": 85,
+          "Field1": "7f 00",
+          "Field1Value": 127,
+          "Field2": "00 64",
+          "Field2Value": 25600,
+          "PayloadHex": "55 00 7f 00 00 64 01 00 00 1f 04 05 00 00 00 00 00 00 00 00"
+        },
+        {
           "Line": 3705,
           "PayloadLength": 20,
           "Field0": "45 00",
@@ -439361,6 +440218,23 @@
       ],
       "FactionPlayerInfoPayloads": [
         {
+          "Line": 612,
+          "PayloadLength": 68,
+          "CharacterId": 119925,
+          "FactionId": 24113,
+          "PrefixHex": "01 00 00 01 0f 00",
+          "Mode": 1,
+          "DataBytes": 52,
+          "Alignment": 1,
+          "FactionName": "The Duality",
+          "MasterCharacterId": 120879,
+          "Money": 76011110,
+          "CrewCount": null,
+          "CrewNames": [],
+          "CrewLeaderNames": [],
+          "PayloadHex": "75 d4 01 00 31 5e 00 00 01 00 00 01 0f 00 34 00 01 54 68 65 20 44 75 61 6c 69 74 79 00 00 00 00 00 00 00 00 00 00 00 07 00 78 43 59 50 48 78 00 3b 00 49 20 63 61 6e 74 20 61 6c 02 2f d8 01 00 66 d6 87 04"
+        },
+        {
           "Line": 658,
           "PayloadLength": 583,
           "CharacterId": 119925,
@@ -439556,6 +440430,31 @@
         },
         {
           "Line": 871,
+          "PayloadLength": 280,
+          "CharacterId": 119925,
+          "CrewId": 45387,
+          "Organization": 1,
+          "CrewNameOffset": 33,
+          "CaptainCharacterId": 128403,
+          "FirstMateCharacterId": 119925,
+          "Money": 0,
+          "MemberListOffset": 50,
+          "ConstantHex": "14 02 00 00",
+          "FullSize": 280,
+          "CrewName": "Reservoir Dogs",
+          "MemberCount": 6,
+          "MemberHandles": [
+            "AfterWhoruNeo",
+            "Cherberus",
+            "TheAvenNigera",
+            "L1zZ",
+            "Karthos",
+            "TheWhoruNeo"
+          ],
+          "PayloadHex": "75 d4 01 00 4b b1 00 00 01 21 00 93 f5 01 00 75 d4 01 00 00 00 00 00 32 00 14 02 00 00 18 01 0f 00 52 65 73 65 72 76 6f 69 72 20 44 6f 67 73 00 06 00 00 75 d4 01 00 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 99 10 01 00 43 68 65 72 62 65 72 75 73 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 93 f5 01 00 54 68 65 41 76 65 6e 4e 69 67 65 72 61 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ee 55 02 00 4c 31 7a 5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 c2 98 02 00 4b 61 72 74 68 6f 73 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 62 f9 02 00 54 68 65 57 68 6f 72 75 4e 65 6f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+        },
+        {
+          "Line": 3539,
           "PayloadLength": 280,
           "CharacterId": 119925,
           "CrewId": 45387,
@@ -440660,6 +441559,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 20 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 47 74 61 63 74 69 63 73 00"
         },
         {
+          "Line": 911,
+          "PayloadLength": 38,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 30,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BFaIIeN",
+          "PayloadHex": "08 00 3c 00 00 8e 1e 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 46 61 49 49 65 4e 00"
+        },
+        {
           "Line": 962,
           "PayloadLength": 41,
           "Field0": "08 00",
@@ -440972,6 +441884,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 1c 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 30 34 44 00"
         },
         {
+          "Line": 1134,
+          "PayloadLength": 39,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 31,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BRashahd",
+          "PayloadHex": "08 00 3c 00 00 8e 1f 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 61 73 68 61 68 64 00"
+        },
+        {
           "Line": 1143,
           "PayloadLength": 42,
           "Field0": "08 00",
@@ -441193,6 +442118,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 1c 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 30 34 44 00"
         },
         {
+          "Line": 1321,
+          "PayloadLength": 39,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 31,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BRashahd",
+          "PayloadHex": "08 00 3c 00 00 8e 1f 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 61 73 68 61 68 64 00"
+        },
+        {
           "Line": 1330,
           "PayloadLength": 42,
           "Field0": "08 00",
@@ -441388,6 +442326,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 23 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 75 6e 6e 69 6e 67 77 69 6c 64 00"
         },
         {
+          "Line": 1482,
+          "PayloadLength": 40,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 32,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BLuxPingu",
+          "PayloadHex": "08 00 3c 00 00 8e 20 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 75 78 50 69 6e 67 75 00"
+        },
+        {
           "Line": 1513,
           "PayloadLength": 39,
           "Field0": "08 00",
@@ -441412,6 +442363,19 @@
           "TextBytes": 28,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BL04D",
           "PayloadHex": "08 00 3c 00 00 8e 1c 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 30 34 44 00"
+        },
+        {
+          "Line": 1513,
+          "PayloadLength": 39,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 31,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BRashahd",
+          "PayloadHex": "08 00 3c 00 00 8e 1f 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 61 73 68 61 68 64 00"
         },
         {
           "Line": 1522,
@@ -441659,6 +442623,19 @@
           "TextBytes": 28,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BL04D",
           "PayloadHex": "08 00 3c 00 00 8e 1c 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 30 34 44 00"
+        },
+        {
+          "Line": 1704,
+          "PayloadLength": 39,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 31,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BRashahd",
+          "PayloadHex": "08 00 3c 00 00 8e 1f 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 61 73 68 61 68 64 00"
         },
         {
           "Line": 1713,
@@ -442831,6 +443808,19 @@
           "PayloadHex": "08 00 3c 00 00 8e 23 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 52 75 6e 6e 69 6e 67 77 69 6c 64 00"
         },
         {
+          "Line": 2628,
+          "PayloadLength": 40,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 32,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BLuxPingu",
+          "PayloadHex": "08 00 3c 00 00 8e 20 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 4c 75 78 50 69 6e 67 75 00"
+        },
+        {
           "Line": 2659,
           "PayloadLength": 39,
           "Field0": "08 00",
@@ -442920,6 +443910,19 @@
           "TextBytes": 35,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BGalishnikov",
           "PayloadHex": "08 00 3c 00 00 8e 23 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 47 61 6c 69 73 68 6e 69 6b 6f 76 00"
+        },
+        {
+          "Line": 2677,
+          "PayloadLength": 40,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 32,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002B1Anakin1",
+          "PayloadHex": "08 00 3c 00 00 8e 20 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 31 41 6e 61 6b 69 6e 31 00"
         },
         {
           "Line": 2699,
@@ -443076,6 +444079,19 @@
           "TextBytes": 32,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BTisifone",
           "PayloadHex": "08 00 3c 00 00 8e 20 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 54 69 73 69 66 6f 6e 65 00"
+        },
+        {
+          "Line": 3741,
+          "PayloadLength": 38,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 30,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BSosuke",
+          "PayloadHex": "08 00 3c 00 00 8e 1e 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 53 6f 73 75 6b 65 00"
         },
         {
           "Line": 3778,
@@ -443687,6 +444703,19 @@
           "TextBytes": 33,
           "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BAlkyoneus",
           "PayloadHex": "08 00 3c 00 00 8e 21 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 41 6c 6b 79 6f 6e 65 75 73 00"
+        },
+        {
+          "Line": 3850,
+          "PayloadLength": 38,
+          "Field0": "08 00",
+          "Field0Value": 8,
+          "Field1": "3c 00",
+          "Field1Value": 60,
+          "Field2": "00 8e",
+          "Field2Value": 36352,
+          "TextBytes": 30,
+          "Text": "SOE\u002BMXO\u002BVector-Hostile\u002BSteveB",
+          "PayloadHex": "08 00 3c 00 00 8e 1e 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 53 74 65 76 65 42 00"
         },
         {
           "Line": 3887,
@@ -472746,13 +473775,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 0d cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 700,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 700,
               "Offset": 3,
               "PayloadPrefixHex": "00 0d cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -477782,13 +478811,13 @@
           "Classification": "NPC_BASE dynamic creation candidate",
           "PrefixHex": "01 00 0c 57 02 7e cd ab 10 8e 43 68 61 6e 67 20 57 69 6e 67 20 50 75 70",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "57",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "02 7e cd ab 10 8e 43 68 61 6e 67 20 57 69 6e 67",
               "IsKnownLength": false
@@ -502222,13 +503251,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 9e cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "00 9e cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -502461,7 +503490,7 @@
           "Classification": "object state update",
           "PrefixHex": "1b 00 02 0c 0d e7 83 04 46 00 00 be 42 12 29 ee 46 09 00 04 80 80 80 80",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 12,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -502475,9 +503504,9 @@
             {
               "Selector": "09",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 12,
+              "PayloadBytes": 15,
               "Offset": 17,
-              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01",
+              "PayloadPrefixHex": "00 04 80 80 80 80 c0 4c 0a 00 28 01 01 00 00",
               "IsKnownLength": false
             }
           ]
@@ -506563,7 +507592,7 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "1d 00 06 0c 82 be 15 68 46 00 00 be 42 93 1f fa 46 ff 00 00 00 10 00 00",
           "ParsedUpdateCount": 1,
-          "UnparsedBytes": 332,
+          "UnparsedBytes": 333,
           "Complete": false,
           "Segments": [
             {
@@ -506577,7 +507606,7 @@
             {
               "Selector": "ff",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 332,
+              "PayloadBytes": 333,
               "Offset": 17,
               "PayloadPrefixHex": "00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00",
               "IsKnownLength": false
@@ -509585,13 +510614,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 b2 cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 700,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 700,
               "Offset": 3,
               "PayloadPrefixHex": "00 b2 cd ab 1b 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -513405,13 +514434,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 0e cd ab 1d 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 214,
+          "UnparsedBytes": 215,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 214,
+              "PayloadBytes": 215,
               "Offset": 3,
               "PayloadPrefixHex": "00 0e cd ab 1d 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -515593,9 +516622,9 @@
           "UpdateCount": 19,
           "FirstSelector": "00",
           "Classification": "unclassified object-view update",
-          "PrefixHex": "00 02 13 00 03 00 02 0c f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00",
+          "PrefixHex": "00 02 13 00 03 00 02 0c f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00 00",
           "ParsedUpdateCount": 2,
-          "UnparsedBytes": 14,
+          "UnparsedBytes": 15,
           "Complete": false,
           "Segments": [
             {
@@ -515617,9 +516646,9 @@
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 14,
+              "PayloadBytes": 15,
               "Offset": 7,
-              "PayloadPrefixHex": "f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00",
+              "PayloadPrefixHex": "f5 d9 ee bc 46 00 80 fc c3 2c db 83 46 00 00",
               "IsKnownLength": false
             }
           ]
@@ -515657,13 +516686,13 @@
           "Classification": "player spawn/self-view candidate",
           "PrefixHex": "01 00 0c 0c 00 22 cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65 72 73 6f 6e",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 698,
+          "UnparsedBytes": 701,
           "Complete": false,
           "Segments": [
             {
               "Selector": "0c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 698,
+              "PayloadBytes": 701,
               "Offset": 3,
               "PayloadPrefixHex": "00 22 cd ab 1c 8b 81 ff 71 02 00 00 41 6e 64 65",
               "IsKnownLength": false
@@ -522028,13 +523057,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "04 01 01 07 1e 16 80 bc 55 00 54 02 00 5a 01 00 00 1d 04 0f 00 00 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 679,
+          "UnparsedBytes": 680,
           "Complete": false,
           "Segments": [
             {
               "Selector": "07",
               "Classification": "unknown selector payload",
-              "PayloadBytes": 679,
+              "PayloadBytes": 680,
               "Offset": 3,
               "PayloadPrefixHex": "1e 16 80 bc 55 00 54 02 00 5a 01 00 00 1d 04 0f",
               "IsKnownLength": false
@@ -524187,13 +525216,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 e5 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 e5 cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
@@ -524210,13 +525239,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 f0 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 f0 cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
@@ -524233,13 +525262,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 03 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 03 cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
@@ -524256,15 +525285,38 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 11 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 11 cd ab 03 84 00 00 00 00 f3 04",
+              "IsKnownLength": false
+            }
+          ]
+        },
+        {
+          "Line": 53,
+          "Direction": null,
+          "TransportHeader": "82",
+          "ViewId": 1,
+          "UpdateCount": 8,
+          "FirstSelector": "a0",
+          "Classification": "static object/door spawn candidate",
+          "PrefixHex": "01 00 08 a0 01 08 00 f0 34 1b cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
+          "ParsedUpdateCount": 0,
+          "UnparsedBytes": 60,
+          "Complete": false,
+          "Segments": [
+            {
+              "Selector": "a0",
+              "Classification": "static object/door variable block",
+              "PayloadBytes": 60,
+              "Offset": 3,
+              "PayloadPrefixHex": "01 08 00 f0 34 1b cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
             }
           ]
@@ -524279,13 +525331,13 @@
           "Classification": "static object/door spawn candidate",
           "PrefixHex": "01 00 08 a0 01 08 00 f0 34 cf cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "a0",
               "Classification": "static object/door variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "01 08 00 f0 34 cf cd ab 03 84 00 00 00 00 f3 04",
               "IsKnownLength": false
@@ -524302,13 +525354,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "01 00 08 3c 1b 06 00 f0 34 04 cd ab 03 84 00 00 00 00 00 00 80 3f 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 26,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "3c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 26,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "1b 06 00 f0 34 04 cd ab 03 84 00 00 00 00 00 00",
               "IsKnownLength": false
@@ -524325,13 +525377,13 @@
           "Classification": "unclassified object-view update",
           "PrefixHex": "01 00 08 3c 1b 06 00 f0 34 05 cd ab 03 84 00 00 00 00 00 00 80 3f 00 00",
           "ParsedUpdateCount": 0,
-          "UnparsedBytes": 22,
+          "UnparsedBytes": 60,
           "Complete": false,
           "Segments": [
             {
               "Selector": "3c",
               "Classification": "spawn/profile variable block",
-              "PayloadBytes": 22,
+              "PayloadBytes": 60,
               "Offset": 3,
               "PayloadPrefixHex": "1b 06 00 f0 34 05 cd ab 03 84 00 00 00 00 00 00",
               "IsKnownLength": false

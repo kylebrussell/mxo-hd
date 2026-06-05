@@ -1201,12 +1201,15 @@ public static partial class PacketResearcher
         string? currentPacketDirection = null;
         int currentPacketStartLine = 0;
         List<byte> currentPacketBytes = new();
+        int loosePacketStartLine = 0;
+        List<byte> loosePacketBytes = new();
         foreach (string line in File.ReadLines(file))
         {
             lineNumber++;
             string? packetDirection = DetectPacketDirection(line);
             if (packetDirection is not null)
             {
+                AnalyzeLoosePacket();
                 AnalyzeCurrentPacket();
                 currentPacketDirection = packetDirection;
                 currentPacketStartLine = lineNumber;
@@ -1215,25 +1218,34 @@ public static partial class PacketResearcher
 
             if (!TryParsePacketDumpLineBytes(line, out byte[] bytes))
             {
+                if (currentPacketDirection is null)
+                {
+                    AnalyzeLoosePacket();
+                }
+
                 continue;
             }
 
-            packetLikeLines++;
-            string protocol = DetectProtocol(bytes);
-            Increment(protocols, protocol);
-
-            foreach (string label in DetectKnownEncodedHeaders(bytes, localByEncodedHeader))
+            bool packetLikeLine = bytes.Length >= 4;
+            if (packetLikeLine)
             {
-                Increment(knownHeaders, label);
-                if (!knownHeaderSampleLines.TryGetValue(label, out List<int>? lines))
-                {
-                    lines = new List<int>();
-                    knownHeaderSampleLines[label] = lines;
-                }
+                packetLikeLines++;
+                string protocol = DetectProtocol(bytes);
+                Increment(protocols, protocol);
 
-                if (lines.Count < 5 && !lines.Contains(lineNumber))
+                foreach (string label in DetectKnownEncodedHeaders(bytes, localByEncodedHeader))
                 {
-                    lines.Add(lineNumber);
+                    Increment(knownHeaders, label);
+                    if (!knownHeaderSampleLines.TryGetValue(label, out List<int>? lines))
+                    {
+                        lines = new List<int>();
+                        knownHeaderSampleLines[label] = lines;
+                    }
+
+                    if (lines.Count < 5 && !lines.Contains(lineNumber))
+                    {
+                        lines.Add(lineNumber);
+                    }
                 }
             }
 
@@ -1241,12 +1253,24 @@ public static partial class PacketResearcher
             {
                 currentPacketBytes.AddRange(bytes);
             }
-            else
+            else if (packetLikeLine && LooksLikeLoosePacketStart(bytes))
+            {
+                AnalyzeLoosePacket();
+                loosePacketStartLine = lineNumber;
+                loosePacketBytes.Clear();
+                loosePacketBytes.AddRange(bytes);
+            }
+            else if (loosePacketBytes.Count > 0)
+            {
+                loosePacketBytes.AddRange(bytes);
+            }
+            else if (packetLikeLine)
             {
                 AnalyzeProtocolBytes(bytes, lineNumber, null);
             }
         }
 
+        AnalyzeLoosePacket();
         AnalyzeCurrentPacket();
 
         return new PacketDumpFileSummary(
@@ -1293,6 +1317,18 @@ public static partial class PacketResearcher
             }
 
             AnalyzeProtocolBytes(currentPacketBytes, currentPacketStartLine, currentPacketDirection);
+        }
+
+        void AnalyzeLoosePacket()
+        {
+            if (loosePacketBytes.Count == 0)
+            {
+                return;
+            }
+
+            AnalyzeProtocolBytes(loosePacketBytes, loosePacketStartLine, null);
+            loosePacketStartLine = 0;
+            loosePacketBytes.Clear();
         }
 
         void AnalyzeProtocolBytes(IReadOnlyList<byte> bytes, int sampleLine, string? directionHint)
@@ -3457,17 +3493,17 @@ public static partial class PacketResearcher
             return true;
         }
 
-        if (bytes.Count > 1 && (bytes[0] is 0x02 or 0x42) && bytes[1] == 0x03)
-        {
-            offset = 2;
-            transportHeader = bytes[0].ToString("x2", CultureInfo.InvariantCulture);
-            return true;
-        }
-
         if (bytes.Count > 5 && (bytes[0] is 0x82 or 0xc2) && bytes[5] == 0x03)
         {
             offset = 6;
             transportHeader = $"{bytes[0]:x2} + simtime";
+            return true;
+        }
+
+        if (bytes.Count > 1 && (bytes[0] is 0x02 or 0x42 or 0x82 or 0xc2) && bytes[1] == 0x03)
+        {
+            offset = 2;
+            transportHeader = bytes[0].ToString("x2", CultureInfo.InvariantCulture);
             return true;
         }
 
@@ -3912,13 +3948,38 @@ public static partial class PacketResearcher
         return HexDumpLineStartRegex().IsMatch(line);
     }
 
+    private static bool LooksLikeLoosePacketStart(IReadOnlyList<byte> bytes)
+    {
+        if (bytes.Count == 0)
+        {
+            return false;
+        }
+
+        if (IsKnownProtocol(bytes[0]))
+        {
+            return true;
+        }
+
+        if (bytes.Count > 1 && (bytes[0] is 0x02 or 0x42) && IsKnownProtocol(bytes[1]))
+        {
+            return true;
+        }
+
+        if (bytes.Count > 5 && (bytes[0] is 0x82 or 0xc2) && IsKnownProtocol(bytes[5]))
+        {
+            return true;
+        }
+
+        return bytes.Count > 1 && (bytes[0] is 0x82 or 0xc2) && IsKnownProtocol(bytes[1]);
+    }
+
     private static bool TryParsePacketDumpLineBytes(string line, out byte[] bytes)
     {
         string trimmed = StripComment(line).Trim();
         if (LooksLikeHexDumpLine(trimmed))
         {
             bytes = ParseHexBytes(trimmed).ToArray();
-            return bytes.Length >= 4;
+            return bytes.Length > 0;
         }
 
         if (trimmed.Length >= 8 && trimmed.Length % 2 == 0 && trimmed.All(Uri.IsHexDigit))
@@ -3927,8 +3988,33 @@ public static partial class PacketResearcher
             return bytes.Length >= 4;
         }
 
+        if (TryParseLabeledCompactHexLine(trimmed, out bytes))
+        {
+            return true;
+        }
+
         bytes = Array.Empty<byte>();
         return false;
+    }
+
+    private static bool TryParseLabeledCompactHexLine(string line, out byte[] bytes)
+    {
+        int separatorIndex = line.IndexOf(':', StringComparison.Ordinal);
+        if (separatorIndex < 0 || separatorIndex == line.Length - 1)
+        {
+            bytes = Array.Empty<byte>();
+            return false;
+        }
+
+        string compact = string.Concat(line[(separatorIndex + 1)..].Where(value => !char.IsWhiteSpace(value)));
+        if (compact.Length < 8 || compact.Length % 2 != 0 || !compact.All(Uri.IsHexDigit))
+        {
+            bytes = Array.Empty<byte>();
+            return false;
+        }
+
+        bytes = ParseCompactHexBytes(compact).ToArray();
+        return bytes.Length >= 4;
     }
 
     private static string StripComment(string line)

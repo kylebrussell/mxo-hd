@@ -212,6 +212,99 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void SummarizePacketDump_ParsesLabeledCompactHexPacketLines()
+    {
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllLines(tempFile, new[]
+            {
+                "Answer 1:82773AD648 030100089E010D00F034EBCD AB038400000000F204353F00000000F40435BF41000000008074F0C00000000000206240000000000096C940340800001200000000"
+            });
+
+            PacketDumpFileSummary summary = PacketResearcher.SummarizePacketDump(tempFile, Array.Empty<RpcHeaderEntry>());
+
+            Assert.Equal(1, summary.PacketLikeLines);
+            Protocol03ObjectViewSample sample = Assert.Single(summary.Protocol03ObjectViews);
+            Protocol03StaticObjectLead lead = Assert.Single(sample.StaticObjectLeads);
+            Assert.Equal("82 + simtime", sample.TransportHeader);
+            Assert.Equal("9e", lead.Selector);
+            Assert.Equal((uint)888143885, lead.ObjectId);
+            Assert.Equal("eb", lead.InstanceByteHex);
+            Assert.Equal(60, lead.PayloadBytes);
+            Assert.Equal(-67400.0, lead.PostQuaternionX);
+            Assert.Equal(145.0, lead.PostQuaternionY);
+            Assert.Equal(13100.0, lead.PostQuaternionZ);
+            Assert.Equal("34 08 00 00 12 00 00 00 00", lead.PostQuaternionTailHex);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void SummarizePacketDump_StitchesLooseMultilinePacketBlocks()
+    {
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllLines(tempFile, new[]
+            {
+                "Answer 1:",
+                "02 03 01 00 08 a0 01 08 00 f0 34 e5 cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00 00 00 f3 04 35 3f",
+                "41 00 00 00 00 80 a6 f0 c0 00 00 00 00 00 20 62 40 00 00 00 00 00 b3 d0 40 34 08 00 00 12 00 00",
+                "00 00",
+                "02 04 01 00 48 01 08 80 c8 08 00 f0 34 03 00"
+            });
+
+            PacketDumpFileSummary summary = PacketResearcher.SummarizePacketDump(tempFile, Array.Empty<RpcHeaderEntry>());
+
+            Assert.Equal(3, summary.PacketLikeLines);
+            Protocol03ObjectViewSample sample = Assert.Single(summary.Protocol03ObjectViews);
+            Protocol03StaticObjectLead lead = Assert.Single(sample.StaticObjectLeads);
+            Assert.Equal(2, sample.Line);
+            Assert.Equal("a0", lead.Selector);
+            Assert.Equal(60, lead.PayloadBytes);
+            Assert.Equal("e5", lead.InstanceByteHex);
+            Assert.Equal(34, lead.PostQuaternionBytes);
+            Assert.Equal("34 08 00 00 12 00 00 00 00", lead.PostQuaternionTailHex);
+            Assert.Single(summary.Protocol04InteractionPayloads);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void SummarizePacketDump_ParsesDirect82Protocol03Transport()
+    {
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllLines(tempFile, new[]
+            {
+                "82 03 01 00 08 a0 01 08 00 f0 34 1b cd ab 03 84 00 00 00 00 f3 04 35 bf 00 00 00 00 f3 04 35 3f",
+                "41 00 00 00 00 80 a6 f0 c0 00 00 00 00 00 20 62 40 00 00 00 00 00 b3 d0 40 34 08 00 00 03 00 00",
+                "00 00"
+            });
+
+            PacketDumpFileSummary summary = PacketResearcher.SummarizePacketDump(tempFile, Array.Empty<RpcHeaderEntry>());
+
+            Protocol03ObjectViewSample sample = Assert.Single(summary.Protocol03ObjectViews);
+            Protocol03StaticObjectLead lead = Assert.Single(sample.StaticObjectLeads);
+            Assert.Equal("82", sample.TransportHeader);
+            Assert.Equal("1b", lead.InstanceByteHex);
+            Assert.Equal("34 08 00 00 03 00 00 00 00", lead.PostQuaternionTailHex);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
     public void DetectManageBonusPayloads_GroupsTopLevelPayloadFields()
     {
         byte[] bytes = PacketResearcher.ParseHexBytes(
