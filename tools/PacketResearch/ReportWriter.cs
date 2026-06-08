@@ -7,6 +7,29 @@ namespace MxoHd.PacketResearch;
 
 public static class ReportWriter
 {
+    private const uint AbilityCodeFlag = 0x80000000;
+    private const uint AbilityCodeMask = 0xfffffc00;
+    private const uint AbilityLevelMask = 0x000003ff;
+
+    private static readonly HashSet<uint> FullPriceAbilityCodes = new()
+    {
+        2148365312, // BalanceAbility
+        2147490816, // DetectVulnerabilityAbility
+        2147605504, // DisarmTrapsAbility
+        2147492864, // EnergizedAttacksAbility
+        2147496960, // HyperStrengthAbility
+        2147684352, // IgnorePainAbility
+        2147858432, // ImpartInvisibilityAbility
+        2147497984, // PowerShotAbility
+        2147499008, // PreciseBlowAbility
+        2147500032, // PunishingBlowsAbility
+        2148372480, // PurityAbility
+        2148374528, // SpinningFlowerAbility
+        2148373504, // SweepTheFloorAbility
+        2148364288, // TechniqueAbility
+        2148375552 // ZenMasterAbility
+    };
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true
@@ -45,6 +68,8 @@ public static class ReportWriter
         builder.AppendLine($"- Local RPC headers: {report.LocalHeaders.Count}");
         builder.AppendLine($"- Local attribute definitions: {report.AttributeDefinitions.Count}");
         builder.AppendLine($"- Imported FX definitions: {report.FxDefinitions.Count}");
+        builder.AppendLine($"- Imported ability definitions: {report.AbilityDefinitions.Count}");
+        builder.AppendLine($"- Imported animation definitions: {report.AnimationDefinitions.Count}");
         builder.AppendLine($"- Game object symbol entries: {report.GameObjectEntries.Count}");
         builder.AppendLine($"- Inventory command item entries: {report.ItemCommandEntries.Count}");
         builder.AppendLine($"- Static object correlation rows: {report.StaticObjectEntries.Count}");
@@ -55,6 +80,7 @@ public static class ReportWriter
         builder.AppendLine($"- External object-interaction command examples: {report.Protocol04InteractionCommandExamples.Count}");
         builder.AppendLine($"- Vendor inventory rows: {report.VendorInventoryEntries.Count}");
         builder.AppendLine($"- Protocol 04 interaction payloads: {report.PacketDumpFiles.Sum(file => file.Protocol04InteractionPayloads.Count)}");
+        builder.AppendLine($"- Protocol 04 top-level vendor transaction flows: {report.PacketDumpFiles.Sum(file => file.VendorTransactionFlows?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 additional server payload shape samples: {report.PacketDumpFiles.Sum(file => file.Protocol04ServerPayloadShapes?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 unknown `81 67` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown8167Payloads?.Count ?? 0)}");
         builder.AppendLine($"- Protocol 04 unknown `47` payloads: {report.PacketDumpFiles.Sum(file => file.Unknown47Payloads?.Count ?? 0)}");
@@ -100,6 +126,24 @@ public static class ReportWriter
         AppendFactionNameResponsePayloadSummary(builder, report);
         AppendProtocol04ServerPayloadShapeSummary(builder, report);
         AppendProtocol03ObjectViewSummary(builder, report);
+        AppendProtocol03SelectorFfRepeatListResourceReferences(builder, report);
+        AppendProtocol03SelectorFfRepeatListShapeSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListEffectiveShapeSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListContinuationMarkerSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBodyWindowParserActionSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBodyWindowResourceCollisionSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListHeaderNameSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListHeaderRegionSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBoundaryTargetSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListHeaderSamples(builder, report);
+        AppendProtocol03SelectorFfRepeatListLayoutSummaries(builder, report);
         AppendHardcodedProtocol03Examples(builder, report);
         AppendPlayerAttributePayloadSummary(builder, report);
         AppendAbilityUnloadPayloadSummary(builder, report);
@@ -1949,7 +1993,31 @@ public static class ReportWriter
         builder.AppendLine();
         AppendProtocol03StaticObjectLeads(builder, report, samples);
         AppendProtocol03NestedMovementLeads(builder, samples);
+        AppendProtocol03NestedMovementParserActionSummaries(builder, report);
+        AppendProtocol03NestedMovementBoundaryEvidenceSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06BoundaryCandidateSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06FfContinuationSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationBoundarySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationBodySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationPrefixSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationRemainderSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationTupleSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationTupleBoundarySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyTailAnchorSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorLeadSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorBodySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorOffsetSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorHeaderCandidateSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06TupleBodyParserActionSummaries(builder, report);
         AppendProtocol03MovementStateTailLeads(builder, samples);
+        AppendProtocol03VariableSelectorTailFamilies(builder, report, samples);
+        AppendProtocol03SelectorFfPackedFieldLeads(builder, report, samples);
+        AppendProtocol03SelectorFfPositionLikeLeads(builder, report, samples);
         AppendProtocol03Selector2a2ePositionLeads(builder, samples);
         AppendProtocol03Selector80SelfViewAttributeLeads(builder, report, samples);
         AppendProtocol03Selector80Leads(builder, report, samples);
@@ -1973,6 +2041,554 @@ public static class ReportWriter
                 .ThenBy(group => group.Key)
                 .First();
             builder.AppendLine($"| `{fileGroup.Key}` | {fileGroup.Count()} | {fileGroup.Count(entry => entry.Sample.Complete)} | {topClassification.Key} ({topClassification.Count()}) |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListResourceReferences(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListFieldSummary[] summaries = report.Protocol03SelectorFfRepeatListFieldSummaries
+            .Where(summary => summary.ResourceReferences.Count > 0)
+            .OrderBy(summary => summary.RoleOrder)
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ZeroRun)
+            .ThenBy(summary => summary.FieldOffset ?? int.MaxValue)
+            .ThenBy(summary => summary.FieldHex, StringComparer.OrdinalIgnoreCase)
+            .Take(40)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Repeat List Resource References");
+        builder.AppendLine();
+        builder.AppendLine("These are candidate name matches for the two-byte field values in the modeled selector `ff` exact two-entry repeat lists. A match means the numeric value appears in a known resource table, not that the field semantics are proven.");
+        builder.AppendLine();
+        builder.AppendLine("| Field role | Layout | Zero run | Field offset | Field u16 | Candidates | Resource references | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | ---: | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListFieldSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.FieldRole)} | {FormatTableText(summary.FieldLayoutKind)} | {summary.ZeroRun} | {FormatNullableInt(summary.FieldOffset)} | {FormatProtocol03NullableU16Field(summary.FieldHex)} | {summary.CandidateCount} | {FormatResourceReferences(summary.ResourceReferences, 8)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListShapeSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListShapeSummary[] summaries = report.Protocol03SelectorFfRepeatListShapeSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1ZeroRun)
+            .ThenBy(summary => summary.Entry1FieldOffset ?? int.MaxValue)
+            .ThenBy(summary => summary.Entry1FieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2ZeroRun)
+            .ThenBy(summary => summary.Entry2FieldOffset ?? int.MaxValue)
+            .ThenBy(summary => summary.Entry2FieldHex, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Repeat List Shape Summary");
+        builder.AppendLine();
+        builder.AppendLine("This groups the modeled selector `ff` exact two-entry repeat lists by the combined entry-1 field, entry-2 field, continuation prefix, and continuation post-marker field. Resource references are candidate labels for each two-byte value, not proven semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry 1 field | Entry 2 field | Entry 2 secondary fields | Entry 2 effective fields | Continuation | Post-marker field | Field layouts | Candidates | Entry 1 refs | Entry 2 refs | Post-marker refs | First selectors | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListShapeSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatProtocol03RepeatRecordFieldShape(summary.Entry1ZeroRun, summary.Entry1FieldOffset, summary.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(summary.Entry2ZeroRun, summary.Entry2FieldOffset, summary.Entry2FieldHex)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 4)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 4)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} | {FormatSelectorFfRepeatListShapeFieldLayouts(summary)} | {summary.CandidateCount} | {FormatResourceReferences(summary.Entry1ResourceReferences, 3)} | {FormatResourceReferences(summary.Entry2ResourceReferences, 3)} | {FormatResourceReferences(summary.PostMarkerResourceReferences, 3)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListLayoutSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListLayoutSummary[] summaries = report.Protocol03SelectorFfRepeatListLayoutSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1FieldLayoutKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2FieldLayoutKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Repeat List Layout Summary");
+        builder.AppendLine();
+        builder.AppendLine("This rolls exact shape summaries up by entry field layout, continuation prefix, and post-marker layout. It is intended to separate marker-adjacent windows from ordinary padded fields before assigning field semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry 1 layout | Entry 2 layout | Continuation | Post-marker layout | Candidates | Shapes | Entry 1 fields | Entry 2 fields | Entry 2 secondary fields | Entry 2 effective fields | Post-marker fields | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListLayoutSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.Entry1FieldLayoutKind)} | {FormatTableText(summary.Entry2FieldLayoutKind)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | {FormatTableText(summary.PostMarkerFieldLayoutKind)} | {summary.CandidateCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2Fields, 5)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListEffectiveShapeSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListEffectiveShapeSummary[] summaries = report.Protocol03SelectorFfRepeatListEffectiveShapeSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1ZeroRun)
+            .ThenBy(summary => summary.Entry1FieldOffset ?? int.MaxValue)
+            .ThenBy(summary => summary.Entry1FieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2EffectiveFieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Effective Repeat List Shape Summary");
+        builder.AppendLine();
+        builder.AppendLine("This groups the same exact two-entry repeat lists by entry-1 field, normalized entry-2 effective field, continuation prefix, and post-marker field. It keeps the original primary entry-2 fields and effective source counts visible so marker-adjacent rows can be compared with ordinary padded rows without losing boundary evidence.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry 1 field | Entry 2 effective field | Continuation | Post-marker field | Effective sources | Primary entry 2 fields | Secondary entry 2 fields | Entry 2 layouts | Candidates | Entry 1 refs | Entry 2 effective refs | Post-marker refs | First selectors | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListEffectiveShapeSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatProtocol03RepeatRecordFieldShape(summary.Entry1ZeroRun, summary.Entry1FieldOffset, summary.Entry1FieldHex)} | {FormatProtocol03NullableU16Field(summary.Entry2EffectiveFieldHex)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} | {FormatCountDictionary(summary.Entry2EffectiveSources, 4)} | {FormatCountDictionary(summary.Entry2PrimaryFields, 4)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 4)} | {FormatCountDictionary(summary.Entry2FieldLayouts, 4)} | {summary.CandidateCount} | {FormatResourceReferences(summary.Entry1ResourceReferences, 3)} | {FormatResourceReferences(summary.Entry2EffectiveResourceReferences, 3)} | {FormatResourceReferences(summary.PostMarkerResourceReferences, 3)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummary[] summaries = report.Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries
+            .OrderByDescending(summary => summary.CandidatesWithVendorHeaderWindows)
+            .ThenByDescending(summary => summary.VendorHeaderWindows.Sum(window => window.Count))
+            .ThenByDescending(summary => summary.CandidatesWithHeaderWindows)
+            .ThenByDescending(summary => summary.HeaderWindows.Sum(window => window.Count))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1ZeroRun)
+            .ThenBy(summary => summary.Entry1FieldOffset ?? int.MaxValue)
+            .ThenBy(summary => summary.Entry1FieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2EffectiveFieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Effective Repeat List Header Correlations");
+        builder.AppendLine();
+        builder.AppendLine("This joins normalized selector `ff` repeat-list shapes to embedded byte windows that match known local RPC headers. Header matches are still byte-window evidence, not proof that the repeated fields are nested RPC calls, but vendor-header hits are high-priority parser leads.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry 1 field | Entry 2 effective field | Continuation | Post-marker field | Candidates | With known headers | With vendor headers | Vendor windows | Header windows | Effective sources | Primary entry 2 fields | Secondary entry 2 fields | First selectors | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatProtocol03RepeatRecordFieldShape(summary.Entry1ZeroRun, summary.Entry1FieldOffset, summary.Entry1FieldHex)} | {FormatProtocol03NullableU16Field(summary.Entry2EffectiveFieldHex)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} | {summary.CandidateCount} | {summary.CandidatesWithHeaderWindows} | {summary.CandidatesWithVendorHeaderWindows} | {FormatSelectorFfRepeatListHeaderWindows(summary.VendorHeaderWindows, 4)} | {FormatSelectorFfRepeatListHeaderWindows(summary.HeaderWindows, 5)} | {FormatCountDictionary(summary.Entry2EffectiveSources, 4)} | {FormatCountDictionary(summary.Entry2PrimaryFields, 4)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 4)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListContinuationMarkerSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListContinuationMarkerSummary[] summaries = report.Protocol03SelectorFfRepeatListContinuationMarkerSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.ShapeCount)
+            .ThenBy(summary => summary.ContinuationPrefixBeforeMarkerHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationMarkerHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostMarkerZeroRun)
+            .ThenBy(summary => summary.PostMarkerFirstFieldOffset ?? int.MaxValue)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Continuation Marker Summary");
+        builder.AppendLine();
+        builder.AppendLine("This rolls exact two-entry selector `ff` repeat-list candidates up by the three-byte continuation prefix before the marker byte and by the first post-marker field layout. It is a compact invariant table for testing whether local continuation byte `+3` behaves like a marker or flag before assigning semantics to the surrounding fields.");
+        builder.AppendLine();
+        builder.AppendLine("| Prefix before marker | Marker | Post-marker field | Post-marker layout | Candidates | Shapes | Known header candidates | Vendor header candidates | Header windows | Vendor windows | Header regions | Continuation prefixes | Entry 1 fields | Entry 1 refs | Entry 2 primary fields | Entry 2 secondary fields | Entry 2 effective fields | Entry 2 refs | Effective sources | Post-marker refs | Vendor entry 1 refs | Vendor entry 2 refs | Vendor post-marker refs | Post-marker lead bytes | First selectors | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListContinuationMarkerSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(summary.ContinuationPrefixBeforeMarkerHex)}` | `{FormatEmptyHex(summary.ContinuationMarkerHex)}` | {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} | {FormatTableText(summary.PostMarkerFieldLayoutKind)} | {summary.CandidateCount} | {summary.ShapeCount} | {summary.CandidatesWithHeaderWindows} | {summary.CandidatesWithVendorHeaderWindows} | {FormatSelectorFfRepeatListHeaderWindows(summary.HeaderWindows, 4)} | {FormatSelectorFfRepeatListHeaderWindows(summary.VendorHeaderWindows, 4)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry1ResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2PrimaryFields, 5)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2EffectiveSources, 4)} | {FormatCountDictionary(summary.PostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.VendorEntry1ResourceReferences, 5)} | {FormatCountDictionary(summary.VendorEntry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.VendorPostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.PostMarkerLeadHexes, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries
+            .OrderByDescending(summary => summary.HeaderWindowCount)
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ContinuationOffset)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Continuation Body Targets");
+        builder.AppendLine();
+        builder.AppendLine("This narrows vendor-only selector `ff` byte windows that the parser already classifies as continuation-body targets. Rows are grouped by local continuation offset so body-length and nested-field parser work can focus on the exact post-marker byte positions instead of raw payload offsets.");
+        builder.AppendLine();
+        builder.AppendLine("| Continuation offset | Post-marker offset | Candidates | Windows | Shapes | Headers | Payload offsets | Object offsets | Window hexes | Context bytes | Target body bytes | Continuation bytes | Bytes after window | Window tail classes | Continuation prefixes | Entry 1 fields | Entry 2 effective fields | Post-marker fields | Position anchors | First selectors | Sample |");
+        builder.AppendLine("| ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| +{summary.ContinuationOffset.ToString(CultureInfo.InvariantCulture)} | +{summary.PostMarkerOffset.ToString(CultureInfo.InvariantCulture)} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.ContextHexes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.ContinuationBytes, 5)} | {FormatCountDictionary(summary.BytesAfterHeaderInContinuation, 5)} | {FormatCountDictionary(summary.HeaderTailClasses, 5)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries
+            .OrderByDescending(summary => summary.HeaderWindowCount)
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.PrePositionOffset)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Pre-Position Body Targets");
+        builder.AppendLine();
+        builder.AppendLine("This narrows vendor-only selector `ff` byte windows that the parser classifies as unresolved bytes before the decoded position anchor. Rows are grouped by local pre-position offset, where offset `+0` starts immediately after the packed `u32 +9` field.");
+        builder.AppendLine();
+        builder.AppendLine("| Pre-position offset | Sample bytes before position | Bytes before position | Bytes after window before position | Position gap classes | Candidates | Windows | Shapes | Headers | Payload offsets | Object offsets | Window hexes | Context bytes | Target body bytes | Pre-position bodies | Position anchors | Continuation prefixes | Entry 1 fields | Entry 2 effective fields | Post-marker fields | First selectors | Sample |");
+        builder.AppendLine("| ---: | ---: | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatSignedOffset(summary.PrePositionOffset)} | {summary.BytesBeforePosition.ToString(CultureInfo.InvariantCulture)} | {FormatCountDictionary(summary.BytesBeforePositions, 5)} | {FormatCountDictionary(summary.BytesAfterHeaderBeforePosition, 5)} | {FormatCountDictionary(summary.PositionGapClasses, 5)} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.ContextHexes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PrePositionHexes, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string FormatSignedOffset(int offset)
+    {
+        return offset >= 0
+            ? $"+{offset.ToString(CultureInfo.InvariantCulture)}"
+            : offset.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries
+            .OrderBy(summary => summary.ParserPriority.Contains("overlap", StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.BodyRegion, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.BodyOffset)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(40)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        int totalRows = report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries.Count;
+        int rowsWithLengthMatches = report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries
+            .Count(summary => summary.NearbyU16LengthMatches.Count > 0);
+        int rowsWithWindowHalfResourceReferences = report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries
+            .Count(summary => summary.WindowHalfU16ResourceReferences.Count > 0);
+        int rowsWithLowHalfWindowResourceReferences = report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries
+            .Count(summary => summary.WindowHalfU16ResourceReferences.Keys.Any(key => key.StartsWith("low ", StringComparison.OrdinalIgnoreCase)));
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Body Window Probes");
+        builder.AppendLine();
+        builder.AppendLine("This groups vendor-only selector `ff` windows that land inside continuation or pre-position bodies and adds byte-level probe fields for body-length work. Offset modulus and the four-byte little-endian window help separate aligned packed fields from plausible body boundaries.");
+        builder.AppendLine();
+        builder.AppendLine($"Rows with simple nearby `u16` length matches: {rowsWithLengthMatches.ToString(CultureInfo.InvariantCulture)} of {totalRows.ToString(CultureInfo.InvariantCulture)}.");
+        builder.AppendLine($"Rows with half-window `u16` resource references: {rowsWithWindowHalfResourceReferences.ToString(CultureInfo.InvariantCulture)} of {totalRows.ToString(CultureInfo.InvariantCulture)}.");
+        builder.AppendLine($"Rows with low-half window resource references: {rowsWithLowHalfWindowResourceReferences.ToString(CultureInfo.InvariantCulture)} of {totalRows.ToString(CultureInfo.InvariantCulture)}.");
+        builder.AppendLine();
+        builder.AppendLine("| Region | Priority | Interpretation | Header | Local offset | Body offset | Mod 2 | Mod 4 | Candidates | Windows | Shapes | Bytes before header | Bytes after header | Body byte count | Body spans | Body bytes | Payload offsets | Object offsets | Window hexes | Window u32 | Header u16 | Window u16 refs | Nearby u16 | Length matches | Continuation prefixes | Entry 1 fields | Entry 2 effective fields | Post-marker fields | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.BodyRegion)} | {FormatTableText(summary.ParserPriority)} | {FormatTableText(summary.TargetInterpretation)} | {FormatTableText(summary.Name)}<br>`{summary.EncodedHeader}` [{FormatSlashList(summary.Protocols, 4)} {FormatTableText(summary.Direction)}] | {FormatTableText(summary.TargetLocalOffset)} | {summary.BodyOffset} | {summary.BodyOffsetModulo2} | {summary.BodyOffsetModulo4} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.BytesBeforeHeaderInBody, 5)} | {FormatCountDictionary(summary.BytesAfterHeaderInBody, 5)} | {FormatCountDictionary(summary.BodyByteCounts, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.WindowU32Values, 5)} | {FormatCountDictionary(summary.HeaderU16Values, 5)} | {FormatCountDictionary(summary.WindowHalfU16ResourceReferences, 8)} | {FormatCountDictionary(summary.NearbyU16Values, 8)} | {FormatCountDictionary(summary.NearbyU16LengthMatches, 8)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBodyWindowParserActionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBodyWindowParserActionSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBodyWindowParserActionSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Body Window Parser Actions");
+        builder.AppendLine();
+        builder.AppendLine("This turns the body-window evidence triage into parser work items. Rows marked for suppression are useful negative evidence: they should prevent treating the same aligned bytes as nested vendor RPCs unless new captures contradict the current model.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Probe rows | Candidates | Windows | Shapes | Evidence | Regions | Priorities | Interpretations | Headers | Local offsets | Body spans | Window hexes | Low-half refs | High-half refs | Length matches | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBodyWindowParserActionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.ProbeRowCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.EvidenceDispositions, 5)} | {FormatCountDictionary(summary.BodyRegions, 5)} | {FormatCountDictionary(summary.ParserPriorities, 5)} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.LowHalfResourceReferences, 5)} | {FormatCountDictionary(summary.HighHalfResourceReferences, 5)} | {FormatCountDictionary(summary.NearbyU16LengthMatches, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Body Window Evidence Triage");
+        builder.AppendLine();
+        builder.AppendLine("This classifies each vendor body-window probe row by the strongest current evidence. Length matches would be parser leads; low-half item/gameobject references are collision controls for packed resource fields; high-half-only references usually reflect the header-looking `81 xx` bytes.");
+        builder.AppendLine();
+        builder.AppendLine("| Evidence disposition | Probe rows | Candidates | Windows | Shapes | Regions | Priorities | Interpretations | Headers | Local offsets | Body offsets | Body spans | Window hexes | Low-half refs | High-half refs | Length matches | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.EvidenceDisposition)} | {summary.ProbeRowCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.BodyRegions, 5)} | {FormatCountDictionary(summary.ParserPriorities, 5)} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.BodyOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.LowHalfResourceReferences, 5)} | {FormatCountDictionary(summary.HighHalfResourceReferences, 5)} | {FormatCountDictionary(summary.NearbyU16LengthMatches, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBodyWindowResourceCollisionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBodyWindowResourceCollisionSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBodyWindowResourceCollisionSummaries
+            .OrderBy(summary => summary.WindowHalf.Equals("low", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenByDescending(summary => summary.ReferenceWindowCount)
+            .ThenBy(summary => summary.ResourceKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.WindowU16, StringComparer.OrdinalIgnoreCase)
+            .Take(40)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Body Window Resource Collisions");
+        builder.AppendLine();
+        builder.AppendLine("This rolls up half-window `u16` resource references from the vendor body-window probe table. Low-half rows are the strongest collision controls because high-half rows often correspond to the header-looking `81 xx` bytes themselves.");
+        builder.AppendLine();
+        builder.AppendLine("| Half | Window u16 | Resource kind | Resource reference | Probe rows | Ref windows | Candidates | Related windows | Shapes | Regions | Priorities | Interpretations | Headers | Local offsets | Body offsets | Body spans | Window hexes | Header u16 | Length matches | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBodyWindowResourceCollisionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.WindowHalf)} | `{FormatTableText(summary.WindowU16)}` | {FormatTableText(summary.ResourceKind)} | {FormatTableText(summary.ResourceReference)} | {summary.ProbeRowCount} | {summary.ReferenceWindowCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.BodyRegions, 5)} | {FormatCountDictionary(summary.ParserPriorities, 5)} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.BodyOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.HeaderU16Values, 5)} | {FormatCountDictionary(summary.NearbyU16LengthMatches, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListHeaderNameSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListHeaderNameSummary[] summaries = report.Protocol03SelectorFfRepeatListHeaderNameSummaries
+            .OrderByDescending(summary => summary.IsVendorHeader)
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenByDescending(summary => summary.ShapeCount)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Header Name Rollup");
+        builder.AppendLine();
+        builder.AppendLine("This inverts the selector `ff` repeat-list header correlations by local RPC header name. Counts are de-duplicated across CR1/CR2 aliases, so repeated protocol enum entries do not inflate candidate or window totals.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Direction | Encoded | Protocols | Candidates | Header windows | Shapes | Top shapes | Regions | Payload offsets | Object offsets | Window hexes | Entry 1 fields | Entry 2 effective fields | Post-marker fields | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListHeaderNameSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.Name)} | {FormatTableText(summary.Direction)} | `{summary.EncodedHeader}` | {FormatSlashList(summary.Protocols, 4)} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatSelectorFfRepeatListHeaderNameShapes(summary.TopShapes, 4)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListHeaderSamples(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListHeaderSample[] samples = report.Protocol03SelectorFfRepeatListHeaderSamples
+            .OrderByDescending(sample => sample.IsVendorHeader)
+            .ThenBy(sample => sample.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(sample => sample.File, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(sample => sample.Line)
+            .ThenBy(sample => sample.HeaderPayloadOffset)
+            .Take(40)
+            .ToArray();
+        if (samples.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Header Window Samples");
+        builder.AppendLine();
+        builder.AppendLine("This keeps bounded byte slices for selector `ff` repeat-list candidates that contain known local RPC-header byte windows. These are packet-boundary samples for decoder work, not proof that the bytes are nested RPC calls.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Source | Offsets | Shape | Position | Header context | Repeat-list context |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListHeaderSample sample in samples)
+        {
+            builder.AppendLine(
+                $"| {FormatSelectorFfRepeatListHeaderSampleHeader(sample)} | {FormatSelectorFfRepeatListHeaderSampleSource(sample)} | {FormatSelectorFfRepeatListHeaderSampleOffsets(sample)} | {FormatSelectorFfRepeatListHeaderSampleShape(sample)} | {FormatSelectorFfRepeatListHeaderSamplePosition(sample)} | `{FormatEmptyHex(sample.HeaderContextHex)}` | `{FormatEmptyHex(sample.RepeatListContextHex)}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListHeaderRegionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListHeaderRegionSummary[] summaries = report.Protocol03SelectorFfRepeatListHeaderRegionSummaries
+            .OrderByDescending(summary => summary.IsVendorHeader)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.HeaderRegion, StringComparer.OrdinalIgnoreCase)
+            .Take(40)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Header Region Rollup");
+        builder.AppendLine();
+        builder.AppendLine("This splits selector `ff` repeat-list header windows by where the matched bytes appear inside the modeled selector body. Region counts help separate likely packed-field collisions from repeat-list and continuation-body leads.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Region | Candidates | Header windows | Shapes | Top shapes | Payload offsets | Object offsets | Window hexes | Entry 1 fields | Entry 1 refs | Entry 2 effective fields | Entry 2 refs | Post-marker fields | Post-marker refs | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListHeaderRegionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.Name)}<br>`{summary.EncodedHeader}` [{FormatSlashList(summary.Protocols, 4)} {FormatTableText(summary.Direction)}] | {FormatTableText(summary.HeaderRegion)} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatSelectorFfRepeatListHeaderNameShapes(summary.TopShapes, 3)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry1ResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.PostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries
+            .OrderBy(summary => summary.IsModeledFieldOverlap)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.ParserPriority, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Boundary Priority Rollup");
+        builder.AppendLine();
+        builder.AppendLine("This groups vendor-only selector `ff` target rows by parser priority so body-length work can start with the most useful unresolved body classes before spending time on modeled field overlaps or likely short-span collisions.");
+        builder.AppendLine();
+        builder.AppendLine("| Priority | Modeled overlap | Targets | Candidates | Windows | Target shapes | Interpretations | Headers | Regions | Payload offsets | Object offsets | Local offsets | Body spans | Body bytes | Position anchors | Entry 1 fields | Entry 2 effective fields | Post-marker fields | Top targets |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserPriority)} | {(summary.IsModeledFieldOverlap ? "yes" : "no")} | {summary.TargetCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatSelectorFfRepeatListVendorInterpretationTargets(summary.TopTargets, 5)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries
+            .OrderBy(summary => summary.IsModeledFieldOverlap)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.TargetInterpretation, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Boundary Interpretation Rollup");
+        builder.AppendLine();
+        builder.AppendLine("This collapses vendor-only selector `ff` target rows by parser interpretation. Unresolved boundary candidates should drive body-length work first; modeled field overlaps are likely byte-window collisions unless future captures contradict the field model.");
+        builder.AppendLine();
+        builder.AppendLine("| Interpretation | Priority | Targets | Candidates | Windows | Target shapes | Headers | Regions | Payload offsets | Object offsets | Local offsets | Body spans | Body bytes | Position anchors | Entry 1 fields | Entry 2 effective fields | Post-marker fields | Top targets |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TargetInterpretation)} | {FormatTableText(summary.ParserPriority)} | {summary.TargetCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatSelectorFfRepeatListVendorInterpretationTargets(summary.TopTargets, 5)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBoundaryTargetSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBoundaryTargetSummary[] summaries = report.Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenByDescending(summary => summary.ShapeCount)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.HeaderRegion, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.HeaderPayloadOffset)
+            .Take(40)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Boundary Targets");
+        builder.AppendLine();
+        builder.AppendLine("This filters the selector `ff` header-window correlations to vendor-only byte windows and groups them by exact local payload/object offset. These rows are parser targets for separating packed-field collisions from repeat-entry and continuation-body boundaries; they are still byte-window evidence, not decoded nested RPCs.");
+        builder.AppendLine();
+        builder.AppendLine("| Header | Target | Region | Interpretation | Local offsets | Body spans | Body bytes | Position anchors | Candidates | Windows | Shapes | Top shapes | Window hexes | Continuation prefixes | Entry 1 fields | Entry 1 refs | Entry 2 effective fields | Entry 2 refs | Post-marker fields | Post-marker refs | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBoundaryTargetSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.Name)}<br>`{summary.EncodedHeader}` [{FormatSlashList(summary.Protocols, 4)} {FormatTableText(summary.Direction)}] | payload +{summary.HeaderPayloadOffset.ToString(CultureInfo.InvariantCulture)}<br>object +{summary.HeaderObjectOffset.ToString(CultureInfo.InvariantCulture)} | {FormatTableText(summary.HeaderRegion)} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatSelectorFfRepeatListHeaderNameShapes(summary.TopShapes, 3)} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry1ResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatCountDictionary(summary.PostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
         }
 
         builder.AppendLine();
@@ -2126,6 +2742,510 @@ public static class ReportWriter
             segment.Offset + 1 == entry.Lead.Offset);
     }
 
+    private static void AppendProtocol03NestedMovementParserActionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementParserActionSummary[] summaries = report.Protocol03NestedMovementParserActionSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Embedded Movement Parser Actions");
+        builder.AppendLine();
+        builder.AppendLine("This turns embedded movement-window evidence into conservative parser work items. Mode `06` unresolved windows are queued for boundary investigation; bounded primary wrappers stay in the known-layout bucket.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Evidence rows | Windows | Bounded wrappers | Unresolved leads | Evidence | Modes | Inner selectors | Outer selectors | Classifications | Suffixes | Post-suffixes | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementParserActionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.EvidenceRowCount} | {summary.WindowCount} | {summary.BoundedPrimaryWrapperCount} | {summary.UnresolvedPayloadLeadCount} | {FormatCountDictionary(summary.EvidenceDispositions, 5)} | {FormatCountDictionary(summary.MarkerModes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.SuffixPrefixes, 5)} | {FormatCountDictionary(summary.PostSuffixPrefixes, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementBoundaryEvidenceSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementBoundaryEvidenceSummary[] summaries = report.Protocol03NestedMovementBoundaryEvidenceSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Embedded Movement Boundary Evidence");
+        builder.AppendLine();
+        builder.AppendLine("This groups embedded movement windows by their strongest current boundary evidence. Suffix rows are body-boundary leads only; no body length is claimed without bounded examples or independent capture context.");
+        builder.AppendLine();
+        builder.AppendLine("| Evidence disposition | Parser action | Reason | Windows | Bounded wrappers | Unresolved leads | Modes | Inner selectors | Outer selectors | Classifications | Suffixes | Post-suffixes | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementBoundaryEvidenceSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.EvidenceDisposition)} | {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.WindowCount} | {summary.BoundedPrimaryWrapperCount} | {summary.UnresolvedPayloadLeadCount} | {FormatCountDictionary(summary.MarkerModes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.SuffixPrefixes, 5)} | {FormatCountDictionary(summary.PostSuffixPrefixes, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06BoundaryCandidateSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06BoundaryCandidateSummary[] summaries = report.Protocol03NestedMovementMode06BoundaryCandidateSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Movement Boundary Candidates");
+        builder.AppendLine();
+        builder.AppendLine("This narrows the mode `06` object-state movement queue to repeated tail shapes after the known inner movement payload. Tail start and after-suffix offsets are relative to the containing unresolved selector payload; they are candidate cut points, not decoded body lengths.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Suffix prefix | Next bytes | Windows | Tail start offsets | After-suffix offsets | Tail bytes | Header-like tail leads | Inner selectors | Outer selectors | Classifications | Payload bytes | Lead prefixes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06BoundaryCandidateSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.SuffixPrefixHex)}` | `{FormatEmptyHex(summary.PostSuffixPrefixHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.CandidateCutOffsets, 5)} | {FormatCountDictionary(summary.TailBytes, 5)} | {FormatCountDictionary(summary.HeaderLikeTailLeads, 4)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.LeadPrefixes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06FfContinuationSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06FfContinuationSummary[] summaries = report.Protocol03NestedMovementMode06FfContinuationSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 FF Continuation Fields");
+        builder.AppendLine();
+        builder.AppendLine("This decomposes the repeated mode `06` `ff 00 00 00` tail leads into captured byte fields. The after-continuation offset is the candidate cut after the 16 captured tail bytes, not a decoded packet body length.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Marker prefix | u16 +4 | u16 +6 | Continuation prefix | Continuation marker | Post-marker prefix | Windows | Tail start offsets | After-suffix offsets | After-continuation offsets | Tail bytes | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06FfContinuationSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.MarkerPrefixHex)}` | {FormatProtocol03NullableU16Field(summary.TailU16Offset4Hex)} | {FormatProtocol03NullableU16Field(summary.TailU16Offset6Hex)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | `{FormatEmptyHex(summary.ContinuationMarkerHex)}` | `{FormatEmptyHex(summary.PostMarkerPrefixHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.SuffixCutOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.TailBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationBoundarySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationBoundarySummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationBoundarySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Continuation Boundary Leads");
+        builder.AppendLine();
+        builder.AppendLine("This scans the full tail after the 16-byte mode `06` FF continuation lead for plausible object-view headers inside the next 64 bytes. Rows are boundary evidence only; a later object-view-shaped header is not consumed by the parser yet.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Boundary disposition | Tail boundary offset | Post-continuation offset | Pre-boundary prefix | Header prefix | Header classification | Windows | Tail start offsets | After-continuation offsets | Boundary cut offsets | Tail bytes | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationBoundarySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | {FormatTableText(summary.BoundaryDisposition)} | {FormatNullableInt(summary.TailBoundaryOffset)} | {FormatNullableInt(summary.PostContinuationOffset)} | `{FormatEmptyHex(summary.PreBoundaryPrefixHex)}` | `{FormatEmptyHex(summary.HeaderHex)}` | {FormatTableText(string.IsNullOrWhiteSpace(summary.HeaderClassification) ? "-" : summary.HeaderClassification)} | {summary.WindowCount} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.TailBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationBodySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationBodySummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationBodySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Continuation Body Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups bytes between the 16-byte mode `06` FF continuation lead and the later object-view candidate. Rows are shape evidence only; they do not make the post-continuation body a consumed parser segment.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Body disposition | Body bytes | Body prefix | Body suffix | First nonzero offset | First nonzero field | Windows | Tail start offsets | After-continuation offsets | Boundary cut offsets | Header classifications | Header prefixes | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationBodySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | {FormatTableText(summary.BodyDisposition)} | {summary.PostContinuationBodyBytes} | `{FormatEmptyHex(summary.BodyPrefixHex)}` | `{FormatEmptyHex(summary.BodySuffixHex)}` | {FormatNullableInt(summary.FirstNonZeroOffset)} | `{FormatEmptyHex(summary.FirstNonZeroFieldHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationPrefixSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationPrefixSummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationPrefixSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Continuation Prefix Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups the first 31 bytes after the 16-byte mode `06` FF continuation lead for every matching row, including rows without a later object-view candidate. The table compares shared prefix shapes against boundary/no-boundary outcomes.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix disposition | Prefix bytes | Prefix lead | Prefix suffix | First nonzero offset | First nonzero field | Windows | Boundary dispositions | Post-continuation boundary offsets | Bytes after prefix | Tail start offsets | After-continuation offsets | Boundary cut offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationPrefixSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | {FormatTableText(summary.PrefixDisposition)} | {summary.PrefixBytes} | `{FormatEmptyHex(summary.PrefixLeadHex)}` | `{FormatEmptyHex(summary.PrefixSuffixHex)}` | {FormatNullableInt(summary.FirstNonZeroOffset)} | `{FormatEmptyHex(summary.FirstNonZeroFieldHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.BoundaryDispositions, 5)} | {FormatCountDictionary(summary.PostContinuationBoundaryOffsets, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationRemainderSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationRemainderSummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationRemainderSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Continuation Remainder Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups the bytes immediately after the 31-byte post-continuation prefix. Rows separate object-view-shaped post-prefix leads from non-object leads, preserving the boundary/no-boundary split.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix field | Post-prefix disposition | Post-prefix lead | U16 +0 | U16 +4 | U16 +6 | Windows | Boundary dispositions | Post-continuation boundary offsets | Bytes after prefix | Tail start offsets | After-continuation offsets | Boundary cut offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationRemainderSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.PostPrefixDisposition)} | `{FormatEmptyHex(summary.PostPrefixLeadHex)}` | {FormatProtocol03NullableU16Field(summary.PostPrefixU16Offset0Hex)} | {FormatProtocol03NullableU16Field(summary.PostPrefixU16Offset4Hex)} | {FormatProtocol03NullableU16Field(summary.PostPrefixU16Offset6Hex)} | {summary.WindowCount} | {FormatCountDictionary(summary.BoundaryDispositions, 5)} | {FormatCountDictionary(summary.PostContinuationBoundaryOffsets, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationTupleSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationTupleSummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationTupleSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Continuation Tuple Fields");
+        builder.AppendLine();
+        builder.AppendLine("This decomposes the first eight bytes after the 31-byte post-continuation prefix into byte fields. The tuple layout separates parser-accepted object-view headers, unclassified object-view-shaped tuples that the boundary finder skips, and zero-update marker tuples.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix field | Tuple layout | Post-prefix disposition | B0 | B1 values | Update byte | Selector byte | B4-B6 | Marker byte | Windows | Boundary dispositions | Post-continuation boundary offsets | Bytes after prefix | Post-prefix leads | Tail start offsets | After-continuation offsets | Boundary cut offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationTupleSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | `{FormatEmptyHex(summary.Byte0Hex)}` | {FormatCountDictionary(summary.Byte1Values, 5)} | `{FormatEmptyHex(summary.UpdateCountHex)}` | `{FormatEmptyHex(summary.FirstSelectorHex)}` | `{FormatEmptyHex(summary.MiddleBytesHex)}` | `{FormatEmptyHex(summary.MarkerByteHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.BoundaryDispositions, 5)} | {FormatCountDictionary(summary.PostContinuationBoundaryOffsets, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationTupleBoundarySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationTupleBoundarySummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationTupleBoundarySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Prefix Tuple Boundary Scan");
+        builder.AppendLine();
+        builder.AppendLine("This scans after the eight-byte post-prefix tuple for the next parser-accepted object-view header. Rows distinguish tuples that are themselves accepted boundaries from longer inline tuple bodies and from rows with no later accepted object-view boundary.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix field | Tuple layout | Post-prefix disposition | Boundary disposition | Tail boundary offset | Post-continuation boundary offset | Post-tuple body bytes | Header prefix | Header classification | Windows | Bytes after prefix | Post-prefix leads | B1 values | Marker bytes | Tail start offsets | After-continuation offsets | Boundary cut offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationTupleBoundarySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | {FormatTableText(summary.BoundaryDisposition)} | {FormatNullableInt(summary.TailBoundaryOffset)} | {FormatNullableInt(summary.PostContinuationBoundaryOffset)} | {FormatNullableInt(summary.PostTupleBodyBytes)} | `{FormatEmptyHex(summary.HeaderHex)}` | {FormatTableText(string.IsNullOrWhiteSpace(summary.HeaderClassification) ? "-" : summary.HeaderClassification)} | {summary.WindowCount} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.Byte1Values, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationTupleBodySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Post-Prefix Tuple Body Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups bytes after the eight-byte post-prefix tuple and before the next parser-accepted object-view header. Parser-consumed tuple bodies preserve enough boundary lookahead for this table; low-count rows remain evidence-only.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix field | Tuple layout | Post-prefix disposition | Body disposition | Body bytes | Body prefix | Body suffix | First nonzero offset | First nonzero field | Windows | Header classifications | Header prefixes | Post-continuation boundary offsets | Bytes after prefix | Post-prefix leads | B1 values | Marker bytes | Tail start offsets | After-continuation offsets | Boundary cut offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | --- | --- | ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationTupleBodySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | {FormatTableText(summary.BodyDisposition)} | {summary.PostTupleBodyBytes} | `{FormatEmptyHex(summary.BodyPrefixHex)}` | `{FormatEmptyHex(summary.BodySuffixHex)}` | {FormatNullableInt(summary.FirstNonZeroOffset)} | `{FormatEmptyHex(summary.FirstNonZeroFieldHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.PostContinuationBoundaryOffsets, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.Byte1Values, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.BoundaryCutOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary[] summaries = report.Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Terminal Tuple Body Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This groups bytes after the eight-byte post-prefix tuple when no later parser-accepted object-view boundary exists in the same tail. These rows are report-only evidence for terminal tuple-body length rules.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail prefix kind | Prefix field | Tuple layout | Post-prefix disposition | Body disposition | Terminal body bytes | Windows | Body prefixes | Body suffixes | Pre-tail field offsets | Pre-tail field bytes | First nonzero offsets | First nonzero fields | Bytes after prefix | Post-prefix leads | B1 values | Marker bytes | Tail start offsets | After-continuation offsets | Terminal tail end offsets | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | {FormatTableText(summary.BodyDisposition)} | {summary.TerminalPostTupleBodyBytes} | {summary.WindowCount} | {FormatCountDictionary(summary.BodyPrefixes, 5)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.PreTailFieldOffsets, 5)} | {FormatCountDictionary(summary.PreTailFieldBytes, 5)} | {FormatCountDictionary(summary.FirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.FirstNonZeroFields, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.Byte1Values, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.TailStartOffsets, 5)} | {FormatCountDictionary(summary.ContinuationCutOffsets, 5)} | {FormatCountDictionary(summary.TerminalTailEndOffsets, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyTailAnchorSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Tail Anchors");
+        builder.AppendLine();
+        builder.AppendLine("This isolates long bounded and terminal tuple bodies and classifies only their final suffix anchor. Rows are evidence-only until a rule explains the bytes before the inferred trailing body.");
+        builder.AppendLine();
+        builder.AppendLine("| Source | Tail prefix kind | Prefix field | Tuple layout | Post-prefix disposition | Body bytes | Windows | Tail anchors | Inferred trailing body bytes | Pre-anchor body bytes | Pre-anchor first nonzero | Pre-anchor fields | Pre-anchor trailing leads | Pre-anchor pre-lead bytes | Pre-anchor prefixes | Pre-anchor suffixes | Body prefixes | Body suffixes | Header classifications | Header prefixes | Bytes after prefix | Post-prefix leads | Marker bytes | Inner selectors | Outer selectors | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.SourceDisposition)} | {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | {summary.BodyBytes} | {summary.WindowCount} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.InferredTrailingBodyBytes, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroFields, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.PreAnchorPreLeadBytes, 5)} | {FormatCountDictionary(summary.PreAnchorBodyPrefixes, 5)} | {FormatCountDictionary(summary.PreAnchorBodySuffixes, 5)} | {FormatCountDictionary(summary.BodyPrefixes, 5)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.BytesAfterPrefix, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorLeadSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorLeadSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorLeadSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Leads");
+        builder.AppendLine();
+        builder.AppendLine("This rolls inferred long-body pre-anchor leads into parser-target groups without consuming the long bodies. Candidate rows need body-length proof before becoming live parser rules.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser target | Reason | Source | Pre-anchor trailing lead | Pre-anchor pre-lead | Tail anchor | Evidence rows | Windows | Prefix fields | Tuple layouts | Post-prefix dispositions | Body bytes | Pre-anchor bytes | Inferred trailing body bytes | Pre-anchor first nonzero | Pre-anchor fields | Post-prefix leads | Marker bytes | Header classifications | Header prefixes | Body suffixes | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorLeadSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserTarget)} | {FormatTableText(summary.ActionReason)} | {FormatTableText(summary.SourceDisposition)} | `{FormatEmptyHex(summary.PreAnchorTrailingLeadHex)}` | `{FormatEmptyHex(summary.PreAnchorPreLeadHex)}` | {FormatTableText(summary.TailAnchorKind)} | {summary.EvidenceRowCount} | {summary.WindowCount} | {FormatCountDictionary(summary.PrefixFields, 5)} | {FormatCountDictionary(summary.TupleLayouts, 5)} | {FormatCountDictionary(summary.PostPrefixDispositions, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.InferredTrailingBodyBytes, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroFields, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorBodySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorBodySummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorBodySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Body Candidates");
+        builder.AppendLine();
+        builder.AppendLine("This exposes compact byte maps for the inferred pre-anchor body spans behind the long-body lead queue. Rows are diagnostic only; internal header-like offsets are evidence to inspect, not parser boundaries.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser target | Reason | Source | Tail anchor | Pre-anchor trailing lead | Pre-anchor pre-lead | Body bytes | Pre-anchor bytes | Trailing body bytes | Windows | Prefix fields | Tuple layouts | Post-prefix dispositions | Pre-anchor first nonzero | Pre-anchor fields | Nonzero offsets | Header-like offsets | Pre-anchor prefixes | First-nonzero windows | Pre-anchor suffixes | Body suffixes | Header classifications | Header prefixes | Classifications | Payload bytes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorBodySummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserTarget)} | {FormatTableText(summary.ActionReason)} | {FormatTableText(summary.SourceDisposition)} | {FormatTableText(summary.TailAnchorKind)} | `{FormatEmptyHex(summary.PreAnchorTrailingLeadHex)}` | `{FormatEmptyHex(summary.PreAnchorPreLeadHex)}` | {summary.BodyBytes} | {summary.PreAnchorBodyBytes} | {summary.InferredTrailingBodyBytes} | {summary.WindowCount} | {FormatCountDictionary(summary.PrefixFields, 5)} | {FormatCountDictionary(summary.TupleLayouts, 5)} | {FormatCountDictionary(summary.PostPrefixDispositions, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroFields, 5)} | {FormatCountDictionary(summary.PreAnchorNonZeroByteOffsets, 5)} | {FormatCountDictionary(summary.PreAnchorHeaderLikeOffsets, 5)} | {FormatCountDictionary(summary.PreAnchorPrefixes, 3)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroWindows, 3)} | {FormatCountDictionary(summary.PreAnchorSuffixes, 3)} | {FormatCountDictionary(summary.BodySuffixes, 3)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | {FormatCountDictionary(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorOffsetSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorOffsetSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorOffsetSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Offset Fields");
+        builder.AppendLine();
+        builder.AppendLine("This groups byte offsets across the inferred pre-anchor body spans. Rows include any offset with a nonzero byte or header-like collision; header-like rows are not accepted boundaries until a stronger rule proves them.");
+        builder.AppendLine();
+        builder.AppendLine("| Offset | Windows | Nonzero | Header-like | Byte values | Two-byte values | Four-byte windows | Header classifications | Parser targets | Pre-anchor leads | Tail anchors | Pre-anchor bytes | Body bytes | Sample |");
+        builder.AppendLine("| ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorOffsetSummary summary in summaries.Take(80))
+        {
+            builder.AppendLine(
+                $"| {summary.Offset} | {summary.WindowCount} | {summary.NonZeroCount} | {summary.HeaderLikeCount} | {FormatCountDictionary(summary.ByteValues, 8)} | {FormatCountDictionary(summary.TwoByteValues, 8)} | {FormatCountDictionary(summary.FourByteWindows, 8)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorHeaderCandidateSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorHeaderCandidateSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorHeaderCandidateSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Header Candidates");
+        builder.AppendLine();
+        builder.AppendLine("This expands header-like collision offsets inside the inferred pre-anchor body spans into candidate protocol 03 header fields. Rows are diagnostic only; overlapping candidates must be resolved before any body consume rule is promoted.");
+        builder.AppendLine();
+        builder.AppendLine("| Offset | Disposition | Windows | View ids | Update counts | First selectors | Header classifications | Four-byte windows | Next header-like offsets | Bytes to next | Bytes to pre-anchor end | Parser targets | Pre-anchor leads | Tail anchors | Pre-anchor bytes | Body bytes | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorHeaderCandidateSummary summary in summaries.Take(40))
+        {
+            builder.AppendLine(
+                $"| {summary.Offset} | {FormatTableText(summary.CandidateDisposition)} | {summary.WindowCount} | {FormatCountDictionary(summary.ViewIds, 8)} | {FormatCountDictionary(summary.UpdateCounts, 8)} | {FormatCountDictionary(summary.FirstSelectors, 8)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.FourByteWindows, 8)} | {FormatCountDictionary(summary.NextHeaderLikeOffsets, 8)} | {FormatCountDictionary(summary.BytesToNextHeaderLike, 8)} | {FormatCountDictionary(summary.BytesToPreAnchorEnd, 8)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Embedded Movement Windows");
+        builder.AppendLine();
+        builder.AppendLine("This scans inferred pre-anchor body spans for embedded `00 06 <movement selector>` windows. Supported selectors are decoded with the existing movement payload table; unsupported selectors remain evidence-only.");
+        builder.AppendLine();
+        builder.AppendLine("| Marker offset | Disposition | Windows | Inner selectors | Inner payload bytes | Inner position offsets | Pre-anchor position offsets | Marker windows | Positions | Outer positions | Post-movement leads | Parser targets | Pre-anchor leads | Tail anchors | Pre-anchor bytes | Body bytes | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {summary.MarkerOffset} | {FormatTableText(summary.MovementDisposition)} | {summary.WindowCount} | {FormatCountDictionary(summary.InnerSelectors, 8)} | {FormatCountDictionary(summary.InnerPayloadBytes, 8)} | {FormatCountDictionary(summary.InnerPositionOffsets, 8)} | {FormatCountDictionary(summary.PreAnchorPositionOffsets, 8)} | {FormatCountDictionary(summary.MarkerWindows, 5)} | {FormatCountDictionary(summary.PositionSamples, 5)} | {FormatCountDictionary(summary.OuterPositionSamples, 5)} | {FormatCountDictionary(summary.PostMovementLeads, 5)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Embedded Movement Trailers");
+        builder.AppendLine();
+        builder.AppendLine("This groups bytes after embedded `00 06 <movement selector>` windows. It is trailer evidence only; live parsing should not consume these bodies until the continuation shape explains the remaining pre-anchor bytes.");
+        builder.AppendLine();
+        builder.AppendLine("| Marker offset | Movement disposition | Trailer disposition | Post-movement lead | Windows | Inner selectors | Post-movement offsets | Bytes remaining | Next leads | Tail leads | Pre-tail field offsets | Pre-tail fields | Pre-leads | Nonzero trailer offsets | Parser targets | Pre-anchor leads | Tail anchors | Pre-anchor bytes | Body bytes | Sample |");
+        builder.AppendLine("| ---: | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {summary.MarkerOffset} | {FormatTableText(summary.MovementDisposition)} | {FormatTableText(summary.TrailerDisposition)} | `{FormatEmptyHex(summary.PostMovementLeadHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.InnerSelectors, 8)} | {FormatCountDictionary(summary.PreAnchorPostMovementOffsets, 8)} | {FormatCountDictionary(summary.BytesRemainingAfterMovement, 8)} | {FormatCountDictionary(summary.PostMovementNextLeads, 5)} | {FormatCountDictionary(summary.PostMovementTailLeads, 5)} | {FormatCountDictionary(summary.PreTailFieldOffsets, 5)} | {FormatCountDictionary(summary.PreTailFieldBytes, 5)} | {FormatCountDictionary(summary.PreAnchorPreLeads, 5)} | {FormatCountDictionary(summary.PostMovementNonZeroByteOffsets, 5)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary[] summaries = report.Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Long Tuple Body Pre-Anchor Embedded Movement Trailer Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This splits the embedded movement trailers into exact field/pre-lead/trailing-lead shapes. Repeated decoded shared shapes are consume candidates; singleton and unsupported-selector rows stay as collision controls.");
+        builder.AppendLine();
+        builder.AppendLine("| Shape disposition | Marker offset | Movement disposition | Trailer disposition | Post-movement lead | Next lead | Bytes remaining | Pre-tail offset | Pre-tail field | Pre-lead | Trailing lead | Tail anchor | Windows | Inner selectors | Post-movement offsets | Parser targets | Pre-anchor bytes | Body bytes | Nonzero trailer offsets | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ShapeDisposition)} | {summary.MarkerOffset} | {FormatTableText(summary.MovementDisposition)} | {FormatTableText(summary.TrailerDisposition)} | `{FormatEmptyHex(summary.PostMovementLeadHex)}` | `{FormatEmptyHex(summary.PostMovementNextLeadHex)}` | {summary.BytesRemainingAfterMovement} | {summary.PreTailFieldOffset?.ToString(CultureInfo.InvariantCulture) ?? "-"} | `{FormatEmptyHex(summary.PreTailFieldHex)}` | `{FormatEmptyHex(summary.PreAnchorPreLeadHex)}` | `{FormatEmptyHex(summary.PreAnchorTrailingLeadHex)}` | {FormatTableText(summary.TailAnchorKind)} | {summary.WindowCount} | {FormatCountDictionary(summary.InnerSelectors, 8)} | {FormatCountDictionary(summary.PreAnchorPostMovementOffsets, 8)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | {FormatCountDictionary(summary.PostMovementNonZeroByteOffsets, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06TupleBodyParserActionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary[] summaries = report.Protocol03NestedMovementMode06TupleBodyParserActionSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Tuple Body Parser Actions");
+        builder.AppendLine();
+        builder.AppendLine("This rolls the bounded post-prefix tuple body shapes into parser-length actions, separating live consumed bodies from held evidence.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Evidence rows | Windows | Tail prefixes | Tuple layouts | Post-prefix dispositions | Body dispositions | Body bytes | First nonzero offsets | First nonzero fields | Header classifications | Header prefixes | Post-prefix leads | Marker bytes | Inner selectors | Outer selectors | Classifications | Payload bytes | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06TupleBodyParserActionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.EvidenceRowCount} | {summary.WindowCount} | {FormatCountDictionary(summary.TailPrefixKinds, 5)} | {FormatCountDictionary(summary.TupleLayouts, 5)} | {FormatCountDictionary(summary.PostPrefixDispositions, 5)} | {FormatCountDictionary(summary.BodyDispositions, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.FirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.FirstNonZeroFields, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendProtocol03MovementStateTailLeads(
         StringBuilder builder,
         IReadOnlyList<Protocol03SampleWithFile> samples)
@@ -2162,6 +3282,1905 @@ public static class ReportWriter
         }
 
         builder.AppendLine();
+    }
+
+    private static void AppendProtocol03VariableSelectorTailFamilies(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Dictionary<string, RpcHeaderEntry[]> headersByEncoded = BuildEncodedHeaderLookup(report.LocalHeaders);
+        Protocol03VariableSelectorTailRow[] rows = samples
+            .SelectMany(entry => entry.Sample.VariableSelectorLeads
+                .Where(lead => !lead.Selector.Equals("80", StringComparison.OrdinalIgnoreCase))
+                .Select(lead => BuildProtocol03VariableSelectorTailRow(entry.File, entry.Sample.Line, entry.Sample, lead, headersByEncoded)))
+            .ToArray();
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        int unknownPayloads = rows.Count(row => row.Segment?.Classification.Equals("unknown selector payload", StringComparison.Ordinal) == true);
+        int rowsWithKnownHeaders = rows.Count(row => row.HeaderWindows.Count > 0);
+        int rowsWithVendorHeaders = rows.Count(row => row.HeaderWindows.Any(window => IsVendorHeader(window.Header)));
+
+        builder.AppendLine("### Protocol 03 Variable Selector Tail Families");
+        builder.AppendLine();
+        builder.AppendLine("This groups unresolved non-`80` variable selector payloads and scans their bytes for local two-byte RPC header windows. Header windows inside these tails are boundary clues for nested or adjacent packet families; they are not decoded RPC blocks by themselves.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {rows.Length} non-`80` variable selector tails, {unknownPayloads} are still classified as unknown selector payloads, {rowsWithKnownHeaders} contain at least one known header window, and {rowsWithVendorHeaders} contain an embedded vendor header window.");
+        builder.AppendLine();
+        builder.AppendLine("| Selector | Segment classification | Update count | First selector | Lead prefix | Records | Payload bytes | Header windows | Nearby 4-byte windows | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | ---: | --- | --- | --- | --- |");
+
+        var groupedRows = rows
+            .GroupBy(row => new
+            {
+                row.Lead.Selector,
+                SegmentClassification = row.Segment?.Classification ?? "variable selector payload",
+                row.Sample.UpdateCount,
+                row.Sample.FirstSelector,
+                row.PayloadPrefixHex
+            })
+            .Select(group => new
+            {
+                Group = group,
+                VendorHeaderHits = CountProtocol03TailHeaderWindows(group, vendorOnly: true),
+                HeaderHits = CountProtocol03TailHeaderWindows(group, vendorOnly: false)
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.Selector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .Take(25);
+
+        foreach (var grouped in groupedRows)
+        {
+            Protocol03VariableSelectorTailRow sample = grouped.Group
+                .OrderByDescending(row => row.HeaderWindows.Any(window => IsVendorHeader(window.Header)))
+                .ThenByDescending(row => row.HeaderWindows.Count)
+                .First();
+            builder.AppendLine(
+                $"| `{grouped.Group.Key.Selector}` | {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | `{FormatEmptyHex(grouped.Group.Key.PayloadPrefixHex)}` | {grouped.Group.Count()} | {FormatCountSummary(grouped.Group.Select(row => row.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatProtocol03TailHeaderSummary(grouped.Group)} | {FormatProtocol03TailHeaderContainerSummary(grouped.Group)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPackedFieldLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Dictionary<string, RpcHeaderEntry[]> headersByEncoded = BuildEncodedHeaderLookup(report.LocalHeaders);
+        Protocol03VariableSelectorTailRow[] rows = samples
+            .SelectMany(entry => entry.Sample.VariableSelectorLeads
+                .Where(lead => lead.Selector.Equals("ff", StringComparison.OrdinalIgnoreCase))
+                .Select(lead => BuildProtocol03VariableSelectorTailRow(entry.File, entry.Sample.Line, entry.Sample, lead, headersByEncoded)))
+            .ToArray();
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        Dictionary<string, FxDefinition> fxByHex = BuildFxDictionary(report.FxDefinitions);
+        Dictionary<uint, AbilityDefinition> abilitiesById = BuildAbilityDefinitionDictionary(report.AbilityDefinitions);
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+        ILookup<uint, StaticObjectEntry> staticObjectsByMxoId = report.StaticObjectEntries.ToLookup(entry => entry.MxoId);
+        ILookup<uint, StaticObjectEntry> staticObjectsByStaticId = report.StaticObjectEntries.ToLookup(entry => entry.StaticId);
+        ILookup<uint, VendorInventoryEntry> vendorsByStaticId = report.VendorInventoryEntries.ToLookup(entry => entry.VendorStaticId);
+        int unknownPayloads = rows.Count(row => row.Segment?.Classification.Equals("unknown selector payload", StringComparison.Ordinal) == true);
+        int rowsWithKnownHeaders = rows.Count(row => row.HeaderWindows.Count > 0);
+
+        builder.AppendLine("### Protocol 03 Selector ff Packed Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups selector `ff` payloads by fixed byte slices around the recurring header-like windows. The `u32 +9` resource refs column checks imported resource tables, but the field and nearby windows are still field-slice evidence only; repeated local RPC header bytes inside these slices are not treated as nested RPC boundaries.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {rows.Length} selector `ff` tails, {unknownPayloads} are still classified as unknown selector payloads and {rowsWithKnownHeaders} contain at least one known header window.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Lead +0 | u32 +9 | u32 +9 resource refs | Bytes +13 | Bytes +16 | Bytes +24 | Bytes +31 | Records | Payload bytes | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedRows = rows
+            .GroupBy(row => new
+            {
+                SegmentClassification = row.Segment?.Classification ?? "variable selector payload",
+                row.Sample.UpdateCount,
+                row.Sample.FirstSelector,
+                Lead0Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 0, 9),
+                Field9Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 9, 4),
+                Bytes13Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 13, 3),
+                Bytes16Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 16, 8),
+                Bytes24Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 24, 8),
+                Bytes31Hex = FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 31, 8)
+            })
+            .Select(group => new
+            {
+                Group = group,
+                VendorHeaderHits = CountProtocol03TailHeaderWindows(group, vendorOnly: true),
+                HeaderHits = CountProtocol03TailHeaderWindows(group, vendorOnly: false)
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .Take(25);
+
+        foreach (var grouped in groupedRows)
+        {
+            Protocol03VariableSelectorTailRow sample = grouped.Group
+                .OrderByDescending(row => row.HeaderWindows.Any(window => IsVendorHeader(window.Header)))
+                .ThenByDescending(row => row.HeaderWindows.Count)
+                .First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | `{FormatEmptyHex(grouped.Group.Key.Lead0Hex)}` | {FormatProtocol03U32Field(grouped.Group.Key.Field9Hex)} | {FormatProtocol03U32ResourceReferences(grouped.Group.Key.Field9Hex, fxByHex, gameObjectsById, abilitiesById, itemsById, staticObjectsByMxoId, staticObjectsByStaticId, vendorsByStaticId)} | `{FormatEmptyHex(grouped.Group.Key.Bytes13Hex)}` | `{FormatEmptyHex(grouped.Group.Key.Bytes16Hex)}` | `{FormatEmptyHex(grouped.Group.Key.Bytes24Hex)}` | `{FormatEmptyHex(grouped.Group.Key.Bytes31Hex)}` | {grouped.Group.Count()} | {FormatCountSummary(grouped.Group.Select(row => row.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatProtocol03TailHeaderSummary(grouped.Group)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPositionLikeLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        Dictionary<string, RpcHeaderEntry[]> headersByEncoded = BuildEncodedHeaderLookup(report.LocalHeaders);
+        Protocol03VariableSelectorTailRow[] rows = samples
+            .SelectMany(entry => entry.Sample.VariableSelectorLeads
+                .Where(lead => lead.Selector.Equals("ff", StringComparison.OrdinalIgnoreCase))
+                .Select(lead => BuildProtocol03VariableSelectorTailRow(entry.File, entry.Sample.Line, entry.Sample, lead, headersByEncoded)))
+            .ToArray();
+        Protocol03SelectorFfPositionLead[] leads = rows
+            .SelectMany(FindProtocol03SelectorFfPositionLeads)
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        int rowsWithPositions = leads
+            .GroupBy(lead => new { lead.Row.File, lead.Row.Line, lead.Row.Lead.Offset })
+            .Count();
+
+        builder.AppendLine("### Protocol 03 Selector ff Position-Like Leads");
+        builder.AppendLine();
+        builder.AppendLine("This scans unresolved selector `ff` payloads for plausible 24-byte little-endian xyz triples after the fixed packed-field prefix. These are position leads only: the surrounding selector body remains variable and is not fully decoded.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {rows.Length} selector `ff` tails, {rowsWithPositions} expose at least one plausible little-endian xyz triple.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Lead +0 | u32 +9 | Position offset | Pre-position bytes | Post-position bytes | Tail after position | Records | Payload bytes | Position samples | Nearest decoded-position hints | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | ---: | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        Protocol03DecodedPositionHint[] decodedPositions = BuildProtocol03DecodedPositionHints(report, samples);
+
+        var groupedLeads = leads
+            .GroupBy(lead => new
+            {
+                SegmentClassification = lead.Row.Segment?.Classification ?? "variable selector payload",
+                lead.Row.Sample.UpdateCount,
+                lead.Row.Sample.FirstSelector,
+                lead.Lead0Hex,
+                lead.Field9Hex,
+                lead.PositionOffset,
+                lead.PrePositionHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(lead => lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03SelectorFfPositionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | `{FormatEmptyHex(grouped.Group.Key.Lead0Hex)}` | {FormatProtocol03U32Field(grouped.Group.Key.Field9Hex)} | {grouped.Group.Key.PositionOffset} | `{FormatEmptyHex(grouped.Group.Key.PrePositionHex)}` | {FormatDistinct(grouped.Group.Select(lead => FormatEmptyHex(lead.PostPositionHex)), 4)} | {FormatCountSummary(grouped.Group.Select(lead => lead.PostPositionBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatCountSummary(grouped.Rows.Select(row => row.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(grouped.Group.Select(FormatProtocol03SelectorFfPosition), 4)} | {FormatProtocol03SelectorFfNearestDecodedPositions(grouped.Group, decodedPositions)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Row.File}:{sample.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+        AppendProtocol03SelectorFfPostPositionTailLeads(builder, leads);
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionTailLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> leads)
+    {
+        Protocol03SelectorFfPositionLead[] tailLeads = leads
+            .Where(lead => lead.PostPositionBytes > 0)
+            .ToArray();
+        if (tailLeads.Length == 0)
+        {
+            return;
+        }
+
+        int rowsWithTail = tailLeads
+            .GroupBy(lead => new { lead.Row.File, lead.Row.Line, lead.Row.Lead.Offset, lead.PositionOffset })
+            .Count();
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Tail Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups the unresolved bytes immediately after selector `ff` position-like triples. Treat the fields as structural leads only: the suffix may be a nested selector, fixed trailer, or repeated state-list entry.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {tailLeads.Length} selector `ff` position leads, {rowsWithTail} have bytes after the xyz triple.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Post +0 | Zero run after +0 | First nonzero offset | u16 at first nonzero | Bytes after u16 | Next ff offset | Next ff bytes | Tail after position | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | --- | ---: | ---: | --- | --- | ---: | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = tailLeads
+            .GroupBy(lead => new
+            {
+                SegmentClassification = lead.Row.Segment?.Classification ?? "variable selector payload",
+                lead.Row.Sample.UpdateCount,
+                lead.Row.Sample.FirstSelector,
+                lead.PositionOffset,
+                lead.PostPositionLeadHex,
+                lead.PostPositionZeroRun,
+                lead.PostPositionFirstNonZeroOffset,
+                lead.PostPositionFirstFieldHex,
+                lead.PostPositionFieldSuffixHex,
+                lead.PostPositionNextFfOffset,
+                lead.PostPositionNextFfHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(lead => lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03SelectorFfPositionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | `{FormatEmptyHex(grouped.Group.Key.PostPositionLeadHex)}` | {grouped.Group.Key.PostPositionZeroRun} | {FormatNullableInt(grouped.Group.Key.PostPositionFirstNonZeroOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionFirstFieldHex)} | `{FormatEmptyHex(grouped.Group.Key.PostPositionFieldSuffixHex)}` | {FormatNullableInt(grouped.Group.Key.PostPositionNextFfOffset)} | `{FormatEmptyHex(grouped.Group.Key.PostPositionNextFfHex)}` | {FormatCountSummary(grouped.Group.Select(lead => lead.PostPositionBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(FormatProtocol03SelectorFfPosition), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Row.File}:{sample.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+        AppendProtocol03SelectorFfPostPositionRepeatLeads(builder, tailLeads);
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> tailLeads)
+    {
+        Protocol03SelectorFfPositionLead[] repeatLeads = tailLeads
+            .Where(lead => lead.PostPositionRepeatRecordCount >= 2 && lead.PostPositionRepeatStride is not null)
+            .ToArray();
+        if (repeatLeads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat-Stride Leads");
+        builder.AppendLine();
+        builder.AppendLine("This tests whether the post-position tail exposes repeated `ff`-started entries at the next observed marker stride. It is a boundary lead only; the entry body is not decoded.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {tailLeads.Count} selector `ff` position tails with suffix bytes, {repeatLeads.Length} expose at least two `ff` markers at a consistent post-position stride.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | First record u16 | Second record lead | Repeat records | Record field sequence | Tail after position | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = repeatLeads
+            .GroupBy(lead => new
+            {
+                SegmentClassification = lead.Row.Segment?.Classification ?? "variable selector payload",
+                lead.Row.Sample.UpdateCount,
+                lead.Row.Sample.FirstSelector,
+                lead.PositionOffset,
+                lead.PostPositionRepeatStride,
+                lead.PostPositionFirstFieldHex,
+                lead.PostPositionRepeatSecondLeadHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(lead => lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03SelectorFfPositionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionFirstFieldHex)} | `{FormatEmptyHex(grouped.Group.Key.PostPositionRepeatSecondLeadHex)}` | {FormatCountSummary(grouped.Group.Select(lead => lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatDistinct(grouped.Group.Select(lead => lead.PostPositionRepeatFieldSequence), 4)} | {FormatCountSummary(grouped.Group.Select(lead => lead.PostPositionBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(FormatProtocol03SelectorFfPosition), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Row.File}:{sample.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+        AppendProtocol03SelectorFfPostPositionRepeatSecondFieldLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatEntryTransitionLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatContinuationLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatContinuationFieldLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatContinuationMarkerTailLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatContinuationPrefixFamilyLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatListCandidateLeads(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatListFieldSummary(builder, repeatLeads);
+        AppendProtocol03SelectorFfPostPositionRepeatEntryFieldMatrix(builder, repeatLeads);
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatSecondFieldLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03SelectorFfPositionLead[] fieldLeads = repeatLeads
+            .Where(lead => lead.PostPositionRepeatSecondFieldOffset is not null && !string.IsNullOrWhiteSpace(lead.PostPositionRepeatSecondFieldHex))
+            .ToArray();
+        if (fieldLeads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Second-Entry Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups the first nonzero local field inside the second repeated `ff` entry. It keeps the 18-byte stride as a structural lead while separating entries whose second member has a different internal shape.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {repeatLeads.Count} repeat-stride tails, {fieldLeads.Length} expose a second-entry local field within the repeated stride.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | First record u16 | Second zero run | Second field offset | Second field u16 | Second record leads | Repeat records | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = fieldLeads
+            .GroupBy(lead => new
+            {
+                SegmentClassification = lead.Row.Segment?.Classification ?? "variable selector payload",
+                lead.Row.Sample.UpdateCount,
+                lead.Row.Sample.FirstSelector,
+                lead.PositionOffset,
+                lead.PostPositionRepeatStride,
+                lead.PostPositionFirstFieldHex,
+                lead.PostPositionRepeatSecondZeroRun,
+                lead.PostPositionRepeatSecondFieldOffset,
+                lead.PostPositionRepeatSecondFieldHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(lead => lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03SelectorFfPositionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionFirstFieldHex)} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatSecondZeroRun)} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatSecondFieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionRepeatSecondFieldHex)} | {FormatDistinct(grouped.Group.Select(lead => FormatEmptyHex(lead.PostPositionRepeatSecondLeadHex)), 4)} | {FormatCountSummary(grouped.Group.Select(lead => lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(FormatProtocol03SelectorFfPosition), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Row.File}:{sample.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatEntryTransitionLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatEntryTransitionLead[] transitionLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads);
+        if (transitionLeads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Entry Transition Leads");
+        builder.AppendLine();
+        builder.AppendLine("This pairs the first local field in entry 1 with the first local field in entry 2 for each repeated `ff` tail. It is an entry-shape lead for a possible repeated state list, not a final semantic decode.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {repeatLeads.Count} repeat-stride tails, {transitionLeads.Length} expose paired entry-1 and entry-2 local fields.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | First record u16 | Entry 1 field | Entry 2 field | Entry 1 lead | Entry 2 lead | Repeat records | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = transitionLeads
+            .GroupBy(entry => new
+            {
+                SegmentClassification = entry.Lead.Row.Segment?.Classification ?? "variable selector payload",
+                entry.Lead.Row.Sample.UpdateCount,
+                entry.Lead.Row.Sample.FirstSelector,
+                entry.Lead.PositionOffset,
+                entry.Lead.PostPositionRepeatStride,
+                entry.Lead.PostPositionFirstFieldHex,
+                Entry1ZeroRun = entry.Entry1.ZeroRun,
+                Entry1FieldOffset = entry.Entry1.FieldOffset,
+                Entry1FieldHex = entry.Entry1.FieldHex,
+                Entry2ZeroRun = entry.Entry2.ZeroRun,
+                Entry2FieldOffset = entry.Entry2.FieldOffset,
+                Entry2FieldHex = entry.Entry2.FieldHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatEntryTransitionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionFirstFieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry1ZeroRun, grouped.Group.Key.Entry1FieldOffset, grouped.Group.Key.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry2ZeroRun, grouped.Group.Key.Entry2FieldOffset, grouped.Group.Key.Entry2FieldHex)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.Entry1.EntryLeadHex)), 4)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.Entry2.EntryLeadHex)), 4)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Lead.Row.File}:{sample.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatContinuationLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatEntryTransitionLead[] transitionLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads);
+        if (transitionLeads.Length == 0)
+        {
+            return;
+        }
+
+        int continuationCount = transitionLeads.Count(entry => entry.Lead.PostPositionRepeatContinuationBytes > 0);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Continuation Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups the bytes immediately after the consecutive repeated `ff` entries. It tests whether the observed two-entry run is terminal in the capture buffer or hands off to another body shape.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {transitionLeads.Length} paired repeat-stride tails, {continuationCount} have bytes after their repeated records.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | Entry 1 field | Entry 2 field | Repeat records | Continuation offset | Continuation bytes | Continuation prefix | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = transitionLeads
+            .GroupBy(entry => new
+            {
+                SegmentClassification = entry.Lead.Row.Segment?.Classification ?? "variable selector payload",
+                entry.Lead.Row.Sample.UpdateCount,
+                entry.Lead.Row.Sample.FirstSelector,
+                entry.Lead.PositionOffset,
+                entry.Lead.PostPositionRepeatStride,
+                Entry1ZeroRun = entry.Entry1.ZeroRun,
+                Entry1FieldOffset = entry.Entry1.FieldOffset,
+                Entry1FieldHex = entry.Entry1.FieldHex,
+                Entry2ZeroRun = entry.Entry2.ZeroRun,
+                Entry2FieldOffset = entry.Entry2.FieldOffset,
+                Entry2FieldHex = entry.Entry2.FieldHex,
+                entry.Lead.PostPositionRepeatContinuationOffset,
+                entry.Lead.PostPositionRepeatContinuationHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatEntryTransitionLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry1ZeroRun, grouped.Group.Key.Entry1FieldOffset, grouped.Group.Key.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry2ZeroRun, grouped.Group.Key.Entry2FieldOffset, grouped.Group.Key.Entry2FieldHex)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatContinuationOffset)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Lead.PostPositionRepeatContinuationBytes.ToString(CultureInfo.InvariantCulture)), 8)} | `{FormatEmptyHex(grouped.Group.Key.PostPositionRepeatContinuationHex)}` | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Lead.Row.File}:{sample.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatContinuationFieldLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatContinuationFieldLead[] fieldLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads)
+            .Select(CreateProtocol03RepeatContinuationFieldLead)
+            .Where(lead => lead is not null)
+            .Select(lead => lead!)
+            .ToArray();
+        if (fieldLeads.Length == 0)
+        {
+            return;
+        }
+
+        int byte3FfCount = fieldLeads.Count(lead => lead.Byte3IsFf);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Continuation Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This treats the continuation bytes after the two repeated records as a separate local body and groups its first byte fields. It is a structural field lead only.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {fieldLeads.Length} continuation bodies with at least four bytes, {byte3FfCount} have continuation byte `+3 = ff`.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | Entry 1 field | Entry 2 field | Continuation +0..+3 | u16 +4 | u16 +6 | u16 +8 | u16 +10 | u16 +12 | u16 +14 | Continuation bytes | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = fieldLeads
+            .GroupBy(entry => new
+            {
+                SegmentClassification = entry.Transition.Lead.Row.Segment?.Classification ?? "variable selector payload",
+                entry.Transition.Lead.Row.Sample.UpdateCount,
+                entry.Transition.Lead.Row.Sample.FirstSelector,
+                entry.Transition.Lead.PositionOffset,
+                entry.Transition.Lead.PostPositionRepeatStride,
+                Entry1ZeroRun = entry.Transition.Entry1.ZeroRun,
+                Entry1FieldOffset = entry.Transition.Entry1.FieldOffset,
+                Entry1FieldHex = entry.Transition.Entry1.FieldHex,
+                Entry2ZeroRun = entry.Transition.Entry2.ZeroRun,
+                Entry2FieldOffset = entry.Transition.Entry2.FieldOffset,
+                Entry2FieldHex = entry.Transition.Entry2.FieldHex,
+                entry.ContinuationPrefixHex,
+                entry.U16Offset4Hex,
+                entry.U16Offset6Hex,
+                entry.U16Offset8Hex,
+                entry.U16Offset10Hex,
+                entry.U16Offset12Hex,
+                entry.U16Offset14Hex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Transition.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatContinuationFieldLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry1ZeroRun, grouped.Group.Key.Entry1FieldOffset, grouped.Group.Key.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry2ZeroRun, grouped.Group.Key.Entry2FieldOffset, grouped.Group.Key.Entry2FieldHex)} | `{FormatEmptyHex(grouped.Group.Key.ContinuationPrefixHex)}` | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset4Hex)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset6Hex)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset8Hex)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset10Hex)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset12Hex)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.U16Offset14Hex)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.PostPositionRepeatContinuationBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Transition.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Transition.Lead.Row.File}:{sample.Transition.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatContinuationMarkerTailLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatContinuationFieldLead[] markerLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads)
+            .Select(CreateProtocol03RepeatContinuationFieldLead)
+            .Where(lead => lead is { Byte3IsFf: true })
+            .Select(lead => lead!)
+            .ToArray();
+        if (markerLeads.Length == 0)
+        {
+            return;
+        }
+
+        int postMarkerFieldCount = markerLeads.Count(lead => lead.PostMarkerFirstFieldOffset is not null);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Continuation Marker Tail Leads");
+        builder.AppendLine();
+        builder.AppendLine("This treats continuation byte `+3 = ff` as a candidate local marker and groups the bytes that follow it. It is a structural field lead only.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {markerLeads.Length} continuation bodies with byte `+3 = ff`, {postMarkerFieldCount} expose a post-marker u16 field.");
+        builder.AppendLine();
+        builder.AppendLine("| Segment classification | Update count | First selector | Position offset | Repeat stride | Entry 1 field | Entry 2 field | Continuation +0..+2 | Marker | Post-marker zero run | First post-marker field offset | First post-marker field | Post-marker lead | Continuation bytes | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = markerLeads
+            .GroupBy(entry => new
+            {
+                SegmentClassification = entry.Transition.Lead.Row.Segment?.Classification ?? "variable selector payload",
+                entry.Transition.Lead.Row.Sample.UpdateCount,
+                entry.Transition.Lead.Row.Sample.FirstSelector,
+                entry.Transition.Lead.PositionOffset,
+                entry.Transition.Lead.PostPositionRepeatStride,
+                Entry1ZeroRun = entry.Transition.Entry1.ZeroRun,
+                Entry1FieldOffset = entry.Transition.Entry1.FieldOffset,
+                Entry1FieldHex = entry.Transition.Entry1.FieldHex,
+                Entry2ZeroRun = entry.Transition.Entry2.ZeroRun,
+                Entry2FieldOffset = entry.Transition.Entry2.FieldOffset,
+                Entry2FieldHex = entry.Transition.Entry2.FieldHex,
+                entry.ContinuationPrefixBeforeMarkerHex,
+                entry.ContinuationMarkerHex,
+                entry.PostMarkerZeroRun,
+                entry.PostMarkerFirstFieldOffset,
+                entry.PostMarkerFirstFieldHex,
+                entry.PostMarkerLeadHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Transition.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatContinuationFieldLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry1ZeroRun, grouped.Group.Key.Entry1FieldOffset, grouped.Group.Key.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry2ZeroRun, grouped.Group.Key.Entry2FieldOffset, grouped.Group.Key.Entry2FieldHex)} | `{FormatEmptyHex(grouped.Group.Key.ContinuationPrefixBeforeMarkerHex)}` | `{FormatEmptyHex(grouped.Group.Key.ContinuationMarkerHex)}` | {grouped.Group.Key.PostMarkerZeroRun} | {FormatNullableInt(grouped.Group.Key.PostMarkerFirstFieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostMarkerFirstFieldHex)} | `{FormatEmptyHex(grouped.Group.Key.PostMarkerLeadHex)}` | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.PostPositionRepeatContinuationBytes.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Transition.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Transition.Lead.Row.File}:{sample.Transition.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatContinuationPrefixFamilyLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatContinuationFieldLead[] markerLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads)
+            .Select(CreateProtocol03RepeatContinuationFieldLead)
+            .Where(lead => lead is { Byte3IsFf: true })
+            .Select(lead => lead!)
+            .ToArray();
+        if (markerLeads.Length == 0)
+        {
+            return;
+        }
+
+        var allGroupedLeads = markerLeads
+            .GroupBy(entry => new
+            {
+                entry.ContinuationPrefixBeforeMarkerHex,
+                entry.ContinuationMarkerHex,
+                entry.PostMarkerZeroRun,
+                entry.PostMarkerFirstFieldOffset,
+                entry.PostMarkerFirstFieldHex,
+                entry.PostMarkerLeadHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Transition.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .ToArray();
+        int postMarkerFieldCount = markerLeads.Count(lead => lead.PostMarkerFirstFieldOffset is not null);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Continuation Prefix Families");
+        builder.AppendLine();
+        builder.AppendLine("This collapses the continuation marker-tail rows into prefix families so the dominant local body shapes are visible without entry-field dimensions.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {markerLeads.Length} continuation bodies with byte `+3 = ff`, {allGroupedLeads.Length} prefix/post-marker families appear and {postMarkerFieldCount} expose a post-marker u16 field.");
+        builder.AppendLine();
+        builder.AppendLine("| Continuation +0..+2 | Marker | Post-marker zero run | First post-marker field offset | First post-marker field | Post-marker lead | Continuation bodies | Records | Segment classifications | Update counts | First selectors | Entry 1 fields | Entry 2 fields | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+
+        foreach (var grouped in allGroupedLeads
+            .OrderByDescending(group => group.Group.Count())
+            .ThenByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenBy(group => group.Group.Key.ContinuationPrefixBeforeMarkerHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PostMarkerZeroRun)
+            .ThenBy(group => group.Group.Key.PostMarkerFirstFieldOffset ?? int.MaxValue)
+            .Take(25))
+        {
+            Protocol03RepeatContinuationFieldLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(grouped.Group.Key.ContinuationPrefixBeforeMarkerHex)}` | `{FormatEmptyHex(grouped.Group.Key.ContinuationMarkerHex)}` | {grouped.Group.Key.PostMarkerZeroRun} | {FormatNullableInt(grouped.Group.Key.PostMarkerFirstFieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostMarkerFirstFieldHex)} | `{FormatEmptyHex(grouped.Group.Key.PostMarkerLeadHex)}` | {grouped.Group.Count()} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => entry.Transition.Lead.Row.Segment?.Classification ?? "variable selector payload"), 6)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.Row.Sample.UpdateCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.Row.Sample.FirstSelector), 8)} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03RepeatRecordFieldShape(entry.Transition.Entry1.ZeroRun, entry.Transition.Entry1.FieldOffset, entry.Transition.Entry1.FieldHex)), 8)} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03RepeatRecordFieldShape(entry.Transition.Entry2.ZeroRun, entry.Transition.Entry2.FieldOffset, entry.Transition.Entry2.FieldHex)), 8)} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Transition.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Transition.Lead.Row.File}:{sample.Transition.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatListCandidateLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatContinuationFieldLead[] markerLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads)
+            .Select(CreateProtocol03RepeatContinuationFieldLead)
+            .Where(lead => lead is { Byte3IsFf: true })
+            .Select(lead => lead!)
+            .ToArray();
+        if (markerLeads.Length == 0)
+        {
+            return;
+        }
+
+        int exactTwoEntryCount = markerLeads.Count(lead =>
+            lead.Transition.Lead.PostPositionRepeatRecordCount == 2 &&
+            lead.Transition.Lead.PostPositionRepeatStride is int stride &&
+            lead.Transition.Lead.PostPositionRepeatContinuationOffset == stride * 2);
+        int postMarkerFieldCount = markerLeads.Count(lead => lead.PostMarkerFirstFieldOffset is not null);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat List Candidate Leads");
+        builder.AppendLine();
+        builder.AppendLine("This treats the two observed `ff` stride entries plus the following continuation marker body as one structural list candidate. It is still a field-shape lead, not a semantic decode.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {markerLeads.Length} continuation bodies with byte `+3 = ff`, {exactTwoEntryCount} have exactly two repeated entries before the continuation body and {postMarkerFieldCount} expose a post-marker u16 field.");
+        builder.AppendLine();
+        builder.AppendLine("| Repeat stride | Repeat entries | Continuation offset | Entry 1 field | Entry 2 field | Continuation +0..+2 | Marker | Post-marker zero run | First post-marker field offset | First post-marker field | Post-marker leads | Continuation bodies | Records | Segment classifications | Update counts | First selectors | Position samples | Header windows | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | --- | --- | ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |");
+
+        var groupedLeads = markerLeads
+            .GroupBy(entry => new
+            {
+                entry.Transition.Lead.PostPositionRepeatStride,
+                entry.Transition.Lead.PostPositionRepeatRecordCount,
+                entry.Transition.Lead.PostPositionRepeatContinuationOffset,
+                Entry1ZeroRun = entry.Transition.Entry1.ZeroRun,
+                Entry1FieldOffset = entry.Transition.Entry1.FieldOffset,
+                Entry1FieldHex = entry.Transition.Entry1.FieldHex,
+                Entry2ZeroRun = entry.Transition.Entry2.ZeroRun,
+                Entry2FieldOffset = entry.Transition.Entry2.FieldOffset,
+                Entry2FieldHex = entry.Transition.Entry2.FieldHex,
+                entry.ContinuationPrefixBeforeMarkerHex,
+                entry.ContinuationMarkerHex,
+                entry.PostMarkerZeroRun,
+                entry.PostMarkerFirstFieldOffset,
+                entry.PostMarkerFirstFieldHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Transition.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderByDescending(group => group.Group.Count())
+            .ThenByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenBy(group => group.Group.Key.PostPositionRepeatStride ?? int.MaxValue)
+            .ThenBy(group => group.Group.Key.ContinuationPrefixBeforeMarkerHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PostMarkerZeroRun)
+            .ThenBy(group => group.Group.Key.PostMarkerFirstFieldOffset ?? int.MaxValue)
+            .Take(25);
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatContinuationFieldLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatContinuationOffset)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry1ZeroRun, grouped.Group.Key.Entry1FieldOffset, grouped.Group.Key.Entry1FieldHex)} | {FormatProtocol03RepeatRecordFieldShape(grouped.Group.Key.Entry2ZeroRun, grouped.Group.Key.Entry2FieldOffset, grouped.Group.Key.Entry2FieldHex)} | `{FormatEmptyHex(grouped.Group.Key.ContinuationPrefixBeforeMarkerHex)}` | `{FormatEmptyHex(grouped.Group.Key.ContinuationMarkerHex)}` | {grouped.Group.Key.PostMarkerZeroRun} | {FormatNullableInt(grouped.Group.Key.PostMarkerFirstFieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostMarkerFirstFieldHex)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.PostMarkerLeadHex)), 6)} | {grouped.Group.Count()} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => entry.Transition.Lead.Row.Segment?.Classification ?? "variable selector payload"), 6)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.Row.Sample.UpdateCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Transition.Lead.Row.Sample.FirstSelector), 8)} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Transition.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Transition.Lead.Row.File}:{sample.Transition.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatListFieldSummary(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatContinuationFieldLead[] candidateLeads = BuildProtocol03RepeatEntryTransitionLeads(repeatLeads)
+            .Select(CreateProtocol03RepeatContinuationFieldLead)
+            .Where(lead =>
+                lead is { Byte3IsFf: true } &&
+                lead.Transition.Lead.PostPositionRepeatRecordCount == 2 &&
+                lead.Transition.Lead.PostPositionRepeatStride is int stride &&
+                lead.Transition.Lead.PostPositionRepeatContinuationOffset == stride * 2)
+            .Select(lead => lead!)
+            .ToArray();
+        if (candidateLeads.Length == 0)
+        {
+            return;
+        }
+
+        Protocol03RepeatListFieldValueLead[] fieldLeads = candidateLeads
+            .SelectMany(lead => new[]
+            {
+                new Protocol03RepeatListFieldValueLead(
+                    "entry 1",
+                    1,
+                    lead.Transition.Entry1.ZeroRun,
+                    lead.Transition.Entry1.FieldOffset,
+                    lead.Transition.Entry1.FieldHex,
+                    ClassifyProtocol03SelectorFfRepeatListFieldLayout("entry 1", lead.Transition.Entry1.ZeroRun, lead.Transition.Entry1.FieldOffset, lead.Transition.Entry1.FieldHex),
+                    lead.Transition.Entry1.EntryLeadHex,
+                    lead),
+                new Protocol03RepeatListFieldValueLead(
+                    "entry 2",
+                    2,
+                    lead.Transition.Entry2.ZeroRun,
+                    lead.Transition.Entry2.FieldOffset,
+                    lead.Transition.Entry2.FieldHex,
+                    ClassifyProtocol03SelectorFfRepeatListFieldLayout("entry 2", lead.Transition.Entry2.ZeroRun, lead.Transition.Entry2.FieldOffset, lead.Transition.Entry2.FieldHex),
+                    lead.Transition.Entry2.EntryLeadHex,
+                    lead),
+                new Protocol03RepeatListFieldValueLead(
+                    "post-marker",
+                    3,
+                    lead.PostMarkerZeroRun,
+                    lead.PostMarkerFirstFieldOffset,
+                    lead.PostMarkerFirstFieldHex,
+                    ClassifyProtocol03SelectorFfRepeatListFieldLayout("post-marker", lead.PostMarkerZeroRun, lead.PostMarkerFirstFieldOffset, lead.PostMarkerFirstFieldHex),
+                    lead.PostMarkerLeadHex,
+                    lead)
+            })
+            .ToArray();
+
+        builder.AppendLine("### Protocol 03 Selector ff Repeat List Field Value Summary");
+        builder.AppendLine();
+        builder.AppendLine("This collapses the modeled two-entry list candidates into global field-value families for the first repeat entry, second repeat entry, and continuation post-marker field.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {candidateLeads.Length} exact two-entry list candidates, {fieldLeads.Length} modeled field-role observations are available.");
+        builder.AppendLine();
+        builder.AppendLine("| Field role | Layout | Zero run | Field offset | Field u16 | Lead bytes | Candidates | Update counts | First selectors | Continuation prefixes | Position samples | Header windows | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+
+        var groupedLeads = fieldLeads
+            .GroupBy(entry => new
+            {
+                entry.Role,
+                entry.RoleOrder,
+                entry.ZeroRun,
+                entry.FieldOffset,
+                entry.FieldHex,
+                entry.FieldLayoutKind
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Candidate.Transition.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderBy(group => group.Group.Key.RoleOrder)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenBy(group => group.Group.Key.ZeroRun)
+            .ThenBy(group => group.Group.Key.FieldOffset ?? int.MaxValue)
+            .GroupBy(group => group.Group.Key.RoleOrder)
+            .SelectMany(roleGroup => roleGroup.Take(12));
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatListFieldValueLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {FormatTableText(grouped.Group.Key.Role)} | {FormatTableText(grouped.Group.Key.FieldLayoutKind)} | {grouped.Group.Key.ZeroRun} | {FormatNullableInt(grouped.Group.Key.FieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.FieldHex)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.ValueLeadHex)), 6)} | {grouped.Group.Count()} | {FormatCountSummary(grouped.Group.Select(entry => entry.Candidate.Transition.Lead.Row.Sample.UpdateCount.ToString(CultureInfo.InvariantCulture)), 8)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Candidate.Transition.Lead.Row.Sample.FirstSelector), 8)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.Candidate.ContinuationPrefixHex)), 6)} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Candidate.Transition.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Candidate.Transition.Lead.Row.File}:{sample.Candidate.Transition.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static Protocol03RepeatEntryTransitionLead[] BuildProtocol03RepeatEntryTransitionLeads(IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        List<Protocol03RepeatEntryTransitionLead> transitionLeads = new();
+        foreach (Protocol03SelectorFfPositionLead lead in repeatLeads)
+        {
+            Protocol03RepeatRecordFieldSample? entry1 = lead.PostPositionRepeatFields.FirstOrDefault(field => field.EntryIndex == 1);
+            Protocol03RepeatRecordFieldSample? entry2 = lead.PostPositionRepeatFields.FirstOrDefault(field => field.EntryIndex == 2);
+            if (entry1 is null || entry2 is null)
+            {
+                continue;
+            }
+
+            transitionLeads.Add(new Protocol03RepeatEntryTransitionLead(lead, entry1, entry2));
+        }
+
+        return transitionLeads.ToArray();
+    }
+
+    private static Protocol03RepeatContinuationFieldLead? CreateProtocol03RepeatContinuationFieldLead(Protocol03RepeatEntryTransitionLead transition)
+    {
+        byte[] bytes = ParseHexBytes(transition.Lead.PostPositionRepeatContinuationFullHex);
+        if (bytes.Length < 4)
+        {
+            return null;
+        }
+
+        int postMarkerOffset = 4;
+        int postMarkerZeroRun = 0;
+        while (postMarkerOffset < bytes.Length && bytes[postMarkerOffset] == 0)
+        {
+            postMarkerZeroRun++;
+            postMarkerOffset++;
+        }
+
+        int? postMarkerFirstFieldOffset = postMarkerOffset + 1 < bytes.Length
+            ? postMarkerOffset
+            : null;
+
+        return new Protocol03RepeatContinuationFieldLead(
+            transition,
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 0, 4),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 0, 3),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 3, 1),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 4, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 6, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 8, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 10, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 12, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 14, 2),
+            FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, 4, 8),
+            postMarkerZeroRun,
+            postMarkerFirstFieldOffset,
+            postMarkerFirstFieldOffset is int fieldOffset
+                ? FormatProtocol03PayloadSlice(transition.Lead.PostPositionRepeatContinuationFullHex, fieldOffset, 2)
+                : string.Empty,
+            bytes[3] == 0xff);
+    }
+
+    private static void AppendProtocol03SelectorFfPostPositionRepeatEntryFieldMatrix(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03SelectorFfPositionLead> repeatLeads)
+    {
+        Protocol03RepeatRecordFieldLead[] fieldLeads = repeatLeads
+            .SelectMany(lead => lead.PostPositionRepeatFields.Select(field => new Protocol03RepeatRecordFieldLead(lead, field)))
+            .ToArray();
+        if (fieldLeads.Length == 0)
+        {
+            return;
+        }
+
+        int leadCount = fieldLeads
+            .GroupBy(entry => new { entry.Lead.Row.File, entry.Lead.Row.Line, entry.Lead.Row.Lead.Offset, entry.Lead.PositionOffset })
+            .Count();
+        int maxEntryIndex = fieldLeads.Max(entry => entry.Field.EntryIndex);
+
+        builder.AppendLine("### Protocol 03 Selector ff Post-Position Repeat Entry Field Matrix");
+        builder.AppendLine();
+        builder.AppendLine("This groups the first local field found in each repeated `ff` entry for the first repeated entries. It is still structural evidence, but it shows whether later entries preserve or change the second-entry field shape.");
+        builder.AppendLine();
+        builder.AppendLine($"Across {leadCount} repeat-stride tails, {fieldLeads.Length} repeated-entry field observations appear across the first {maxEntryIndex} entries.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry index | Segment classification | Update count | First selector | Position offset | Repeat stride | First record u16 | Zero run | Field offset | Field u16 | Entry leads | Repeat records | Records | Position samples | Header windows | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | ---: | ---: | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |");
+
+        var groupedLeads = fieldLeads
+            .GroupBy(entry => new
+            {
+                entry.Field.EntryIndex,
+                SegmentClassification = entry.Lead.Row.Segment?.Classification ?? "variable selector payload",
+                entry.Lead.Row.Sample.UpdateCount,
+                entry.Lead.Row.Sample.FirstSelector,
+                entry.Lead.PositionOffset,
+                entry.Lead.PostPositionRepeatStride,
+                entry.Lead.PostPositionFirstFieldHex,
+                entry.Field.ZeroRun,
+                entry.Field.FieldOffset,
+                entry.Field.FieldHex
+            })
+            .Select(group =>
+            {
+                Protocol03VariableSelectorTailRow[] groupRows = group
+                    .Select(entry => entry.Lead.Row)
+                    .GroupBy(row => new { row.File, row.Line, row.Lead.Offset })
+                    .Select(rowGroup => rowGroup.First())
+                    .ToArray();
+                return new
+                {
+                    Group = group,
+                    Rows = groupRows,
+                    VendorHeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: true),
+                    HeaderHits = CountProtocol03TailHeaderWindows(groupRows, vendorOnly: false)
+                };
+            })
+            .OrderBy(group => group.Group.Key.EntryIndex)
+            .ThenByDescending(group => group.VendorHeaderHits)
+            .ThenByDescending(group => group.HeaderHits)
+            .ThenByDescending(group => group.Group.Count())
+            .ThenBy(group => group.Group.Key.UpdateCount)
+            .ThenBy(group => group.Group.Key.FirstSelector, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Group.Key.PositionOffset)
+            .GroupBy(group => group.Group.Key.EntryIndex)
+            .SelectMany(group => group.Take(20));
+
+        foreach (var grouped in groupedLeads)
+        {
+            Protocol03RepeatRecordFieldLead sample = grouped.Group.First();
+            builder.AppendLine(
+                $"| {grouped.Group.Key.EntryIndex} | {FormatTableText(grouped.Group.Key.SegmentClassification)} | {grouped.Group.Key.UpdateCount} | `{grouped.Group.Key.FirstSelector}` | {grouped.Group.Key.PositionOffset} | {FormatNullableInt(grouped.Group.Key.PostPositionRepeatStride)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.PostPositionFirstFieldHex)} | {grouped.Group.Key.ZeroRun} | {FormatNullableInt(grouped.Group.Key.FieldOffset)} | {FormatProtocol03NullableU16Field(grouped.Group.Key.FieldHex)} | {FormatDistinct(grouped.Group.Select(entry => FormatEmptyHex(entry.Field.EntryLeadHex)), 4)} | {FormatCountSummary(grouped.Group.Select(entry => entry.Lead.PostPositionRepeatRecordCount.ToString(CultureInfo.InvariantCulture)), 8)} | {grouped.Rows.Length} | {FormatDistinct(grouped.Group.Select(entry => FormatProtocol03SelectorFfPosition(entry.Lead)), 4)} | {FormatProtocol03TailHeaderSummary(grouped.Rows)} | `{sample.Lead.Row.File}:{sample.Lead.Row.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string FormatProtocol03RepeatRecordFieldShape(int zeroRun, int? fieldOffset, string fieldHex)
+    {
+        return fieldOffset is int offset
+            ? $"z{zeroRun} +{offset} {FormatProtocol03NullableU16Field(fieldHex)}"
+            : $"z{zeroRun} -";
+    }
+
+    private static Dictionary<string, RpcHeaderEntry[]> BuildEncodedHeaderLookup(IReadOnlyList<RpcHeaderEntry> localHeaders)
+    {
+        return localHeaders
+            .Where(header => header.EncodedHeader.Contains(" ", StringComparison.Ordinal))
+            .GroupBy(header => header.EncodedHeader, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static Protocol03VariableSelectorTailRow BuildProtocol03VariableSelectorTailRow(
+        string file,
+        int line,
+        Protocol03ObjectViewSample sample,
+        Protocol03VariableSelectorLead lead,
+        IReadOnlyDictionary<string, RpcHeaderEntry[]> headersByEncoded)
+    {
+        Protocol03ObjectUpdateSegment? segment = FindProtocol03VariableLeadSegment(sample, lead);
+        string payloadPrefixHex = FormatProtocol03TailPrefix(lead.PayloadHex);
+        Protocol03TailHeaderWindow[] headerWindows = FindProtocol03TailHeaderWindows(lead, headersByEncoded).ToArray();
+        return new Protocol03VariableSelectorTailRow(file, line, sample, lead, segment, payloadPrefixHex, headerWindows);
+    }
+
+    private static Protocol03ObjectUpdateSegment? FindProtocol03VariableLeadSegment(
+        Protocol03ObjectViewSample sample,
+        Protocol03VariableSelectorLead lead)
+    {
+        return sample.Segments.FirstOrDefault(segment =>
+            segment.Selector.Equals(lead.Selector, StringComparison.OrdinalIgnoreCase) &&
+            segment.Offset + 1 == lead.Offset);
+    }
+
+    private static string FormatProtocol03TailPrefix(string payloadHex)
+    {
+        byte[] bytes = ParseHexBytes(payloadHex);
+        return PacketResearcher.FormatHeader(bytes.Take(Math.Min(16, bytes.Length)));
+    }
+
+    private static string FormatProtocol03PayloadSlice(string payloadHex, int offset, int count)
+    {
+        byte[] bytes = ParseHexBytes(payloadHex);
+        if (offset < 0 || offset >= bytes.Length || count <= 0)
+        {
+            return string.Empty;
+        }
+
+        return PacketResearcher.FormatHeader(bytes.Skip(offset).Take(Math.Min(count, bytes.Length - offset)));
+    }
+
+    private static string FormatProtocol03U32Field(string hex)
+    {
+        byte[] bytes = ParseHexBytes(hex);
+        if (bytes.Length != 4)
+        {
+            return $"`{FormatEmptyHex(hex)}`";
+        }
+
+        uint value = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
+        return $"`{hex}` / {value}";
+    }
+
+    private static string FormatProtocol03NullableU16Field(string hex)
+    {
+        byte[] bytes = ParseHexBytes(hex);
+        if (bytes.Length == 0)
+        {
+            return "-";
+        }
+
+        if (bytes.Length != 2)
+        {
+            return $"`{FormatEmptyHex(hex)}`";
+        }
+
+        ushort value = BinaryPrimitives.ReadUInt16LittleEndian(bytes);
+        return $"`{hex}` / {value}";
+    }
+
+    private static string FormatNullableInt(int? value)
+    {
+        return value?.ToString(CultureInfo.InvariantCulture) ?? "-";
+    }
+
+    private static IEnumerable<Protocol03SelectorFfPositionLead> FindProtocol03SelectorFfPositionLeads(
+        Protocol03VariableSelectorTailRow row)
+    {
+        byte[] bytes = ParseHexBytes(row.Lead.PayloadHex);
+        for (int offset = 32; offset <= bytes.Length - 24; offset++)
+        {
+            Vector3d position = new(
+                ReadDoubleLittleEndian(bytes, offset),
+                ReadDoubleLittleEndian(bytes, offset + 8),
+                ReadDoubleLittleEndian(bytes, offset + 16));
+            if (!IsPlausibleProtocol03SelectorFfPosition(position))
+            {
+                continue;
+            }
+
+            string prePositionHex = PacketResearcher.FormatHeader(bytes
+                .Skip(Math.Max(0, offset - 8))
+                .Take(Math.Min(8, offset)));
+            int postPositionOffset = offset + 24;
+            int postPositionBytes = Math.Max(0, bytes.Length - postPositionOffset);
+            string postPositionHex = PacketResearcher.FormatHeader(bytes
+                .Skip(postPositionOffset)
+                .Take(Math.Min(16, postPositionBytes)));
+            byte[] postPositionTail = bytes
+                .Skip(postPositionOffset)
+                .Take(postPositionBytes)
+                .ToArray();
+            string postPositionLeadHex = postPositionTail.Length > 0
+                ? postPositionTail[0].ToString("x2", CultureInfo.InvariantCulture)
+                : string.Empty;
+            int postPositionZeroRun = 0;
+            int postPositionScanOffset = 1;
+            while (postPositionScanOffset < postPositionTail.Length && postPositionTail[postPositionScanOffset] == 0)
+            {
+                postPositionZeroRun++;
+                postPositionScanOffset++;
+            }
+
+            int? postPositionFirstNonZeroOffset = postPositionScanOffset < postPositionTail.Length
+                ? postPositionScanOffset
+                : null;
+            string postPositionFirstFieldHex = postPositionFirstNonZeroOffset is int firstFieldOffset && firstFieldOffset + 1 < postPositionTail.Length
+                ? PacketResearcher.FormatHeader(postPositionTail.Skip(firstFieldOffset).Take(2))
+                : string.Empty;
+            string postPositionFieldSuffixHex = postPositionFirstNonZeroOffset is int suffixOffset && suffixOffset + 2 < postPositionTail.Length
+                ? PacketResearcher.FormatHeader(postPositionTail.Skip(suffixOffset + 2).Take(Math.Min(8, postPositionTail.Length - suffixOffset - 2)))
+                : string.Empty;
+            int? postPositionNextFfOffset = null;
+            string postPositionNextFfHex = string.Empty;
+            if (postPositionFirstNonZeroOffset is int fieldOffset)
+            {
+                for (int nextOffset = fieldOffset + 2; nextOffset < postPositionTail.Length; nextOffset++)
+                {
+                    if (postPositionTail[nextOffset] != 0xff)
+                    {
+                        continue;
+                    }
+
+                    postPositionNextFfOffset = nextOffset;
+                    postPositionNextFfHex = PacketResearcher.FormatHeader(postPositionTail
+                        .Skip(nextOffset)
+                        .Take(Math.Min(8, postPositionTail.Length - nextOffset)));
+                    break;
+                }
+            }
+
+            int? postPositionRepeatStride = postPositionNextFfOffset;
+            int postPositionRepeatRecordCount = postPositionRepeatStride is int repeatStride
+                ? CountProtocol03SelectorFfPostPositionRepeatRecords(postPositionTail, repeatStride)
+                : 0;
+            string postPositionRepeatSecondLeadHex = postPositionRepeatStride is int secondLeadOffset && secondLeadOffset < postPositionTail.Length
+                ? PacketResearcher.FormatHeader(postPositionTail.Skip(secondLeadOffset).Take(Math.Min(8, postPositionTail.Length - secondLeadOffset)))
+                : string.Empty;
+            Protocol03RepeatRecordFieldSample[] postPositionRepeatFields = postPositionRepeatStride is int fieldStride
+                ? EnumerateProtocol03SelectorFfPostPositionRepeatRecordFields(postPositionTail, fieldStride, maxRecords: 4).ToArray()
+                : Array.Empty<Protocol03RepeatRecordFieldSample>();
+            Protocol03RepeatRecordFieldSample? postPositionRepeatSecondField = postPositionRepeatFields
+                .FirstOrDefault(field => field.EntryIndex == 2);
+            string postPositionRepeatFieldSequence = postPositionRepeatStride is int sequenceStride
+                ? FormatProtocol03SelectorFfPostPositionRepeatFieldSequence(postPositionTail, sequenceStride)
+                : string.Empty;
+            int? postPositionRepeatContinuationOffset = null;
+            int postPositionRepeatContinuationBytes = 0;
+            string postPositionRepeatContinuationHex = string.Empty;
+            string postPositionRepeatContinuationFullHex = string.Empty;
+            if (postPositionRepeatStride is int continuationStride && postPositionRepeatRecordCount > 0)
+            {
+                int continuationOffset = continuationStride * postPositionRepeatRecordCount;
+                postPositionRepeatContinuationOffset = continuationOffset;
+                if (continuationOffset < postPositionTail.Length)
+                {
+                    postPositionRepeatContinuationBytes = postPositionTail.Length - continuationOffset;
+                    postPositionRepeatContinuationFullHex = PacketResearcher.FormatHeader(postPositionTail
+                        .Skip(continuationOffset));
+                    postPositionRepeatContinuationHex = PacketResearcher.FormatHeader(postPositionTail
+                        .Skip(continuationOffset)
+                        .Take(Math.Min(16, postPositionTail.Length - continuationOffset)));
+                }
+            }
+
+            yield return new Protocol03SelectorFfPositionLead(
+                row,
+                offset,
+                FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 0, 9),
+                FormatProtocol03PayloadSlice(row.Lead.PayloadHex, 9, 4),
+                prePositionHex,
+                position,
+                postPositionHex,
+                postPositionBytes,
+                postPositionLeadHex,
+                postPositionZeroRun,
+                postPositionFirstNonZeroOffset,
+                postPositionFirstFieldHex,
+                postPositionFieldSuffixHex,
+                postPositionNextFfOffset,
+                postPositionNextFfHex,
+                postPositionRepeatStride,
+                postPositionRepeatRecordCount,
+                postPositionRepeatSecondLeadHex,
+                postPositionRepeatSecondField?.ZeroRun,
+                postPositionRepeatSecondField?.FieldOffset,
+                postPositionRepeatSecondField?.FieldHex ?? string.Empty,
+                postPositionRepeatFields,
+                postPositionRepeatContinuationOffset,
+                postPositionRepeatContinuationBytes,
+                postPositionRepeatContinuationHex,
+                postPositionRepeatContinuationFullHex,
+                postPositionRepeatFieldSequence);
+        }
+    }
+
+    private static bool IsPlausibleProtocol03SelectorFfPosition(Vector3d position)
+    {
+        return IsFiniteCoordinate(position.X) &&
+            IsFiniteCoordinate(position.Y) &&
+            IsFiniteCoordinate(position.Z) &&
+            Math.Abs(position.X) <= 100000 &&
+            Math.Abs(position.Y) <= 10000 &&
+            Math.Abs(position.Z) <= 100000 &&
+            Math.Abs(position.X) >= 100 &&
+            Math.Abs(position.Y) >= 100 &&
+            Math.Abs(position.Z) >= 100;
+    }
+
+    private static int CountProtocol03SelectorFfPostPositionRepeatRecords(IReadOnlyList<byte> tail, int stride)
+    {
+        if (stride <= 0)
+        {
+            return 0;
+        }
+
+        int count = 0;
+        for (int offset = 0; offset < tail.Count; offset += stride)
+        {
+            if (tail[offset] != 0xff)
+            {
+                break;
+            }
+
+            count++;
+        }
+
+        return count;
+    }
+
+    private static string FormatProtocol03SelectorFfPostPositionRepeatFieldSequence(IReadOnlyList<byte> tail, int stride)
+    {
+        if (stride <= 0)
+        {
+            return string.Empty;
+        }
+
+        List<string> fields = new();
+        foreach (Protocol03RepeatRecordFieldSample field in EnumerateProtocol03SelectorFfPostPositionRepeatRecordFields(tail, stride, maxRecords: 4))
+        {
+            if (field.FieldOffset is int fieldOffset)
+            {
+                ushort value = BinaryPrimitives.ReadUInt16LittleEndian(ParseHexBytes(field.FieldHex));
+                fields.Add($"+{field.RecordOffset} z{field.ZeroRun} +{fieldOffset} `{field.FieldHex}`/{value.ToString(CultureInfo.InvariantCulture)}");
+            }
+            else
+            {
+                fields.Add($"+{field.RecordOffset} z{field.ZeroRun} -");
+            }
+        }
+
+        return fields.Count == 0 ? string.Empty : string.Join(" -> ", fields);
+    }
+
+    private static IEnumerable<Protocol03RepeatRecordFieldSample> EnumerateProtocol03SelectorFfPostPositionRepeatRecordFields(
+        IReadOnlyList<byte> tail,
+        int stride,
+        int maxRecords)
+    {
+        if (stride <= 0 || maxRecords <= 0)
+        {
+            yield break;
+        }
+
+        int entryIndex = 1;
+        for (int offset = 0; offset < tail.Count && entryIndex <= maxRecords; offset += stride, entryIndex++)
+        {
+            if (tail[offset] != 0xff)
+            {
+                yield break;
+            }
+
+            Protocol03RepeatRecordField? field = ReadProtocol03SelectorFfPostPositionRepeatRecordField(tail, offset, stride);
+            if (field is null)
+            {
+                yield break;
+            }
+
+            yield return new Protocol03RepeatRecordFieldSample(
+                entryIndex,
+                offset,
+                field.ZeroRun,
+                field.FieldOffset,
+                field.FieldHex,
+                PacketResearcher.FormatHeader(tail.Skip(offset).Take(Math.Min(8, tail.Count - offset))));
+        }
+    }
+
+    private static Protocol03RepeatRecordField? ReadProtocol03SelectorFfPostPositionRepeatRecordField(
+        IReadOnlyList<byte> tail,
+        int recordOffset,
+        int stride)
+    {
+        if (recordOffset < 0 || recordOffset >= tail.Count || stride <= 0 || tail[recordOffset] != 0xff)
+        {
+            return null;
+        }
+
+        int recordEnd = Math.Min(recordOffset + stride, tail.Count);
+        int fieldOffset = recordOffset + 1;
+        int zeroRun = 0;
+        while (fieldOffset < recordEnd && tail[fieldOffset] == 0)
+        {
+            zeroRun++;
+            fieldOffset++;
+        }
+
+        if (fieldOffset + 1 >= recordEnd)
+        {
+            return new Protocol03RepeatRecordField(zeroRun, null, string.Empty);
+        }
+
+        return new Protocol03RepeatRecordField(
+            zeroRun,
+            fieldOffset - recordOffset,
+            PacketResearcher.FormatHeader(tail.Skip(fieldOffset).Take(2)));
+    }
+
+    private static bool IsFiniteCoordinate(double value)
+    {
+        return !double.IsNaN(value) && !double.IsInfinity(value);
+    }
+
+    private static string FormatProtocol03SelectorFfPosition(Protocol03SelectorFfPositionLead lead)
+    {
+        return FormatPosition(lead.Position);
+    }
+
+    private static Protocol03DecodedPositionHint[] BuildProtocol03DecodedPositionHints(
+        PacketResearchReport report,
+        IReadOnlyList<Protocol03SampleWithFile> samples)
+    {
+        List<Protocol03DecodedPositionHint> hints = new();
+        foreach (Protocol03SampleWithFile sample in samples)
+        {
+            foreach (Protocol03PlayerCharacterCreationRecord record in sample.Sample.PlayerCharacterCreationRecords)
+            {
+                if (TryReadAttributeVector3d(record.CreationAttributes, 49) is Vector3d position && IsFinitePosition(position))
+                {
+                    hints.Add(new Protocol03DecodedPositionHint(
+                        "player",
+                        FormatPlayerCharacterPositionHintLabel(record),
+                        position,
+                        sample.File,
+                        sample.Sample.Line));
+                }
+            }
+
+            foreach (Protocol03NamedProfileRecord record in sample.Sample.NamedProfileRecords)
+            {
+                if (TryReadAttributeVector3d(record.CreationAttributes, 27) is Vector3d position && IsFinitePosition(position))
+                {
+                    hints.Add(new Protocol03DecodedPositionHint(
+                        "npc",
+                        FormatNpcBasePositionHintLabel(record, report.GameObjectEntries),
+                        position,
+                        sample.File,
+                        sample.Sample.Line));
+                }
+            }
+        }
+
+        foreach (WorldEntityEntry entry in report.WorldEntityEntries)
+        {
+            if (entry.X is not double x || entry.Y is not double y || entry.Z is not double z)
+            {
+                continue;
+            }
+
+            Vector3d position = new(x, y, z);
+            if (!IsFinitePosition(position))
+            {
+                continue;
+            }
+
+            hints.Add(new Protocol03DecodedPositionHint(
+                "world",
+                FormatWorldEntityPositionHintLabel(entry),
+                position,
+                entry.File,
+                entry.Line));
+        }
+
+        return hints
+            .GroupBy(hint => new
+            {
+                hint.Kind,
+                hint.Label,
+                Position = FormatPosition(hint.Position)
+            })
+            .Select(group => group
+                .OrderBy(hint => hint.File, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(hint => hint.Line)
+                .First())
+            .ToArray();
+    }
+
+    private static string FormatProtocol03SelectorFfNearestDecodedPositions(
+        IEnumerable<Protocol03SelectorFfPositionLead> leads,
+        IReadOnlyList<Protocol03DecodedPositionHint> decodedPositions)
+    {
+        if (decodedPositions.Count == 0)
+        {
+            return "-";
+        }
+
+        string[] summaries = leads
+            .GroupBy(FormatProtocol03SelectorFfPosition, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .Take(4)
+            .Select(lead =>
+            {
+                string[] nearest = decodedPositions
+                    .Select(hint => new
+                    {
+                        Hint = hint,
+                        Distance = Distance(lead.Position, hint.Position)
+                    })
+                    .OrderBy(match => match.Distance)
+                    .ThenBy(match => match.Hint.Kind, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(match => match.Hint.Label, StringComparer.OrdinalIgnoreCase)
+                    .Take(2)
+                    .Select(match => $"{FormatTableText(match.Hint.Kind)} {FormatTableText(match.Hint.Label)} {FormatDistance(match.Distance)} @ {FormatPosition(match.Hint.Position)}")
+                    .ToArray();
+                return $"{FormatProtocol03SelectorFfPosition(lead)} -> {string.Join("; ", nearest)}";
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return FormatCandidateList(summaries);
+    }
+
+    private static string FormatPlayerCharacterPositionHintLabel(Protocol03PlayerCharacterCreationRecord record)
+    {
+        if (TryDecodeAttributeAscii(record.CreationAttributes, 37) is string handle)
+        {
+            return handle;
+        }
+
+        string? firstName = TryDecodeAttributeAscii(record.CreationAttributes, 11);
+        string? lastName = TryDecodeAttributeAscii(record.CreationAttributes, 3);
+        string fullName = string.Join(" ", new[] { firstName, lastName }.Where(value => value is not null));
+        return string.IsNullOrWhiteSpace(fullName)
+            ? $"Object{record.GameObjectId}"
+            : fullName;
+    }
+
+    private static string FormatNpcBasePositionHintLabel(
+        Protocol03NamedProfileRecord record,
+        IReadOnlyList<GameObjectEntry> gameObjectEntries)
+    {
+        string? gameObjectName = gameObjectEntries
+            .Where(entry => entry.GoId == record.GameObjectId)
+            .Select(entry => entry.CodeName)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+        return string.IsNullOrWhiteSpace(gameObjectName)
+            ? record.Text
+            : $"{record.Text} ({gameObjectName})";
+    }
+
+    private static string FormatWorldEntityPositionHintLabel(WorldEntityEntry entry)
+    {
+        string? scope = FormatWorldEntityScope(entry);
+        return string.IsNullOrWhiteSpace(scope)
+            ? entry.Name
+            : $"{entry.Name} {scope}";
+    }
+
+    private static bool IsFinitePosition(Vector3d position)
+    {
+        return IsFiniteCoordinate(position.X) &&
+            IsFiniteCoordinate(position.Y) &&
+            IsFiniteCoordinate(position.Z);
+    }
+
+    private static string FormatPosition(Vector3d position)
+    {
+        return $"{FormatCoordinate(position.X)},{FormatCoordinate(position.Y)},{FormatCoordinate(position.Z)}";
+    }
+
+    private static string FormatProtocol03U32ResourceReferences(
+        string hex,
+        IReadOnlyDictionary<string, FxDefinition> fxByHex,
+        ILookup<int, GameObjectEntry> gameObjectsById,
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById,
+        IReadOnlyDictionary<uint, ItemCommandEntry> itemsById,
+        ILookup<uint, StaticObjectEntry> staticObjectsByMxoId,
+        ILookup<uint, StaticObjectEntry> staticObjectsByStaticId,
+        ILookup<uint, VendorInventoryEntry> vendorsByStaticId)
+    {
+        byte[] bytes = ParseHexBytes(hex);
+        if (bytes.Length != 4)
+        {
+            return "-";
+        }
+
+        uint value = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
+        string? compactHex = NormalizeHex(hex);
+        List<string> references = new();
+        if (compactHex is not null && fxByHex.TryGetValue(compactHex, out FxDefinition? fx))
+        {
+            references.Add($"FX `{compactHex}` {FormatTableText(fx.Name)}");
+        }
+
+        string[] gameObjectNames = gameObjectsById[unchecked((int)value)]
+            .Select(entry => FormatTableText(entry.CodeName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToArray();
+        if (gameObjectNames.Length > 0)
+        {
+            int signedValue = unchecked((int)value);
+            string idText = signedValue >= 0 && (uint)signedValue == value
+                ? value.ToString(CultureInfo.InvariantCulture)
+                : $"{value}/{signedValue.ToString(CultureInfo.InvariantCulture)}";
+            references.Add($"GoID {idText} {string.Join(", ", gameObjectNames)}");
+        }
+
+        if (abilitiesById.ContainsKey(value))
+        {
+            references.Add($"ability {FormatAbilityReference(value, abilitiesById)}");
+        }
+
+        if (itemsById.ContainsKey(value))
+        {
+            references.Add($"item {FormatItemReference(value, itemsById)}");
+        }
+
+        StaticObjectEntry[] mxoRows = staticObjectsByMxoId[value].ToArray();
+        if (mxoRows.Length > 0)
+        {
+            references.Add($"static mxo {value} {FormatStaticTypeSymbols(mxoRows, gameObjectsById)}");
+        }
+
+        StaticObjectEntry[] staticIdRows = staticObjectsByStaticId[value].ToArray();
+        if (staticIdRows.Length > 0)
+        {
+            references.Add($"static id {value} {FormatStaticTypeSymbols(staticIdRows, gameObjectsById)}");
+        }
+
+        VendorInventoryEntry[] vendorRows = vendorsByStaticId[value].ToArray();
+        if (vendorRows.Length > 0)
+        {
+            references.Add($"vendor static {value} inventories {vendorRows.Length}");
+        }
+
+        return FormatCandidateList(references
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .ToArray());
+    }
+
+    private static IEnumerable<Protocol03TailHeaderWindow> FindProtocol03TailHeaderWindows(
+        Protocol03VariableSelectorLead lead,
+        IReadOnlyDictionary<string, RpcHeaderEntry[]> headersByEncoded)
+    {
+        byte[] bytes = ParseHexBytes(lead.PayloadHex);
+        for (int offset = 0; offset <= bytes.Length - 2; offset++)
+        {
+            string encodedHeader = PacketResearcher.FormatHeader(new[] { bytes[offset], bytes[offset + 1] });
+            if (!headersByEncoded.TryGetValue(encodedHeader, out RpcHeaderEntry[]? headers))
+            {
+                continue;
+            }
+
+            foreach (RpcHeaderEntry header in headers)
+            {
+                yield return new Protocol03TailHeaderWindow(offset, header);
+            }
+        }
+    }
+
+    private static int CountProtocol03TailHeaderWindows(IEnumerable<Protocol03VariableSelectorTailRow> rows, bool vendorOnly)
+    {
+        return BuildProtocol03TailHeaderWindowSummaries(rows, vendorOnly).Sum(summary => summary.Count);
+    }
+
+    private static string FormatProtocol03TailHeaderSummary(IEnumerable<Protocol03VariableSelectorTailRow> rows)
+    {
+        Protocol03TailHeaderWindowSummary[] summaries = BuildProtocol03TailHeaderWindowSummaries(rows, vendorOnly: false)
+            .Take(5)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return "-";
+        }
+
+        return string.Join("<br>", summaries.Select(summary =>
+            $"payload +{summary.PayloadOffset}/object {summary.ObjectOffsets} {FormatTableText(summary.Name)} [{summary.Protocols} {FormatTableText(summary.Direction)}] `{summary.EncodedHeader}` ({summary.Count})"));
+    }
+
+    private static string FormatProtocol03TailHeaderContainerSummary(IEnumerable<Protocol03VariableSelectorTailRow> rows)
+    {
+        Protocol03TailHeaderContainerSummary[] summaries = BuildProtocol03TailHeaderContainerSummaries(rows)
+            .Take(5)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return "-";
+        }
+
+        return string.Join("<br>", summaries.Select(summary =>
+            $"payload +{summary.PayloadOffset} `{summary.WindowHex}` {FormatTableText(summary.Name)} ({summary.Count})"));
+    }
+
+    private static Protocol03TailHeaderWindowSummary[] BuildProtocol03TailHeaderWindowSummaries(
+        IEnumerable<Protocol03VariableSelectorTailRow> rows,
+        bool vendorOnly)
+    {
+        return rows
+            .SelectMany(row => row.HeaderWindows.Select(window => new Protocol03TailHeaderWindowOccurrence(row, window)))
+            .Where(occurrence => !vendorOnly || IsVendorHeader(occurrence.Window.Header))
+            .GroupBy(occurrence => new
+            {
+                occurrence.Window.PayloadOffset,
+                occurrence.Window.Header.Name,
+                occurrence.Window.Header.Direction,
+                occurrence.Window.Header.EncodedHeader
+            })
+            .Select(group =>
+            {
+                string[] protocols = group
+                    .Select(occurrence => occurrence.Window.Header.Protocol)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(protocol => protocol, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                int protocolCount = Math.Max(1, protocols.Length);
+                return new Protocol03TailHeaderWindowSummary(
+                    group.Key.PayloadOffset,
+                    group.Key.Name,
+                    group.Key.Direction,
+                    group.Key.EncodedHeader,
+                    FormatSlashList(protocols, 4),
+                    group.Count() / protocolCount,
+                    FormatProtocol03TailObjectOffsetSummary(group));
+            })
+            .OrderByDescending(summary => summary.Count)
+            .ThenBy(summary => summary.PayloadOffset)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Direction, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string FormatProtocol03TailObjectOffsetSummary(IEnumerable<Protocol03TailHeaderWindowOccurrence> occurrences)
+    {
+        string[] parts = occurrences
+            .GroupBy(occurrence => occurrence.Row.Lead.Offset + occurrence.Window.PayloadOffset)
+            .Select(group =>
+            {
+                int protocolCount = Math.Max(1, group
+                    .Select(occurrence => occurrence.Window.Header.Protocol)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count());
+                return new
+                {
+                    Offset = group.Key,
+                    Count = group.Count() / protocolCount
+                };
+            })
+            .OrderByDescending(group => group.Count)
+            .ThenBy(group => group.Offset)
+            .Select(group => $"+{group.Offset} ({group.Count})")
+            .ToArray();
+        if (parts.Length == 0)
+        {
+            return "-";
+        }
+
+        return parts.Length <= 8
+            ? string.Join("; ", parts)
+            : $"{string.Join("; ", parts.Take(8))}; +{parts.Length - 8} more";
+    }
+
+    private static Protocol03TailHeaderContainerSummary[] BuildProtocol03TailHeaderContainerSummaries(
+        IEnumerable<Protocol03VariableSelectorTailRow> rows)
+    {
+        return rows
+            .SelectMany(row => row.HeaderWindows.Select(window => TryCreateProtocol03TailHeaderContainer(row, window)))
+            .Where(occurrence => occurrence is not null)
+            .Select(occurrence => occurrence!)
+            .GroupBy(occurrence => new
+            {
+                occurrence.PayloadOffset,
+                occurrence.WindowHex,
+                occurrence.Window.Header.Name,
+                occurrence.Window.Header.Direction,
+                occurrence.Window.Header.EncodedHeader
+            })
+            .Select(group =>
+            {
+                int protocolCount = Math.Max(1, group
+                    .Select(occurrence => occurrence.Window.Header.Protocol)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count());
+                return new Protocol03TailHeaderContainerSummary(
+                    group.Key.PayloadOffset,
+                    group.Key.WindowHex,
+                    group.Key.Name,
+                    group.Key.Direction,
+                    group.Key.EncodedHeader,
+                    group.Count() / protocolCount);
+            })
+            .OrderByDescending(summary => summary.Count)
+            .ThenBy(summary => summary.PayloadOffset)
+            .ThenBy(summary => summary.WindowHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static Protocol03TailHeaderContainerOccurrence? TryCreateProtocol03TailHeaderContainer(
+        Protocol03VariableSelectorTailRow row,
+        Protocol03TailHeaderWindow window)
+    {
+        byte[] bytes = ParseHexBytes(row.Lead.PayloadHex);
+        if (bytes.Length < 4)
+        {
+            return null;
+        }
+
+        int start = window.PayloadOffset >= 2 ? window.PayloadOffset - 2 : window.PayloadOffset;
+        if (start + 4 > bytes.Length)
+        {
+            start = bytes.Length - 4;
+        }
+
+        if (start < 0)
+        {
+            return null;
+        }
+
+        string windowHex = PacketResearcher.FormatHeader(bytes.Skip(start).Take(4));
+        return new Protocol03TailHeaderContainerOccurrence(row, window, start, windowHex);
+    }
+
+    private static string FormatSlashList(IEnumerable<string> values, int take)
+    {
+        string[] distinct = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinct.Length == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("/", distinct.Take(take));
+        return distinct.Length > take
+            ? $"{formatted}/+{distinct.Length - take} more"
+            : formatted;
+    }
+
+    private static bool IsVendorHeader(RpcHeaderEntry header)
+    {
+        return header.Name.Contains("VENDOR", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void AppendProtocol03Selector2a2ePositionLeads(
@@ -2429,6 +5448,7 @@ public static class ReportWriter
             .ToDictionary(
                 group => group.Key,
                 group => group.Select(entry => entry.CodeName).OrderBy(value => value, StringComparer.OrdinalIgnoreCase).First());
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById = BuildAbilityDefinitionDictionary(report.AbilityDefinitions);
         Protocol03PlayerCharacterCreationRecordWithFile[] records = samples
             .Where(entry => entry.Sample.Classification.Equals("player spawn/self-view candidate", StringComparison.OrdinalIgnoreCase))
             .Where(entry => entry.Sample.UpdateCount == 12 && entry.Sample.FirstSelector.Equals("0c", StringComparison.OrdinalIgnoreCase))
@@ -2465,7 +5485,7 @@ public static class ReportWriter
         {
             Protocol03PlayerCharacterCreationRecordWithFile sample = group.First();
             builder.AppendLine(
-                $"| {group.Key.CreationFlagHex} | {group.Key.GameObjectIdHex} | {group.Key.GameObjectId} | {FormatTableText(group.Key.GameObjectName)} | {group.Key.CreationAttributeCount} | {group.Key.FirstAttributeMaskHex} | {group.Key.ParsedAttributeCount} | {group.Count()} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 3)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 11)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 37)), 5)} | {FormatDistinct(group.Select(entry => FormatPlayerCharacterCreationSummary(entry.Record)), 4)} | `{sample.File}:{sample.Line}` | `{sample.Record.CreationFlagHex} {sample.Record.GameObjectIdHex} {sample.Record.SpawnCounterHex} {sample.Record.SeparatorHex} {sample.Record.CreationAttributeCount:x2} {sample.Record.FirstAttributeMaskHex}` |");
+                $"| {group.Key.CreationFlagHex} | {group.Key.GameObjectIdHex} | {group.Key.GameObjectId} | {FormatTableText(group.Key.GameObjectName)} | {group.Key.CreationAttributeCount} | {group.Key.FirstAttributeMaskHex} | {group.Key.ParsedAttributeCount} | {group.Count()} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 3)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 11)), 5)} | {FormatDistinct(group.Select(entry => TryDecodeAttributeAscii(entry.Record.CreationAttributes, 37)), 5)} | {FormatDistinct(group.Select(entry => FormatPlayerCharacterCreationSummary(entry.Record, abilitiesById)), 4)} | `{sample.File}:{sample.Line}` | `{sample.Record.CreationFlagHex} {sample.Record.GameObjectIdHex} {sample.Record.SpawnCounterHex} {sample.Record.SeparatorHex} {sample.Record.CreationAttributeCount:x2} {sample.Record.FirstAttributeMaskHex}` |");
         }
 
         builder.AppendLine();
@@ -2581,6 +5601,7 @@ public static class ReportWriter
         AppendProtocol03NpcBaseCreationAttributeParseConsistency(builder, candidates);
         AppendProtocol03NpcBasePostCreationAttributeSuffixLeads(builder, candidates);
         AppendProtocol03NpcBasePostCreationObjectViewBoundaryLeads(builder, candidates);
+        AppendProtocol03NpcBaseDynamicCreationSummaryExports(builder, report);
         AppendProtocol03NpcBaseCreationAttributePresence(builder, candidates);
         AppendProtocol03NpcBaseCreationEntityCorrelation(builder, candidates);
         AppendProtocol03NpcBaseCreationSymbolLeads(builder, report, candidates);
@@ -2780,8 +5801,21 @@ public static class ReportWriter
             entry.Record.CreationAttributeBytes,
             entry.Record.PostCreationAttributePrefixHex,
             entry.Record.PostCreationObjectViewHeaderOffset,
+            entry.Record.PostCreationObjectViewPreHeaderHex,
             entry.Record.PostCreationObjectViewHeaderHex,
             entry.Record.PostCreationObjectViewHeaderClassification,
+            entry.Record.PostCreationObjectViewBoundaryFamily,
+            entry.Record.PostCreationObjectViewParsedUpdateCount,
+            entry.Record.PostCreationObjectViewUnparsedBytes,
+            entry.Record.PostCreationObjectViewConsumedBytes,
+            entry.Record.PostCreationObjectViewParseStatus,
+            entry.Record.PostCreationObjectViewDynamicTailPrefixHex,
+            entry.Record.PostCreationObjectViewDynamicTailAvailableBytes,
+            entry.Record.PostCreationObjectViewDynamicTailNextHeaderOffset,
+            entry.Record.PostCreationObjectViewDynamicTailPreHeaderHex,
+            entry.Record.PostCreationObjectViewDynamicTailNextHeaderHex,
+            entry.Record.PostCreationObjectViewDynamicTailNextHeaderClassification,
+            entry.Record.PostCreationObjectViewComplete,
             entry.Record.SuffixZeroBytes,
             entry.Record.TitleAbilityHex,
             entry.Record.CombatantModeHex,
@@ -2876,29 +5910,498 @@ public static class ReportWriter
         builder.AppendLine();
         builder.AppendLine("This scans the first eight bytes after each parsed Object599 creation attribute stream for a plausible protocol 03 object-view header. These are boundary leads for future segmentation work, not consumed nested records yet.");
         builder.AppendLine();
-        builder.AppendLine($"Across {candidates.Count} Object599 creation records, {boundaryLeads.Length} expose a plausible next object-view header inside the first eight post-attribute suffix bytes.");
+        int distinctPreHeaderPrefixes = boundaryLeads
+            .Select(candidate => FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+        int threeByteZeroTailPreHeaders = boundaryLeads.Count(candidate => IsThreeByteZeroTailPreHeader(candidate.PostCreationObjectViewPreHeaderHex));
+        string useVerb = threeByteZeroTailPreHeaders == 1 ? "uses" : "use";
+        builder.AppendLine($"Across {candidates.Count} Object599 creation records, {boundaryLeads.Length} expose a plausible next object-view header inside the first eight post-attribute suffix bytes, with {distinctPreHeaderPrefixes} distinct bounded pre-header byte sequences; {threeByteZeroTailPreHeaders} of those boundary leads {useVerb} a three-byte `<value> 00 00` pre-header.");
+        int completeFollowUps = boundaryLeads.Count(candidate => candidate.PostCreationObjectViewComplete);
+        string headerNoun = completeFollowUps == 1 ? "header" : "headers";
+        builder.AppendLine($"Selector-length plus dynamic-creation boundary parsing fully accounts for {completeFollowUps} of those follow-up object-view {headerNoun} without consuming them into the parent record.");
+        if (completeFollowUps > 0)
+        {
+            builder.AppendLine($"Complete follow-up consumed byte lengths: {FormatCountSummary(boundaryLeads.Where(candidate => candidate.PostCreationObjectViewComplete).Select(candidate => candidate.PostCreationObjectViewConsumedBytes.ToString(CultureInfo.InvariantCulture)))}.");
+        }
+
+        AppendProtocol03NpcBasePostCreationBoundaryFamilies(builder, boundaryLeads);
+        AppendProtocol03NpcBasePostCreationFollowUpParseStatus(builder, boundaryLeads);
+        AppendProtocol03NpcBaseDynamicCreationTailLeads(builder, boundaryLeads);
+        AppendProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidates(builder, boundaryLeads);
+        AppendProtocol03NpcBaseDynamicCreationHeaderLikeTailLeadSummary(builder, boundaryLeads);
+        AppendProtocol03NpcBaseThreeByteZeroTailPreHeaderValues(builder, boundaryLeads);
+        AppendProtocol03NpcBaseNonZeroTailPreHeaderExceptions(builder, boundaryLeads);
         builder.AppendLine();
-        builder.AppendLine("| Header offset | Header prefix | Header classification | Records | Suffix prefixes | Distinct names | Text samples | Sample |");
-        builder.AppendLine("| ---: | --- | --- | ---: | --- | ---: | --- | --- |");
+        builder.AppendLine("| Header offset | Pre-header bytes | Records | Header classifications | Distinct header prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | ---: | ---: | --- | --- |");
         foreach (var group in boundaryLeads
             .GroupBy(candidate => new
             {
                 candidate.PostCreationObjectViewHeaderOffset,
+                PreHeaderHex = FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PostCreationObjectViewHeaderOffset)
+            .ThenBy(group => group.Key.PreHeaderHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctHeaderPrefixes = group.Select(candidate => candidate.PostCreationObjectViewHeaderHex).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.PostCreationObjectViewHeaderOffset} | `{group.Key.PreHeaderHex}` | {group.Count()} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderClassification), 8)} | {distinctHeaderPrefixes} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("| Header offset | Pre-header bytes | Header prefix | Header classification | Records | Suffix prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | --- | --- | ---: | --- | ---: | --- | --- |");
+        foreach (var group in boundaryLeads
+            .GroupBy(candidate => new
+            {
+                candidate.PostCreationObjectViewHeaderOffset,
+                PreHeaderHex = FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex),
                 candidate.PostCreationObjectViewHeaderHex,
                 candidate.PostCreationObjectViewHeaderClassification
             })
             .OrderByDescending(group => group.Count())
             .ThenBy(group => group.Key.PostCreationObjectViewHeaderOffset)
+            .ThenBy(group => group.Key.PreHeaderHex, StringComparer.OrdinalIgnoreCase)
             .ThenBy(group => group.Key.PostCreationObjectViewHeaderHex, StringComparer.OrdinalIgnoreCase)
             .Take(25))
         {
             Protocol03NamedProfileRecordCandidate sample = group.First();
             int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
             builder.AppendLine(
-                $"| {group.Key.PostCreationObjectViewHeaderOffset} | `{group.Key.PostCreationObjectViewHeaderHex}` | {FormatTableText(group.Key.PostCreationObjectViewHeaderClassification)} | {group.Count()} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationAttributePrefixHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+                $"| {group.Key.PostCreationObjectViewHeaderOffset} | `{group.Key.PreHeaderHex}` | `{group.Key.PostCreationObjectViewHeaderHex}` | {FormatTableText(group.Key.PostCreationObjectViewHeaderClassification)} | {group.Count()} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationAttributePrefixHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
         }
 
         builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NpcBasePostCreationBoundaryFamilies(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        builder.AppendLine();
+        builder.AppendLine("| Boundary family | Records | Complete follow-ups | Header offsets | Header classifications | Pre-header samples | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in boundaryLeads
+            .GroupBy(candidate => candidate.PostCreationObjectViewBoundaryFamily, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            int completeFollowUps = group.Count(candidate => candidate.PostCreationObjectViewComplete);
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key)} | {group.Count()} | {completeFollowUps} | {FormatCountSummary(group.Select(candidate => candidate.PostCreationObjectViewHeaderOffset?.ToString(CultureInfo.InvariantCulture) ?? "-"))} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderClassification), 8)} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static void AppendProtocol03NpcBasePostCreationFollowUpParseStatus(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        builder.AppendLine();
+        builder.AppendLine("| Follow-up complete | Parse status | Records | Parsed updates | Consumed bytes | Unparsed bytes | Header classifications | Boundary families | Pre-header samples | Header prefixes | Dynamic tail bytes | Dynamic tail prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in boundaryLeads
+            .GroupBy(candidate => new
+            {
+                candidate.PostCreationObjectViewComplete,
+                candidate.PostCreationObjectViewParseStatus,
+                candidate.PostCreationObjectViewParsedUpdateCount,
+                candidate.PostCreationObjectViewConsumedBytes
+            })
+            .OrderBy(group => group.Key.PostCreationObjectViewComplete)
+            .ThenBy(group => group.Key.PostCreationObjectViewParseStatus, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PostCreationObjectViewParsedUpdateCount)
+            .ThenBy(group => group.Key.PostCreationObjectViewConsumedBytes)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {FormatBoolean(group.Key.PostCreationObjectViewComplete)} | {FormatTableText(group.Key.PostCreationObjectViewParseStatus)} | {group.Count()} | {group.Key.PostCreationObjectViewParsedUpdateCount} | {group.Key.PostCreationObjectViewConsumedBytes} | {FormatCountSummary(group.Select(candidate => candidate.PostCreationObjectViewUnparsedBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderClassification), 8)} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewBoundaryFamily), 8)} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex)), 8)} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderHex), 8)} | {FormatCountSummary(group.Select(candidate => candidate.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseDynamicCreationTailLeads(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        Protocol03NamedProfileRecordCandidate[] dynamicTailLeads = boundaryLeads
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate.PostCreationObjectViewDynamicTailPrefixHex))
+            .ToArray();
+        if (dynamicTailLeads.Length == 0)
+        {
+            return;
+        }
+
+        int unboundedDynamicCreations = dynamicTailLeads.Count(candidate =>
+            !candidate.PostCreationObjectViewComplete &&
+            candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase));
+        builder.AppendLine();
+        builder.AppendLine("Dynamic creation tail prefixes start after a nested Object599 dynamic creation body has parsed its declared attribute stream. They are byte leads for the next segmentation pass, not decoded payloads.");
+        builder.AppendLine($"Across {dynamicTailLeads.Length} measured nested dynamic creations, {unboundedDynamicCreations} parsed the Object599 body but did not expose another object-view header inside the current eight-byte search window.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail family | Follow-up complete | Parse status | Available bytes | Captured bytes | Records | Parent pre-values | Lead prefixes | Header-like leads | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in dynamicTailLeads
+            .GroupBy(candidate => new
+            {
+                TailFamily = ClassifyProtocol03DynamicCreationTailPrefix(candidate.PostCreationObjectViewDynamicTailPrefixHex),
+                candidate.PostCreationObjectViewComplete,
+                candidate.PostCreationObjectViewParseStatus
+            })
+            .OrderBy(group => group.Key.PostCreationObjectViewComplete)
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key.TailFamily, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.PostCreationObjectViewParseStatus, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            string headerLikeLeads = FormatDistinct(group.SelectMany(candidate =>
+                EnumerateProtocol03DynamicTailHeaderLikeLeads(candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8);
+            builder.AppendLine(
+                $"| {FormatTableText(group.Key.TailFamily)} | {FormatBoolean(group.Key.PostCreationObjectViewComplete)} | {FormatTableText(group.Key.PostCreationObjectViewParseStatus)} | {FormatCountSummary(group.Select(candidate => candidate.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatCountSummary(group.Select(candidate => ParseHexBytes(candidate.PostCreationObjectViewDynamicTailPrefixHex).Length.ToString(CultureInfo.InvariantCulture)), 12)} | {group.Count()} | {FormatCountSummary(group.Select(candidate => TryReadThreeByteZeroTailPreHeaderValue(candidate.PostCreationObjectViewPreHeaderHex)?.ToString("x2", CultureInfo.InvariantCulture) ?? "-"), 12)} | {FormatDistinct(group.Select(candidate => FormatEmptyHex(candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8)} | {headerLikeLeads} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseDynamicCreationHeaderLikeTailLeadSummary(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        var leadEntries = boundaryLeads
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate.PostCreationObjectViewDynamicTailPrefixHex))
+            .SelectMany(candidate => EnumerateProtocol03DynamicTailHeaderLikeLeadInfos(candidate.PostCreationObjectViewDynamicTailPrefixHex)
+                .Select(lead => new
+                {
+                    Candidate = candidate,
+                    Lead = lead
+                }))
+            .ToArray();
+        if (leadEntries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("Header-like dynamic tail leads are object-view-shaped byte signatures after parsed nested Object599 creation records. They remain evidence for capture targeting unless the selector payload is already bounded by existing parser rules.");
+        builder.AppendLine();
+        builder.AppendLine("| Lead offset | View id | Update count | First selector | Records | Complete parents | Tail bytes | Parse statuses | Tail families | Parent pre-values | Lead prefixes | Body hints | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in leadEntries
+            .GroupBy(entry => new
+            {
+                entry.Lead.Offset,
+                entry.Lead.ViewId,
+                entry.Lead.UpdateCount,
+                entry.Lead.FirstSelector
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Offset)
+            .ThenBy(group => group.Key.ViewId)
+            .ThenBy(group => group.Key.UpdateCount)
+            .ThenBy(group => group.Key.FirstSelector)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First().Candidate;
+            int distinctNames = group.Select(entry => entry.Candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.Offset} | {group.Key.ViewId} | `{group.Key.UpdateCount:x2}` | `{group.Key.FirstSelector:x2}` | {group.Count()} | {FormatCountSummary(group.Select(entry => FormatBoolean(entry.Candidate.PostCreationObjectViewComplete)))} | {FormatCountSummary(group.Select(entry => entry.Candidate.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatDistinct(group.Select(entry => entry.Candidate.PostCreationObjectViewParseStatus), 8)} | {FormatDistinct(group.Select(entry => ClassifyProtocol03DynamicCreationTailPrefix(entry.Candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8)} | {FormatCountSummary(group.Select(entry => TryReadThreeByteZeroTailPreHeaderValue(entry.Candidate.PostCreationObjectViewPreHeaderHex)?.ToString("x2", CultureInfo.InvariantCulture) ?? "-"), 12)} | {FormatDistinct(group.Select(entry => FormatEmptyHex(entry.Candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8)} | {FormatDistinct(group.Select(entry => FormatProtocol03DynamicTailBodyHints(entry.Candidate.PostCreationObjectViewDynamicTailPrefixHex, entry.Lead)), 8)} | {distinctNames} | {FormatDistinct(group.Select(entry => entry.Candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+
+        Protocol03DynamicTailBodyAnchor[] bodyAnchors = leadEntries
+            .Select(entry => TryCreateProtocol03DynamicTailBodyAnchor(entry.Candidate, entry.Lead, out Protocol03DynamicTailBodyAnchor? anchor)
+                ? anchor
+                : null)
+            .Where(anchor => anchor is not null)
+            .Select(anchor => anchor!)
+            .ToArray();
+        if (bodyAnchors.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("Header-like selector body anchors group embedded `cd ab` separators inside selector bodies. They are shape evidence for follow-up body-length rules, not decoded field boundaries.");
+        builder.AppendLine();
+        builder.AppendLine("| Lead offset | View id | Update count | First selector | Body separator offset | Records | Complete parents | Tail bytes | Parse statuses | Body prefixes | Post-separator prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in bodyAnchors
+            .GroupBy(anchor => new
+            {
+                anchor.Lead.Offset,
+                anchor.Lead.ViewId,
+                anchor.Lead.UpdateCount,
+                anchor.Lead.FirstSelector,
+                anchor.BodySeparatorOffset
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.Offset)
+            .ThenBy(group => group.Key.ViewId)
+            .ThenBy(group => group.Key.UpdateCount)
+            .ThenBy(group => group.Key.FirstSelector)
+            .ThenBy(group => group.Key.BodySeparatorOffset)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First().Candidate;
+            int distinctNames = group.Select(anchor => anchor.Candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.Offset} | {group.Key.ViewId} | `{group.Key.UpdateCount:x2}` | `{group.Key.FirstSelector:x2}` | {group.Key.BodySeparatorOffset} | {group.Count()} | {FormatCountSummary(group.Select(anchor => FormatBoolean(anchor.Candidate.PostCreationObjectViewComplete)))} | {FormatCountSummary(group.Select(anchor => anchor.Candidate.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatDistinct(group.Select(anchor => anchor.Candidate.PostCreationObjectViewParseStatus), 8)} | {FormatDistinct(group.Select(anchor => FormatEmptyHex(anchor.BodyPrefixHex)), 8)} | {FormatDistinct(group.Select(anchor => FormatEmptyHex(anchor.PostSeparatorPrefixHex)), 8)} | {distinctNames} | {FormatDistinct(group.Select(anchor => anchor.Candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidates(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        Protocol03NamedProfileRecordCandidate[] unboundedDynamicCreations = boundaryLeads
+            .Where(candidate =>
+                !candidate.PostCreationObjectViewComplete &&
+                candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Protocol03NamedProfileRecordCandidate[] extendedBoundaryCandidates = unboundedDynamicCreations
+            .Where(candidate => candidate.PostCreationObjectViewDynamicTailNextHeaderOffset is not null)
+            .ToArray();
+        if (extendedBoundaryCandidates.Length == 0)
+        {
+            return;
+        }
+
+        int minOffset = extendedBoundaryCandidates
+            .Select(candidate => candidate.PostCreationObjectViewDynamicTailNextHeaderOffset!.Value)
+            .Min();
+        int maxOffset = extendedBoundaryCandidates
+            .Select(candidate => candidate.PostCreationObjectViewDynamicTailNextHeaderOffset!.Value)
+            .Max();
+
+        builder.AppendLine();
+        builder.AppendLine("### Protocol 03 NPC_BASE Dynamic Creation Extended Boundary Candidates");
+        builder.AppendLine();
+        builder.AppendLine("This scans unbounded nested Object599 dynamic creation tails beyond the conservative eight-byte parser window and up to 64 bytes after the parsed creation attribute stream. These are evidence leads only: they do not mark the parent object-view as complete.");
+        builder.AppendLine($"Across {unboundedDynamicCreations.Length} unbounded dynamic creation tails, {extendedBoundaryCandidates.Length} expose a later plausible object-view header between byte offsets {minOffset} and {maxOffset} after the parsed nested creation attribute stream.");
+        builder.AppendLine();
+        builder.AppendLine("| Tail header offset | Pre-header bytes | Header prefix | Header classification | Boundary interpretation | Parser action | Records | Tail bytes | Tail families | Parent pre-values | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- | ---: | --- | --- |");
+        foreach (var group in extendedBoundaryCandidates
+            .GroupBy(candidate => new
+            {
+                candidate.PostCreationObjectViewDynamicTailNextHeaderOffset,
+                PreHeaderHex = FormatEmptyHex(candidate.PostCreationObjectViewDynamicTailPreHeaderHex),
+                candidate.PostCreationObjectViewDynamicTailNextHeaderHex,
+                candidate.PostCreationObjectViewDynamicTailNextHeaderClassification
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PostCreationObjectViewDynamicTailNextHeaderOffset)
+            .ThenBy(group => group.Key.PreHeaderHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.PostCreationObjectViewDynamicTailNextHeaderHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            string boundaryInterpretation = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidate(
+                group.Key.PreHeaderHex,
+                group.Key.PostCreationObjectViewDynamicTailNextHeaderHex);
+            string parserAction = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryParserAction(
+                boundaryInterpretation,
+                group.Key.PostCreationObjectViewDynamicTailNextHeaderClassification,
+                group.Count());
+            builder.AppendLine(
+                $"| {group.Key.PostCreationObjectViewDynamicTailNextHeaderOffset} | `{group.Key.PreHeaderHex}` | `{group.Key.PostCreationObjectViewDynamicTailNextHeaderHex}` | {FormatTableText(group.Key.PostCreationObjectViewDynamicTailNextHeaderClassification)} | {FormatTableText(boundaryInterpretation)} | {FormatTableText(parserAction)} | {group.Count()} | {FormatCountSummary(group.Select(candidate => candidate.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)), 12)} | {FormatDistinct(group.Select(candidate => ClassifyProtocol03DynamicCreationTailPrefix(candidate.PostCreationObjectViewDynamicTailPrefixHex)), 8)} | {FormatCountSummary(group.Select(candidate => TryReadThreeByteZeroTailPreHeaderValue(candidate.PostCreationObjectViewPreHeaderHex)?.ToString("x2", CultureInfo.InvariantCulture) ?? "-"), 12)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static string ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidate(
+        string preHeaderHex,
+        string headerPrefixHex)
+    {
+        if (headerPrefixHex.Equals("cd ab", StringComparison.OrdinalIgnoreCase) ||
+            headerPrefixHex.StartsWith("cd ab ", StringComparison.OrdinalIgnoreCase))
+        {
+            return "cd ab separator collision";
+        }
+
+        if (preHeaderHex.Contains("cd ab", StringComparison.OrdinalIgnoreCase))
+        {
+            return "post-separator later header candidate";
+        }
+
+        return "later header candidate";
+    }
+
+    private static string ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryParserAction(
+        string boundaryInterpretation,
+        string headerClassification,
+        int candidateCount)
+    {
+        if (boundaryInterpretation.Equals("cd ab separator collision", StringComparison.OrdinalIgnoreCase))
+        {
+            return "reject as separator collision";
+        }
+
+        if (boundaryInterpretation.Equals("post-separator later header candidate", StringComparison.OrdinalIgnoreCase))
+        {
+            return "evidence only; post-separator lead";
+        }
+
+        if (candidateCount >= 5 &&
+            !headerClassification.Equals("unclassified object-view update", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review for parser promotion";
+        }
+
+        return candidateCount > 1
+            ? "evidence only; repeated later lead"
+            : "evidence only; single-sample lead";
+    }
+
+    private static void AppendProtocol03NpcBaseDynamicCreationSummaryExports(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        if (report.Protocol03NpcBaseDynamicCreationTailSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationBodyAnchorSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("### Protocol 03 NPC_BASE Dynamic Creation Summary Exports");
+        builder.AppendLine();
+        builder.AppendLine("These rows mirror the Object599 nested dynamic-creation tail evidence in machine-readable JSON fields. They preserve exact tail families, header-like offsets, `cd ab` body anchors, and extended boundary candidates without widening parser completion rules.");
+
+        if (report.Protocol03NpcBaseDynamicCreationTailSummaries.Count > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Tail family | Follow-up complete | Parse status | Records | Tail bytes | Captured bytes | Parent pre-values | Tail prefixes | Header-like leads | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationTailSummary summary in report.Protocol03NpcBaseDynamicCreationTailSummaries.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.TailFamily)} | {FormatBoolean(summary.FollowUpComplete)} | {FormatTableText(summary.ParseStatus)} | {summary.CandidateCount} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.CapturedBytes, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TailPrefixes, 3)} | {FormatCountDictionary(summary.HeaderLikeLeads, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (report.Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries.Count > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Lead offset | View id | Update count | First selector | Records | Complete parents | Tail bytes | Parse statuses | Tail families | Parent pre-values | Lead prefixes | Body hints | Text samples | Sample |");
+            builder.AppendLine("| ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummary summary in report.Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {summary.LeadOffset} | {summary.ViewId} | `{summary.UpdateCountHex}` | `{summary.FirstSelector}` | {summary.CandidateCount} | {FormatCountDictionary(summary.CompleteParents, 5)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.ParseStatuses, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.LeadPrefixes, 3)} | {FormatCountDictionary(summary.BodyHints, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (report.Protocol03NpcBaseDynamicCreationBodyAnchorSummaries.Count > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Lead offset | View id | Update count | First selector | Body separator offset | Records | Complete parents | Tail bytes | Parse statuses | Body prefixes | Post-separator prefixes | Text samples | Sample |");
+            builder.AppendLine("| ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationBodyAnchorSummary summary in report.Protocol03NpcBaseDynamicCreationBodyAnchorSummaries.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {summary.LeadOffset} | {summary.ViewId} | `{summary.UpdateCountHex}` | `{summary.FirstSelector}` | {summary.BodySeparatorOffset} | {summary.CandidateCount} | {FormatCountDictionary(summary.CompleteParents, 5)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.ParseStatuses, 5)} | {FormatCountDictionary(summary.BodyPrefixes, 3)} | {FormatCountDictionary(summary.PostSeparatorPrefixes, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Tail header offset | Pre-header bytes | Header prefix | Header classification | Boundary interpretation | Parser action | Records | Tail bytes | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundarySummary summary in report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {summary.TailHeaderOffset} | `{summary.PreHeaderHex}` | `{summary.HeaderPrefixHex}` | {FormatTableText(summary.HeaderClassification)} | {FormatTableText(summary.BoundaryInterpretation)} | {FormatTableText(summary.ParserAction)} | {summary.CandidateCount} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseThreeByteZeroTailPreHeaderValues(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        var zeroTailLeads = boundaryLeads
+            .Select(candidate => new
+            {
+                Candidate = candidate,
+                Value = TryReadThreeByteZeroTailPreHeaderValue(candidate.PostCreationObjectViewPreHeaderHex)
+            })
+            .Where(entry => entry.Value is not null)
+            .ToArray();
+        if (zeroTailLeads.Length == 0)
+        {
+            return;
+        }
+
+        int minValue = zeroTailLeads.Min(entry => entry.Value!.Value);
+        int maxValue = zeroTailLeads.Max(entry => entry.Value!.Value);
+        int exceptionCount = boundaryLeads.Count - zeroTailLeads.Length;
+        string exceptionNoun = exceptionCount == 1 ? "lead" : "leads";
+        string exceptionVerb = exceptionCount == 1 ? "uses" : "use";
+        builder.AppendLine();
+        builder.AppendLine($"The three-byte zero-tail pre-header values range from `{minValue:x2}` to `{maxValue:x2}`; {exceptionCount} boundary {exceptionNoun} {exceptionVerb} another pre-header shape.");
+        builder.AppendLine();
+        builder.AppendLine("| Pre-header value | Pre-header bytes | Records | Header classifications | Distinct header prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | ---: | ---: | --- | --- |");
+        foreach (var group in zeroTailLeads
+            .GroupBy(entry => entry.Value!.Value)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First().Candidate;
+            int distinctHeaderPrefixes = group.Select(entry => entry.Candidate.PostCreationObjectViewHeaderHex).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            int distinctNames = group.Select(entry => entry.Candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            string preHeaderHex = $"{group.Key:x2} 00 00";
+            builder.AppendLine(
+                $"| `{group.Key:x2}` | `{preHeaderHex}` | {group.Count()} | {FormatDistinct(group.Select(entry => entry.Candidate.PostCreationObjectViewHeaderClassification), 8)} | {distinctHeaderPrefixes} | {distinctNames} | {FormatDistinct(group.Select(entry => entry.Candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
+    }
+
+    private static void AppendProtocol03NpcBaseNonZeroTailPreHeaderExceptions(
+        StringBuilder builder,
+        IReadOnlyList<Protocol03NamedProfileRecordCandidate> boundaryLeads)
+    {
+        Protocol03NamedProfileRecordCandidate[] exceptions = boundaryLeads
+            .Where(candidate => !IsThreeByteZeroTailPreHeader(candidate.PostCreationObjectViewPreHeaderHex))
+            .ToArray();
+        if (exceptions.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("Non-zero-tail pre-header exceptions remain separate because they do not match the dominant `<value> 00 00` tail-field shape.");
+        builder.AppendLine($"Exception classifications: {FormatCountSummary(exceptions.Select(candidate => candidate.PostCreationObjectViewHeaderClassification))}. Header offsets: {FormatCountSummary(exceptions.Select(candidate => candidate.PostCreationObjectViewHeaderOffset?.ToString(CultureInfo.InvariantCulture) ?? "-"))}.");
+        builder.AppendLine();
+        builder.AppendLine("| Header offset | Pre-header bytes | Records | Header classifications | Header prefixes | Distinct names | Text samples | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | --- | --- | ---: | --- | --- |");
+        foreach (var group in exceptions
+            .GroupBy(candidate => new
+            {
+                candidate.PostCreationObjectViewHeaderOffset,
+                PreHeaderHex = FormatEmptyHex(candidate.PostCreationObjectViewPreHeaderHex)
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PostCreationObjectViewHeaderOffset)
+            .ThenBy(group => group.Key.PreHeaderHex, StringComparer.OrdinalIgnoreCase)
+            .Take(25))
+        {
+            Protocol03NamedProfileRecordCandidate sample = group.First();
+            int distinctNames = group.Select(candidate => candidate.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            builder.AppendLine(
+                $"| {group.Key.PostCreationObjectViewHeaderOffset} | `{group.Key.PreHeaderHex}` | {group.Count()} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderClassification), 8)} | {FormatDistinct(group.Select(candidate => candidate.PostCreationObjectViewHeaderHex), 6)} | {distinctNames} | {FormatDistinct(group.Select(candidate => candidate.Text), 8)} | `{sample.File}:{sample.Line}` |");
+        }
     }
 
     private static void AppendProtocol03NpcBaseCreationEntityCorrelation(
@@ -4138,18 +7641,26 @@ public static class ReportWriter
             return;
         }
 
-        builder.AppendLine("| Protocol | Local name | Direction | Value | Encoded header | Embedded candidate hits | Sample files |");
-        builder.AppendLine("| --- | --- | --- | ---: | --- | ---: | --- |");
+        builder.AppendLine("Parsed top-level RPC hits come from protocol 04 block parsing. Embedded byte hits are raw encoded-header byte windows found inside packet-like lines; non-matching packet directions or protocols are packet-boundary targets, not decoded vendor exchanges.");
+        builder.AppendLine();
+        builder.AppendLine("| Protocol | Local name | Direction | Value | Encoded header | Parsed top-level RPC hits | Embedded byte hits | Top embedded contexts | Sample files |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | ---: | ---: | --- | --- |");
         foreach (RpcHeaderEntry header in vendorHeaders)
         {
+            int parsedHits = report.PacketDumpFiles
+                .SelectMany(file => file.RpcHeaderCounts)
+                .Where(entry => IsParsedHeaderLabelMatch(entry.Key, header))
+                .Sum(entry => entry.Value);
             int hits = report.PacketDumpFiles
                 .SelectMany(file => file.KnownHeaderCounts)
                 .Where(entry => IsHeaderLabelMatch(entry.Key, header))
                 .Sum(entry => entry.Value);
-            builder.AppendLine($"| {header.Protocol} | {header.Name} | {header.Direction} | `{header.Value:x}` | `{header.EncodedHeader}` | {hits} | {FormatHeaderSamples(report.PacketDumpFiles, header)} |");
+            builder.AppendLine($"| {header.Protocol} | {header.Name} | {header.Direction} | `{header.Value:x}` | `{header.EncodedHeader}` | {parsedHits} | {hits} | {FormatHeaderContexts(report.PacketDumpFiles, header)} | {FormatHeaderSamples(report.PacketDumpFiles, header)} |");
         }
 
         builder.AppendLine();
+        AppendVendorTransactionFlows(builder, report);
+        AppendVendorEmbeddedWindows(builder, report, vendorHeaders);
     }
 
     private static void AddCounts(Dictionary<string, int> totals, IReadOnlyDictionary<string, int> counts)
@@ -4165,6 +7676,13 @@ public static class ReportWriter
         return label.StartsWith(header.EncodedHeader + " ", StringComparison.OrdinalIgnoreCase)
             && label.Contains(header.Name, StringComparison.OrdinalIgnoreCase)
             && label.Contains($"[{header.Protocol} {header.Direction}]", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsParsedHeaderLabelMatch(string label, RpcHeaderEntry header)
+    {
+        return label.StartsWith(header.EncodedHeader + " ", StringComparison.OrdinalIgnoreCase)
+            && label.Contains($"[{header.Direction}]", StringComparison.OrdinalIgnoreCase)
+            && label.Contains($"{header.Protocol}:{header.Name}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatHeaderSamples(IReadOnlyList<PacketDumpFileSummary> files, RpcHeaderEntry header)
@@ -4188,6 +7706,1610 @@ public static class ReportWriter
         }
 
         return samples.Count == 0 ? "-" : string.Join("<br>", samples);
+    }
+
+    private static string FormatHeaderContexts(IReadOnlyList<PacketDumpFileSummary> files, RpcHeaderEntry header)
+    {
+        var contexts = files
+            .SelectMany(file => file.KnownHeaderContexts ?? Array.Empty<KnownHeaderContextSummary>())
+            .Where(context => IsHeaderLabelMatch(context.Label, header))
+            .GroupBy(context => new
+            {
+                Direction = context.PacketDirection ?? "unframed",
+                context.PacketProtocol,
+                context.LineProtocol
+            })
+            .Select(group => new
+            {
+                group.Key.Direction,
+                group.Key.PacketProtocol,
+                group.Key.LineProtocol,
+                Count = group.Sum(context => context.Count)
+            })
+            .OrderByDescending(context => context.Count)
+            .ThenBy(context => context.Direction, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(context => context.PacketProtocol, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(context => context.LineProtocol, StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .Select(context => $"{context.Direction} packet {context.PacketProtocol}, line {context.LineProtocol}: {context.Count}")
+            .ToArray();
+
+        return contexts.Length == 0 ? "-" : FormatDistinct(contexts, contexts.Length);
+    }
+
+    private static void AppendVendorEmbeddedWindows(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<RpcHeaderEntry> vendorHeaders)
+    {
+        var rows = vendorHeaders
+            .SelectMany(header => report.PacketDumpFiles.SelectMany(file =>
+                (file.KnownHeaderContexts ?? Array.Empty<KnownHeaderContextSummary>())
+                    .Where(context => IsHeaderLabelMatch(context.Label, header))
+                    .SelectMany(context => (context.Windows ?? Array.Empty<KnownHeaderWindowSummary>())
+                        .Select(window => new
+                        {
+                            Header = header,
+                            File = file,
+                            Context = context,
+                            Window = window
+                        }))))
+            .GroupBy(row => new
+            {
+                row.Header.Name,
+                row.Header.Direction,
+                row.Header.EncodedHeader,
+                PacketDirection = row.Context.PacketDirection ?? "unframed",
+                row.Context.PacketProtocol,
+                row.Context.LineProtocol,
+                row.Window.Offset,
+                row.Window.PrefixHex,
+                row.Window.SuffixHex
+            })
+            .Select(group => new
+            {
+                Protocols = FormatDistinct(group.Select(row => row.Header.Protocol), 4),
+                group.Key.Name,
+                group.Key.Direction,
+                group.Key.EncodedHeader,
+                group.Key.PacketDirection,
+                group.Key.PacketProtocol,
+                group.Key.LineProtocol,
+                group.Key.Offset,
+                group.Key.PrefixHex,
+                group.Key.SuffixHex,
+                Count = group.Sum(row => row.Window.Count) /
+                    Math.Max(1, group.Select(row => row.Header.Protocol).Distinct(StringComparer.OrdinalIgnoreCase).Count()),
+                Samples = FormatWindowSamples(group.Select(row => new FileLineSamples(row.File.File, row.Window.SampleLines))),
+                Protocol03Contexts = FormatProtocol03WindowContexts(group.Select(row => new FileWindowLocations(row.File, row.Window)))
+            })
+            .OrderByDescending(row => row.Count)
+            .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.PacketDirection, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.PacketProtocol, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.Offset)
+            .Take(16)
+            .ToArray();
+
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Embedded Byte Windows");
+        builder.AppendLine();
+        builder.AppendLine("This groups the immediate bytes around embedded vendor header candidates. Repeated prefixes and suffixes are boundary evidence for the surrounding packet family; they are not decoded vendor RPC payloads by themselves.");
+        builder.AppendLine();
+        builder.AppendLine("| Protocols | Local name | Direction | Context | Offset | Prefix | Header | Suffix | Count | Containing protocol 03 segment | Sample lines |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | --- | --- | --- | ---: | --- | --- |");
+        foreach (var row in rows)
+        {
+            string context = $"{row.PacketDirection} packet {row.PacketProtocol}, line {row.LineProtocol}";
+            builder.AppendLine($"| {row.Protocols} | {row.Name} | {row.Direction} | {FormatTableText(context)} | {row.Offset} | `{FormatEmptyHex(row.PrefixHex)}` | `{row.EncodedHeader}` | `{FormatEmptyHex(row.SuffixHex)}` | {row.Count} | {row.Protocol03Contexts} | {row.Samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendVendorTransactionFlows(StringBuilder builder, PacketResearchReport report)
+    {
+        VendorFlowWithFile[] flows = report.PacketDumpFiles
+            .SelectMany(file => (file.VendorTransactionFlows ?? Array.Empty<VendorTransactionFlowSample>())
+                .Select(flow => new VendorFlowWithFile(file, flow)))
+            .ToArray();
+        if (flows.Length == 0)
+        {
+            return;
+        }
+
+        int distinctSequences = flows
+            .Select(entry => FormatSequence(entry.Flow.Blocks.Select(block => block.Header).ToArray()))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+        builder.AppendLine("### Top-Level Vendor Transaction Flows");
+        builder.AppendLine();
+        builder.AppendLine("These are parsed protocol 04 packets where a top-level RPC block is a known vendor header. The adjacent packet column shows the nearest parsed protocol 04 packets in the same capture file, which gives transaction-neighborhood evidence without copying full raw dump bodies into the Markdown report.");
+        builder.AppendLine();
+        builder.AppendLine($"- Top-level vendor protocol 04 packets: {flows.Length}");
+        builder.AppendLine($"- Distinct vendor packet header sequences: {distinctSequences}");
+        builder.AppendLine();
+        builder.AppendLine("| Vendor RPC | Direction | Packet header sequence | Vendor payload bytes | Vendor payload prefix | Vendor payload suffix | Count | Adjacent protocol 04 packets | Samples |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | --- | ---: | --- | --- |");
+
+        foreach (var group in flows
+            .GroupBy(entry => new
+            {
+                entry.Flow.VendorHeader,
+                VendorLocalName = entry.Flow.VendorLocalName ?? "(unknown)",
+                Direction = entry.Flow.Direction ?? "unframed",
+                Sequence = FormatSequence(entry.Flow.Blocks.Select(block => block.Header).ToArray()),
+                entry.Flow.VendorPayloadLength,
+                entry.Flow.VendorPayloadPrefixHex,
+                entry.Flow.VendorPayloadSuffixHex
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.VendorLocalName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Direction, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Sequence, StringComparer.OrdinalIgnoreCase)
+            .Take(32))
+        {
+            string samples = FormatWindowSamples(group.Select(entry => new FileLineSamples(entry.File.File, new[] { entry.Flow.Line })));
+            string adjacent = FormatVendorFlowAdjacentPackets(group);
+            builder.AppendLine(
+                $"| `{group.Key.VendorHeader}` {FormatTableText(group.Key.VendorLocalName)} | {FormatTableText(group.Key.Direction)} | `{group.Key.Sequence}` | {group.Key.VendorPayloadLength} | `{FormatEmptyHex(group.Key.VendorPayloadPrefixHex)}` | `{FormatEmptyHex(group.Key.VendorPayloadSuffixHex)}` | {group.Count()} | {adjacent} | {samples} |");
+        }
+
+        builder.AppendLine();
+        AppendVendorOpenHeaderFieldLeads(builder, flows);
+        AppendVendorOpenItemListLeads(builder, flows, report);
+        AppendVendorAdjacentPayloadShapes(builder, flows);
+        AppendVendorTransactionFieldLeads(builder, flows);
+        AppendVendorBuyItemPriceLeads(builder, flows, report);
+        AppendVendorSellItemPriceLeads(builder, flows, report);
+    }
+
+    private static void AppendVendorOpenHeaderFieldLeads(
+        StringBuilder builder,
+        IReadOnlyList<VendorFlowWithFile> flows)
+    {
+        VendorOpenHeaderFieldLead[] leads = flows
+            .Where(entry => HeaderEquals(entry.Flow.VendorHeader, "81 0d"))
+            .SelectMany(CreateVendorOpenHeaderFieldLeads)
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Open Header Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This interprets complete top-level `81 0d` vendor-open payload headers as candidate fields only. Offset `+28` is retained as the list-start field because it is `20 00` / 32 for the complete samples below; the float32 columns are mechanical little-endian interpretations, not final coordinate or semantic claims.");
+        builder.AppendLine();
+        builder.AppendLine("| Vendor open payload prefix | Payload bytes | List offset +28 | Count +30 | Float32 candidates +0/+8/+16/+24 | Raw words +4/+12/+20 | Prev client interaction | Samples |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | --- | --- |");
+
+        foreach (var group in leads
+            .GroupBy(lead => new
+            {
+                lead.HeaderHex,
+                lead.PayloadLength,
+                lead.PayloadPrefixHex,
+                lead.ListOffsetFieldHex,
+                lead.ListOffset,
+                lead.CountFieldHex,
+                lead.DeclaredCount
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key.PayloadLength)
+            .ThenBy(group => group.Key.HeaderHex, StringComparer.OrdinalIgnoreCase)
+            .Take(32))
+        {
+            VendorOpenHeaderFieldLead sample = group.First();
+            string floats = FormatVendorOpenHeaderFloatCandidates(sample);
+            string rawWords = FormatVendorOpenHeaderRawWords(sample);
+            string previousClients = FormatVendorOpenHeaderPreviousClients(group.Select(lead => lead.PreviousClientInteraction));
+            string samples = FormatWindowSamples(group.Select(lead => new FileLineSamples(lead.File.File, new[] { lead.Flow.Line })));
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(group.Key.PayloadPrefixHex)}` | {group.Key.PayloadLength} | `{group.Key.ListOffsetFieldHex}` / {group.Key.ListOffset.ToString(CultureInfo.InvariantCulture)} | `{group.Key.CountFieldHex}` / {group.Key.DeclaredCount.ToString(CultureInfo.InvariantCulture)} | {floats} | {rawWords} | {previousClients} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static IEnumerable<VendorOpenHeaderFieldLead> CreateVendorOpenHeaderFieldLeads(VendorFlowWithFile entry)
+    {
+        byte[] payload = ParseHexBytes(entry.Flow.VendorPayloadHex);
+        if (payload.Length < 32)
+        {
+            yield break;
+        }
+
+        ushort listOffset = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(28, 2));
+        if (listOffset != 32)
+        {
+            yield break;
+        }
+
+        ushort declaredCount = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(30, 2));
+        int trailingBytes = payload.Length - listOffset;
+        if (declaredCount == 0 || trailingBytes < 0 || trailingBytes % 4 != 0)
+        {
+            yield break;
+        }
+
+        int availableIds = trailingBytes / 4;
+        if (availableIds != declaredCount)
+        {
+            yield break;
+        }
+
+        yield return new VendorOpenHeaderFieldLead(
+            entry.File,
+            entry.Flow,
+            FormatHexBytes(payload.Take(32)),
+            payload.Length,
+            entry.Flow.VendorPayloadPrefixHex,
+            FormatHexBytes(payload.Skip(28).Take(2)),
+            listOffset,
+            FormatHexBytes(payload.Skip(30).Take(2)),
+            declaredCount,
+            ReadSingleLittleEndian(payload, 0),
+            ReadSingleLittleEndian(payload, 8),
+            ReadSingleLittleEndian(payload, 16),
+            ReadSingleLittleEndian(payload, 24),
+            FormatHexBytes(payload.Skip(4).Take(4)),
+            FormatHexBytes(payload.Skip(12).Take(4)),
+            FormatHexBytes(payload.Skip(20).Take(4)),
+            FormatVendorOpenPreviousClientInteraction(entry));
+    }
+
+    private static void AppendVendorOpenItemListLeads(
+        StringBuilder builder,
+        IReadOnlyList<VendorFlowWithFile> flows,
+        PacketResearchReport report)
+    {
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+        Dictionary<uint, AbilityDefinition> abilitiesById = BuildAbilityDefinitionDictionary(report.AbilityDefinitions);
+        Dictionary<uint, VendorPriceEntry> pricesByGoId = BuildVendorPriceDictionary(report.VendorPriceEntries);
+
+        VendorOpenItemListLead[] leads = flows
+            .Where(entry => HeaderEquals(entry.Flow.VendorHeader, "81 0d"))
+            .SelectMany(entry => CreateVendorOpenItemListLeads(entry, report.VendorInventoryEntries))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Open Item List Leads");
+        builder.AppendLine();
+        builder.AppendLine("This parses complete top-level `81 0d` vendor-open payloads as a 32-byte header, a little-endian `u16` item-count field at payload offset `+30`, then that many little-endian `u32` item or ability ids at offset `+32`. Rows only appear when the declared count exactly consumes the retained vendor payload.");
+        builder.AppendLine();
+        builder.AppendLine("| Vendor open payload prefix | Payload bytes | Count field +30 | Parsed ids | Known refs | Price rows | Best vendor inventory matches | Samples |");
+        builder.AppendLine("| --- | ---: | --- | ---: | --- | --- | --- | --- |");
+
+        foreach (var group in leads
+            .GroupBy(lead => new
+            {
+                lead.PayloadPrefixHex,
+                lead.PayloadLength,
+                lead.CountFieldHex,
+                lead.DeclaredCount,
+                lead.ParsedIdCount,
+                IdKey = string.Join(",", lead.Ids.Select(id => id.ToString(CultureInfo.InvariantCulture)))
+            })
+            .OrderByDescending(group => group.Count())
+            .ThenByDescending(group => group.Key.ParsedIdCount)
+            .ThenBy(group => group.Key.PayloadLength)
+            .ThenBy(group => group.Key.PayloadPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(32))
+        {
+            VendorOpenItemListLead sample = group.First();
+            string refs = FormatVendorOpenKnownReferences(sample.Ids, itemsById, abilitiesById);
+            string priceRows = FormatVendorOpenPriceRows(sample.Ids, pricesByGoId);
+            string inventoryMatches = FormatVendorOpenInventoryMatches(sample.BestInventoryMatches);
+            string samples = FormatVendorOpenItemListLeadSamples(group);
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(group.Key.PayloadPrefixHex)}` | {group.Key.PayloadLength} | `{group.Key.CountFieldHex}` / {group.Key.DeclaredCount.ToString(CultureInfo.InvariantCulture)} | {group.Key.ParsedIdCount} | {refs} | {priceRows} | {inventoryMatches} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static IEnumerable<VendorOpenItemListLead> CreateVendorOpenItemListLeads(
+        VendorFlowWithFile entry,
+        IReadOnlyList<VendorInventoryEntry> vendorInventoryEntries)
+    {
+        byte[] payload = ParseHexBytes(entry.Flow.VendorPayloadHex);
+        if (payload.Length < 32)
+        {
+            yield break;
+        }
+
+        ushort listOffset = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(28, 2));
+        if (listOffset != 32)
+        {
+            yield break;
+        }
+
+        ushort declaredCount = BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(30, 2));
+        int trailingBytes = payload.Length - listOffset;
+        if (declaredCount == 0 || trailingBytes < 0 || trailingBytes % 4 != 0)
+        {
+            yield break;
+        }
+
+        int availableIds = trailingBytes / 4;
+        if (availableIds != declaredCount)
+        {
+            yield break;
+        }
+
+        uint[] ids = Enumerable.Range(0, availableIds)
+            .Select(index => BinaryPrimitives.ReadUInt32LittleEndian(payload.AsSpan(listOffset + index * 4, 4)))
+            .ToArray();
+        if (ids.Length == 0)
+        {
+            yield break;
+        }
+
+        VendorOpenInventoryMatch[] bestInventoryMatches = FindVendorOpenInventoryMatches(ids, vendorInventoryEntries);
+        yield return new VendorOpenItemListLead(
+            entry.File,
+            entry.Flow,
+            entry.Flow.VendorPayloadPrefixHex,
+            payload.Length,
+            FormatHexBytes(payload.Skip(30).Take(2)),
+            declaredCount,
+            ids.Length,
+            ids,
+            bestInventoryMatches);
+    }
+
+    private static string FormatVendorOpenHeaderFloatCandidates(VendorOpenHeaderFieldLead lead)
+    {
+        return string.Join(
+            "<br>",
+            new[]
+            {
+                $"+0 {FormatVendorOpenHeaderFloat(lead.HeaderFloat0)}",
+                $"+8 {FormatVendorOpenHeaderFloat(lead.HeaderFloat8)}",
+                $"+16 {FormatVendorOpenHeaderFloat(lead.HeaderFloat16)}",
+                $"+24 {FormatVendorOpenHeaderFloat(lead.HeaderFloat24)}"
+            });
+    }
+
+    private static string FormatVendorOpenHeaderFloat(float value)
+    {
+        return value.ToString("0.###", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatVendorOpenHeaderRawWords(VendorOpenHeaderFieldLead lead)
+    {
+        return string.Join(
+            "<br>",
+            new[]
+            {
+                $"+4 `{lead.HeaderWord4Hex}`",
+                $"+12 `{lead.HeaderWord12Hex}`",
+                $"+20 `{lead.HeaderWord20Hex}`"
+            });
+    }
+
+    private static string FormatVendorOpenHeaderPreviousClients(IEnumerable<string> interactions)
+    {
+        string[] formatted = interactions
+            .Where(value => value.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static string FormatVendorOpenPreviousClientInteraction(VendorFlowWithFile entry)
+    {
+        Protocol04PacketSequenceSample? previous = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line < entry.Flow.Line &&
+                string.Equals(sequence.Direction, "client", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(sequence => sequence.Line)
+            .FirstOrDefault();
+        if (previous is null)
+        {
+            return string.Empty;
+        }
+
+        string sequence = FormatSequence(previous.Headers);
+        Protocol04RpcFlowBlockSample? firstBlock = (previous.Blocks ?? Array.Empty<Protocol04RpcFlowBlockSample>())
+            .FirstOrDefault(block => block.PayloadLength > 0);
+        if (firstBlock is not null && !string.IsNullOrWhiteSpace(firstBlock.PayloadPrefixHex))
+        {
+            return $"prev {previous.Line.ToString(CultureInfo.InvariantCulture)} `{FormatTableText(sequence)}` `{FormatEmptyHex(firstBlock.PayloadPrefixHex)}`";
+        }
+
+        return $"prev {previous.Line.ToString(CultureInfo.InvariantCulture)} `{FormatTableText(sequence)}`";
+    }
+
+    private static VendorOpenInventoryMatch[] FindVendorOpenInventoryMatches(
+        IReadOnlyList<uint> ids,
+        IReadOnlyList<VendorInventoryEntry> vendorInventoryEntries)
+    {
+        HashSet<uint> normalizedOpenIds = ids
+            .Select(NormalizeVendorOpenListId)
+            .ToHashSet();
+
+        return vendorInventoryEntries
+            .Select(entry =>
+            {
+                HashSet<uint> normalizedRowIds = entry.Items
+                    .Select(NormalizeVendorOpenListId)
+                    .ToHashSet();
+                int matches = normalizedOpenIds.Count(normalizedRowIds.Contains);
+                return new VendorOpenInventoryMatch(
+                    entry.VendorStaticId,
+                    entry.File,
+                    entry.Line,
+                    matches,
+                    normalizedOpenIds.Count,
+                    normalizedRowIds.Count);
+            })
+            .Where(match => match.MatchedIds > 0)
+            .OrderByDescending(match => match.MatchedIds)
+            .ThenBy(match => match.OpenIdCount - match.MatchedIds)
+            .ThenBy(match => match.RowIdCount - match.MatchedIds)
+            .ThenBy(match => match.File, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(match => match.Line)
+            .Take(3)
+            .ToArray();
+    }
+
+    private static uint NormalizeVendorOpenListId(uint id)
+    {
+        return (id & AbilityCodeFlag) == 0 ? id : id & AbilityCodeMask;
+    }
+
+    private static string FormatVendorOpenKnownReferences(
+        IReadOnlyList<uint> ids,
+        IReadOnlyDictionary<uint, ItemCommandEntry> itemsById,
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById)
+    {
+        string[] references = ids
+            .Select(id => FormatVendorOpenKnownReference(id, itemsById, abilitiesById))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (references.Length == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", references.Take(12).Select(FormatTableText));
+        return references.Length > 12
+            ? $"{formatted}<br>+{references.Length - 12} more"
+            : formatted;
+    }
+
+    private static string FormatVendorOpenKnownReference(
+        uint id,
+        IReadOnlyDictionary<uint, ItemCommandEntry> itemsById,
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById)
+    {
+        uint normalizedAbilityId = NormalizeVendorOpenListId(id);
+        if ((id & AbilityCodeFlag) != 0 && abilitiesById.ContainsKey(normalizedAbilityId))
+        {
+            string reference = FormatAbilityReference(normalizedAbilityId, abilitiesById);
+            return id == normalizedAbilityId
+                ? reference
+                : $"{id.ToString(CultureInfo.InvariantCulture)} -> {reference}";
+        }
+
+        return FormatItemReference(id, itemsById);
+    }
+
+    private static string FormatVendorOpenPriceRows(
+        IReadOnlyList<uint> ids,
+        IReadOnlyDictionary<uint, VendorPriceEntry> pricesByGoId)
+    {
+        string[] prices = ids
+            .Select(NormalizeVendorOpenListId)
+            .Distinct()
+            .Select(id => pricesByGoId.TryGetValue(id, out VendorPriceEntry? price)
+                ? $"{id.ToString(CultureInfo.InvariantCulture)} {FormatTableText(price.CodeName)} {price.VendorPrice.ToString(CultureInfo.InvariantCulture)}{(price.NonSellable ? " non-sellable" : string.Empty)}"
+                : null)
+            .Where(value => value is not null)
+            .Select(value => value!)
+            .ToArray();
+        if (prices.Length == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", prices.Take(12));
+        return prices.Length > 12
+            ? $"{formatted}<br>+{prices.Length - 12} more"
+            : formatted;
+    }
+
+    private static string FormatVendorOpenInventoryMatches(IReadOnlyList<VendorOpenInventoryMatch> matches)
+    {
+        if (matches.Count == 0)
+        {
+            return "-";
+        }
+
+        return string.Join("<br>", matches.Select(match =>
+            $"{FormatTableText(Path.GetFileName(match.File))}:{match.Line.ToString(CultureInfo.InvariantCulture)} static {match.StaticId.ToString(CultureInfo.InvariantCulture)}: {match.MatchedIds.ToString(CultureInfo.InvariantCulture)}/{match.OpenIdCount.ToString(CultureInfo.InvariantCulture)} open ids, {match.MatchedIds.ToString(CultureInfo.InvariantCulture)}/{match.RowIdCount.ToString(CultureInfo.InvariantCulture)} row ids"));
+    }
+
+    private static string FormatVendorOpenItemListLeadSamples(IEnumerable<VendorOpenItemListLead> samples)
+    {
+        string[] formatted = samples
+            .Select(sample => $"`{sample.File.File}:{sample.Flow.Line}`")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static void AppendVendorAdjacentPayloadShapes(StringBuilder builder, IReadOnlyList<VendorFlowWithFile> flows)
+    {
+        VendorAdjacentBlockWithFlow[] rows = flows
+            .SelectMany(EnumerateVendorAdjacentBlocks)
+            .ToArray();
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Adjacent Payload Shapes");
+        builder.AppendLine();
+        builder.AppendLine("This expands the nearest parsed protocol 04 packets before and after each top-level vendor RPC when block payload details are retained. These rows are packet-neighborhood targets for decoding transaction side effects; they are not final cash or inventory semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Vendor RPC | Direction | Vendor payload prefix | Adjacent packet | Adjacent sequence | Adjacent block | Payload bytes | Prefix | Suffix | Count | Texts | Samples |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | ---: | --- | --- | ---: | --- | --- |");
+
+        foreach (var group in rows
+            .GroupBy(row => new
+            {
+                row.Flow.VendorHeader,
+                VendorLocalName = row.Flow.VendorLocalName ?? "(unknown)",
+                Direction = row.Flow.Direction ?? "unframed",
+                row.Flow.VendorPayloadPrefixHex,
+                row.Position,
+                PacketDirection = row.Packet.Direction ?? "unframed",
+                AdjacentSequence = FormatSequence(row.Packet.Headers),
+                row.Block.Header,
+                BlockLocalName = row.Block.LocalName ?? "(unknown)",
+                row.Block.PayloadLength,
+                row.Block.PayloadPrefixHex,
+                row.Block.PayloadSuffixHex
+            })
+            .OrderBy(group => VendorAdjacentPositionOrder(group.Key.Position))
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key.VendorLocalName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Direction, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.AdjacentSequence, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Header, StringComparer.OrdinalIgnoreCase)
+            .Take(80))
+        {
+            string adjacentPacket = $"{group.Key.Position} {group.Key.PacketDirection} line";
+            string texts = FormatDistinct(group.SelectMany(row => row.Block.Texts), 4);
+            string samples = FormatVendorAdjacentBlockSamples(group);
+            builder.AppendLine(
+                $"| `{group.Key.VendorHeader}` {FormatTableText(group.Key.VendorLocalName)} | {FormatTableText(group.Key.Direction)} | `{FormatEmptyHex(group.Key.VendorPayloadPrefixHex)}` | {FormatTableText(adjacentPacket)} | `{FormatTableText(group.Key.AdjacentSequence)}` | `{group.Key.Header}` {FormatTableText(group.Key.BlockLocalName)} | {group.Key.PayloadLength} | `{FormatEmptyHex(group.Key.PayloadPrefixHex)}` | `{FormatEmptyHex(group.Key.PayloadSuffixHex)}` | {group.Count()} | {texts} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendVendorTransactionFieldLeads(StringBuilder builder, IReadOnlyList<VendorFlowWithFile> flows)
+    {
+        VendorTransactionFieldLead[] leads = flows
+            .SelectMany(EnumerateVendorAdjacentBlocks)
+            .Where(adjacent => adjacent.Position.Equals("next", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(CreateVendorTransactionFieldLeads)
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Transaction Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This derives fixed-offset field leads from following vendor-adjacent payload rows above. Values are little-endian interpretations for parser work; the field names remain candidate semantics until verified against before/after inventory and cash captures.");
+        builder.AppendLine();
+        builder.AppendLine("| Vendor RPC | Direction | Vendor payload prefix | Adjacent block | Field lead | Value | Inference | Count | Samples |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | ---: | --- |");
+
+        foreach (var group in leads
+            .GroupBy(lead => new
+            {
+                lead.Adjacent.Flow.VendorHeader,
+                VendorLocalName = lead.Adjacent.Flow.VendorLocalName ?? "(unknown)",
+                Direction = lead.Adjacent.Flow.Direction ?? "unframed",
+                lead.Adjacent.Flow.VendorPayloadPrefixHex,
+                lead.Adjacent.Block.Header,
+                BlockLocalName = lead.Adjacent.Block.LocalName ?? "(unknown)",
+                lead.FieldRole,
+                lead.FieldValue,
+                lead.Inference
+            })
+            .OrderBy(group => VendorTransactionFieldLeadOrder(group.Key.FieldRole))
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key.VendorLocalName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.VendorPayloadPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.Header, StringComparer.OrdinalIgnoreCase)
+            .Take(96))
+        {
+            string samples = FormatVendorTransactionFieldLeadSamples(group);
+            builder.AppendLine(
+                $"| `{group.Key.VendorHeader}` {FormatTableText(group.Key.VendorLocalName)} | {FormatTableText(group.Key.Direction)} | `{FormatEmptyHex(group.Key.VendorPayloadPrefixHex)}` | `{group.Key.Header}` {FormatTableText(group.Key.BlockLocalName)} | {FormatTableText(group.Key.FieldRole)} | {group.Key.FieldValue} | {FormatTableText(group.Key.Inference)} | {group.Count()} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static IEnumerable<VendorTransactionFieldLead> CreateVendorTransactionFieldLeads(VendorAdjacentBlockWithFlow adjacent)
+    {
+        byte[] blockBytes = ParseHexBytes(adjacent.Block.PayloadPrefixHex);
+        byte[] vendorBytes = ParseHexBytes(adjacent.Flow.VendorPayloadPrefixHex);
+
+        if (HeaderEquals(adjacent.Block.Header, "80 e7") && blockBytes.Length >= 12)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate cash delta s64 +0",
+                FormatInt64FieldValue(blockBytes, 0),
+                "negative on buy and positive on sell in current captures");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "value kind u32 +8",
+                FormatUInt32FieldValue(blockBytes, 8),
+                "8 on buy follow-ups and 7 on sell follow-ups in current captures");
+        }
+
+        if (HeaderEquals(adjacent.Block.Header, "80 e4") && blockBytes.Length >= 8)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate player value u32 +0",
+                FormatUInt32FieldValue(blockBytes, 0),
+                "paired with the same value-kind field as the adjacent delta block");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "value kind u32 +4",
+                FormatUInt32FieldValue(blockBytes, 4),
+                "8 on buy follow-ups and 7 on sell follow-ups in current captures");
+        }
+
+        if (HeaderEquals(adjacent.Flow.VendorHeader, "81 0e"))
+        {
+            foreach (VendorTransactionFieldLead lead in CreateBuyFieldLeads(adjacent, blockBytes, vendorBytes))
+            {
+                yield return lead;
+            }
+        }
+
+        if (HeaderEquals(adjacent.Flow.VendorHeader, "81 11"))
+        {
+            foreach (VendorTransactionFieldLead lead in CreateSellFieldLeads(adjacent, blockBytes))
+            {
+                yield return lead;
+            }
+        }
+    }
+
+    private static IEnumerable<VendorTransactionFieldLead> CreateBuyFieldLeads(
+        VendorAdjacentBlockWithFlow adjacent,
+        byte[] blockBytes,
+        byte[] vendorBytes)
+    {
+        if (HeaderEquals(adjacent.Block.Header, "5e") && blockBytes.Length >= 11)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate sequence u16 +0",
+                FormatUInt16FieldValue(blockBytes, 0),
+                "increments across repeated buy follow-ups in current captures");
+            if (vendorBytes.Length >= 5 && SegmentEquals(blockBytes, 2, vendorBytes, 0, 5))
+            {
+                yield return new VendorTransactionFieldLead(
+                    adjacent,
+                    "buy payload echo +2",
+                    FormatHexFieldValue(blockBytes, 2, 5),
+                    "matches the five-byte client buy payload prefix");
+            }
+
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "buy ack tail marker +9",
+                FormatHexFieldValue(blockBytes, 9, 2),
+                "constant marker in checked-in buy follow-ups");
+        }
+
+        if (HeaderEquals(adjacent.Block.Header, "69") && blockBytes.Length >= 9)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate buy ack flag u8 +0",
+                FormatByteFieldValue(blockBytes, 0),
+                "observed before repeated Rajko buy follow-up fields");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate buy ack sequence u16 +1",
+                FormatUInt16FieldValue(blockBytes, 1),
+                "observed as 54 across repeated Rajko buy follow-ups");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate buy ack step u32 +5",
+                FormatUInt32FieldValue(blockBytes, 5),
+                "increments by four across repeated Rajko Icy Snowball buys");
+        }
+
+        if (HeaderEquals(adjacent.Block.Header, "81 0f") && blockBytes.Length >= 12)
+        {
+            if (vendorBytes.Length >= 5 && SegmentEquals(blockBytes, 0, vendorBytes, 0, 5))
+            {
+                yield return new VendorTransactionFieldLead(
+                    adjacent,
+                    "buy payload echo +0",
+                    FormatHexFieldValue(blockBytes, 0, 5),
+                    "matches the five-byte client buy payload prefix");
+            }
+
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate buy value u32 +8",
+                FormatUInt32FieldValue(blockBytes, 8),
+                "matches the visible per-item buy price in current captures");
+        }
+    }
+
+    private static IEnumerable<VendorTransactionFieldLead> CreateSellFieldLeads(
+        VendorAdjacentBlockWithFlow adjacent,
+        byte[] blockBytes)
+    {
+        if (HeaderEquals(adjacent.Block.Header, "5f") && blockBytes.Length >= 3)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate sell item u16 +0",
+                FormatUInt16FieldValue(blockBytes, 0),
+                "matches the sold-item-looking value in the current sell ack");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "sell ack flag u8 +2",
+                FormatByteFieldValue(blockBytes, 2),
+                "constant flag in checked-in sell follow-ups");
+        }
+
+        if (HeaderEquals(adjacent.Block.Header, "81 12") && blockBytes.Length >= 13)
+        {
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate sell value u32 +9",
+                FormatUInt32FieldValue(blockBytes, 9),
+                "matches the positive sell cash delta in the adjacent 80 e7 block");
+            yield return new VendorTransactionFieldLead(
+                adjacent,
+                "candidate sell response prefix +0",
+                FormatHexFieldValue(blockBytes, 0, 9),
+                "body prefix before the sell value field");
+        }
+    }
+
+    private static void AppendVendorBuyItemPriceLeads(
+        StringBuilder builder,
+        IReadOnlyList<VendorFlowWithFile> flows,
+        PacketResearchReport report)
+    {
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+        Dictionary<uint, VendorPriceEntry> pricesByGoId = BuildVendorPriceDictionary(report.VendorPriceEntries);
+        ILookup<uint, VendorInventoryEntry> vendorRowsByItem = report.VendorInventoryEntries
+            .SelectMany(entry => entry.Items.Select(item => new { Item = item, Entry = entry }))
+            .ToLookup(entry => entry.Item, entry => entry.Entry);
+
+        VendorBuyItemPriceLead[] leads = flows
+            .Where(entry => HeaderEquals(entry.Flow.VendorHeader, "81 0e"))
+            .SelectMany(CreateVendorBuyItemPriceLeads)
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Buy Item Price Leads");
+        builder.AppendLine();
+        builder.AppendLine("This treats the first four bytes of client `81 0e` buy payloads as a little-endian item id and joins the result against public item, vendor price, and vendor inventory tables. Price matches compare the absolute observed `80 e7` cash delta and `81 0f` buy value from the following server packet against `data/vendor_prices.csv`. Ack details include `5e` tail markers and the `69 +5` candidate step field seen in Rajko buy follow-ups.");
+        builder.AppendLine();
+        builder.AppendLine("| Buy payload prefix | Item id | Item reference | Vendor price | Price match | Ack sequences | Ack detail fields | Observed cash deltas | Observed buy values | Value kinds | Vendor inventory rows | Samples |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |");
+
+        foreach (var group in leads
+            .GroupBy(lead => new
+            {
+                lead.BuyPayloadPrefixHex,
+                lead.ItemId
+            })
+            .OrderBy(group => pricesByGoId.ContainsKey(group.Key.ItemId) ? 0 : 1)
+            .ThenBy(group => group.Key.ItemId)
+            .Take(32))
+        {
+            uint itemId = group.Key.ItemId;
+            VendorPriceEntry? price = pricesByGoId.GetValueOrDefault(itemId);
+            VendorInventoryEntry[] vendorRows = vendorRowsByItem[itemId]
+                .Distinct()
+                .OrderBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.Line)
+                .ToArray();
+            string priceText = price is null
+                ? "-"
+                : $"{price.VendorPrice.ToString(CultureInfo.InvariantCulture)} {FormatTableText(price.CodeName)}{(price.NonSellable ? " non-sellable" : string.Empty)}";
+            string priceMatch = FormatVendorBuyPriceMatch(group, price);
+            string cashDeltas = FormatCountSummary(group
+                .SelectMany(lead => lead.CashDeltas)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string buyValues = FormatCountSummary(group
+                .SelectMany(lead => lead.BuyValues)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string valueKinds = FormatCountSummary(group
+                .SelectMany(lead => lead.ValueKinds)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string ackSequences = FormatCountSummary(group
+                .SelectMany(lead => lead.AckSequences)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string ackDetails = FormatCountSummary(group
+                .SelectMany(lead => lead.AckDetailFields)
+                .Select(value => $"`{value}`"), 8);
+            string samples = FormatVendorBuyItemPriceLeadSamples(group);
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(group.Key.BuyPayloadPrefixHex)}` | {itemId.ToString(CultureInfo.InvariantCulture)} | {FormatItemReference(itemId, itemsById)} | {priceText} | {priceMatch} | {ackSequences} | {ackDetails} | {cashDeltas} | {buyValues} | {valueKinds} | {vendorRows.Length} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static IEnumerable<VendorBuyItemPriceLead> CreateVendorBuyItemPriceLeads(VendorFlowWithFile entry)
+    {
+        byte[] vendorBytes = ParseHexBytes(entry.Flow.VendorPayloadPrefixHex);
+        if (vendorBytes.Length < 4)
+        {
+            yield break;
+        }
+
+        Protocol04PacketSequenceSample? next = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line > entry.Flow.Line)
+            .OrderBy(sequence => sequence.Line)
+            .FirstOrDefault();
+        if (next is null || !IsOppositeOrUnknownDirection(entry.Flow.Direction, next.Direction))
+        {
+            yield break;
+        }
+
+        uint itemId = BinaryPrimitives.ReadUInt32LittleEndian(vendorBytes.AsSpan(0, 4));
+        long[] cashDeltas = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "80 e7"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 8)
+            .Select(bytes => BinaryPrimitives.ReadInt64LittleEndian(bytes.AsSpan(0, 8)))
+            .ToArray() ?? Array.Empty<long>();
+        uint[] buyValues = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "81 0f"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 12)
+            .Select(bytes => BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(8, 4)))
+            .ToArray() ?? Array.Empty<uint>();
+        uint[] valueKinds = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "80 e7") || HeaderEquals(block.Header, "80 e4"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .SelectMany(EnumerateVendorValueKinds)
+            .ToArray() ?? Array.Empty<uint>();
+        ushort[] ackSequences = next.Blocks?
+            .SelectMany(EnumerateVendorBuyAckSequences)
+            .ToArray() ?? Array.Empty<ushort>();
+        string[] ackDetailFields = next.Blocks?
+            .SelectMany(EnumerateVendorBuyAckDetailFields)
+            .ToArray() ?? Array.Empty<string>();
+
+        yield return new VendorBuyItemPriceLead(
+            entry.File,
+            entry.Flow,
+            next,
+            entry.Flow.VendorPayloadPrefixHex,
+            itemId,
+            cashDeltas,
+            buyValues,
+            valueKinds,
+            ackSequences,
+            ackDetailFields);
+    }
+
+    private static IEnumerable<ushort> EnumerateVendorBuyAckSequences(Protocol04RpcFlowBlockSample block)
+    {
+        byte[] bytes = ParseHexBytes(block.PayloadPrefixHex);
+        if (HeaderEquals(block.Header, "5e") && bytes.Length >= 11)
+        {
+            yield return BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(0, 2));
+        }
+
+        if (HeaderEquals(block.Header, "69") && bytes.Length >= 9)
+        {
+            yield return BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(1, 2));
+        }
+    }
+
+    private static IEnumerable<string> EnumerateVendorBuyAckDetailFields(Protocol04RpcFlowBlockSample block)
+    {
+        byte[] bytes = ParseHexBytes(block.PayloadPrefixHex);
+        if (HeaderEquals(block.Header, "5e") && bytes.Length >= 11)
+        {
+            yield return FormatHexBytes(bytes.Skip(9).Take(2));
+        }
+
+        if (HeaderEquals(block.Header, "69") && bytes.Length >= 9)
+        {
+            yield return $"69 +5 {FormatHexBytes(bytes.Skip(5).Take(4))}";
+        }
+    }
+
+    private static IEnumerable<uint> EnumerateVendorValueKinds(byte[] bytes)
+    {
+        if (bytes.Length >= 12)
+        {
+            yield return BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(8, 4));
+        }
+        else if (bytes.Length >= 8)
+        {
+            yield return BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(4, 4));
+        }
+    }
+
+    private static string FormatVendorBuyPriceMatch(
+        IEnumerable<VendorBuyItemPriceLead> leads,
+        VendorPriceEntry? price)
+    {
+        if (price is null)
+        {
+            return "-";
+        }
+
+        uint expected = price.VendorPrice;
+        bool cashMatches = leads
+            .SelectMany(lead => lead.CashDeltas)
+            .Any(delta => delta < 0 && Math.Abs(delta) == expected);
+        bool buyValueMatches = leads
+            .SelectMany(lead => lead.BuyValues)
+            .Any(value => value == expected);
+        if (cashMatches && buyValueMatches)
+        {
+            return "cash and buy value";
+        }
+
+        if (cashMatches)
+        {
+            return "cash";
+        }
+
+        if (buyValueMatches)
+        {
+            return "buy value";
+        }
+
+        return "no observed match";
+    }
+
+    private static void AppendVendorSellItemPriceLeads(
+        StringBuilder builder,
+        IReadOnlyList<VendorFlowWithFile> flows,
+        PacketResearchReport report)
+    {
+        Dictionary<uint, ItemCommandEntry> itemsById = BuildItemCommandDictionary(report.ItemCommandEntries);
+        Dictionary<uint, AbilityDefinition> abilitiesById = BuildAbilityDefinitionDictionary(report.AbilityDefinitions);
+        Dictionary<uint, VendorPriceEntry> pricesByGoId = BuildVendorPriceDictionary(report.VendorPriceEntries);
+        ILookup<uint, VendorInventoryEntry> vendorRowsByItem = report.VendorInventoryEntries
+            .SelectMany(entry => entry.Items.Select(item => new { Item = item, Entry = entry }))
+            .ToLookup(entry => entry.Item, entry => entry.Entry);
+
+        VendorSellItemPriceLead[] leads = flows
+            .Where(entry => HeaderEquals(entry.Flow.VendorHeader, "81 11"))
+            .SelectMany(entry => CreateVendorSellItemPriceLeads(entry, pricesByGoId))
+            .ToArray();
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Sell Item Price Leads");
+        builder.AppendLine();
+        builder.AppendLine("This inspects following `81 12` sell-result payloads for price-backed item identifiers: normal item ids at payload offset `+1`, and high-bit ability ids at payload offset `+5` normalized with the runtime ability-code mask. Expected sell values use the same decoded vendor buyback rule as the server: normal item price divided by ten, and ability base price divided by ten unless the ability is a known full-price buyback exception.");
+        builder.AppendLine();
+        builder.AppendLine("| Sell payload prefix | Response field | Response id | Price id / reference | Vendor price | Expected sell | Price match | Ack item values | Ack flags | Observed cash deltas | Observed sell values | Value kinds | Vendor inventory rows | Samples |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | --- |");
+
+        foreach (var group in leads
+            .GroupBy(lead => new
+            {
+                lead.SellPayloadPrefixHex,
+                lead.ResponseField,
+                lead.ResponseId,
+                lead.PriceId,
+                lead.IsAbility
+            })
+            .OrderBy(group => group.Key.IsAbility ? 1 : 0)
+            .ThenBy(group => group.Key.PriceId)
+            .Take(32))
+        {
+            uint priceId = group.Key.PriceId;
+            VendorPriceEntry price = pricesByGoId[priceId];
+            VendorInventoryEntry[] vendorRows = vendorRowsByItem[priceId]
+                .Distinct()
+                .OrderBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.Line)
+                .ToArray();
+            string priceText = $"{price.VendorPrice.ToString(CultureInfo.InvariantCulture)} {FormatTableText(price.CodeName)}{(price.NonSellable ? " non-sellable" : string.Empty)}";
+            string reference = group.Key.IsAbility
+                ? FormatAbilityReference(priceId, abilitiesById)
+                : FormatItemReference(priceId, itemsById);
+            uint expectedSell = group.First().ExpectedSell;
+            string priceMatch = FormatVendorSellPriceMatch(group, expectedSell);
+            string cashDeltas = FormatCountSummary(group
+                .SelectMany(lead => lead.CashDeltas)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string sellValues = FormatCountSummary(group
+                .SelectMany(lead => lead.SellValues)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string valueKinds = FormatCountSummary(group
+                .SelectMany(lead => lead.ValueKinds)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string ackItemValues = FormatCountSummary(group
+                .SelectMany(lead => lead.AckItemValues)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string ackFlags = FormatCountSummary(group
+                .SelectMany(lead => lead.AckFlags)
+                .Select(value => value.ToString(CultureInfo.InvariantCulture)), 8);
+            string samples = FormatVendorSellItemPriceLeadSamples(group);
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(group.Key.SellPayloadPrefixHex)}` | {FormatTableText(group.Key.ResponseField)} | {group.Key.ResponseId.ToString(CultureInfo.InvariantCulture)} | {reference} | {priceText} | {expectedSell.ToString(CultureInfo.InvariantCulture)} | {priceMatch} | {ackItemValues} | {ackFlags} | {cashDeltas} | {sellValues} | {valueKinds} | {vendorRows.Length} | {samples} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static IEnumerable<VendorSellItemPriceLead> CreateVendorSellItemPriceLeads(
+        VendorFlowWithFile entry,
+        IReadOnlyDictionary<uint, VendorPriceEntry> pricesByGoId)
+    {
+        Protocol04PacketSequenceSample? next = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line > entry.Flow.Line)
+            .OrderBy(sequence => sequence.Line)
+            .FirstOrDefault();
+        if (next is null || !IsOppositeOrUnknownDirection(entry.Flow.Direction, next.Direction))
+        {
+            yield break;
+        }
+
+        long[] cashDeltas = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "80 e7"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 8)
+            .Select(bytes => BinaryPrimitives.ReadInt64LittleEndian(bytes.AsSpan(0, 8)))
+            .ToArray() ?? Array.Empty<long>();
+        uint[] sellValues = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "81 12"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 13)
+            .Select(bytes => BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(9, 4)))
+            .ToArray() ?? Array.Empty<uint>();
+        uint[] valueKinds = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "80 e7") || HeaderEquals(block.Header, "80 e4"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .SelectMany(EnumerateVendorValueKinds)
+            .ToArray() ?? Array.Empty<uint>();
+        ushort[] ackItemValues = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "5f"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 3)
+            .Select(bytes => BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(0, 2)))
+            .ToArray() ?? Array.Empty<ushort>();
+        byte[] ackFlags = next.Blocks?
+            .Where(block => HeaderEquals(block.Header, "5f"))
+            .Select(block => ParseHexBytes(block.PayloadPrefixHex))
+            .Where(bytes => bytes.Length >= 3)
+            .Select(bytes => bytes[2])
+            .ToArray() ?? Array.Empty<byte>();
+
+        foreach (Protocol04RpcFlowBlockSample block in next.Blocks?.Where(block => HeaderEquals(block.Header, "81 12")) ?? Array.Empty<Protocol04RpcFlowBlockSample>())
+        {
+            byte[] bytes = ParseHexBytes(block.PayloadPrefixHex);
+            if (bytes.Length < 13)
+            {
+                continue;
+            }
+
+            uint normalItemId = BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(1, 4));
+            if ((normalItemId & AbilityCodeFlag) == 0 && pricesByGoId.TryGetValue(normalItemId, out VendorPriceEntry? normalPrice))
+            {
+                yield return new VendorSellItemPriceLead(
+                    entry.File,
+                    entry.Flow,
+                    next,
+                    entry.Flow.VendorPayloadPrefixHex,
+                    "+1 normal item u32",
+                    normalItemId,
+                    normalItemId,
+                    false,
+                    CalculateVendorSellPrice(normalItemId, normalPrice.VendorPrice, normalPrice.NonSellable),
+                    cashDeltas,
+                    sellValues,
+                    valueKinds,
+                    ackItemValues,
+                    ackFlags);
+            }
+
+            uint abilityId = BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(5, 4));
+            uint abilityPriceId = abilityId & AbilityCodeMask;
+            if ((abilityId & AbilityCodeFlag) != 0 && pricesByGoId.TryGetValue(abilityPriceId, out VendorPriceEntry? abilityPrice))
+            {
+                yield return new VendorSellItemPriceLead(
+                    entry.File,
+                    entry.Flow,
+                    next,
+                    entry.Flow.VendorPayloadPrefixHex,
+                    "+5 ability code u32",
+                    abilityId,
+                    abilityPriceId,
+                    true,
+                    CalculateVendorSellPrice(abilityId, abilityPrice.VendorPrice, abilityPrice.NonSellable),
+                    cashDeltas,
+                    sellValues,
+                    valueKinds,
+                    ackItemValues,
+                    ackFlags);
+            }
+        }
+    }
+
+    private static uint CalculateVendorSellPrice(uint responseId, uint vendorPrice, bool nonSellable)
+    {
+        if ((responseId & AbilityCodeFlag) == 0)
+        {
+            return nonSellable ? 0 : vendorPrice / 10;
+        }
+
+        uint abilityCode = responseId & AbilityCodeMask;
+        uint level = responseId & AbilityLevelMask;
+        ulong buyback = vendorPrice;
+        for (uint i = 1; i < level; i++)
+        {
+            ulong nextLevel = i + 1;
+            buyback += nextLevel * nextLevel * 200;
+        }
+
+        if (!FullPriceAbilityCodes.Contains(abilityCode))
+        {
+            buyback /= 10;
+        }
+
+        return buyback > uint.MaxValue ? uint.MaxValue : (uint)buyback;
+    }
+
+    private static string FormatVendorSellPriceMatch(
+        IEnumerable<VendorSellItemPriceLead> leads,
+        uint expectedSell)
+    {
+        bool cashMatches = leads
+            .SelectMany(lead => lead.CashDeltas)
+            .Any(delta => delta > 0 && delta == expectedSell);
+        bool sellValueMatches = leads
+            .SelectMany(lead => lead.SellValues)
+            .Any(value => value == expectedSell);
+        if (cashMatches && sellValueMatches)
+        {
+            return "cash and sell value";
+        }
+
+        if (cashMatches)
+        {
+            return "cash";
+        }
+
+        if (sellValueMatches)
+        {
+            return "sell value";
+        }
+
+        return "no observed match";
+    }
+
+    private static IEnumerable<VendorAdjacentBlockWithFlow> EnumerateVendorAdjacentBlocks(VendorFlowWithFile entry)
+    {
+        foreach ((string position, Protocol04PacketSequenceSample packet) in EnumerateVendorAdjacentPackets(entry))
+        {
+            foreach (Protocol04RpcFlowBlockSample block in packet.Blocks ?? Array.Empty<Protocol04RpcFlowBlockSample>())
+            {
+                yield return new VendorAdjacentBlockWithFlow(entry.File, entry.Flow, position, packet, block);
+            }
+        }
+    }
+
+    private static IEnumerable<(string Position, Protocol04PacketSequenceSample Packet)> EnumerateVendorAdjacentPackets(VendorFlowWithFile entry)
+    {
+        Protocol04PacketSequenceSample? previous = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line < entry.Flow.Line)
+            .OrderByDescending(sequence => sequence.Line)
+            .FirstOrDefault();
+        if (previous is not null)
+        {
+            if (IsOppositeOrUnknownDirection(entry.Flow.Direction, previous.Direction))
+            {
+                yield return ("prev", previous);
+            }
+        }
+
+        Protocol04PacketSequenceSample? next = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line > entry.Flow.Line)
+            .OrderBy(sequence => sequence.Line)
+            .FirstOrDefault();
+        if (next is not null)
+        {
+            if (IsOppositeOrUnknownDirection(entry.Flow.Direction, next.Direction))
+            {
+                yield return ("next", next);
+            }
+        }
+    }
+
+    private static bool IsOppositeOrUnknownDirection(string? sourceDirection, string? adjacentDirection)
+    {
+        if (string.IsNullOrWhiteSpace(sourceDirection) || string.IsNullOrWhiteSpace(adjacentDirection))
+        {
+            return true;
+        }
+
+        return !sourceDirection.Equals(adjacentDirection, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int VendorAdjacentPositionOrder(string position)
+    {
+        return position.Equals("next", StringComparison.OrdinalIgnoreCase) ? 0 : 1;
+    }
+
+    private static int VendorTransactionFieldLeadOrder(string fieldRole)
+    {
+        return fieldRole switch
+        {
+            "candidate cash delta s64 +0" => 0,
+            "candidate buy value u32 +8" => 1,
+            "candidate sell value u32 +9" => 1,
+            "value kind u32 +8" => 2,
+            "value kind u32 +4" => 3,
+            "buy payload echo +0" => 4,
+            "buy payload echo +2" => 5,
+            "candidate buy ack flag u8 +0" => 6,
+            "candidate buy ack sequence u16 +1" => 7,
+            "candidate buy ack step u32 +5" => 8,
+            "candidate sell item u16 +0" => 9,
+            _ => 20
+        };
+    }
+
+    private static bool HeaderEquals(string? actual, string expected)
+    {
+        return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool SegmentEquals(byte[] left, int leftOffset, byte[] right, int rightOffset, int length)
+    {
+        if (leftOffset < 0 ||
+            rightOffset < 0 ||
+            leftOffset + length > left.Length ||
+            rightOffset + length > right.Length)
+        {
+            return false;
+        }
+
+        return left.AsSpan(leftOffset, length).SequenceEqual(right.AsSpan(rightOffset, length));
+    }
+
+    private static string FormatInt64FieldValue(byte[] bytes, int offset)
+    {
+        long value = BinaryPrimitives.ReadInt64LittleEndian(bytes.AsSpan(offset, 8));
+        return $"`{FormatHexBytes(bytes.Skip(offset).Take(8))}` / {value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatUInt32FieldValue(byte[] bytes, int offset)
+    {
+        uint value = BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4));
+        return $"`{FormatHexBytes(bytes.Skip(offset).Take(4))}` / {value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatUInt16FieldValue(byte[] bytes, int offset)
+    {
+        ushort value = BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(offset, 2));
+        return $"`{FormatHexBytes(bytes.Skip(offset).Take(2))}` / {value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatByteFieldValue(byte[] bytes, int offset)
+    {
+        byte value = bytes[offset];
+        return $"`{value.ToString("x2", CultureInfo.InvariantCulture)}` / {value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatHexFieldValue(byte[] bytes, int offset, int length)
+    {
+        return $"`{FormatHexBytes(bytes.Skip(offset).Take(length))}`";
+    }
+
+    private static string FormatVendorFlowAdjacentPackets(IEnumerable<VendorFlowWithFile> flows)
+    {
+        string[] adjacentPackets = flows
+            .Select(FormatVendorFlowAdjacentPacket)
+            .Where(value => value.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return adjacentPackets.Length == 0 ? "-" : string.Join("<br>", adjacentPackets);
+    }
+
+    private static string FormatVendorFlowAdjacentPacket(VendorFlowWithFile entry)
+    {
+        Protocol04PacketSequenceSample? previous = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line < entry.Flow.Line)
+            .OrderByDescending(sequence => sequence.Line)
+            .FirstOrDefault();
+        Protocol04PacketSequenceSample? next = entry.File.Protocol04PacketSequences
+            .Where(sequence => sequence.Line > entry.Flow.Line)
+            .OrderBy(sequence => sequence.Line)
+            .FirstOrDefault();
+
+        if (previous is null && next is null)
+        {
+            return string.Empty;
+        }
+
+        List<string> parts = new();
+        if (previous is not null)
+        {
+            parts.Add($"prev {previous.Line.ToString(CultureInfo.InvariantCulture)} `{FormatTableText(FormatSequence(previous.Headers))}`");
+        }
+
+        if (next is not null)
+        {
+            parts.Add($"next {next.Line.ToString(CultureInfo.InvariantCulture)} `{FormatTableText(FormatSequence(next.Headers))}`");
+        }
+
+        return string.Join("; ", parts);
+    }
+
+    private sealed record FileLineSamples(string File, IReadOnlyList<int> Lines);
+
+    private sealed record FileWindowLocations(PacketDumpFileSummary File, KnownHeaderWindowSummary Window);
+
+    private sealed record VendorFlowWithFile(PacketDumpFileSummary File, VendorTransactionFlowSample Flow);
+
+    private sealed record VendorAdjacentBlockWithFlow(
+        PacketDumpFileSummary File,
+        VendorTransactionFlowSample Flow,
+        string Position,
+        Protocol04PacketSequenceSample Packet,
+        Protocol04RpcFlowBlockSample Block);
+
+    private sealed record VendorTransactionFieldLead(
+        VendorAdjacentBlockWithFlow Adjacent,
+        string FieldRole,
+        string FieldValue,
+        string Inference);
+
+    private sealed record VendorBuyItemPriceLead(
+        PacketDumpFileSummary File,
+        VendorTransactionFlowSample Flow,
+        Protocol04PacketSequenceSample Next,
+        string BuyPayloadPrefixHex,
+        uint ItemId,
+        IReadOnlyList<long> CashDeltas,
+        IReadOnlyList<uint> BuyValues,
+        IReadOnlyList<uint> ValueKinds,
+        IReadOnlyList<ushort> AckSequences,
+        IReadOnlyList<string> AckDetailFields);
+
+    private sealed record VendorSellItemPriceLead(
+        PacketDumpFileSummary File,
+        VendorTransactionFlowSample Flow,
+        Protocol04PacketSequenceSample Next,
+        string SellPayloadPrefixHex,
+        string ResponseField,
+        uint ResponseId,
+        uint PriceId,
+        bool IsAbility,
+        uint ExpectedSell,
+        IReadOnlyList<long> CashDeltas,
+        IReadOnlyList<uint> SellValues,
+        IReadOnlyList<uint> ValueKinds,
+        IReadOnlyList<ushort> AckItemValues,
+        IReadOnlyList<byte> AckFlags);
+
+    private sealed record VendorOpenHeaderFieldLead(
+        PacketDumpFileSummary File,
+        VendorTransactionFlowSample Flow,
+        string HeaderHex,
+        int PayloadLength,
+        string PayloadPrefixHex,
+        string ListOffsetFieldHex,
+        ushort ListOffset,
+        string CountFieldHex,
+        ushort DeclaredCount,
+        float HeaderFloat0,
+        float HeaderFloat8,
+        float HeaderFloat16,
+        float HeaderFloat24,
+        string HeaderWord4Hex,
+        string HeaderWord12Hex,
+        string HeaderWord20Hex,
+        string PreviousClientInteraction);
+
+    private sealed record VendorOpenItemListLead(
+        PacketDumpFileSummary File,
+        VendorTransactionFlowSample Flow,
+        string PayloadPrefixHex,
+        int PayloadLength,
+        string CountFieldHex,
+        ushort DeclaredCount,
+        int ParsedIdCount,
+        IReadOnlyList<uint> Ids,
+        IReadOnlyList<VendorOpenInventoryMatch> BestInventoryMatches);
+
+    private sealed record VendorOpenInventoryMatch(
+        uint StaticId,
+        string File,
+        int Line,
+        int MatchedIds,
+        int OpenIdCount,
+        int RowIdCount);
+
+    private static string FormatWindowSamples(IEnumerable<FileLineSamples> samples)
+    {
+        string[] formatted = samples
+            .SelectMany(sample => sample.Lines.Take(2).Select(line => $"`{sample.File}:{line}`"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static string FormatVendorAdjacentBlockSamples(IEnumerable<VendorAdjacentBlockWithFlow> samples)
+    {
+        string[] formatted = samples
+            .Select(sample => $"`{sample.File.File}:{sample.Flow.Line} -> {sample.Position} {sample.Packet.Line}`")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static string FormatVendorTransactionFieldLeadSamples(IEnumerable<VendorTransactionFieldLead> samples)
+    {
+        return FormatVendorAdjacentBlockSamples(samples.Select(sample => sample.Adjacent));
+    }
+
+    private static string FormatVendorBuyItemPriceLeadSamples(IEnumerable<VendorBuyItemPriceLead> samples)
+    {
+        string[] formatted = samples
+            .Select(sample => $"`{sample.File.File}:{sample.Flow.Line} -> next {sample.Next.Line}`")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static string FormatVendorSellItemPriceLeadSamples(IEnumerable<VendorSellItemPriceLead> samples)
+    {
+        string[] formatted = samples
+            .Select(sample => $"`{sample.File.File}:{sample.Flow.Line} -> next {sample.Next.Line}`")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return formatted.Length == 0 ? "-" : string.Join("<br>", formatted);
+    }
+
+    private static string FormatProtocol03WindowContexts(IEnumerable<FileWindowLocations> samples)
+    {
+        string[] contexts = samples
+            .SelectMany(sample => EnumerateProtocol03WindowContexts(sample.File, sample.Window))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+
+        return contexts.Length == 0 ? "-" : string.Join("<br>", contexts);
+    }
+
+    private static IEnumerable<string> EnumerateProtocol03WindowContexts(PacketDumpFileSummary file, KnownHeaderWindowSummary window)
+    {
+        if (window.SampleLocations is not null && window.SampleLocations.Count > 0)
+        {
+            foreach (KnownHeaderWindowLocation location in window.SampleLocations)
+            {
+                Protocol03ObjectViewSample[] samePacketViews = file.Protocol03ObjectViews
+                    .Where(view => view.Line == location.PacketStartLine)
+                    .ToArray();
+                Protocol03ObjectViewSample[] containingViews = samePacketViews
+                    .Where(view => ContainsPacketOffset(view, location.PacketOffset))
+                    .ToArray();
+
+                foreach (Protocol03ObjectViewSample view in containingViews.Length == 0 ? samePacketViews : containingViews)
+                {
+                    yield return FormatProtocol03WindowContext(view, location.PacketOffset);
+                }
+            }
+
+            yield break;
+        }
+
+        foreach (int line in window.SamplePacketStartLines)
+        {
+            foreach (Protocol03ObjectViewSample view in file.Protocol03ObjectViews.Where(view => view.Line == line))
+            {
+                yield return FormatProtocol03WindowContext(view, null);
+            }
+        }
+    }
+
+    private static bool ContainsPacketOffset(Protocol03ObjectViewSample view, int packetOffset)
+    {
+        if (view.PacketOffset < 0)
+        {
+            return false;
+        }
+
+        int relativeOffset = packetOffset - view.PacketOffset;
+        return relativeOffset >= 0 && relativeOffset < EstimateProtocol03ObjectViewBytes(view);
+    }
+
+    private static int EstimateProtocol03ObjectViewBytes(Protocol03ObjectViewSample view)
+    {
+        int segmentEnd = view.Segments.Count == 0
+            ? 4
+            : view.Segments.Max(segment => segment.Offset + 1 + Math.Max(0, segment.PayloadBytes));
+        return Math.Max(4, segmentEnd);
+    }
+
+    private static string FormatProtocol03WindowContext(Protocol03ObjectViewSample view, int? packetOffset)
+    {
+        Protocol03ObjectUpdateSegment? containingSegment = packetOffset is null
+            ? null
+            : FindContainingSegment(view, packetOffset.Value);
+        if (containingSegment is not null)
+        {
+            int relativeOffset = packetOffset!.Value - view.PacketOffset;
+            return FormatTableText(
+                $"count {view.UpdateCount}, first {view.FirstSelector}, {view.Classification}; segment {containingSegment.Selector} {containingSegment.Classification} at +{relativeOffset}");
+        }
+
+        string segmentSummary = string.Join(" -> ", view.Segments
+            .Take(3)
+            .Select(segment => $"{segment.Selector} {segment.Classification}"));
+        return FormatTableText($"count {view.UpdateCount}, first {view.FirstSelector}, {view.Classification}; segments {segmentSummary}");
+    }
+
+    private static Protocol03ObjectUpdateSegment? FindContainingSegment(Protocol03ObjectViewSample view, int packetOffset)
+    {
+        if (view.PacketOffset < 0)
+        {
+            return null;
+        }
+
+        int relativeOffset = packetOffset - view.PacketOffset;
+        return view.Segments.FirstOrDefault(segment =>
+        {
+            int payloadStart = segment.Offset + 1;
+            int payloadEnd = payloadStart + Math.Max(0, segment.PayloadBytes);
+            return relativeOffset >= payloadStart && relativeOffset < payloadEnd;
+        });
     }
 
     private static string[] AttributeCandidates(
@@ -4233,6 +9355,19 @@ public static class ReportWriter
             : $"{reference}: {FormatTableText(item.DisplayName)}";
     }
 
+    private static string FormatAbilityReference(uint abilityId, IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById)
+    {
+        if (!abilitiesById.TryGetValue(abilityId, out AbilityDefinition? ability))
+        {
+            return abilityId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        string reference = $"{abilityId.ToString(CultureInfo.InvariantCulture)} {FormatTableText(ability.CodeName)}";
+        return string.IsNullOrWhiteSpace(ability.DisplayName)
+            ? reference
+            : $"{reference}: {FormatTableText(ability.DisplayName)}";
+    }
+
     private static string FormatTableText(string value)
     {
         return value
@@ -4257,6 +9392,194 @@ public static class ReportWriter
         return distinct.Length > take
             ? $"{formatted}<br>+{distinct.Length - take} more"
             : formatted;
+    }
+
+    private static string FormatResourceReferences(IEnumerable<string?> values, int take = 8)
+    {
+        string[] distinct = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinct.Length == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", distinct.Take(take).Select(FormatTableText));
+        return distinct.Length > take
+            ? $"{formatted}<br>+{distinct.Length - take} more"
+            : formatted;
+    }
+
+    private static string FormatCountDictionary(IReadOnlyDictionary<string, int> values, int take = 5)
+    {
+        if (values.Count == 0)
+        {
+            return "-";
+        }
+
+        var ordered = values
+            .OrderByDescending(entry => entry.Value)
+            .ThenBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        string formatted = string.Join("<br>", ordered
+            .Take(take)
+            .Select(entry => $"{FormatTableText(entry.Key)} ({entry.Value.ToString(CultureInfo.InvariantCulture)})"));
+        return ordered.Length > take
+            ? $"{formatted}<br>+{ordered.Length - take} more"
+            : formatted;
+    }
+
+    private static string FormatSelectorFfRepeatListShapePositions(
+        IReadOnlyList<Protocol03SelectorFfRepeatListShapePositionSample> samples,
+        int take = 4)
+    {
+        if (samples.Count == 0)
+        {
+            return "-";
+        }
+
+        string[] positions = samples
+            .Select(sample => $"{FormatCoordinate(sample.X)},{FormatCoordinate(sample.Y)},{FormatCoordinate(sample.Z)}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        string formatted = string.Join("<br>", positions.Take(take).Select(FormatTableText));
+        return positions.Length > take
+            ? $"{formatted}<br>+{positions.Length - take} more"
+            : formatted;
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderWindows(
+        IReadOnlyList<Protocol03SelectorFfRepeatListHeaderWindowSummary> summaries,
+        int take)
+    {
+        if (summaries.Count == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", summaries
+            .Take(take)
+            .Select(summary =>
+            {
+                string protocols = FormatSlashList(summary.Protocols, 4);
+                return $"payload +{summary.PayloadOffset.ToString(CultureInfo.InvariantCulture)}/object {FormatCountDictionary(summary.ObjectOffsets, 3)} {FormatTableText(summary.Name)} [{protocols} {FormatTableText(summary.Direction)}] `{summary.EncodedHeader}` ({summary.Count.ToString(CultureInfo.InvariantCulture)}); windows {FormatCountDictionary(summary.WindowHexes, 2)}";
+            }));
+        return summaries.Count > take
+            ? $"{formatted}<br>+{summaries.Count - take} more"
+            : formatted;
+    }
+
+    private static string FormatSelectorFfRepeatListVendorInterpretationTargets(
+        IReadOnlyList<Protocol03SelectorFfRepeatListVendorBoundaryInterpretationTargetSummary> targets,
+        int take)
+    {
+        if (targets.Count == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", targets
+            .Take(take)
+            .Select(target =>
+            {
+                string protocols = FormatSlashList(target.Protocols, 4);
+                return $"{FormatTableText(target.Name)} [{protocols} {FormatTableText(target.Direction)}] `{target.EncodedHeader}` {FormatTableText(target.HeaderRegion)} payload +{target.HeaderPayloadOffset.ToString(CultureInfo.InvariantCulture)}/object +{target.HeaderObjectOffset.ToString(CultureInfo.InvariantCulture)} ({target.HeaderWindowCount.ToString(CultureInfo.InvariantCulture)}); local {FormatCountDictionary(target.TargetLocalOffsets, 2)}; span {FormatCountDictionary(target.TargetBodySpanBytes, 2)}; body {FormatCountDictionary(target.TargetBodyHexes, 2)}; position {FormatCountDictionary(target.PositionOffsets, 2)}; entry2 {FormatCountDictionary(target.Entry2EffectiveFields, 2)}; post {FormatCountDictionary(target.PostMarkerFields, 2)}";
+            }));
+        return targets.Count > take
+            ? $"{formatted}<br>+{targets.Count - take} more"
+            : formatted;
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderNameShapes(
+        IReadOnlyList<Protocol03SelectorFfRepeatListHeaderNameShapeSummary> summaries,
+        int take)
+    {
+        if (summaries.Count == 0)
+        {
+            return "-";
+        }
+
+        string formatted = string.Join("<br>", summaries
+            .Take(take)
+            .Select(summary =>
+                $"{FormatProtocol03RepeatRecordFieldShape(summary.Entry1ZeroRun, summary.Entry1FieldOffset, summary.Entry1FieldHex)} -> {FormatProtocol03NullableU16Field(summary.Entry2EffectiveFieldHex)} -> `{FormatEmptyHex(summary.ContinuationPrefixHex)}` -> {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} ({summary.CandidateCount.ToString(CultureInfo.InvariantCulture)} candidates, {summary.HeaderWindowCount.ToString(CultureInfo.InvariantCulture)} windows)"));
+        return summaries.Count > take
+            ? $"{formatted}<br>+{summaries.Count - take} more"
+            : formatted;
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderSampleHeader(Protocol03SelectorFfRepeatListHeaderSample sample)
+    {
+        string protocols = FormatSlashList(sample.Protocols, 4);
+        return $"{FormatTableText(sample.Name)}<br>`{sample.EncodedHeader}` [{protocols} {FormatTableText(sample.Direction)}]";
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderSampleSource(Protocol03SelectorFfRepeatListHeaderSample sample)
+    {
+        string packetDirection = string.IsNullOrWhiteSpace(sample.PacketDirection)
+            ? "-"
+            : FormatTableText(sample.PacketDirection);
+        return $"{FormatTableText(sample.File)}:{sample.Line.ToString(CultureInfo.InvariantCulture)}<br>{packetDirection}; view {sample.ViewId.ToString(CultureInfo.InvariantCulture)}, count {sample.UpdateCount.ToString(CultureInfo.InvariantCulture)}, first `{sample.FirstSelector}`<br>{FormatTableText(sample.SegmentClassification)}";
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderSampleOffsets(Protocol03SelectorFfRepeatListHeaderSample sample)
+    {
+        return $"{FormatTableText(sample.HeaderRegion)}<br>{FormatTableText(sample.HeaderInterpretation)}<br>{FormatTableText(sample.TargetLocalOffset)}<br>payload +{sample.HeaderPayloadOffset.ToString(CultureInfo.InvariantCulture)}; object +{sample.HeaderObjectOffset.ToString(CultureInfo.InvariantCulture)}; selector +{sample.SelectorOffset.ToString(CultureInfo.InvariantCulture)}<br>packet +{sample.PacketOffset.ToString(CultureInfo.InvariantCulture)}; payload bytes {sample.PayloadBytes.ToString(CultureInfo.InvariantCulture)}<br>window `{FormatEmptyHex(sample.HeaderWindowHex)}`";
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderSampleShape(Protocol03SelectorFfRepeatListHeaderSample sample)
+    {
+        return $"{FormatProtocol03NullableU16Field(sample.Entry1FieldHex)} -> {FormatProtocol03NullableU16Field(sample.Entry2EffectiveFieldHex)} ({FormatTableText(sample.Entry2EffectiveFieldSource)}) -> `{FormatEmptyHex(sample.ContinuationPrefixHex)}` -> {FormatProtocol03NullableU16Field(sample.PostMarkerFirstFieldHex)}";
+    }
+
+    private static string FormatSelectorFfRepeatListHeaderSamplePosition(Protocol03SelectorFfRepeatListHeaderSample sample)
+    {
+        return $"+{sample.PositionOffset.ToString(CultureInfo.InvariantCulture)} {FormatCoordinate(sample.X)},{FormatCoordinate(sample.Y)},{FormatCoordinate(sample.Z)}<br>`{FormatEmptyHex(sample.PositionHex)}`";
+    }
+
+    private static string FormatSelectorFfRepeatListShapeFieldLayouts(Protocol03SelectorFfRepeatListShapeSummary summary)
+    {
+        return string.Join("<br>", new[]
+        {
+            $"entry 1: {FormatTableText(summary.Entry1FieldLayoutKind)}",
+            $"entry 2: {FormatTableText(summary.Entry2FieldLayoutKind)}",
+            $"post: {FormatTableText(summary.PostMarkerFieldLayoutKind)}"
+        });
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListFieldLayout(string role, int zeroRun, int? fieldOffset, string fieldHex)
+    {
+        if (fieldOffset is null || string.IsNullOrWhiteSpace(fieldHex))
+        {
+            return role.Equals("post-marker", StringComparison.OrdinalIgnoreCase)
+                ? "no post-marker u16"
+                : "no u16 field";
+        }
+
+        if (!role.Equals("post-marker", StringComparison.OrdinalIgnoreCase))
+        {
+            if (fieldOffset == 1 && fieldHex.StartsWith("ff", StringComparison.OrdinalIgnoreCase))
+            {
+                return "marker-adjacent entry u16";
+            }
+
+            return zeroRun switch
+            {
+                0 => "immediate entry u16",
+                >= 8 => "long-zero-padded entry u16",
+                _ => "zero-padded entry u16"
+            };
+        }
+
+        return zeroRun switch
+        {
+            0 => "immediate post-marker u16",
+            4 => "four-zero post-marker u16",
+            >= 8 => "long-zero post-marker u16",
+            _ => "zero-padded post-marker u16"
+        };
     }
 
     private static AttributeMatchCount CountEntityMatches(
@@ -4563,7 +9886,9 @@ public static class ReportWriter
         return parts.Count == 0 ? null : string.Join(" ", parts);
     }
 
-    private static string? FormatPlayerCharacterCreationSummary(Protocol03PlayerCharacterCreationRecord record)
+    private static string? FormatPlayerCharacterCreationSummary(
+        Protocol03PlayerCharacterCreationRecord record,
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById)
     {
         List<string> parts = new();
         string? firstName = TryDecodeAttributeAscii(record.CreationAttributes, 11);
@@ -4601,12 +9926,32 @@ public static class ReportWriter
             parts.Add($"mode {combatantMode}");
         }
 
+        AppendAbilityAttribute(parts, "title", record.CreationAttributes, 42, abilitiesById);
+        AppendAbilityAttribute(parts, "cancel", record.CreationAttributes, 9, abilitiesById);
+        AppendAbilityAttribute(parts, "exclusive", record.CreationAttributes, 62, abilitiesById);
+        AppendAbilityAttribute(parts, "combat exclusive", record.CreationAttributes, 73, abilitiesById);
+
         if (TryReadAttributeVector3d(record.CreationAttributes, 49) is Vector3d position)
         {
             parts.Add($"pos {FormatCoordinate(position.X)},{FormatCoordinate(position.Y)},{FormatCoordinate(position.Z)}");
         }
 
         return parts.Count == 0 ? null : string.Join(" ", parts);
+    }
+
+    private static void AppendAbilityAttribute(
+        List<string> parts,
+        string label,
+        IReadOnlyList<Protocol03CreationAttributeSample> attributes,
+        int index,
+        IReadOnlyDictionary<uint, AbilityDefinition> abilitiesById)
+    {
+        if (TryReadAttributeUInt32(attributes, index) is not uint abilityId || abilityId == 0)
+        {
+            return;
+        }
+
+        parts.Add($"{label} {FormatAbilityReference(abilityId, abilitiesById)}");
     }
 
     private static string FormatAttributeSignature(IReadOnlyList<Protocol03CreationAttributeSample> attributes)
@@ -4949,6 +10294,298 @@ public static class ReportWriter
         return string.IsNullOrWhiteSpace(value) ? "-" : value;
     }
 
+    private static string FormatCountSummary(IEnumerable<string> values)
+    {
+        return FormatCountSummary(values, int.MaxValue);
+    }
+
+    private static string FormatCountSummary(IEnumerable<string> values, int maxValues)
+    {
+        string[] parts = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .GroupBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(group => $"{group.Key} ({group.Count()})")
+            .ToArray();
+        if (parts.Length == 0)
+        {
+            return "-";
+        }
+
+        return parts.Length <= maxValues
+            ? string.Join("; ", parts)
+            : $"{string.Join("; ", parts.Take(maxValues))}; +{parts.Length - maxValues} more";
+    }
+
+    private static bool IsThreeByteZeroTailPreHeader(string value)
+    {
+        return TryReadThreeByteZeroTailPreHeaderValue(value) is not null;
+    }
+
+    private static int? TryReadThreeByteZeroTailPreHeaderValue(string value)
+    {
+        byte[] bytes = ParseHexBytes(value);
+        return bytes.Length == 3 && bytes[1] == 0 && bytes[2] == 0 ? bytes[0] : null;
+    }
+
+    private static string ClassifyProtocol03DynamicCreationTailPrefix(string value)
+    {
+        byte[] bytes = ParseHexBytes(value);
+        if (bytes.Length >= 8 &&
+            bytes[1] == 0x00 &&
+            bytes[2] == 0x00 &&
+            bytes[3] == 0x01 &&
+            bytes[4] == 0x00 &&
+            bytes[5] == 0x0c &&
+            bytes[6] == 0x57 &&
+            bytes[7] == 0x02)
+        {
+            return "next dynamic object-view boundary";
+        }
+
+        if (bytes.Length == 5 &&
+            bytes[1] == 0x00 &&
+            bytes[2] == 0x00 &&
+            bytes[3] == 0x00 &&
+            bytes[4] == 0x00)
+        {
+            return "five-byte zero tail lead";
+        }
+
+        if (bytes.Length >= 6 &&
+            bytes[1] == 0x00 &&
+            bytes[2] == 0x00 &&
+            bytes[3] == 0x00 &&
+            bytes[4] == 0x00 &&
+            bytes[5] == 0x04 &&
+            ContainsBytePair(bytes, 0x16, 0x80))
+        {
+            return "zero-extended 04/16 80 tail lead";
+        }
+
+        if (bytes.Length >= 2 && bytes[0] == 0x02 && bytes[1] == 0x03 && ContainsBytePair(bytes, 0x16, 0x80))
+        {
+            return "02 03/16 80 tail lead";
+        }
+
+        if (!string.IsNullOrEmpty(FormatProtocol03DynamicTailHeaderLikeLeads(value)))
+        {
+            return "header-like object-view tail lead";
+        }
+
+        if (ContainsBytePair(bytes, 0x16, 0x80))
+        {
+            return "16 80-bearing tail lead";
+        }
+
+        return "other tail lead";
+    }
+
+    private static string FormatProtocol03DynamicTailHeaderLikeLeads(string value)
+    {
+        string[] leads = EnumerateProtocol03DynamicTailHeaderLikeLeadInfos(value)
+            .Select(lead => lead.Label)
+            .ToArray();
+        return leads.Length == 0 ? string.Empty : string.Join("<br>", leads);
+    }
+
+    private static IEnumerable<string> EnumerateProtocol03DynamicTailHeaderLikeLeads(string value)
+    {
+        return EnumerateProtocol03DynamicTailHeaderLikeLeadInfos(value).Select(lead => lead.Label);
+    }
+
+    private static IEnumerable<Protocol03DynamicTailHeaderLikeLead> EnumerateProtocol03DynamicTailHeaderLikeLeadInfos(string value)
+    {
+        byte[] bytes = ParseHexBytes(value);
+        int maxCandidate = Math.Min(8, bytes.Length - 4);
+        for (int offset = 0; offset <= maxCandidate; offset++)
+        {
+            if (!IsProtocol03DynamicTailHeaderLikeOffset(bytes, offset))
+            {
+                continue;
+            }
+
+            int viewId = bytes[offset] | (bytes[offset + 1] << 8);
+            byte updateCount = bytes[offset + 2];
+            byte firstSelector = bytes[offset + 3];
+            if (viewId == 0 || updateCount == 0 || updateCount > 0x20)
+            {
+                continue;
+            }
+
+            yield return new Protocol03DynamicTailHeaderLikeLead(offset, viewId, updateCount, firstSelector);
+        }
+    }
+
+    private static string FormatProtocol03DynamicTailBodyHints(string value, Protocol03DynamicTailHeaderLikeLead lead)
+    {
+        byte[] bytes = ParseHexBytes(value);
+        int bodyOffset = lead.Offset + 4;
+        if (bodyOffset >= bytes.Length)
+        {
+            return "-";
+        }
+
+        List<string> hints = new()
+        {
+            $"body {FormatHexBytes(bytes.Skip(bodyOffset).Take(Math.Min(8, bytes.Length - bodyOffset)))}"
+        };
+
+        string[] separators = EnumerateBytePairOffsets(bytes, bodyOffset, 0xcd, 0xab)
+            .Take(3)
+            .Select(offset => $"cd ab @+{offset - bodyOffset}")
+            .ToArray();
+        if (separators.Length > 0)
+        {
+            hints.Add(string.Join(", ", separators));
+        }
+
+        string[] positions = EnumerateProtocol03DynamicTailFloat3Hints(bytes, bodyOffset)
+            .Take(3)
+            .ToArray();
+        if (positions.Length > 0)
+        {
+            hints.Add(string.Join(", ", positions));
+        }
+
+        return string.Join("; ", hints);
+    }
+
+    private static bool TryCreateProtocol03DynamicTailBodyAnchor(
+        Protocol03NamedProfileRecordCandidate candidate,
+        Protocol03DynamicTailHeaderLikeLead lead,
+        out Protocol03DynamicTailBodyAnchor? anchor)
+    {
+        byte[] bytes = ParseHexBytes(candidate.PostCreationObjectViewDynamicTailPrefixHex);
+        int bodyOffset = lead.Offset + 4;
+        if (bodyOffset >= bytes.Length)
+        {
+            anchor = null;
+            return false;
+        }
+
+        foreach (int separatorOffset in EnumerateBytePairOffsets(bytes, bodyOffset, 0xcd, 0xab))
+        {
+            string bodyPrefixHex = FormatHexBytes(bytes.Skip(bodyOffset).Take(separatorOffset - bodyOffset));
+            string postSeparatorPrefixHex = FormatHexBytes(bytes.Skip(separatorOffset).Take(Math.Min(8, bytes.Length - separatorOffset)));
+            anchor = new Protocol03DynamicTailBodyAnchor(
+                candidate,
+                lead,
+                separatorOffset - bodyOffset,
+                bodyPrefixHex,
+                postSeparatorPrefixHex);
+            return true;
+        }
+
+        anchor = null;
+        return false;
+    }
+
+    private static IEnumerable<int> EnumerateBytePairOffsets(IReadOnlyList<byte> bytes, int offset, byte first, byte second)
+    {
+        for (int i = Math.Max(0, offset); i + 1 < bytes.Count; i++)
+        {
+            if (bytes[i] == first && bytes[i + 1] == second)
+            {
+                yield return i;
+            }
+        }
+    }
+
+    private static IEnumerable<string> EnumerateProtocol03DynamicTailFloat3Hints(byte[] bytes, int bodyOffset)
+    {
+        int maxOffset = Math.Min(bytes.Length - 12, bodyOffset + 20);
+        for (int offset = bodyOffset; offset <= maxOffset; offset++)
+        {
+            float x = ReadSingleLittleEndian(bytes, offset);
+            float y = ReadSingleLittleEndian(bytes, offset + 4);
+            float z = ReadSingleLittleEndian(bytes, offset + 8);
+            if (!IsPlausibleProtocol03Position(x, y, z))
+            {
+                continue;
+            }
+
+            yield return $"float3 @+{offset - bodyOffset} {FormatCoordinate(x)},{FormatCoordinate(y)},{FormatCoordinate(z)}";
+        }
+    }
+
+    private static float ReadSingleLittleEndian(byte[] bytes, int offset)
+    {
+        int bits = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(offset, 4));
+        return BitConverter.Int32BitsToSingle(bits);
+    }
+
+    private static string FormatHexBytes(IEnumerable<byte> bytes)
+    {
+        return string.Join(" ", bytes.Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+    }
+
+    private static bool IsPlausibleProtocol03Position(float x, float y, float z)
+    {
+        return float.IsFinite(x) &&
+            float.IsFinite(y) &&
+            float.IsFinite(z) &&
+            Math.Abs(x) < 100000 &&
+            Math.Abs(y) < 5000 &&
+            Math.Abs(z) < 100000 &&
+            CountMeaningfulProtocol03PositionAxes(x, y, z) >= 2;
+    }
+
+    private static int CountMeaningfulProtocol03PositionAxes(float x, float y, float z)
+    {
+        int axes = 0;
+        if (Math.Abs(x) >= 1000)
+        {
+            axes++;
+        }
+
+        if (Math.Abs(y) >= 100)
+        {
+            axes++;
+        }
+
+        if (Math.Abs(z) >= 1000)
+        {
+            axes++;
+        }
+
+        return axes;
+    }
+
+    private static bool IsProtocol03DynamicTailHeaderLikeOffset(IReadOnlyList<byte> bytes, int offset)
+    {
+        return offset switch
+        {
+            0 => true,
+            3 => bytes.Count > 2 && bytes[1] == 0x00 && bytes[2] == 0x00,
+            4 => bytes.Count > 3 && bytes[1] == 0x00 && bytes[2] == 0x00 && bytes[3] == 0x00,
+            7 => bytes.Count > 6 &&
+                bytes[1] == 0x00 &&
+                bytes[2] == 0x00 &&
+                bytes[3] == 0x01 &&
+                bytes[4] == 0x00 &&
+                bytes[5] == 0x08 &&
+                bytes[6] == 0x50 &&
+                offset + 3 < bytes.Count &&
+                bytes[offset + 3] == 0x80,
+            _ => false
+        };
+    }
+
+    private static bool ContainsBytePair(IReadOnlyList<byte> bytes, byte first, byte second)
+    {
+        for (int i = 0; i + 1 < bytes.Count; i++)
+        {
+            if (bytes[i] == first && bytes[i + 1] == second)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static string FormatStaticObjectPosition(StaticObjectEntry entry)
     {
         return $"{entry.MetrId}/{entry.SectorId} {FormatCoordinate(entry.X)},{FormatCoordinate(entry.Y)},{FormatCoordinate(entry.Z)} type {entry.TypeId}";
@@ -5190,6 +10827,28 @@ public static class ReportWriter
         return itemsById;
     }
 
+    private static Dictionary<uint, VendorPriceEntry> BuildVendorPriceDictionary(IReadOnlyList<VendorPriceEntry> vendorPriceEntries)
+    {
+        Dictionary<uint, VendorPriceEntry> pricesByGoId = new();
+        foreach (VendorPriceEntry entry in vendorPriceEntries)
+        {
+            pricesByGoId.TryAdd(entry.GoId, entry);
+        }
+
+        return pricesByGoId;
+    }
+
+    private static Dictionary<uint, AbilityDefinition> BuildAbilityDefinitionDictionary(IReadOnlyList<AbilityDefinition> abilityDefinitions)
+    {
+        Dictionary<uint, AbilityDefinition> abilitiesById = new();
+        foreach (AbilityDefinition entry in abilityDefinitions)
+        {
+            abilitiesById.TryAdd(entry.AbilityId, entry);
+        }
+
+        return abilitiesById;
+    }
+
     private static IEnumerable<FxMatch> FindFxMatches(string file, ManageBonusPayloadSample payload, IReadOnlyDictionary<string, FxDefinition> fxByHex)
     {
         return FindFxMatches(file, payload.Line, payload.PayloadHex, fxByHex);
@@ -5336,6 +10995,129 @@ public static class ReportWriter
 
     private sealed record Protocol03VariableSelectorLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03VariableSelectorLead Lead);
 
+    private sealed record Protocol03SelectorFfPositionLead(
+        Protocol03VariableSelectorTailRow Row,
+        int PositionOffset,
+        string Lead0Hex,
+        string Field9Hex,
+        string PrePositionHex,
+        Vector3d Position,
+        string PostPositionHex,
+        int PostPositionBytes,
+        string PostPositionLeadHex,
+        int PostPositionZeroRun,
+        int? PostPositionFirstNonZeroOffset,
+        string PostPositionFirstFieldHex,
+        string PostPositionFieldSuffixHex,
+        int? PostPositionNextFfOffset,
+        string PostPositionNextFfHex,
+        int? PostPositionRepeatStride,
+        int PostPositionRepeatRecordCount,
+        string PostPositionRepeatSecondLeadHex,
+        int? PostPositionRepeatSecondZeroRun,
+        int? PostPositionRepeatSecondFieldOffset,
+        string PostPositionRepeatSecondFieldHex,
+        IReadOnlyList<Protocol03RepeatRecordFieldSample> PostPositionRepeatFields,
+        int? PostPositionRepeatContinuationOffset,
+        int PostPositionRepeatContinuationBytes,
+        string PostPositionRepeatContinuationHex,
+        string PostPositionRepeatContinuationFullHex,
+        string PostPositionRepeatFieldSequence);
+
+    private sealed record Protocol03RepeatRecordField(
+        int ZeroRun,
+        int? FieldOffset,
+        string FieldHex);
+
+    private sealed record Protocol03RepeatRecordFieldSample(
+        int EntryIndex,
+        int RecordOffset,
+        int ZeroRun,
+        int? FieldOffset,
+        string FieldHex,
+        string EntryLeadHex);
+
+    private sealed record Protocol03RepeatRecordFieldLead(
+        Protocol03SelectorFfPositionLead Lead,
+        Protocol03RepeatRecordFieldSample Field);
+
+    private sealed record Protocol03RepeatEntryTransitionLead(
+        Protocol03SelectorFfPositionLead Lead,
+        Protocol03RepeatRecordFieldSample Entry1,
+        Protocol03RepeatRecordFieldSample Entry2);
+
+    private sealed record Protocol03RepeatContinuationFieldLead(
+        Protocol03RepeatEntryTransitionLead Transition,
+        string ContinuationPrefixHex,
+        string ContinuationPrefixBeforeMarkerHex,
+        string ContinuationMarkerHex,
+        string U16Offset4Hex,
+        string U16Offset6Hex,
+        string U16Offset8Hex,
+        string U16Offset10Hex,
+        string U16Offset12Hex,
+        string U16Offset14Hex,
+        string PostMarkerLeadHex,
+        int PostMarkerZeroRun,
+        int? PostMarkerFirstFieldOffset,
+        string PostMarkerFirstFieldHex,
+        bool Byte3IsFf);
+
+    private sealed record Protocol03RepeatListFieldValueLead(
+        string Role,
+        int RoleOrder,
+        int ZeroRun,
+        int? FieldOffset,
+        string FieldHex,
+        string FieldLayoutKind,
+        string ValueLeadHex,
+        Protocol03RepeatContinuationFieldLead Candidate);
+
+    private sealed record Protocol03DecodedPositionHint(
+        string Kind,
+        string Label,
+        Vector3d Position,
+        string File,
+        int Line);
+
+    private sealed record Protocol03VariableSelectorTailRow(
+        string File,
+        int Line,
+        Protocol03ObjectViewSample Sample,
+        Protocol03VariableSelectorLead Lead,
+        Protocol03ObjectUpdateSegment? Segment,
+        string PayloadPrefixHex,
+        IReadOnlyList<Protocol03TailHeaderWindow> HeaderWindows);
+
+    private sealed record Protocol03TailHeaderWindow(int PayloadOffset, RpcHeaderEntry Header);
+
+    private sealed record Protocol03TailHeaderWindowOccurrence(
+        Protocol03VariableSelectorTailRow Row,
+        Protocol03TailHeaderWindow Window);
+
+    private sealed record Protocol03TailHeaderWindowSummary(
+        int PayloadOffset,
+        string Name,
+        string Direction,
+        string EncodedHeader,
+        string Protocols,
+        int Count,
+        string ObjectOffsets);
+
+    private sealed record Protocol03TailHeaderContainerOccurrence(
+        Protocol03VariableSelectorTailRow Row,
+        Protocol03TailHeaderWindow Window,
+        int PayloadOffset,
+        string WindowHex);
+
+    private sealed record Protocol03TailHeaderContainerSummary(
+        int PayloadOffset,
+        string WindowHex,
+        string Name,
+        string Direction,
+        string EncodedHeader,
+        int Count);
+
     private sealed record Protocol03SelfViewAttributeLeadWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03SelfViewAttributeLead Lead);
 
     private sealed record Protocol03StringWithFile(string File, int Line, Protocol03ObjectViewSample Sample, Protocol03StringSample String);
@@ -5351,6 +11133,22 @@ public static class ReportWriter
     private sealed record Protocol03PlayerCharacterCreationRecordWithFile(string File, int Line, Protocol03PlayerCharacterCreationRecord Record);
 
     private sealed record Protocol03NamedProfileRecordWithFile(string File, int Line, Protocol03NamedProfileRecord Record);
+
+    private sealed record Protocol03DynamicTailHeaderLikeLead(
+        int Offset,
+        int ViewId,
+        byte UpdateCount,
+        byte FirstSelector)
+    {
+        public string Label => $"{Offset}: view {ViewId} count {UpdateCount:x2} selector {FirstSelector:x2}";
+    }
+
+    private sealed record Protocol03DynamicTailBodyAnchor(
+        Protocol03NamedProfileRecordCandidate Candidate,
+        Protocol03DynamicTailHeaderLikeLead Lead,
+        int BodySeparatorOffset,
+        string BodyPrefixHex,
+        string PostSeparatorPrefixHex);
 
     private sealed record Protocol03NamedProfileRecordCandidate(
         string File,
@@ -5371,8 +11169,21 @@ public static class ReportWriter
         int CreationAttributeBytes,
         string PostCreationAttributePrefixHex,
         int? PostCreationObjectViewHeaderOffset,
+        string PostCreationObjectViewPreHeaderHex,
         string PostCreationObjectViewHeaderHex,
         string PostCreationObjectViewHeaderClassification,
+        string PostCreationObjectViewBoundaryFamily,
+        int PostCreationObjectViewParsedUpdateCount,
+        int PostCreationObjectViewUnparsedBytes,
+        int PostCreationObjectViewConsumedBytes,
+        string PostCreationObjectViewParseStatus,
+        string PostCreationObjectViewDynamicTailPrefixHex,
+        int PostCreationObjectViewDynamicTailAvailableBytes,
+        int? PostCreationObjectViewDynamicTailNextHeaderOffset,
+        string PostCreationObjectViewDynamicTailPreHeaderHex,
+        string PostCreationObjectViewDynamicTailNextHeaderHex,
+        string PostCreationObjectViewDynamicTailNextHeaderClassification,
+        bool PostCreationObjectViewComplete,
         int SuffixZeroBytes,
         string TitleAbilityHex,
         string CombatantModeHex,

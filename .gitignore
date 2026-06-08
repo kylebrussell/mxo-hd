@@ -88,4 +88,5 @@ UnknownRPC.txt
 UnknownClient03Request.txt
 DebugLog.txt
 data/experiment_artifacts/packet-captures/
+data/experiment_artifacts/packet-corpora/
 Config*.xml
