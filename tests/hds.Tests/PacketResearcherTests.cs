@@ -1631,6 +1631,33 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectManageBonusTradeStatePayloads_DecodesSerializedTradeStateRows()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 04 01 00 00 01 16 80 bc 45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00")
+            .ToArray();
+
+        ManageBonusTradeStatePayloadSample payload = PacketResearcher.DetectManageBonusTradeStatePayloads(bytes, 12, "server").Single();
+
+        Assert.Equal(12, payload.Line);
+        Assert.Equal(20, payload.PayloadLength);
+        Assert.Equal("45 03", payload.TradeField0);
+        Assert.Equal("11 00", payload.TradeField1);
+        Assert.Equal(17, payload.TradeField1Value);
+        Assert.Equal("00 02", payload.TradeField2);
+        Assert.Equal(512, payload.TradeField2Value);
+        Assert.Equal("11 00", payload.RepeatedTradeField1);
+        Assert.Equal(17, payload.RepeatedTradeField1Value);
+        Assert.Equal("32 00", payload.VariantValue);
+        Assert.Equal(50, payload.VariantValueInt);
+        Assert.Equal("dominant serialized trade-state transition variant", payload.VariantRole);
+        Assert.Equal("01 00", payload.Byte15Value);
+        Assert.Equal(1, payload.Byte15ValueInt);
+        Assert.Equal("on", payload.StateName);
+        Assert.Equal("45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00", payload.PayloadHex);
+    }
+
+    [Fact]
     public void DetectPlayerAttributePayloads_GroupsTopLevelPayloadFields()
     {
         byte[] bytes = PacketResearcher.ParseHexBytes(
@@ -2123,6 +2150,12 @@ public class PacketResearcherTests
         Assert.Equal(2, payload.EntryCount);
         Assert.Equal(2, payload.ParsedEntryCount);
         Assert.Equal(new[] { 0x30, 0x31 }, payload.EntryIds);
+        Assert.Equal(2, payload.EntryRecords.Count);
+        Assert.Equal("00", payload.EntryRecords[0].PrefixHex);
+        Assert.Equal(0, payload.EntryRecords[0].PrefixValue);
+        Assert.Equal("30 00", payload.EntryRecords[0].EntryIdHex);
+        Assert.Equal(0x30, payload.EntryRecords[0].EntryId);
+        Assert.Equal("00 00 00", payload.EntryRecords[0].TailHex);
     }
 
     [Fact]
@@ -2406,8 +2439,40 @@ public class PacketResearcherTests
             Array.Empty<RpcComparison>(),
             new[] { dump });
 
+        ManageBonusStateIdLongFormFieldLeadSummary lead = Assert.Single(PacketResearcher.BuildManageBonusStateIdLongFormFieldLeadSummaries(
+            new[] { dump },
+            report.AttributeDefinitions,
+            report.GameObjectEntries));
+        Assert.Equal("45 03", lead.Field0);
+        Assert.Equal("3d 04", lead.Field1);
+        Assert.Equal(1085, lead.Field1Value);
+        Assert.Equal(new[] { "creation TalkActiveTracker (1)", "go Mclothing_Pants_A8_C1" }, lead.FieldReferences);
+        Assert.Equal(1, lead.PayloadCount);
+        Assert.Equal(1, lead.SamePacketB2Matches);
+        Assert.Equal(1, lead.SamePacketB2ValueMirrors);
+        Assert.Equal(0, lead.SamePacketB3Matches);
+        Assert.Equal(1, lead.Field2Values["00 43"]);
+        Assert.Equal(1, lead.Byte11Values["00 00"]);
+        Assert.Equal(1, lead.Byte15Values["01 00"]);
+        Assert.Equal(1, lead.TopPacketSequences["80 b2 -> 80 bc"]);
+
+        ManageBonusStateIdLongFormSemanticFamilySummary family = Assert.Single(
+            PacketResearcher.BuildManageBonusStateIdLongFormSemanticFamilySummaries(new[] { lead }));
+        Assert.Equal("interaction state", family.SemanticFamily);
+        Assert.Equal(1, family.DistinctFields);
+        Assert.Equal(1, family.PayloadCount);
+        Assert.Equal(1, family.SamePacketB2Matches);
+        Assert.Equal(1, family.SamePacketB2ValueMirrors);
+        Assert.Equal(0, family.SamePacketB3Matches);
+        Assert.Equal(1, family.TopFieldReferences["creation TalkActiveTracker (1)"]);
+        Assert.Equal(1, family.TopFieldReferences["go Mclothing_Pants_A8_C1"]);
+        Assert.Equal(1, family.TopFields["45 03/3d 04 (1085) creation TalkActiveTracker (1); go Mclothing_Pants_A8_C1"]);
+
         string markdown = ReportWriter.ToMarkdown(report);
 
+        Assert.Contains("### `80 bc` Long-Form Semantic Families", markdown);
+        Assert.Contains("interaction state", markdown);
+        Assert.Contains("field id overlaps talk, active, loot, use, or interaction attributes", markdown);
         Assert.Contains("### Cross-Family State Field Links", markdown);
         Assert.Contains("`3d 04` (1085)", markdown);
         Assert.Contains("`sample.txt:10`", markdown);
@@ -2428,6 +2493,621 @@ public class PacketResearcherTests
         Assert.Contains("| `3d 04` (1085) | Mclothing_Pants_A8_C1 | 1 | 1 | `sample.txt:10` | `3d 04 00 00 08 02` | `45 03 3d 04 00 43 00 00 00 3d 04 00 00 00 00 01 00 00 00 00` |", markdown);
         Assert.Contains("### Vendor and Interaction `80 bc` Layout Leads", markdown);
         Assert.Contains("| `3d 04` (1085) | TalkActiveTracker | creation | 1 | 1 | 1 | 0 | `45 03` (1) | `sample.txt:10` |", markdown);
+        Assert.Contains("### `80 bc` Semantic Field Family Leads", markdown);
+        Assert.Contains("| `45 03` | state-id long-form candidate<br>links to 80 b2 short state<br>interaction attribute-index candidates | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 1 | `3d 04` (1085) creation TalkActiveTracker (1); go Mclothing_Pants_A8_C1 (1) | 80 b2 -> 80 bc (1) | `sample.txt:10` |", markdown);
+        Assert.Contains("### `80 bc` Long-Form State Field Leads", markdown);
+        Assert.Contains("| `45 03` | `3d 04` (1085) | `3d 04` (1085) creation TalkActiveTracker (1); go Mclothing_Pants_A8_C1 (1) | 1 | 1 | 1 | 0 | 00 43 (1) | 00 00 (1) | 01 00 (1) | 0 | 80 b2 -> 80 bc (1) | `sample.txt:10` |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesManageBonusInteractionSequenceContext()
+    {
+        PacketDumpFileSummary dump = new(
+            "community-intake/trade/vendor_trade_sample.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "81 0d", "80 bc", "80 e7" })
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            new[]
+            {
+                new PlayerAttributePayloadSample(42, 6, "11 00", 0x11, "32 00", 0x32, "08 02", 0x0208, "11 00 32 00 08 02")
+            },
+            new[]
+            {
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00")
+            })
+        {
+            ManageBonusTradeStatePayloads = new[]
+            {
+                new ManageBonusTradeStatePayloadSample(
+                    42,
+                    20,
+                    "45 03",
+                    "11 00",
+                    0x11,
+                    "00 02",
+                    0x0200,
+                    "11 00",
+                    0x11,
+                    "32 00",
+                    0x32,
+                    "dominant serialized trade-state transition variant",
+                    "01 00",
+                    1,
+                    "on",
+                    "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00")
+            },
+            AbilityUnloadPayloads = new[]
+            {
+                new AbilityUnloadPayloadSample(42, 2, "11 00", 0x11, "11 00")
+            }
+        };
+        AttributeDefinition[] attributes =
+        {
+            new("mxo-hd", "TradeState", 17, "SecureTradeFlag", 1, 0x11, -1, "TradeState.cs", 24),
+            new("mxo-hd", "TradeState", 17, "TradeField2Lead", 1, 0x0200, -1, "TradeState.cs", 25),
+            new("mxo-hd", "TradeState", 17, "TradeByte11Lead", 1, 0x32, -1, "TradeState.cs", 26)
+        };
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            attributes,
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump });
+
+        ManageBonusTradeStateValueSummary valueSummary = Assert.Single(PacketResearcher.BuildManageBonusTradeStateValueSummaries(
+            new[] { dump },
+            attributes: attributes));
+        Assert.Equal("45 03", valueSummary.Field0);
+        Assert.Equal("11 00", valueSummary.Field1);
+        Assert.Equal("00 02", valueSummary.Field2);
+        Assert.Equal(0x0200, valueSummary.Field2Value);
+        Assert.Equal(1, valueSummary.Field2References["00 02 (512) creation TradeField2Lead (1)"]);
+        Assert.Equal("32 00", valueSummary.Byte11Value);
+        Assert.Equal(0x32, valueSummary.Byte11ValueInt);
+        Assert.Equal(1, valueSummary.Byte11References["32 00 (50) creation TradeByte11Lead (1)"]);
+        Assert.Equal("01 00", valueSummary.Byte15Value);
+        Assert.Equal(1, valueSummary.Byte15ValueInt);
+        Assert.Equal(1, valueSummary.PayloadCount);
+        Assert.Equal(1, valueSummary.SamePacketB2Matches);
+        Assert.Equal(1, valueSummary.SamePacketB2ValueMirrors);
+        Assert.Equal(1, valueSummary.SamePacketB2Field1Values["32 00"]);
+        Assert.Equal(1, valueSummary.SamePacketB2Field2Values["08 02"]);
+        Assert.Equal(0, valueSummary.SamePacketOppositeByte15Rows);
+        Assert.Equal(1, valueSummary.SamePacketB3Matches);
+        Assert.Equal(1, valueSummary.SamePacketVendorOrMarketHeaders);
+        Assert.Equal(0, valueSummary.SamePacketObjectInteractionHeaders);
+        Assert.Equal(1, valueSummary.CaptureScopes["vendor/market"]);
+        Assert.Equal(1, valueSummary.TopPacketSequences["81 0d -> 80 bc -> 80 e7"]);
+
+        ManageBonusTradeStatePayloadDecodeSummary payloadDecode =
+            Assert.Single(PacketResearcher.BuildManageBonusTradeStatePayloadDecodeSummaries(new[] { dump }));
+        Assert.Equal("32 00", payloadDecode.VariantValue);
+        Assert.Equal(50, payloadDecode.VariantValueInt);
+        Assert.Equal("dominant serialized trade-state transition variant", payloadDecode.VariantRole);
+        Assert.Equal("01 00", payloadDecode.Byte15Value);
+        Assert.Equal("on", payloadDecode.StateName);
+        Assert.Equal(1, payloadDecode.PayloadCount);
+        Assert.Equal(1, payloadDecode.CaptureScopes["vendor/market"]);
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("### Vendor and Interaction `80 bc` Sequence Context", markdown);
+        Assert.Contains("| `11 00` (17) | SecureTradeFlag | creation | 1 | 1 | 1 | 0 | 1 | vendor/market (1) | 81 0d -> 80 bc -> 80 e7 (1) | `community-intake/trade/vendor_trade_sample.txt:42` |", markdown);
+        Assert.Contains("### `80 bc` Trade-State Value Leads", markdown);
+        Assert.Contains("| `00 02` (512) | 00 02 (512) creation TradeField2Lead (1) (1) | `32 00` (50) | 32 00 (50) creation TradeByte11Lead (1) (1) | `01 00` (1) | 1 | 1 | 1 | 32 00 (1) | 08 02 (1) | 0 | 1 | 1 | 0 | vendor/market (1) | 81 0d -> 80 bc -> 80 e7 (1) | community-intake/trade/vendor_trade_sample.txt (1) | `community-intake/trade/vendor_trade_sample.txt:42` `45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00` |", markdown);
+        Assert.Contains("### `80 bc` Trade-State Payload Decoder", markdown);
+        Assert.Contains("| `32 00` (50) | dominant serialized trade-state transition variant | `01 00` (1) | on | 1 | vendor/market (1) | `community-intake/trade/vendor_trade_sample.txt:42` | `45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00` |", markdown);
+    }
+
+    [Fact]
+    public void BuildManageBonusTradeStateByte15PairSummaries_GroupsOppositeByte15Rows()
+    {
+        PacketDumpFileSummary dump = new(
+            "trade-pair.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "80 bc", "80 b2", "80 bc" })
+                {
+                    Blocks = new[]
+                    {
+                        new Protocol04RpcFlowBlockSample(0, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00", "00 00 00 00 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(1, "80 b2", null, 6, "11 00 32 00 08 02", "-", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(2, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01", "01 00 00 00 00 00 00 00", Array.Empty<string>())
+                    }
+                }
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            new[]
+            {
+                new PlayerAttributePayloadSample(42, 6, "11 00", 0x11, "32 00", 0x32, "08 02", 0x0208, "11 00 32 00 08 02")
+            },
+            new[]
+            {
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00 00 00 00 00"),
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00")
+            });
+
+        ManageBonusTradeStateValueSummary[] values = PacketResearcher.BuildManageBonusTradeStateValueSummaries(new[] { dump }).ToArray();
+        ManageBonusTradeStateByte15PairSummary pair = Assert.Single(PacketResearcher.BuildManageBonusTradeStateByte15PairSummaries(values));
+
+        Assert.Equal("32 00", pair.Byte11Value);
+        Assert.Equal(1, pair.OffPayloadCount);
+        Assert.Equal(1, pair.OnPayloadCount);
+        Assert.Equal(1, pair.SamePacketPairedRows);
+        Assert.Equal(1, pair.OffSamePacketB2ValueMirrors);
+        Assert.Equal(1, pair.OnSamePacketB2ValueMirrors);
+        Assert.Equal(2, pair.LinkedB2Field1Values["32 00"]);
+        Assert.Equal(2, pair.LinkedB2Field2Values["08 02"]);
+
+        ManageBonusTradeStateByte15TransitionSummary transition = Assert.Single(PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(new[] { dump }));
+
+        Assert.Equal("32 00", transition.Byte11Value);
+        Assert.Equal(1, transition.PairedPacketCount);
+        Assert.Equal(1, transition.PairCombinationCount);
+        Assert.Equal(1, transition.OffBeforeOnPairs);
+        Assert.Equal(0, transition.OnBeforeOffPairs);
+        Assert.Equal(1, transition.AdjacentPairCombinations);
+        Assert.Equal(1, transition.MinManageBonusRowDistance);
+        Assert.Equal(1, transition.MaxManageBonusRowDistance);
+        Assert.Equal(0, transition.AdjacentProtocolBlockPairs);
+        Assert.Equal(2, transition.MinProtocolBlockDistance);
+        Assert.Equal(2, transition.MaxProtocolBlockDistance);
+        Assert.Equal(1, transition.SamePacketB2Packets);
+        Assert.Equal(0, transition.SamePacketB3Packets);
+        Assert.Equal(1, transition.BetweenPairB2MirrorPairs);
+        Assert.Equal(0, transition.PrecedingB3MatchPairs);
+        Assert.Equal(0, transition.CompleteStateRefreshPairs);
+        Assert.Equal(1, transition.B2OnlyStateRefreshPairs);
+        Assert.Equal(0, transition.UnmatchedStateRefreshPairs);
+        Assert.Equal(1, transition.BetweenPairB2Values["11 00/32 00/08 02"]);
+        Assert.Equal(1, transition.PrecedingB3Values["none"]);
+        Assert.Equal(1, transition.CaptureScopes["trade"]);
+        Assert.Equal(1, transition.TopPacketSequences["80 bc -> 80 b2 -> 80 bc"]);
+        Assert.Equal(1, transition.TopPairHeaderWindows["80 bc -> 80 b2 -> 80 bc"]);
+    }
+
+    [Fact]
+    public void BuildManageBonusTradeStateByte15TransitionSummaries_GroupsImmediateCompanionRows()
+    {
+        PacketDumpFileSummary dump = new(
+            "trade-companion.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            new[]
+            {
+                new Protocol04PacketSequenceSample(42, "server", new[] { "80 b3", "80 bc", "80 bc", "80 b2", "80 bc", "80 bc" })
+                {
+                    Blocks = new[]
+                    {
+                        new Protocol04RpcFlowBlockSample(0, "80 b3", null, 2, "11 00", "-", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(1, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01", "00 00 00 01 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(2, "80 bc", null, 20, "55 00 c0 00 00 02 00 00 00 cc 00 32 00 00 00 01", "00 00 00 01 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(3, "80 b2", null, 6, "11 00 32 00 08 02", "-", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(4, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00", "00 00 00 00 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(5, "80 bc", null, 20, "55 00 d4 00 00 02 00 00 00 cc 00 32 00 00 00 00", "00 00 00 00 00 00 00 00", Array.Empty<string>())
+                    }
+                },
+                new Protocol04PacketSequenceSample(43, "server", new[] { "80 b3", "80 bc", "80 bc", "80 b2", "80 bc", "80 bc" })
+                {
+                    Blocks = new[]
+                    {
+                        new Protocol04RpcFlowBlockSample(0, "80 b3", null, 2, "11 00", "-", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(1, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01", "00 00 00 01 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(2, "80 bc", null, 20, "45 00 aa 00 00 02 00 00 00 cc 00 04 00 00 00 01", "00 00 00 01 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(3, "80 b2", null, 6, "11 00 32 00 08 02", "-", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(4, "80 bc", null, 20, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00", "00 00 00 00 00 00 00 00", Array.Empty<string>()),
+                        new Protocol04RpcFlowBlockSample(5, "80 bc", null, 20, "45 00 bb 00 00 02 00 00 00 cc 00 05 00 00 00 00", "00 00 00 00 00 00 00 00", Array.Empty<string>())
+                    }
+                }
+            },
+            Array.Empty<Protocol03ObjectViewSample>(),
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            new[]
+            {
+                new PlayerAttributePayloadSample(42, 6, "11 00", 0x11, "32 00", 0x32, "08 02", 0x0208, "11 00 32 00 08 02")
+            },
+            new[]
+            {
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00"),
+                new ManageBonusPayloadSample(42, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00 00 00 00 00"),
+                new ManageBonusPayloadSample(43, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 01 00 00 00 00"),
+                new ManageBonusPayloadSample(43, 20, "45 03", 0x0345, "11 00", 0x11, "00 02", 0x0200, "45 03 11 00 00 02 00 00 00 11 00 32 00 00 00 00 00 00 00 00")
+            });
+
+        ManageBonusTradeStateByte15TransitionSummary transition = Assert.Single(PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(new[] { dump }));
+
+        Assert.Equal(0, transition.OffBeforeOnPairs);
+        Assert.Equal(2, transition.OnBeforeOffPairs);
+        Assert.Equal(3, transition.MinProtocolBlockDistance);
+        Assert.Equal(3, transition.MaxProtocolBlockDistance);
+        Assert.Equal(2, transition.CompleteStateRefreshPairs);
+        Assert.Equal(2, transition.OnCompanionRows);
+        Assert.Equal(2, transition.OffCompanionRows);
+        Assert.Equal(2, transition.BothCompanionRows);
+        Assert.Equal(2, transition.OnCompanionByte15Matches);
+        Assert.Equal(2, transition.OffCompanionByte15Matches);
+        Assert.Equal(0, transition.SameCompanionField1Pairs);
+        Assert.Equal(1, transition.SameCompanionByte11Pairs);
+        Assert.Equal(2, transition.TopPairHeaderWindows["80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2"]);
+        Assert.Equal(1, transition.OnCompanionField0Values["55 00"]);
+        Assert.Equal(1, transition.OnCompanionField0Values["45 00"]);
+        Assert.Equal(1, transition.OffCompanionField0Values["55 00"]);
+        Assert.Equal(1, transition.OffCompanionField0Values["45 00"]);
+        Assert.Equal(1, transition.CompanionField0Pairs["55 00 -> 55 00"]);
+        Assert.Equal(1, transition.CompanionField0Pairs["45 00 -> 45 00"]);
+        Assert.Equal(1, transition.OnCompanionField1Values["c0 00"]);
+        Assert.Equal(1, transition.OnCompanionField1Values["aa 00"]);
+        Assert.Equal(1, transition.OffCompanionField1Values["d4 00"]);
+        Assert.Equal(1, transition.OffCompanionField1Values["bb 00"]);
+        Assert.Equal(1, transition.CompanionField1Pairs["c0 00 -> d4 00"]);
+        Assert.Equal(1, transition.CompanionField1Pairs["aa 00 -> bb 00"]);
+        Assert.Equal(1, transition.OnCompanionByte11Values["32 00"]);
+        Assert.Equal(1, transition.OnCompanionByte11Values["04 00"]);
+        Assert.Equal(1, transition.OffCompanionByte11Values["32 00"]);
+        Assert.Equal(1, transition.OffCompanionByte11Values["05 00"]);
+        Assert.Equal(1, transition.CompanionByte11Pairs["32 00 -> 32 00"]);
+        Assert.Equal(1, transition.CompanionByte11Pairs["04 00 -> 05 00"]);
+        Assert.Equal(1, transition.OnCompanionShapes["55 00/c0 00/00 02/32 00/01 00"]);
+        Assert.Equal(1, transition.OnCompanionShapes["45 00/aa 00/00 02/04 00/01 00"]);
+        Assert.Equal(1, transition.OffCompanionShapes["55 00/d4 00/00 02/32 00/00 00"]);
+        Assert.Equal(1, transition.OffCompanionShapes["45 00/bb 00/00 02/05 00/00 00"]);
+        Assert.Equal(1, transition.CompanionShapePairs["55 00/c0 00/00 02/32 00/01 00 -> 55 00/d4 00/00 02/32 00/00 00"]);
+        Assert.Equal(1, transition.CompanionShapePairs["45 00/aa 00/00 02/04 00/01 00 -> 45 00/bb 00/00 02/05 00/00 00"]);
+
+        AttributeDefinition[] attributes =
+        {
+            new("fixture", "CompanionState", 1, "OnCompanionState", 1, 0xc0, -1, "CompanionState.cs", 12),
+            new("fixture", "CompanionState", 1, "OffCompanionState", 1, -1, 0xd4, "CompanionState.cs", 13),
+            new("fixture", "OtherCompanionState", 1, "OtherOnCompanionState", 1, 0xaa, -1, "OtherCompanionState.cs", 12),
+            new("fixture", "OtherCompanionState", 1, "OtherOffCompanionState", 1, -1, 0xbb, "OtherCompanionState.cs", 13),
+            new("fixture", "TradeCompanionByte", 1, "TradeCompanionByte11", 1, 0x32, 0x32, "TradeCompanionByte.cs", 12),
+            new("fixture", "OtherCompanionByte", 1, "OtherOnCompanionByte11", 1, 0x04, -1, "OtherCompanionByte.cs", 12),
+            new("fixture", "OtherCompanionByte", 1, "OtherOffCompanionByte11", 1, -1, 0x05, "OtherCompanionByte.cs", 13)
+        };
+        ManageBonusTradeStateCompanionMapSummary[] maps = PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+            new[] { transition },
+            attributes: attributes).ToArray();
+        Assert.Equal(2, maps.Length);
+        ManageBonusTradeStateCompanionMapSummary map = Assert.Single(maps, summary =>
+            summary.OnCompanionByte11Value.Equals("32 00", StringComparison.OrdinalIgnoreCase) &&
+            summary.OffCompanionByte11Value.Equals("32 00", StringComparison.OrdinalIgnoreCase));
+        ManageBonusTradeStateCompanionMapSummary otherMap = Assert.Single(maps, summary =>
+            summary.OnCompanionByte11Value.Equals("04 00", StringComparison.OrdinalIgnoreCase) &&
+            summary.OffCompanionByte11Value.Equals("05 00", StringComparison.OrdinalIgnoreCase));
+
+        Assert.Equal("32 00", map.TradeByte11Value);
+        Assert.Equal(0x32, map.TradeByte11ValueInt);
+        Assert.Equal("32 00", map.OnCompanionByte11Value);
+        Assert.Equal(0x32, map.OnCompanionByte11ValueInt);
+        Assert.Equal("32 00", map.OffCompanionByte11Value);
+        Assert.Equal(0x32, map.OffCompanionByte11ValueInt);
+        Assert.Equal(1, map.CompanionPairCombinationCount);
+        Assert.Equal(2, map.TransitionPairCombinationCount);
+        Assert.Equal(1, map.SameCompanionByte11Pairs);
+        Assert.Equal(2, map.TransitionCompleteStateRefreshPairs);
+        Assert.Equal(0, map.SameCompanionField1Pairs);
+        Assert.Equal(1, map.CompanionField0PairDistinctCount);
+        Assert.Equal(1, map.CompanionField1PairDistinctCount);
+        Assert.Equal(1, map.ListedCompanionField1PairCount);
+        Assert.Equal(1, map.OnCompanionField1DistinctCount);
+        Assert.Equal(1, map.OffCompanionField1DistinctCount);
+        Assert.Equal(1, map.CompanionField1PairRepeatBuckets["1 hit"]);
+        Assert.Equal(1, map.CompanionField0Pairs["55 00 -> 55 00"]);
+        Assert.Equal(1, map.CompanionField1Pairs["c0 00 -> d4 00"]);
+        Assert.False(map.CompanionField0Pairs.ContainsKey("45 00 -> 45 00"));
+        Assert.False(map.CompanionField1Pairs.ContainsKey("aa 00 -> bb 00"));
+        Assert.Equal(1, map.CompanionField1PairReferences["c0 00 (192) creation OnCompanionState (1) -> d4 00 (212) update OffCompanionState (1)"]);
+        Assert.Equal(1, map.OnCompanionField1References["c0 00 (192) creation OnCompanionState (1)"]);
+        Assert.Equal(1, map.OffCompanionField1References["d4 00 (212) update OffCompanionState (1)"]);
+        Assert.Equal(1, map.CompanionByte11PairReferences["32 00 (50) creation TradeCompanionByte11 (1); update TradeCompanionByte11 (1) -> 32 00 (50) creation TradeCompanionByte11 (1); update TradeCompanionByte11 (1)"]);
+        Assert.Equal(1, map.OnCompanionByte11References["32 00 (50) creation TradeCompanionByte11 (1)"]);
+        Assert.Equal(1, map.OnCompanionByte11References["32 00 (50) update TradeCompanionByte11 (1)"]);
+        Assert.Equal(1, map.OffCompanionByte11References["32 00 (50) creation TradeCompanionByte11 (1)"]);
+        Assert.Equal(1, map.OffCompanionByte11References["32 00 (50) update TradeCompanionByte11 (1)"]);
+        Assert.Equal(1, otherMap.CompanionField0Pairs["45 00 -> 45 00"]);
+        Assert.Equal(1, otherMap.CompanionField1Pairs["aa 00 -> bb 00"]);
+        Assert.Equal(1, otherMap.CompanionField0PairDistinctCount);
+        Assert.Equal(1, otherMap.CompanionField1PairDistinctCount);
+        Assert.Equal(1, otherMap.ListedCompanionField1PairCount);
+        Assert.Equal(1, otherMap.OnCompanionField1DistinctCount);
+        Assert.Equal(1, otherMap.OffCompanionField1DistinctCount);
+        Assert.Equal(1, otherMap.CompanionField1PairRepeatBuckets["1 hit"]);
+        Assert.False(otherMap.CompanionField0Pairs.ContainsKey("55 00 -> 55 00"));
+        Assert.False(otherMap.CompanionField1Pairs.ContainsKey("c0 00 -> d4 00"));
+        Assert.Equal(1, otherMap.CompanionField1PairReferences["aa 00 (170) creation OtherOnCompanionState (1) -> bb 00 (187) update OtherOffCompanionState (1)"]);
+        Assert.Equal(1, otherMap.CompanionByte11PairReferences["04 00 (4) creation OtherOnCompanionByte11 (1) -> 05 00 (5) update OtherOffCompanionByte11 (1)"]);
+        Assert.Equal(1, otherMap.OnCompanionByte11References["04 00 (4) creation OtherOnCompanionByte11 (1)"]);
+        Assert.Equal(1, otherMap.OffCompanionByte11References["05 00 (5) update OtherOffCompanionByte11 (1)"]);
+
+        ManageBonusTradeStateCompanionMapSummary dominantMap = map with
+        {
+            CompanionPairCombinationCount = 60,
+            TransitionPairCombinationCount = 60,
+            SameCompanionByte11Pairs = 60,
+            TransitionCompleteStateRefreshPairs = 54,
+            TransitionB2OnlyStateRefreshPairs = 6,
+            TransitionUnmatchedStateRefreshPairs = 0,
+            CompanionField1PairDistinctCount = 12,
+            CompanionField1PairRepeatBuckets = new Dictionary<string, int> { ["1 hit"] = 8, ["4 hits"] = 4 },
+            CompanionField0Pairs = new Dictionary<string, int> { ["55 00 -> 55 00"] = 60 },
+            CaptureScopes = new Dictionary<string, int> { ["vendor/market"] = 6, ["static interaction"] = 4 },
+            TopPairHeaderWindows = new Dictionary<string, int> { ["80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2"] = 54 }
+        };
+        ManageBonusTradeStateParserActionSummary[] actionSummaries = PacketResearcher.BuildManageBonusTradeStateParserActionSummaries(
+                new[] { dominantMap, map, otherMap })
+            .ToArray();
+        Assert.Equal(3, actionSummaries.Length);
+        Assert.Equal("promote serialized trade-state transition candidate", actionSummaries[0].ParserAction);
+        Assert.Equal(60, actionSummaries[0].CompanionPairCombinationCount);
+        Assert.Equal(60, actionSummaries[0].StableCompanionByte11Pairs);
+        Assert.Equal(54, actionSummaries[0].CompleteStateRefreshPairs);
+        Assert.Equal(6, actionSummaries[0].B2OnlyStateRefreshPairs);
+        Assert.Equal(0, actionSummaries[0].UnmatchedStateRefreshPairs);
+        Assert.Equal(60, actionSummaries[0].TradeByte11Values["32 00 / 50"]);
+        Assert.Equal(60, actionSummaries[0].CompanionByte11Pairs["32 00 / 50 -> 32 00 / 50"]);
+        Assert.Equal(60, actionSummaries[0].CompanionField0Pairs["55 00 -> 55 00"]);
+        Assert.Equal(8, actionSummaries[0].CompanionField1PairRepeatBuckets["1 hit"]);
+        Assert.Equal(6, actionSummaries[0].CaptureScopes["vendor/market"]);
+        Assert.Equal(54, actionSummaries[0].TopPairHeaderWindows["80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2"]);
+        Assert.Equal("retain low-count trade-state transition control", actionSummaries[1].ParserAction);
+        Assert.Equal(1, actionSummaries[1].CompanionPairCombinationCount);
+        Assert.Equal("collect before/after capture for companion byte-11 variant", actionSummaries[2].ParserAction);
+        Assert.Equal(0, actionSummaries[2].StableCompanionByte11Pairs);
+        Assert.Equal(1, actionSummaries[2].CompanionByte11Pairs["04 00 / 4 -> 05 00 / 5"]);
+
+        ManageBonusTradeStateSerializedTransitionSummary[] serializedSummaries =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSummaries(
+                    new[] { transition },
+                    new[] { dominantMap, map, otherMap })
+                .ToArray();
+        Assert.Equal(3, serializedSummaries.Length);
+        Assert.Equal("promote serialized trade-state transition candidate", serializedSummaries[0].ParserAction);
+        Assert.Equal("45 03/11 00/00 02/32 00/01 00", serializedSummaries[0].TradeOnShape);
+        Assert.Equal("45 03/11 00/00 02/32 00/00 00", serializedSummaries[0].TradeOffShape);
+        Assert.Equal("32 00", serializedSummaries[0].OnCompanionByte11Value);
+        Assert.Equal("32 00", serializedSummaries[0].OffCompanionByte11Value);
+        Assert.Equal("mixed complete and 80 b2-only refresh", serializedSummaries[0].RefreshClassification);
+        Assert.Equal(60, serializedSummaries[0].TransitionPairCombinationCount);
+        Assert.Equal(60, serializedSummaries[0].CompanionPairCombinationCount);
+        Assert.Equal(2, serializedSummaries[0].BetweenPairB2Values["11 00/32 00/08 02"]);
+        Assert.Equal(2, serializedSummaries[0].PrecedingB3Values["11 00"]);
+        Assert.Equal("collect before/after capture for companion byte-11 variant", serializedSummaries[2].ParserAction);
+        Assert.Equal("04 00", serializedSummaries[2].OnCompanionByte11Value);
+        Assert.Equal("05 00", serializedSummaries[2].OffCompanionByte11Value);
+
+        ManageBonusTradeStateSerializedTransitionSample[] serializedSamples =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSamples(
+                new[] { dump },
+                new[] { dominantMap, map, otherMap })
+            .ToArray();
+        Assert.Equal(2, serializedSamples.Length);
+        ManageBonusTradeStateSerializedTransitionSample serializedSample = serializedSamples[0];
+        Assert.Equal("promote serialized trade-state transition candidate", serializedSample.ParserAction);
+        Assert.Equal("complete short-state refresh", serializedSample.RefreshClassification);
+        Assert.Equal(1, serializedSample.ObservedPairCount);
+        Assert.Equal("45 03/11 00/00 02/32 00/01 00", serializedSample.TradeOnShape);
+        Assert.Equal("45 03/11 00/00 02/32 00/00 00", serializedSample.TradeOffShape);
+        Assert.Equal("32 00", serializedSample.OnCompanionByte11Value);
+        Assert.Equal("32 00", serializedSample.OffCompanionByte11Value);
+        Assert.Equal("55 00/c0 00/00 02/32 00/01 00", serializedSample.OnCompanionShape);
+        Assert.Equal("55 00/d4 00/00 02/32 00/00 00", serializedSample.OffCompanionShape);
+        Assert.Equal(3, serializedSample.ProtocolBlockDistance);
+        Assert.Equal("80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2", serializedSample.PairHeaderWindow);
+        Assert.Equal(new[] { "11 00/32 00/08 02" }, serializedSample.BetweenPairB2Values);
+        Assert.Equal("11 00", serializedSample.PrecedingB3Value);
+        Assert.Equal("collect before/after capture for companion byte-11 variant", serializedSamples[1].ParserAction);
+        Assert.Equal("04 00", serializedSamples[1].OnCompanionByte11Value);
+        Assert.Equal("05 00", serializedSamples[1].OffCompanionByte11Value);
+
+        ManageBonusTradeStateSerializedTransitionParserCoverageSummary[] coverageSummaries =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionParserCoverageSummaries(serializedSamples)
+                .ToArray();
+        Assert.Equal(2, coverageSummaries.Length);
+        Assert.Equal("promote serialized trade-state transition candidate; complete short-state refresh", coverageSummaries[0].ParserCase);
+        Assert.Equal(1, coverageSummaries[0].ObservedPairCount);
+        Assert.Equal(1, coverageSummaries[0].TradeByte11Values["32 00 / 50"]);
+        Assert.Equal(1, coverageSummaries[0].CompanionByte11Pairs["32 00 / 50 -> 32 00 / 50"]);
+        Assert.Equal(1, coverageSummaries[0].TradeShapePairs["45 03/11 00/00 02/32 00/01 00 -> 45 03/11 00/00 02/32 00/00 00"]);
+        Assert.Equal(1, coverageSummaries[0].BetweenPairB2Values["11 00/32 00/08 02"]);
+        Assert.Equal(1, coverageSummaries[0].PrecedingB3Values["11 00"]);
+        Assert.Equal(1, coverageSummaries[0].PairHeaderWindows["80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2"]);
+        Assert.Equal("collect before/after capture for companion byte-11 variant; complete short-state refresh", coverageSummaries[1].ParserCase);
+        Assert.Equal(1, coverageSummaries[1].CompanionByte11Pairs["04 00 / 4 -> 05 00 / 5"]);
+
+        ManageBonusTradeStateSerializedTransitionDecoderRow[] decoderRows =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDecoderRows(serializedSamples)
+                .ToArray();
+        Assert.Equal(2, decoderRows.Length);
+        ManageBonusTradeStateSerializedTransitionDecoderRow decoderRow = decoderRows[0];
+        Assert.Equal("promote serialized trade-state transition candidate; complete short-state refresh", decoderRow.ParserCase);
+        Assert.Equal("45 03", decoderRow.TradeField0);
+        Assert.Equal("11 00", decoderRow.TradeField1);
+        Assert.Equal(17, decoderRow.TradeField1Value);
+        Assert.Equal("00 02", decoderRow.TradeField2);
+        Assert.Equal(512, decoderRow.TradeField2Value);
+        Assert.Equal("32 00", decoderRow.TradeByte11Value);
+        Assert.Equal(50, decoderRow.TradeByte11ValueInt);
+        Assert.Equal("01 00", decoderRow.OnTradeByte15Value);
+        Assert.Equal(1, decoderRow.OnTradeByte15ValueInt);
+        Assert.Equal("00 00", decoderRow.OffTradeByte15Value);
+        Assert.Equal(0, decoderRow.OffTradeByte15ValueInt);
+        Assert.Equal("11 00", decoderRow.BetweenPairB2Field0);
+        Assert.Equal(17, decoderRow.BetweenPairB2Field0Value);
+        Assert.Equal("32 00", decoderRow.BetweenPairB2Field1);
+        Assert.Equal(50, decoderRow.BetweenPairB2Field1Value);
+        Assert.Equal("08 02", decoderRow.BetweenPairB2Field2);
+        Assert.Equal(520, decoderRow.BetweenPairB2Field2Value);
+        Assert.Equal("11 00", decoderRow.PrecedingB3Value);
+        Assert.Equal(17, decoderRow.PrecedingB3ValueInt);
+        Assert.Equal("55 00", decoderRow.OnCompanionField0);
+        Assert.Equal("55 00", decoderRow.OffCompanionField0);
+        Assert.Equal("32 00", decoderRow.OnCompanionByte11Value);
+        Assert.Equal(50, decoderRow.OnCompanionByte11ValueInt);
+        Assert.Equal("32 00", decoderRow.OffCompanionByte11Value);
+        Assert.Equal(50, decoderRow.OffCompanionByte11ValueInt);
+        Assert.Equal("01 00", decoderRow.OnCompanionByte15Value);
+        Assert.Equal(1, decoderRow.OnCompanionByte15ValueInt);
+        Assert.Equal("00 00", decoderRow.OffCompanionByte15Value);
+        Assert.Equal(0, decoderRow.OffCompanionByte15ValueInt);
+
+        ManageBonusTradeStateSerializedTransitionDetection[] detections =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDetections(new[] { dump })
+                .ToArray();
+        Assert.Equal(2, detections.Length);
+        ManageBonusTradeStateSerializedTransitionDetection detection = detections[0];
+        Assert.Equal("decode dominant serialized trade-state transition", detection.ParserAction);
+        Assert.Equal("complete short-state refresh", detection.RefreshClassification);
+        Assert.Equal("decode dominant serialized trade-state transition; complete short-state refresh", detection.ParserCase);
+        Assert.Equal("32 00", detection.VariantValue);
+        Assert.Equal(50, detection.VariantValueInt);
+        Assert.Equal("dominant serialized trade-state transition variant", detection.VariantRole);
+        Assert.Equal("45 03/11 00/00 02/32 00/01 00", detection.TradeOnShape);
+        Assert.Equal("45 03/11 00/00 02/32 00/00 00", detection.TradeOffShape);
+        Assert.Equal(-1, detection.RowDistance);
+        Assert.Equal(3, detection.ProtocolBlockDistance);
+        Assert.Equal("80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2", detection.PairHeaderWindow);
+        Assert.Equal(new[] { "11 00/32 00/08 02" }, detection.BetweenPairB2Values);
+        Assert.Equal("11 00", detection.PrecedingB3Value);
+        Assert.Equal("55 00/c0 00/00 02/32 00/01 00", detection.OnCompanionShape);
+        Assert.Equal("55 00/d4 00/00 02/32 00/00 00", detection.OffCompanionShape);
+        Assert.Equal("trade", detection.CaptureScope);
+        Assert.True(detection.HasSamePacketB2);
+        Assert.True(detection.HasSamePacketB3);
+        Assert.Equal(0, detection.OnManageBonusIndex);
+        Assert.Equal(1, detection.OffManageBonusIndex);
+        Assert.Equal("review serialized trade-state transition candidate", detections[1].ParserAction);
+        Assert.Equal("45 00/aa 00/00 02/04 00/01 00", detections[1].OnCompanionShape);
+        Assert.Equal("45 00/bb 00/00 02/05 00/00 00", detections[1].OffCompanionShape);
+
+        ManageBonusTradeStateSerializedTransitionDetectionActionSummary[] detectionActions =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDetectionActionSummaries(detections)
+                .ToArray();
+        Assert.Equal(2, detectionActions.Length);
+        ManageBonusTradeStateSerializedTransitionDetectionActionSummary dominantDetectionAction = detectionActions[0];
+        Assert.Equal("decode dominant serialized trade-state transition", dominantDetectionAction.ParserAction);
+        Assert.Equal("complete short-state refresh", dominantDetectionAction.RefreshClassification);
+        Assert.Equal("decode dominant serialized trade-state transition; complete short-state refresh", dominantDetectionAction.ParserCase);
+        Assert.Equal(1, dominantDetectionAction.DetectionCount);
+        Assert.Equal(1, dominantDetectionAction.DetectionsWithCompanionShapes);
+        Assert.Equal(1, dominantDetectionAction.SamePacketB2Count);
+        Assert.Equal(1, dominantDetectionAction.SamePacketB3Count);
+        Assert.Equal(1, dominantDetectionAction.VariantValues["32 00 / 50"]);
+        Assert.Equal(1, dominantDetectionAction.VariantRoles["dominant serialized trade-state transition variant"]);
+        Assert.Equal(1, dominantDetectionAction.TradeShapePairs["45 03/11 00/00 02/32 00/01 00 -> 45 03/11 00/00 02/32 00/00 00"]);
+        Assert.Equal(1, dominantDetectionAction.CompanionShapePairs["55 00/c0 00/00 02/32 00/01 00 -> 55 00/d4 00/00 02/32 00/00 00"]);
+        Assert.Equal(1, dominantDetectionAction.BetweenPairB2Values["11 00/32 00/08 02"]);
+        Assert.Equal(1, dominantDetectionAction.PrecedingB3Values["11 00"]);
+        Assert.Equal(1, dominantDetectionAction.PairHeaderWindows["80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2"]);
+        Assert.Equal(1, dominantDetectionAction.CaptureScopes["trade"]);
+        ManageBonusTradeStateSerializedTransitionDetectionActionSummary reviewDetectionAction = detectionActions[1];
+        Assert.Equal("review serialized trade-state transition candidate", reviewDetectionAction.ParserAction);
+        Assert.Equal(1, reviewDetectionAction.DetectionCount);
+        Assert.Equal(1, reviewDetectionAction.CompanionShapePairs["45 00/aa 00/00 02/04 00/01 00 -> 45 00/bb 00/00 02/05 00/00 00"]);
+
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary[] fieldRoles =
+            PacketResearcher.BuildManageBonusTradeStateSerializedTransitionFieldRoleSummaries(serializedSamples, maps)
+                .ToArray();
+        Assert.Equal(11, fieldRoles.Length);
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary tradeByte15Role =
+            Assert.Single(fieldRoles, role => role.FieldRole == "trade byte 15");
+        Assert.Equal(2, tradeByte15Role.ObservedPairCount);
+        Assert.Equal(2, tradeByte15Role.Values["01 00 -> 00 00"]);
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary companionByte11Role =
+            Assert.Single(fieldRoles, role => role.FieldRole == "companion byte 11");
+        Assert.Equal(1, companionByte11Role.Values["32 00 / 50 -> 32 00 / 50"]);
+        Assert.Equal(1, companionByte11Role.Values["04 00 / 4 -> 05 00 / 5"]);
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary precedingB3Role =
+            Assert.Single(fieldRoles, role => role.FieldRole == "preceding 80 b3");
+        Assert.Equal(2, precedingB3Role.Values["11 00"]);
+
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            attributes,
+            Array.Empty<FxDefinition>(),
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump })
+        {
+            ManageBonusTradeStateByte15TransitionSummaries = new[] { transition },
+            ManageBonusTradeStateCompanionMapSummaries = maps,
+            ManageBonusTradeStateParserActionSummaries = actionSummaries,
+            ManageBonusTradeStateSerializedTransitionSummaries = serializedSummaries,
+            ManageBonusTradeStateSerializedTransitionSamples = serializedSamples,
+            ManageBonusTradeStateSerializedTransitionParserCoverageSummaries = coverageSummaries,
+            ManageBonusTradeStateSerializedTransitionFieldRoleSummaries = fieldRoles,
+            ManageBonusTradeStateSerializedTransitionDecoderRows = decoderRows,
+            ManageBonusTradeStateSerializedTransitionDetections = detections,
+            ManageBonusTradeStateSerializedTransitionDetectionActionSummaries = detectionActions
+        };
+        string json = System.Text.Json.JsonSerializer.Serialize(report, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("\"ManageBonusTradeStateSerializedTransitionDetectionActionSummaries\"", json);
+        Assert.Contains("### `80 bc` Trade-State Parser Action Leads", markdown);
+        Assert.Contains("| promote serialized trade-state transition candidate | dominant adjacent off/on rows have stable companion byte-11, short-state mirrors, and broad companion field-1 tails | 1 | 60 | 60 | 60 | 54 | 6 | 0 | 0 | 12 | 32 00 / 50 (60) | 32 00 / 50 -> 32 00 / 50 (60) | 55 00 -> 55 00 (60) | 1 hit (8)<br>4 hits (4) | vendor/market (6); static interaction (4) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 (54) |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Transition Layouts", markdown);
+        Assert.Contains("| promote serialized trade-state transition candidate | `45 03/11 00/00 02/32 00/01 00` | `45 03/11 00/00 02/32 00/00 00` | `32 00` (50) -> `32 00` (50) | mixed complete and 80 b2-only refresh | 60 | 60 | 60 | 54 | 6 | 0 | 11 00/32 00/08 02 (2) | 11 00 (2) | 55 00 -> 55 00 (60) | c0 00 -> d4 00 (1) | 1 hit (8)<br>4 hits (4) | vendor/market (6); static interaction (4) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 (54) |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Transition Samples", markdown);
+        Assert.Contains("| promote serialized trade-state transition candidate | complete short-state refresh | 1 | `45 03/11 00/00 02/32 00/01 00` | `45 03/11 00/00 02/32 00/00 00` | `32 00` (50) -> `32 00` (50) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | rows -1; blocks 3 | 11 00/32 00/08 02 | 11 00 | on `55 00/c0 00/00 02/32 00/01 00`<br>off `55 00/d4 00/00 02/32 00/00 00` | trade; B2 yes; B3 yes<br>80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | `trade-companion.txt:42` off index 1, on index 0 |", markdown);
+        Assert.Contains("| collect before/after capture for companion byte-11 variant | complete short-state refresh | 1 | `45 03/11 00/00 02/32 00/01 00` | `45 03/11 00/00 02/32 00/00 00` | `04 00` (4) -> `05 00` (5) |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Parser Coverage", markdown);
+        Assert.Contains("| promote serialized trade-state transition candidate; complete short-state refresh | 1 | 1 | 32 00 / 50 (1) | 32 00 / 50 -> 32 00 / 50 (1) | 45 03/11 00/00 02/32 00/01 00 -> 45 03/11 00/00 02/32 00/00 00 (1) | 11 00/32 00/08 02 (1) | 11 00 (1) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 (1) | trade (1) | `trade-companion.txt:42` |", markdown);
+        Assert.Contains("| collect before/after capture for companion byte-11 variant; complete short-state refresh | 1 | 1 | 32 00 / 50 (1) | 04 00 / 4 -> 05 00 / 5 (1) |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Decoder Rows", markdown);
+        Assert.Contains("| promote serialized trade-state transition candidate; complete short-state refresh | 1 | field0 `45 03`; field1 `11 00` (17); field2 `00 02` (512); byte11 `32 00` (50) | `01 00` (1) -> `00 00` (0) | `11 00` (17) / `32 00` (50) / `08 02` (520) | `11 00` (17) | field0 `55 00` -> `55 00`; byte11 `32 00` (50) -> `32 00` (50); byte15 `01 00` (1) -> `00 00` (0) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2; blocks 3 | `trade-companion.txt:42` |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Detection Actions", markdown);
+        Assert.Contains("| decode dominant serialized trade-state transition; complete short-state refresh | 1 | 1 with companion shapes | same-packet B2 1<br>same-packet B3 1 | values 32 00 / 50 (1)<br>roles dominant serialized trade-state transition variant (1) | 45 03/11 00/00 02/32 00/01 00 -> 45 03/11 00/00 02/32 00/00 00 (1) | 55 00/c0 00/00 02/32 00/01 00 -> 55 00/d4 00/00 02/32 00/00 00 (1) | B2 11 00/32 00/08 02 (1)<br>B3 11 00 (1) | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 (1) | trade (1) | `trade-companion.txt:42` |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Transition Detections", markdown);
+        Assert.Contains("| decode dominant serialized trade-state transition; complete short-state refresh | `32 00` (50)<br>dominant serialized trade-state transition variant | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | rows -1; blocks 3 | B2 11 00/32 00/08 02; B3 11 00 | on `55 00/c0 00/00 02/32 00/01 00`<br>off `55 00/d4 00/00 02/32 00/00 00` | trade; B2 yes; B3 yes<br>80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | `trade-companion.txt:42` on index 0, off index 1 |", markdown);
+        Assert.Contains("| review serialized trade-state transition candidate; complete short-state refresh | `32 00` (50)<br>dominant serialized trade-state transition variant | 80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | rows -1; blocks 3 | B2 11 00/32 00/08 02; B3 11 00 | on `45 00/aa 00/00 02/04 00/01 00`<br>off `45 00/bb 00/00 02/05 00/00 00` | trade; B2 yes; B3 yes<br>80 b3 -> 80 bc x2 -> 80 b2 -> 80 bc x2 | `trade-companion.txt:43` on index 0, off index 1 |", markdown);
+        Assert.Contains("### `80 bc` Serialized Trade-State Field Roles", markdown);
+        Assert.Contains("| trade byte 15 | serialized on/off flag; current pairs are on row 01 00 followed by off row 00 00 | 2 | 01 00 -> 00 00 (2) |", markdown);
+        Assert.Contains("promote serialized trade-state transition candidate; complete short-state refresh (1)", markdown);
+        Assert.Contains("collect before/after capture for companion byte-11 variant; complete short-state refresh (1)", markdown);
+        Assert.Contains("| companion byte 11 | immediate non-trade 80 bc companion byte-11 pair after each on/off row | 2 |", markdown);
+        Assert.Contains("32 00 / 50 -> 32 00 / 50 (1)", markdown);
+        Assert.Contains("04 00 / 4 -> 05 00 / 5 (1)", markdown);
+        Assert.Contains("### `80 bc` Trade-State Companion Byte-11 Map Leads", markdown);
+        Assert.Contains("| `32 00` (50) | `32 00` (50) | `32 00` (50) | 32 00 (50) creation TradeCompanionByte11 (1); update TradeCompanionByte11 (1) -> 32 00 (50) creation TradeCompanionByte11 (1); update TradeCompanionByte11 (1) (1) | 32 00 (50) creation TradeCompanionByte11 (1) (1)<br>32 00 (50) update TradeCompanionByte11 (1) (1) | 32 00 (50) creation TradeCompanionByte11 (1) (1)<br>32 00 (50) update TradeCompanionByte11 (1) (1) | 1 | 2 | 1 | 2 | 0 | 0 | 0 | field0 pairs 1; field1 pairs 1; listed field1 pairs 1/1; on values 1; off values 1 | 1 hit (1) | 55 00 -> 55 00 (1) | c0 00 -> d4 00 (1) | c0 00 (192) creation OnCompanionState (1) -> d4 00 (212) update OffCompanionState (1) (1) | c0 00 (1) | d4 00 (1) | c0 00 (192) creation OnCompanionState (1) (1) | d4 00 (212) update OffCompanionState (1) (1) |", markdown);
+        Assert.Contains("| `32 00` (50) | `04 00` (4) | `05 00` (5) | 04 00 (4) creation OtherOnCompanionByte11 (1) -> 05 00 (5) update OtherOffCompanionByte11 (1) (1) | 04 00 (4) creation OtherOnCompanionByte11 (1) (1) | 05 00 (5) update OtherOffCompanionByte11 (1) (1) | 1 | 2 | 0 | 2 | 0 | 0 | 0 | field0 pairs 1; field1 pairs 1; listed field1 pairs 1/1; on values 1; off values 1 | 1 hit (1) | 45 00 -> 45 00 (1) | aa 00 -> bb 00 (1) | aa 00 (170) creation OtherOnCompanionState (1) -> bb 00 (187) update OtherOffCompanionState (1) (1) | aa 00 (1) | bb 00 (1) | aa 00 (170) creation OtherOnCompanionState (1) (1) | bb 00 (187) update OtherOffCompanionState (1) (1) |", markdown);
     }
 
     [Fact]
@@ -2632,13 +3312,46 @@ public class PacketResearcherTests
             new Dictionary<string, IReadOnlyList<int>>(),
             new[]
             {
-                new Protocol04PacketSequenceSample(42, "server", new[] { "6d", "80 c1" })
+                new Protocol04PacketSequenceSample(42, "server", new[] { "6d", "80 c1", "80 b3", "80 bc", "80 b2" })
             },
             Array.Empty<Protocol03ObjectViewSample>(),
             Array.Empty<Protocol04InteractionPayloadSample>(),
-            Array.Empty<PlayerAttributePayloadSample>(),
-            Array.Empty<ManageBonusPayloadSample>())
+            new[]
+            {
+                new PlayerAttributePayloadSample(
+                    42,
+                    6,
+                    "11 00",
+                    17,
+                    "c8 00",
+                    200,
+                    "08 02",
+                    520,
+                    "11 00 c8 00 08 02")
+            },
+            new[]
+            {
+                new ManageBonusPayloadSample(
+                    42,
+                    20,
+                    "45 03",
+                    837,
+                    "11 00",
+                    17,
+                    "00 02",
+                    512,
+                    "45 03 11 00 00 02 00 00 00 11 00 c8 00 00 00 01 00 00 00 00")
+            })
         {
+            AbilityUnloadPayloads = new[]
+            {
+                new AbilityUnloadPayloadSample(
+                    42,
+                    2,
+                    "11 00",
+                    17,
+                    "11 00")
+            },
             Unknown6dPayloads = new[]
             {
                 new Unknown6dPayloadSample(
@@ -2653,7 +3366,12 @@ public class PacketResearcherTests
                     2,
                     2,
                     new[] { 0x30, 0x31 },
-                    "01 00 00 00 08 00 01 02 00 00 30 00 00 00 00 00 31 00 00 00 00")
+                    new[]
+                    {
+                        new Unknown6dEntryRecord("00", 0, "30 00", 0x30, "00 00 00"),
+                        new Unknown6dEntryRecord("00", 0, "31 00", 0x31, "00 00 01")
+                    },
+                    "01 00 00 00 08 00 01 02 00 00 30 00 00 00 00 00 31 00 00 00 01")
             },
             Unknown80c1Payloads = new[]
             {
@@ -2667,15 +3385,38 @@ public class PacketResearcherTests
                     "00 00 c8 00")
             }
         };
+        AttributeDefinition[] attributes =
+        {
+            new("test", "Object48", 48, "CreationAttr48", 1, 48, -1, "attributes.cs", 10),
+            new("test", "Object49", 49, "UpdateAttr49", 1, -1, 49, "attributes.cs", 11),
+            new("test", "Object200", 200, "StateMarker200", 1, 200, -1, "attributes.cs", 12)
+        };
+        AbilityDefinition[] abilities =
+        {
+            new(48, 48, "Ability48", "Ability Display", "abilities.csv", 3)
+        };
+        ItemCommandEntry[] items =
+        {
+            new(48, "TestItem", "Test Display", "items.txt", 4)
+        };
+        GameObjectEntry[] gameObjects =
+        {
+            new("TestObject", 49, "gameobjects.csv", 5),
+            new("StateObject200", 200, "gameobjects.csv", 6)
+        };
+        AnimationDefinition[] animations =
+        {
+            new("3000", "0030", 48, "TestAnimation", "animations.txt", 6)
+        };
         PacketResearchReport report = new(
             ".",
             Array.Empty<string>(),
             null,
             Array.Empty<string>(),
             Array.Empty<RpcHeaderEntry>(),
-            Array.Empty<AttributeDefinition>(),
+            attributes,
             Array.Empty<FxDefinition>(),
-            Array.Empty<GameObjectEntry>(),
+            gameObjects,
             Array.Empty<WorldEntityEntry>(),
             Array.Empty<RajkoRpcEntry>(),
             Array.Empty<HardcodedCommandExample>(),
@@ -2683,16 +3424,154 @@ public class PacketResearcherTests
             Array.Empty<Protocol04InteractionCommandExample>(),
             Array.Empty<VendorInventoryEntry>(),
             Array.Empty<RpcComparison>(),
-            new[] { dump });
+            new[] { dump })
+        {
+            AbilityDefinitions = abilities,
+            AnimationDefinitions = animations,
+            ItemCommandEntries = items
+        };
+
+        Unknown6dListRecordShapeSummary unknown6dSummary =
+            Assert.Single(PacketResearcher.BuildUnknown6dListRecordShapeSummaries(
+                new[] { dump },
+                attributes,
+                abilities,
+                items,
+                gameObjects,
+                animations));
+        Assert.Equal(21, unknown6dSummary.PayloadLength);
+        Assert.Equal("01 00", unknown6dSummary.ModeHex);
+        Assert.Equal("00 00", unknown6dSummary.Field1);
+        Assert.Equal(8, unknown6dSummary.ListOffset);
+        Assert.Equal(1, unknown6dSummary.ListFlag);
+        Assert.Equal(2, unknown6dSummary.EntryCount);
+        Assert.Equal(2, unknown6dSummary.ParsedEntryCount);
+        Assert.Equal(2, unknown6dSummary.TotalRecordCount);
+        Assert.Equal(2, unknown6dSummary.DistinctEntryIdCount);
+        Assert.Equal(2, unknown6dSummary.RecordPrefixes["00"]);
+        Assert.Equal(1, unknown6dSummary.RecordTails["00 00 00"]);
+        Assert.Equal(1, unknown6dSummary.RecordTails["00 00 01"]);
+        Assert.Equal(2, unknown6dSummary.RecordTailU16Offset0Values["00 00 / 0"]);
+        Assert.Equal(1, unknown6dSummary.RecordTailU16Offset1Values["00 00 / 0"]);
+        Assert.Equal(1, unknown6dSummary.RecordTailU16Offset1Values["00 01 / 256"]);
+        Assert.Equal(1, unknown6dSummary.EntryIds["48"]);
+        Assert.Equal(1, unknown6dSummary.EntryIds["49"]);
+        Assert.Equal(1, unknown6dSummary.EntryIdResourceReferences["48 -> ability:48 Ability48 \"Ability Display\""]);
+        Assert.Equal(1, unknown6dSummary.EntryIdResourceReferences["48 -> animation:30 00 TestAnimation"]);
+        Assert.Equal(1, unknown6dSummary.EntryIdResourceReferences["48 -> item:48 TestItem \"Test Display\""]);
+        Assert.Equal(1, unknown6dSummary.EntryIdResourceReferences["49 -> gameobject:49 TestObject"]);
+        Assert.Equal(1, unknown6dSummary.EntryIdAttributeReferences["48 -> creation CreationAttr48 (1)"]);
+        Assert.Equal(1, unknown6dSummary.EntryIdAttributeReferences["49 -> update UpdateAttr49 (1)"]);
+        Unknown6dEntryIdSummary[] entryIdSummaries = PacketResearcher.BuildUnknown6dEntryIdSummaries(
+            new[] { dump },
+            attributes,
+            abilities,
+            items,
+            gameObjects,
+            animations).ToArray();
+        Unknown6dEntryIdSummary entry48 = entryIdSummaries.Single(summary => summary.EntryId == 0x30);
+        Assert.Equal(1, entry48.PayloadCount);
+        Assert.Equal(1, entry48.TotalRecordCount);
+        Assert.Equal(1, entry48.EntryIdHexes["30 00"]);
+        Assert.Equal(1, entry48.Modes["01 00"]);
+        Assert.Equal(1, entry48.PayloadShapes["01 00 / 21 bytes / count 2"]);
+        Assert.Equal(1, entry48.RecordPrefixes["00"]);
+        Assert.Equal(1, entry48.RecordTails["00 00 00"]);
+        Assert.Equal(1, entry48.RecordTailU16Offset1Values["00 00 / 0"]);
+        Assert.Equal(1, entry48.ResourceReferences["ability:48 Ability48 \"Ability Display\""]);
+        Assert.Equal(1, entry48.ResourceReferences["animation:30 00 TestAnimation"]);
+        Assert.Equal(1, entry48.ResourceReferences["item:48 TestItem \"Test Display\""]);
+        Assert.Equal(1, entry48.AttributeReferences["creation CreationAttr48 (1)"]);
+        Unknown6dEntryTailFlagSummary tailFlagSummary = Assert.Single(PacketResearcher.BuildUnknown6dEntryTailFlagSummaries(
+            new[] { dump },
+            attributes,
+            abilities,
+            items,
+            gameObjects,
+            animations));
+        Assert.Equal(0x31, tailFlagSummary.EntryId);
+        Assert.Equal("00 00 01", tailFlagSummary.TailHex);
+        Assert.Equal(1, tailFlagSummary.FlagRecordCount);
+        Assert.Equal(1, tailFlagSummary.TotalEntryRecordCount);
+        Assert.Equal(1, tailFlagSummary.FlagPayloadCount);
+        Assert.Equal(1, tailFlagSummary.TotalEntryPayloadCount);
+        Assert.Equal(1, tailFlagSummary.TailU16Offset1Values["00 01 / 256"]);
+        Assert.Equal(1, tailFlagSummary.ResourceReferences["gameobject:49 TestObject"]);
+        Assert.Equal(1, tailFlagSummary.AttributeReferences["update UpdateAttr49 (1)"]);
+        Unknown6dPacketContextSummary contextSummary = Assert.Single(PacketResearcher.BuildUnknown6dPacketContextSummaries(
+            new[] { dump },
+            attributes,
+            abilities,
+            items,
+            gameObjects,
+            animations));
+        Assert.Equal("01 00", contextSummary.ModeHex);
+        Assert.Equal("00 00", contextSummary.Field1);
+        Assert.Equal(1, contextSummary.PayloadCount);
+        Assert.Equal(1, contextSummary.PacketCount);
+        Assert.Equal(2, contextSummary.TotalRecordCount);
+        Assert.Equal(2, contextSummary.DistinctEntryIdCount);
+        Assert.Equal(1, contextSummary.NonzeroTailRecordCount);
+        Assert.Equal(1, contextSummary.SamePacket80c1PayloadCount);
+        Assert.Equal(1, contextSummary.EntryCounts["2"]);
+        Assert.Equal(1, contextSummary.PreviousHeaders["packet start"]);
+        Assert.Equal(1, contextSummary.NextHeaders["80 c1"]);
+        Assert.Equal(1, contextSummary.SamePacket80c1Fields["00 00 -> c8 00 / 200"]);
+        Assert.Equal(1, contextSummary.RecordTails["00 00 01"]);
+        Assert.Equal(1, contextSummary.EntryIdResourceReferences["48 -> animation:30 00 TestAnimation"]);
+        Assert.Equal(1, contextSummary.EntryIdAttributeReferences["49 -> update UpdateAttr49 (1)"]);
+        Unknown80c1PacketContextSummary unknown80c1ContextSummary =
+            Assert.Single(PacketResearcher.BuildUnknown80c1PacketContextSummaries(
+                new[] { dump },
+                attributes,
+                abilities,
+                items,
+                gameObjects,
+                animations));
+        Assert.Equal("00 00", unknown80c1ContextSummary.Field0);
+        Assert.Equal("c8 00", unknown80c1ContextSummary.Field1);
+        Assert.Equal(1, unknown80c1ContextSummary.PayloadCount);
+        Assert.Equal(1, unknown80c1ContextSummary.PacketCount);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket6dPayloadCount);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80b2PayloadCount);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80b3PayloadCount);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80bcPayloadCount);
+        Assert.Equal(1, unknown80c1ContextSummary.PayloadShapes["4 bytes / 00 00 -> c8 00 / 200"]);
+        Assert.Equal(1, unknown80c1ContextSummary.PreviousHeaders["6d"]);
+        Assert.Equal(1, unknown80c1ContextSummary.NextHeaders["80 b3"]);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket6dShapes["01 00 / 21 bytes / count 2"]);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80b2Fields["11 00 -> c8 00 / 200 -> 08 02"]);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80b3Fields["11 00 / 17"]);
+        Assert.Equal(1, unknown80c1ContextSummary.SamePacket80bcShapes["45 03/11 00/00 02/byte11 c8 00/byte15 01 00"]);
+        Assert.Empty(unknown80c1ContextSummary.Field0LocalReferences);
+        Assert.Equal(1, unknown80c1ContextSummary.Field1LocalReferences["creation StateMarker200 (1)"]);
+        Assert.Equal(1, unknown80c1ContextSummary.Field1LocalReferences["gameobject:200 StateObject200"]);
 
         string markdown = ReportWriter.ToMarkdown(report);
 
         Assert.Contains("- Protocol 04 unknown `6d` payloads: 1", markdown);
         Assert.Contains("- Protocol 04 unknown `80 c1` payloads: 1", markdown);
         Assert.Contains("## Unknown `6d` Protocol 04 Payload Groups", markdown);
-        Assert.Contains("| 21 | `01 00` | `00 00` | 8 | 1 | 2 | 2 | 48-49 | 1 | state.txt (1) | 6d -> 80 c1 (1) | `state.txt:42` |", markdown);
+        Assert.Contains("Record tails", markdown);
+        Assert.Contains("Tail u16 +0", markdown);
+        Assert.Contains("Entry id resources", markdown);
+        Assert.Contains("Entry id attributes", markdown);
+        Assert.Contains("00 00 00 (1)", markdown);
+        Assert.Contains("00 00 01 (1)", markdown);
+        Assert.Contains("48 -> animation:30 00 TestAnimation (1)", markdown);
+        Assert.Contains("49 -> update UpdateAttr49 (1) (1)", markdown);
+        Assert.Contains("## Unknown `6d` Packet Context Rollup", markdown);
+        Assert.Contains("| `01 00` | `00 00` | 1 | 1 | 2 | 2 | 2 (1) | 1 | 1 | 00 00 -> c8 00 / 200 (1) | packet start (1) | 80 c1 (1) | 00 00 00 (1)<br>00 00 01 (1)", markdown);
+        Assert.Contains("## Unknown `6d` Entry Id Correlations", markdown);
+        Assert.Contains("| 48 | 30 00 (1) | 1 | 1 | 01 00 (1) | 01 00 / 21 bytes / count 2 (1)", markdown);
+        Assert.Contains("ability:48 Ability48 \"Ability Display\" (1)<br>animation:30 00 TestAnimation (1)<br>item:48 TestItem \"Test Display\" (1)", markdown);
+        Assert.Contains("creation CreationAttr48 (1) (1) | other (1) | 6d -> 80 c1 -> 80 b3 -> 80 bc -> 80 b2 (1) | `state.txt:42` |", markdown);
+        Assert.Contains("## Unknown `6d` Nonzero Tail Flags", markdown);
+        Assert.Contains("| 49 | 31 00 (1) | `00 00 01` | 00 00 / 0 (1) | 00 01 / 256 (1) | 1 | 1 | 1 | 1 | 01 00 (1) | 01 00 / 21 bytes / count 2 (1) | gameobject:49 TestObject (1) | update UpdateAttr49 (1) (1) | other (1) | 6d -> 80 c1 -> 80 b3 -> 80 bc -> 80 b2 (1) | `state.txt:42` |", markdown);
         Assert.Contains("## Unknown `80 c1` Protocol 04 Payload Groups", markdown);
-        Assert.Contains("| 4 | `00 00` | `c8 00` | 1 | state.txt (1) | 6d -> 80 c1 (1) | `state.txt:42` | `00 00 c8 00` |", markdown);
+        Assert.Contains("| 4 | `00 00` | `c8 00` | 1 | state.txt (1) | 6d -> 80 c1 -> 80 b3 -> 80 bc -> 80 b2 (1) | `state.txt:42` | `00 00 c8 00` |", markdown);
+        Assert.Contains("## Unknown `80 c1` Packet Context Rollup", markdown);
+        Assert.Contains("| `00 00` | `c8 00` (200) | 1 | 1 | 1 | 1 | 1 | 1 | 4 bytes / 00 00 -> c8 00 / 200 (1) | 6d (1) | 80 b3 (1) | 01 00 / 21 bytes / count 2 (1) | 11 00 -> c8 00 / 200 -> 08 02 (1) | 11 00 / 17 (1) | 45 03/11 00/00 02/byte11 c8 00/byte15 01 00 (1) | - | creation StateMarker200 (1) (1)<br>gameobject:200 StateObject200 (1) | other (1) | 6d -> 80 c1 -> 80 b3 -> 80 bc -> 80 b2 (1) | `state.txt:42` |", markdown);
     }
 
     [Fact]
@@ -3890,6 +4769,85 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.FirstNonZeroOffsets["-"]);
         Assert.Equal(1, parserAction.FirstNonZeroFields["-"]);
 
+        Protocol03NestedMovementMode06HeldTupleBodySummary heldBodySummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(new[] { tupleBodySummary }));
+        Assert.Equal("hold mode 06 tuple body as evidence only", heldBodySummary.ParserAction);
+        Assert.Equal("bounded before accepted object-view header", heldBodySummary.SourceDisposition);
+        Assert.Equal(36, heldBodySummary.BodyBytes);
+        Assert.Equal(1, heldBodySummary.WindowCount);
+        Assert.Equal(1, heldBodySummary.BodySuffixes["00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"]);
+        Assert.Equal(1, heldBodySummary.FirstNonZeroOffsets["-"]);
+        Assert.Equal(1, heldBodySummary.HeaderClassifications["object state update"]);
+        Assert.Equal(1, heldBodySummary.PostPrefixLeads["00 4b 00 00 00 00 00 01"]);
+
+        Protocol03NestedMovementMode06HeldTupleBodySummary marker34HeldBodySummary = heldBodySummary with
+        {
+            ParserAction = "hold mode 06 marker-34 long object-view tuple body as evidence only",
+            ActionReason = "variable-length marker-34 object-view body needs body-length rule",
+            TupleLayoutKind = "unclassified object-view tuple",
+            PostPrefixDisposition = "unclassified object-view update",
+            BodyDisposition = "nonzero post-tuple body",
+            BodyBytes = 123,
+            BodySuffixes = new Dictionary<string, int>
+            {
+                ["01 00 02 0e 05 93 a7 a6 00 00 00 00 00 00 00 00"] = 1
+            },
+            FirstNonZeroOffsets = new Dictionary<string, int>
+            {
+                ["0"] = 1
+            },
+            FirstNonZeroFields = new Dictionary<string, int>
+            {
+                ["01 00"] = 1
+            },
+            HeaderClassifications = new Dictionary<string, int>
+            {
+                ["object state update"] = 1
+            },
+            HeaderPrefixes = new Dictionary<string, int>
+            {
+                ["01 00 02 0e 05 93 a7 a6"] = 1
+            },
+            PostPrefixLeads = new Dictionary<string, int>
+            {
+                ["00 e9 07 00 00 00 00 34"] = 1
+            },
+            MarkerBytes = new Dictionary<string, int>
+            {
+                ["34"] = 1
+            },
+            InnerSelectors = new Dictionary<string, int>
+            {
+                ["0e"] = 1
+            }
+        };
+        Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary[] prioritySummaries =
+            PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodyPrioritySummaries(new[] { heldBodySummary, marker34HeldBodySummary })
+                .ToArray();
+        Assert.Collection(
+            prioritySummaries,
+            priority =>
+            {
+                Assert.Equal("investigate marker-34 long body length rule", priority.PriorityAction);
+                Assert.Equal("singleton variable-length marker-34 object-view bodies remain bounded but unpromoted", priority.PriorityReason);
+                Assert.Equal(1, priority.HeldRowCount);
+                Assert.Equal(1, priority.WindowCount);
+                Assert.Equal(1, priority.ParserActions["hold mode 06 marker-34 long object-view tuple body as evidence only"]);
+                Assert.Equal(1, priority.BodyByteLengths["123"]);
+                Assert.Equal(1, priority.PostPrefixLeads["00 e9 07 00 00 00 00 34"]);
+                Assert.Equal(1, priority.MarkerBytes["34"]);
+            },
+            priority =>
+            {
+                Assert.Equal("retain low-count or non-dominant mode 06 controls", priority.PriorityAction);
+                Assert.Equal("held tuple bodies lack repeated exact body-length evidence for parser promotion", priority.PriorityReason);
+                Assert.Equal(1, priority.HeldRowCount);
+                Assert.Equal(1, priority.WindowCount);
+                Assert.Equal(1, priority.ParserActions["hold mode 06 tuple body as evidence only"]);
+                Assert.Equal(1, priority.BodyByteLengths["36"]);
+                Assert.Equal(1, priority.PostPrefixLeads["00 4b 00 00 00 00 00 01"]);
+            });
+
         PacketResearchReport report = new(
             ".",
             Array.Empty<string>(),
@@ -3910,6 +4868,8 @@ public class PacketResearcherTests
         {
             Protocol03NestedMovementMode06PostContinuationTupleBoundarySummaries = new[] { tupleBoundarySummary },
             Protocol03NestedMovementMode06PostContinuationTupleBodySummaries = new[] { tupleBodySummary },
+            Protocol03NestedMovementMode06HeldTupleBodySummaries = new[] { heldBodySummary },
+            Protocol03NestedMovementMode06HeldTupleBodyPrioritySummaries = prioritySummaries,
             Protocol03NestedMovementMode06TupleBodyParserActionSummaries = new[] { parserAction }
         };
         string markdown = ReportWriter.ToMarkdown(report);
@@ -3917,6 +4877,15 @@ public class PacketResearcherTests
         Assert.Contains("| ff marker plus zero-padded ff continuation lead | `03 ff` | zero-update marker tuple | non-object-view post-prefix lead | zero-filled post-tuple body | 36 | `00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00` | `00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00` | - | `-` | 1 | object state update (1) | 01 00 02 0e 05 93 a7 a6 (1) | 75 (1) |", markdown);
         Assert.Contains("### Protocol 03 Mode 06 Tuple Body Parser Actions", markdown);
         Assert.Contains("| hold mode 06 tuple body as evidence only | low-count or non-dominant tuple body shape | 1 | 1 |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Held Tuple Body Priority Rollup", markdown);
+        Assert.Contains("| investigate marker-34 long body length rule | singleton variable-length marker-34 object-view bodies remain bounded but unpromoted | 1 | 1 |", markdown);
+        Assert.Contains("hold mode 06 marker-34 long object-view tuple body as evidence only (1)", markdown);
+        Assert.Contains("00 e9 07 00 00 00 00 34 (1)", markdown);
+        Assert.Contains("| retain low-count or non-dominant mode 06 controls | held tuple bodies lack repeated exact body-length evidence for parser promotion | 1 | 1 |", markdown);
+        Assert.Contains("hold mode 06 tuple body as evidence only (1)", markdown);
+        Assert.Contains("00 4b 00 00 00 00 00 01 (1)", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Held Tuple Body Rows", markdown);
+        Assert.Contains("| hold mode 06 tuple body as evidence only | low-count or non-dominant tuple body shape | bounded before accepted object-view header | 1 | 36 |", markdown);
     }
 
     [Fact]
@@ -3947,7 +4916,11 @@ public class PacketResearcherTests
         Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 531, "server").ToArray();
 
         Assert.NotEmpty(samples);
-        Assert.True(samples[0].Complete);
+        Assert.True(
+            samples[0].Complete,
+            $"complete={samples[0].Complete} parsed={samples[0].ParsedUpdateCount} unparsed={samples[0].UnparsedBytes} " +
+            $"segments={string.Join("; ", samples[0].Segments.Select(segment => $"{segment.Selector}:{segment.Classification}:{segment.PayloadBytes}"))} " +
+            $"boundaries={string.Join("; ", samples[0].NestedMovementConsumedBodyBoundaries.Select(boundary => $"{boundary.ParserAction}:{boundary.PayloadBytes}:{boundary.PostTupleBodyBytes}:{boundary.BoundaryHeaderHex}"))}");
         Assert.Equal(0, samples[0].UnparsedBytes);
         Assert.Contains(samples[0].Segments, segment => segment.Classification == "mode 06 terminal 96-byte tuple body");
         Protocol03NestedMovementConsumedBodyBoundary consumedBoundary =
@@ -4031,6 +5004,158 @@ public class PacketResearcherTests
         string markdown = ReportWriter.ToMarkdown(report);
         Assert.Contains("### Protocol 03 Mode 06 Terminal Tuple Body Shapes", markdown);
         Assert.Contains("| ff marker plus zero-padded ff continuation lead | `02 ff` | unclassified object-view tuple | unclassified object-view update | nonzero terminal post-tuple body | 96 | 1 | 00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00 (1) | 07 08 00 00 00 00 00 00 22 00 00 00 00 00 00 00 (1) | - (1) | - (1) | 6 (1) | ff 00 (1) | 104 (1) | 00 e9 07 00 00 00 00 34 (1) |", markdown);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsTerminalMode0696ByteMarker04ZeroUpdateTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes("""
+            82 ab 4c a1 47 03 37 00 02 0e 01 1a 30 63 8b 47 00 00 be 42 8d 05 3f 47 2f 00 02 0c 3b 86 6c 88
+            47 00 00 be 42 bf 0a 41 47 29 00 02 0e 04 ff d8 cb 92 47 00 00 be 42 b1 fc 31 47 25 00 06 0e 04
+            38 58 90 8d 47 00 00 be 42 ca 5c 3d 47 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00 00 96 00 00
+            00 00 00 04 00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 01 00 96 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 00
+            00 00 00 00 00 00 00 00 00 00 00 39 03 00 08 37 08 00 00 1f 42 21 00 00 00 00 00 00 22 00 00 00
+            00 00 00 00
+            """).ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 541, "server").ToArray();
+
+        const string expectedParserAction = "test terminal mode 06 96-byte marker-04 zero-update tuple body";
+        Protocol03ObjectViewSample sample = Assert.Single(
+            samples,
+            candidate => candidate.NestedMovementConsumedBodyBoundaries.Any(boundary => boundary.ParserAction == expectedParserAction));
+        Assert.True(sample.Complete);
+        Assert.Equal(0, sample.UnparsedBytes);
+        Assert.Contains(
+            sample.Segments,
+            segment =>
+                segment.Selector == "25" &&
+                segment.Classification == "mode 06 terminal 96-byte marker-04 zero-update tuple body" &&
+                segment.PayloadBytes == 168 &&
+                segment.IsKnownLength);
+
+        Protocol03NestedMovementConsumedBodyBoundary consumedBoundary = Assert.Single(sample.NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, consumedBoundary.ParserAction);
+        Assert.Equal("25", consumedBoundary.Selector);
+        Assert.Equal(168, consumedBoundary.PayloadBytes);
+        Assert.Equal(168, consumedBoundary.EvidencePayloadBytes);
+        Assert.Equal(17, consumedBoundary.TailStartOffset);
+        Assert.Equal(151, consumedBoundary.TailBoundaryOffset);
+        Assert.Equal(96, consumedBoundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", consumedBoundary.TupleLayoutKind);
+        Assert.Equal(6, consumedBoundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", consumedBoundary.FirstNonZeroFieldHex);
+        Assert.Equal(string.Empty, consumedBoundary.BoundaryHeaderHex);
+        Assert.Equal("terminal tail end", consumedBoundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-terminal-marker-04-zero-update-96.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { sample },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary terminalBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", terminalBody.TailPrefixKind);
+        Assert.Equal("03 ff", terminalBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", terminalBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", terminalBody.PostPrefixDisposition);
+        Assert.Equal(96, terminalBody.TerminalPostTupleBodyBytes);
+        Assert.Equal(1, terminalBody.BodyPrefixes["00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00"]);
+        Assert.Equal(1, terminalBody.BodySuffixes["42 21 00 00 00 00 00 00 22 00 00 00 00 00 00 00"]);
+        Assert.Equal(1, terminalBody.PostPrefixLeads["00 96 00 00 00 00 00 04"]);
+        Assert.Equal(1, terminalBody.MarkerBytes["04"]);
+        Assert.Equal(1, terminalBody.InnerSelectors["0e"]);
+        Assert.Equal(1, terminalBody.OuterSelectors["25"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(
+                Array.Empty<Protocol03NestedMovementMode06PostContinuationTupleBodySummary>(),
+                new[] { terminalBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("terminal 96-byte marker-04 zero-update body with shared suffix", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["96"]);
+        Assert.Equal(1, parserAction.MarkerBytes["04"]);
+    }
+
+    [Fact]
+    public void BuildProtocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries_SplitsMixedTerminal96Suffixes()
+    {
+        const string acceptedSuffixHex = "07 08 00 00 00 00 00 00 22 00 00 00 00 00 00 00";
+        const string unsupportedSuffixHex = "13 08 00 00 00 00 00 00 22 00 00 00 00 00 00 00";
+        Protocol03ObjectViewSample acceptedSample = DetectSample(acceptedSuffixHex, 531);
+        Protocol03ObjectViewSample unsupportedSample = DetectSample(unsupportedSuffixHex, 532);
+        PacketDumpFileSummary dump = new(
+            "mode06-terminal-mixed-suffixes.txt",
+            2,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { acceptedSample, unsupportedSample },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary[] terminalBodies =
+            PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTerminalTupleBodySummaries(new[] { dump }).ToArray();
+
+        Assert.Equal(2, terminalBodies.Length);
+        Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary acceptedBody =
+            Assert.Single(terminalBodies, summary => summary.BodySuffixes.ContainsKey(acceptedSuffixHex));
+        Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary unsupportedBody =
+            Assert.Single(terminalBodies, summary => summary.BodySuffixes.ContainsKey(unsupportedSuffixHex));
+        Assert.Equal(1, acceptedBody.WindowCount);
+        Assert.Equal(1, unsupportedBody.WindowCount);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary[] parserActions =
+            PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(
+                Array.Empty<Protocol03NestedMovementMode06PostContinuationTupleBodySummary>(),
+                terminalBodies).ToArray();
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary acceptedAction =
+            Assert.Single(parserActions, summary => summary.ParserAction == "test terminal mode 06 96-byte tuple body");
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary heldAction =
+            Assert.Single(parserActions, summary => summary.ParserAction == "hold mode 06 tuple body as evidence only");
+        Assert.Equal(1, acceptedAction.WindowCount);
+        Assert.Equal(1, acceptedAction.BodyByteLengths["96"]);
+        Assert.Equal(1, heldAction.WindowCount);
+        Assert.Equal(1, heldAction.BodyByteLengths["96"]);
+
+        static Protocol03ObjectViewSample DetectSample(string suffixHex, int line)
+        {
+            byte[] suffix = PacketResearcher.ParseHexBytes(suffixHex).ToArray();
+            byte[] body = Enumerable.Repeat((byte)0x00, 6)
+                .Concat(new byte[] { 0xff, 0x00 })
+                .Concat(Enumerable.Repeat((byte)0x00, 72))
+                .Concat(suffix)
+                .ToArray();
+            var bytes = new List<byte>
+            {
+                0x02, 0x03,
+                0x01, 0x00, 0x02, 0x0c
+            };
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+            bytes.Add(0x03);
+            bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("00 e9 07 00 00 00 00 34"));
+            bytes.AddRange(body);
+
+            return PacketResearcher.DetectProtocol03ObjectViews(bytes, line, "server").First();
+        }
     }
 
     [Fact]
@@ -4293,7 +5418,120 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.MarkerBytes["34"]);
     }
 
+    [Fact]
+    public void BuildProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries_GroupsUnsupportedControlsBySelector()
+    {
+        var shapes = new[]
+        {
+            new Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary(
+                95,
+                "unsupported selector trailer control",
+                "unsupported embedded mode 06 movement selector",
+                "non-shared post-movement lead",
+                "02 c0 00 27 31 00 6e f3",
+                "32 c7 00 80 93 43 77 d6",
+                73,
+                56,
+                "03",
+                "ff 00 00 00 00 00 00 00",
+                "00 07 03 00 00 00 00 1d",
+                "trailing guarded 57-byte object-view suffix",
+                1,
+                new Dictionary<string, int> { ["28"] = 1 },
+                new Dictionary<string, int> { ["98"] = 1 },
+                new Dictionary<string, int> { ["candidate mode 06 stacked pre-anchor lead before guarded object-view body"] = 1 },
+                new Dictionary<string, int> { ["171"] = 1 },
+                new Dictionary<string, int> { ["228"] = 1 },
+                new Dictionary<string, int> { ["0:02 1:c0 3:27"] = 1 },
+                "sample-a.log",
+                10),
+            new Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary(
+                95,
+                "unsupported selector trailer control",
+                "unsupported embedded mode 06 movement selector",
+                "non-shared post-movement lead",
+                "00 40 00 00 00 10 90 82",
+                "98 c3 f8 df ec 44 ab e6",
+                73,
+                56,
+                "03",
+                "ff 00 00 00 00 00 00 00",
+                "00 cf 03 00 00 00 00 25",
+                "trailing guarded 57-byte object-view suffix",
+                1,
+                new Dictionary<string, int> { ["28"] = 1 },
+                new Dictionary<string, int> { ["98"] = 1 },
+                new Dictionary<string, int> { ["candidate mode 06 stacked pre-anchor lead before guarded object-view body"] = 1 },
+                new Dictionary<string, int> { ["171"] = 1 },
+                new Dictionary<string, int> { ["228"] = 1 },
+                new Dictionary<string, int> { ["0:40 5:10 6:90"] = 1 },
+                "sample-b.log",
+                20),
+            new Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary(
+                95,
+                "unsupported selector trailer control",
+                "unsupported embedded mode 06 movement selector",
+                "non-shared post-movement lead",
+                "02 c0 00 27 31 00 05 e2",
+                "6e f3 32 c7 00 80 93 43",
+                75,
+                58,
+                "03",
+                "ff 00 00 00 00 00 00 00",
+                "00 07 03 00 00 00 00 1d",
+                "trailing guarded 57-byte object-view suffix",
+                1,
+                new Dictionary<string, int> { ["2e"] = 1 },
+                new Dictionary<string, int> { ["98"] = 1 },
+                new Dictionary<string, int> { ["candidate mode 06 stacked pre-anchor lead before guarded object-view body"] = 1 },
+                new Dictionary<string, int> { ["173"] = 1 },
+                new Dictionary<string, int> { ["230"] = 1 },
+                new Dictionary<string, int> { ["0:02 1:c0 3:27"] = 1 },
+                "sample-c.log",
+                30)
+        };
+
+        Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary[] summaries =
+            PacketResearcher.BuildProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries(shapes).ToArray();
+
+        Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary selector28 = summaries[0];
+        Assert.Equal("28", selector28.InnerSelectorHex);
+        Assert.Equal(2, selector28.WindowCount);
+        Assert.Equal(2, selector28.ShapeDispositions["unsupported selector trailer control"]);
+        Assert.Equal(2, selector28.TrailerDispositions["non-shared post-movement lead"]);
+        Assert.Equal(1, selector28.PostMovementLeads["02 c0 00 27 31 00 6e f3"]);
+        Assert.Equal(1, selector28.PostMovementLeads["00 40 00 00 00 10 90 82"]);
+        Assert.Equal(2, selector28.PreTailFields["03"]);
+        Assert.Equal(1, selector28.PreAnchorTrailingLeads["00 07 03 00 00 00 00 1d"]);
+        Assert.Equal(1, selector28.PreAnchorTrailingLeads["00 cf 03 00 00 00 00 25"]);
+        Assert.Equal(2, selector28.ParserTargets["candidate mode 06 stacked pre-anchor lead before guarded object-view body"]);
+        Assert.Equal("sample-a.log", selector28.SampleFile);
+        Assert.Equal(10, selector28.SampleLine);
+
+        Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary selector2e =
+            Assert.Single(summaries, summary => summary.InnerSelectorHex.Equals("2e", StringComparison.Ordinal));
+        Assert.Equal(1, selector2e.WindowCount);
+        Assert.Equal(1, selector2e.BodyBytes["230"]);
+        Assert.Equal(1, selector2e.BytesRemainingAfterMovement["75"]);
+    }
+
     [Theory]
+    [InlineData(
+        "03",
+        "0e",
+        "03",
+        "ff cd cc 4c be 00 00 00",
+        "00 46 05 00 00 00 00 34",
+        "00 46 05 00 00 00 00 34",
+        "",
+        "mode 06 terminal long embedded movement marker-34-46 trailer body",
+        "test terminal mode 06 long embedded marker-34-46 trailer body",
+        "unclassified object-view tuple",
+        335,
+        318,
+        263,
+        335,
+        "terminal tail end")]
     [InlineData(
         "03",
         "0e",
@@ -4342,6 +5580,38 @@ public class PacketResearcherTests
         263,
         335,
         "terminal tail end")]
+    [InlineData(
+        "01",
+        "0c",
+        "01",
+        "ff 00 00 00 00 00 00 00",
+        "00 b0 04 00 00 00 00 16",
+        "00 b0 04 00 00 00 00 16",
+        "2e 00 02 0e 01 d7 ec 85",
+        "mode 06 guarded 94-byte long embedded movement marker-16 trailer body",
+        "test guarded mode 06 long embedded marker-16 trailer body",
+        "unclassified object-view tuple",
+        332,
+        315,
+        260,
+        340,
+        "object state update")]
+    [InlineData(
+        "03",
+        "0e",
+        "03",
+        "ff 00 00 00 00 00 00 00",
+        "00 b6 03 00 00 00 00 24",
+        "00 b6 03 00 00 00 00 24",
+        "28 ff 01 00 00 00 00 00",
+        "mode 06 guarded 57-byte long embedded movement marker-24 trailer body",
+        "test guarded mode 06 long embedded marker-24 trailer body",
+        "unclassified object-view tuple",
+        296,
+        279,
+        224,
+        304,
+        "single state marker update")]
     [InlineData(
         "03",
         "0e",
@@ -4400,6 +5670,12 @@ public class PacketResearcherTests
         byte[] anchorBody = string.IsNullOrEmpty(boundaryHeaderHex)
             ? BuildProtocol03Mode06Terminal96Body("07 08 00 00 00 00 00 00 22 00 00 00 00 00 00 00")
             : BuildProtocol03Mode06Guarded57Body("ff 00 00 00 00 00 00 00 00 d4 1e 00 00 4c 0a 00");
+        if (!string.IsNullOrEmpty(boundaryHeaderHex) &&
+            expectedPostTupleBodyBytes == 260)
+        {
+            anchorBody = BuildProtocol03Mode06Guarded94Body("00 1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00");
+        }
+
         byte[] body = preAnchor.Concat(anchorBody).ToArray();
         byte[] bytes = BuildProtocol03Mode06LongEmbeddedTrailerObjectView(
             body,
@@ -4416,8 +5692,12 @@ public class PacketResearcherTests
         else
         {
             Assert.Equal(2, samples.Length);
-            Assert.True(samples[1].Complete);
-            Assert.Equal("single state marker update", samples[1].Classification);
+            if (expectedBoundaryClassification.Equals("single state marker update", StringComparison.Ordinal))
+            {
+                Assert.True(samples[1].Complete);
+            }
+
+            Assert.Equal(expectedBoundaryClassification, samples[1].Classification);
         }
 
         Assert.True(samples[0].Complete);
@@ -4442,6 +5722,31 @@ public class PacketResearcherTests
         Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
         Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
         Assert.Equal(expectedBoundaryClassification, boundary.BoundaryHeaderClassification);
+
+        if (!string.IsNullOrEmpty(boundaryHeaderHex))
+        {
+            PacketDumpFileSummary dump = new(
+                "mode06-guarded-long-embedded-trailer-body.txt",
+                1,
+                new Dictionary<string, int>(),
+                new Dictionary<string, int>(),
+                new Dictionary<string, int>(),
+                new Dictionary<string, IReadOnlyList<int>>(),
+                Array.Empty<Protocol04PacketSequenceSample>(),
+                new[] { samples[0] },
+                Array.Empty<Protocol04InteractionPayloadSample>(),
+                Array.Empty<PlayerAttributePayloadSample>(),
+                Array.Empty<ManageBonusPayloadSample>());
+            Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+                Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+            Assert.Equal(expectedTupleLayoutKind, tupleBody.TupleLayoutKind);
+            Assert.Equal(expectedPostTupleBodyBytes, tupleBody.PostTupleBodyBytes);
+
+            Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+                Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+            Assert.Equal(expectedParserAction, parserAction.ParserAction);
+            Assert.Equal(1, parserAction.BodyByteLengths[expectedPostTupleBodyBytes.ToString(CultureInfo.InvariantCulture)]);
+        }
 
         if (string.IsNullOrEmpty(boundaryHeaderHex))
         {
@@ -4557,13 +5862,36 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.BodyByteLengths["70"]);
     }
 
-    [Fact]
-    public void DetectProtocol03ObjectViews_BoundsGuardedMode06ZeroUpdate94ByteTupleBody()
+    [Theory]
+    [InlineData(
+        "00 1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00",
+        "00 96 00 00 00 00 00 04",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        true)]
+    [InlineData(
+        "00 1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00",
+        "00 96 00 00 00 00 00 04",
+        "15 00 02 0c 5f 22 ac 84",
+        "object state update",
+        false)]
+    [InlineData(
+        "00 1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00",
+        "00 c8 00 00 00 00 00 06",
+        "05 00 02 0e 00 1c 17 e0",
+        "object state update",
+        false)]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06ZeroUpdate94ByteTupleBody(
+        string bodySuffixHex,
+        string postPrefixLeadHex,
+        string boundaryHeaderHex,
+        string boundaryClassification,
+        bool boundaryComplete)
     {
         byte[] body = Enumerable.Repeat((byte)0x00, 6)
             .Concat(new byte[] { 0xff, 0x00 })
             .Concat(Enumerable.Repeat((byte)0x00, 70))
-            .Concat(PacketResearcher.ParseHexBytes("00 1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00"))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
             .ToArray();
         var bytes = new List<byte>
         {
@@ -4576,9 +5904,9 @@ public class PacketResearcherTests
         bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
         bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
         bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
-        bytes.AddRange(PacketResearcher.ParseHexBytes("00 96 00 00 00 00 00 04"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
         bytes.AddRange(body);
-        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 01 00 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
 
         Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 537, "server").ToArray();
 
@@ -4603,9 +5931,8 @@ public class PacketResearcherTests
                 Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
                 Assert.True(segment.IsKnownLength);
             });
-        Assert.True(samples[1].Complete);
-        Assert.Equal(0xff28, samples[1].ViewId);
-        Assert.Equal("single state marker update", samples[1].Classification);
+        Assert.Equal(boundaryComplete, samples[1].Complete);
+        Assert.Equal(boundaryClassification, samples[1].Classification);
 
         Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
         Assert.Equal("test guarded mode 06 94-byte zero-update tuple body", boundary.ParserAction);
@@ -4619,8 +5946,8 @@ public class PacketResearcherTests
         Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
         Assert.Equal(6, boundary.FirstNonZeroOffset);
         Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
-        Assert.Equal("28 ff 01 00 00 00 00 00", boundary.BoundaryHeaderHex);
-        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryClassification, boundary.BoundaryHeaderClassification);
 
         PacketDumpFileSummary dump = new(
             "mode06-guarded-zero-update-94.txt",
@@ -4642,17 +5969,707 @@ public class PacketResearcherTests
         Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
         Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
         Assert.Equal(94, tupleBody.PostTupleBodyBytes);
-        Assert.Equal("00 1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
         Assert.Equal(6, tupleBody.FirstNonZeroOffset);
         Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
-        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
-        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 01 00 00 00 00 00"]);
-        Assert.Equal(1, tupleBody.PostPrefixLeads["00 96 00 00 00 00 00 04"]);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
 
         Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
         Assert.Equal("test guarded mode 06 94-byte zero-update tuple body", parserAction.ParserAction);
         Assert.Equal(1, parserAction.BodyByteLengths["94"]);
+    }
+
+    [Theory]
+    [InlineData("17 00 02 0c c5 29 44 85")]
+    [InlineData("1d 00 02 0c 19 bc 15 93")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker04_94ByteZeroUpdateTupleBody(
+        string boundaryHeaderHex)
+    {
+        const string bodySuffixHex = "00 1f f9 07 00 00 00 00 00 00 22 00 00 00 00 00";
+        const string postPrefixLeadHex = "00 96 00 00 00 00 00 04";
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 70))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 537, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 94;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 94-byte marker-04 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.False(samples[1].Complete);
+        Assert.Equal("object state update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 94-byte marker-04 zero-update tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(149, boundary.TailBoundaryOffset);
+        Assert.Equal(94, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal("object state update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-04-zero-update-94.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(94, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["object state update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 94-byte marker-04 zero-update tuple body", parserAction.ParserAction);
+        Assert.Equal("94-byte marker-04 zero-update body before object-state boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["94"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker04_95ByteZeroUpdateTupleBody()
+    {
+        const string bodySuffixHex = "1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00 25";
+        const string postPrefixLeadHex = "00 96 00 00 00 00 00 04";
+        const string boundaryHeaderHex = "00 02 02 00 1d 00 02 0c";
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 71))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 537, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 95;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 95-byte marker-04 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 95-byte marker-04 zero-update tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(150, boundary.TailBoundaryOffset);
+        Assert.Equal(95, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-04-zero-update-95.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(95, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 95-byte marker-04 zero-update tuple body", parserAction.ParserAction);
+        Assert.Equal("95-byte marker-04 zero-update body before state/object boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["95"]);
+    }
+
+    [Theory]
+    [InlineData("00 5d 01 00 88 37 08 00")]
+    [InlineData("00 5e 01 00 88 37 08 00")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker04_237ByteZeroUpdateTupleBody(
+        string boundaryHeaderHex)
+    {
+        const string bodyPrefixHex = "00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00";
+        const string bodySuffixHex = "00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00";
+        const string postPrefixLeadHex = "00 96 00 00 00 00 00 04";
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 213))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 537, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 237;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 237-byte marker-04 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal("single state marker update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 237-byte marker-04 zero-update tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(292, boundary.TailBoundaryOffset);
+        Assert.Equal(237, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-04-zero-update-237.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(237, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodyPrefixHex, tupleBody.BodyPrefixHex);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 237-byte marker-04 zero-update tuple body", parserAction.ParserAction);
+        Assert.Equal("237-byte marker-04 zero-update body before paired state-marker boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["237"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0678ByteMarkerFfNonObjectTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes("""
+            02 03 3f 00 02 0e 05 62 6f ba 06 47 00 20 8a c4 10 b4 59 c4 21 00 06 0c 29 28 96 0f 47 00 20 94
+            c4 16 38 1f c5 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 32 32 00 00 00 00 ff 00 00 00 00
+            00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 01 00 32 32 ff 04 00 00 00 00 00 00 00 22 b6 00 00 cd 08 00 28 ff 06 00 00 00 00 00 00 00 00
+            00 00 00 6e 06 00 40 37 08 00 00 1f 01 08 00 00 00 10 00 00 22 00 00 00 00 00 00 00
+            """).ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 538, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 78-byte marker-ff non-object tuple body";
+        const int expectedPayloadBytes = 16 + 55 + 78;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0e", segment.Selector);
+                Assert.Equal("position xyz + two flags", segment.Classification);
+                Assert.Equal(14, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("21", segment.Selector);
+                Assert.Equal("mode 06 guarded 78-byte marker-ff non-object tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal("single position update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("21", boundary.Selector);
+        Assert.Equal(18, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(16, boundary.TailStartOffset);
+        Assert.Equal(133, boundary.TailBoundaryOffset);
+        Assert.Equal(78, boundary.PostTupleBodyBytes);
+        Assert.Equal("non-object marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 1f 01 08 00 00 00 10", boundary.BoundaryHeaderHex);
+        Assert.Equal("single position update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-ff-non-object-78.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("non-object marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(78, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", tupleBody.BodyPrefixHex);
+        Assert.Equal("00 00 00 00 00 00 00 00 00 6e 06 00 40 37 08 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single position update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 1f 01 08 00 00 00 10"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 32 32 00 00 00 00 ff"]);
+        Assert.Equal(1, tupleBody.InnerSelectors["0c"]);
+        Assert.Equal(1, tupleBody.OuterSelectors["21"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("78-byte marker-ff non-object body before single-position boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["78"]);
+        Assert.Empty(PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(new[] { tupleBody }));
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06119ByteMarker04ZeroUpdateTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes("""
+            02 03 39 00 02 0e 04 ed 50 fa 83 47 00 00 be 42 a3 e3 44 47 33 00 06 0e 01 2d 5e d1 82 47 00 00
+            be 42 80 e7 1c 47 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00 00 96 00 00 00 00 00 04 00 00 00
+            00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 01 00 96 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00
+            00 00 00 00 32 03 00 08 37 08 00 00 1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00 25 00 02 2a 02
+            40 00 25 ac 00 00 10 00 00 9a 8d 47 00 00 be 42 00 48 3c 47 1d 00 02 0e 00 76 bc 15 93 47 00 00
+            be 42 a8 fa 2f 47 0f 00 02 0e 00 30 df 18 8f 47 00 00 be 42 44 1d 43 47 0d 00 02 0e 00 8d 75 40
+            8b 47 00 00 be 42 12 c6 3e 47 05 00 02 0c 74 18 63 92 47 00 00 be 42 d0 a8 42 47 00 00
+            """).ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 539, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 119-byte marker-04 zero-update tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 119;
+        Assert.True(samples.Length >= 2);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0e", segment.Selector);
+                Assert.Equal("position xyz + two flags", segment.Classification);
+                Assert.Equal(14, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("33", segment.Selector);
+                Assert.Equal("mode 06 guarded 119-byte marker-04 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal("object state update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("33", boundary.Selector);
+        Assert.Equal(18, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(174, boundary.TailBoundaryOffset);
+        Assert.Equal(119, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("1d 00 02 0e 00 76 bc 15", boundary.BoundaryHeaderHex);
+        Assert.Equal("object state update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-04-zero-update-119.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(119, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", tupleBody.BodyPrefixHex);
+        Assert.Equal("00 00 10 00 00 9a 8d 47 00 00 be 42 00 48 3c 47", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["object state update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["1d 00 02 0e 00 76 bc 15"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 96 00 00 00 00 00 04"]);
+        Assert.Equal(1, tupleBody.InnerSelectors["0e"]);
+        Assert.Equal(1, tupleBody.OuterSelectors["33"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("119-byte marker-04 zero-update body before object-state boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["119"]);
+        Assert.Empty(PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(new[] { tupleBody }));
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06138ByteMarker4fObjectViewTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes("""
+            02 03 45 00 02 0e 04 60 86 d6 39 47 00 20 8a c4 00 26 d7 c4 39 00 06 0e 04 75 e1 c9 25 47 00 20
+            8a c4 4d 2c ad c5 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00 00 e9 07 00 00 00 00 4f 00 00 00
+            00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 01 00 27 07 ff 00 00 00 00 00 00 00 00 3e b9 00 00 4c 0a 00 28 ff 05 00 00 00 00 00 00 00
+            00 00 00 00 61 00 00 40 37 08 00 00 1f 07 08 00 00 00 40 00 00 22 00 00 00 00 00 37 00 02 28 00
+            40 00 00 00 10 b8 0a 34 47 00 20 8a c4 6c 13 55 c5 31 00 02 28 00 40 00 00 00 10 cd 47 24 47 00
+            20 8a c4 85 7c c9 c5 07 00 02 08 ce 41 38 47 00 20 8a c4 9e ca 9a c5 00 00
+            """).ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 540, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 138-byte marker-4f object-view tuple body";
+        const int expectedPayloadBytes = 210;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0e", segment.Selector);
+                Assert.Equal("position xyz + two flags", segment.Classification);
+                Assert.Equal(14, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("39", segment.Selector);
+                Assert.Equal("mode 06 guarded 138-byte marker-4f object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal("position/object state update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("39", boundary.Selector);
+        Assert.Equal(18, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(193, boundary.TailBoundaryOffset);
+        Assert.Equal(138, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("07 00 02 08 ce 41 38 47", boundary.BoundaryHeaderHex);
+        Assert.Equal("position/object state update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-4f-object-view-138.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(138, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", tupleBody.BodyPrefixHex);
+        Assert.Equal("00 00 00 10 cd 47 24 47 00 20 8a c4 85 7c c9 c5", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["position/object state update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["07 00 02 08 ce 41 38 47"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 e9 07 00 00 00 00 4f"]);
+        Assert.Equal(1, tupleBody.InnerSelectors["0e"]);
+        Assert.Equal(1, tupleBody.OuterSelectors["39"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("138-byte marker-4f object-view body before object-state boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["138"]);
+        Assert.Empty(PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(new[] { tupleBody }));
+    }
+
+    [Theory]
+    [InlineData("00 04 01 01 73 01 07 80")]
+    [InlineData("00 04 01 01 74 01 08 80")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker2a_261ByteDeleteViewObjectViewTupleBody(
+        string boundaryHeaderHex)
+    {
+        const string bodyPrefixHex = "00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00";
+        const string bodySuffixHex = "1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00 00";
+        const string postPrefixLeadHex = "00 4c 04 00 00 00 00 2a";
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 237))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 537, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 261;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 261-byte marker-2a delete-view object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal("delete view candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 261-byte marker-2a delete-view object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(316, boundary.TailBoundaryOffset);
+        Assert.Equal(261, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal("delete view candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-2a-delete-view-object-view-261.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(261, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodyPrefixHex, tupleBody.BodyPrefixHex);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["delete view candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 261-byte marker-2a delete-view object-view tuple body", parserAction.ParserAction);
+        Assert.Equal("261-byte marker-2a object-view body before paired delete-view boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["261"]);
     }
 
     [Fact]
@@ -4953,6 +6970,125 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.MarkerBytes["34"]);
     }
 
+    [Theory]
+    [InlineData(
+        "01 ff",
+        "00 d2 0f 00 00 00 00 4f",
+        "00 1f 06 08 00 00 08 00 10 00 22 01 b9 00 00 00",
+        "b3 00 02 80 80 10 ce 14",
+        "appearance/attribute update candidate",
+        "4f")]
+    [InlineData(
+        "02 ff",
+        "00 e9 07 00 00 00 00 34",
+        "00 1f 06 08 00 00 02 00 10 00 22 00 00 00 00 00",
+        "18 00 02 0c 81 66 f2 48",
+        "object state update",
+        "34")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0694ByteResidualExactObjectViewTupleBody(
+        string prefixHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification,
+        string markerByte)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 70))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 80192, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 94-byte residual exact object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 94;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 94-byte residual exact object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(149, boundary.TailBoundaryOffset);
+        Assert.Equal(94, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-residual-exact-object-view-94.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(94, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["94"]);
+        Assert.Equal(1, parserAction.MarkerBytes[markerByte]);
+    }
+
     [Fact]
     public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker24And25ObjectViewTupleBody()
     {
@@ -5153,6 +7289,123 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.MarkerBytes["26"]);
     }
 
+    [Theory]
+    [InlineData("ff 00 00 00 00 00 00 00 00 c2 1e 00 00 4c 0a 00")]
+    [InlineData("ff 00 00 00 00 00 00 00 00 cf 1e 00 00 4c 0a 00")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker24And26AltObjectViewTupleBody(
+        string bodySuffixHex)
+    {
+        Protocol03ObjectViewSample[] marker24Samples = DetectSample("00 91 05 00 00 00 00 24", bodySuffixHex);
+        Protocol03ObjectViewSample[] marker26Samples = DetectSample("00 dc 05 00 00 00 00 26", bodySuffixHex);
+
+        AssertConsumedBoundary(marker24Samples);
+        AssertConsumedBoundary(marker26Samples);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-24-26-alt-object-view-57.txt",
+            2,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { marker24Samples[0], marker26Samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("02 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(2, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(2, tupleBody.HeaderPrefixes["28 ff 01 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 91 05 00 00 00 00 24"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 dc 05 00 00 00 00 26"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-24-26-alt object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(2, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["24"]);
+        Assert.Equal(1, parserAction.MarkerBytes["26"]);
+
+        static Protocol03ObjectViewSample[] DetectSample(string postPrefixLeadHex, string bodySuffixHex)
+        {
+            byte[] body = Enumerable.Repeat((byte)0x00, 6)
+                .Concat(new byte[] { 0xff, 0x00 })
+                .Concat(Enumerable.Repeat((byte)0x00, 33))
+                .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+                .ToArray();
+            var bytes = new List<byte>
+            {
+                0x02, 0x03,
+                0x01, 0x00, 0x02, 0x0c
+            };
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+            bytes.Add(0x03);
+            bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+            bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+            bytes.AddRange(body);
+            bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 01 00 00 00 00 00"));
+
+            return PacketResearcher.DetectProtocol03ObjectViews(bytes, 568, "server").ToArray();
+        }
+
+        static void AssertConsumedBoundary(Protocol03ObjectViewSample[] samples)
+        {
+            const int expectedPayloadBytes = 17 + 55 + 57;
+            Assert.Equal(2, samples.Length);
+            Assert.True(samples[0].Complete);
+            Assert.Equal(2, samples[0].ParsedUpdateCount);
+            Assert.Equal(0, samples[0].UnparsedBytes);
+            Assert.Collection(
+                samples[0].Segments,
+                segment =>
+                {
+                    Assert.Equal("0c", segment.Selector);
+                    Assert.Equal("position xyz + flag", segment.Classification);
+                    Assert.Equal(13, segment.PayloadBytes);
+                    Assert.True(segment.IsKnownLength);
+                },
+                segment =>
+                {
+                    Assert.Equal("03", segment.Selector);
+                    Assert.Equal("mode 06 guarded 57-byte marker-24/26 alternate object-view tuple body", segment.Classification);
+                    Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                    Assert.True(segment.IsKnownLength);
+                });
+            Assert.True(samples[1].Complete);
+            Assert.Equal(0xff28, samples[1].ViewId);
+            Assert.Equal("single state marker update", samples[1].Classification);
+
+            Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+            Assert.Equal("test guarded mode 06 57-byte marker-24-26-alt object-view tuple body", boundary.ParserAction);
+            Assert.Equal("03", boundary.Selector);
+            Assert.Equal(17, boundary.Offset);
+            Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+            Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+            Assert.Equal(17, boundary.TailStartOffset);
+            Assert.Equal(112, boundary.TailBoundaryOffset);
+            Assert.Equal(57, boundary.PostTupleBodyBytes);
+            Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+            Assert.Equal(6, boundary.FirstNonZeroOffset);
+            Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+            Assert.Equal("28 ff 01 00 00 00 00 00", boundary.BoundaryHeaderHex);
+            Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+        }
+    }
+
     [Fact]
     public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker29And2aObjectViewTupleBody()
     {
@@ -5251,6 +7504,112 @@ public class PacketResearcherTests
         Assert.Equal("test guarded mode 06 57-byte marker-29-2a object-view tuple body", parserAction.ParserAction);
         Assert.Equal(1, parserAction.BodyByteLengths["57"]);
         Assert.Equal(1, parserAction.MarkerBytes["2a"]);
+    }
+
+    [Theory]
+    [InlineData("00 66 08 00 00 00 00 29", "29", "28 ff 01 00 00 00 00 00", "single state marker update")]
+    [InlineData("00 98 08 00 00 00 00 2a", "2a", "28 ff 02 00 00 00 00 00", "state marker/object update candidate")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker29And2aAltObjectViewTupleBody(
+        string postPrefixLeadHex,
+        string expectedMarkerByte,
+        string boundaryHeaderHex,
+        string expectedBoundaryClassification)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 da 1e 00 00 4c 0a 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 558, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-29/2a alternate object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(expectedBoundaryClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-29-2a-alt object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(expectedBoundaryClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-29-2a-alt-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 da 1e 00 00 4c 0a 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[expectedBoundaryClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-29-2a-alt object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes[expectedMarkerByte]);
     }
 
     [Fact]
@@ -6050,6 +8409,106 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.BodyByteLengths["57"]);
     }
 
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker1aObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 78 05 00 00 00 00 1a"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 01 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 568, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-1a object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal("single state marker update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-1a object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("28 ff 01 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-1a-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 01 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 78 05 00 00 00 00 1a"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-1a object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["1a"]);
+    }
+
     [Theory]
     [InlineData("ff 00 00 00 00 00 00 00 00 d2 1e 00 00 1d 0a 00")]
     [InlineData("ff 00 00 00 00 00 00 00 ff 00 00 00 00 1d 0a 00")]
@@ -6251,6 +8710,141 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker1fAnd1eAltObjectViewTupleBody()
+    {
+        Protocol03ObjectViewSample[] marker1fSamples = DetectSample(
+            "00 39 03 00 00 00 00 1f",
+            "28 ff 02 00 00 00 00 00");
+        Protocol03ObjectViewSample[] marker1eSamples = DetectSample(
+            "00 20 03 00 00 00 00 1e",
+            "28 ff 01 00 00 00 00 00");
+
+        AssertConsumedBoundary(
+            marker1fSamples,
+            "test guarded mode 06 57-byte marker-1f object-view tuple body",
+            "mode 06 guarded 57-byte marker-1f object-view tuple body",
+            "state marker/object update candidate",
+            "28 ff 02 00 00 00 00 00");
+        AssertConsumedBoundary(
+            marker1eSamples,
+            "test guarded mode 06 57-byte marker-1f-1e-alt object-view tuple body",
+            "mode 06 guarded 57-byte marker-1f/1e alternate object-view tuple body",
+            "single state marker update",
+            "28 ff 01 00 00 00 00 00");
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-1f-1e-alt-object-view-57.txt",
+            2,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { marker1fSamples[0], marker1eSamples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 cb 1e 00 00 4c 0a 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 01 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 39 03 00 00 00 00 1f"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 20 03 00 00 00 00 1e"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-1f-1e-alt object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(2, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["1f"]);
+        Assert.Equal(1, parserAction.MarkerBytes["1e"]);
+
+        static Protocol03ObjectViewSample[] DetectSample(string postPrefixLeadHex, string boundaryHeaderHex)
+        {
+            byte[] body = Enumerable.Repeat((byte)0x00, 6)
+                .Concat(new byte[] { 0xff, 0x00 })
+                .Concat(Enumerable.Repeat((byte)0x00, 33))
+                .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 cb 1e 00 00 4c 0a 00"))
+                .ToArray();
+            var bytes = new List<byte>
+            {
+                0x02, 0x03,
+                0x01, 0x00, 0x02, 0x0c
+            };
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+            bytes.Add(0x03);
+            bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+            bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+            bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+            bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+            bytes.AddRange(body);
+            bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+            return PacketResearcher.DetectProtocol03ObjectViews(bytes, 567, "server").ToArray();
+        }
+
+        static void AssertConsumedBoundary(
+            Protocol03ObjectViewSample[] samples,
+            string expectedParserAction,
+            string expectedSegmentClassification,
+            string expectedBoundaryClassification,
+            string expectedBoundaryHeaderHex)
+        {
+            const int expectedPayloadBytes = 17 + 55 + 57;
+            Assert.Equal(2, samples.Length);
+            Assert.True(samples[0].Complete);
+            Assert.Equal(2, samples[0].ParsedUpdateCount);
+            Assert.Equal(0, samples[0].UnparsedBytes);
+            Assert.Collection(
+                samples[0].Segments,
+                segment =>
+                {
+                    Assert.Equal("0c", segment.Selector);
+                    Assert.Equal("position xyz + flag", segment.Classification);
+                    Assert.Equal(13, segment.PayloadBytes);
+                    Assert.True(segment.IsKnownLength);
+                },
+                segment =>
+                {
+                    Assert.Equal("03", segment.Selector);
+                    Assert.Equal(expectedSegmentClassification, segment.Classification);
+                    Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                    Assert.True(segment.IsKnownLength);
+                });
+            Assert.True(samples[1].Complete);
+            Assert.Equal(0xff28, samples[1].ViewId);
+            Assert.Equal(expectedBoundaryClassification, samples[1].Classification);
+
+            Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+            Assert.Equal(expectedParserAction, boundary.ParserAction);
+            Assert.Equal("03", boundary.Selector);
+            Assert.Equal(17, boundary.Offset);
+            Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+            Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+            Assert.Equal(17, boundary.TailStartOffset);
+            Assert.Equal(112, boundary.TailBoundaryOffset);
+            Assert.Equal(57, boundary.PostTupleBodyBytes);
+            Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+            Assert.Equal(6, boundary.FirstNonZeroOffset);
+            Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+            Assert.Equal(expectedBoundaryHeaderHex, boundary.BoundaryHeaderHex);
+            Assert.Equal(expectedBoundaryClassification, boundary.BoundaryHeaderClassification);
+        }
+    }
+
+    [Fact]
     public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker24ObjectViewTupleBody()
     {
         byte[] body = Enumerable.Repeat((byte)0x00, 6)
@@ -6446,6 +9040,114 @@ public class PacketResearcherTests
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
         Assert.Equal("test guarded mode 06 57-byte marker-33 object-view tuple body", parserAction.ParserAction);
         Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+    }
+
+    [Theory]
+    [InlineData(
+        "00 be 0a 00 00 00 00 35",
+        "ff 00 00 00 00 00 00 00 00 00 00 00 00 03 08 00")]
+    [InlineData(
+        "00 eb 0f 00 00 00 00 35",
+        "ff 00 00 00 00 00 00 00 00 1f ba 00 00 a1 07 00")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker35AltObjectViewTupleBody(
+        string postPrefixLeadHex,
+        string bodySuffixHex)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 02 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 65355, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-35-alt object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-35-alt object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("28 ff 02 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-35-alt-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-35-alt object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["35"]);
     }
 
     [Fact]
@@ -6824,6 +9526,106 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.MarkerBytes["19"]);
     }
 
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker1dAltObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 d2 1e 00 00 1d 0a 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 07 03 00 00 00 00 1d"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 01 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 569, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-1d alternate object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal("single state marker update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-1d-alt object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("28 ff 01 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-1d-alt-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("03 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 d2 1e 00 00 1d 0a 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 01 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 07 03 00 00 00 00 1d"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-1d-alt object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["1d"]);
+    }
+
     [Theory]
     [InlineData("00 9e 07 00 00 00 00 25", "28 ff 01 00 00 00 00 00", "single state marker update")]
     [InlineData("00 6c 07 00 00 00 00 24", "28 ff 02 00 00 00 00 00", "state marker/object update candidate")]
@@ -6928,6 +9730,796 @@ public class PacketResearcherTests
         Assert.Equal(1, parserAction.BodyByteLengths["57"]);
     }
 
+    [Theory]
+    [InlineData("ff 00 00 00 00 00 00 00 00 6a ba 00 00 4c 0a 00", "28 ff 01 00 00 00 00 00", "single state marker update")]
+    [InlineData("ff 00 00 00 00 00 00 00 00 57 ba 00 00 cd 08 00", "28 ff 01 00 00 00 00 00", "single state marker update")]
+    [InlineData("ff 00 00 00 00 00 00 00 00 6a ba 00 00 cd 08 00", "28 ff 01 00 00 00 00 00", "single state marker update")]
+    [InlineData("ff 00 00 00 00 00 00 00 00 6a ba 00 00 eb 09 00", "28 ff 02 00 00 00 00 00", "state marker/object update candidate")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker4fObjectViewTupleBody(
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 d2 0f 00 00 00 00 4f"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 565, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-4f object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-4f object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-4f-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 d2 0f 00 00 00 00 4f"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-4f object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["4f"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker64ObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 5f b9 00 00 4c 0a 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 01"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 ec 13 00 00 00 00 64"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 02 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 565, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-64 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-64 object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("28 ff 02 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-64-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 01", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 5f b9 00 00 4c 0a 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 ec 13 00 00 00 00 64"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-64 object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["64"]);
+    }
+
+    [Theory]
+    [InlineData(
+        "02 ff",
+        "00 08 07 00 00 00 00 2e",
+        "ff 00 00 00 00 00 00 00 00 63 9a 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-2e",
+        "2e")]
+    [InlineData(
+        "03 ff",
+        "00 b0 04 00 00 00 00 2e",
+        "ff 00 00 00 00 00 00 00 00 63 9a 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-2e-alt",
+        "2e")]
+    [InlineData(
+        "01 ff",
+        "00 60 09 00 00 00 00 2e",
+        "ff 00 00 00 00 00 00 00 00 63 9a 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-2e-60",
+        "2e")]
+    [InlineData(
+        "03 ff",
+        "00 c9 04 00 00 00 00 2f",
+        "ff 00 00 00 00 00 00 00 00 c4 1e 00 00 4c 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-2f",
+        "2f")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker2e2fAnd2eAltObjectViewTupleBody(
+        string prefixHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification,
+        string markerName,
+        string markerByte)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 566, "server").ToArray();
+
+        string expectedParserAction = $"test guarded mode 06 57-byte {markerName} object-view tuple body";
+        string expectedClassification = $"mode 06 guarded 57-byte {markerName} object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal(expectedClassification, segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            $"mode06-guarded-{markerName}-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes[markerByte]);
+    }
+
+    [Theory]
+    [InlineData(
+        "01 ff",
+        "00 60 09 00 00 00 00 2e",
+        "ff 00 00 00 00 00 00 00 00 63 9a 00 00 11 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "2e")]
+    [InlineData(
+        "01 ff",
+        "00 40 06 00 00 00 00 1e",
+        "ff 00 00 00 00 00 00 00 00 c1 09 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "1e")]
+    [InlineData(
+        "01 ff",
+        "00 e8 03 00 00 00 00 12",
+        "ff 00 00 00 00 00 00 00 00 ef 1a 00 00 4c 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "12")]
+    [InlineData(
+        "01 ff",
+        "00 f0 0a 00 00 00 00 36",
+        "ff 00 00 00 00 00 00 00 00 fb b9 00 00 a1 07 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "36")]
+    [InlineData(
+        "03 ff",
+        "00 07 03 00 00 00 00 1d",
+        "ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "1d")]
+    [InlineData(
+        "03 ff",
+        "00 20 03 00 00 00 00 1e",
+        "ff 00 00 00 00 00 00 00 ff 00 00 00 00 b9 07 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "1e")]
+    [InlineData(
+        "03 ff",
+        "00 07 03 00 00 00 00 1d",
+        "ff 00 00 00 00 00 00 00 ff d2 1e 00 00 1d 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "1d")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteResidualExactObjectViewTupleBody(
+        string prefixHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification,
+        string markerByte)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 84097, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 57-byte residual exact object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte residual exact object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-residual-exact-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes[markerByte]);
+    }
+
+    [Theory]
+    [InlineData(
+        "01 ff",
+        "00 8c 0a 00 00 00 00 34",
+        "ff 00 00 00 00 00 00 00 00 22 b6 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-34",
+        "34")]
+    [InlineData(
+        "02 ff",
+        "00 e9 07 00 00 00 00 34",
+        "ff 00 00 00 00 00 00 00 00 00 00 00 00 9c 05 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-34-9c",
+        "34")]
+    [InlineData(
+        "03 ff",
+        "00 46 05 00 00 00 00 34",
+        "ff 00 00 00 00 00 00 00 00 00 00 00 00 9c 05 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-34-9c",
+        "34")]
+    [InlineData(
+        "01 ff",
+        "00 8c 0a 00 00 00 00 34",
+        "ff 00 00 00 00 00 00 00 00 fd b9 00 00 f4 07 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-34-alt",
+        "34")]
+    [InlineData(
+        "03 ff",
+        "00 46 05 00 00 00 00 34",
+        "ff 00 00 00 00 00 00 00 00 00 00 00 00 0d 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-34-alt",
+        "34")]
+    [InlineData(
+        "03 ff",
+        "00 fb 04 00 00 00 00 31",
+        "ff 00 00 00 00 00 00 00 00 d6 1e 00 00 4c 0a 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-31",
+        "31")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker34And31ObjectViewTupleBody(
+        string prefixHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification,
+        string markerName,
+        string markerByte)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 567, "server").ToArray();
+
+        string expectedParserAction = $"test guarded mode 06 57-byte {markerName} object-view tuple body";
+        string expectedClassification = $"mode 06 guarded 57-byte {markerName} object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal(expectedClassification, segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            $"mode06-guarded-{markerName}-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes[markerByte]);
+    }
+
+    [Theory]
+    [InlineData(
+        "02 ff",
+        "00 27 06 00 00 00 00 28",
+        "ff 00 00 00 00 00 00 00 00 99 95 00 00 4c 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-28")]
+    [InlineData(
+        "01 ff",
+        "00 34 08 00 00 00 00 28",
+        "ff 00 00 00 00 00 00 00 00 99 95 00 00 4c 0a 00",
+        "28 ff 02 00 00 00 00 00",
+        "state marker/object update candidate",
+        "marker-28-alt")]
+    [InlineData(
+        "02 ff",
+        "00 27 06 00 00 00 00 28",
+        "ff 00 00 00 00 00 00 00 00 99 95 00 00 fa 09 00",
+        "28 ff 01 00 00 00 00 00",
+        "single state marker update",
+        "marker-28-alt")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker28ObjectViewTupleBody(
+        string prefixHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex,
+        string boundaryHeaderClassification,
+        string markerName)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(bodySuffixHex))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 568, "server").ToArray();
+
+        string expectedParserAction = $"test guarded mode 06 57-byte {markerName} object-view tuple body";
+        string expectedClassification = $"mode 06 guarded 57-byte {markerName} object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal(expectedClassification, segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal(boundaryHeaderClassification, samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal(boundaryHeaderClassification, boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            $"mode06-guarded-{markerName}-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(bodySuffixHex, tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications[boundaryHeaderClassification]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["28"]);
+    }
+
     [Fact]
     public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker1dB9ObjectViewTupleBody()
     {
@@ -7025,6 +10617,106 @@ public class PacketResearcherTests
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
         Assert.Equal("test guarded mode 06 57-byte marker-1d-b9 object-view tuple body", parserAction.ParserAction);
         Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0657ByteMarker1eB9ObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes("ff 00 00 00 00 00 00 00 00 c1 09 00 00 b9 07 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 b0 04 00 00 00 00 1e"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("28 ff 02 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 569, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 55 + 57;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 57-byte marker-1e-b9 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xff28, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 57-byte marker-1e-b9 object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(112, boundary.TailBoundaryOffset);
+        Assert.Equal(57, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("28 ff 02 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-1e-b9-object-view-57.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("02 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(57, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("ff 00 00 00 00 00 00 00 00 c1 09 00 00 b9 07 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["28 ff 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 b0 04 00 00 00 00 1e"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 57-byte marker-1e-b9 object-view tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["57"]);
+        Assert.Equal(1, parserAction.MarkerBytes["1e"]);
     }
 
     [Fact]
@@ -7127,10 +10819,20 @@ public class PacketResearcherTests
     }
 
     [Theory]
-    [InlineData("00 b8 01 00 28 ff 15 00", "01 00 98 05 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-b8-15 object-view tuple body", "test guarded mode 06 53-byte marker-34-b8-15 object-view tuple body")]
-    [InlineData("00 62 01 00 28 ff 0f 00", "01 00 9a 04 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-62-0f object-view tuple body", "test guarded mode 06 53-byte marker-34-62-0f object-view tuple body")]
-    [InlineData("00 b8 01 00 28 ff 1c 00", "01 00 6a 04 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-b8-1c object-view tuple body", "test guarded mode 06 53-byte marker-34-b8-1c object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 b8 01 00 28 ff 15 00", "01 00 98 05 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-b8-15 object-view tuple body", "test guarded mode 06 53-byte marker-34-b8-15 object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 62 01 00 28 ff 0f 00", "01 00 9a 04 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-62-0f object-view tuple body", "test guarded mode 06 53-byte marker-34-62-0f object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 b8 01 00 28 ff 1c 00", "01 00 6a 04 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-b8-1c object-view tuple body", "test guarded mode 06 53-byte marker-34-b8-1c object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 62 01 00 28 ff 08 00", "01 00 17 07 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-62-alt object-view tuple body", "test guarded mode 06 53-byte marker-34-62-alt object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 62 01 00 28 ff 15 00", "01 00 9e 03 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-62-alt object-view tuple body", "test guarded mode 06 53-byte marker-34-62-alt object-view tuple body")]
+    [InlineData("02 ff", "00 e9 07 00 00 00 00 34", "00 62 01 00 28 ff 16 00", "01 00 b8 07 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-62-alt object-view tuple body", "test guarded mode 06 53-byte marker-34-62-alt object-view tuple body")]
+    [InlineData("03 ff", "00 46 05 00 00 00 00 34", "00 62 01 00 28 ff 01 00", "01 00 46 05 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-46 object-view tuple body", "test guarded mode 06 53-byte marker-34-46 object-view tuple body")]
+    [InlineData("03 ff", "00 46 05 00 00 00 00 34", "00 b7 01 00 28 ff 0b 00", "01 00 67 01 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-46 object-view tuple body", "test guarded mode 06 53-byte marker-34-46 object-view tuple body")]
+    [InlineData("03 ff", "00 46 05 00 00 00 00 34", "00 b7 01 00 28 ff 0b 00", "01 00 c6 01 ff 00 00 00 00 00 00 00 00 00 00 00", "mode 06 guarded 53-byte marker-34-46 object-view tuple body", "test guarded mode 06 53-byte marker-34-46 object-view tuple body")]
+    [InlineData("02 ff", "00 78 07 00 00 00 00 31", "00 c1 01 00 28 ff 03 00", "01 00 8f 05 ff 00 00 00 00 00 00 00 00 db 1e 00", "mode 06 guarded 53-byte marker-31 object-view tuple body", "test guarded mode 06 53-byte marker-31 object-view tuple body")]
+    [InlineData("02 ff", "00 78 07 00 00 00 00 31", "00 c1 01 00 28 ff 07 00", "01 00 c0 03 ff 00 00 00 00 00 00 00 00 db 1e 00", "mode 06 guarded 53-byte marker-31 object-view tuple body", "test guarded mode 06 53-byte marker-31 object-view tuple body")]
     public void DetectProtocol03ObjectViews_BoundsGuardedMode0653ByteMarker34ObjectViewTupleBody(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
         string boundaryHeaderHex,
         string bodySuffixHex,
         string expectedClassification,
@@ -7151,9 +10853,9 @@ public class PacketResearcherTests
         bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
         bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
         bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
-        bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixFirstNonZeroFieldHex));
         bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
-        bytes.AddRange(PacketResearcher.ParseHexBytes("00 e9 07 00 00 00 00 34"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
         bytes.AddRange(body);
         bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
 
@@ -7214,7 +10916,7 @@ public class PacketResearcherTests
         Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
         Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
-        Assert.Equal("02 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal(prefixFirstNonZeroFieldHex, tupleBody.PrefixFirstNonZeroFieldHex);
         Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
         Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
         Assert.Equal(53, tupleBody.PostTupleBodyBytes);
@@ -7223,7 +10925,7 @@ public class PacketResearcherTests
         Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
         Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
         Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
-        Assert.Equal(1, tupleBody.PostPrefixLeads["00 e9 07 00 00 00 00 34"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
 
         Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
@@ -7232,7 +10934,784 @@ public class PacketResearcherTests
     }
 
     [Fact]
-    public void DetectProtocol03ObjectViews_QueuesMode06Marker34LongBodyEvidenceOnly()
+    public void BuildProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries_ExportsHeldLongBodyBytes()
+    {
+        byte[] suffix = PacketResearcher.ParseHexBytes("00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00")
+            .ToArray();
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 86))
+            .Concat(suffix)
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 e9 07 00 00 00 00 34"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 7c 01 00 10 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 544, "server").ToArray();
+
+        Assert.NotEmpty(samples);
+        PacketDumpFileSummary dump = new(
+            "mode06-marker-34-held-long-body.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal(110, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("02 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("00 e9 07 00 00 00 00 34", Assert.Single(tupleBody.PostPrefixLeads).Key);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("hold mode 06 marker-34 long object-view tuple body as evidence only", parserAction.ParserAction);
+        Assert.Equal("variable-length marker-34 object-view body needs body-length rule", parserAction.ActionReason);
+
+        Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary fixture =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries(new[] { dump }));
+        Assert.Equal(parserAction.ParserAction, fixture.ParserAction);
+        Assert.Equal(parserAction.ActionReason, fixture.ActionReason);
+        Assert.Equal(110, fixture.BodyBytes);
+        Assert.Equal(PacketResearcher.FormatHeader(body), fixture.BodyHex);
+        Assert.Equal("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", fixture.BodyPrefixHex);
+        Assert.Equal("00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00", fixture.BodySuffixHex);
+        Assert.Equal(6, fixture.FirstNonZeroOffset);
+        Assert.Equal("ff 00", fixture.FirstNonZeroFieldHex);
+        Assert.Contains("6:ff", fixture.BodyNonZeroOffsets, StringComparison.Ordinal);
+        Assert.Contains("96:04", fixture.BodyNonZeroOffsets, StringComparison.Ordinal);
+        Assert.Equal(17, fixture.TailStartOffset);
+        Assert.Equal(33, fixture.ContinuationCutOffset);
+        Assert.Equal(72, fixture.BodyOffset);
+        Assert.Equal(182, fixture.BoundaryCutOffset);
+        Assert.Equal(149, fixture.PostContinuationBoundaryOffset);
+        Assert.Equal("unclassified object-view tuple", fixture.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", fixture.PostPrefixDisposition);
+        Assert.Equal("single state marker update", fixture.BoundaryHeaderClassification);
+        Assert.Equal("00 7c 01 00 10 00 00 00", fixture.BoundaryHeaderHex);
+
+        byte[] interiorBody = Enumerable.Repeat((byte)0x00, 160).ToArray();
+        interiorBody[6] = 0xff;
+        interiorBody[37] = 0x01;
+        interiorBody[39] = 0xd4;
+        interiorBody[40] = 0x06;
+        interiorBody[41] = 0xff;
+        byte[] knownFxWindow = PacketResearcher.ParseHexBytes("30 04 00 28 ff 14").ToArray();
+        Array.Copy(knownFxWindow, 0, interiorBody, 54, knownFxWindow.Length);
+        interiorBody[71] = 0x76;
+        interiorBody[72] = 0x0c;
+        interiorBody[74] = 0x58;
+        interiorBody[75] = 0x37;
+        interiorBody[76] = 0x08;
+        interiorBody[79] = 0x1f;
+        interiorBody[80] = 0x06;
+        interiorBody[81] = 0x08;
+        interiorBody[88] = 0x22;
+        byte[] embeddedMovementWindow = PacketResearcher.ParseHexBytes("0e 00 06 0c 13 51 10 3b c7 00 a7 8c 42 00 42 f4 c6").ToArray();
+        Array.Copy(embeddedMovementWindow, 0, interiorBody, 94, embeddedMovementWindow.Length);
+        interiorBody[148] = 0x00;
+        interiorBody[149] = 0x02;
+        interiorBody[150] = 0xff;
+        Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary interiorFixture = fixture with
+        {
+            BodyBytes = interiorBody.Length,
+            BodyHex = PacketResearcher.FormatHeader(interiorBody),
+            BodyPrefixHex = PacketResearcher.FormatHeader(interiorBody.Take(16)),
+            BodySuffixHex = PacketResearcher.FormatHeader(interiorBody.Skip(interiorBody.Length - 16)),
+            BoundaryHeaderClassification = "attribute/effect bundle",
+            BoundaryHeaderHex = "fb 02 04 80 b3 d5 04 08",
+            InnerSelectorHex = "0c",
+            OuterSelectorHex = "10",
+            Position = "-47802.75,36.102,-31265"
+        };
+        Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary[] offsetSummaries =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyOffsetSummaries(new[] { fixture, interiorFixture })
+                .ToArray();
+        Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary offset6 =
+            Assert.Single(offsetSummaries, summary => summary.BodyOffset == 6);
+        Assert.Equal("stable nonzero byte", offset6.OffsetDisposition);
+        Assert.Equal(2, offset6.PresentFixtureCount);
+        Assert.Equal(2, offset6.NonZeroFixtureCount);
+        Assert.Equal(2, offset6.ByteValues["ff"]);
+        Assert.Equal(2, offset6.BodyByteLengths.Count);
+        Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary offset96 =
+            Assert.Single(offsetSummaries, summary => summary.BodyOffset == 96);
+        Assert.Equal("present nonzero variable byte", offset96.OffsetDisposition);
+        Assert.Equal(1, offset96.ByteValues["04"]);
+        Assert.Equal(1, offset96.ByteValues["06"]);
+
+        Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary[] interiorWindows =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries(new[] { fixture, interiorFixture })
+                .ToArray();
+        Assert.Collection(
+            interiorWindows,
+            window =>
+            {
+                Assert.Equal("embedded mode 06 movement window", window.WindowDisposition);
+                Assert.Equal(95, window.BodyOffset);
+                Assert.Equal("00 06 0c", window.WindowHex);
+                Assert.Equal(1, window.FixtureCount);
+                Assert.Equal(1, window.BodyByteLengths["160"]);
+            },
+            window =>
+            {
+                Assert.Equal("embedded marker-34 prefix-field lead", window.WindowDisposition);
+                Assert.Equal(148, window.BodyOffset);
+                Assert.Equal("00 02 ff", window.WindowHex);
+                Assert.Equal(1, window.FixtureCount);
+                Assert.Equal(1, window.BoundaryHeaderClassifications["attribute/effect bundle"]);
+            });
+
+        FxDefinition fx = new("30040028", "28000430", "FX_CHARACTER_HEALTH_DRAIN", "fxlisthex.txt", 20);
+        Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary knownFx =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries(new[] { fixture, interiorFixture }, new[] { fx }));
+        Assert.Equal(54, knownFx.BodyOffset);
+        Assert.Equal("30 04 00 28", knownFx.FxHex);
+        Assert.Equal("FX_CHARACTER_HEALTH_DRAIN", knownFx.FxName);
+        Assert.Equal(1, knownFx.FixtureCount);
+        Assert.Equal(1, knownFx.FollowupBytes["ff 14"]);
+        Assert.Equal(1, knownFx.BodyByteLengths["160"]);
+        Assert.Equal(1, knownFx.BoundaryHeaderClassifications["attribute/effect bundle"]);
+
+        byte[] nestedBody = Enumerable.Repeat((byte)0x00, 265).ToArray();
+        byte[] nestedPrefix = PacketResearcher.ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        Array.Copy(nestedPrefix, 0, nestedBody, 148, nestedPrefix.Length);
+        int nestedBodyOffset = 148 + nestedPrefix.Length;
+        nestedBody[nestedBodyOffset + 6] = 0xff;
+        nestedBody[nestedBodyOffset + 37] = 0x01;
+        nestedBody[nestedBodyOffset + 39] = 0x83;
+        nestedBody[nestedBodyOffset + 40] = 0x07;
+        nestedBody[nestedBodyOffset + 41] = 0xff;
+        Array.Copy(knownFxWindow, 0, nestedBody, nestedBodyOffset + 54, knownFxWindow.Length);
+        nestedBody[nestedBodyOffset + 71] = 0x76;
+        nestedBody[nestedBodyOffset + 72] = 0x0c;
+        nestedBody[nestedBodyOffset + 74] = 0x58;
+        nestedBody[nestedBodyOffset + 75] = 0x37;
+        nestedBody[nestedBodyOffset + 76] = 0x08;
+        nestedBody[nestedBodyOffset + 79] = 0x1f;
+        nestedBody[nestedBodyOffset + 80] = 0x06;
+        nestedBody[nestedBodyOffset + 81] = 0x08;
+        nestedBody[nestedBodyOffset + 88] = 0x22;
+        Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary nestedFixture = fixture with
+        {
+            BodyBytes = nestedBody.Length,
+            BodyHex = PacketResearcher.FormatHeader(nestedBody),
+            BodyPrefixHex = PacketResearcher.FormatHeader(nestedBody.Take(16)),
+            BodySuffixHex = PacketResearcher.FormatHeader(nestedBody.Skip(nestedBody.Length - 16)),
+            BoundaryHeaderClassification = "attribute/effect bundle",
+            BoundaryHeaderHex = "fb 02 04 80 b3 d5 04 08",
+            InnerSelectorHex = "0c",
+            OuterSelectorHex = "10",
+            Position = "-47802.75,36.102,-31265"
+        };
+        Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary nestedReplay =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries(new[] { nestedFixture }, new[] { fx }));
+        Assert.Equal("nested marker-34 body replay with stable scaffold", nestedReplay.ReplayDisposition);
+        Assert.Equal(148, nestedReplay.PrefixBodyOffset);
+        Assert.Equal(nestedBodyOffset, nestedReplay.NestedBodyOffset);
+        Assert.Equal(99, nestedReplay.AvailableNestedBodyBytes);
+        Assert.Equal(PacketResearcher.FormatHeader(nestedPrefix), nestedReplay.PrefixHex);
+        Assert.Equal("01 00 83 07 ff", nestedReplay.NestedTagWindowHex);
+        Assert.Equal("30 04 00 28", nestedReplay.NestedKnownFxHex);
+        Assert.Equal("FX_CHARACTER_HEALTH_DRAIN", nestedReplay.NestedKnownFxName);
+        Assert.Equal("ff 14", nestedReplay.NestedKnownFxFollowupBytes);
+        Assert.Equal(12, nestedReplay.StableOffsetMatchCount);
+        Assert.Equal(12, nestedReplay.StableOffsetProbeCount);
+        Assert.Contains("88:22", nestedReplay.MatchedStableOffsets, StringComparison.Ordinal);
+
+        Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary[] fxFieldRoles =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries(new[] { interiorFixture, nestedFixture }, new[] { fx })
+                .ToArray();
+        Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary outerFxRole =
+            Assert.Single(fxFieldRoles, summary => summary.Marker34BodyScope == "outer marker-34 body");
+        Assert.Equal("marker-34 effect field at relative offset 54", outerFxRole.FieldDisposition);
+        Assert.Equal(0, outerFxRole.Marker34BodyOffset);
+        Assert.Equal(54, outerFxRole.BodyOffset);
+        Assert.Equal(54, outerFxRole.Marker34RelativeOffset);
+        Assert.Equal("30 04 00 28", outerFxRole.FxHex);
+        Assert.Equal("FX_CHARACTER_HEALTH_DRAIN", outerFxRole.FxName);
+        Assert.Equal(1, outerFxRole.FollowupBytes["ff 14"]);
+        Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary nestedFxRole =
+            Assert.Single(fxFieldRoles, summary => summary.Marker34BodyScope == "nested marker-34 replay body");
+        Assert.Equal(nestedBodyOffset, nestedFxRole.Marker34BodyOffset);
+        Assert.Equal(nestedBodyOffset + 54, nestedFxRole.BodyOffset);
+        Assert.Equal(54, nestedFxRole.Marker34RelativeOffset);
+        Assert.Equal("30 04 00 28", nestedFxRole.FxHex);
+        Assert.Equal(1, nestedFxRole.FollowupBytes["ff 14"]);
+
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary[] structuralRoles =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries(new[] { interiorFixture, nestedFixture }, new[] { fx })
+                .ToArray();
+        Assert.Equal(8, structuralRoles.Length);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary outerMarkerLead =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "outer marker-34 body" &&
+                summary.Marker34RelativeOffset == 6);
+        Assert.Equal("marker-34 marker lead", outerMarkerLead.FieldDisposition);
+        Assert.Equal(6, outerMarkerLead.BodyOffset);
+        Assert.Equal(2, outerMarkerLead.WindowBytes);
+        Assert.Equal(1, outerMarkerLead.WindowHexes["ff 00"]);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary outerTag =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "outer marker-34 body" &&
+                summary.Marker34RelativeOffset == 37);
+        Assert.Equal(1, outerTag.Interpretations["tag-le 1748"]);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary outerScaffold =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "outer marker-34 body" &&
+                summary.Marker34RelativeOffset == 71);
+        Assert.Equal("marker-34 stable scaffold field", outerScaffold.FieldDisposition);
+        Assert.Equal(18, outerScaffold.WindowBytes);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary nestedMarkerLead =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "nested marker-34 replay body" &&
+                summary.Marker34RelativeOffset == 6);
+        Assert.Equal(nestedBodyOffset + 6, nestedMarkerLead.BodyOffset);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary nestedTagRole =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "nested marker-34 replay body" &&
+                summary.Marker34RelativeOffset == 37);
+        Assert.Equal(nestedBodyOffset + 37, nestedTagRole.BodyOffset);
+        Assert.Equal(1, nestedTagRole.Interpretations["tag-le 1923"]);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary nestedFxRoleSummary =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "nested marker-34 replay body" &&
+                summary.Marker34RelativeOffset == 54);
+        Assert.Equal(nestedBodyOffset + 54, nestedFxRoleSummary.BodyOffset);
+        Assert.Equal(1, nestedFxRoleSummary.Interpretations["FX_CHARACTER_HEALTH_DRAIN"]);
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary nestedScaffoldRole =
+            Assert.Single(structuralRoles, summary =>
+                summary.Marker34BodyScope == "nested marker-34 replay body" &&
+                summary.Marker34RelativeOffset == 71);
+        Assert.Equal(nestedBodyOffset + 71, nestedScaffoldRole.BodyOffset);
+        Assert.Equal(1, nestedScaffoldRole.Interpretations["stable scaffold through marker byte 22"]);
+
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary[] fieldWindows =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries(new[] { interiorFixture, nestedFixture }, new[] { fx })
+                .ToArray();
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary fxWindow =
+            Assert.Single(fieldWindows, summary =>
+                summary.WindowDisposition == "known effect-style field window" &&
+                summary.BodyOffset == 54);
+        Assert.Equal(6, fxWindow.WindowBytes);
+        Assert.Equal(1, fxWindow.FixtureCount);
+        Assert.Equal(1, fxWindow.Interpretations["FX_CHARACTER_HEALTH_DRAIN"]);
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary movementWindow =
+            Assert.Single(fieldWindows, summary =>
+                summary.WindowDisposition == "embedded movement payload window" &&
+                summary.BodyOffset == 94);
+        Assert.Equal(17, movementWindow.WindowBytes);
+        Assert.Equal(1, movementWindow.Interpretations["mode 06 selector 0c"]);
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary replayPrefixWindow =
+            Assert.Single(fieldWindows, summary =>
+                summary.WindowDisposition == "nested marker-34 replay prefix" &&
+                summary.BodyOffset == 148);
+        Assert.Equal(nestedPrefix.Length, replayPrefixWindow.WindowBytes);
+        Assert.Equal(1, replayPrefixWindow.Interpretations["replay prefix starts nested marker-34 body"]);
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary nestedTagWindow =
+            Assert.Single(fieldWindows, summary =>
+                summary.WindowDisposition == "marker-34 tag window" &&
+                summary.BodyOffset == nestedBodyOffset + 37);
+        Assert.Equal(1, nestedTagWindow.Interpretations["tag-le 1923"]);
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary nestedScaffoldWindow =
+            Assert.Single(fieldWindows, summary =>
+                summary.WindowDisposition == "marker-34 stable scaffold window" &&
+                summary.BodyOffset == nestedBodyOffset + 71);
+        Assert.Equal(1, nestedScaffoldWindow.Interpretations["stable scaffold through marker byte 22"]);
+
+        Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary vectorSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries(new[] { interiorFixture }));
+        Assert.Equal("decoded marker-34 embedded movement vector", vectorSummary.MovementDisposition);
+        Assert.Equal(94, vectorSummary.LeadBodyOffset);
+        Assert.Equal(95, vectorSummary.MarkerBodyOffset);
+        Assert.Equal("0e", vectorSummary.LeadByteHex);
+        Assert.Equal("0c", vectorSummary.SelectorHex);
+        Assert.Equal(13, vectorSummary.InnerPayloadBytes);
+        Assert.Equal(1, vectorSummary.InnerPositionOffset);
+        Assert.Equal(99, vectorSummary.BodyPositionOffset);
+        Assert.Equal(1, vectorSummary.PrePositionBytes["13"]);
+        Assert.Equal(1, vectorSummary.PositionHexes["51 10 3b c7 00 a7 8c 42 00 42 f4 c6"]);
+        Assert.Equal(1, vectorSummary.DecodedPositions["-47888.32,70.326,-31265"]);
+        Assert.Equal(1, vectorSummary.OuterPositionRelations["near outer movement position"]);
+
+        Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary[] layoutSummaries =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyLayoutSummaries(new[] { interiorFixture, nestedFixture }, new[] { fx })
+                .ToArray();
+        Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary movementLayout =
+            Assert.Single(layoutSummaries, summary => summary.BodyBytes == 160);
+        Assert.Equal("marker-34 effect and embedded movement layout", movementLayout.LayoutDisposition);
+        Assert.Equal("1748", movementLayout.MarkerTagValue);
+        Assert.Equal("01 00 d4 06 ff", movementLayout.MarkerTagWindowHex);
+        Assert.Equal("30 04 00 28", movementLayout.MarkerFxHex);
+        Assert.Equal("FX_CHARACTER_HEALTH_DRAIN", movementLayout.MarkerFxName);
+        Assert.Equal("ff 14", movementLayout.MarkerFxFollowupBytes);
+        Assert.Equal("0c", movementLayout.EmbeddedMovementSelectorHex);
+        Assert.Equal("-47888.32,70.326,-31265", movementLayout.EmbeddedMovementPosition);
+        Assert.Equal("near outer movement position", movementLayout.EmbeddedMovementRelation);
+        Assert.Equal("92.157", movementLayout.EmbeddedMovementDistance);
+        Assert.Equal(-1, movementLayout.NestedReplayPrefixOffset);
+        Assert.Equal(-1, movementLayout.NestedMarker34BodyOffset);
+        Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary replayLayout =
+            Assert.Single(layoutSummaries, summary => summary.BodyBytes == 265);
+        Assert.Equal("marker-34 nested replay layout", replayLayout.LayoutDisposition);
+        Assert.Equal(148, replayLayout.NestedReplayPrefixOffset);
+        Assert.Equal(nestedBodyOffset, replayLayout.NestedMarker34BodyOffset);
+        Assert.Equal("1923", replayLayout.NestedTagValue);
+        Assert.Equal("01 00 83 07 ff", replayLayout.NestedTagWindowHex);
+        Assert.Equal("30 04 00 28", replayLayout.NestedFxHex);
+        Assert.Equal("FX_CHARACTER_HEALTH_DRAIN", replayLayout.NestedFxName);
+        Assert.Equal("ff 14", replayLayout.NestedFxFollowupBytes);
+        Assert.Equal("76 0c 00 58 37 08 00 00 1f 06 08 00 00 00 00 00 00 22", replayLayout.NestedScaffoldHex);
+        Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary[] readinessSummaries =
+            PacketResearcher.BuildProtocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries(layoutSummaries)
+                .ToArray();
+        Assert.Equal(2, readinessSummaries.Length);
+        Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary movementReadiness =
+            Assert.Single(readinessSummaries, summary =>
+                summary.ReadinessDisposition == "layout-ready marker-34 embedded movement parser candidate");
+        Assert.Equal("singleton layout still needs exact body-length/suffix guard", movementReadiness.PromotionBlocker);
+        Assert.Equal(1, movementReadiness.FixtureCount);
+        Assert.Equal(1, movementReadiness.BodyByteLengths["160"]);
+        Assert.Single(movementReadiness.BodySuffixes);
+        Assert.Equal(1, movementReadiness.PostPrefixLeads["00 e9 07 00 00 00 00 34"]);
+        Assert.Equal(1, movementReadiness.MarkerBytes["34"]);
+        Assert.Equal(1, movementReadiness.MarkerFxs["30 04 00 28 / FX_CHARACTER_HEALTH_DRAIN / ff 14"]);
+        Assert.Equal(1, movementReadiness.EmbeddedMovementSelectors["0c"]);
+        Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary replayReadiness =
+            Assert.Single(readinessSummaries, summary =>
+                summary.ReadinessDisposition == "layout-ready marker-34 nested replay parser candidate");
+        Assert.Equal(1, replayReadiness.NestedReplayOffsets["prefix 148; body 166"]);
+        Assert.Equal(1, replayReadiness.PostPrefixLeads["00 e9 07 00 00 00 00 34"]);
+        Assert.Equal(1, replayReadiness.MarkerBytes["34"]);
+
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            new[] { fx },
+            Array.Empty<GameObjectEntry>(),
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump })
+        {
+            Protocol03NestedMovementMode06Marker34LongBodyFixtureSummaries = new[] { fixture },
+            Protocol03NestedMovementMode06Marker34LongBodyOffsetSummaries = offsetSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries = interiorWindows,
+            Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries = new[] { knownFx },
+            Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries = fxFieldRoles,
+            Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries = structuralRoles,
+            Protocol03NestedMovementMode06Marker34LongBodyLayoutSummaries = layoutSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries = readinessSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries = new[] { nestedReplay },
+            Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries = fieldWindows,
+            Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries = new[] { vectorSummary }
+        };
+        string markdown = ReportWriter.ToMarkdown(report);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Fixtures", markdown);
+        Assert.Contains("| hold mode 06 marker-34 long object-view tuple body as evidence only | variable-length marker-34 object-view body needs body-length rule | 110 |", markdown);
+        Assert.Contains("tail 17; continuation 33; body 72; boundary 182; post-continuation 149", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Offset Scaffold", markdown);
+        Assert.Contains("| 6 | stable nonzero byte | 2 | 2 | ff (2) |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Interior Windows", markdown);
+        Assert.Contains("| embedded mode 06 movement window | 95 | `00 06 0c` | 1 | 160 (1) |", markdown);
+        Assert.Contains("| embedded marker-34 prefix-field lead | 148 | `00 02 ff` | 1 | 160 (1) |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Known FX Windows", markdown);
+        Assert.Contains("| 54 | `30 04 00 28` | FX_CHARACTER_HEALTH_DRAIN | 1 | ff 14 (1) |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body FX Field Roles", markdown);
+        Assert.Contains("| marker-34 effect field at relative offset 54 | outer marker-34 body @ 0 | 54 | 54 | `30 04 00 28` | FX_CHARACTER_HEALTH_DRAIN | 1 |", markdown);
+        Assert.Contains("| marker-34 effect field at relative offset 54 | nested marker-34 replay body @ 166 | 220 | 54 | `30 04 00 28` | FX_CHARACTER_HEALTH_DRAIN | 1 |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Structural Roles", markdown);
+        Assert.Contains("| marker-34 marker lead | outer marker-34 body @ 0 | 6 | 6 | 2 | 1 | ff 00 (1) |", markdown);
+        Assert.Contains("| marker-34 tag field | nested marker-34 replay body @ 166 | 203 | 37 | 5 | 1 | 01 00 83 07 ff (1) | tag-le 1923 (1) |", markdown);
+        Assert.Contains("| marker-34 stable scaffold field | nested marker-34 replay body @ 166 | 237 | 71 | 18 | 1 |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Layouts", markdown);
+        Assert.Contains("| marker-34 effect and embedded movement layout | hold mode 06 marker-34 long object-view tuple body as evidence only | variable-length marker-34 object-view body needs body-length rule | 160 | 1748 / `01 00 d4 06 ff` | `30 04 00 28` / FX_CHARACTER_HEALTH_DRAIN / `ff 14` |", markdown);
+        Assert.Contains("selector `0c` / -47888.32,70.326,-31265 / near outer movement position / 92.157", markdown);
+        Assert.Contains("| marker-34 nested replay layout | hold mode 06 marker-34 long object-view tuple body as evidence only | variable-length marker-34 object-view body needs body-length rule | 265 | - / `-` | - | `-` | - | prefix 148; body 166 | 1923 / `01 00 83 07 ff` | `30 04 00 28` / FX_CHARACTER_HEALTH_DRAIN / `ff 14` |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Parser Readiness", markdown);
+        Assert.Contains("| layout-ready marker-34 embedded movement parser candidate | singleton layout still needs exact body-length/suffix guard | 1 |", markdown);
+        Assert.Contains("| layout-ready marker-34 nested replay parser candidate | singleton layout still needs exact body-length/suffix guard | 1 |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Nested Replay Candidates", markdown);
+        Assert.Contains("| nested marker-34 body replay with stable scaffold | 148 | 166 | 99 |", markdown);
+        Assert.Contains("12/12: 6:ff 37:01 41:ff 58:ff", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Field Windows", markdown);
+        Assert.Contains("| embedded movement payload window | 94 | 17 | 1 |", markdown);
+        Assert.Contains("| nested marker-34 replay prefix | 148 | 18 | 1 |", markdown);
+        Assert.Contains("### Protocol 03 Mode 06 Marker-34 Long Body Embedded Movement Vectors", markdown);
+        Assert.Contains("| decoded marker-34 embedded movement vector | 94 | 95 | `0e` | `0c` | 13 | 99 | 1 |", markdown);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker34EffectScaffoldObjectViewTupleBody()
+    {
+        byte[] body = new byte[110];
+        body[6] = 0xff;
+        body[37] = 0x01;
+        body[39] = 0x79;
+        body[40] = 0x07;
+        body[41] = 0xff;
+        body[54] = 0x9c;
+        body[55] = 0x05;
+        body[57] = 0x28;
+        body[58] = 0xff;
+        body[59] = 0x0e;
+        body[71] = 0x76;
+        body[72] = 0x0c;
+        body[74] = 0x58;
+        body[75] = 0x37;
+        body[76] = 0x08;
+        body[79] = 0x1f;
+        body[80] = 0x06;
+        body[81] = 0x08;
+        body[88] = 0x22;
+        byte[] suffix = PacketResearcher.ParseHexBytes("00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00").ToArray();
+        Array.Copy(suffix, 0, body, body.Length - suffix.Length, suffix.Length);
+
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 e9 07 00 00 00 00 34"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 7c 01 00 10 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 545, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 marker-34 effect/scaffold object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 110;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded marker-34 effect/scaffold object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(165, boundary.TailBoundaryOffset);
+        Assert.Equal(110, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 7c 01 00 10 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        static IReadOnlyDictionary<string, int> SingleValue(string value)
+        {
+            return new Dictionary<string, int> { [value] = 1 };
+        }
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody = new(
+            "ff marker plus zero-padded ff continuation lead",
+            "02 ff",
+            "unclassified object-view tuple",
+            "unclassified object-view update",
+            "nonzero post-tuple body",
+            110,
+            "00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00",
+            "00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00",
+            "-",
+            "-",
+            null,
+            "-",
+            "-",
+            "-",
+            6,
+            "ff 00",
+            1,
+            SingleValue("single state marker update"),
+            SingleValue("00 7c 01 00 10 00 00 00"),
+            SingleValue("165"),
+            SingleValue("143"),
+            SingleValue("00 e9 07 00 00 00 00 34"),
+            SingleValue("e9"),
+            SingleValue("34"),
+            SingleValue("17"),
+            SingleValue("33"),
+            SingleValue("182"),
+            SingleValue("0e"),
+            SingleValue("09"),
+            SingleValue("unclassified object-view update"),
+            SingleValue("237"),
+            SingleValue("-47888.32,70.326,-31265"),
+            "mode06-guarded-marker-34-effect-scaffold.txt",
+            1);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("marker-34 effect/scaffold body before exact state-marker boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["110"]);
+        Assert.Equal(1, parserAction.OuterSelectors["09"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker34NestedReplayObjectViewTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 11 00 02 0e 00 5a da 63 52 c7 00 00 be 42 54 7b d2 c6 10 00 06 0c ff c1 ba 3a c7 00 68 10 " +
+            "42 00 42 f4 c6 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+            "00 00 00 00 00 00 00 00 00 00 00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34 00 00 00 00 " +
+            "00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+            "00 01 00 d4 06 ff 00 00 00 00 00 00 00 00 00 00 00 00 30 04 00 28 ff 09 00 00 00 00 00 00 00 00 " +
+            "00 00 00 76 0c 00 58 37 08 00 00 1f 06 08 00 00 00 00 10 00 22 00 00 00 00 00 0e 00 06 0c 13 51 " +
+            "10 3b c7 00 a7 8c 42 00 42 f4 c6 ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00 00 00 00 00 00 " +
+            "00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 " +
+            "00 34 00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+            "00 00 00 00 00 00 00 01 00 83 07 ff 00 00 00 00 00 00 00 00 00 00 00 00 9c 05 00 28 ff 0e 00 00 " +
+            "00 00 00 00 00 00 00 00 00 76 0c 00 58 37 08 00 00 1f 06 08 00 00 00 00 00 00 22 00 00 00 00 00 " +
+            "00 00 04 01 06 fb 02 04 80 b3 d5 04 08 80 b2 d5 04 00 00 08 02")
+            .ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 546, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 marker-34 nested replay object-view tuple body";
+        Protocol03ObjectUpdateSegment segment = Assert.Single(
+            samples.SelectMany(sample => sample.Segments),
+            segment => segment.Classification.Equals("mode 06 guarded marker-34 nested replay object-view tuple body", StringComparison.Ordinal));
+        Assert.Equal("10", segment.Selector);
+        Assert.True(segment.IsKnownLength);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(
+            samples.SelectMany(sample => sample.NestedMovementConsumedBodyBoundaries),
+            boundary => boundary.ParserAction.Equals(expectedParserAction, StringComparison.Ordinal));
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("10", boundary.Selector);
+        Assert.Equal(18, boundary.Offset);
+        Assert.Equal(336, boundary.PayloadBytes);
+        Assert.Equal(344, boundary.EvidencePayloadBytes);
+        Assert.Equal(16, boundary.TailStartOffset);
+        Assert.Equal(320, boundary.TailBoundaryOffset);
+        Assert.Equal(265, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("fb 02 04 80 b3 d5 04 08", boundary.BoundaryHeaderHex);
+        Assert.Equal("attribute/effect bundle", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-34-nested-replay.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            samples,
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(
+                PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }),
+                summary => summary.PostTupleBodyBytes == 265);
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("02 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(265, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 22 00 00 00 00 00 00 00 04 01 06", tupleBody.BodySuffixHex);
+        Assert.Equal("fb 02 04 80 b3 d5 04 08", Assert.Single(tupleBody.HeaderPrefixes).Key);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("265-byte marker-34 nested replay body before exact attribute/effect boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["265"]);
+        Assert.Equal(1, parserAction.OuterSelectors["10"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06123ByteMarker34EmbeddedMovementObjectViewTupleBody()
+    {
+        byte[] body = new byte[123];
+        body[6] = 0xff;
+        body[37] = 0x01;
+        body[38] = 0x00;
+        body[39] = 0xf5;
+        body[40] = 0x06;
+        body[41] = 0xff;
+        body[71] = 0x75;
+        body[72] = 0x0c;
+        body[74] = 0x58;
+        body[75] = 0x37;
+        body[76] = 0x08;
+        body[79] = 0x1f;
+        body[80] = 0x06;
+        body[81] = 0x08;
+        body[88] = 0x22;
+        body[94] = 0x21;
+        body[95] = 0x00;
+        body[96] = 0x06;
+        body[97] = 0x0e;
+        body[98] = 0x05;
+        body[99] = 0x98;
+        byte[] movementAndSuffix = PacketResearcher.ParseHexBytes(
+            "26 35 45 47 00 20 8a c4 02 4c 3d c7 80 80 80 80 80 80 01 12 08 00 00")
+            .ToArray();
+        Array.Copy(movementAndSuffix, 0, body, 100, movementAndSuffix.Length);
+
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("02 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 e9 07 00 00 00 00 34"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("15 00 01 00 04 be 08 3c"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 544, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 123-byte marker-34 embedded movement object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 123;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 123-byte marker-34 embedded movement object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(178, boundary.TailBoundaryOffset);
+        Assert.Equal(123, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("15 00 01 00 04 be 08 3c", boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        static IReadOnlyDictionary<string, int> SingleValue(string value)
+        {
+            return new Dictionary<string, int> { [value] = 1 };
+        }
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody = new(
+            "ff marker plus zero-padded ff continuation lead",
+            "02 ff",
+            "unclassified object-view tuple",
+            "unclassified object-view update",
+            "nonzero post-tuple body",
+            123,
+            "00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00",
+            "c4 02 4c 3d c7 80 80 80 80 80 80 01 12 08 00 00",
+            "-",
+            "-",
+            null,
+            "-",
+            "-",
+            "-",
+            6,
+            "ff 00",
+            1,
+            SingleValue("single state marker update"),
+            SingleValue("15 00 01 00 04 be 08 3c"),
+            SingleValue("178"),
+            SingleValue("156"),
+            SingleValue("00 e9 07 00 00 00 00 34"),
+            SingleValue("e9"),
+            SingleValue("34"),
+            SingleValue("17"),
+            SingleValue("33"),
+            SingleValue("195"),
+            SingleValue("0e"),
+            SingleValue("0b"),
+            SingleValue("movement/state update"),
+            SingleValue("195"),
+            SingleValue("50485.15,-1105,-48460.01"),
+            "mode06-guarded-marker-34-embedded-movement-123.txt",
+            1);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("123-byte marker-34 body with decoded embedded movement before paired state-marker boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["123"]);
+        Assert.Equal(1, parserAction.OuterSelectors["0b"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06158ByteMarker34ObjectViewTupleBody()
     {
         byte[] body = Enumerable.Repeat((byte)0x00, 6)
             .Concat(new byte[] { 0xff, 0x00 })
@@ -7257,11 +11736,49 @@ public class PacketResearcherTests
 
         Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 543, "server").ToArray();
 
-        Assert.NotEmpty(samples);
-        Assert.Empty(samples[0].NestedMovementConsumedBodyBoundaries);
+        const string expectedParserAction = "test guarded mode 06 158-byte marker-34 object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 158;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 158-byte marker-34 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0x5800, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(213, boundary.TailBoundaryOffset);
+        Assert.Equal(158, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 58 02 00 00 00 00 0e", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
 
         PacketDumpFileSummary dump = new(
-            "mode06-marker-34-long-body-evidence.txt",
+            "mode06-guarded-marker-34-object-view-158.txt",
             1,
             new Dictionary<string, int>(),
             new Dictionary<string, int>(),
@@ -7288,8 +11805,8 @@ public class PacketResearcherTests
 
         Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
-        Assert.Equal("hold mode 06 marker-34 long object-view tuple body as evidence only", parserAction.ParserAction);
-        Assert.Equal("variable-length marker-34 object-view body needs body-length rule", parserAction.ActionReason);
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("158-byte marker-34 object-view body before 00 58 state/object boundary", parserAction.ActionReason);
         Assert.Equal(1, parserAction.BodyByteLengths["158"]);
 
         Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummary longAnchor =
@@ -7310,6 +11827,320 @@ public class PacketResearcherTests
         Assert.Equal(1, longAnchor.PreAnchorPreLeadBytes["-"]);
         Assert.Equal(1, longAnchor.BodySuffixes["00 00 00 00 00 00 00 02 ff 00 00 00 00 00 00 00"]);
         Assert.Equal(1, longAnchor.HeaderPrefixes["00 58 02 00 00 00 00 0e"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06158ByteMarker16ObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 134))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 b0 04 00 00 00 00 16"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 58 02 00 00 00 00 16"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 544, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 158-byte marker-16 object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 158;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 158-byte marker-16 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal(0x5800, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(213, boundary.TailBoundaryOffset);
+        Assert.Equal(158, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 58 02 00 00 00 00 16", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-16-object-view-158.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(158, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 58 02 00 00 00 00 16"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 b0 04 00 00 00 00 16"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("158-byte marker-16 object-view body before 00 58 state/object boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["158"]);
+
+        Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummary longAnchor =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06LongTupleBodyTailAnchorSummaries(
+                new[] { tupleBody },
+                Array.Empty<Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary>()));
+        Assert.Equal("bounded before accepted object-view header", longAnchor.SourceDisposition);
+        Assert.Equal(158, longAnchor.BodyBytes);
+        Assert.Equal(1, longAnchor.WindowCount);
+        Assert.Equal(1, longAnchor.BodySuffixes["00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00"]);
+        Assert.Equal(1, longAnchor.HeaderPrefixes["00 58 02 00 00 00 00 16"]);
+    }
+
+    [Theory]
+    [InlineData("01 ff", "00 b0 04 00 00 00 00 16", "00 58 02 00 00 00 00 16", 0x5800)]
+    [InlineData("02 ff", "00 cf 03 00 00 00 00 18", "00 8a 02 00 00 00 00 18", 0x8a00)]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06159ByteMarker16And18ObjectViewTupleBody(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string boundaryHeaderHex,
+        int expectedBoundaryViewId)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 135))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(prefixFirstNonZeroFieldHex));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes(boundaryHeaderHex));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 544, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 159-byte marker-16-18 object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 159;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 159-byte marker-16/18 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal(expectedBoundaryViewId, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(214, boundary.TailBoundaryOffset);
+        Assert.Equal(159, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal(boundaryHeaderHex, boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-16-18-object-view-159.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal(prefixFirstNonZeroFieldHex, tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(159, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderPrefixes[boundaryHeaderHex]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("159-byte marker-16/18 object-view body before accepted state/object boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["159"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode0649ByteMarker0eObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 25))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 00 00 01 00 20 03 ff 00 00 00 00 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 7));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 20 03 00 00 00 00 0e"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 b5 02 00 00 4c 0a 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 545, "server").ToArray();
+
+        const string expectedParserAction = "test guarded mode 06 49-byte marker-0e object-view tuple body";
+        const int expectedPayloadBytes = 17 + 55 + 49;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 49-byte marker-0e object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.Equal(0xb500, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal(expectedParserAction, boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(104, boundary.TailBoundaryOffset);
+        Assert.Equal(49, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 b5 02 00 00 4c 0a 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-guarded-marker-0e-object-view-49.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker plus zero-padded ff continuation lead", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(49, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 01 00 20 03 ff 00 00 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 b5 02 00 00 4c 0a 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 20 03 00 00 00 00 0e"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal(expectedParserAction, parserAction.ParserAction);
+        Assert.Equal("49-byte marker-0e object-view body before 00 b5 state/object boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["49"]);
     }
 
     [Fact]
@@ -7501,6 +12332,363 @@ public class PacketResearcherTests
         Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
             Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
         Assert.Equal("test guarded mode 06 non-dominant 49-byte zero-update tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["49"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06NonDominant53ByteMarker32ObjectViewTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 29))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 9e 07 ff 00 00 00 82 77 00 00 ae 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 18 00 00 00 01 00 00 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("03 02"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 9e 07 00 00 00 00 32"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 50 01 00 28 ff 06 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 536, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 53;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 non-dominant 53-byte marker-32 object-view tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0x5000, samples[1].ViewId);
+        Assert.Equal("single state marker update", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 non-dominant 53-byte marker-32 object-view tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(108, boundary.TailBoundaryOffset);
+        Assert.Equal(53, boundary.PostTupleBodyBytes);
+        Assert.Equal("unclassified object-view tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 50 01 00 28 ff 06 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("single state marker update", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-nondominant-marker-32-object-view-53.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker-prefixed tail", tupleBody.TailPrefixKind);
+        Assert.Equal("03 02", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(53, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 9e 07 ff 00 00 00 82 77 00 00 ae 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 50 01 00 28 ff 06 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["00 9e 07 00 00 00 00 32"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 non-dominant 53-byte marker-32 object-view tuple body", parserAction.ParserAction);
+        Assert.Equal("non-dominant 53-byte marker-32 object-view body before shared 00 50 state-marker boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["53"]);
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06NonDominant70ByteMarker32ObjectViewTupleBody()
+    {
+        byte[] bytes = PacketResearcher.ParseHexBytes("""
+            02 03 02 00 02 80 04 1e 05 00 01 00 04 c0 25 11 46 00 80 93 43 26 4e 85 c6 03 00 06 0e 00 71 a4
+            f2 0e 46 00 80 93 43 0a 57 82 c6 ff 00 00 00 10 00 00 01 01 00 01 ff 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 ff 00 00 00 00 00 f1 02 02 28 0a 00 00 00
+            00 32 00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00 00 28 0a ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+            00 00 00 00 00 00 01 00 00 86 01 00 58 37 08 00 00 1f 0a 08 00 00 00 00 00 00 22 00 00 00 00 00
+            00 00 04 01 00 69 07 46 80 a0 00 06 00 01 3e 00 4d 6f 76 65 20 74 68 65 20 63 61 6d 65 72 61 20
+            61 72 6f 75 6e 64 20 62 79 20 68 6f 6c 64 69 6e 67 20 64 6f 77 6e 20 74 68 65 20 72 69 67 68 74
+            20 6d 6f 75 73 65 20 62 75 74 74 6f 6e 00 06 81 45 75 08 00 86 1d 80 a0 01 06 00 00 15 00 4d 6f
+            76 65 20 61 72 6f 75 6e 64 20 74 68 65 20 72 6f 6f 6d 00 1d 80 a0 01 06 00 01 15 00 4d 6f 76 65
+            20 61 72 6f 75 6e 64 20 74 68 65 20 72 6f 6f 6d 00 05 81 02 0e 00 01 06 81 45 79 08 00 86 2d 80
+            a0 02 06 00 00 25 00 54 61 6c 6b 20 74 6f 20 41 6d 6d 69 74 20 77 69 74 68 20 64 6f 75 62 6c 65
+            2d 6c 65 66 74 20 63 6c 69 63 6b 00
+            """).ToArray();
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 536, "server").ToArray();
+
+        PacketDumpFileSummary dump = new(
+            "mode06-nondominant-marker-32-object-view-70.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            samples,
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary[] tupleBodies =
+            PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }).ToArray();
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody = Assert.Single(tupleBodies, tupleBody =>
+            tupleBody.PostTupleBodyBytes == 70 &&
+            tupleBody.PostPrefixLeads.ContainsKey("02 28 0a 00 00 00 00 32"));
+        Assert.Equal("ff marker-prefixed tail", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("unclassified object-view tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("unclassified object-view update", tupleBody.PostPrefixDisposition);
+        Assert.Equal(70, tupleBody.PostTupleBodyBytes);
+        Assert.Equal("00 00 00 00 ff 00 00 00 00 00 00 00 00 00 01 00", tupleBody.BodySuffixHex);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["single state marker update"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 86 01 00 58 37 08 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["02 28 0a 00 00 00 00 32"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 non-dominant 70-byte marker-32 object-view tuple body", parserAction.ParserAction);
+        Assert.Equal("non-dominant 70-byte marker-32 object-view body before shared 00 86 state-marker boundary", parserAction.ActionReason);
+        Assert.Equal(1, parserAction.BodyByteLengths["70"]);
+        Assert.Empty(PacketResearcher.BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(new[] { tupleBody }));
+    }
+
+    [Fact]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker02_49ByteZeroUpdateTupleBody()
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 25))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 00 00 00 00 c8 00 ff 00 00 00 00 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 18 00 00 00 01 00 00 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("02 c8 00 00 00 00 00 02"));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 b4 02 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 536, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 49;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 49-byte marker-02 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xb400, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 49-byte marker-02 zero-update tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(104, boundary.TailBoundaryOffset);
+        Assert.Equal(49, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 b4 02 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-marker02-zero-update-49.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker-prefixed tail", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(49, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal("00 00 00 00 00 00 c8 00 ff 00 00 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 b4 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads["02 c8 00 00 00 00 00 02"]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 49-byte marker-02 zero-update tuple body", parserAction.ParserAction);
+        Assert.Equal(1, parserAction.BodyByteLengths["49"]);
+    }
+
+    [Theory]
+    [InlineData("02 fa 00 00 00 00 00 03")]
+    [InlineData("03 fa 00 00 00 00 00 03")]
+    public void DetectProtocol03ObjectViews_BoundsGuardedMode06Marker03_49ByteZeroUpdateTupleBody(
+        string postPrefixLeadHex)
+    {
+        byte[] body = Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 25))
+            .Concat(PacketResearcher.ParseHexBytes("00 00 00 00 00 00 fa 00 ff 00 00 00 00 00 00 00"))
+            .ToArray();
+        var bytes = new List<byte>
+        {
+            0x02, 0x03,
+            0x01, 0x00, 0x02, 0x0c
+        };
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
+        bytes.Add(0x03);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 18 00 00 00 01 00 00 ff 00 00 00 00"));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("01 ff"));
+        bytes.AddRange(Enumerable.Repeat((byte)0x00, 29));
+        bytes.AddRange(PacketResearcher.ParseHexBytes(postPrefixLeadHex));
+        bytes.AddRange(body);
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 b4 02 00 00 00 00 00"));
+
+        Protocol03ObjectViewSample[] samples = PacketResearcher.DetectProtocol03ObjectViews(bytes, 536, "server").ToArray();
+
+        const int expectedPayloadBytes = 17 + 16 + 31 + 8 + 49;
+        Assert.Equal(2, samples.Length);
+        Assert.True(samples[0].Complete);
+        Assert.Equal(2, samples[0].ParsedUpdateCount);
+        Assert.Equal(0, samples[0].UnparsedBytes);
+        Assert.Collection(
+            samples[0].Segments,
+            segment =>
+            {
+                Assert.Equal("0c", segment.Selector);
+                Assert.Equal("position xyz + flag", segment.Classification);
+                Assert.Equal(13, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            },
+            segment =>
+            {
+                Assert.Equal("03", segment.Selector);
+                Assert.Equal("mode 06 guarded 49-byte marker-03 zero-update tuple body", segment.Classification);
+                Assert.Equal(expectedPayloadBytes, segment.PayloadBytes);
+                Assert.True(segment.IsKnownLength);
+            });
+        Assert.True(samples[1].Complete);
+        Assert.Equal(0xb400, samples[1].ViewId);
+        Assert.Equal("state marker/object update candidate", samples[1].Classification);
+
+        Protocol03NestedMovementConsumedBodyBoundary boundary = Assert.Single(samples[0].NestedMovementConsumedBodyBoundaries);
+        Assert.Equal("test guarded mode 06 49-byte marker-03 zero-update tuple body", boundary.ParserAction);
+        Assert.Equal("03", boundary.Selector);
+        Assert.Equal(17, boundary.Offset);
+        Assert.Equal(expectedPayloadBytes, boundary.PayloadBytes);
+        Assert.Equal(expectedPayloadBytes + 8, boundary.EvidencePayloadBytes);
+        Assert.Equal(17, boundary.TailStartOffset);
+        Assert.Equal(104, boundary.TailBoundaryOffset);
+        Assert.Equal(49, boundary.PostTupleBodyBytes);
+        Assert.Equal("zero-update marker tuple", boundary.TupleLayoutKind);
+        Assert.Equal(6, boundary.FirstNonZeroOffset);
+        Assert.Equal("ff 00", boundary.FirstNonZeroFieldHex);
+        Assert.Equal("00 b4 02 00 00 00 00 00", boundary.BoundaryHeaderHex);
+        Assert.Equal("state marker/object update candidate", boundary.BoundaryHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "mode06-marker03-zero-update-49.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { samples[0] },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        Protocol03NestedMovementMode06PostContinuationTupleBodySummary tupleBody =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(new[] { dump }));
+        Assert.Equal("ff marker-prefixed tail", tupleBody.TailPrefixKind);
+        Assert.Equal("01 ff", tupleBody.PrefixFirstNonZeroFieldHex);
+        Assert.Equal("zero-update marker tuple", tupleBody.TupleLayoutKind);
+        Assert.Equal("non-object-view post-prefix lead", tupleBody.PostPrefixDisposition);
+        Assert.Equal(49, tupleBody.PostTupleBodyBytes);
+        Assert.Equal(6, tupleBody.FirstNonZeroOffset);
+        Assert.Equal("ff 00", tupleBody.FirstNonZeroFieldHex);
+        Assert.Equal("00 00 00 00 00 00 fa 00 ff 00 00 00 00 00 00 00", tupleBody.BodySuffixHex);
+        Assert.Equal(1, tupleBody.HeaderClassifications["state marker/object update candidate"]);
+        Assert.Equal(1, tupleBody.HeaderPrefixes["00 b4 02 00 00 00 00 00"]);
+        Assert.Equal(1, tupleBody.PostPrefixLeads[postPrefixLeadHex]);
+
+        Protocol03NestedMovementMode06TupleBodyParserActionSummary parserAction =
+            Assert.Single(PacketResearcher.BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(new[] { tupleBody }));
+        Assert.Equal("test guarded mode 06 49-byte marker-03 zero-update tuple body", parserAction.ParserAction);
         Assert.Equal(1, parserAction.BodyByteLengths["49"]);
     }
 
@@ -8241,6 +13429,38 @@ public class PacketResearcherTests
         Assert.Equal(8, candidate.PostMarkerFirstFieldValue);
         Assert.Equal("long-zero post-marker u16", candidate.PostMarkerFieldLayoutKind);
 
+        Protocol03SelectorFfRepeatListDecodedRow decodedRow = Assert.Single(
+            PacketResearcher.BuildProtocol03SelectorFfRepeatListDecodedRows(new[] { candidate }));
+        Assert.Equal("decode two-entry stride-18 list before continuation marker", decodedRow.ParserAction);
+        Assert.Equal("continuation-local +3 marker/flag candidate", decodedRow.ContinuationMarkerRole);
+        Assert.Equal("vendor.txt", decodedRow.File);
+        Assert.Equal(6, decodedRow.Line);
+        Assert.Equal("server", decodedRow.Direction);
+        Assert.Equal(18, decodedRow.RepeatStride);
+        Assert.Equal(2, decodedRow.RepeatRecordCount);
+        Assert.Equal(36, decodedRow.ContinuationOffset);
+        Assert.Equal(16, decodedRow.ContinuationBytes);
+        Assert.Equal(3, decodedRow.ContinuationMarkerOffset);
+        Assert.Equal("ff", decodedRow.ContinuationMarkerHex);
+        Assert.Equal("00 01 00", decodedRow.ContinuationPrefixBeforeMarkerHex);
+        Assert.Equal("00 01 00 ff", decodedRow.ContinuationPrefixHex);
+        Assert.Equal(11, decodedRow.Entry1FieldOffset);
+        Assert.Equal("a0 13", decodedRow.Entry1FieldHex);
+        Assert.Equal(5024, decodedRow.Entry1FieldValue);
+        Assert.Equal(1, decodedRow.Entry2FieldOffset);
+        Assert.Equal("ff 00", decodedRow.Entry2FieldHex);
+        Assert.Equal(255, decodedRow.Entry2FieldValue);
+        Assert.Equal(6, decodedRow.Entry2SecondaryFieldOffset);
+        Assert.Equal("66 00", decodedRow.Entry2SecondaryFieldHex);
+        Assert.Equal(102, decodedRow.Entry2SecondaryFieldValue);
+        Assert.Equal(6, decodedRow.Entry2EffectiveFieldOffset);
+        Assert.Equal("66 00", decodedRow.Entry2EffectiveFieldHex);
+        Assert.Equal(102, decodedRow.Entry2EffectiveFieldValue);
+        Assert.Equal("secondary field", decodedRow.Entry2EffectiveFieldSource);
+        Assert.Equal(14, decodedRow.PostMarkerFirstFieldOffset);
+        Assert.Equal("08 00", decodedRow.PostMarkerFirstFieldHex);
+        Assert.Equal(8, decodedRow.PostMarkerFirstFieldValue);
+
         AbilityDefinition[] abilityDefinitions = { new(8, 8, "EightAbility", null, "abilities.txt", 1) };
         ItemCommandEntry[] itemEntries = { new(5024, "TestItem", "Test Display", "items.txt", 1) };
         GameObjectEntry[] gameObjectEntries = { new("TestObject", 5024, "gameobjects.csv", 1) };
@@ -8369,6 +13589,32 @@ public class PacketResearcherTests
         Assert.Contains("item:5024 TestItem \"Test Display\"", effectiveShape.Entry1ResourceReferences);
         Assert.Equal(new[] { "ability:8 EightAbility" }, effectiveShape.PostMarkerResourceReferences);
 
+        Protocol03SelectorFfRepeatListEntryPairSummary entryPair = Assert.Single(PacketResearcher.BuildProtocol03SelectorFfRepeatListEntryPairSummaries(
+            new[] { candidate },
+            abilityDefinitions,
+            itemEntries,
+            gameObjectEntries,
+            animationDefinitions));
+        Assert.Equal(18, entryPair.RepeatStride);
+        Assert.Equal(2, entryPair.RepeatRecordCount);
+        Assert.Equal(36, entryPair.ContinuationOffset);
+        Assert.Equal("00 01 00 ff", entryPair.ContinuationPrefixHex);
+        Assert.Equal("a0 13", entryPair.Entry1FieldHex);
+        Assert.Equal(5024, entryPair.Entry1FieldValue);
+        Assert.Equal("66 00", entryPair.Entry2EffectiveFieldHex);
+        Assert.Equal(102, entryPair.Entry2EffectiveFieldValue);
+        Assert.Equal(1, entryPair.CandidateCount);
+        Assert.Equal(1, entryPair.DistinctPostMarkerFieldCount);
+        Assert.Equal(1, entryPair.Entry2EffectiveSources["secondary field"]);
+        Assert.Equal(1, entryPair.Entry1Layouts["long-zero-padded entry u16"]);
+        Assert.Equal(1, entryPair.Entry2Layouts["marker-adjacent entry u16"]);
+        Assert.Equal(1, entryPair.PostMarkerFields["08 00 / 8"]);
+        Assert.Equal(1, entryPair.PostMarkerLayouts["long-zero post-marker u16"]);
+        Assert.Equal(1, entryPair.CaptureScopes["vendor/market"]);
+        Assert.Contains("gameobject:5024 TestObject", entryPair.Entry1ResourceReferences);
+        Assert.Equal(1, entryPair.Entry2EffectiveResourceReferences["animation:66 00 EffectiveAnimation"]);
+        Assert.Equal(1, entryPair.PostMarkerResourceReferences["ability:8 EightAbility"]);
+
         Protocol03SelectorFfRepeatListContinuationMarkerSummary markerSummary = Assert.Single(PacketResearcher.BuildProtocol03SelectorFfRepeatListContinuationMarkerSummaries(
             new[] { candidate }));
         Assert.Equal("00 01 00", markerSummary.ContinuationPrefixBeforeMarkerHex);
@@ -8435,6 +13681,59 @@ public class PacketResearcherTests
         Assert.Equal("SERVER_VENDOR_OPEN", markerVendorWindow.Name);
         Assert.Equal(99, markerVendorWindow.PayloadOffset);
         Assert.Equal(1, markerVendorWindow.Count);
+
+        Protocol03SelectorFfRepeatListContinuationParserActionSummary continuationAction = Assert.Single(
+            PacketResearcher.BuildProtocol03SelectorFfRepeatListContinuationParserActionSummaries(new[] { markerHeaderSummary }));
+        Assert.Equal("model +3 ff as continuation marker; keep vendor windows as collision controls", continuationAction.ParserAction);
+        Assert.Equal("stable marker plus vendor-looking byte windows that prior boundary work treats as collision controls", continuationAction.ActionReason);
+        Assert.Equal(1, continuationAction.MarkerRowCount);
+        Assert.Equal(1, continuationAction.CandidateCount);
+        Assert.Equal(1, continuationAction.ShapeCount);
+        Assert.Equal(1, continuationAction.CandidatesWithHeaderWindows);
+        Assert.Equal(1, continuationAction.CandidatesWithVendorHeaderWindows);
+        Assert.Equal(1, continuationAction.HeaderWindowCount);
+        Assert.Equal(1, continuationAction.VendorHeaderWindowCount);
+        Assert.Equal(1, continuationAction.ContinuationPrefixBeforeMarkers["00 01 00"]);
+        Assert.Equal(1, continuationAction.ContinuationPrefixes["00 01 00 ff"]);
+        Assert.Equal(1, continuationAction.PostMarkerLayouts["long-zero post-marker u16"]);
+        Assert.Equal(1, continuationAction.PostMarkerFields["08 00 / 8"]);
+        Assert.Equal(1, continuationAction.Entry1Fields["a0 13 / 5024"]);
+        Assert.Equal(1, continuationAction.Entry2PrimaryFields["ff 00 / 255"]);
+        Assert.Equal(1, continuationAction.Entry2SecondaryFields["66 00 / 102"]);
+        Assert.Equal(1, continuationAction.Entry2EffectiveFields["66 00 / 102"]);
+        Assert.Equal(1, continuationAction.Entry2EffectiveSources["secondary field"]);
+        Assert.Equal(1, continuationAction.HeaderRegions["repeat entry 2"]);
+        Assert.Equal(1, continuationAction.VendorHeaderWindows["SERVER_VENDOR_OPEN [66 00 server]"]);
+        Assert.Equal(1, continuationAction.FirstSelectors["0c"]);
+        Assert.Equal("vendor.txt", continuationAction.SampleFile);
+        Assert.Equal(6, continuationAction.SampleLine);
+
+        Protocol03SelectorFfRepeatListParserCoverageSummary parserCoverage = Assert.Single(
+            PacketResearcher.BuildProtocol03SelectorFfRepeatListParserCoverageSummaries(new[] { continuationAction }));
+        Assert.Equal("decode selector-ff two-entry repeat list plus +3 ff continuation marker", parserCoverage.ParserCase);
+        Assert.Equal("covered with vendor-window collision controls", parserCoverage.CoverageDisposition);
+        Assert.Equal(1, parserCoverage.ActionRowCount);
+        Assert.Equal(1, parserCoverage.MarkerRowCount);
+        Assert.Equal(1, parserCoverage.CoveredCandidateCount);
+        Assert.Equal(1, parserCoverage.ShapeCount);
+        Assert.Equal(1, parserCoverage.CandidatesWithHeaderWindows);
+        Assert.Equal(1, parserCoverage.CandidatesWithVendorHeaderWindows);
+        Assert.Equal(1, parserCoverage.HeaderWindowCount);
+        Assert.Equal(1, parserCoverage.VendorHeaderWindowCount);
+        Assert.Equal(1, parserCoverage.ParserActions["model +3 ff as continuation marker; keep vendor windows as collision controls"]);
+        Assert.Equal(1, parserCoverage.ActionReasons["stable marker plus vendor-looking byte windows that prior boundary work treats as collision controls"]);
+        Assert.Equal(1, parserCoverage.ContinuationPrefixBeforeMarkers["00 01 00"]);
+        Assert.Equal(1, parserCoverage.ContinuationPrefixes["00 01 00 ff"]);
+        Assert.Equal(1, parserCoverage.PostMarkerLayouts["long-zero post-marker u16"]);
+        Assert.Equal(1, parserCoverage.PostMarkerFields["08 00 / 8"]);
+        Assert.Equal(1, parserCoverage.Entry1Fields["a0 13 / 5024"]);
+        Assert.Equal(1, parserCoverage.Entry2EffectiveFields["66 00 / 102"]);
+        Assert.Equal(1, parserCoverage.Entry2EffectiveSources["secondary field"]);
+        Assert.Equal(1, parserCoverage.HeaderRegions["repeat entry 2"]);
+        Assert.Equal(1, parserCoverage.VendorHeaderWindows["SERVER_VENDOR_OPEN [66 00 server]"]);
+        Assert.Equal(1, parserCoverage.FirstSelectors["0c"]);
+        Assert.Equal("vendor.txt", parserCoverage.SampleFile);
+        Assert.Equal(6, parserCoverage.SampleLine);
 
         Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummary headerShape = Assert.Single(PacketResearcher.BuildProtocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries(
             new[] { candidate },
@@ -8591,6 +13890,21 @@ public class PacketResearcherTests
         Assert.Equal(1, vendorPriority.TargetBodySpanBytes["not body-span target"]);
         Assert.Equal(1, vendorPriority.Entry2EffectiveFields["66 00 / 102"]);
 
+        Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow vendorDecision = Assert.Single(
+            PacketResearcher.BuildProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(new[] { vendorTarget }));
+        Assert.Equal("suppress nested vendor RPC as modeled selector-ff field overlap", vendorDecision.ParserDecision);
+        Assert.Equal("modeled field overlap", vendorDecision.EvidenceDisposition);
+        Assert.Equal("modeled field overlap", vendorDecision.ParserPriority);
+        Assert.True(vendorDecision.IsModeledFieldOverlap);
+        Assert.Equal("repeat entry 2 secondary field overlap", vendorDecision.TargetInterpretation);
+        Assert.Equal("SERVER_VENDOR_OPEN", vendorDecision.Name);
+        Assert.Equal(99, vendorDecision.HeaderPayloadOffset);
+        Assert.Equal(117, vendorDecision.HeaderObjectOffset);
+        Assert.Equal(1, vendorDecision.TargetLocalOffsets["repeat entry 2 +6"]);
+        Assert.Equal(1, vendorDecision.TargetBodySpanBytes["not body-span target"]);
+        Assert.Empty(vendorDecision.LowHalfResourceReferences);
+        Assert.Empty(vendorDecision.NearbyU16LengthMatches);
+
         Protocol03SelectorFfRepeatListHeaderSample headerSample = Assert.Single(PacketResearcher.BuildProtocol03SelectorFfRepeatListHeaderSamples(
             new[] { candidate },
             new[] { dump },
@@ -8640,32 +13954,44 @@ public class PacketResearcherTests
             new[] { dump })
         {
             Protocol03SelectorFfRepeatListCandidates = new[] { candidate },
+            Protocol03SelectorFfRepeatListDecodedRows = new[] { decodedRow },
             Protocol03SelectorFfRepeatListFieldSummaries = summaries,
             Protocol03SelectorFfRepeatListShapeSummaries = new[] { shape },
             Protocol03SelectorFfRepeatListEffectiveShapeSummaries = new[] { effectiveShape },
+            Protocol03SelectorFfRepeatListEntryPairSummaries = new[] { entryPair },
             Protocol03SelectorFfRepeatListContinuationMarkerSummaries = new[] { markerHeaderSummary },
+            Protocol03SelectorFfRepeatListContinuationParserActionSummaries = new[] { continuationAction },
+            Protocol03SelectorFfRepeatListParserCoverageSummaries = new[] { parserCoverage },
             Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries = new[] { headerShape },
             Protocol03SelectorFfRepeatListHeaderNameSummaries = new[] { headerName },
             Protocol03SelectorFfRepeatListHeaderRegionSummaries = new[] { headerRegion },
             Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries = new[] { vendorTarget },
             Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries = new[] { vendorInterpretation },
             Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries = new[] { vendorPriority },
+            Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows = new[] { vendorDecision },
             Protocol03SelectorFfRepeatListHeaderSamples = new[] { headerSample },
             Protocol03SelectorFfRepeatListLayoutSummaries = new[] { layout }
         };
         string json = System.Text.Json.JsonSerializer.Serialize(report, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 
         Assert.Contains("\"Protocol03SelectorFfRepeatListCandidates\"", json);
+        Assert.Contains("\"Protocol03SelectorFfRepeatListDecodedRows\"", json);
+        Assert.Contains("\"Unknown6dPacketContextSummaries\"", json);
+        Assert.Contains("\"Unknown80c1PacketContextSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListFieldSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListShapeSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListEffectiveShapeSummaries\"", json);
+        Assert.Contains("\"Protocol03SelectorFfRepeatListEntryPairSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListContinuationMarkerSummaries\"", json);
+        Assert.Contains("\"Protocol03SelectorFfRepeatListContinuationParserActionSummaries\"", json);
+        Assert.Contains("\"Protocol03SelectorFfRepeatListParserCoverageSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListHeaderNameSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListHeaderRegionSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries\"", json);
+        Assert.Contains("\"Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries\"", json);
         Assert.Contains("\"Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries\"", json);
@@ -8693,6 +14019,20 @@ public class PacketResearcherTests
         Assert.Contains("\"Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries\"", json);
         Assert.Contains("\"Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries\"", json);
         Assert.Contains("\"Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06HeldTupleBodySummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyFixtureSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyOffsetSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyLayoutSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries\"", json);
+        Assert.Contains("\"Protocol03NestedMovementMode06HeldTupleBodyPrioritySummaries\"", json);
         Assert.Contains("\"Protocol03NestedMovementMode06TupleBodyParserActionSummaries\"", json);
         Assert.Contains("\"Protocol03NestedMovementParserActionSummaries\"", json);
         Assert.Contains("\"TargetInterpretations\"", json);
@@ -9006,6 +14346,32 @@ public class PacketResearcherTests
         Assert.Equal("no length-match or resource-collision control explains the row", actionSummaries[1].ActionReason);
         Assert.Equal(1, actionSummaries[1].ProbeRowCount);
         Assert.Equal(1, actionSummaries[1].EvidenceDispositions["unexplained body-window candidate"]);
+
+        Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow[] decisionRows =
+            PacketResearcher.BuildProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(targets, probes)
+                .OrderBy(row => row.ParserDecision, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        Assert.Equal(2, decisionRows.Length);
+
+        Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow queueDecision =
+            Assert.Single(decisionRows, row => row.ParserDecision == "queue selector-ff body-length investigation");
+        Assert.Equal("unexplained body-window candidate", queueDecision.EvidenceDisposition);
+        Assert.Equal("mid-body boundary candidate", queueDecision.ParserPriority);
+        Assert.Equal("continuation mid-body unresolved", queueDecision.TargetInterpretation);
+        Assert.Equal("SERVER_VENDOR_MID_BODY", queueDecision.Name);
+        Assert.Equal(1, queueDecision.TargetBodySpanBytes["continuation tail 48"]);
+        Assert.Empty(queueDecision.LowHalfResourceReferences);
+        Assert.Empty(queueDecision.NearbyU16LengthMatches);
+
+        Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow lengthDecision =
+            Assert.Single(decisionRows, row => row.ParserDecision == "test selector-ff body-length boundary");
+        Assert.Equal("nearby length-match candidate", lengthDecision.EvidenceDisposition);
+        Assert.Equal("deep-body boundary candidate", lengthDecision.ParserPriority);
+        Assert.Equal("continuation deep-body unresolved", lengthDecision.TargetInterpretation);
+        Assert.Equal("SERVER_VENDOR_DEEP_BODY", lengthDecision.Name);
+        Assert.Equal(1, lengthDecision.TargetBodySpanBytes["continuation tail 78"]);
+        Assert.Equal(1, lengthDecision.LowHalfResourceReferences["low 01 00 / 1 -> gameobject:1 SyntheticWindowField"]);
+        Assert.Equal(1, lengthDecision.NearbyU16LengthMatches["-4 4e 00 / 78 = bytes after header"]);
 
         Protocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummary collisionOnlyEvidence = Assert.Single(
             PacketResearcher.BuildProtocol03SelectorFfRepeatListVendorBodyWindowEvidenceSummaries(
@@ -9548,6 +14914,51 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void DetectProtocol03ObjectViews_BoundsReviewedNpcBasePostSeparatorBody()
+    {
+        const string reviewedBodyHex =
+            "09 00 00 01 00 08 2f 94 d9 2a 20 2b b8 cd ab 02 05 00 00 00 00 00 65 fd c0 00 00 00 40 c8 b5 85 40 00 00 00 00 80 d5 ed c0 00 00 00 00 d2 4a c4 bd 00 00 00 00 49 d2 7e 3f 07 00 00";
+        const string reviewedNextHeaderHex = "01 00 08 50 02 19 00 30";
+        List<byte> bytes = PacketResearcher.ParseHexBytes("02 03 01 00 0c 57 02 e2 cd ab 04 8e").ToList();
+        bytes.AddRange(FixedAscii("Gold Blood Champion", 32));
+        bytes.AddRange(PacketResearcher.ParseHexBytes("00 10 00 00 22 40 01 17 00 00 01 00 0c 57 02 e3 cd ab 04 8e"));
+        bytes.AddRange(FixedAscii("Gold Blood Enforcer", 32));
+        bytes.AddRange(PacketResearcher.ParseHexBytes($"00 10 00 00 22 40 01 {reviewedBodyHex} {reviewedNextHeaderHex}"));
+
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 64, "server").Single();
+
+        Protocol03NamedProfileRecord record = Assert.Single(sample.NamedProfileRecords, record => record.Text == "Gold Blood Champion");
+        Assert.Equal("dynamic creation bounded by reviewed post-separator body", record.PostCreationObjectViewParseStatus);
+        Assert.True(record.PostCreationObjectViewComplete);
+        Assert.Equal(1, record.PostCreationObjectViewParsedUpdateCount);
+        Assert.Equal(0, record.PostCreationObjectViewUnparsedBytes);
+        Assert.Equal(60, record.PostCreationObjectViewDynamicTailNextHeaderOffset);
+        Assert.Equal(reviewedBodyHex, record.PostCreationObjectViewDynamicTailPreHeaderHex);
+        Assert.Equal(reviewedNextHeaderHex, record.PostCreationObjectViewDynamicTailNextHeaderHex);
+        Assert.Equal("NPC_BASE post-creation tail object-view candidate", record.PostCreationObjectViewDynamicTailNextHeaderClassification);
+
+        PacketDumpFileSummary dump = new(
+            "npc-reviewed-post-separator.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { sample },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary extendedBoundarySummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundarySummaries(new[] { dump }));
+        Assert.Equal(60, extendedBoundarySummary.TailHeaderOffset);
+        Assert.Equal(reviewedBodyHex, extendedBoundarySummary.PreHeaderHex);
+        Assert.Equal(reviewedNextHeaderHex, extendedBoundarySummary.HeaderPrefixHex);
+        Assert.Equal("post-separator later header candidate", extendedBoundarySummary.BoundaryInterpretation);
+        Assert.Equal("evidence only; post-separator lead", extendedBoundarySummary.ParserAction);
+    }
+
+    [Fact]
     public void DetectProtocol03ObjectViews_BoundsKnownNpcBasePostCreationTailSelectors()
     {
         List<byte> bytes = PacketResearcher.ParseHexBytes("02 03 01 00 0c 57 02 e2 cd ab 04 8e").ToList();
@@ -9685,7 +15096,7 @@ public class PacketResearcherTests
         string markdown = ReportWriter.ToMarkdown(report);
 
         Assert.Contains("Dynamic creation tail prefixes start after a nested Object599 dynamic creation body has parsed its declared attribute stream.", markdown);
-        Assert.Contains("Across 1 measured nested dynamic creations, 1 parsed the Object599 body but did not expose another object-view header inside the current eight-byte search window.", markdown);
+        Assert.Contains("Across 1 measured nested dynamic creations, 1 parsed the Object599 body but did not expose another object-view header inside the current eight-byte search window; 0 are bounded by the reviewed post-separator body rule.", markdown);
         Assert.Contains("| header-like object-view tail lead | no | dynamic creation parsed; next boundary not found | 16 (1) | 16 (1) | 1 | 17 (1) | 05 00 00 01 00 08 18 20 fc 09 e0 03 10 cd ab 08 | 3: view 1 count 08 selector 18 | 1 | Gold Blood Champion | `npc-tail.txt:63` |", markdown);
         Assert.Contains("| 3 | 1 | `08` | `18` | 1 | no (1) | 16 (1) | dynamic creation parsed; next boundary not found | header-like object-view tail lead | 17 (1) | 05 00 00 01 00 08 18 20 fc 09 e0 03 10 cd ab 08 | body 20 fc 09 e0 03 10 cd ab; cd ab @+6 | 1 | Gold Blood Champion | `npc-tail.txt:63` |", markdown);
         Assert.Contains("| 3 | 1 | `08` | `18` | 6 | 1 | no (1) | 16 (1) | dynamic creation parsed; next boundary not found | 20 fc 09 e0 03 10 | cd ab 08 | 1 | Gold Blood Champion | `npc-tail.txt:63` |", markdown);
@@ -9722,6 +15133,33 @@ public class PacketResearcherTests
         Assert.Equal("later header candidate", extendedBoundarySummary.BoundaryInterpretation);
         Assert.Equal("evidence only; single-sample lead", extendedBoundarySummary.ParserAction);
         Assert.Equal(1, extendedBoundarySummary.TailAvailableBytes["17"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary parserActionSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("evidence only; single-sample lead", parserActionSummary.ParserAction);
+        Assert.Equal(1, parserActionSummary.BoundaryRowCount);
+        Assert.Equal(1, parserActionSummary.CandidateCount);
+        Assert.Equal(1, parserActionSummary.BoundaryInterpretations["later header candidate"]);
+        Assert.Equal(1, parserActionSummary.HeaderClassifications["delete view candidate"]);
+        Assert.Equal(1, parserActionSummary.TailHeaderOffsets["9"]);
+        Assert.Equal(1, parserActionSummary.HeaderPrefixes["00 04 01 01 20 08 3e 3a"]);
+        Assert.Equal(1, parserActionSummary.PreHeaderPrefixes["aa bb cc dd ee ff 11 22 33"]);
+        Assert.Equal(1, parserActionSummary.TailAvailableBytes["17"]);
+        Assert.Equal(1, parserActionSummary.TailFamilies["other tail lead"]);
+        Assert.Equal(1, parserActionSummary.ParentPreValues["17"]);
+        Assert.Equal(1, parserActionSummary.TextSamples["Gold Blood Champion"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary bodyShapeSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("later header candidate", bodyShapeSummary.BoundaryInterpretation);
+        Assert.Equal("evidence only; single-sample lead", bodyShapeSummary.ParserAction);
+        Assert.Equal(9, bodyShapeSummary.BodyByteCount);
+        Assert.Equal("-", bodyShapeSummary.SeparatorOffset);
+        Assert.Equal(9, bodyShapeSummary.PreSeparatorByteCount);
+        Assert.Equal(0, bodyShapeSummary.PostSeparatorByteCount);
+        Assert.Equal(1, bodyShapeSummary.BoundaryRowCount);
+        Assert.Equal(1, bodyShapeSummary.CandidateCount);
+        Assert.Equal(1, bodyShapeSummary.PreSeparatorPrefixes["aa bb cc dd ee ff 11 22 33"]);
+        Assert.Equal(1, bodyShapeSummary.PostSeparatorPrefixes["-"]);
+
         PacketResearchReport report = new(
             ".",
             Array.Empty<string>(),
@@ -9743,13 +15181,20 @@ public class PacketResearcherTests
             Array.Empty<RpcComparison>(),
             new[] { dump })
         {
-            Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries = new[] { extendedBoundarySummary }
+            Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries = new[] { extendedBoundarySummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries = new[] { parserActionSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries = new[] { bodyShapeSummary }
         };
 
+        string json = System.Text.Json.JsonSerializer.Serialize(report, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
         string markdown = ReportWriter.ToMarkdown(report);
 
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries\"", json);
         Assert.Contains("### Protocol 03 NPC_BASE Dynamic Creation Extended Boundary Candidates", markdown);
-        Assert.Contains("Across 1 unbounded dynamic creation tails, 1 expose a later plausible object-view header between byte offsets 9 and 9 after the parsed nested creation attribute stream.", markdown);
+        Assert.Contains("Across 1 extended-boundary dynamic creation tails (1 unbounded and 0 reviewed post-separator bodies), 1 expose a later plausible object-view header between byte offsets 9 and 9 after the parsed nested creation attribute stream.", markdown);
+        Assert.Contains("| evidence only; single-sample lead | 1 | 1 | later header candidate (1) | delete view candidate (1) | 9 (1) | 00 04 01 01 20 08 3e 3a (1) | aa bb cc dd ee ff 11 22 33 (1) | 17 (1) | other tail lead (1) | 17 (1) | Gold Blood Champion (1) | `npc-extended-tail.txt:63` |", markdown);
+        Assert.Contains("| later header candidate | evidence only; single-sample lead | 9 | - | 9 | 0 | 1 | 1 | delete view candidate (1) | 9 (1) | 00 04 01 01 20 08 3e 3a (1) | aa bb cc dd ee ff 11 22 33 (1) | - (1) | 17 (1) | other tail lead (1) | 17 (1) | Gold Blood Champion (1) | `npc-extended-tail.txt:63` |", markdown);
         Assert.Contains("| 9 | `aa bb cc dd ee ff 11 22 33` | `00 04 01 01 20 08 3e 3a` | delete view candidate | later header candidate | evidence only; single-sample lead | 1 | 17 (1) |", markdown);
         Assert.Contains("| 9 | `aa bb cc dd ee ff 11 22 33` | `00 04 01 01 20 08 3e 3a` | delete view candidate | later header candidate | evidence only; single-sample lead | 1 | 17 (1) | other tail lead (1) | 17 (1) | Gold Blood Champion (1) | `npc-extended-tail.txt:63` |", markdown);
     }
@@ -9782,6 +15227,14 @@ public class PacketResearcherTests
         Assert.Equal("delete view candidate", extendedBoundarySummary.HeaderClassification);
         Assert.Equal("cd ab separator collision", extendedBoundarySummary.BoundaryInterpretation);
         Assert.Equal("reject as separator collision", extendedBoundarySummary.ParserAction);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary bodyShapeSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("header+0", bodyShapeSummary.SeparatorOffset);
+        Assert.Equal(13, bodyShapeSummary.BodyByteCount);
+        Assert.Equal(13, bodyShapeSummary.PreSeparatorByteCount);
+        Assert.Equal(3, bodyShapeSummary.PostSeparatorByteCount);
+        Assert.Equal(1, bodyShapeSummary.PreSeparatorPrefixes["05 00 00 01 00 08 18 20 fc 09 e0 03 10"]);
+        Assert.Equal(1, bodyShapeSummary.PostSeparatorPrefixes["cd ab 01 01 00"]);
 
         PacketResearchReport report = new(
             ".",
@@ -9810,6 +15263,290 @@ public class PacketResearcherTests
         string markdown = ReportWriter.ToMarkdown(report);
 
         Assert.Contains("| 13 | `05 00 00 01 00 08 18 20 fc 09 e0 03 10` | `cd ab 01 01 00` | delete view candidate | cd ab separator collision | reject as separator collision | 1 | 18 (1) |", markdown);
+        Assert.Contains("| cd ab separator collision | reject as separator collision | 13 | header+0 | 13 | 3 | 1 | 1 | delete view candidate (1) | 13 (1) | cd ab 01 01 00 (1) | 05 00 00 01 00 08 18 20 fc 09 e0 03 10 (1) | cd ab 01 01 00 (1) | 18 (1) |", markdown);
+    }
+
+    [Fact]
+    public void ReportWriter_IncludesProtocol03NpcBaseDynamicCreationPostSeparatorFieldLeads()
+    {
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary extendedBoundarySummary = new(
+            60,
+            "09 00 00 01 00 08 2f 94 d9 2a 20 2b b8 cd ab 02 05 00 00 00 00 00 65 fd c0 00 00 00 40 c8 b5 85 40 00 00 00 00 80 d5 ed c0 00 00 00 00 d2 4a c4 bd 00 00 00 00 49 d2 7e 3f 07 00 00",
+            "01 00 08 50 02 19 00 30",
+            "NPC_BASE post-creation tail object-view candidate",
+            "post-separator later header candidate",
+            "evidence only; post-separator lead",
+            2,
+            new Dictionary<string, int> { ["519"] = 2 },
+            new Dictionary<string, int> { ["header-like object-view tail lead"] = 2 },
+            new Dictionary<string, int> { ["0b"] = 2 },
+            new Dictionary<string, int> { ["Sleeper Sergeant"] = 2 },
+            "npc-post-separator.txt",
+            19750);
+
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary fieldSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("post-separator later header candidate", fieldSummary.BoundaryInterpretation);
+        Assert.Equal("evidence only; post-separator lead", fieldSummary.ParserAction);
+        Assert.Equal(60, fieldSummary.BodyByteCount);
+        Assert.Equal(13, fieldSummary.SeparatorOffset);
+        Assert.Equal(45, fieldSummary.PostSeparatorByteCount);
+        Assert.Equal("02", fieldSummary.PostSeparatorLeadByteHex);
+        Assert.Equal("05", fieldSummary.PostSeparatorSecondByteHex);
+        Assert.Equal(5, fieldSummary.ZeroRunAfterSecondByte);
+        Assert.Equal(7, fieldSummary.FirstNonZeroAfterSecondByteOffset);
+        Assert.Equal(2, fieldSummary.CandidateCount);
+        Assert.Equal(1, fieldSummary.BoundaryRowCount);
+        Assert.Equal(2, fieldSummary.HeaderClassifications["NPC_BASE post-creation tail object-view candidate"]);
+        Assert.Equal(2, fieldSummary.TailHeaderOffsets["60"]);
+        Assert.Equal(2, fieldSummary.HeaderPrefixes["01 00 08 50 02 19 00 30"]);
+        Assert.Equal(2, fieldSummary.PostSeparatorPrefixes["02 05 00 00 00 00 00 65 fd c0 00 00 00 40 c8 b5"]);
+        Assert.Equal(2, fieldSummary.FirstNonZeroWindows["65 fd c0 00 00 00 40 c8"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary vectorSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("post-separator later header candidate", vectorSummary.BoundaryInterpretation);
+        Assert.Equal("evidence only; post-separator lead", vectorSummary.ParserAction);
+        Assert.Equal(60, vectorSummary.BodyByteCount);
+        Assert.Equal(13, vectorSummary.SeparatorOffset);
+        Assert.Equal(45, vectorSummary.PostSeparatorByteCount);
+        Assert.Equal("02", vectorSummary.PostSeparatorLeadByteHex);
+        Assert.Equal("05", vectorSummary.PostSeparatorSecondByteHex);
+        Assert.Equal(5, vectorSummary.ZeroRunAfterSecondByte);
+        Assert.Equal(9, vectorSummary.VectorOffset);
+        Assert.Equal(7, vectorSummary.PreVectorBridgeOffset);
+        Assert.Equal(2, vectorSummary.PreVectorBridgeByteCount);
+        Assert.Equal("be f64 x3", vectorSummary.VectorEncoding);
+        Assert.Equal("bounded finite triple", vectorSummary.VectorDisposition);
+        Assert.Equal(2, vectorSummary.CandidateCount);
+        Assert.Equal(1, vectorSummary.BoundaryRowCount);
+        Assert.Equal(2, vectorSummary.PreVectorBridges["65 fd"]);
+        Assert.Equal(2, vectorSummary.VectorSamples["-2,2,-2"]);
+        Assert.Equal(2, vectorSummary.VectorWindows["c0 00 00 00 40 c8 b5 85 40 00 00 00 00 80 d5 ed c0 00 00 00 00 d2 4a c4"]);
+        Assert.Equal(2, vectorSummary.FirstNonZeroWindows["65 fd c0 00 00 00 40 c8"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary vectorTailSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries(new[] { extendedBoundarySummary }));
+        Assert.Equal("post-separator later header candidate", vectorTailSummary.BoundaryInterpretation);
+        Assert.Equal("evidence only; post-separator lead", vectorTailSummary.ParserAction);
+        Assert.Equal(60, vectorTailSummary.BodyByteCount);
+        Assert.Equal(13, vectorTailSummary.SeparatorOffset);
+        Assert.Equal(45, vectorTailSummary.PostSeparatorByteCount);
+        Assert.Equal("02", vectorTailSummary.PostSeparatorLeadByteHex);
+        Assert.Equal("05", vectorTailSummary.PostSeparatorSecondByteHex);
+        Assert.Equal(5, vectorTailSummary.ZeroRunAfterSecondByte);
+        Assert.Equal(9, vectorTailSummary.VectorOffset);
+        Assert.Equal(7, vectorTailSummary.PreVectorBridgeOffset);
+        Assert.Equal(2, vectorTailSummary.PreVectorBridgeByteCount);
+        Assert.Equal("be f64 x3", vectorTailSummary.VectorEncoding);
+        Assert.Equal("bounded finite triple", vectorTailSummary.VectorDisposition);
+        Assert.Equal(33, vectorTailSummary.TailOffset);
+        Assert.Equal(12, vectorTailSummary.TailByteCount);
+        Assert.Equal("be f32 x3", vectorTailSummary.TailFloatEncoding);
+        Assert.Equal("bounded be f32 triple tail", vectorTailSummary.TailDisposition);
+        Assert.Equal(2, vectorTailSummary.CandidateCount);
+        Assert.Equal(1, vectorTailSummary.BoundaryRowCount);
+        Assert.Equal(2, vectorTailSummary.PreVectorBridges["65 fd"]);
+        Assert.Equal(2, vectorTailSummary.VectorSamples["-2,2,-2"]);
+        Assert.Equal(2, vectorTailSummary.TailHexes["bd 00 00 00 00 49 d2 7e 3f 07 00 00"]);
+        Assert.Equal(2, vectorTailSummary.TailFloatSamples["-0.031,0,0.527"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary layoutActionSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries(new[] { vectorTailSummary }));
+        Assert.Equal("review bounded vector-tail body", layoutActionSummary.ParserAction);
+        Assert.Equal("bounded be f64 vector followed by bounded be f32 tail fields", layoutActionSummary.ActionReason);
+        Assert.Equal(1, layoutActionSummary.LayoutRowCount);
+        Assert.Equal(2, layoutActionSummary.CandidateCount);
+        Assert.Equal(2, layoutActionSummary.PreVectorBridgeByteCounts["2"]);
+        Assert.Equal(2, layoutActionSummary.PreVectorBridges["65 fd"]);
+        Assert.Equal(2, layoutActionSummary.VectorSamples["-2,2,-2"]);
+        Assert.Equal(2, layoutActionSummary.TailDispositions["bounded be f32 triple tail"]);
+        Assert.Equal(2, layoutActionSummary.TailFloatSamples["-0.031,0,0.527"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary reviewedBodyLayoutSummary =
+            Assert.Single(PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries(new[] { vectorTailSummary }));
+        Assert.Equal("review bounded vector-tail body", reviewedBodyLayoutSummary.LayoutAction);
+        Assert.Equal("bounded be f64 vector followed by bounded be f32 tail fields", reviewedBodyLayoutSummary.LayoutInterpretation);
+        Assert.Equal("post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3", reviewedBodyLayoutSummary.FieldLayout);
+        Assert.Equal(60, reviewedBodyLayoutSummary.BodyByteCount);
+        Assert.Equal(13, reviewedBodyLayoutSummary.SeparatorOffset);
+        Assert.Equal(45, reviewedBodyLayoutSummary.PostSeparatorByteCount);
+        Assert.Equal("02", reviewedBodyLayoutSummary.PostSeparatorLeadByteHex);
+        Assert.Equal("05", reviewedBodyLayoutSummary.PostSeparatorSecondByteHex);
+        Assert.Equal(5, reviewedBodyLayoutSummary.ZeroRunAfterSecondByte);
+        Assert.Equal(7, reviewedBodyLayoutSummary.PreVectorBridgeOffset);
+        Assert.Equal(2, reviewedBodyLayoutSummary.PreVectorBridgeByteCount);
+        Assert.Equal(9, reviewedBodyLayoutSummary.VectorOffset);
+        Assert.Equal("be f64 x3", reviewedBodyLayoutSummary.VectorEncoding);
+        Assert.Equal(33, reviewedBodyLayoutSummary.TailOffset);
+        Assert.Equal(12, reviewedBodyLayoutSummary.TailByteCount);
+        Assert.Equal("be f32 x3", reviewedBodyLayoutSummary.TailFloatEncoding);
+        Assert.Equal("bounded be f32 triple tail", reviewedBodyLayoutSummary.TailDisposition);
+        Assert.Equal(1, reviewedBodyLayoutSummary.LayoutRowCount);
+        Assert.Equal(2, reviewedBodyLayoutSummary.CandidateCount);
+        Assert.Equal(2, reviewedBodyLayoutSummary.BoundaryInterpretations["post-separator later header candidate"]);
+        Assert.Equal(2, reviewedBodyLayoutSummary.SourceParserActions["evidence only; post-separator lead"]);
+        Assert.Equal(2, reviewedBodyLayoutSummary.PreVectorBridges["65 fd"]);
+        Assert.Equal(2, reviewedBodyLayoutSummary.VectorSamples["-2,2,-2"]);
+        Assert.Equal(2, reviewedBodyLayoutSummary.TailHexes["bd 00 00 00 00 49 d2 7e 3f 07 00 00"]);
+        Assert.Equal(2, reviewedBodyLayoutSummary.TailFloatSamples["-0.031,0,0.527"]);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary vectorSemanticSummary = new(
+            "treat as non-position vector body field",
+            "reviewed be f64 vector is bounded but does not match decoded parent Position",
+            "different from parent Position",
+            2,
+            new Dictionary<string, int>
+            {
+                ["post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3"] = 2
+            },
+            new Dictionary<string, int> { ["60"] = 2 },
+            new Dictionary<string, int> { ["02"] = 2 },
+            new Dictionary<string, int> { ["05"] = 2 },
+            new Dictionary<string, int> { ["5"] = 2 },
+            new Dictionary<string, int> { ["2"] = 2 },
+            new Dictionary<string, int> { ["65 fd"] = 2 },
+            new Dictionary<string, int> { ["-2,2,-2"] = 2 },
+            new Dictionary<string, int> { ["-58639,95,-111833"] = 2 },
+            new Dictionary<string, int> { [">5k"] = 2 },
+            new Dictionary<string, int> { ["126243.973"] = 2 },
+            new Dictionary<string, int> { ["bounded be f32 triple tail"] = 2 },
+            new Dictionary<string, int> { ["-0.031,0,0.527"] = 2 },
+            new Dictionary<string, int> { ["NPC_BASE post-creation tail object-view candidate"] = 2 },
+            new Dictionary<string, int> { ["01 00 08 50 02 19 00 30"] = 2 },
+            new Dictionary<string, int> { ["Sleeper Sergeant"] = 2 },
+            "npc-post-separator.txt",
+            19750);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary tailSemanticSummary = new(
+            "review planar direction-like f32 tail",
+            "bounded f32 triple has a zero middle component and sub-unit-scale magnitude",
+            "be f32 x3",
+            2,
+            new Dictionary<string, int>
+            {
+                ["post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3"] = 2
+            },
+            new Dictionary<string, int> { ["12"] = 2 },
+            new Dictionary<string, int> { ["be f32 x3"] = 2 },
+            new Dictionary<string, int> { ["bounded be f32 triple tail"] = 2 },
+            new Dictionary<string, int> { ["x-/y0/z+"] = 2 },
+            new Dictionary<string, int> { ["y0"] = 2 },
+            new Dictionary<string, int> { ["<=10"] = 2 },
+            new Dictionary<string, int> { ["0.528"] = 2 },
+            new Dictionary<string, int> { ["-0.031,0,0.527"] = 2 },
+            new Dictionary<string, int> { ["-2,2,-2"] = 2 },
+            new Dictionary<string, int> { ["65 fd"] = 2 },
+            new Dictionary<string, int> { ["NPC_BASE post-creation tail object-view candidate"] = 2 },
+            new Dictionary<string, int> { ["01 00 08 50 02 19 00 30"] = 2 },
+            new Dictionary<string, int> { ["Sleeper Sergeant"] = 2 },
+            "npc-post-separator.txt",
+            19750);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary controlSemanticSummary = new(
+            "hold no-tail control",
+            "bounded be f64 vector reaches the later header with no post-vector tail",
+            "different from parent Position",
+            2,
+            new Dictionary<string, int>
+            {
+                ["post[0]=lead 02; post[1]=subtype 05; post[2..4]=00 x3; post[5..8]=bridge 4 bytes; post[9..32]=be f64 x3; no post-vector tail"] = 2
+            },
+            new Dictionary<string, int> { ["44"] = 2 },
+            new Dictionary<string, int> { ["02"] = 2 },
+            new Dictionary<string, int> { ["05"] = 2 },
+            new Dictionary<string, int> { ["3"] = 2 },
+            new Dictionary<string, int> { ["4"] = 2 },
+            new Dictionary<string, int> { ["8c 2b c6 d0"] = 2 },
+            new Dictionary<string, int> { ["2,2,7.141"] = 2 },
+            new Dictionary<string, int> { ["-58639,95,-111833"] = 2 },
+            new Dictionary<string, int> { [">5k"] = 2 },
+            new Dictionary<string, int> { ["126243.973"] = 2 },
+            new Dictionary<string, int> { ["0"] = 2 },
+            new Dictionary<string, int> { ["-"] = 2 },
+            new Dictionary<string, int> { ["no post-vector tail"] = 2 },
+            new Dictionary<string, int> { ["-"] = 2 },
+            new Dictionary<string, int> { ["NPC_BASE dynamic creation candidate"] = 2 },
+            new Dictionary<string, int> { ["01 00 0c 57 02 95 cd ab"] = 2 },
+            new Dictionary<string, int> { ["Hariel"] = 2 },
+            "npc-post-separator.txt",
+            19750);
+
+        byte[] bytes = PacketResearcher.ParseHexBytes(
+            "02 03 01 00 0c 57 02 e2 cd ab 04 8e 53 6c 65 65 70 65 72 20 53 65 72 67 65 61 6e 74 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 22 40 01")
+            .ToArray();
+        Protocol03ObjectViewSample sample = PacketResearcher.DetectProtocol03ObjectViews(bytes, 19750, "server").Single();
+        PacketDumpFileSummary dump = new(
+            "npc-post-separator.txt",
+            1,
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, int>(),
+            new Dictionary<string, IReadOnlyList<int>>(),
+            Array.Empty<Protocol04PacketSequenceSample>(),
+            new[] { sample },
+            Array.Empty<Protocol04InteractionPayloadSample>(),
+            Array.Empty<PlayerAttributePayloadSample>(),
+            Array.Empty<ManageBonusPayloadSample>());
+
+        PacketResearchReport report = new(
+            ".",
+            Array.Empty<string>(),
+            null,
+            Array.Empty<string>(),
+            Array.Empty<RpcHeaderEntry>(),
+            Array.Empty<AttributeDefinition>(),
+            Array.Empty<FxDefinition>(),
+            new[]
+            {
+                new GameObjectEntry("NPC_BASE", 599, "data/gameobjects.csv", 32012)
+            },
+            Array.Empty<WorldEntityEntry>(),
+            Array.Empty<RajkoRpcEntry>(),
+            Array.Empty<HardcodedCommandExample>(),
+            Array.Empty<Protocol03HardcodedExample>(),
+            Array.Empty<Protocol04InteractionCommandExample>(),
+            Array.Empty<VendorInventoryEntry>(),
+            Array.Empty<RpcComparison>(),
+            new[] { dump })
+        {
+            Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries = new[] { extendedBoundarySummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries = new[] { fieldSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries = new[] { vectorSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries = new[] { vectorTailSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries = new[] { layoutActionSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries = new[] { reviewedBodyLayoutSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries = new[] { vectorSemanticSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries = new[] { tailSemanticSummary },
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries = new[] { controlSemanticSummary }
+        };
+
+        string json = System.Text.Json.JsonSerializer.Serialize(report, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries\"", json);
+        Assert.Contains("\"Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries\"", json);
+        Assert.Contains("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | First nonzero offset |", markdown);
+        Assert.Contains("| post-separator later header candidate | evidence only; post-separator lead | 60 | 13 | 45 | `02` | `05` | 5 | 7 | 1 | 2 |", markdown);
+        Assert.Contains("02 05 00 00 00 00 00 65 fd c0 00 00 00 40 c8 b5 (2)", markdown);
+        Assert.Contains("65 fd c0 00 00 00 40 c8 (2)", markdown);
+        Assert.Contains("| Parser action | Reason | Layout rows | Candidates | Boundary interpretations | Source parser actions | Body bytes |", markdown);
+        Assert.Contains("| review bounded vector-tail body | bounded be f64 vector followed by bounded be f32 tail fields | 1 | 2 | post-separator later header candidate (2) | evidence only; post-separator lead (2) | 60 (2) |", markdown);
+        Assert.Contains("| Layout action | Interpretation | Field layout | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run | Bridge offset | Bridge bytes | Vector offset | Vector encoding | Tail offset | Tail bytes | Tail encoding | Tail disposition |", markdown);
+        Assert.Contains("| review bounded vector-tail body | bounded be f64 vector followed by bounded be f32 tail fields | post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3 | 60 | 13 | 45 | `02` | `05` | 5 | 7 | 2 | 9 | be f64 x3 | 33 | 12 | be f32 x3 | bounded be f32 triple tail | 1 | 2 | post-separator later header candidate (2) | evidence only; post-separator lead (2) | 65 fd (2) | -2,2,-2 (2) |", markdown);
+        Assert.Contains("| Semantic action | Reason | Parent position relation | Candidates | Field layouts | Body bytes | Lead bytes | Second bytes | Zero-runs | Bridge byte counts | Pre-vector bridges | Vector samples | Parent position samples | Vector-parent distances |", markdown);
+        Assert.Contains("| treat as non-position vector body field | reviewed be f64 vector is bounded but does not match decoded parent Position | different from parent Position | 2 | post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3 (2) | 60 (2) | 02 (2) | 05 (2) | 5 (2) | 2 (2) | 65 fd (2) | -2,2,-2 (2) | -58639,95,-111833 (2) | >5k (2) | 126243.973 (2) | bounded be f32 triple tail (2) | -0.031,0,0.527 (2) |", markdown);
+        Assert.Contains("| Tail semantic action | Reason | Tail float kind | Candidates | Field layouts | Tail bytes | Tail encodings | Tail dispositions | Axis patterns | Planar axes | Magnitudes |", markdown);
+        Assert.Contains("| review planar direction-like f32 tail | bounded f32 triple has a zero middle component and sub-unit-scale magnitude | be f32 x3 | 2 | post[0]=lead 02; post[1]=subtype 05; post[2..6]=00 x5; post[7..8]=bridge 2 bytes; post[9..32]=be f64 x3; post[33..44]=be f32 x3 (2) | 12 (2) | be f32 x3 (2) | bounded be f32 triple tail (2) | x-/y0/z+ (2) | y0 (2) | <=10 (2) | 0.528 (2) | -0.031,0,0.527 (2) | -2,2,-2 (2) | 65 fd (2) |", markdown);
+        Assert.Contains("| Control action | Reason | Parent position relation | Candidates | Field layouts | Body bytes | Lead bytes | Second bytes | Zero-runs | Bridge byte counts | Pre-vector bridges | Vector samples | Parent position samples | Vector-parent distances | Distance samples | Tail bytes | Tail encodings | Tail dispositions | Tail float samples | Header classifications | Header prefixes | Text samples | Sample |", markdown);
+        Assert.Contains("| hold no-tail control | bounded be f64 vector reaches the later header with no post-vector tail | different from parent Position | 2 | post[0]=lead 02; post[1]=subtype 05; post[2..4]=00 x3; post[5..8]=bridge 4 bytes; post[9..32]=be f64 x3; no post-vector tail (2) | 44 (2) | 02 (2) | 05 (2) | 3 (2) | 4 (2) | 8c 2b c6 d0 (2) | 2,2,7.141 (2) | -58639,95,-111833 (2) | >5k (2) | 126243.973 (2) | 0 (2) | - (2) | no post-vector tail (2) | - (2) | NPC_BASE dynamic creation candidate (2) | 01 00 0c 57 02 95 cd ab (2) | Hariel (2) | `npc-post-separator.txt:19750` |", markdown);
+        Assert.Contains("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | Bridge offset | Bridge bytes | Vector offset | Encoding | Disposition |", markdown);
+        Assert.Contains("| post-separator later header candidate | evidence only; post-separator lead | 60 | 13 | 45 | `02` | `05` | 5 | 7 | 2 | 9 | be f64 x3 | bounded finite triple | 1 | 2 | 65 fd (2) | -2,2,-2 (2) |", markdown);
+        Assert.Contains("c0 00 00 00 40 c8 b5 85 40 00 00 00 00 80 d5 ed c0 00 00 00 00 d2 4a c4 (2)", markdown);
+        Assert.Contains("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | Bridge offset | Bridge bytes | Vector offset | Vector encoding | Vector disposition | Tail offset | Tail bytes | Tail encoding | Tail disposition |", markdown);
+        Assert.Contains("| post-separator later header candidate | evidence only; post-separator lead | 60 | 13 | 45 | `02` | `05` | 5 | 7 | 2 | 9 | be f64 x3 | bounded finite triple | 33 | 12 | be f32 x3 | bounded be f32 triple tail | 1 | 2 | 65 fd (2) | -2,2,-2 (2) |", markdown);
+        Assert.Contains("bd 00 00 00 00 49 d2 7e 3f 07 00 00 (2)", markdown);
+        Assert.Contains("-0.031,0,0.527 (2)", markdown);
+        Assert.Contains("`npc-post-separator.txt:19750`", markdown);
     }
 
     [Fact]
@@ -10228,7 +15965,8 @@ public class PacketResearcherTests
         IReadOnlyList<byte> body,
         string outerPrefixFieldHex,
         string outerPostPrefixLeadHex,
-        string boundaryHeaderHex)
+        string boundaryHeaderHex,
+        byte selector = 0x03)
     {
         var bytes = new List<byte>
         {
@@ -10236,7 +15974,7 @@ public class PacketResearcherTests
             0x01, 0x00, 0x02, 0x0c
         };
         bytes.AddRange(Enumerable.Repeat((byte)0x00, 13));
-        bytes.Add(0x03);
+        bytes.Add(selector);
         bytes.AddRange(PacketResearcher.ParseHexBytes("00 06 0e 01 18 58 3a f6 c6 00 00 be 42 44 35 af 46"));
         bytes.AddRange(PacketResearcher.ParseHexBytes("ff 00 00 00 10 00 00 00 00 00 01 ff 00 00 00 00"));
         bytes.AddRange(Enumerable.Repeat((byte)0x00, 22));
@@ -10293,6 +16031,15 @@ public class PacketResearcherTests
         return Enumerable.Repeat((byte)0x00, 6)
             .Concat(new byte[] { 0xff, 0x00 })
             .Concat(Enumerable.Repeat((byte)0x00, 33))
+            .Concat(PacketResearcher.ParseHexBytes(suffixHex))
+            .ToArray();
+    }
+
+    private static byte[] BuildProtocol03Mode06Guarded94Body(string suffixHex)
+    {
+        return Enumerable.Repeat((byte)0x00, 6)
+            .Concat(new byte[] { 0xff, 0x00 })
+            .Concat(Enumerable.Repeat((byte)0x00, 70))
             .Concat(PacketResearcher.ParseHexBytes(suffixHex))
             .ToArray();
     }

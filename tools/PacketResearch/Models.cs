@@ -335,7 +335,104 @@ public sealed record Unknown6dPayloadSample(
     int? EntryCount,
     int? ParsedEntryCount,
     IReadOnlyList<int> EntryIds,
+    IReadOnlyList<Unknown6dEntryRecord> EntryRecords,
     string PayloadHex);
+
+public sealed record Unknown6dEntryRecord(
+    string PrefixHex,
+    int PrefixValue,
+    string EntryIdHex,
+    int EntryId,
+    string TailHex);
+
+public sealed record Unknown6dListRecordShapeSummary(
+    int PayloadLength,
+    string ModeHex,
+    int ModeValue,
+    string Field1,
+    int Field1Value,
+    int ListOffset,
+    int? ListFlag,
+    int? EntryCount,
+    int? ParsedEntryCount,
+    int PayloadCount,
+    int TotalRecordCount,
+    int DistinctEntryIdCount,
+    IReadOnlyDictionary<string, int> RecordPrefixes,
+    IReadOnlyDictionary<string, int> RecordTails,
+    IReadOnlyDictionary<string, int> RecordTailU16Offset0Values,
+    IReadOnlyDictionary<string, int> RecordTailU16Offset1Values,
+    IReadOnlyDictionary<string, int> EntryIds,
+    IReadOnlyDictionary<string, int> EntryIdResourceReferences,
+    IReadOnlyDictionary<string, int> EntryIdAttributeReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record Unknown6dEntryIdSummary(
+    int EntryId,
+    IReadOnlyDictionary<string, int> EntryIdHexes,
+    int PayloadCount,
+    int TotalRecordCount,
+    IReadOnlyDictionary<string, int> Modes,
+    IReadOnlyDictionary<string, int> PayloadShapes,
+    IReadOnlyDictionary<string, int> RecordPrefixes,
+    IReadOnlyDictionary<string, int> RecordTails,
+    IReadOnlyDictionary<string, int> RecordTailU16Offset1Values,
+    IReadOnlyDictionary<string, int> ResourceReferences,
+    IReadOnlyDictionary<string, int> AttributeReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record Unknown6dEntryTailFlagSummary(
+    int EntryId,
+    IReadOnlyDictionary<string, int> EntryIdHexes,
+    string TailHex,
+    IReadOnlyDictionary<string, int> TailU16Offset0Values,
+    IReadOnlyDictionary<string, int> TailU16Offset1Values,
+    int FlagRecordCount,
+    int TotalEntryRecordCount,
+    int FlagPayloadCount,
+    int TotalEntryPayloadCount,
+    IReadOnlyDictionary<string, int> Modes,
+    IReadOnlyDictionary<string, int> PayloadShapes,
+    IReadOnlyDictionary<string, int> ResourceReferences,
+    IReadOnlyDictionary<string, int> AttributeReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record Unknown6dPacketContextSummary(
+    string ModeHex,
+    int ModeValue,
+    string Field1,
+    int Field1Value,
+    int PayloadCount,
+    int PacketCount,
+    int TotalRecordCount,
+    int DistinctEntryIdCount,
+    int SamePacket80c1PayloadCount,
+    int NonzeroTailRecordCount,
+    IReadOnlyDictionary<string, int> EntryCounts,
+    IReadOnlyDictionary<string, int> PayloadShapes,
+    IReadOnlyDictionary<string, int> PreviousHeaders,
+    IReadOnlyDictionary<string, int> NextHeaders,
+    IReadOnlyDictionary<string, int> SamePacket80c1Fields,
+    IReadOnlyDictionary<string, int> RecordTails,
+    IReadOnlyDictionary<string, int> EntryIdResourceReferences,
+    IReadOnlyDictionary<string, int> EntryIdAttributeReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
 
 public sealed record Unknown80c1PayloadSample(
     int Line,
@@ -345,6 +442,32 @@ public sealed record Unknown80c1PayloadSample(
     string Field1,
     int Field1Value,
     string PayloadHex);
+
+public sealed record Unknown80c1PacketContextSummary(
+    string Field0,
+    int Field0Value,
+    string Field1,
+    int Field1Value,
+    int PayloadCount,
+    int PacketCount,
+    int SamePacket6dPayloadCount,
+    int SamePacket80b2PayloadCount,
+    int SamePacket80b3PayloadCount,
+    int SamePacket80bcPayloadCount,
+    IReadOnlyDictionary<string, int> PayloadShapes,
+    IReadOnlyDictionary<string, int> PreviousHeaders,
+    IReadOnlyDictionary<string, int> NextHeaders,
+    IReadOnlyDictionary<string, int> SamePacket6dShapes,
+    IReadOnlyDictionary<string, int> SamePacket80b2Fields,
+    IReadOnlyDictionary<string, int> SamePacket80b3Fields,
+    IReadOnlyDictionary<string, int> SamePacket80bcShapes,
+    IReadOnlyDictionary<string, int> Field0LocalReferences,
+    IReadOnlyDictionary<string, int> Field1LocalReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
 
 public sealed record LoadWorldPayloadSample(
     int Line,
@@ -481,6 +604,447 @@ public sealed record ManageBonusPayloadSample(
     string Field2,
     int Field2Value,
     string PayloadHex);
+
+public sealed record ManageBonusTradeStatePayloadSample(
+    int Line,
+    int PayloadLength,
+    string TradeField0,
+    string TradeField1,
+    int TradeField1Value,
+    string TradeField2,
+    int TradeField2Value,
+    string RepeatedTradeField1,
+    int RepeatedTradeField1Value,
+    string VariantValue,
+    int VariantValueInt,
+    string VariantRole,
+    string Byte15Value,
+    int Byte15ValueInt,
+    string StateName,
+    string PayloadHex);
+
+public sealed record ManageBonusTradeStatePayloadDecodeSummary(
+    string VariantValue,
+    int VariantValueInt,
+    string VariantRole,
+    string Byte15Value,
+    int Byte15ValueInt,
+    string StateName,
+    int PayloadCount,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record ManageBonusStateIdLongFormFieldLeadSummary(
+    string Field0,
+    string Field1,
+    int Field1Value,
+    IReadOnlyList<string> FieldReferences,
+    int PayloadCount,
+    int SamePacketB2Matches,
+    int SamePacketB2ValueMirrors,
+    int SamePacketB3Matches,
+    IReadOnlyDictionary<string, int> Field2Values,
+    IReadOnlyDictionary<string, int> Byte11Values,
+    IReadOnlyDictionary<string, int> Byte15Values,
+    int SamePacketVendorOrMarketHeaders,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record ManageBonusStateIdLongFormSemanticFamilySummary(
+    string SemanticFamily,
+    string Interpretation,
+    int DistinctFields,
+    int PayloadCount,
+    int SamePacketB2Matches,
+    int SamePacketB2ValueMirrors,
+    int SamePacketB3Matches,
+    int SamePacketVendorOrMarketHeaders,
+    IReadOnlyDictionary<string, int> Field0Values,
+    IReadOnlyDictionary<string, int> Field2Values,
+    IReadOnlyDictionary<string, int> Byte11Values,
+    IReadOnlyDictionary<string, int> Byte15Values,
+    IReadOnlyDictionary<string, int> TopFieldReferences,
+    IReadOnlyDictionary<string, int> TopFields,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string SampleField0,
+    string SampleField1,
+    int SampleField1Value,
+    IReadOnlyList<string> SampleFieldReferences,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record ManageBonusTradeStateValueSummary(
+    string Field0,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    IReadOnlyDictionary<string, int> Field2References,
+    string Byte11Value,
+    int Byte11ValueInt,
+    IReadOnlyDictionary<string, int> Byte11References,
+    string Byte15Value,
+    int Byte15ValueInt,
+    int PayloadCount,
+    int SamePacketB2Matches,
+    int SamePacketB2ValueMirrors,
+    IReadOnlyDictionary<string, int> SamePacketB2Field1Values,
+    IReadOnlyDictionary<string, int> SamePacketB2Field2Values,
+    int SamePacketOppositeByte15Rows,
+    int SamePacketB3Matches,
+    int SamePacketVendorOrMarketHeaders,
+    int SamePacketObjectInteractionHeaders,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    IReadOnlyDictionary<string, int> SampleFiles,
+    string SampleFile,
+    int SampleLine,
+    string SamplePayloadHex);
+
+public sealed record ManageBonusTradeStateByte15PairSummary(
+    string Field0,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string Byte11Value,
+    int Byte11ValueInt,
+    int OffPayloadCount,
+    int OnPayloadCount,
+    int SamePacketPairedRows,
+    int OffSamePacketB2ValueMirrors,
+    int OnSamePacketB2ValueMirrors,
+    int OffSamePacketB3Matches,
+    int OnSamePacketB3Matches,
+    int SamePacketVendorOrMarketHeaders,
+    IReadOnlyDictionary<string, int> LinkedB2Field1Values,
+    IReadOnlyDictionary<string, int> LinkedB2Field2Values,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    string OffSampleFile,
+    int OffSampleLine,
+    string OffSamplePayloadHex,
+    string OnSampleFile,
+    int OnSampleLine,
+    string OnSamplePayloadHex);
+
+public sealed record ManageBonusTradeStateByte15TransitionSummary(
+    string Field0,
+    string Field1,
+    int Field1Value,
+    string Field2,
+    int Field2Value,
+    string Byte11Value,
+    int Byte11ValueInt,
+    int PairedPacketCount,
+    int PairCombinationCount,
+    int OffBeforeOnPairs,
+    int OnBeforeOffPairs,
+    int AdjacentPairCombinations,
+    int MinManageBonusRowDistance,
+    int MaxManageBonusRowDistance,
+    int AdjacentProtocolBlockPairs,
+    int MinProtocolBlockDistance,
+    int MaxProtocolBlockDistance,
+    int SamePacketB2Packets,
+    int SamePacketB3Packets,
+    int SamePacketVendorOrMarketPackets,
+    int SamePacketObjectInteractionPackets,
+    int BetweenPairB2MirrorPairs,
+    int PrecedingB3MatchPairs,
+    int CompleteStateRefreshPairs,
+    int B2OnlyStateRefreshPairs,
+    int UnmatchedStateRefreshPairs,
+    int OnCompanionRows,
+    int OffCompanionRows,
+    int BothCompanionRows,
+    int OnCompanionByte15Matches,
+    int OffCompanionByte15Matches,
+    int SameCompanionField1Pairs,
+    int SameCompanionByte11Pairs,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPacketSequences,
+    IReadOnlyDictionary<string, int> TopPairHeaderWindows,
+    IReadOnlyDictionary<string, int> BetweenPairB2Values,
+    IReadOnlyDictionary<string, int> PrecedingB3Values,
+    IReadOnlyDictionary<string, int> OnCompanionField0Values,
+    IReadOnlyDictionary<string, int> OffCompanionField0Values,
+    IReadOnlyDictionary<string, int> CompanionField0Pairs,
+    IReadOnlyDictionary<string, int> OnCompanionField1Values,
+    IReadOnlyDictionary<string, int> OffCompanionField1Values,
+    IReadOnlyDictionary<string, int> CompanionField1Pairs,
+    IReadOnlyDictionary<string, int> OnCompanionByte11Values,
+    IReadOnlyDictionary<string, int> OffCompanionByte11Values,
+    IReadOnlyDictionary<string, int> CompanionByte11Pairs,
+    IReadOnlyList<ManageBonusTradeStateCompanionMapFieldSummary> CompanionMapFieldSummaries,
+    IReadOnlyDictionary<string, int> OnCompanionShapes,
+    IReadOnlyDictionary<string, int> OffCompanionShapes,
+    IReadOnlyDictionary<string, int> CompanionShapePairs,
+    IReadOnlyDictionary<string, int> SampleFiles,
+    string SampleFile,
+    int SampleLine,
+    int OffManageBonusIndex,
+    int OnManageBonusIndex,
+    string OffSamplePayloadHex,
+    string OnSamplePayloadHex);
+
+public sealed record ManageBonusTradeStateCompanionMapFieldSummary(
+    string OnCompanionByte11Value,
+    int OnCompanionByte11ValueInt,
+    string OffCompanionByte11Value,
+    int OffCompanionByte11ValueInt,
+    int CompanionPairCombinationCount,
+    int SameCompanionField1Pairs,
+    int CompanionField0PairDistinctCount,
+    int CompanionField1PairDistinctCount,
+    int ListedCompanionField1PairCount,
+    int OnCompanionField1DistinctCount,
+    int OffCompanionField1DistinctCount,
+    IReadOnlyDictionary<string, int> CompanionField0Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1PairRepeatBuckets,
+    IReadOnlyDictionary<string, int> OnCompanionField1Values,
+    IReadOnlyDictionary<string, int> OffCompanionField1Values);
+
+public sealed record ManageBonusTradeStateCompanionMapSummary(
+    string TradeByte11Value,
+    int TradeByte11ValueInt,
+    string OnCompanionByte11Value,
+    int OnCompanionByte11ValueInt,
+    string OffCompanionByte11Value,
+    int OffCompanionByte11ValueInt,
+    IReadOnlyDictionary<string, int> CompanionByte11PairReferences,
+    IReadOnlyDictionary<string, int> OnCompanionByte11References,
+    IReadOnlyDictionary<string, int> OffCompanionByte11References,
+    int CompanionPairCombinationCount,
+    int TransitionPairCombinationCount,
+    int SameCompanionByte11Pairs,
+    int TransitionCompleteStateRefreshPairs,
+    int TransitionB2OnlyStateRefreshPairs,
+    int TransitionUnmatchedStateRefreshPairs,
+    int SameCompanionField1Pairs,
+    int CompanionField0PairDistinctCount,
+    int CompanionField1PairDistinctCount,
+    int ListedCompanionField1PairCount,
+    int OnCompanionField1DistinctCount,
+    int OffCompanionField1DistinctCount,
+    IReadOnlyDictionary<string, int> CompanionField0Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1PairRepeatBuckets,
+    IReadOnlyDictionary<string, int> CompanionField1PairReferences,
+    IReadOnlyDictionary<string, int> OnCompanionField1Values,
+    IReadOnlyDictionary<string, int> OffCompanionField1Values,
+    IReadOnlyDictionary<string, int> OnCompanionField1References,
+    IReadOnlyDictionary<string, int> OffCompanionField1References,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPairHeaderWindows,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateParserActionSummary(
+    string ParserAction,
+    string ActionReason,
+    int CompanionMapRows,
+    int TransitionPairCombinationCount,
+    int CompanionPairCombinationCount,
+    int StableCompanionByte11Pairs,
+    int CompleteStateRefreshPairs,
+    int B2OnlyStateRefreshPairs,
+    int UnmatchedStateRefreshPairs,
+    int SameCompanionField1Pairs,
+    int CompanionField1PairDistinctCount,
+    IReadOnlyDictionary<string, int> TradeByte11Values,
+    IReadOnlyDictionary<string, int> CompanionByte11Pairs,
+    IReadOnlyDictionary<string, int> CompanionField0Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1PairRepeatBuckets,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPairHeaderWindows,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateSerializedTransitionSummary(
+    string ParserAction,
+    string ActionReason,
+    string TradeField0,
+    string TradeField1,
+    int TradeField1Value,
+    string TradeField2,
+    int TradeField2Value,
+    string TradeByte11Value,
+    int TradeByte11ValueInt,
+    string TradeOnShape,
+    string TradeOffShape,
+    string OnCompanionByte11Value,
+    int OnCompanionByte11ValueInt,
+    string OffCompanionByte11Value,
+    int OffCompanionByte11ValueInt,
+    int TransitionPairCombinationCount,
+    int CompanionPairCombinationCount,
+    int StableCompanionByte11Pairs,
+    int CompleteStateRefreshPairs,
+    int B2OnlyStateRefreshPairs,
+    int UnmatchedStateRefreshPairs,
+    string RefreshClassification,
+    IReadOnlyDictionary<string, int> BetweenPairB2Values,
+    IReadOnlyDictionary<string, int> PrecedingB3Values,
+    IReadOnlyDictionary<string, int> CompanionField0Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1Pairs,
+    IReadOnlyDictionary<string, int> CompanionField1PairRepeatBuckets,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyDictionary<string, int> TopPairHeaderWindows,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateSerializedTransitionSample(
+    string ParserAction,
+    string ActionReason,
+    string RefreshClassification,
+    int ObservedPairCount,
+    string TradeField0,
+    string TradeField1,
+    int TradeField1Value,
+    string TradeField2,
+    int TradeField2Value,
+    string TradeByte11Value,
+    int TradeByte11ValueInt,
+    string TradeOnShape,
+    string TradeOffShape,
+    string OnCompanionByte11Value,
+    int OnCompanionByte11ValueInt,
+    string OffCompanionByte11Value,
+    int OffCompanionByte11ValueInt,
+    string? OnCompanionShape,
+    string? OffCompanionShape,
+    int RowDistance,
+    int ProtocolBlockDistance,
+    string PairHeaderWindow,
+    IReadOnlyList<string> BetweenPairB2Values,
+    string? PrecedingB3Value,
+    string CaptureScope,
+    string PacketSequence,
+    bool HasSamePacketB2,
+    bool HasSamePacketB3,
+    string SampleFile,
+    int SampleLine,
+    int OffManageBonusIndex,
+    int OnManageBonusIndex,
+    string OffSamplePayloadHex,
+    string OnSamplePayloadHex);
+
+public sealed record ManageBonusTradeStateSerializedTransitionParserCoverageSummary(
+    string ParserAction,
+    string RefreshClassification,
+    string ParserCase,
+    int SampleRows,
+    int ObservedPairCount,
+    IReadOnlyDictionary<string, int> TradeByte11Values,
+    IReadOnlyDictionary<string, int> CompanionByte11Pairs,
+    IReadOnlyDictionary<string, int> TradeShapePairs,
+    IReadOnlyDictionary<string, int> BetweenPairB2Values,
+    IReadOnlyDictionary<string, int> PrecedingB3Values,
+    IReadOnlyDictionary<string, int> PairHeaderWindows,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateSerializedTransitionFieldRoleSummary(
+    string FieldRole,
+    string Interpretation,
+    int ObservedPairCount,
+    IReadOnlyDictionary<string, int> Values,
+    IReadOnlyDictionary<string, int> ParserCases,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateSerializedTransitionDecoderRow(
+    string ParserAction,
+    string RefreshClassification,
+    string ParserCase,
+    int ObservedPairCount,
+    string TradeField0,
+    string TradeField1,
+    int TradeField1Value,
+    string TradeField2,
+    int TradeField2Value,
+    string TradeByte11Value,
+    int TradeByte11ValueInt,
+    string OnTradeByte15Value,
+    int OnTradeByte15ValueInt,
+    string OffTradeByte15Value,
+    int OffTradeByte15ValueInt,
+    string BetweenPairB2Field0,
+    int BetweenPairB2Field0Value,
+    string BetweenPairB2Field1,
+    int BetweenPairB2Field1Value,
+    string BetweenPairB2Field2,
+    int BetweenPairB2Field2Value,
+    string? PrecedingB3Value,
+    int? PrecedingB3ValueInt,
+    string? OnCompanionField0,
+    string? OffCompanionField0,
+    string? OnCompanionByte11Value,
+    int? OnCompanionByte11ValueInt,
+    string? OffCompanionByte11Value,
+    int? OffCompanionByte11ValueInt,
+    string? OnCompanionByte15Value,
+    int? OnCompanionByte15ValueInt,
+    string? OffCompanionByte15Value,
+    int? OffCompanionByte15ValueInt,
+    int ProtocolBlockDistance,
+    string PairHeaderWindow,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record ManageBonusTradeStateSerializedTransitionDetection(
+    string ParserAction,
+    string RefreshClassification,
+    string ParserCase,
+    string VariantValue,
+    int VariantValueInt,
+    string VariantRole,
+    string TradeOnShape,
+    string TradeOffShape,
+    int RowDistance,
+    int ProtocolBlockDistance,
+    string PairHeaderWindow,
+    IReadOnlyList<string> BetweenPairB2Values,
+    string? PrecedingB3Value,
+    string? OnCompanionShape,
+    string? OffCompanionShape,
+    string CaptureScope,
+    string PacketSequence,
+    bool HasSamePacketB2,
+    bool HasSamePacketB3,
+    string SampleFile,
+    int SampleLine,
+    int OnManageBonusIndex,
+    int OffManageBonusIndex,
+    string OnSamplePayloadHex,
+    string OffSamplePayloadHex);
+
+public sealed record ManageBonusTradeStateSerializedTransitionDetectionActionSummary(
+    string ParserAction,
+    string RefreshClassification,
+    string ParserCase,
+    int DetectionCount,
+    int DetectionsWithCompanionShapes,
+    int SamePacketB2Count,
+    int SamePacketB3Count,
+    IReadOnlyDictionary<string, int> VariantValues,
+    IReadOnlyDictionary<string, int> VariantRoles,
+    IReadOnlyDictionary<string, int> TradeShapePairs,
+    IReadOnlyDictionary<string, int> CompanionShapePairs,
+    IReadOnlyDictionary<string, int> BetweenPairB2Values,
+    IReadOnlyDictionary<string, int> PrecedingB3Values,
+    IReadOnlyDictionary<string, int> PairHeaderWindows,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    string SampleFile,
+    int SampleLine);
 
 public sealed record PlayerAttributePayloadSample(
     int Line,
@@ -670,6 +1234,265 @@ public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundarySummary(
     string SampleFile,
     int SampleLine);
 
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary(
+    string ParserAction,
+    int BoundaryRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> BoundaryInterpretations,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> TailHeaderOffsets,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> PreHeaderPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary(
+    string BoundaryInterpretation,
+    string ParserAction,
+    int BodyByteCount,
+    string SeparatorOffset,
+    int PreSeparatorByteCount,
+    int PostSeparatorByteCount,
+    int BoundaryRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> TailHeaderOffsets,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> PreSeparatorPrefixes,
+    IReadOnlyDictionary<string, int> PostSeparatorPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary(
+    string BoundaryInterpretation,
+    string ParserAction,
+    int BodyByteCount,
+    int SeparatorOffset,
+    int PostSeparatorByteCount,
+    string PostSeparatorLeadByteHex,
+    string PostSeparatorSecondByteHex,
+    int ZeroRunAfterSecondByte,
+    int? FirstNonZeroAfterSecondByteOffset,
+    int BoundaryRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> TailHeaderOffsets,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> PostSeparatorPrefixes,
+    IReadOnlyDictionary<string, int> FirstNonZeroWindows,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary(
+    string BoundaryInterpretation,
+    string ParserAction,
+    int BodyByteCount,
+    int SeparatorOffset,
+    int PostSeparatorByteCount,
+    string PostSeparatorLeadByteHex,
+    string PostSeparatorSecondByteHex,
+    int ZeroRunAfterSecondByte,
+    int VectorOffset,
+    int PreVectorBridgeOffset,
+    int PreVectorBridgeByteCount,
+    string VectorEncoding,
+    string VectorDisposition,
+    int BoundaryRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> VectorWindows,
+    IReadOnlyDictionary<string, int> FirstNonZeroWindows,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> TailHeaderOffsets,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary(
+    string BoundaryInterpretation,
+    string ParserAction,
+    int BodyByteCount,
+    int SeparatorOffset,
+    int PostSeparatorByteCount,
+    string PostSeparatorLeadByteHex,
+    string PostSeparatorSecondByteHex,
+    int ZeroRunAfterSecondByte,
+    int VectorOffset,
+    int PreVectorBridgeOffset,
+    int PreVectorBridgeByteCount,
+    string VectorEncoding,
+    string VectorDisposition,
+    int TailOffset,
+    int TailByteCount,
+    string TailFloatEncoding,
+    string TailDisposition,
+    int BoundaryRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> TailHexes,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> TailHeaderOffsets,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary(
+    string ParserAction,
+    string ActionReason,
+    int LayoutRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> BoundaryInterpretations,
+    IReadOnlyDictionary<string, int> SourceParserActions,
+    IReadOnlyDictionary<string, int> BodyByteCounts,
+    IReadOnlyDictionary<string, int> PostSeparatorLeadBytes,
+    IReadOnlyDictionary<string, int> PostSeparatorSecondBytes,
+    IReadOnlyDictionary<string, int> ZeroRunsAfterSecondByte,
+    IReadOnlyDictionary<string, int> PreVectorBridgeByteCounts,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorDispositions,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> TailByteCounts,
+    IReadOnlyDictionary<string, int> TailDispositions,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary(
+    string LayoutAction,
+    string LayoutInterpretation,
+    string FieldLayout,
+    int BodyByteCount,
+    int SeparatorOffset,
+    int PostSeparatorByteCount,
+    string PostSeparatorLeadByteHex,
+    string PostSeparatorSecondByteHex,
+    int ZeroRunAfterSecondByte,
+    int PreVectorBridgeOffset,
+    int PreVectorBridgeByteCount,
+    int VectorOffset,
+    string VectorEncoding,
+    int TailOffset,
+    int TailByteCount,
+    string TailFloatEncoding,
+    string TailDisposition,
+    int LayoutRowCount,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> BoundaryInterpretations,
+    IReadOnlyDictionary<string, int> SourceParserActions,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> TailHexes,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TailAvailableBytes,
+    IReadOnlyDictionary<string, int> TailFamilies,
+    IReadOnlyDictionary<string, int> ParentPreValues,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary(
+    string SemanticAction,
+    string SemanticReason,
+    string ParentPositionRelation,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> FieldLayouts,
+    IReadOnlyDictionary<string, int> BodyByteCounts,
+    IReadOnlyDictionary<string, int> PostSeparatorLeadBytes,
+    IReadOnlyDictionary<string, int> PostSeparatorSecondBytes,
+    IReadOnlyDictionary<string, int> ZeroRunsAfterSecondByte,
+    IReadOnlyDictionary<string, int> PreVectorBridgeByteCounts,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> ParentPositionSamples,
+    IReadOnlyDictionary<string, int> VectorToParentDistanceBuckets,
+    IReadOnlyDictionary<string, int> VectorToParentDistanceSamples,
+    IReadOnlyDictionary<string, int> TailDispositions,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary(
+    string SemanticAction,
+    string SemanticReason,
+    string TailFloatKind,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> FieldLayouts,
+    IReadOnlyDictionary<string, int> TailByteCounts,
+    IReadOnlyDictionary<string, int> TailFloatEncodings,
+    IReadOnlyDictionary<string, int> TailDispositions,
+    IReadOnlyDictionary<string, int> TailAxisPatterns,
+    IReadOnlyDictionary<string, int> TailPlanarAxisPatterns,
+    IReadOnlyDictionary<string, int> TailMagnitudeBuckets,
+    IReadOnlyDictionary<string, int> TailMagnitudeSamples,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary(
+    string ControlAction,
+    string ControlReason,
+    string ParentPositionRelation,
+    int CandidateCount,
+    IReadOnlyDictionary<string, int> FieldLayouts,
+    IReadOnlyDictionary<string, int> BodyByteCounts,
+    IReadOnlyDictionary<string, int> PostSeparatorLeadBytes,
+    IReadOnlyDictionary<string, int> PostSeparatorSecondBytes,
+    IReadOnlyDictionary<string, int> ZeroRunsAfterSecondByte,
+    IReadOnlyDictionary<string, int> PreVectorBridgeByteCounts,
+    IReadOnlyDictionary<string, int> PreVectorBridges,
+    IReadOnlyDictionary<string, int> VectorSamples,
+    IReadOnlyDictionary<string, int> ParentPositionSamples,
+    IReadOnlyDictionary<string, int> VectorToParentDistanceBuckets,
+    IReadOnlyDictionary<string, int> VectorToParentDistanceSamples,
+    IReadOnlyDictionary<string, int> TailByteCounts,
+    IReadOnlyDictionary<string, int> TailFloatEncodings,
+    IReadOnlyDictionary<string, int> TailDispositions,
+    IReadOnlyDictionary<string, int> TailFloatSamples,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> TextSamples,
+    string SampleFile,
+    int SampleLine);
+
 public sealed record Protocol03PlayerCharacterCreationRecord(
     int Offset,
     string RecordPrefixHex,
@@ -783,6 +1606,66 @@ public sealed record Protocol03SelectorFfRepeatListCandidate(
     int? PostMarkerFirstFieldValue,
     string PostMarkerFieldLayoutKind);
 
+public sealed record Protocol03SelectorFfRepeatListDecodedRow(
+    string ParserAction,
+    string ContinuationMarkerRole,
+    string File,
+    int Line,
+    string? Direction,
+    int PacketOffset,
+    int ViewId,
+    int UpdateCount,
+    string FirstSelector,
+    string Classification,
+    string SegmentClassification,
+    int SelectorOffset,
+    int PayloadBytes,
+    int PositionOffset,
+    string PositionHex,
+    double X,
+    double Y,
+    double Z,
+    int RepeatStride,
+    int RepeatRecordCount,
+    int ContinuationOffset,
+    int ContinuationBytes,
+    string Entry1LeadHex,
+    int Entry1ZeroRun,
+    int? Entry1FieldOffset,
+    string Entry1FieldHex,
+    int? Entry1FieldValue,
+    string Entry1FieldLayoutKind,
+    int? Entry1SecondaryFieldOffset,
+    string Entry1SecondaryFieldHex,
+    int? Entry1SecondaryFieldValue,
+    int? Entry1EffectiveFieldOffset,
+    string Entry1EffectiveFieldHex,
+    int? Entry1EffectiveFieldValue,
+    string Entry1EffectiveFieldSource,
+    string Entry2LeadHex,
+    int Entry2ZeroRun,
+    int? Entry2FieldOffset,
+    string Entry2FieldHex,
+    int? Entry2FieldValue,
+    string Entry2FieldLayoutKind,
+    int? Entry2SecondaryFieldOffset,
+    string Entry2SecondaryFieldHex,
+    int? Entry2SecondaryFieldValue,
+    int? Entry2EffectiveFieldOffset,
+    string Entry2EffectiveFieldHex,
+    int? Entry2EffectiveFieldValue,
+    string Entry2EffectiveFieldSource,
+    string ContinuationPrefixHex,
+    string ContinuationPrefixBeforeMarkerHex,
+    int ContinuationMarkerOffset,
+    string ContinuationMarkerHex,
+    string PostMarkerLeadHex,
+    int PostMarkerZeroRun,
+    int? PostMarkerFirstFieldOffset,
+    string PostMarkerFirstFieldHex,
+    int? PostMarkerFirstFieldValue,
+    string PostMarkerFieldLayoutKind);
+
 public sealed record Protocol03SelectorFfRepeatListFieldSummary(
     string FieldRole,
     int RoleOrder,
@@ -886,6 +1769,33 @@ public sealed record Protocol03SelectorFfRepeatListEffectiveShapeSummary(
     string SampleFile,
     int SampleLine);
 
+public sealed record Protocol03SelectorFfRepeatListEntryPairSummary(
+    int RepeatStride,
+    int RepeatRecordCount,
+    int ContinuationOffset,
+    string ContinuationPrefixHex,
+    string Entry1FieldHex,
+    int? Entry1FieldValue,
+    string Entry2EffectiveFieldHex,
+    int? Entry2EffectiveFieldValue,
+    int CandidateCount,
+    int DistinctPostMarkerFieldCount,
+    IReadOnlyDictionary<string, int> Entry2EffectiveSources,
+    IReadOnlyDictionary<string, int> Entry1Layouts,
+    IReadOnlyDictionary<string, int> Entry2Layouts,
+    IReadOnlyDictionary<string, int> PostMarkerFields,
+    IReadOnlyDictionary<string, int> PostMarkerLayouts,
+    IReadOnlyDictionary<string, int> UpdateCounts,
+    IReadOnlyDictionary<string, int> FirstSelectors,
+    IReadOnlyDictionary<string, int> SegmentClassifications,
+    IReadOnlyDictionary<string, int> Entry1ResourceReferences,
+    IReadOnlyDictionary<string, int> Entry2EffectiveResourceReferences,
+    IReadOnlyDictionary<string, int> PostMarkerResourceReferences,
+    IReadOnlyDictionary<string, int> CaptureScopes,
+    IReadOnlyList<Protocol03SelectorFfRepeatListShapePositionSample> PositionSamples,
+    string SampleFile,
+    int SampleLine);
+
 public sealed record Protocol03SelectorFfRepeatListContinuationMarkerSummary(
     string ContinuationPrefixBeforeMarkerHex,
     string ContinuationMarkerHex,
@@ -919,6 +1829,59 @@ public sealed record Protocol03SelectorFfRepeatListContinuationMarkerSummary(
     IReadOnlyDictionary<string, int> FirstSelectors,
     IReadOnlyDictionary<string, int> SegmentClassifications,
     IReadOnlyList<Protocol03SelectorFfRepeatListShapePositionSample> PositionSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03SelectorFfRepeatListContinuationParserActionSummary(
+    string ParserAction,
+    string ActionReason,
+    int MarkerRowCount,
+    int CandidateCount,
+    int ShapeCount,
+    int CandidatesWithHeaderWindows,
+    int CandidatesWithVendorHeaderWindows,
+    int HeaderWindowCount,
+    int VendorHeaderWindowCount,
+    IReadOnlyDictionary<string, int> ContinuationPrefixBeforeMarkers,
+    IReadOnlyDictionary<string, int> ContinuationPrefixes,
+    IReadOnlyDictionary<string, int> PostMarkerLayouts,
+    IReadOnlyDictionary<string, int> PostMarkerFields,
+    IReadOnlyDictionary<string, int> Entry1Fields,
+    IReadOnlyDictionary<string, int> Entry2PrimaryFields,
+    IReadOnlyDictionary<string, int> Entry2SecondaryFields,
+    IReadOnlyDictionary<string, int> Entry2EffectiveFields,
+    IReadOnlyDictionary<string, int> Entry2EffectiveSources,
+    IReadOnlyDictionary<string, int> HeaderRegions,
+    IReadOnlyDictionary<string, int> VendorHeaderWindows,
+    IReadOnlyDictionary<string, int> FirstSelectors,
+    IReadOnlyDictionary<string, int> SegmentClassifications,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03SelectorFfRepeatListParserCoverageSummary(
+    string ParserCase,
+    string CoverageDisposition,
+    int ActionRowCount,
+    int MarkerRowCount,
+    int CoveredCandidateCount,
+    int ShapeCount,
+    int CandidatesWithHeaderWindows,
+    int CandidatesWithVendorHeaderWindows,
+    int HeaderWindowCount,
+    int VendorHeaderWindowCount,
+    IReadOnlyDictionary<string, int> ParserActions,
+    IReadOnlyDictionary<string, int> ActionReasons,
+    IReadOnlyDictionary<string, int> ContinuationPrefixBeforeMarkers,
+    IReadOnlyDictionary<string, int> ContinuationPrefixes,
+    IReadOnlyDictionary<string, int> PostMarkerLayouts,
+    IReadOnlyDictionary<string, int> PostMarkerFields,
+    IReadOnlyDictionary<string, int> Entry1Fields,
+    IReadOnlyDictionary<string, int> Entry2EffectiveFields,
+    IReadOnlyDictionary<string, int> Entry2EffectiveSources,
+    IReadOnlyDictionary<string, int> HeaderRegions,
+    IReadOnlyDictionary<string, int> VendorHeaderWindows,
+    IReadOnlyDictionary<string, int> FirstSelectors,
+    IReadOnlyDictionary<string, int> SegmentClassifications,
     string SampleFile,
     int SampleLine);
 
@@ -1286,6 +2249,42 @@ public sealed record Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary
     IReadOnlyDictionary<string, int> Entry2EffectiveFields,
     IReadOnlyDictionary<string, int> PostMarkerFields,
     IReadOnlyList<Protocol03SelectorFfRepeatListVendorBoundaryInterpretationTargetSummary> TopTargets);
+
+public sealed record Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow(
+    string ParserDecision,
+    string DecisionReason,
+    string EvidenceDisposition,
+    string ParserPriority,
+    bool IsModeledFieldOverlap,
+    string TargetInterpretation,
+    string Name,
+    string Direction,
+    string EncodedHeader,
+    IReadOnlyList<string> Protocols,
+    string HeaderRegion,
+    int HeaderPayloadOffset,
+    int HeaderObjectOffset,
+    int CandidateCount,
+    int HeaderWindowCount,
+    int ShapeCount,
+    IReadOnlyDictionary<string, int> TargetLocalOffsets,
+    IReadOnlyDictionary<string, int> TargetBodySpanBytes,
+    IReadOnlyDictionary<string, int> TargetBodyHexes,
+    IReadOnlyDictionary<string, int> PositionOffsets,
+    IReadOnlyDictionary<string, int> WindowHexes,
+    IReadOnlyDictionary<string, int> ContinuationPrefixes,
+    IReadOnlyDictionary<string, int> LowHalfResourceReferences,
+    IReadOnlyDictionary<string, int> HighHalfResourceReferences,
+    IReadOnlyDictionary<string, int> NearbyU16LengthMatches,
+    IReadOnlyDictionary<string, int> Entry1Fields,
+    IReadOnlyDictionary<string, int> Entry1ResourceReferences,
+    IReadOnlyDictionary<string, int> Entry2EffectiveFields,
+    IReadOnlyDictionary<string, int> Entry2EffectiveResourceReferences,
+    IReadOnlyDictionary<string, int> PostMarkerFields,
+    IReadOnlyDictionary<string, int> PostMarkerResourceReferences,
+    IReadOnlyDictionary<string, int> FirstSelectors,
+    string SampleFile,
+    int SampleLine);
 
 public sealed record Protocol03SelectorFfRepeatListHeaderSample(
     string Name,
@@ -1856,6 +2855,327 @@ public sealed record Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbedde
     string SampleFile,
     int SampleLine);
 
+public sealed record Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary(
+    string MovementDisposition,
+    string InnerSelectorHex,
+    int WindowCount,
+    IReadOnlyDictionary<string, int> ShapeDispositions,
+    IReadOnlyDictionary<string, int> TrailerDispositions,
+    IReadOnlyDictionary<string, int> PostMovementLeads,
+    IReadOnlyDictionary<string, int> PostMovementNextLeads,
+    IReadOnlyDictionary<string, int> BytesRemainingAfterMovement,
+    IReadOnlyDictionary<string, int> PreTailFieldOffsets,
+    IReadOnlyDictionary<string, int> PreTailFields,
+    IReadOnlyDictionary<string, int> PreAnchorPreLeads,
+    IReadOnlyDictionary<string, int> PreAnchorTrailingLeads,
+    IReadOnlyDictionary<string, int> TailAnchorKinds,
+    IReadOnlyDictionary<string, int> ParserTargets,
+    IReadOnlyDictionary<string, int> PreAnchorBodyBytes,
+    IReadOnlyDictionary<string, int> BodyBytes,
+    IReadOnlyDictionary<string, int> PostMovementNonZeroByteOffsets,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06HeldTupleBodySummary(
+    string ParserAction,
+    string ActionReason,
+    string SourceDisposition,
+    string TailPrefixKind,
+    string PrefixFirstNonZeroFieldHex,
+    string TupleLayoutKind,
+    string PostPrefixDisposition,
+    string BodyDisposition,
+    int BodyBytes,
+    int WindowCount,
+    IReadOnlyDictionary<string, int> BodyPrefixes,
+    IReadOnlyDictionary<string, int> BodySuffixes,
+    IReadOnlyDictionary<string, int> FirstNonZeroOffsets,
+    IReadOnlyDictionary<string, int> FirstNonZeroFields,
+    IReadOnlyDictionary<string, int> PreAnchorFirstNonZeroOffsets,
+    IReadOnlyDictionary<string, int> PreAnchorFirstNonZeroFields,
+    IReadOnlyDictionary<string, int> PreAnchorTrailingLeads,
+    IReadOnlyDictionary<string, int> PreAnchorPreLeadBytes,
+    IReadOnlyDictionary<string, int> PreTailFieldOffsets,
+    IReadOnlyDictionary<string, int> PreTailFieldBytes,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> PostPrefixLeads,
+    IReadOnlyDictionary<string, int> MarkerBytes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> ObjectClassifications,
+    IReadOnlyDictionary<string, int> PayloadBytes,
+    IReadOnlyDictionary<string, int> PositionSamples,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary(
+    string ParserAction,
+    string ActionReason,
+    int BodyBytes,
+    string BodyHex,
+    string BodyPrefixHex,
+    string BodySuffixHex,
+    int? FirstNonZeroOffset,
+    string FirstNonZeroFieldHex,
+    string BodyNonZeroOffsets,
+    int TailStartOffset,
+    int ContinuationCutOffset,
+    int BodyOffset,
+    int BoundaryCutOffset,
+    int PostContinuationBoundaryOffset,
+    string TailPrefixKind,
+    string PrefixFirstNonZeroFieldHex,
+    string TupleLayoutKind,
+    string PostPrefixDisposition,
+    string PostPrefixLeadHex,
+    string MarkerByteHex,
+    string BoundaryHeaderClassification,
+    string BoundaryHeaderHex,
+    string InnerSelectorHex,
+    string OuterSelectorHex,
+    string ObjectClassification,
+    int PayloadBytes,
+    string Position,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary(
+    int BodyOffset,
+    string OffsetDisposition,
+    int PresentFixtureCount,
+    int NonZeroFixtureCount,
+    IReadOnlyDictionary<string, int> ByteValues,
+    IReadOnlyDictionary<string, int> U16LeValues,
+    IReadOnlyDictionary<string, int> U16BeValues,
+    IReadOnlyDictionary<string, int> U32LeValues,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary(
+    string WindowDisposition,
+    int BodyOffset,
+    string WindowHex,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary(
+    int BodyOffset,
+    string FxHex,
+    string FxName,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> FollowupBytes,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary(
+    string FieldDisposition,
+    string Marker34BodyScope,
+    int Marker34BodyOffset,
+    int BodyOffset,
+    int Marker34RelativeOffset,
+    string FxHex,
+    string FxName,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> FollowupBytes,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary(
+    string FieldDisposition,
+    string Marker34BodyScope,
+    int Marker34BodyOffset,
+    int BodyOffset,
+    int Marker34RelativeOffset,
+    int WindowBytes,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> WindowHexes,
+    IReadOnlyDictionary<string, int> Interpretations,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary(
+    string LayoutDisposition,
+    string ParserAction,
+    string ActionReason,
+    int BodyBytes,
+    string BodyPrefixHex,
+    string BodySuffixHex,
+    string PostPrefixLeadHex,
+    string MarkerByteHex,
+    string MarkerTagValue,
+    string MarkerTagWindowHex,
+    string MarkerFxHex,
+    string MarkerFxName,
+    string MarkerFxFollowupBytes,
+    string MarkerScaffoldHex,
+    string EmbeddedMovementSelectorHex,
+    string EmbeddedMovementPosition,
+    string EmbeddedMovementRelation,
+    string EmbeddedMovementDistance,
+    int NestedReplayPrefixOffset,
+    int NestedMarker34BodyOffset,
+    string NestedTagValue,
+    string NestedTagWindowHex,
+    string NestedFxHex,
+    string NestedFxName,
+    string NestedFxFollowupBytes,
+    string NestedScaffoldHex,
+    string BoundaryHeaderClassification,
+    string BoundaryHeaderHex,
+    string InnerSelectorHex,
+    string OuterSelectorHex,
+    string Position,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary(
+    string ReadinessDisposition,
+    string PromotionBlocker,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> ParserActions,
+    IReadOnlyDictionary<string, int> ActionReasons,
+    IReadOnlyDictionary<string, int> Layouts,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BodyPrefixes,
+    IReadOnlyDictionary<string, int> BodySuffixes,
+    IReadOnlyDictionary<string, int> PostPrefixLeads,
+    IReadOnlyDictionary<string, int> MarkerBytes,
+    IReadOnlyDictionary<string, int> MarkerTags,
+    IReadOnlyDictionary<string, int> MarkerFxs,
+    IReadOnlyDictionary<string, int> EmbeddedMovementSelectors,
+    IReadOnlyDictionary<string, int> EmbeddedMovementRelations,
+    IReadOnlyDictionary<string, int> NestedReplayOffsets,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary(
+    string ReplayDisposition,
+    int PrefixBodyOffset,
+    int NestedBodyOffset,
+    int AvailableNestedBodyBytes,
+    string PrefixHex,
+    string NestedTagWindowHex,
+    string NestedKnownFxHex,
+    string NestedKnownFxName,
+    string NestedKnownFxFollowupBytes,
+    int StableOffsetMatchCount,
+    int StableOffsetProbeCount,
+    string MatchedStableOffsets,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary(
+    string WindowDisposition,
+    int BodyOffset,
+    int WindowBytes,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> WindowHexes,
+    IReadOnlyDictionary<string, int> Interpretations,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> Positions,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary(
+    string MovementDisposition,
+    int LeadBodyOffset,
+    int MarkerBodyOffset,
+    string LeadByteHex,
+    string SelectorHex,
+    int InnerPayloadBytes,
+    int InnerPositionOffset,
+    int BodyPositionOffset,
+    int FixtureCount,
+    IReadOnlyDictionary<string, int> PrePositionBytes,
+    IReadOnlyDictionary<string, int> PositionHexes,
+    IReadOnlyDictionary<string, int> DecodedPositions,
+    IReadOnlyDictionary<string, int> OuterPositions,
+    IReadOnlyDictionary<string, int> OuterPositionRelations,
+    IReadOnlyDictionary<string, int> DistancesFromOuterPosition,
+    IReadOnlyDictionary<string, int> PostMovementLeads,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> BoundaryHeaderClassifications,
+    IReadOnlyDictionary<string, int> BoundaryHeaderPrefixes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    string SampleFile,
+    int SampleLine);
+
+public sealed record Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary(
+    string PriorityAction,
+    string PriorityReason,
+    int HeldRowCount,
+    int WindowCount,
+    IReadOnlyDictionary<string, int> ParserActions,
+    IReadOnlyDictionary<string, int> SourceDispositions,
+    IReadOnlyDictionary<string, int> TailPrefixKinds,
+    IReadOnlyDictionary<string, int> PrefixFirstNonZeroFields,
+    IReadOnlyDictionary<string, int> TupleLayouts,
+    IReadOnlyDictionary<string, int> PostPrefixDispositions,
+    IReadOnlyDictionary<string, int> BodyDispositions,
+    IReadOnlyDictionary<string, int> BodyByteLengths,
+    IReadOnlyDictionary<string, int> FirstNonZeroOffsets,
+    IReadOnlyDictionary<string, int> FirstNonZeroFields,
+    IReadOnlyDictionary<string, int> HeaderClassifications,
+    IReadOnlyDictionary<string, int> HeaderPrefixes,
+    IReadOnlyDictionary<string, int> PostPrefixLeads,
+    IReadOnlyDictionary<string, int> MarkerBytes,
+    IReadOnlyDictionary<string, int> InnerSelectors,
+    IReadOnlyDictionary<string, int> OuterSelectors,
+    IReadOnlyDictionary<string, int> ObjectClassifications,
+    IReadOnlyDictionary<string, int> PayloadBytes,
+    IReadOnlyDictionary<string, int> BodySuffixes,
+    IReadOnlyDictionary<string, int> PositionSamples,
+    string SampleFile,
+    int SampleLine);
+
 public sealed record Protocol03NestedMovementMode06TupleBodyParserActionSummary(
     string ParserAction,
     string ActionReason,
@@ -2105,6 +3425,12 @@ public sealed record PacketDumpFileSummary(
     public int ManageBonusPayloadCount => ManageBonusPayloads.Count;
 
     [JsonIgnore]
+    public IReadOnlyList<ManageBonusTradeStatePayloadSample>? ManageBonusTradeStatePayloads { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int ManageBonusTradeStatePayloadCount => ManageBonusTradeStatePayloads?.Count ?? 0;
+
+    [JsonIgnore]
     public IReadOnlyList<Protocol04ServerPayloadShapeSample>? Protocol04ServerPayloadShapes { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -2282,7 +3608,49 @@ public sealed record PacketResearchReport(
 
     public IReadOnlyList<VendorSellPriceLeadSummary> VendorSellPriceLeadSummaries { get; init; } = Array.Empty<VendorSellPriceLeadSummary>();
 
+    public IReadOnlyList<ManageBonusStateIdLongFormFieldLeadSummary> ManageBonusStateIdLongFormFieldLeadSummaries { get; init; } = Array.Empty<ManageBonusStateIdLongFormFieldLeadSummary>();
+
+    public IReadOnlyList<ManageBonusStateIdLongFormSemanticFamilySummary> ManageBonusStateIdLongFormSemanticFamilySummaries { get; init; } = Array.Empty<ManageBonusStateIdLongFormSemanticFamilySummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateValueSummary> ManageBonusTradeStateValueSummaries { get; init; } = Array.Empty<ManageBonusTradeStateValueSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStatePayloadDecodeSummary> ManageBonusTradeStatePayloadDecodeSummaries { get; init; } = Array.Empty<ManageBonusTradeStatePayloadDecodeSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateByte15PairSummary> ManageBonusTradeStateByte15PairSummaries { get; init; } = Array.Empty<ManageBonusTradeStateByte15PairSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> ManageBonusTradeStateByte15TransitionSummaries { get; init; } = Array.Empty<ManageBonusTradeStateByte15TransitionSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> ManageBonusTradeStateCompanionMapSummaries { get; init; } = Array.Empty<ManageBonusTradeStateCompanionMapSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateParserActionSummary> ManageBonusTradeStateParserActionSummaries { get; init; } = Array.Empty<ManageBonusTradeStateParserActionSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionSummary> ManageBonusTradeStateSerializedTransitionSummaries { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionSample> ManageBonusTradeStateSerializedTransitionSamples { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionSample>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionParserCoverageSummary> ManageBonusTradeStateSerializedTransitionParserCoverageSummaries { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionParserCoverageSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionFieldRoleSummary> ManageBonusTradeStateSerializedTransitionFieldRoleSummaries { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionFieldRoleSummary>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionDecoderRow> ManageBonusTradeStateSerializedTransitionDecoderRows { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionDecoderRow>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionDetection> ManageBonusTradeStateSerializedTransitionDetections { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionDetection>();
+
+    public IReadOnlyList<ManageBonusTradeStateSerializedTransitionDetectionActionSummary> ManageBonusTradeStateSerializedTransitionDetectionActionSummaries { get; init; } = Array.Empty<ManageBonusTradeStateSerializedTransitionDetectionActionSummary>();
+
+    public IReadOnlyList<Unknown6dListRecordShapeSummary> Unknown6dListRecordShapeSummaries { get; init; } = Array.Empty<Unknown6dListRecordShapeSummary>();
+
+    public IReadOnlyList<Unknown6dEntryIdSummary> Unknown6dEntryIdSummaries { get; init; } = Array.Empty<Unknown6dEntryIdSummary>();
+
+    public IReadOnlyList<Unknown6dEntryTailFlagSummary> Unknown6dEntryTailFlagSummaries { get; init; } = Array.Empty<Unknown6dEntryTailFlagSummary>();
+
+    public IReadOnlyList<Unknown6dPacketContextSummary> Unknown6dPacketContextSummaries { get; init; } = Array.Empty<Unknown6dPacketContextSummary>();
+
+    public IReadOnlyList<Unknown80c1PacketContextSummary> Unknown80c1PacketContextSummaries { get; init; } = Array.Empty<Unknown80c1PacketContextSummary>();
+
     public IReadOnlyList<Protocol03SelectorFfRepeatListCandidate> Protocol03SelectorFfRepeatListCandidates { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListCandidate>();
+
+    public IReadOnlyList<Protocol03SelectorFfRepeatListDecodedRow> Protocol03SelectorFfRepeatListDecodedRows { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListDecodedRow>();
 
     public IReadOnlyList<Protocol03SelectorFfRepeatListFieldSummary> Protocol03SelectorFfRepeatListFieldSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListFieldSummary>();
 
@@ -2290,7 +3658,13 @@ public sealed record PacketResearchReport(
 
     public IReadOnlyList<Protocol03SelectorFfRepeatListEffectiveShapeSummary> Protocol03SelectorFfRepeatListEffectiveShapeSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListEffectiveShapeSummary>();
 
+    public IReadOnlyList<Protocol03SelectorFfRepeatListEntryPairSummary> Protocol03SelectorFfRepeatListEntryPairSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListEntryPairSummary>();
+
     public IReadOnlyList<Protocol03SelectorFfRepeatListContinuationMarkerSummary> Protocol03SelectorFfRepeatListContinuationMarkerSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListContinuationMarkerSummary>();
+
+    public IReadOnlyList<Protocol03SelectorFfRepeatListContinuationParserActionSummary> Protocol03SelectorFfRepeatListContinuationParserActionSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListContinuationParserActionSummary>();
+
+    public IReadOnlyList<Protocol03SelectorFfRepeatListParserCoverageSummary> Protocol03SelectorFfRepeatListParserCoverageSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListParserCoverageSummary>();
 
     public IReadOnlyList<Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary> Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary>();
 
@@ -2315,6 +3689,8 @@ public sealed record PacketResearchReport(
     public IReadOnlyList<Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummary> Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummary>();
 
     public IReadOnlyList<Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary> Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary>();
+
+    public IReadOnlyList<Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow> Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow>();
 
     public IReadOnlyList<Protocol03SelectorFfRepeatListHeaderSample> Protocol03SelectorFfRepeatListHeaderSamples { get; init; } = Array.Empty<Protocol03SelectorFfRepeatListHeaderSample>();
 
@@ -2358,6 +3734,34 @@ public sealed record PacketResearchReport(
 
     public IReadOnlyList<Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary> Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary>();
 
+    public IReadOnlyList<Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary> Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06HeldTupleBodySummary> Protocol03NestedMovementMode06HeldTupleBodySummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06HeldTupleBodySummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> Protocol03NestedMovementMode06Marker34LongBodyFixtureSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary> Protocol03NestedMovementMode06Marker34LongBodyOffsetSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary> Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary> Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary> Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary> Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary> Protocol03NestedMovementMode06Marker34LongBodyLayoutSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary> Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary> Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary> Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary> Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary>();
+
+    public IReadOnlyList<Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary> Protocol03NestedMovementMode06HeldTupleBodyPrioritySummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary>();
+
     public IReadOnlyList<Protocol03NestedMovementMode06TupleBodyParserActionSummary> Protocol03NestedMovementMode06TupleBodyParserActionSummaries { get; init; } = Array.Empty<Protocol03NestedMovementMode06TupleBodyParserActionSummary>();
 
     public IReadOnlyList<Protocol03NestedMovementParserActionSummary> Protocol03NestedMovementParserActionSummaries { get; init; } = Array.Empty<Protocol03NestedMovementParserActionSummary>();
@@ -2369,4 +3773,24 @@ public sealed record PacketResearchReport(
     public IReadOnlyList<Protocol03NpcBaseDynamicCreationBodyAnchorSummary> Protocol03NpcBaseDynamicCreationBodyAnchorSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationBodyAnchorSummary>();
 
     public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary>();
+
+    public IReadOnlyList<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary> Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries { get; init; } = Array.Empty<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary>();
 }

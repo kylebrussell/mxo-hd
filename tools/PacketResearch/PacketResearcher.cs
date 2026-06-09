@@ -347,6 +347,8 @@ public static partial class PacketResearcher
             .ToArray();
         List<StaticObjectEntry> staticObjectEntries = LoadStaticObjectEntries(repositoryRoot, interactionObjectIds).ToList();
         List<Protocol03SelectorFfRepeatListCandidate> selectorFfRepeatListCandidates = BuildProtocol03SelectorFfRepeatListCandidates(dumpSummaries).ToList();
+        List<Protocol03SelectorFfRepeatListDecodedRow> selectorFfRepeatListDecodedRows =
+            BuildProtocol03SelectorFfRepeatListDecodedRows(selectorFfRepeatListCandidates).ToList();
         List<Protocol03SelectorFfRepeatListFieldSummary> selectorFfRepeatListFieldSummaries = BuildProtocol03SelectorFfRepeatListFieldSummaries(
             selectorFfRepeatListCandidates,
             abilityDefinitions,
@@ -365,6 +367,12 @@ public static partial class PacketResearcher
             itemCommandEntries,
             gameObjectEntries,
             animationDefinitions).ToList();
+        List<Protocol03SelectorFfRepeatListEntryPairSummary> selectorFfRepeatListEntryPairSummaries = BuildProtocol03SelectorFfRepeatListEntryPairSummaries(
+            selectorFfRepeatListCandidates,
+            abilityDefinitions,
+            itemCommandEntries,
+            gameObjectEntries,
+            animationDefinitions).ToList();
         List<Protocol03SelectorFfRepeatListContinuationMarkerSummary> selectorFfRepeatListContinuationMarkerSummaries = BuildProtocol03SelectorFfRepeatListContinuationMarkerSummaries(
             selectorFfRepeatListCandidates,
             dumpSummaries,
@@ -373,6 +381,10 @@ public static partial class PacketResearcher
             itemCommandEntries,
             gameObjectEntries,
             animationDefinitions).ToList();
+        List<Protocol03SelectorFfRepeatListContinuationParserActionSummary> selectorFfRepeatListContinuationParserActionSummaries =
+            BuildProtocol03SelectorFfRepeatListContinuationParserActionSummaries(selectorFfRepeatListContinuationMarkerSummaries).ToList();
+        List<Protocol03SelectorFfRepeatListParserCoverageSummary> selectorFfRepeatListParserCoverageSummaries =
+            BuildProtocol03SelectorFfRepeatListParserCoverageSummaries(selectorFfRepeatListContinuationParserActionSummaries).ToList();
         List<Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary> selectorFfRepeatListVendorContinuationBodyOffsetSummaries = BuildProtocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries(
             selectorFfRepeatListCandidates,
             dumpSummaries,
@@ -423,6 +435,9 @@ public static partial class PacketResearcher
             selectorFfRepeatListVendorBoundaryTargetSummaries).ToList();
         List<Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummary> selectorFfRepeatListVendorBoundaryPrioritySummaries = BuildProtocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries(
             selectorFfRepeatListVendorBoundaryTargetSummaries).ToList();
+        List<Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow> selectorFfRepeatListVendorBoundaryDecisionRows = BuildProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(
+            selectorFfRepeatListVendorBoundaryTargetSummaries,
+            selectorFfRepeatListVendorBodyWindowProbeSummaries).ToList();
         List<Protocol03SelectorFfRepeatListHeaderSample> selectorFfRepeatListHeaderSamples = BuildProtocol03SelectorFfRepeatListHeaderSamples(
             selectorFfRepeatListCandidates,
             dumpSummaries,
@@ -469,6 +484,36 @@ public static partial class PacketResearcher
             BuildProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries(dumpSummaries).ToList();
         List<Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary> nestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries =
             BuildProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries(dumpSummaries).ToList();
+        List<Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary> nestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries =
+            BuildProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries(nestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries).ToList();
+        List<Protocol03NestedMovementMode06HeldTupleBodySummary> nestedMovementMode06HeldTupleBodySummaries =
+            BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(
+                nestedMovementMode06PostContinuationTupleBodySummaries,
+                nestedMovementMode06PostContinuationTerminalTupleBodySummaries).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> nestedMovementMode06Marker34LongBodyFixtureSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries(dumpSummaries).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary> nestedMovementMode06Marker34LongBodyOffsetSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyOffsetSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary> nestedMovementMode06Marker34LongBodyInteriorWindowSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary> nestedMovementMode06Marker34LongBodyKnownFxWindowSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary> nestedMovementMode06Marker34LongBodyFxFieldRoleSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary> nestedMovementMode06Marker34LongBodyStructuralRoleSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary> nestedMovementMode06Marker34LongBodyLayoutSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyLayoutSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary> nestedMovementMode06Marker34LongBodyParserReadinessSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries(nestedMovementMode06Marker34LongBodyLayoutSummaries).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary> nestedMovementMode06Marker34LongBodyNestedReplaySummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary> nestedMovementMode06Marker34LongBodyFieldWindowSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries, fxDefinitions).ToList();
+        List<Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary> nestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries =
+            BuildProtocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries(nestedMovementMode06Marker34LongBodyFixtureSummaries).ToList();
+        List<Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary> nestedMovementMode06HeldTupleBodyPrioritySummaries =
+            BuildProtocol03NestedMovementMode06HeldTupleBodyPrioritySummaries(nestedMovementMode06HeldTupleBodySummaries).ToList();
         List<Protocol03NestedMovementMode06TupleBodyParserActionSummary> nestedMovementMode06TupleBodyParserActionSummaries =
             BuildProtocol03NestedMovementMode06TupleBodyParserActionSummaries(
                 nestedMovementMode06PostContinuationTupleBodySummaries,
@@ -479,6 +524,28 @@ public static partial class PacketResearcher
         List<Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummary> npcBaseDynamicCreationHeaderLikeLeadSummaries = BuildProtocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries(dumpSummaries).ToList();
         List<Protocol03NpcBaseDynamicCreationBodyAnchorSummary> npcBaseDynamicCreationBodyAnchorSummaries = BuildProtocol03NpcBaseDynamicCreationBodyAnchorSummaries(dumpSummaries).ToList();
         List<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> npcBaseDynamicCreationExtendedBoundarySummaries = BuildProtocol03NpcBaseDynamicCreationExtendedBoundarySummaries(dumpSummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary> npcBaseDynamicCreationExtendedBoundaryParserActionSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries(npcBaseDynamicCreationExtendedBoundarySummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary> npcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries(npcBaseDynamicCreationExtendedBoundarySummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries(npcBaseDynamicCreationExtendedBoundarySummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries(npcBaseDynamicCreationExtendedBoundarySummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries(npcBaseDynamicCreationExtendedBoundarySummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries(
+                npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries(
+                npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries(dumpSummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries(dumpSummaries).ToList();
+        List<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary> npcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries =
+            BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries(dumpSummaries).ToList();
         List<VendorBuyPriceLeadSummary> vendorBuyPriceLeadSummaries = BuildVendorBuyPriceLeadSummaries(
             dumpSummaries,
             itemCommandEntries,
@@ -490,6 +557,97 @@ public static partial class PacketResearcher
             itemCommandEntries,
             vendorPriceEntries,
             vendorInventoryEntries).ToList();
+        List<ManageBonusStateIdLongFormFieldLeadSummary> allManageBonusStateIdLongFormFieldLeadSummaries =
+            BuildManageBonusStateIdLongFormFieldLeadSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                gameObjectEntries,
+                maxRows: int.MaxValue).ToList();
+        List<ManageBonusStateIdLongFormFieldLeadSummary> manageBonusStateIdLongFormFieldLeadSummaries =
+            allManageBonusStateIdLongFormFieldLeadSummaries.Take(30).ToList();
+        List<ManageBonusStateIdLongFormSemanticFamilySummary> manageBonusStateIdLongFormSemanticFamilySummaries =
+            BuildManageBonusStateIdLongFormSemanticFamilySummaries(allManageBonusStateIdLongFormFieldLeadSummaries).ToList();
+        List<ManageBonusTradeStateValueSummary> manageBonusTradeStateValueSummaries =
+            BuildManageBonusTradeStateValueSummaries(
+                dumpSummaries,
+                attributes: attributeDefinitions,
+                gameObjects: gameObjectEntries).ToList();
+        List<ManageBonusTradeStatePayloadDecodeSummary> manageBonusTradeStatePayloadDecodeSummaries =
+            BuildManageBonusTradeStatePayloadDecodeSummaries(dumpSummaries).ToList();
+        List<ManageBonusTradeStateByte15PairSummary> manageBonusTradeStateByte15PairSummaries =
+            BuildManageBonusTradeStateByte15PairSummaries(manageBonusTradeStateValueSummaries).ToList();
+        List<ManageBonusTradeStateByte15TransitionSummary> manageBonusTradeStateByte15TransitionSummaries =
+            BuildManageBonusTradeStateByte15TransitionSummaries(dumpSummaries).ToList();
+        List<ManageBonusTradeStateCompanionMapSummary> manageBonusTradeStateCompanionMapSummaries =
+            BuildManageBonusTradeStateCompanionMapSummaries(
+                manageBonusTradeStateByte15TransitionSummaries,
+                attributes: attributeDefinitions,
+                gameObjects: gameObjectEntries).ToList();
+        List<ManageBonusTradeStateParserActionSummary> manageBonusTradeStateParserActionSummaries =
+            BuildManageBonusTradeStateParserActionSummaries(manageBonusTradeStateCompanionMapSummaries).ToList();
+        List<ManageBonusTradeStateSerializedTransitionSummary> manageBonusTradeStateSerializedTransitionSummaries =
+            BuildManageBonusTradeStateSerializedTransitionSummaries(
+                manageBonusTradeStateByte15TransitionSummaries,
+                manageBonusTradeStateCompanionMapSummaries).ToList();
+        List<ManageBonusTradeStateSerializedTransitionSample> manageBonusTradeStateSerializedTransitionSamples =
+            BuildManageBonusTradeStateSerializedTransitionSamples(
+                dumpSummaries,
+                manageBonusTradeStateCompanionMapSummaries).ToList();
+        List<ManageBonusTradeStateSerializedTransitionParserCoverageSummary> manageBonusTradeStateSerializedTransitionParserCoverageSummaries =
+            BuildManageBonusTradeStateSerializedTransitionParserCoverageSummaries(
+                manageBonusTradeStateSerializedTransitionSamples).ToList();
+        List<ManageBonusTradeStateSerializedTransitionFieldRoleSummary> manageBonusTradeStateSerializedTransitionFieldRoleSummaries =
+            BuildManageBonusTradeStateSerializedTransitionFieldRoleSummaries(
+                manageBonusTradeStateSerializedTransitionSamples,
+                manageBonusTradeStateCompanionMapSummaries).ToList();
+        List<ManageBonusTradeStateSerializedTransitionDecoderRow> manageBonusTradeStateSerializedTransitionDecoderRows =
+            BuildManageBonusTradeStateSerializedTransitionDecoderRows(
+                manageBonusTradeStateSerializedTransitionSamples).ToList();
+        List<ManageBonusTradeStateSerializedTransitionDetection> manageBonusTradeStateSerializedTransitionDetections =
+            BuildManageBonusTradeStateSerializedTransitionDetections(dumpSummaries).ToList();
+        List<ManageBonusTradeStateSerializedTransitionDetectionActionSummary> manageBonusTradeStateSerializedTransitionDetectionActionSummaries =
+            BuildManageBonusTradeStateSerializedTransitionDetectionActionSummaries(
+                manageBonusTradeStateSerializedTransitionDetections).ToList();
+        List<Unknown6dListRecordShapeSummary> unknown6dListRecordShapeSummaries =
+            BuildUnknown6dListRecordShapeSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                abilityDefinitions,
+                itemCommandEntries,
+                gameObjectEntries,
+                animationDefinitions).ToList();
+        List<Unknown6dEntryIdSummary> unknown6dEntryIdSummaries =
+            BuildUnknown6dEntryIdSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                abilityDefinitions,
+                itemCommandEntries,
+                gameObjectEntries,
+                animationDefinitions).ToList();
+        List<Unknown6dEntryTailFlagSummary> unknown6dEntryTailFlagSummaries =
+            BuildUnknown6dEntryTailFlagSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                abilityDefinitions,
+                itemCommandEntries,
+                gameObjectEntries,
+                animationDefinitions).ToList();
+        List<Unknown6dPacketContextSummary> unknown6dPacketContextSummaries =
+            BuildUnknown6dPacketContextSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                abilityDefinitions,
+                itemCommandEntries,
+                gameObjectEntries,
+                animationDefinitions).ToList();
+        List<Unknown80c1PacketContextSummary> unknown80c1PacketContextSummaries =
+            BuildUnknown80c1PacketContextSummaries(
+                dumpSummaries,
+                attributeDefinitions,
+                abilityDefinitions,
+                itemCommandEntries,
+                gameObjectEntries,
+                animationDefinitions).ToList();
 
         return new PacketResearchReport(
             ".",
@@ -516,11 +674,35 @@ public static partial class PacketResearcher
             StaticObjectEntries = staticObjectEntries,
             VendorBuyPriceLeadSummaries = vendorBuyPriceLeadSummaries,
             VendorSellPriceLeadSummaries = vendorSellPriceLeadSummaries,
+            ManageBonusStateIdLongFormFieldLeadSummaries = manageBonusStateIdLongFormFieldLeadSummaries,
+            ManageBonusStateIdLongFormSemanticFamilySummaries = manageBonusStateIdLongFormSemanticFamilySummaries,
+            ManageBonusTradeStateValueSummaries = manageBonusTradeStateValueSummaries,
+            ManageBonusTradeStatePayloadDecodeSummaries = manageBonusTradeStatePayloadDecodeSummaries,
+            ManageBonusTradeStateByte15PairSummaries = manageBonusTradeStateByte15PairSummaries,
+            ManageBonusTradeStateByte15TransitionSummaries = manageBonusTradeStateByte15TransitionSummaries,
+            ManageBonusTradeStateCompanionMapSummaries = manageBonusTradeStateCompanionMapSummaries,
+            ManageBonusTradeStateParserActionSummaries = manageBonusTradeStateParserActionSummaries,
+            ManageBonusTradeStateSerializedTransitionSummaries = manageBonusTradeStateSerializedTransitionSummaries,
+            ManageBonusTradeStateSerializedTransitionSamples = manageBonusTradeStateSerializedTransitionSamples,
+            ManageBonusTradeStateSerializedTransitionParserCoverageSummaries = manageBonusTradeStateSerializedTransitionParserCoverageSummaries,
+            ManageBonusTradeStateSerializedTransitionFieldRoleSummaries = manageBonusTradeStateSerializedTransitionFieldRoleSummaries,
+            ManageBonusTradeStateSerializedTransitionDecoderRows = manageBonusTradeStateSerializedTransitionDecoderRows,
+            ManageBonusTradeStateSerializedTransitionDetections = manageBonusTradeStateSerializedTransitionDetections,
+            ManageBonusTradeStateSerializedTransitionDetectionActionSummaries = manageBonusTradeStateSerializedTransitionDetectionActionSummaries,
+            Unknown6dListRecordShapeSummaries = unknown6dListRecordShapeSummaries,
+            Unknown6dEntryIdSummaries = unknown6dEntryIdSummaries,
+            Unknown6dEntryTailFlagSummaries = unknown6dEntryTailFlagSummaries,
+            Unknown6dPacketContextSummaries = unknown6dPacketContextSummaries,
+            Unknown80c1PacketContextSummaries = unknown80c1PacketContextSummaries,
             Protocol03SelectorFfRepeatListCandidates = selectorFfRepeatListCandidates,
+            Protocol03SelectorFfRepeatListDecodedRows = selectorFfRepeatListDecodedRows,
             Protocol03SelectorFfRepeatListFieldSummaries = selectorFfRepeatListFieldSummaries,
             Protocol03SelectorFfRepeatListShapeSummaries = selectorFfRepeatListShapeSummaries,
             Protocol03SelectorFfRepeatListEffectiveShapeSummaries = selectorFfRepeatListEffectiveShapeSummaries,
+            Protocol03SelectorFfRepeatListEntryPairSummaries = selectorFfRepeatListEntryPairSummaries,
             Protocol03SelectorFfRepeatListContinuationMarkerSummaries = selectorFfRepeatListContinuationMarkerSummaries,
+            Protocol03SelectorFfRepeatListContinuationParserActionSummaries = selectorFfRepeatListContinuationParserActionSummaries,
+            Protocol03SelectorFfRepeatListParserCoverageSummaries = selectorFfRepeatListParserCoverageSummaries,
             Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries = selectorFfRepeatListVendorContinuationBodyOffsetSummaries,
             Protocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries = selectorFfRepeatListVendorPrePositionBodyOffsetSummaries,
             Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries = selectorFfRepeatListVendorBodyWindowProbeSummaries,
@@ -533,6 +715,7 @@ public static partial class PacketResearcher
             Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries = selectorFfRepeatListVendorBoundaryTargetSummaries,
             Protocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries = selectorFfRepeatListVendorBoundaryInterpretationSummaries,
             Protocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries = selectorFfRepeatListVendorBoundaryPrioritySummaries,
+            Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows = selectorFfRepeatListVendorBoundaryDecisionRows,
             Protocol03SelectorFfRepeatListHeaderSamples = selectorFfRepeatListHeaderSamples,
             Protocol03SelectorFfRepeatListLayoutSummaries = selectorFfRepeatListLayoutSummaries,
             Protocol03NestedMovementBoundaryEvidenceSummaries = nestedMovementBoundaryEvidenceSummaries,
@@ -554,13 +737,2354 @@ public static partial class PacketResearcher
             Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries = nestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries,
             Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries = nestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries,
             Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries = nestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries,
+            Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries = nestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries,
+            Protocol03NestedMovementMode06HeldTupleBodySummaries = nestedMovementMode06HeldTupleBodySummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyFixtureSummaries = nestedMovementMode06Marker34LongBodyFixtureSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyOffsetSummaries = nestedMovementMode06Marker34LongBodyOffsetSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries = nestedMovementMode06Marker34LongBodyInteriorWindowSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries = nestedMovementMode06Marker34LongBodyKnownFxWindowSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries = nestedMovementMode06Marker34LongBodyFxFieldRoleSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries = nestedMovementMode06Marker34LongBodyStructuralRoleSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyLayoutSummaries = nestedMovementMode06Marker34LongBodyLayoutSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries = nestedMovementMode06Marker34LongBodyParserReadinessSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries = nestedMovementMode06Marker34LongBodyNestedReplaySummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries = nestedMovementMode06Marker34LongBodyFieldWindowSummaries,
+            Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries = nestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries,
+            Protocol03NestedMovementMode06HeldTupleBodyPrioritySummaries = nestedMovementMode06HeldTupleBodyPrioritySummaries,
             Protocol03NestedMovementMode06TupleBodyParserActionSummaries = nestedMovementMode06TupleBodyParserActionSummaries,
             Protocol03NestedMovementParserActionSummaries = nestedMovementParserActionSummaries,
             Protocol03NpcBaseDynamicCreationTailSummaries = npcBaseDynamicCreationTailSummaries,
             Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries = npcBaseDynamicCreationHeaderLikeLeadSummaries,
             Protocol03NpcBaseDynamicCreationBodyAnchorSummaries = npcBaseDynamicCreationBodyAnchorSummaries,
-            Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries = npcBaseDynamicCreationExtendedBoundarySummaries
+            Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries = npcBaseDynamicCreationExtendedBoundarySummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries = npcBaseDynamicCreationExtendedBoundaryParserActionSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries = npcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries,
+            Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries = npcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries
         };
+    }
+
+    public static IEnumerable<Unknown6dListRecordShapeSummary> BuildUnknown6dListRecordShapeSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null,
+        int maxRows = 40)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue =
+            BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+                abilities ?? Array.Empty<AbilityDefinition>(),
+                items ?? Array.Empty<ItemCommandEntry>(),
+                gameObjects ?? Array.Empty<GameObjectEntry>(),
+                animations ?? Array.Empty<AnimationDefinition>());
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        return files
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .Select(payload => new Unknown6dPayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new
+            {
+                entry.Payload.PayloadLength,
+                entry.Payload.ModeHex,
+                entry.Payload.ModeValue,
+                entry.Payload.Field1,
+                entry.Payload.Field1Value,
+                entry.Payload.ListOffset,
+                entry.Payload.ListFlag,
+                entry.Payload.EntryCount,
+                entry.Payload.ParsedEntryCount
+            })
+            .Select(group =>
+            {
+                Unknown6dPayloadWithFile[] entries = group.ToArray();
+                Unknown6dEntryRecord[] records = entries
+                    .SelectMany(entry => entry.Payload.EntryRecords)
+                    .ToArray();
+                Unknown6dPayloadWithFile sample = entries.First();
+
+                return new Unknown6dListRecordShapeSummary(
+                    group.Key.PayloadLength,
+                    group.Key.ModeHex,
+                    group.Key.ModeValue,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    group.Key.ListOffset,
+                    group.Key.ListFlag,
+                    group.Key.EntryCount,
+                    group.Key.ParsedEntryCount,
+                    entries.Length,
+                    records.Length,
+                    records.Select(record => record.EntryId).Distinct().Count(),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => record.PrefixHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => record.TailHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => FormatUnknown6dRecordTailWord(record, 0)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => FormatUnknown6dRecordTailWord(record, 1)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => record.EntryId.ToString(CultureInfo.InvariantCulture)), 12),
+                    CountUnknown6dEntryIdResourceReferences(records, resourceReferencesByValue, 12),
+                    CountUnknown6dEntryIdAttributeReferences(records, attributeDefinitions, 12),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry =>
+                        sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.PayloadCount)
+            .ThenByDescending(summary => summary.TotalRecordCount)
+            .ThenBy(summary => summary.PayloadLength)
+            .ThenBy(summary => summary.ModeValue)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Unknown6dEntryIdSummary> BuildUnknown6dEntryIdSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null,
+        int maxRows = 80)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue =
+            BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+                abilities ?? Array.Empty<AbilityDefinition>(),
+                items ?? Array.Empty<ItemCommandEntry>(),
+                gameObjects ?? Array.Empty<GameObjectEntry>(),
+                animations ?? Array.Empty<AnimationDefinition>());
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        return files
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .SelectMany(payload => payload.EntryRecords.Select(record => new Unknown6dEntryRecordWithFile(file.File, payload, record))))
+            .GroupBy(entry => entry.Record.EntryId)
+            .Select(group =>
+            {
+                Unknown6dEntryRecordWithFile[] entries = group.ToArray();
+                Unknown6dEntryRecordWithFile sample = entries.First();
+
+                return new Unknown6dEntryIdSummary(
+                    group.Key,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Record.EntryIdHex), 4),
+                    entries.Select(entry => new PacketLocation(entry.File, entry.Payload.Line)).Distinct().Count(),
+                    entries.Length,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Payload.ModeHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dPayloadShape(entry.Payload)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Record.PrefixHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Record.TailHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dRecordTailWord(entry.Record, 1)), 8),
+                    CountUnknown6dEntryIdResourceReferences(entries.Select(entry => entry.Record), resourceReferencesByValue, includeEntryId: false, 12),
+                    CountUnknown6dEntryIdAttributeReferences(entries.Select(entry => entry.Record), attributeDefinitions, includeEntryId: false, 12),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry =>
+                        sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.TotalRecordCount)
+            .ThenBy(summary => summary.EntryId)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Unknown6dEntryTailFlagSummary> BuildUnknown6dEntryTailFlagSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null,
+        int maxRows = 80)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue =
+            BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+                abilities ?? Array.Empty<AbilityDefinition>(),
+                items ?? Array.Empty<ItemCommandEntry>(),
+                gameObjects ?? Array.Empty<GameObjectEntry>(),
+                animations ?? Array.Empty<AnimationDefinition>());
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        Unknown6dEntryRecordWithFile[] allEntries = files
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .SelectMany(payload => payload.EntryRecords.Select(record => new Unknown6dEntryRecordWithFile(file.File, payload, record))))
+            .ToArray();
+        Dictionary<int, Unknown6dEntryRecordWithFile[]> entriesById = allEntries
+            .GroupBy(entry => entry.Record.EntryId)
+            .ToDictionary(group => group.Key, group => group.ToArray());
+
+        return allEntries
+            .Where(entry => !entry.Record.TailHex.Equals("00 00 00", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(entry => new
+            {
+                entry.Record.EntryId,
+                entry.Record.TailHex
+            })
+            .Select(group =>
+            {
+                Unknown6dEntryRecordWithFile[] entries = group.ToArray();
+                Unknown6dEntryRecordWithFile[] totalEntries = entriesById[group.Key.EntryId];
+                Unknown6dEntryRecordWithFile sample = entries.First();
+
+                return new Unknown6dEntryTailFlagSummary(
+                    group.Key.EntryId,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Record.EntryIdHex), 4),
+                    group.Key.TailHex,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dRecordTailWord(entry.Record, 0)), 4),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dRecordTailWord(entry.Record, 1)), 4),
+                    entries.Length,
+                    totalEntries.Length,
+                    entries.Select(entry => new PacketLocation(entry.File, entry.Payload.Line)).Distinct().Count(),
+                    totalEntries.Select(entry => new PacketLocation(entry.File, entry.Payload.Line)).Distinct().Count(),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Payload.ModeHex), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dPayloadShape(entry.Payload)), 8),
+                    CountUnknown6dEntryIdResourceReferences(entries.Select(entry => entry.Record), resourceReferencesByValue, includeEntryId: false, 12),
+                    CountUnknown6dEntryIdAttributeReferences(entries.Select(entry => entry.Record), attributeDefinitions, includeEntryId: false, 12),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry =>
+                        sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.FlagRecordCount)
+            .ThenBy(summary => summary.EntryId)
+            .ThenBy(summary => summary.TailHex, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Unknown6dPacketContextSummary> BuildUnknown6dPacketContextSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null,
+        int maxRows = 40)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue =
+            BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+                abilities ?? Array.Empty<AbilityDefinition>(),
+                items ?? Array.Empty<ItemCommandEntry>(),
+                gameObjects ?? Array.Empty<GameObjectEntry>(),
+                animations ?? Array.Empty<AnimationDefinition>());
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        Dictionary<PacketLocation, Unknown80c1PayloadSample[]> unknown80c1ByPacket = files
+            .SelectMany(file => (file.Unknown80c1Payloads ?? Array.Empty<Unknown80c1PayloadSample>())
+                .Select(payload => new Unknown80c1PayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new PacketLocation(entry.File, entry.Payload.Line))
+            .ToDictionary(group => group.Key, group => group.Select(entry => entry.Payload).ToArray());
+
+        return files
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .Select(payload => new Unknown6dPayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new
+            {
+                entry.Payload.ModeHex,
+                entry.Payload.ModeValue,
+                entry.Payload.Field1,
+                entry.Payload.Field1Value
+            })
+            .Select(group =>
+            {
+                Unknown6dPayloadWithFile[] entries = group.ToArray();
+                Unknown6dEntryRecord[] records = entries
+                    .SelectMany(entry => entry.Payload.EntryRecords)
+                    .ToArray();
+                PacketLocation[] packetLocations = entries
+                    .Select(entry => new PacketLocation(entry.File, entry.Payload.Line))
+                    .Distinct()
+                    .ToArray();
+                Unknown80c1PayloadSample[] samePacket80c1Payloads = packetLocations
+                    .SelectMany(location => unknown80c1ByPacket.TryGetValue(location, out Unknown80c1PayloadSample[]? payloads)
+                        ? payloads
+                        : Array.Empty<Unknown80c1PayloadSample>())
+                    .ToArray();
+                Unknown6dPayloadWithFile sample = entries.First();
+
+                return new Unknown6dPacketContextSummary(
+                    group.Key.ModeHex,
+                    group.Key.ModeValue,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    entries.Length,
+                    packetLocations.Length,
+                    records.Length,
+                    records.Select(record => record.EntryId).Distinct().Count(),
+                    samePacket80c1Payloads.Length,
+                    records.Count(record => !record.TailHex.Equals("00 00 00", StringComparison.OrdinalIgnoreCase)),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatNullableIntForSummary(entry.Payload.EntryCount)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown6dPayloadShape(entry.Payload)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.SelectMany(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatUnknown6dNeighborHeaders(sequence.Headers, previous: true)
+                            : new[] { "unsequenced" }), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.SelectMany(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatUnknown6dNeighborHeaders(sequence.Headers, previous: false)
+                            : new[] { "unsequenced" }), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(samePacket80c1Payloads.Select(FormatUnknown80c1FieldPair), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(records.Select(record => record.TailHex), 8),
+                    CountUnknown6dEntryIdResourceReferences(records, resourceReferencesByValue, 12),
+                    CountUnknown6dEntryIdAttributeReferences(records, attributeDefinitions, 12),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.Select(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.PayloadCount)
+            .ThenByDescending(summary => summary.SamePacket80c1PayloadCount)
+            .ThenByDescending(summary => summary.TotalRecordCount)
+            .ThenBy(summary => summary.ModeValue)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Unknown80c1PacketContextSummary> BuildUnknown80c1PacketContextSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null,
+        int maxRows = 40)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue =
+            BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+                abilities ?? Array.Empty<AbilityDefinition>(),
+                items ?? Array.Empty<ItemCommandEntry>(),
+                gameObjects ?? Array.Empty<GameObjectEntry>(),
+                animations ?? Array.Empty<AnimationDefinition>());
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        ILookup<PacketLocation, Unknown6dPayloadSample> unknown6dByPacket = files
+            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
+                .Select(payload => new
+                {
+                    Packet = new PacketLocation(file.File, payload.Line),
+                    Payload = payload
+                }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        ILookup<PacketLocation, PlayerAttributePayloadSample> b2ByPacket = files
+            .SelectMany(file => file.PlayerAttributePayloads.Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        ILookup<PacketLocation, AbilityUnloadPayloadSample> b3ByPacket = files
+            .SelectMany(file => (file.AbilityUnloadPayloads ?? Array.Empty<AbilityUnloadPayloadSample>())
+                .Select(payload => new
+                {
+                    Packet = new PacketLocation(file.File, payload.Line),
+                    Payload = payload
+                }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        ILookup<PacketLocation, ManageBonusPayloadSample> manageBonusByPacket = files
+            .SelectMany(file => file.ManageBonusPayloads.Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+
+        return files
+            .SelectMany(file => (file.Unknown80c1Payloads ?? Array.Empty<Unknown80c1PayloadSample>())
+                .Select(payload => new Unknown80c1PayloadWithFile(file.File, payload)))
+            .GroupBy(entry => new
+            {
+                entry.Payload.Field0,
+                entry.Payload.Field0Value,
+                entry.Payload.Field1,
+                entry.Payload.Field1Value
+            })
+            .Select(group =>
+            {
+                Unknown80c1PayloadWithFile[] entries = group.ToArray();
+                PacketLocation[] packetLocations = entries
+                    .Select(entry => new PacketLocation(entry.File, entry.Payload.Line))
+                    .Distinct()
+                    .ToArray();
+                Unknown6dPayloadSample[] samePacket6dPayloads = packetLocations
+                    .SelectMany(location => unknown6dByPacket[location])
+                    .ToArray();
+                PlayerAttributePayloadSample[] samePacket80b2Payloads = packetLocations
+                    .SelectMany(location => b2ByPacket[location])
+                    .ToArray();
+                AbilityUnloadPayloadSample[] samePacket80b3Payloads = packetLocations
+                    .SelectMany(location => b3ByPacket[location])
+                    .ToArray();
+                ManageBonusPayloadSample[] samePacket80bcPayloads = packetLocations
+                    .SelectMany(location => manageBonusByPacket[location])
+                    .ToArray();
+                Unknown80c1PayloadWithFile sample = entries.First();
+
+                return new Unknown80c1PacketContextSummary(
+                    group.Key.Field0,
+                    group.Key.Field0Value,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    entries.Length,
+                    packetLocations.Length,
+                    samePacket6dPayloads.Length,
+                    samePacket80b2Payloads.Length,
+                    samePacket80b3Payloads.Length,
+                    samePacket80bcPayloads.Length,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => FormatUnknown80c1PayloadShape(entry.Payload)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.SelectMany(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatUnknown80c1NeighborHeaders(sequence.Headers, previous: true)
+                            : new[] { "unsequenced" }), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.SelectMany(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatUnknown80c1NeighborHeaders(sequence.Headers, previous: false)
+                            : new[] { "unsequenced" }), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(samePacket6dPayloads.Select(FormatUnknown6dPayloadShape), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(samePacket80b2Payloads.Select(FormatUnknown80c1PlayerAttributeTuple), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(samePacket80b3Payloads.Select(FormatUnknown80c1AbilityUnloadField), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(samePacket80bcPayloads.Select(FormatUnknown80c1ManageBonusShape), 8),
+                    CountUnknown80c1FieldLocalReferences(group.Key.Field0Value, entries.Length, resourceReferencesByValue, attributeDefinitions, 8),
+                    CountUnknown80c1FieldLocalReferences(group.Key.Field1Value, entries.Length, resourceReferencesByValue, attributeDefinitions, 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetLocations.Select(location =>
+                        sequencesByPacket.TryGetValue(location, out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.PayloadCount)
+            .ThenByDescending(summary => summary.SamePacket80bcPayloadCount)
+            .ThenByDescending(summary => summary.SamePacket80b2PayloadCount + summary.SamePacket80b3PayloadCount)
+            .ThenBy(summary => summary.Field0Value)
+            .ThenBy(summary => summary.Field1Value)
+            .Take(maxRows);
+    }
+
+    private static IReadOnlyDictionary<string, int> CountUnknown80c1FieldLocalReferences(
+        int fieldValue,
+        int payloadCount,
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue,
+        IReadOnlyList<AttributeDefinition> attributes,
+        int maxValues)
+    {
+        if (payloadCount <= 0)
+        {
+            return new Dictionary<string, int>();
+        }
+
+        return CountProtocol03SelectorFfRepeatListWeightedValues(
+            FindUnknown6dEntryIdResourceReferences(fieldValue, resourceReferencesByValue, includeEntryId: false)
+                .Concat(FindUnknown6dEntryIdAttributeReferences(fieldValue, attributes, includeEntryId: false))
+                .Select(reference => new WeightedValue(reference, payloadCount)),
+            maxValues);
+    }
+
+    private static IReadOnlyDictionary<string, int> CountUnknown6dEntryIdResourceReferences(
+        IEnumerable<Unknown6dEntryRecord> records,
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue,
+        int maxValues)
+    {
+        return CountUnknown6dEntryIdResourceReferences(records, resourceReferencesByValue, includeEntryId: true, maxValues);
+    }
+
+    private static IReadOnlyDictionary<string, int> CountUnknown6dEntryIdResourceReferences(
+        IEnumerable<Unknown6dEntryRecord> records,
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue,
+        bool includeEntryId,
+        int maxValues)
+    {
+        return CountProtocol03SelectorFfRepeatListWeightedValues(
+            records.SelectMany(record =>
+                FindUnknown6dEntryIdResourceReferences(record.EntryId, resourceReferencesByValue, includeEntryId)
+                    .Select(reference => new WeightedValue(reference, 1))),
+            maxValues);
+    }
+
+    private static IReadOnlyDictionary<string, int> CountUnknown6dEntryIdAttributeReferences(
+        IEnumerable<Unknown6dEntryRecord> records,
+        IReadOnlyList<AttributeDefinition> attributes,
+        int maxValues)
+    {
+        return CountUnknown6dEntryIdAttributeReferences(records, attributes, includeEntryId: true, maxValues);
+    }
+
+    private static IReadOnlyDictionary<string, int> CountUnknown6dEntryIdAttributeReferences(
+        IEnumerable<Unknown6dEntryRecord> records,
+        IReadOnlyList<AttributeDefinition> attributes,
+        bool includeEntryId,
+        int maxValues)
+    {
+        if (attributes.Count == 0)
+        {
+            return new Dictionary<string, int>();
+        }
+
+        return CountProtocol03SelectorFfRepeatListWeightedValues(
+            records.SelectMany(record => FindUnknown6dEntryIdAttributeReferences(record.EntryId, attributes, includeEntryId)
+                .Select(reference => new WeightedValue(reference, 1))),
+            maxValues);
+    }
+
+    private static IEnumerable<string> FindUnknown6dEntryIdResourceReferences(
+        int entryId,
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue,
+        bool includeEntryId)
+    {
+        foreach (string reference in FindProtocol03SelectorFfRepeatListFieldResourceReferences(entryId, resourceReferencesByValue))
+        {
+            yield return includeEntryId
+                ? $"{entryId.ToString(CultureInfo.InvariantCulture)} -> {reference}"
+                : reference;
+        }
+    }
+
+    private static IEnumerable<string> FindUnknown6dEntryIdAttributeReferences(
+        int entryId,
+        IReadOnlyList<AttributeDefinition> attributes,
+        bool includeEntryId)
+    {
+        string prefix = includeEntryId
+            ? $"{entryId.ToString(CultureInfo.InvariantCulture)} -> "
+            : string.Empty;
+        foreach (string candidate in ManageBonusSemanticAttributeCandidates(attributes, entryId, creationIndex: true).Take(3))
+        {
+            yield return $"{prefix}creation {candidate}";
+        }
+
+        foreach (string candidate in ManageBonusSemanticAttributeCandidates(attributes, entryId, creationIndex: false).Take(3))
+        {
+            yield return $"{prefix}update {candidate}";
+        }
+    }
+
+    private static string FormatUnknown6dPayloadShape(Unknown6dPayloadSample payload)
+    {
+        return $"{payload.ModeHex} / {payload.PayloadLength.ToString(CultureInfo.InvariantCulture)} bytes / count {FormatNullableIntForSummary(payload.EntryCount)}";
+    }
+
+    private static string FormatUnknown80c1PayloadShape(Unknown80c1PayloadSample payload)
+    {
+        return $"{payload.PayloadLength.ToString(CultureInfo.InvariantCulture)} bytes / {payload.Field0} -> {payload.Field1} / {payload.Field1Value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static IEnumerable<string> FormatUnknown6dNeighborHeaders(IReadOnlyList<string> headers, bool previous)
+    {
+        for (int i = 0; i < headers.Count; i++)
+        {
+            if (!headers[i].Equals("6d", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (previous)
+            {
+                yield return i == 0 ? "packet start" : headers[i - 1];
+            }
+            else
+            {
+                yield return i + 1 >= headers.Count ? "packet end" : headers[i + 1];
+            }
+        }
+    }
+
+    private static IEnumerable<string> FormatUnknown80c1NeighborHeaders(IReadOnlyList<string> headers, bool previous)
+    {
+        for (int i = 0; i < headers.Count; i++)
+        {
+            if (!headers[i].Equals("80 c1", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (previous)
+            {
+                yield return i == 0 ? "packet start" : headers[i - 1];
+            }
+            else
+            {
+                yield return i + 1 >= headers.Count ? "packet end" : headers[i + 1];
+            }
+        }
+    }
+
+    private static string FormatUnknown80c1FieldPair(Unknown80c1PayloadSample payload)
+    {
+        return $"{payload.Field0} -> {payload.Field1} / {payload.Field1Value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatUnknown80c1PlayerAttributeTuple(PlayerAttributePayloadSample payload)
+    {
+        return $"{payload.Field0} -> {payload.Field1} / {payload.Field1Value.ToString(CultureInfo.InvariantCulture)} -> {payload.Field2}";
+    }
+
+    private static string FormatUnknown80c1AbilityUnloadField(AbilityUnloadPayloadSample payload)
+    {
+        return $"{payload.Field0} / {payload.Field0Value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatUnknown80c1ManageBonusShape(ManageBonusPayloadSample payload)
+    {
+        string byte11 = payload.PayloadLength >= 13
+            ? ReadManageBonusPayloadWord(payload.PayloadHex, 11)
+            : "-";
+        string byte15 = payload.PayloadLength >= 17
+            ? ReadManageBonusPayloadWord(payload.PayloadHex, 15)
+            : "-";
+        return $"{payload.Field0}/{payload.Field1}/{payload.Field2}/byte11 {byte11}/byte15 {byte15}";
+    }
+
+    private static string FormatNullableIntForSummary(int? value)
+    {
+        return value?.ToString(CultureInfo.InvariantCulture) ?? "-";
+    }
+
+    private static string FormatUnknown6dRecordTailWord(Unknown6dEntryRecord record, int offset)
+    {
+        byte[] bytes = ParseHexBytes(record.TailHex).ToArray();
+        if (bytes.Length < offset + 2)
+        {
+            return "-";
+        }
+
+        string fieldHex = FormatHeader(bytes.Skip(offset).Take(2));
+        int fieldValue = ReadUInt16LittleEndian(bytes, offset);
+        return $"{fieldHex} / {fieldValue.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    public static IEnumerable<ManageBonusStateIdLongFormFieldLeadSummary> BuildManageBonusStateIdLongFormFieldLeadSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        int maxRows = 30)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        var b2ByPacket = files
+            .SelectMany(file => file.PlayerAttributePayloads.Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        var b3ByPacket = files
+            .SelectMany(file => (file.AbilityUnloadPayloads ?? Array.Empty<AbilityUnloadPayloadSample>()).Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        ILookup<int, GameObjectEntry> gameObjectsById = (gameObjects ?? Array.Empty<GameObjectEntry>()).ToLookup(entry => entry.GoId);
+
+        return files
+            .SelectMany(file => file.ManageBonusPayloads.Select(payload => new ManageBonusPayloadWithFile(file.File, payload)))
+            .Where(entry => entry.Payload.PayloadLength == 20)
+            .Where(entry => entry.Payload.Field1.Equals(ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase))
+            .GroupBy(entry => new
+            {
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field1Value
+            })
+            .Select(group =>
+            {
+                ManageBonusPayloadWithFile[] entries = group.ToArray();
+                int samePacketB2Matches = entries.Sum(entry =>
+                    b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b2 => b2.Field0Value == entry.Payload.Field1Value));
+                int samePacketB2ValueMirrors = entries.Sum(entry =>
+                {
+                    string byte11Value = ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 11);
+                    return b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b2 =>
+                            b2.Field0Value == entry.Payload.Field1Value &&
+                            b2.Field1.Equals(byte11Value, StringComparison.OrdinalIgnoreCase));
+                });
+                int samePacketB3Matches = entries.Sum(entry =>
+                    b3ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b3 => b3.Field0Value == entry.Payload.Field1Value));
+                int samePacketVendorOrMarket = entries.Count(entry =>
+                    sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "5e", "5f", "69", "80 e4", "80 e7", "81 0d", "81 0e", "81 0f", "81 11", "81 12", "81 25"));
+                ManageBonusPayloadWithFile sample = entries.First();
+
+                return new ManageBonusStateIdLongFormFieldLeadSummary(
+                    group.Key.Field0,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    BuildManageBonusStateFieldReferences(
+                        group.Key.Field1Value,
+                        attributes ?? Array.Empty<AttributeDefinition>(),
+                        gameObjectsById),
+                    entries.Length,
+                    samePacketB2Matches,
+                    samePacketB2ValueMirrors,
+                    samePacketB3Matches,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.Payload.Field2), 6),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 11)), 6),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 15)), 6),
+                    samePacketVendorOrMarket,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries
+                        .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 5),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(lead => lead.SamePacketB2Matches + lead.SamePacketB3Matches)
+            .ThenByDescending(lead => lead.PayloadCount)
+            .ThenBy(lead => lead.Field0, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(lead => lead.Field1Value)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusStateIdLongFormSemanticFamilySummary> BuildManageBonusStateIdLongFormSemanticFamilySummaries(
+        IEnumerable<ManageBonusStateIdLongFormFieldLeadSummary> fieldLeads,
+        int maxRows = 12)
+    {
+        return fieldLeads
+            .GroupBy(ClassifyManageBonusStateSemanticFamily, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                ManageBonusStateIdLongFormFieldLeadSummary[] entries = group.ToArray();
+                ManageBonusStateIdLongFormFieldLeadSummary sample = entries
+                    .OrderByDescending(lead => lead.SamePacketB2Matches + lead.SamePacketB3Matches)
+                    .ThenByDescending(lead => lead.SamePacketB2ValueMirrors)
+                    .ThenByDescending(lead => lead.PayloadCount)
+                    .First();
+
+                return new ManageBonusStateIdLongFormSemanticFamilySummary(
+                    group.Key,
+                    DescribeManageBonusStateSemanticFamily(group.Key),
+                    entries.Length,
+                    entries.Sum(lead => lead.PayloadCount),
+                    entries.Sum(lead => lead.SamePacketB2Matches),
+                    entries.Sum(lead => lead.SamePacketB2ValueMirrors),
+                    entries.Sum(lead => lead.SamePacketB3Matches),
+                    entries.Sum(lead => lead.SamePacketVendorOrMarketHeaders),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(entries.Select(lead => new WeightedValue(lead.Field0, lead.PayloadCount)), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(entries.Select(lead => lead.Field2Values), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(entries.Select(lead => lead.Byte11Values), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(entries.Select(lead => lead.Byte15Values), 8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(entries.SelectMany(lead =>
+                    {
+                        IEnumerable<string> references = lead.FieldReferences.Count == 0
+                            ? new[] { "no local reference" }
+                            : lead.FieldReferences;
+                        return references.Select(reference => new WeightedValue(reference, lead.PayloadCount));
+                    }), 8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(entries.Select(lead => new WeightedValue(FormatManageBonusStateFieldLeadLabel(lead), lead.PayloadCount)), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(entries.Select(lead => lead.TopPacketSequences), 8),
+                    sample.Field0,
+                    sample.Field1,
+                    sample.Field1Value,
+                    sample.FieldReferences,
+                    sample.SampleFile,
+                    sample.SampleLine,
+                    sample.SamplePayloadHex);
+            })
+            .OrderBy(summary => GetManageBonusStateSemanticFamilyPriority(summary.SemanticFamily))
+            .ThenByDescending(summary => summary.SamePacketB2Matches + summary.SamePacketB3Matches)
+            .ThenByDescending(summary => summary.PayloadCount)
+            .ThenBy(summary => summary.SemanticFamily, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateValueSummary> BuildManageBonusTradeStateValueSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 20,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null)
+    {
+        PacketDumpFileSummary[] files = dumpSummaries.ToArray();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        ILookup<int, GameObjectEntry> gameObjectsById = (gameObjects ?? Array.Empty<GameObjectEntry>()).ToLookup(entry => entry.GoId);
+        var b2ByPacket = files
+            .SelectMany(file => file.PlayerAttributePayloads.Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        var b3ByPacket = files
+            .SelectMany(file => (file.AbilityUnloadPayloads ?? Array.Empty<AbilityUnloadPayloadSample>()).Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = files
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+        return files
+            .SelectMany(file => file.ManageBonusPayloads.Select(payload => new ManageBonusPayloadWithFile(file.File, payload)))
+            .Where(entry => entry.Payload.PayloadLength == 20)
+            .Where(entry => entry.Payload.Field0.Equals("45 03", StringComparison.OrdinalIgnoreCase))
+            .Where(entry => entry.Payload.Field1.Equals("11 00", StringComparison.OrdinalIgnoreCase))
+            .Where(entry => entry.Payload.Field1.Equals(ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase))
+            .GroupBy(entry => new
+            {
+                entry.Payload.Field0,
+                entry.Payload.Field1,
+                entry.Payload.Field1Value,
+                entry.Payload.Field2,
+                entry.Payload.Field2Value,
+                Byte11Value = ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 11),
+                Byte11ValueInt = ReadManageBonusPayloadWordValue(entry.Payload.PayloadHex, 11),
+                Byte15Value = ReadManageBonusPayloadWord(entry.Payload.PayloadHex, 15),
+                Byte15ValueInt = ReadManageBonusPayloadWordValue(entry.Payload.PayloadHex, 15)
+            })
+            .Select(group =>
+            {
+                ManageBonusPayloadWithFile[] entries = group.ToArray();
+                int samePacketB2Matches = entries.Sum(entry =>
+                    b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b2 => b2.Field0Value == entry.Payload.Field1Value));
+                int samePacketB2ValueMirrors = entries.Sum(entry =>
+                    b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b2 =>
+                            b2.Field0Value == entry.Payload.Field1Value &&
+                            b2.Field1.Equals(group.Key.Byte11Value, StringComparison.OrdinalIgnoreCase)));
+                IReadOnlyDictionary<string, int> samePacketB2Field1Values =
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.SelectMany(entry =>
+                        b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                            .Where(b2 => b2.Field0Value == entry.Payload.Field1Value)
+                            .Select(b2 => b2.Field1)), 8);
+                IReadOnlyDictionary<string, int> samePacketB2Field2Values =
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.SelectMany(entry =>
+                        b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                            .Where(b2 => b2.Field0Value == entry.Payload.Field1Value)
+                            .Select(b2 => b2.Field2)), 8);
+                int samePacketOppositeByte15Rows = entries.Count(entry =>
+                    HasSamePacketOppositeManageBonusTradeStateByte15(
+                        files,
+                        entry,
+                        group.Key.Byte11Value,
+                        group.Key.Byte15Value));
+                int samePacketB3Matches = entries.Sum(entry =>
+                    b3ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b3 => b3.Field0Value == entry.Payload.Field1Value));
+                int samePacketVendorOrMarket = entries.Count(entry =>
+                    sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "5e", "5f", "69", "80 e4", "80 e7", "81 0d", "81 0e", "81 0f", "81 11", "81 12", "81 25"));
+                int samePacketObjectInteraction = entries.Count(entry =>
+                    sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "80 c3", "80 c7", "80 c8"));
+                ManageBonusPayloadWithFile sample = entries.First();
+
+                return new ManageBonusTradeStateValueSummary(
+                    group.Key.Field0,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    group.Key.Field2,
+                    group.Key.Field2Value,
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [group.Key.Field2] = entries.Length
+                        },
+                        attributeDefinitions,
+                        gameObjectsById),
+                    group.Key.Byte11Value,
+                    group.Key.Byte11ValueInt,
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [group.Key.Byte11Value] = entries.Length
+                        },
+                        attributeDefinitions,
+                        gameObjectsById),
+                    group.Key.Byte15Value,
+                    group.Key.Byte15ValueInt,
+                    entries.Length,
+                    samePacketB2Matches,
+                    samePacketB2ValueMirrors,
+                    samePacketB2Field1Values,
+                    samePacketB2Field2Values,
+                    samePacketOppositeByte15Rows,
+                    samePacketB3Matches,
+                    samePacketVendorOrMarket,
+                    samePacketObjectInteraction,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries
+                        .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out Protocol04PacketSequenceSample? sequence)
+                            ? FormatProtocol04Sequence(sequence.Headers)
+                            : "unsequenced"), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(entries.Select(entry => entry.File), 8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderByDescending(summary => summary.PayloadCount)
+            .ThenByDescending(summary => summary.SamePacketVendorOrMarketHeaders + summary.SamePacketObjectInteractionHeaders)
+            .ThenByDescending(summary => summary.SamePacketB2ValueMirrors)
+            .ThenBy(summary => summary.Byte11ValueInt)
+            .ThenBy(summary => summary.Byte15ValueInt)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateByte15PairSummary> BuildManageBonusTradeStateByte15PairSummaries(
+        IEnumerable<ManageBonusTradeStateValueSummary> valueSummaries,
+        int maxRows = 12)
+    {
+        return valueSummaries
+            .GroupBy(summary => new
+            {
+                summary.Field0,
+                summary.Field1,
+                summary.Field1Value,
+                summary.Field2,
+                summary.Field2Value,
+                summary.Byte11Value,
+                summary.Byte11ValueInt
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateValueSummary? off = group.FirstOrDefault(summary =>
+                    summary.Byte15Value.Equals("00 00", StringComparison.OrdinalIgnoreCase));
+                ManageBonusTradeStateValueSummary? on = group.FirstOrDefault(summary =>
+                    summary.Byte15Value.Equals("01 00", StringComparison.OrdinalIgnoreCase));
+
+                return off is null || on is null
+                    ? null
+                    : new ManageBonusTradeStateByte15PairSummary(
+                        group.Key.Field0,
+                        group.Key.Field1,
+                        group.Key.Field1Value,
+                        group.Key.Field2,
+                        group.Key.Field2Value,
+                        group.Key.Byte11Value,
+                        group.Key.Byte11ValueInt,
+                        off.PayloadCount,
+                        on.PayloadCount,
+                        Math.Min(off.SamePacketOppositeByte15Rows, on.SamePacketOppositeByte15Rows),
+                        off.SamePacketB2ValueMirrors,
+                        on.SamePacketB2ValueMirrors,
+                        off.SamePacketB3Matches,
+                        on.SamePacketB3Matches,
+                        off.SamePacketVendorOrMarketHeaders + on.SamePacketVendorOrMarketHeaders,
+                        MergeProtocol03SelectorFfRepeatListCountDictionaries(
+                            new[] { off.SamePacketB2Field1Values, on.SamePacketB2Field1Values },
+                            8),
+                        MergeProtocol03SelectorFfRepeatListCountDictionaries(
+                            new[] { off.SamePacketB2Field2Values, on.SamePacketB2Field2Values },
+                            8),
+                        MergeProtocol03SelectorFfRepeatListCountDictionaries(
+                            new[] { off.CaptureScopes, on.CaptureScopes },
+                            8),
+                        MergeProtocol03SelectorFfRepeatListCountDictionaries(
+                            new[] { off.TopPacketSequences, on.TopPacketSequences },
+                            8),
+                        off.SampleFile,
+                        off.SampleLine,
+                        off.SamplePayloadHex,
+                        on.SampleFile,
+                        on.SampleLine,
+                        on.SamplePayloadHex);
+            })
+            .Where(summary => summary is not null)
+            .Select(summary => summary!)
+            .OrderByDescending(summary => summary.SamePacketPairedRows)
+            .ThenByDescending(summary => summary.OffPayloadCount + summary.OnPayloadCount)
+            .ThenBy(summary => summary.Byte11ValueInt)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateByte15TransitionSummary> BuildManageBonusTradeStateByte15TransitionSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 12)
+    {
+        List<ManageBonusTradeStateByte15TransitionObservation> observations =
+            EnumerateManageBonusTradeStateByte15TransitionObservations(dumpSummaries).ToList();
+
+        return observations
+            .GroupBy(observation => new
+            {
+                observation.Field0,
+                observation.Field1,
+                observation.Field1Value,
+                observation.Field2,
+                observation.Field2Value,
+                observation.Byte11Value,
+                observation.Byte11ValueInt
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateByte15TransitionObservation[] pairObservations = group.ToArray();
+                ManageBonusTradeStateByte15TransitionObservation[] packetObservations = pairObservations
+                    .GroupBy(observation => observation.Packet)
+                    .Select(packetGroup => packetGroup.First())
+                    .ToArray();
+                ManageBonusTradeStateByte15TransitionObservation sample = pairObservations
+                    .OrderBy(observation => observation.AbsoluteRowDistance)
+                    .ThenBy(observation => observation.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(observation => observation.SampleLine)
+                    .First();
+
+                return new ManageBonusTradeStateByte15TransitionSummary(
+                    group.Key.Field0,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    group.Key.Field2,
+                    group.Key.Field2Value,
+                    group.Key.Byte11Value,
+                    group.Key.Byte11ValueInt,
+                    packetObservations.Length,
+                    pairObservations.Length,
+                    pairObservations.Count(observation => observation.RowDistance > 0),
+                    pairObservations.Count(observation => observation.RowDistance < 0),
+                    pairObservations.Count(observation => observation.AbsoluteRowDistance == 1),
+                    pairObservations.Min(observation => observation.AbsoluteRowDistance),
+                    pairObservations.Max(observation => observation.AbsoluteRowDistance),
+                    pairObservations.Count(observation => observation.ProtocolBlockDistance == 1),
+                    pairObservations.Where(observation => observation.ProtocolBlockDistance > 0)
+                        .Select(observation => observation.ProtocolBlockDistance)
+                        .DefaultIfEmpty(0)
+                        .Min(),
+                    pairObservations.Where(observation => observation.ProtocolBlockDistance > 0)
+                        .Select(observation => observation.ProtocolBlockDistance)
+                        .DefaultIfEmpty(0)
+                        .Max(),
+                    packetObservations.Count(observation => observation.HasSamePacketB2),
+                    packetObservations.Count(observation => observation.HasSamePacketB3),
+                    packetObservations.Count(observation => observation.HasSamePacketVendorOrMarket),
+                    packetObservations.Count(observation => observation.HasSamePacketObjectInteraction),
+                    pairObservations.Count(observation => observation.BetweenPairB2Values.Any(value =>
+                        IsManageBonusTradeStateB2MirrorValue(value, group.Key.Field1, group.Key.Byte11Value))),
+                    pairObservations.Count(observation =>
+                        observation.PrecedingB3Value is not null &&
+                        IsManageBonusTradeStateB3MatchValue(observation.PrecedingB3Value, group.Key.Field1)),
+                    pairObservations.Count(observation =>
+                        HasManageBonusTradeStateB2Mirror(observation, group.Key.Field1, group.Key.Byte11Value) &&
+                        observation.PrecedingB3Value is not null &&
+                        IsManageBonusTradeStateB3MatchValue(observation.PrecedingB3Value, group.Key.Field1)),
+                    pairObservations.Count(observation =>
+                        HasManageBonusTradeStateB2Mirror(observation, group.Key.Field1, group.Key.Byte11Value) &&
+                        observation.PrecedingB3Value is null),
+                    pairObservations.Count(observation =>
+                        !HasManageBonusTradeStateB2Mirror(observation, group.Key.Field1, group.Key.Byte11Value) ||
+                        (observation.PrecedingB3Value is not null &&
+                            !IsManageBonusTradeStateB3MatchValue(observation.PrecedingB3Value, group.Key.Field1))),
+                    pairObservations.Count(observation => observation.OnCompanionShape is not null),
+                    pairObservations.Count(observation => observation.OffCompanionShape is not null),
+                    pairObservations.Count(observation =>
+                        observation.OnCompanionShape is not null &&
+                        observation.OffCompanionShape is not null),
+                    pairObservations.Count(observation =>
+                        observation.OnCompanionByte15Value is not null &&
+                        observation.OnCompanionByte15Value.Equals("01 00", StringComparison.OrdinalIgnoreCase)),
+                    pairObservations.Count(observation =>
+                        observation.OffCompanionByte15Value is not null &&
+                        observation.OffCompanionByte15Value.Equals("00 00", StringComparison.OrdinalIgnoreCase)),
+                    pairObservations.Count(observation =>
+                        observation.OnCompanionField1 is not null &&
+                        observation.OffCompanionField1 is not null &&
+                        observation.OnCompanionField1.Equals(observation.OffCompanionField1, StringComparison.OrdinalIgnoreCase)),
+                    pairObservations.Count(observation =>
+                        observation.OnCompanionByte11Value is not null &&
+                        observation.OffCompanionByte11Value is not null &&
+                        observation.OnCompanionByte11Value.Equals(observation.OffCompanionByte11Value, StringComparison.OrdinalIgnoreCase)),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetObservations.Select(observation => observation.CaptureScope), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetObservations.Select(observation => observation.PacketSequence), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations.Select(observation => observation.PairHeaderWindow), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations.SelectMany(observation => observation.BetweenPairB2Values), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.PrecedingB3Value ?? "none"), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OnCompanionField0)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OffCompanionField0)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Where(observation => observation.OnCompanionField0 is not null && observation.OffCompanionField0 is not null)
+                        .Select(observation => $"{observation.OnCompanionField0} -> {observation.OffCompanionField0}"), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OnCompanionField1)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OffCompanionField1)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Where(observation => observation.OnCompanionField1 is not null && observation.OffCompanionField1 is not null)
+                        .Select(observation => $"{observation.OnCompanionField1} -> {observation.OffCompanionField1}"), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OnCompanionByte11Value)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OffCompanionByte11Value)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Where(observation => observation.OnCompanionByte11Value is not null && observation.OffCompanionByte11Value is not null)
+                        .Select(observation => $"{observation.OnCompanionByte11Value} -> {observation.OffCompanionByte11Value}"), 8),
+                    BuildManageBonusTradeStateCompanionMapFieldSummaries(pairObservations),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OnCompanionShape)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Select(observation => observation.OffCompanionShape)
+                        .Where(value => value is not null)
+                        .Select(value => value!), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(pairObservations
+                        .Where(observation => observation.OnCompanionShape is not null && observation.OffCompanionShape is not null)
+                        .Select(observation => $"{observation.OnCompanionShape} -> {observation.OffCompanionShape}"), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(packetObservations.Select(observation => observation.SampleFile), 8),
+                    sample.SampleFile,
+                    sample.SampleLine,
+                    sample.OffManageBonusIndex,
+                    sample.OnManageBonusIndex,
+                    sample.OffSamplePayloadHex,
+                    sample.OnSamplePayloadHex);
+            })
+            .OrderByDescending(summary => summary.PairedPacketCount)
+            .ThenByDescending(summary => summary.PairCombinationCount)
+            .ThenBy(summary => summary.Byte11ValueInt)
+            .Take(maxRows);
+    }
+
+    private static IEnumerable<ManageBonusTradeStateByte15TransitionObservation> EnumerateManageBonusTradeStateByte15TransitionObservations(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries)
+    {
+        foreach (PacketDumpFileSummary file in dumpSummaries)
+        {
+            Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = file.Protocol04PacketSequences
+                .GroupBy(sequence => new PacketLocation(file.File, sequence.Line))
+                .ToDictionary(group => group.Key, group => group.First());
+
+            foreach (IGrouping<int, ManageBonusPayloadSample> packetGroup in file.ManageBonusPayloads
+                .Where(IsManageBonusTradeStateValuePayload)
+                .GroupBy(payload => payload.Line))
+            {
+                PacketLocation packet = new(file.File, packetGroup.Key);
+                Protocol04PacketSequenceSample? sequence = sequencesByPacket.TryGetValue(packet, out Protocol04PacketSequenceSample? sequenceSample)
+                    ? sequenceSample
+                    : null;
+                ManageBonusTradeStatePacketRow[] rows = packetGroup
+                    .Select((payload, index) => new ManageBonusTradeStatePacketRow(
+                        file.File,
+                        payload,
+                        index,
+                        ReadManageBonusPayloadWord(payload.PayloadHex, 11),
+                        ReadManageBonusPayloadWordValue(payload.PayloadHex, 11),
+                        ReadManageBonusPayloadWord(payload.PayloadHex, 15)))
+                    .ToArray();
+
+                foreach (IGrouping<(string Byte11Value, int Byte11ValueInt), ManageBonusTradeStatePacketRow> byte11Group in rows
+                    .GroupBy(row => (row.Byte11Value, row.Byte11ValueInt)))
+                {
+                    ManageBonusTradeStatePacketRow[] offRows = byte11Group
+                        .Where(row => row.Byte15Value.Equals("00 00", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+                    ManageBonusTradeStatePacketRow[] onRows = byte11Group
+                        .Where(row => row.Byte15Value.Equals("01 00", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
+                    if (offRows.Length == 0 || onRows.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (ManageBonusTradeStatePacketRow off in offRows)
+                    {
+                        foreach (ManageBonusTradeStatePacketRow on in onRows)
+                        {
+                            int rowDistance = on.ManageBonusIndex - off.ManageBonusIndex;
+                            int protocolBlockDistance = GetManageBonusTradeStateProtocolBlockDistance(sequence, off, on);
+                            string pairHeaderWindow = FormatManageBonusTradeStatePairHeaderWindow(sequence, off, on);
+                            string[] betweenPairB2Values = FindManageBonusTradeStateBetweenPairB2Values(sequence, off, on);
+                            string? precedingB3Value = FindManageBonusTradeStatePrecedingB3Value(sequence, off, on);
+                            ManageBonusTradeStateCompanionBlock? onCompanion = FindManageBonusTradeStateNextCompanionBlock(sequence, on);
+                            ManageBonusTradeStateCompanionBlock? offCompanion = FindManageBonusTradeStateNextCompanionBlock(sequence, off);
+                            yield return new ManageBonusTradeStateByte15TransitionObservation(
+                                packet,
+                                off.Payload.Field0,
+                                off.Payload.Field1,
+                                off.Payload.Field1Value,
+                                off.Payload.Field2,
+                                off.Payload.Field2Value,
+                                byte11Group.Key.Byte11Value,
+                                byte11Group.Key.Byte11ValueInt,
+                                rowDistance,
+                                Math.Abs(rowDistance),
+                                protocolBlockDistance,
+                                pairHeaderWindow,
+                                betweenPairB2Values,
+                                precedingB3Value,
+                                onCompanion?.Field0,
+                                onCompanion?.Field1,
+                                onCompanion?.Byte11Value,
+                                onCompanion?.Shape,
+                                onCompanion?.Byte15Value,
+                                offCompanion?.Field0,
+                                offCompanion?.Field1,
+                                offCompanion?.Byte11Value,
+                                offCompanion?.Shape,
+                                offCompanion?.Byte15Value,
+                                ClassifyManageBonusCaptureScope(file.File),
+                                sequence is null ? "unsequenced" : FormatProtocol04Sequence(sequence.Headers),
+                                sequence is not null && HasAnyProtocol04Header(sequence, "80 b2"),
+                                sequence is not null && HasAnyProtocol04Header(sequence, "80 b3"),
+                                sequence is not null && HasAnyProtocol04Header(sequence, "5e", "5f", "69", "80 e4", "80 e7", "81 0d", "81 0e", "81 0f", "81 11", "81 12", "81 25"),
+                                sequence is not null && HasAnyProtocol04Header(sequence, "80 c3", "80 c7", "80 c8"),
+                                file.File,
+                                packetGroup.Key,
+                                off.ManageBonusIndex,
+                                on.ManageBonusIndex,
+                                off.Payload.PayloadHex,
+                                on.Payload.PayloadHex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<ManageBonusTradeStateCompanionMapSummary> BuildManageBonusTradeStateCompanionMapSummaries(
+        IEnumerable<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries,
+        int maxRows = 12,
+        IReadOnlyList<AttributeDefinition>? attributes = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null)
+    {
+        List<ManageBonusTradeStateCompanionMapSummary> summaries = new();
+        IReadOnlyList<AttributeDefinition> attributeDefinitions = attributes ?? Array.Empty<AttributeDefinition>();
+        ILookup<int, GameObjectEntry> gameObjectsById = (gameObjects ?? Array.Empty<GameObjectEntry>()).ToLookup(entry => entry.GoId);
+
+        foreach (ManageBonusTradeStateByte15TransitionSummary transition in transitionSummaries)
+        {
+            IReadOnlyList<ManageBonusTradeStateCompanionMapFieldSummary> companionMapFields =
+                transition.CompanionMapFieldSummaries.Count > 0
+                    ? transition.CompanionMapFieldSummaries
+                    : BuildManageBonusTradeStateCompanionMapFieldSummariesFromShapePairs(transition.CompanionShapePairs);
+
+            foreach (ManageBonusTradeStateCompanionMapFieldSummary companionFields in companionMapFields)
+            {
+                summaries.Add(new ManageBonusTradeStateCompanionMapSummary(
+                    transition.Byte11Value,
+                    transition.Byte11ValueInt,
+                    companionFields.OnCompanionByte11Value,
+                    companionFields.OnCompanionByte11ValueInt,
+                    companionFields.OffCompanionByte11Value,
+                    companionFields.OffCompanionByte11ValueInt,
+                    BuildManageBonusTradeStateCompanionFieldPairReferences(
+                        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [$"{companionFields.OnCompanionByte11Value} -> {companionFields.OffCompanionByte11Value}"] = companionFields.CompanionPairCombinationCount
+                        },
+                        attributeDefinitions,
+                        gameObjectsById),
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [companionFields.OnCompanionByte11Value] = companionFields.CompanionPairCombinationCount
+                        },
+                        attributeDefinitions,
+                        gameObjectsById),
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [companionFields.OffCompanionByte11Value] = companionFields.CompanionPairCombinationCount
+                        },
+                        attributeDefinitions,
+                        gameObjectsById),
+                    companionFields.CompanionPairCombinationCount,
+                    transition.PairCombinationCount,
+                    companionFields.OnCompanionByte11Value.Equals(companionFields.OffCompanionByte11Value, StringComparison.OrdinalIgnoreCase)
+                        ? companionFields.CompanionPairCombinationCount
+                        : 0,
+                    transition.CompleteStateRefreshPairs,
+                    transition.B2OnlyStateRefreshPairs,
+                    transition.UnmatchedStateRefreshPairs,
+                    companionFields.SameCompanionField1Pairs,
+                    companionFields.CompanionField0PairDistinctCount,
+                    companionFields.CompanionField1PairDistinctCount,
+                    companionFields.ListedCompanionField1PairCount,
+                    companionFields.OnCompanionField1DistinctCount,
+                    companionFields.OffCompanionField1DistinctCount,
+                    companionFields.CompanionField0Pairs,
+                    companionFields.CompanionField1Pairs,
+                    companionFields.CompanionField1PairRepeatBuckets,
+                    BuildManageBonusTradeStateCompanionFieldPairReferences(
+                        companionFields.CompanionField1Pairs,
+                        attributeDefinitions,
+                        gameObjectsById),
+                    companionFields.OnCompanionField1Values,
+                    companionFields.OffCompanionField1Values,
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        companionFields.OnCompanionField1Values,
+                        attributeDefinitions,
+                        gameObjectsById),
+                    BuildManageBonusTradeStateCompanionFieldReferences(
+                        companionFields.OffCompanionField1Values,
+                        attributeDefinitions,
+                        gameObjectsById),
+                    transition.CaptureScopes,
+                    transition.TopPairHeaderWindows,
+                    transition.SampleFile,
+                    transition.SampleLine));
+            }
+        }
+
+        return summaries
+            .OrderByDescending(summary => summary.CompanionPairCombinationCount)
+            .ThenByDescending(summary => summary.TransitionPairCombinationCount)
+            .ThenBy(summary => summary.TradeByte11ValueInt)
+            .ThenBy(summary => summary.OnCompanionByte11ValueInt)
+            .ThenBy(summary => summary.OffCompanionByte11ValueInt)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateParserActionSummary> BuildManageBonusTradeStateParserActionSummaries(
+        IEnumerable<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries,
+        int maxRows = 8)
+    {
+        return companionMapSummaries
+            .GroupBy(summary =>
+            {
+                (string action, string reason) = ClassifyManageBonusTradeStateParserAction(summary);
+                return new
+                {
+                    ParserAction = action,
+                    ActionReason = reason
+                };
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateCompanionMapSummary[] rows = group.ToArray();
+                ManageBonusTradeStateCompanionMapSummary sample = rows
+                    .OrderByDescending(summary => summary.CompanionPairCombinationCount)
+                    .ThenByDescending(summary => summary.TransitionPairCombinationCount)
+                    .First();
+
+                return new ManageBonusTradeStateParserActionSummary(
+                    group.Key.ParserAction,
+                    group.Key.ActionReason,
+                    rows.Length,
+                    rows.Sum(summary => summary.TransitionPairCombinationCount),
+                    rows.Sum(summary => summary.CompanionPairCombinationCount),
+                    rows.Sum(summary => summary.SameCompanionByte11Pairs),
+                    rows.Sum(summary => summary.TransitionCompleteStateRefreshPairs),
+                    rows.Sum(summary => summary.TransitionB2OnlyStateRefreshPairs),
+                    rows.Sum(summary => summary.TransitionUnmatchedStateRefreshPairs),
+                    rows.Sum(summary => summary.SameCompanionField1Pairs),
+                    rows.Sum(summary => summary.CompanionField1PairDistinctCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(summary => new WeightedValue(
+                            FormatManageBonusTradeStateFieldValue(summary.TradeByte11Value, summary.TradeByte11ValueInt),
+                            summary.CompanionPairCombinationCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(summary => new WeightedValue(
+                            $"{FormatManageBonusTradeStateFieldValue(summary.OnCompanionByte11Value, summary.OnCompanionByte11ValueInt)} -> {FormatManageBonusTradeStateFieldValue(summary.OffCompanionByte11Value, summary.OffCompanionByte11ValueInt)}",
+                            summary.CompanionPairCombinationCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(summary => summary.CompanionField0Pairs.Select(entry => new WeightedValue(entry.Key, entry.Value))),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(summary => summary.CompanionField1PairRepeatBuckets.Select(entry => new WeightedValue(entry.Key, entry.Value))),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(summary => summary.CaptureScopes.Select(entry => new WeightedValue(entry.Key, entry.Value))),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(summary => summary.TopPairHeaderWindows.Select(entry => new WeightedValue(entry.Key, entry.Value))),
+                        8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetManageBonusTradeStateParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CompanionPairCombinationCount)
+            .ThenBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionSummary> BuildManageBonusTradeStateSerializedTransitionSummaries(
+        IEnumerable<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries,
+        IEnumerable<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries,
+        int maxRows = 12)
+    {
+        Dictionary<string, ManageBonusTradeStateByte15TransitionSummary> transitionsByTradeByte11 = transitionSummaries
+            .GroupBy(summary => summary.Byte11Value, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .OrderByDescending(summary => summary.PairCombinationCount)
+                    .ThenByDescending(summary => summary.PairedPacketCount)
+                    .First(),
+                StringComparer.OrdinalIgnoreCase);
+
+        return companionMapSummaries
+            .Select(summary =>
+            {
+                if (!transitionsByTradeByte11.TryGetValue(summary.TradeByte11Value, out ManageBonusTradeStateByte15TransitionSummary? transition))
+                {
+                    return null;
+                }
+
+                (string action, string reason) = ClassifyManageBonusTradeStateParserAction(summary);
+                return new ManageBonusTradeStateSerializedTransitionSummary(
+                    action,
+                    reason,
+                    transition.Field0,
+                    transition.Field1,
+                    transition.Field1Value,
+                    transition.Field2,
+                    transition.Field2Value,
+                    summary.TradeByte11Value,
+                    summary.TradeByte11ValueInt,
+                    FormatManageBonusTradeStatePayloadShape(
+                        transition.Field0,
+                        transition.Field1,
+                        transition.Field2,
+                        summary.TradeByte11Value,
+                        "01 00"),
+                    FormatManageBonusTradeStatePayloadShape(
+                        transition.Field0,
+                        transition.Field1,
+                        transition.Field2,
+                        summary.TradeByte11Value,
+                        "00 00"),
+                    summary.OnCompanionByte11Value,
+                    summary.OnCompanionByte11ValueInt,
+                    summary.OffCompanionByte11Value,
+                    summary.OffCompanionByte11ValueInt,
+                    summary.TransitionPairCombinationCount,
+                    summary.CompanionPairCombinationCount,
+                    summary.SameCompanionByte11Pairs,
+                    summary.TransitionCompleteStateRefreshPairs,
+                    summary.TransitionB2OnlyStateRefreshPairs,
+                    summary.TransitionUnmatchedStateRefreshPairs,
+                    ClassifyManageBonusTradeStateRefresh(summary),
+                    transition.BetweenPairB2Values,
+                    transition.PrecedingB3Values,
+                    summary.CompanionField0Pairs,
+                    summary.CompanionField1Pairs,
+                    summary.CompanionField1PairRepeatBuckets,
+                    summary.CaptureScopes,
+                    summary.TopPairHeaderWindows,
+                    summary.SampleFile,
+                    summary.SampleLine);
+            })
+            .Where(summary => summary is not null)
+            .Select(summary => summary!)
+            .OrderBy(summary => GetManageBonusTradeStateParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CompanionPairCombinationCount)
+            .ThenByDescending(summary => summary.TransitionPairCombinationCount)
+            .ThenBy(summary => summary.TradeByte11ValueInt)
+            .ThenBy(summary => summary.OnCompanionByte11ValueInt)
+            .ThenBy(summary => summary.OffCompanionByte11ValueInt)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionSample> BuildManageBonusTradeStateSerializedTransitionSamples(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        IEnumerable<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries,
+        int maxRows = 16)
+    {
+        Dictionary<string, ManageBonusTradeStateCompanionMapSummary> companionMapsByKey = companionMapSummaries
+            .GroupBy(
+                summary => BuildManageBonusTradeStateCompanionMapKey(
+                    summary.TradeByte11Value,
+                    summary.OnCompanionByte11Value,
+                    summary.OffCompanionByte11Value),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .OrderByDescending(summary => summary.CompanionPairCombinationCount)
+                    .ThenByDescending(summary => summary.TransitionPairCombinationCount)
+                    .First(),
+                StringComparer.OrdinalIgnoreCase);
+
+        return EnumerateManageBonusTradeStateByte15TransitionObservations(dumpSummaries)
+            .Where(observation =>
+                observation.OnCompanionByte11Value is not null &&
+                observation.OffCompanionByte11Value is not null)
+            .Select(observation =>
+            {
+                string key = BuildManageBonusTradeStateCompanionMapKey(
+                    observation.Byte11Value,
+                    observation.OnCompanionByte11Value!,
+                    observation.OffCompanionByte11Value!);
+                if (!companionMapsByKey.TryGetValue(key, out ManageBonusTradeStateCompanionMapSummary? companionMap))
+                {
+                    return null;
+                }
+
+                (string action, string reason) = ClassifyManageBonusTradeStateParserAction(companionMap);
+                return new
+                {
+                    Observation = observation,
+                    ParserAction = action,
+                    ActionReason = reason,
+                    RefreshClassification = ClassifyManageBonusTradeStateRefresh(observation),
+                    CompanionMap = companionMap
+                };
+            })
+            .Where(entry => entry is not null)
+            .Select(entry => entry!)
+            .GroupBy(entry => new
+            {
+                entry.ParserAction,
+                entry.ActionReason,
+                entry.RefreshClassification,
+                entry.Observation.Field0,
+                entry.Observation.Field1,
+                entry.Observation.Field1Value,
+                entry.Observation.Field2,
+                entry.Observation.Field2Value,
+                entry.Observation.Byte11Value,
+                entry.Observation.Byte11ValueInt,
+                entry.Observation.OnCompanionByte11Value,
+                entry.Observation.OffCompanionByte11Value,
+                entry.Observation.PairHeaderWindow
+            })
+            .Select(group =>
+            {
+                var sample = group
+                    .OrderBy(entry => entry.Observation.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Observation.SampleLine)
+                    .First();
+                ManageBonusTradeStateByte15TransitionObservation observation = sample.Observation;
+                ManageBonusTradeStateCompanionMapSummary companionMap = sample.CompanionMap;
+
+                return new ManageBonusTradeStateSerializedTransitionSample(
+                    group.Key.ParserAction,
+                    group.Key.ActionReason,
+                    group.Key.RefreshClassification,
+                    group.Count(),
+                    group.Key.Field0,
+                    group.Key.Field1,
+                    group.Key.Field1Value,
+                    group.Key.Field2,
+                    group.Key.Field2Value,
+                    group.Key.Byte11Value,
+                    group.Key.Byte11ValueInt,
+                    FormatManageBonusTradeStatePayloadShape(
+                        group.Key.Field0,
+                        group.Key.Field1,
+                        group.Key.Field2,
+                        group.Key.Byte11Value,
+                        "01 00"),
+                    FormatManageBonusTradeStatePayloadShape(
+                        group.Key.Field0,
+                        group.Key.Field1,
+                        group.Key.Field2,
+                        group.Key.Byte11Value,
+                        "00 00"),
+                    companionMap.OnCompanionByte11Value,
+                    companionMap.OnCompanionByte11ValueInt,
+                    companionMap.OffCompanionByte11Value,
+                    companionMap.OffCompanionByte11ValueInt,
+                    observation.OnCompanionShape,
+                    observation.OffCompanionShape,
+                    observation.RowDistance,
+                    observation.ProtocolBlockDistance,
+                    observation.PairHeaderWindow,
+                    observation.BetweenPairB2Values,
+                    observation.PrecedingB3Value,
+                    observation.CaptureScope,
+                    observation.PacketSequence,
+                    observation.HasSamePacketB2,
+                    observation.HasSamePacketB3,
+                    observation.SampleFile,
+                    observation.SampleLine,
+                    observation.OffManageBonusIndex,
+                    observation.OnManageBonusIndex,
+                    observation.OffSamplePayloadHex,
+                    observation.OnSamplePayloadHex);
+            })
+            .OrderBy(summary => GetManageBonusTradeStateParserActionOrder(summary.ParserAction))
+            .ThenBy(summary => GetManageBonusTradeStateRefreshOrder(summary.RefreshClassification))
+            .ThenByDescending(summary => summary.ObservedPairCount)
+            .ThenBy(summary => summary.TradeByte11ValueInt)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionParserCoverageSummary> BuildManageBonusTradeStateSerializedTransitionParserCoverageSummaries(
+        IEnumerable<ManageBonusTradeStateSerializedTransitionSample> samples,
+        int maxRows = 8)
+    {
+        return samples
+            .GroupBy(sample => new
+            {
+                sample.ParserAction,
+                sample.RefreshClassification
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateSerializedTransitionSample[] rows = group.ToArray();
+                ManageBonusTradeStateSerializedTransitionSample sample = rows
+                    .OrderByDescending(row => row.ObservedPairCount)
+                    .ThenBy(row => row.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(row => row.SampleLine)
+                    .First();
+                int observedPairCount = rows.Sum(row => row.ObservedPairCount);
+
+                return new ManageBonusTradeStateSerializedTransitionParserCoverageSummary(
+                    group.Key.ParserAction,
+                    group.Key.RefreshClassification,
+                    FormatManageBonusTradeStateParserCoverageCase(group.Key.ParserAction, group.Key.RefreshClassification),
+                    rows.Length,
+                    observedPairCount,
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(
+                            FormatManageBonusTradeStateFieldValue(row.TradeByte11Value, row.TradeByte11ValueInt),
+                            row.ObservedPairCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(
+                            $"{FormatManageBonusTradeStateFieldValue(row.OnCompanionByte11Value, row.OnCompanionByte11ValueInt)} -> {FormatManageBonusTradeStateFieldValue(row.OffCompanionByte11Value, row.OffCompanionByte11ValueInt)}",
+                            row.ObservedPairCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(
+                            $"{row.TradeOnShape} -> {row.TradeOffShape}",
+                            row.ObservedPairCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(row => row.BetweenPairB2Values.Select(value => new WeightedValue(value, row.ObservedPairCount))),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.PrecedingB3Value ?? "none", row.ObservedPairCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.PairHeaderWindow, row.ObservedPairCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.CaptureScope, row.ObservedPairCount)),
+                        8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetManageBonusTradeStateParserActionOrder(summary.ParserAction))
+            .ThenBy(summary => GetManageBonusTradeStateRefreshOrder(summary.RefreshClassification))
+            .ThenByDescending(summary => summary.ObservedPairCount)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionFieldRoleSummary> BuildManageBonusTradeStateSerializedTransitionFieldRoleSummaries(
+        IEnumerable<ManageBonusTradeStateSerializedTransitionSample> samples,
+        IEnumerable<ManageBonusTradeStateCompanionMapSummary>? companionMapSummaries = null)
+    {
+        ManageBonusTradeStateSerializedTransitionSample[] rows = samples.ToArray();
+        if (rows.Length == 0)
+        {
+            yield break;
+        }
+
+        ManageBonusTradeStateCompanionMapSummary[] companionMaps = (companionMapSummaries ?? Array.Empty<ManageBonusTradeStateCompanionMapSummary>()).ToArray();
+
+        ManageBonusTradeStateSerializedTransitionSample sample = rows
+            .OrderByDescending(row => row.ObservedPairCount)
+            .ThenBy(row => row.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.SampleLine)
+            .First();
+        int observedPairCount = rows.Sum(row => row.ObservedPairCount);
+        IReadOnlyDictionary<string, int> parserCases = CountProtocol03SelectorFfRepeatListWeightedValues(
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateParserCoverageCase(row.ParserAction, row.RefreshClassification),
+                row.ObservedPairCount)),
+            8);
+
+        yield return Build(
+            "trade field 0",
+            "long-form state-family marker for the serialized trade-state rows",
+            rows.Select(row => new WeightedValue(row.TradeField0, row.ObservedPairCount)));
+        yield return Build(
+            "trade field 1",
+            "state id candidate repeated by the short-state refresh tuple",
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateFieldValue(row.TradeField1, row.TradeField1Value),
+                row.ObservedPairCount)));
+        yield return Build(
+            "trade field 2",
+            "fixed data-node/class word for the serialized trade-state rows",
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateFieldValue(row.TradeField2, row.TradeField2Value),
+                row.ObservedPairCount)));
+        yield return Build(
+            "trade byte 11",
+            "transition variant word mirrored in the between-pair 80 b2 tuple",
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateFieldValue(row.TradeByte11Value, row.TradeByte11ValueInt),
+                row.ObservedPairCount)));
+        yield return Build(
+            "trade byte 15",
+            "serialized on/off flag; current pairs are on row 01 00 followed by off row 00 00",
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateShapePairPart(row.TradeOnShape, row.TradeOffShape, 4),
+                row.ObservedPairCount)));
+        yield return Build(
+            "between-pair 80 b2",
+            "short-state mirror tuple between the serialized on/off rows",
+            rows.SelectMany(row => row.BetweenPairB2Values.Select(value => new WeightedValue(value, row.ObservedPairCount))));
+        yield return Build(
+            "preceding 80 b3",
+            "optional short-state pre-refresh value; absence is the 80 b2-only parser case",
+            rows.Select(row => new WeightedValue(row.PrecedingB3Value ?? "none", row.ObservedPairCount)));
+        yield return Build(
+            "companion byte 11",
+            "immediate non-trade 80 bc companion byte-11 pair after each on/off row",
+            companionMaps.Length == 0
+                ? rows.Select(row => new WeightedValue(
+                    $"{FormatManageBonusTradeStateFieldValue(row.OnCompanionByte11Value, row.OnCompanionByte11ValueInt)} -> {FormatManageBonusTradeStateFieldValue(row.OffCompanionByte11Value, row.OffCompanionByte11ValueInt)}",
+                    row.ObservedPairCount))
+                : companionMaps.Select(map => new WeightedValue(
+                    $"{FormatManageBonusTradeStateFieldValue(map.OnCompanionByte11Value, map.OnCompanionByte11ValueInt)} -> {FormatManageBonusTradeStateFieldValue(map.OffCompanionByte11Value, map.OffCompanionByte11ValueInt)}",
+                    map.CompanionPairCombinationCount)));
+        yield return Build(
+            "companion field 0",
+            "immediate companion row family transition paired with the trade-state rows",
+            companionMaps.Length == 0
+                ? rows.Select(row => new WeightedValue(
+                    FormatManageBonusTradeStateShapePairPart(row.OnCompanionShape, row.OffCompanionShape, 0),
+                    row.ObservedPairCount))
+                : companionMaps.SelectMany(map => map.CompanionField0Pairs.Select(entry => new WeightedValue(entry.Key, entry.Value))));
+        yield return Build(
+            "companion field 1 repeat buckets",
+            "broad companion row state/id tail summarized as repeat buckets; current values are evidence, not final gameplay names",
+            companionMaps.Length == 0
+                ? rows.Select(row => new WeightedValue(
+                    FormatManageBonusTradeStateShapePairPart(row.OnCompanionShape, row.OffCompanionShape, 1),
+                    row.ObservedPairCount))
+                : companionMaps.SelectMany(map => map.CompanionField1PairRepeatBuckets.Select(entry => new WeightedValue(entry.Key, entry.Value))));
+        yield return Build(
+            "companion byte 15",
+            "companion on/off flag mirrors the adjacent trade row byte-15 state",
+            rows.Select(row => new WeightedValue(
+                FormatManageBonusTradeStateShapePairPart(row.OnCompanionShape, row.OffCompanionShape, 4),
+                row.ObservedPairCount)));
+
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary Build(
+            string fieldRole,
+            string interpretation,
+            IEnumerable<WeightedValue> values)
+        {
+            return new ManageBonusTradeStateSerializedTransitionFieldRoleSummary(
+                fieldRole,
+                interpretation,
+                observedPairCount,
+                CountProtocol03SelectorFfRepeatListWeightedValues(values, 8),
+                parserCases,
+                sample.SampleFile,
+                sample.SampleLine);
+        }
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionDecoderRow> BuildManageBonusTradeStateSerializedTransitionDecoderRows(
+        IEnumerable<ManageBonusTradeStateSerializedTransitionSample> samples,
+        int maxRows = 16)
+    {
+        return samples
+            .Select(sample =>
+            {
+                if (!TrySplitManageBonusTradeStateTuple(sample.BetweenPairB2Values.FirstOrDefault(), 3, out string[] b2Fields))
+                {
+                    return null;
+                }
+
+                string onTradeByte15 = GetManageBonusTradeStateShapePart(sample.TradeOnShape, 4);
+                string offTradeByte15 = GetManageBonusTradeStateShapePart(sample.TradeOffShape, 4);
+                string? onCompanionField0 = GetOptionalManageBonusTradeStateShapePart(sample.OnCompanionShape, 0);
+                string? offCompanionField0 = GetOptionalManageBonusTradeStateShapePart(sample.OffCompanionShape, 0);
+                string? onCompanionByte11 = GetOptionalManageBonusTradeStateShapePart(sample.OnCompanionShape, 3);
+                string? offCompanionByte11 = GetOptionalManageBonusTradeStateShapePart(sample.OffCompanionShape, 3);
+                string? onCompanionByte15 = GetOptionalManageBonusTradeStateShapePart(sample.OnCompanionShape, 4);
+                string? offCompanionByte15 = GetOptionalManageBonusTradeStateShapePart(sample.OffCompanionShape, 4);
+
+                return new ManageBonusTradeStateSerializedTransitionDecoderRow(
+                    sample.ParserAction,
+                    sample.RefreshClassification,
+                    FormatManageBonusTradeStateParserCoverageCase(sample.ParserAction, sample.RefreshClassification),
+                    sample.ObservedPairCount,
+                    sample.TradeField0,
+                    sample.TradeField1,
+                    sample.TradeField1Value,
+                    sample.TradeField2,
+                    sample.TradeField2Value,
+                    sample.TradeByte11Value,
+                    sample.TradeByte11ValueInt,
+                    onTradeByte15,
+                    ReadLittleEndianHexWordValue(onTradeByte15),
+                    offTradeByte15,
+                    ReadLittleEndianHexWordValue(offTradeByte15),
+                    b2Fields[0],
+                    ReadLittleEndianHexWordValue(b2Fields[0]),
+                    b2Fields[1],
+                    ReadLittleEndianHexWordValue(b2Fields[1]),
+                    b2Fields[2],
+                    ReadLittleEndianHexWordValue(b2Fields[2]),
+                    sample.PrecedingB3Value,
+                    ReadOptionalLittleEndianHexWordValue(sample.PrecedingB3Value),
+                    onCompanionField0,
+                    offCompanionField0,
+                    onCompanionByte11,
+                    ReadOptionalLittleEndianHexWordValue(onCompanionByte11),
+                    offCompanionByte11,
+                    ReadOptionalLittleEndianHexWordValue(offCompanionByte11),
+                    onCompanionByte15,
+                    ReadOptionalLittleEndianHexWordValue(onCompanionByte15),
+                    offCompanionByte15,
+                    ReadOptionalLittleEndianHexWordValue(offCompanionByte15),
+                    sample.ProtocolBlockDistance,
+                    sample.PairHeaderWindow,
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .Where(row => row is not null)
+            .Select(row => row!)
+            .OrderBy(row => GetManageBonusTradeStateParserActionOrder(row.ParserAction))
+            .ThenBy(row => GetManageBonusTradeStateRefreshOrder(row.RefreshClassification))
+            .ThenByDescending(row => row.ObservedPairCount)
+            .ThenBy(row => row.TradeByte11ValueInt)
+            .ThenBy(row => row.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.SampleLine)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionDetection> BuildManageBonusTradeStateSerializedTransitionDetections(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 256)
+    {
+        return EnumerateManageBonusTradeStateByte15TransitionObservations(dumpSummaries)
+            .Where(observation =>
+                observation.RowDistance < 0 &&
+                observation.AbsoluteRowDistance == 1 &&
+                HasManageBonusTradeStateB2Mirror(observation, observation.Field1, observation.Byte11Value))
+            .Select(observation =>
+            {
+                string refreshClassification = ClassifyManageBonusTradeStateRefresh(observation);
+                string parserAction = ClassifyManageBonusTradeStateSerializedTransitionDetectionAction(
+                    observation,
+                    refreshClassification);
+
+                return new ManageBonusTradeStateSerializedTransitionDetection(
+                    parserAction,
+                    refreshClassification,
+                    FormatManageBonusTradeStateParserCoverageCase(parserAction, refreshClassification),
+                    observation.Byte11Value,
+                    observation.Byte11ValueInt,
+                    DescribeManageBonusTradeStateVariantRole(observation.Byte11ValueInt),
+                    FormatManageBonusTradeStatePayloadShape(
+                        observation.Field0,
+                        observation.Field1,
+                        observation.Field2,
+                        observation.Byte11Value,
+                        "01 00"),
+                    FormatManageBonusTradeStatePayloadShape(
+                        observation.Field0,
+                        observation.Field1,
+                        observation.Field2,
+                        observation.Byte11Value,
+                        "00 00"),
+                    observation.RowDistance,
+                    observation.ProtocolBlockDistance,
+                    observation.PairHeaderWindow,
+                    observation.BetweenPairB2Values,
+                    observation.PrecedingB3Value,
+                    observation.OnCompanionShape,
+                    observation.OffCompanionShape,
+                    observation.CaptureScope,
+                    observation.PacketSequence,
+                    observation.HasSamePacketB2,
+                    observation.HasSamePacketB3,
+                    observation.SampleFile,
+                    observation.SampleLine,
+                    observation.OnManageBonusIndex,
+                    observation.OffManageBonusIndex,
+                    observation.OnSamplePayloadHex,
+                    observation.OffSamplePayloadHex);
+            })
+            .OrderBy(detection => GetManageBonusTradeStateSerializedTransitionDetectionActionOrder(detection.ParserAction))
+            .ThenBy(detection => GetManageBonusTradeStateRefreshOrder(detection.RefreshClassification))
+            .ThenBy(detection => detection.VariantValueInt)
+            .ThenBy(detection => detection.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(detection => detection.SampleLine)
+            .ThenBy(detection => detection.OnManageBonusIndex)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStateSerializedTransitionDetectionActionSummary> BuildManageBonusTradeStateSerializedTransitionDetectionActionSummaries(
+        IEnumerable<ManageBonusTradeStateSerializedTransitionDetection> detections,
+        int maxRows = 12)
+    {
+        return detections
+            .GroupBy(detection => new
+            {
+                detection.ParserAction,
+                detection.RefreshClassification,
+                detection.ParserCase
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateSerializedTransitionDetection[] rows = group.ToArray();
+                ManageBonusTradeStateSerializedTransitionDetection sample = rows
+                    .OrderBy(row => row.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(row => row.SampleLine)
+                    .ThenBy(row => row.OnManageBonusIndex)
+                    .First();
+
+                return new ManageBonusTradeStateSerializedTransitionDetectionActionSummary(
+                    group.Key.ParserAction,
+                    group.Key.RefreshClassification,
+                    group.Key.ParserCase,
+                    rows.Length,
+                    rows.Count(row => row.OnCompanionShape is not null && row.OffCompanionShape is not null),
+                    rows.Count(row => row.HasSamePacketB2),
+                    rows.Count(row => row.HasSamePacketB3),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(
+                            FormatManageBonusTradeStateFieldValue(row.VariantValue, row.VariantValueInt),
+                            1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.VariantRole, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue($"{row.TradeOnShape} -> {row.TradeOffShape}", 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(
+                            $"{row.OnCompanionShape ?? "none"} -> {row.OffCompanionShape ?? "none"}",
+                            1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.SelectMany(row => row.BetweenPairB2Values.Select(value => new WeightedValue(value, 1))),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.PrecedingB3Value ?? "none", 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.PairHeaderWindow, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        rows.Select(row => new WeightedValue(row.CaptureScope, 1)),
+                        8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetManageBonusTradeStateSerializedTransitionDetectionActionOrder(summary.ParserAction))
+            .ThenBy(summary => GetManageBonusTradeStateRefreshOrder(summary.RefreshClassification))
+            .ThenByDescending(summary => summary.DetectionCount)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<ManageBonusTradeStatePayloadDecodeSummary> BuildManageBonusTradeStatePayloadDecodeSummaries(
+        IEnumerable<PacketDumpFileSummary> files,
+        int maxRows = 16)
+    {
+        return files
+            .SelectMany(file => (file.ManageBonusTradeStatePayloads ?? Array.Empty<ManageBonusTradeStatePayloadSample>())
+                .Select(payload => new
+                {
+                    file.File,
+                    Payload = payload
+                }))
+            .GroupBy(entry => new
+            {
+                entry.Payload.VariantValue,
+                entry.Payload.VariantValueInt,
+                entry.Payload.VariantRole,
+                entry.Payload.Byte15Value,
+                entry.Payload.Byte15ValueInt,
+                entry.Payload.StateName
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                var sample = entries
+                    .OrderBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Payload.Line)
+                    .First();
+
+                return new ManageBonusTradeStatePayloadDecodeSummary(
+                    group.Key.VariantValue,
+                    group.Key.VariantValueInt,
+                    group.Key.VariantRole,
+                    group.Key.Byte15Value,
+                    group.Key.Byte15ValueInt,
+                    group.Key.StateName,
+                    entries.Length,
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(
+                        entries.Select(entry => ClassifyManageBonusCaptureScope(entry.File)),
+                        8),
+                    sample.File,
+                    sample.Payload.Line,
+                    sample.Payload.PayloadHex);
+            })
+            .OrderBy(summary => GetManageBonusTradeStateVariantRoleOrder(summary.VariantRole))
+            .ThenByDescending(summary => summary.PayloadCount)
+            .ThenBy(summary => summary.VariantValueInt)
+            .ThenBy(summary => summary.Byte15ValueInt)
+            .Take(maxRows);
+    }
+
+    private static (string Action, string Reason) ClassifyManageBonusTradeStateParserAction(
+        ManageBonusTradeStateCompanionMapSummary summary)
+    {
+        bool hasCompanionPairs = summary.CompanionPairCombinationCount > 0;
+        bool stableCompanionByte11 = hasCompanionPairs &&
+            summary.SameCompanionByte11Pairs == summary.CompanionPairCombinationCount;
+        bool noUnmatchedTransitions = summary.TransitionUnmatchedStateRefreshPairs == 0;
+        bool allTransitionsHaveStateRefresh =
+            summary.TransitionPairCombinationCount > 0 &&
+            summary.TransitionCompleteStateRefreshPairs + summary.TransitionB2OnlyStateRefreshPairs == summary.TransitionPairCombinationCount;
+        bool broadCompanionField1Tail =
+            summary.SameCompanionField1Pairs == 0 &&
+            summary.CompanionField1PairDistinctCount > 1;
+
+        if (stableCompanionByte11 &&
+            noUnmatchedTransitions &&
+            allTransitionsHaveStateRefresh &&
+            broadCompanionField1Tail &&
+            summary.CompanionPairCombinationCount >= 50)
+        {
+            return (
+                "promote serialized trade-state transition candidate",
+                "dominant adjacent off/on rows have stable companion byte-11, short-state mirrors, and broad companion field-1 tails");
+        }
+
+        if (stableCompanionByte11 &&
+            noUnmatchedTransitions &&
+            allTransitionsHaveStateRefresh)
+        {
+            return (
+                "retain low-count trade-state transition control",
+                "same transition invariants as the dominant row but needs more before/after captures before parser promotion");
+        }
+
+        if (!stableCompanionByte11)
+        {
+            return (
+                "collect before/after capture for companion byte-11 variant",
+                "companion byte-11 changes across the on/off rows or has no stable paired evidence");
+        }
+
+        return (
+            "review trade-state transition evidence",
+            "current rows do not match the dominant transition-control invariants");
+    }
+
+    private static int GetManageBonusTradeStateParserActionOrder(string parserAction)
+    {
+        return parserAction switch
+        {
+            "promote serialized trade-state transition candidate" => 0,
+            "retain low-count trade-state transition control" => 1,
+            "collect before/after capture for companion byte-11 variant" => 2,
+            "review trade-state transition evidence" => 3,
+            _ => 4
+        };
+    }
+
+    private static int GetManageBonusTradeStateRefreshOrder(string refreshClassification)
+    {
+        return refreshClassification switch
+        {
+            "complete short-state refresh" => 0,
+            "mixed complete and 80 b2-only refresh" => 1,
+            "80 b2-only refresh" => 2,
+            "review unmatched short-state refresh" => 3,
+            "no short-state refresh" => 4,
+            _ => 5
+        };
+    }
+
+    private static string DescribeManageBonusTradeStateVariantRole(int variantValue)
+    {
+        return variantValue switch
+        {
+            50 => "dominant serialized trade-state transition variant",
+            1 or 2 or 17 => "low-count serialized trade-state control variant",
+            4 or 5 => "unpaired serialized trade-state variant lead",
+            _ => "unclassified serialized trade-state variant"
+        };
+    }
+
+    private static int GetManageBonusTradeStateVariantRoleOrder(string variantRole)
+    {
+        return variantRole switch
+        {
+            "dominant serialized trade-state transition variant" => 0,
+            "low-count serialized trade-state control variant" => 1,
+            "unpaired serialized trade-state variant lead" => 2,
+            "unclassified serialized trade-state variant" => 3,
+            _ => 4
+        };
+    }
+
+    private static string ClassifyManageBonusTradeStateSerializedTransitionDetectionAction(
+        ManageBonusTradeStateByte15TransitionObservation observation,
+        string refreshClassification)
+    {
+        bool hasSupportedRefresh =
+            refreshClassification.Equals("complete short-state refresh", StringComparison.OrdinalIgnoreCase) ||
+            refreshClassification.Equals("80 b2-only refresh", StringComparison.OrdinalIgnoreCase);
+        bool hasStableCompanionByte11 =
+            observation.OnCompanionByte11Value is not null &&
+            observation.OffCompanionByte11Value is not null &&
+            observation.OnCompanionByte11Value.Equals(observation.OffCompanionByte11Value, StringComparison.OrdinalIgnoreCase);
+
+        if (observation.Byte11ValueInt == 50 &&
+            hasSupportedRefresh &&
+            hasStableCompanionByte11)
+        {
+            return "decode dominant serialized trade-state transition";
+        }
+
+        if (observation.Byte11ValueInt is 1 or 2 or 17 &&
+            hasSupportedRefresh)
+        {
+            return "decode low-count serialized trade-state control";
+        }
+
+        return "review serialized trade-state transition candidate";
+    }
+
+    private static int GetManageBonusTradeStateSerializedTransitionDetectionActionOrder(string parserAction)
+    {
+        return parserAction switch
+        {
+            "decode dominant serialized trade-state transition" => 0,
+            "decode low-count serialized trade-state control" => 1,
+            "review serialized trade-state transition candidate" => 2,
+            _ => 3
+        };
+    }
+
+    private static string DescribeManageBonusTradeStateByte15State(int byte15Value)
+    {
+        return byte15Value switch
+        {
+            1 => "on",
+            0 => "off",
+            _ => "non-binary"
+        };
+    }
+
+    private static string BuildManageBonusTradeStateCompanionMapKey(
+        string tradeByte11Value,
+        string onCompanionByte11Value,
+        string offCompanionByte11Value)
+    {
+        return $"{tradeByte11Value}|{onCompanionByte11Value}|{offCompanionByte11Value}";
+    }
+
+    private static string FormatManageBonusTradeStateParserCoverageCase(
+        string parserAction,
+        string refreshClassification)
+    {
+        return $"{parserAction}; {refreshClassification}";
+    }
+
+    private static string FormatManageBonusTradeStateFieldValue(string fieldHex, int fieldValue)
+    {
+        return $"{fieldHex} / {fieldValue}";
+    }
+
+    private static string FormatManageBonusTradeStatePayloadShape(
+        string field0,
+        string field1,
+        string field2,
+        string byte11Value,
+        string byte15Value)
+    {
+        return $"{field0}/{field1}/{field2}/{byte11Value}/{byte15Value}";
+    }
+
+    private static string FormatManageBonusTradeStateShapePairPart(string? onShape, string? offShape, int partIndex)
+    {
+        return $"{GetManageBonusTradeStateShapePart(onShape, partIndex)} -> {GetManageBonusTradeStateShapePart(offShape, partIndex)}";
+    }
+
+    private static string GetManageBonusTradeStateShapePart(string? shape, int partIndex)
+    {
+        if (string.IsNullOrWhiteSpace(shape))
+        {
+            return "none";
+        }
+
+        string[] parts = shape.Split('/');
+        return partIndex >= 0 && partIndex < parts.Length
+            ? parts[partIndex]
+            : "none";
+    }
+
+    private static string? GetOptionalManageBonusTradeStateShapePart(string? shape, int partIndex)
+    {
+        string part = GetManageBonusTradeStateShapePart(shape, partIndex);
+        return part.Equals("none", StringComparison.OrdinalIgnoreCase)
+            ? null
+            : part;
+    }
+
+    private static bool TrySplitManageBonusTradeStateTuple(string? value, int partCount, out string[] parts)
+    {
+        parts = Array.Empty<string>();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        string[] split = value.Split('/');
+        if (split.Length != partCount || split.Any(part => string.IsNullOrWhiteSpace(part)))
+        {
+            return false;
+        }
+
+        parts = split;
+        return true;
+    }
+
+    private static int? ReadOptionalLittleEndianHexWordValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            value.Equals("none", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        int parsed = ReadLittleEndianHexWordValue(value);
+        return parsed < 0 ? null : parsed;
+    }
+
+    private static string ClassifyManageBonusTradeStateRefresh(ManageBonusTradeStateCompanionMapSummary summary)
+    {
+        if (summary.TransitionUnmatchedStateRefreshPairs > 0)
+        {
+            return "review unmatched short-state refresh";
+        }
+
+        if (summary.TransitionCompleteStateRefreshPairs > 0 && summary.TransitionB2OnlyStateRefreshPairs > 0)
+        {
+            return "mixed complete and 80 b2-only refresh";
+        }
+
+        if (summary.TransitionCompleteStateRefreshPairs > 0)
+        {
+            return "complete short-state refresh";
+        }
+
+        if (summary.TransitionB2OnlyStateRefreshPairs > 0)
+        {
+            return "80 b2-only refresh";
+        }
+
+        return "no short-state refresh";
+    }
+
+    private static string ClassifyManageBonusTradeStateRefresh(ManageBonusTradeStateByte15TransitionObservation observation)
+    {
+        bool hasB2Mirror = HasManageBonusTradeStateB2Mirror(
+            observation,
+            observation.Field1,
+            observation.Byte11Value);
+        bool hasB3Match =
+            observation.PrecedingB3Value is not null &&
+            IsManageBonusTradeStateB3MatchValue(observation.PrecedingB3Value, observation.Field1);
+
+        if (hasB2Mirror && hasB3Match)
+        {
+            return "complete short-state refresh";
+        }
+
+        if (hasB2Mirror && observation.PrecedingB3Value is null)
+        {
+            return "80 b2-only refresh";
+        }
+
+        if (!hasB2Mirror ||
+            (observation.PrecedingB3Value is not null && !hasB3Match))
+        {
+            return "review unmatched short-state refresh";
+        }
+
+        return "no short-state refresh";
     }
 
     public static IEnumerable<Protocol03NestedMovementBoundaryEvidenceSummary> BuildProtocol03NestedMovementBoundaryEvidenceSummaries(
@@ -1601,6 +4125,12 @@ public static partial class PacketResearcher
                     : firstNonZeroOffset is null
                         ? "zero-filled terminal post-tuple body"
                         : "nonzero terminal post-tuple body";
+                string bodyPrefixHex = FormatHeader(body.Take(Math.Min(16, body.Length)));
+                string bodySuffixHex = FormatHeader(body.Skip(Math.Max(0, body.Length - 16)).Take(Math.Min(16, body.Length)));
+                string terminalBodySuffixGroup = body.Length == 96 &&
+                    IsProtocol03Mode06Terminal96ByteTupleBodySuffix(bodySuffixHex)
+                        ? "terminal-96 accepted suffix"
+                        : FormatProtocol03NestedMovementEmptyHex(bodySuffixHex);
 
                 return new
                 {
@@ -1612,8 +4142,9 @@ public static partial class PacketResearcher
                     PostPrefixDisposition = postPrefixDisposition,
                     BodyDisposition = bodyDisposition,
                     TerminalPostTupleBodyBytes = body.Length,
-                    BodyPrefixHex = FormatHeader(body.Take(Math.Min(16, body.Length))),
-                    BodySuffixHex = FormatHeader(body.Skip(Math.Max(0, body.Length - 16)).Take(Math.Min(16, body.Length))),
+                    BodyPrefixHex = bodyPrefixHex,
+                    BodySuffixHex = bodySuffixHex,
+                    TerminalBodySuffixGroup = terminalBodySuffixGroup,
                     PreAnchorBodyPrefixHex = preAnchorBodyPrefixHex,
                     PreAnchorBodySuffixHex = preAnchorBodySuffixHex,
                     PreAnchorFirstNonZeroOffset = preAnchorFirstNonZeroOffset,
@@ -1643,6 +4174,7 @@ public static partial class PacketResearcher
                 entry.PostPrefixDisposition,
                 entry.BodyDisposition,
                 entry.TerminalPostTupleBodyBytes,
+                entry.TerminalBodySuffixGroup,
                 entry.PreAnchorFirstNonZeroOffset,
                 entry.PreAnchorFirstNonZeroFieldHex,
                 entry.PreAnchorTrailingLeadHex,
@@ -1802,6 +4334,1766 @@ public static partial class PacketResearcher
             .OrderBy(summary => GetProtocol03NestedMovementMode06TupleBodyParserActionOrder(summary.ParserAction))
             .ThenByDescending(summary => summary.WindowCount)
             .ThenBy(summary => summary.ActionReason, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06HeldTupleBodySummary> BuildProtocol03NestedMovementMode06HeldTupleBodySummaries(
+        IEnumerable<Protocol03NestedMovementMode06PostContinuationTupleBodySummary> summaries,
+        IEnumerable<Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary>? terminalSummaries = null)
+    {
+        static bool IsHeldAction(string parserAction)
+        {
+            return parserAction.StartsWith("hold ", StringComparison.Ordinal);
+        }
+
+        static IReadOnlyDictionary<string, int> SingleValue(string value, int count)
+        {
+            return CountProtocol03NestedMovementWeightedValues(
+                new[] { new WeightedValue(value, count) },
+                8);
+        }
+
+        var boundedRows = summaries
+            .Select(summary =>
+            {
+                (string action, string reason) = GetProtocol03NestedMovementMode06TupleBodyParserAction(summary);
+                return new
+                {
+                    ParserAction = action,
+                    ActionReason = reason,
+                    Summary = summary
+                };
+            })
+            .Where(row => IsHeldAction(row.ParserAction))
+            .Select(row => new Protocol03NestedMovementMode06HeldTupleBodySummary(
+                row.ParserAction,
+                row.ActionReason,
+                "bounded before accepted object-view header",
+                row.Summary.TailPrefixKind,
+                row.Summary.PrefixFirstNonZeroFieldHex,
+                row.Summary.TupleLayoutKind,
+                row.Summary.PostPrefixDisposition,
+                row.Summary.BodyDisposition,
+                row.Summary.PostTupleBodyBytes,
+                row.Summary.WindowCount,
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.BodyPrefixHex), row.Summary.WindowCount),
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.BodySuffixHex), row.Summary.WindowCount),
+                SingleValue(row.Summary.FirstNonZeroOffset?.ToString(CultureInfo.InvariantCulture) ?? "-", row.Summary.WindowCount),
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.FirstNonZeroFieldHex), row.Summary.WindowCount),
+                SingleValue(row.Summary.PreAnchorFirstNonZeroOffset?.ToString(CultureInfo.InvariantCulture) ?? "-", row.Summary.WindowCount),
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.PreAnchorFirstNonZeroFieldHex), row.Summary.WindowCount),
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.PreAnchorTrailingLeadHex), row.Summary.WindowCount),
+                SingleValue(FormatProtocol03NestedMovementEmptyHex(row.Summary.PreAnchorPreLeadHex), row.Summary.WindowCount),
+                SingleValue("-", row.Summary.WindowCount),
+                SingleValue("-", row.Summary.WindowCount),
+                row.Summary.HeaderClassifications,
+                row.Summary.HeaderPrefixes,
+                row.Summary.PostPrefixLeads,
+                row.Summary.MarkerBytes,
+                row.Summary.InnerSelectors,
+                row.Summary.OuterSelectors,
+                row.Summary.ObjectClassifications,
+                row.Summary.PayloadBytes,
+                row.Summary.PositionSamples,
+                row.Summary.SampleFile,
+                row.Summary.SampleLine));
+
+        var terminalRows = (terminalSummaries ?? Array.Empty<Protocol03NestedMovementMode06PostContinuationTerminalTupleBodySummary>())
+            .Select(summary =>
+            {
+                (string action, string reason) = GetProtocol03NestedMovementMode06TerminalTupleBodyParserAction(summary);
+                return new
+                {
+                    ParserAction = action,
+                    ActionReason = reason,
+                    Summary = summary
+                };
+            })
+            .Where(row => IsHeldAction(row.ParserAction))
+            .Select(row => new Protocol03NestedMovementMode06HeldTupleBodySummary(
+                row.ParserAction,
+                row.ActionReason,
+                "terminal tail end",
+                row.Summary.TailPrefixKind,
+                row.Summary.PrefixFirstNonZeroFieldHex,
+                row.Summary.TupleLayoutKind,
+                row.Summary.PostPrefixDisposition,
+                row.Summary.BodyDisposition,
+                row.Summary.TerminalPostTupleBodyBytes,
+                row.Summary.WindowCount,
+                row.Summary.BodyPrefixes,
+                row.Summary.BodySuffixes,
+                row.Summary.FirstNonZeroOffsets,
+                row.Summary.FirstNonZeroFields,
+                row.Summary.PreAnchorFirstNonZeroOffsets,
+                row.Summary.PreAnchorFirstNonZeroFields,
+                row.Summary.PreAnchorTrailingLeads,
+                row.Summary.PreAnchorPreLeadBytes,
+                row.Summary.PreTailFieldOffsets,
+                row.Summary.PreTailFieldBytes,
+                SingleValue("terminal tail end", row.Summary.WindowCount),
+                SingleValue("-", row.Summary.WindowCount),
+                row.Summary.PostPrefixLeads,
+                row.Summary.MarkerBytes,
+                row.Summary.InnerSelectors,
+                row.Summary.OuterSelectors,
+                row.Summary.ObjectClassifications,
+                row.Summary.PayloadBytes,
+                row.Summary.PositionSamples,
+                row.Summary.SampleFile,
+                row.Summary.SampleLine));
+
+        return boundedRows
+            .Concat(terminalRows)
+            .OrderBy(summary => GetProtocol03NestedMovementMode06TupleBodyParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.WindowCount)
+            .ThenBy(summary => summary.SourceDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.BodyBytes)
+            .ThenBy(summary => summary.PrefixFirstNonZeroFieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostPrefixDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries)
+    {
+        const int targetPrefixBytes = 31;
+        const int postPrefixTailOffset = 16 + targetPrefixBytes;
+        const int postTupleTailOffset = postPrefixTailOffset + 8;
+        const string marker34HoldAction = "hold mode 06 marker-34 long object-view tuple body as evidence only";
+        const string marker34EffectScaffoldAction = "test guarded mode 06 marker-34 effect/scaffold object-view tuple body";
+        const string marker34NestedReplayAction = "test guarded mode 06 marker-34 nested replay object-view tuple body";
+        const string marker34EmbeddedMovementAction = "test guarded mode 06 123-byte marker-34 embedded movement object-view tuple body";
+
+        static IReadOnlyDictionary<string, int> SingleValue(string value)
+        {
+            return CountProtocol03NestedMovementValues(new[] { value }, 8);
+        }
+
+        return EnumerateProtocol03NestedMovementObservations(dumpSummaries)
+            .Where(observation => !observation.IsBoundedPrimaryWrapper)
+            .Where(observation => observation.Lead.MarkerModeHex.Equals("06", StringComparison.OrdinalIgnoreCase))
+            .Select(observation => new
+            {
+                Observation = observation,
+                Tail = GetProtocol03NestedMovementFullTailByteValues(observation.Lead).ToArray()
+            })
+            .Where(entry => IsProtocol03NestedMovementMode06FfContinuationLead(entry.Tail))
+            .Where(entry => entry.Tail.Length >= postTupleTailOffset)
+            .Select(entry =>
+            {
+                int postContinuationBytes = Math.Max(0, entry.Tail.Length - 16);
+                byte[] prefix = entry.Tail.Skip(16).Take(targetPrefixBytes).ToArray();
+                int? prefixFirstNonZeroOffset = FindFirstNonZeroOffset(prefix);
+                string prefixFirstNonZeroFieldHex = prefixFirstNonZeroOffset is null
+                    ? string.Empty
+                    : FormatHeader(prefix.Skip(prefixFirstNonZeroOffset.Value).Take(Math.Min(2, prefix.Length - prefixFirstNonZeroOffset.Value)));
+                bool postPrefixLooksLikeObjectView = LooksLikeProtocol03ObjectViewHeader(entry.Tail, postPrefixTailOffset);
+                string postPrefixDisposition = postPrefixLooksLikeObjectView
+                    ? ClassifyProtocol03ObjectView(entry.Tail[postPrefixTailOffset + 2], entry.Tail[postPrefixTailOffset + 3])
+                    : "non-object-view post-prefix lead";
+                bool tupleIsAcceptedBoundary = postPrefixLooksLikeObjectView &&
+                    !postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal);
+                int boundaryAfterTupleOffset = -1;
+                bool hasBoundaryAfterTuple = !tupleIsAcceptedBoundary &&
+                    TryFindProtocol03ObjectViewHeader(
+                        entry.Tail,
+                        postTupleTailOffset,
+                        entry.Tail.Length,
+                        Math.Max(0, entry.Tail.Length - postTupleTailOffset),
+                        includeNpcBasePostCreationTailSelectors: false,
+                        out boundaryAfterTupleOffset);
+
+                if (!hasBoundaryAfterTuple)
+                {
+                    return null;
+                }
+
+                byte[] body = entry.Tail.Skip(postTupleTailOffset).Take(boundaryAfterTupleOffset - postTupleTailOffset).ToArray();
+                (
+                    string preAnchorBodyPrefixHex,
+                    string preAnchorBodySuffixHex,
+                    int? preAnchorFirstNonZeroOffset,
+                    string preAnchorFirstNonZeroFieldHex,
+                    string preAnchorTrailingLeadHex,
+                    string preAnchorPreLeadHex,
+                    _,
+                    _) = GetProtocol03Mode06PreAnchorBodyEvidence(body);
+                int? firstNonZeroOffset = FindFirstNonZeroOffset(body);
+                string firstNonZeroFieldHex = firstNonZeroOffset is null
+                    ? string.Empty
+                    : FormatHeader(body.Skip(firstNonZeroOffset.Value).Take(Math.Min(2, body.Length - firstNonZeroOffset.Value)));
+                string bodyDisposition = body.Length == 0
+                    ? "empty post-tuple body"
+                    : firstNonZeroOffset is null
+                        ? "zero-filled post-tuple body"
+                        : "nonzero post-tuple body";
+                string headerHex = FormatHeader(entry.Tail.Skip(boundaryAfterTupleOffset).Take(Math.Min(8, Math.Max(0, entry.Tail.Length - boundaryAfterTupleOffset))));
+                string headerClassification = ClassifyProtocol03ObjectView(entry.Tail[boundaryAfterTupleOffset + 2], entry.Tail[boundaryAfterTupleOffset + 3]);
+                string tailPrefixKind = ClassifyProtocol03NestedMovementMode06TailPrefix(entry.Observation.Lead);
+                string tupleLayoutKind = ClassifyProtocol03NestedMovementMode06PostPrefixTuple(entry.Tail, postPrefixTailOffset, postPrefixLooksLikeObjectView, postPrefixDisposition);
+                string bodyPrefixHex = FormatHeader(body.Take(Math.Min(16, body.Length)));
+                string bodySuffixHex = FormatHeader(body.Skip(Math.Max(0, body.Length - 16)).Take(Math.Min(16, body.Length)));
+                int tailStartOffset = GetProtocol03NestedMovementTailStartOffset(entry.Observation.Lead);
+                int continuationCutOffset = tailStartOffset + 16;
+                int bodyOffset = tailStartOffset + postTupleTailOffset;
+                int boundaryCutOffset = tailStartOffset + boundaryAfterTupleOffset;
+                int postContinuationBoundaryOffset = boundaryAfterTupleOffset - 16;
+                string postPrefixLeadHex = FormatHeader(entry.Tail.Skip(postPrefixTailOffset).Take(Math.Min(8, entry.Tail.Length - postPrefixTailOffset)));
+                string markerByteHex = FormatProtocol03Byte(entry.Tail, postPrefixTailOffset + 7);
+
+                var classifierSummary = new Protocol03NestedMovementMode06PostContinuationTupleBodySummary(
+                    tailPrefixKind,
+                    prefixFirstNonZeroFieldHex,
+                    tupleLayoutKind,
+                    postPrefixDisposition,
+                    bodyDisposition,
+                    body.Length,
+                    bodyPrefixHex,
+                    bodySuffixHex,
+                    preAnchorBodyPrefixHex,
+                    preAnchorBodySuffixHex,
+                    preAnchorFirstNonZeroOffset,
+                    preAnchorFirstNonZeroFieldHex,
+                    preAnchorTrailingLeadHex,
+                    preAnchorPreLeadHex,
+                    firstNonZeroOffset,
+                    firstNonZeroFieldHex,
+                    1,
+                    SingleValue(headerClassification),
+                    SingleValue(headerHex),
+                    SingleValue(postContinuationBoundaryOffset.ToString(CultureInfo.InvariantCulture)),
+                    SingleValue((postContinuationBytes - targetPrefixBytes).ToString(CultureInfo.InvariantCulture)),
+                    SingleValue(postPrefixLeadHex),
+                    SingleValue(FormatProtocol03Byte(entry.Tail, postPrefixTailOffset + 1)),
+                    SingleValue(markerByteHex),
+                    SingleValue(tailStartOffset.ToString(CultureInfo.InvariantCulture)),
+                    SingleValue(continuationCutOffset.ToString(CultureInfo.InvariantCulture)),
+                    SingleValue(boundaryCutOffset.ToString(CultureInfo.InvariantCulture)),
+                    SingleValue(entry.Observation.Lead.InnerSelector),
+                    SingleValue(entry.Observation.Lead.OuterSelector),
+                    SingleValue(entry.Observation.Sample.Classification),
+                    SingleValue(entry.Observation.Lead.PayloadBytes.ToString(CultureInfo.InvariantCulture)),
+                    SingleValue(FormatProtocol03NestedMovementPosition(entry.Observation.Lead)),
+                    entry.Observation.File,
+                    entry.Observation.Line);
+                (string action, string reason) = GetProtocol03NestedMovementMode06TupleBodyParserAction(classifierSummary);
+                if (!action.Equals(marker34HoldAction, StringComparison.Ordinal) &&
+                    !action.Equals(marker34EffectScaffoldAction, StringComparison.Ordinal) &&
+                    !action.Equals(marker34NestedReplayAction, StringComparison.Ordinal) &&
+                    !action.Equals(marker34EmbeddedMovementAction, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                return new Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary(
+                    action,
+                    reason,
+                    body.Length,
+                    FormatHeader(body),
+                    bodyPrefixHex,
+                    bodySuffixHex,
+                    firstNonZeroOffset,
+                    FormatProtocol03NestedMovementEmptyHex(firstNonZeroFieldHex),
+                    FormatProtocol03Mode06PreAnchorNonZeroByteOffsets(body, 32),
+                    tailStartOffset,
+                    continuationCutOffset,
+                    bodyOffset,
+                    boundaryCutOffset,
+                    postContinuationBoundaryOffset,
+                    tailPrefixKind,
+                    FormatProtocol03NestedMovementEmptyHex(prefixFirstNonZeroFieldHex),
+                    tupleLayoutKind,
+                    postPrefixDisposition,
+                    postPrefixLeadHex,
+                    markerByteHex,
+                    headerClassification,
+                    headerHex,
+                    entry.Observation.Lead.InnerSelector,
+                    entry.Observation.Lead.OuterSelector,
+                    entry.Observation.Sample.Classification,
+                    entry.Observation.Lead.PayloadBytes,
+                    FormatProtocol03NestedMovementPosition(entry.Observation.Lead),
+                    entry.Observation.File,
+                    entry.Observation.Line);
+            })
+            .Where(summary => summary is not null)
+            .Select(summary => summary!)
+            .OrderBy(summary => summary.BodyBytes)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyOffsetSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries)
+    {
+        var fixtures = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .ToArray();
+        if (fixtures.Length == 0)
+        {
+            return Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary>();
+        }
+
+        static string ClassifyOffset(int presentCount, int nonZeroCount, IReadOnlyDictionary<string, int> byteValues)
+        {
+            if (nonZeroCount == presentCount &&
+                byteValues.Count == 1)
+            {
+                return "stable nonzero byte";
+            }
+
+            if (nonZeroCount == presentCount)
+            {
+                return "present nonzero variable byte";
+            }
+
+            if (nonZeroCount >= 2)
+            {
+                return "repeated nonzero byte";
+            }
+
+            return "singleton nonzero byte";
+        }
+
+        int maxBodyBytes = fixtures.Max(fixture => fixture.Body.Length);
+        return Enumerable.Range(0, maxBodyBytes)
+            .Select(offset =>
+            {
+                var presentFixtures = fixtures
+                    .Where(fixture => offset < fixture.Body.Length)
+                    .ToArray();
+                var nonZeroFixtures = presentFixtures
+                    .Where(fixture => fixture.Body[offset] != 0)
+                    .ToArray();
+                if (nonZeroFixtures.Length == 0)
+                {
+                    return null;
+                }
+
+                var sample = nonZeroFixtures[0].Summary;
+                IReadOnlyDictionary<string, int> byteValues = CountProtocol03NestedMovementValues(
+                    nonZeroFixtures.Select(fixture => fixture.Body[offset].ToString("x2", CultureInfo.InvariantCulture)),
+                    8);
+                IReadOnlyDictionary<string, int> u16LeValues = CountProtocol03NestedMovementValues(
+                    nonZeroFixtures
+                        .Where(fixture => offset + 1 < fixture.Body.Length)
+                        .Select(fixture => BinaryPrimitives.ReadUInt16LittleEndian(fixture.Body.AsSpan(offset, 2)).ToString(CultureInfo.InvariantCulture)),
+                    8);
+                IReadOnlyDictionary<string, int> u16BeValues = CountProtocol03NestedMovementValues(
+                    nonZeroFixtures
+                        .Where(fixture => offset + 1 < fixture.Body.Length)
+                        .Select(fixture => BinaryPrimitives.ReadUInt16BigEndian(fixture.Body.AsSpan(offset, 2)).ToString(CultureInfo.InvariantCulture)),
+                    8);
+                IReadOnlyDictionary<string, int> u32LeValues = CountProtocol03NestedMovementValues(
+                    nonZeroFixtures
+                        .Where(fixture => offset + 3 < fixture.Body.Length)
+                        .Select(fixture => BinaryPrimitives.ReadUInt32LittleEndian(fixture.Body.AsSpan(offset, 4)).ToString(CultureInfo.InvariantCulture)),
+                    8);
+
+                return new Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary(
+                    offset,
+                    ClassifyOffset(presentFixtures.Length, nonZeroFixtures.Length, byteValues),
+                    presentFixtures.Length,
+                    nonZeroFixtures.Length,
+                    byteValues,
+                    u16LeValues,
+                    u16BeValues,
+                    u32LeValues,
+                    CountProtocol03NestedMovementValues(nonZeroFixtures.Select(fixture => fixture.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(nonZeroFixtures.Select(fixture => fixture.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(nonZeroFixtures.Select(fixture => fixture.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(nonZeroFixtures.Select(fixture => fixture.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(nonZeroFixtures.Select(fixture => fixture.Summary.OuterSelectorHex), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .Where(summary => summary is not null)
+            .Select(summary => summary!)
+            .OrderBy(summary => summary.BodyOffset);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries)
+    {
+        var windows = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture => Enumerable.Range(0, Math.Max(0, fixture.Body.Length - 2))
+                .Select(offset =>
+                {
+                    string? disposition = null;
+                    int windowBytes = 3;
+                    if (fixture.Body[offset] == 0x00 &&
+                        fixture.Body[offset + 1] == 0x06)
+                    {
+                        disposition = "embedded mode 06 movement window";
+                    }
+                    else if (fixture.Body[offset] == 0x00 &&
+                        fixture.Body[offset + 1] == 0x02 &&
+                        fixture.Body[offset + 2] == 0xff)
+                    {
+                        disposition = "embedded marker-34 prefix-field lead";
+                    }
+
+                    if (disposition is null)
+                    {
+                        return null;
+                    }
+
+                    return new
+                    {
+                        WindowDisposition = disposition,
+                        BodyOffset = offset,
+                        WindowHex = FormatHeader(fixture.Body.Skip(offset).Take(windowBytes)),
+                        fixture.Summary
+                    };
+                })
+                .Where(window => window is not null)
+                .Select(window => window!))
+            .ToArray();
+
+        return windows
+            .GroupBy(window => new
+            {
+                window.WindowDisposition,
+                window.BodyOffset,
+                window.WindowHex
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary(
+                    group.Key.WindowDisposition,
+                    group.Key.BodyOffset,
+                    group.Key.WindowHex,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.BodyOffset)
+            .ThenBy(summary => summary.WindowDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.WindowHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        if (fxByLittleEndianHex.Count == 0)
+        {
+            return Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary>();
+        }
+
+        var windows = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture => Enumerable.Range(0, Math.Max(0, fixture.Body.Length - 3))
+                .Select(offset =>
+                {
+                    if (fixture.Body[offset + 3] != 0x28)
+                    {
+                        return null;
+                    }
+
+                    string compactHex = string.Concat(fixture.Body
+                        .Skip(offset)
+                        .Take(4)
+                        .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+                    if (!fxByLittleEndianHex.TryGetValue(compactHex, out FxDefinition? fx))
+                    {
+                        return null;
+                    }
+
+                    return new
+                    {
+                        BodyOffset = offset,
+                        FxHex = FormatHeader(fixture.Body.Skip(offset).Take(4)),
+                        FxName = fx.Name,
+                        FollowupBytes = FormatHeader(fixture.Body.Skip(offset + 4).Take(Math.Min(2, Math.Max(0, fixture.Body.Length - offset - 4)))),
+                        fixture.Summary
+                    };
+                })
+                .Where(window => window is not null)
+                .Select(window => window!))
+            .ToArray();
+
+        return windows
+            .GroupBy(window => new
+            {
+                window.BodyOffset,
+                window.FxHex,
+                window.FxName
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary(
+                    group.Key.BodyOffset,
+                    group.Key.FxHex,
+                    group.Key.FxName,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => FormatProtocol03NestedMovementEmptyHex(entry.FollowupBytes)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.BodyOffset)
+            .ThenByDescending(summary => summary.FixtureCount)
+            .ThenBy(summary => summary.FxHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        byte[] nestedPrefix = ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        if (fxByLittleEndianHex.Count == 0)
+        {
+            return Array.Empty<Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary>();
+        }
+
+        static (string Scope, int Marker34BodyOffset, int RelativeOffset) ResolveMarker34Scope(
+            int bodyOffset,
+            IReadOnlyList<int> nestedBodyOffsets)
+        {
+            int nestedBodyOffset = nestedBodyOffsets
+                .Where(offset => offset <= bodyOffset)
+                .DefaultIfEmpty(-1)
+                .Max();
+            if (nestedBodyOffset >= 0)
+            {
+                return ("nested marker-34 replay body", nestedBodyOffset, bodyOffset - nestedBodyOffset);
+            }
+
+            return ("outer marker-34 body", 0, bodyOffset);
+        }
+
+        var windows = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture =>
+            {
+                int[] nestedBodyOffsets = Enumerable.Range(0, Math.Max(0, fixture.Body.Length - nestedPrefix.Length + 1))
+                    .Where(offset => fixture.Body.AsSpan(offset, nestedPrefix.Length).SequenceEqual(nestedPrefix))
+                    .Select(offset => offset + nestedPrefix.Length)
+                    .ToArray();
+
+                return Enumerable.Range(0, Math.Max(0, fixture.Body.Length - 3))
+                    .Select(offset =>
+                    {
+                        if (fixture.Body[offset + 3] != 0x28)
+                        {
+                            return null;
+                        }
+
+                        string compactHex = string.Concat(fixture.Body
+                            .Skip(offset)
+                            .Take(4)
+                            .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+                        if (!fxByLittleEndianHex.TryGetValue(compactHex, out FxDefinition? fx))
+                        {
+                            return null;
+                        }
+
+                        (string scope, int marker34BodyOffset, int relativeOffset) = ResolveMarker34Scope(offset, nestedBodyOffsets);
+                        string fieldDisposition = relativeOffset == 54
+                            ? "marker-34 effect field at relative offset 54"
+                            : "marker-34 known FX field at noncanonical relative offset";
+
+                        return new
+                        {
+                            FieldDisposition = fieldDisposition,
+                            Marker34BodyScope = scope,
+                            Marker34BodyOffset = marker34BodyOffset,
+                            BodyOffset = offset,
+                            Marker34RelativeOffset = relativeOffset,
+                            FxHex = FormatHeader(fixture.Body.Skip(offset).Take(4)),
+                            FxName = fx.Name,
+                            FollowupBytes = FormatHeader(fixture.Body.Skip(offset + 4).Take(Math.Min(2, Math.Max(0, fixture.Body.Length - offset - 4)))),
+                            fixture.Summary
+                        };
+                    })
+                    .Where(window => window is not null)
+                    .Select(window => window!);
+            })
+            .ToArray();
+
+        return windows
+            .GroupBy(window => new
+            {
+                window.FieldDisposition,
+                window.Marker34BodyScope,
+                window.Marker34BodyOffset,
+                window.BodyOffset,
+                window.Marker34RelativeOffset,
+                window.FxHex,
+                window.FxName
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary(
+                    group.Key.FieldDisposition,
+                    group.Key.Marker34BodyScope,
+                    group.Key.Marker34BodyOffset,
+                    group.Key.BodyOffset,
+                    group.Key.Marker34RelativeOffset,
+                    group.Key.FxHex,
+                    group.Key.FxName,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => FormatProtocol03NestedMovementEmptyHex(entry.FollowupBytes)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.Marker34BodyOffset)
+            .ThenBy(summary => summary.Marker34RelativeOffset)
+            .ThenBy(summary => summary.BodyOffset)
+            .ThenBy(summary => summary.FxHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        byte[] nestedPrefix = ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        static bool HasMarkerLead(byte[] body, int marker34BodyOffset)
+        {
+            return marker34BodyOffset + 7 < body.Length &&
+                body[marker34BodyOffset + 6] == 0xff &&
+                body[marker34BodyOffset + 7] == 0x00;
+        }
+
+        static bool HasTagWindow(byte[] body, int marker34BodyOffset)
+        {
+            return marker34BodyOffset + 41 < body.Length &&
+                body[marker34BodyOffset + 37] == 0x01 &&
+                body[marker34BodyOffset + 38] == 0x00 &&
+                body[marker34BodyOffset + 41] == 0xff;
+        }
+
+        static bool HasStableScaffold(byte[] body, int marker34BodyOffset)
+        {
+            return marker34BodyOffset + 88 < body.Length &&
+                (body[marker34BodyOffset + 71] == 0x75 || body[marker34BodyOffset + 71] == 0x76) &&
+                body[marker34BodyOffset + 72] == 0x0c &&
+                body[marker34BodyOffset + 74] == 0x58 &&
+                body[marker34BodyOffset + 75] == 0x37 &&
+                body[marker34BodyOffset + 76] == 0x08 &&
+                body[marker34BodyOffset + 79] == 0x1f &&
+                body[marker34BodyOffset + 80] == 0x06 &&
+                body[marker34BodyOffset + 81] == 0x08 &&
+                body[marker34BodyOffset + 88] == 0x22;
+        }
+
+        var roleEntries = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture =>
+            {
+                int[] marker34BodyOffsets = new[] { 0 }
+                    .Concat(Enumerable.Range(0, Math.Max(0, fixture.Body.Length - nestedPrefix.Length + 1))
+                        .Where(offset => fixture.Body.AsSpan(offset, nestedPrefix.Length).SequenceEqual(nestedPrefix))
+                        .Select(offset => offset + nestedPrefix.Length))
+                    .Distinct()
+                    .OrderBy(offset => offset)
+                    .ToArray();
+
+                var entries = new List<(
+                    string FieldDisposition,
+                    string Scope,
+                    int Marker34BodyOffset,
+                    int BodyOffset,
+                    int RelativeOffset,
+                    int WindowBytes,
+                    string WindowHex,
+                    string Interpretation,
+                    Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary Summary)>();
+
+                foreach (int marker34BodyOffset in marker34BodyOffsets)
+                {
+                    string scope = marker34BodyOffset == 0
+                        ? "outer marker-34 body"
+                        : "nested marker-34 replay body";
+
+                    if (HasMarkerLead(fixture.Body, marker34BodyOffset))
+                    {
+                        entries.Add((
+                            "marker-34 marker lead",
+                            scope,
+                            marker34BodyOffset,
+                            marker34BodyOffset + 6,
+                            6,
+                            2,
+                            FormatHeader(fixture.Body.Skip(marker34BodyOffset + 6).Take(2)),
+                            "ff marker lead",
+                            fixture.Summary));
+                    }
+
+                    if (HasTagWindow(fixture.Body, marker34BodyOffset))
+                    {
+                        ushort tag = BinaryPrimitives.ReadUInt16LittleEndian(fixture.Body.AsSpan(marker34BodyOffset + 39, 2));
+                        entries.Add((
+                            "marker-34 tag field",
+                            scope,
+                            marker34BodyOffset,
+                            marker34BodyOffset + 37,
+                            37,
+                            5,
+                            FormatHeader(fixture.Body.Skip(marker34BodyOffset + 37).Take(5)),
+                            string.Create(CultureInfo.InvariantCulture, $"tag-le {tag}"),
+                            fixture.Summary));
+                    }
+
+                    int fxOffset = marker34BodyOffset + 54;
+                    if (fxOffset + 5 < fixture.Body.Length &&
+                        fixture.Body[fxOffset + 3] == 0x28)
+                    {
+                        string compactFxHex = string.Concat(fixture.Body
+                            .Skip(fxOffset)
+                            .Take(4)
+                            .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+                        if (fxByLittleEndianHex.TryGetValue(compactFxHex, out FxDefinition? fx))
+                        {
+                            entries.Add((
+                                "marker-34 known effect field",
+                                scope,
+                                marker34BodyOffset,
+                                fxOffset,
+                                54,
+                                6,
+                                FormatHeader(fixture.Body.Skip(fxOffset).Take(6)),
+                                fx.Name,
+                                fixture.Summary));
+                        }
+                    }
+
+                    if (HasStableScaffold(fixture.Body, marker34BodyOffset))
+                    {
+                        entries.Add((
+                            "marker-34 stable scaffold field",
+                            scope,
+                            marker34BodyOffset,
+                            marker34BodyOffset + 71,
+                            71,
+                            18,
+                            FormatHeader(fixture.Body.Skip(marker34BodyOffset + 71).Take(18)),
+                            "stable scaffold through marker byte 22",
+                            fixture.Summary));
+                    }
+                }
+
+                return entries;
+            })
+            .ToArray();
+
+        return roleEntries
+            .GroupBy(entry => new
+            {
+                entry.FieldDisposition,
+                entry.Scope,
+                entry.Marker34BodyOffset,
+                entry.BodyOffset,
+                entry.RelativeOffset,
+                entry.WindowBytes
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary(
+                    group.Key.FieldDisposition,
+                    group.Key.Scope,
+                    group.Key.Marker34BodyOffset,
+                    group.Key.BodyOffset,
+                    group.Key.RelativeOffset,
+                    group.Key.WindowBytes,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.WindowHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Interpretation), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.Marker34BodyOffset)
+            .ThenBy(summary => summary.Marker34RelativeOffset)
+            .ThenBy(summary => summary.FieldDisposition, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyLayoutSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        byte[] nestedPrefix = ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        static (string TagValue, string TagHex) ReadTag(byte[] body, int marker34BodyOffset)
+        {
+            if (marker34BodyOffset + 41 >= body.Length ||
+                body[marker34BodyOffset + 37] != 0x01 ||
+                body[marker34BodyOffset + 38] != 0x00 ||
+                body[marker34BodyOffset + 41] != 0xff)
+            {
+                return ("-", "-");
+            }
+
+            ushort tag = BinaryPrimitives.ReadUInt16LittleEndian(body.AsSpan(marker34BodyOffset + 39, 2));
+            return (
+                tag.ToString(CultureInfo.InvariantCulture),
+                FormatHeader(body.Skip(marker34BodyOffset + 37).Take(5)));
+        }
+
+        static (string FxHex, string FxName, string FollowupBytes) ReadFx(
+            byte[] body,
+            int marker34BodyOffset,
+            IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex)
+        {
+            int fxOffset = marker34BodyOffset + 54;
+            if (fxOffset + 5 >= body.Length ||
+                body[fxOffset + 3] != 0x28)
+            {
+                return ("-", "-", "-");
+            }
+
+            string compactFxHex = string.Concat(body
+                .Skip(fxOffset)
+                .Take(4)
+                .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+            if (!fxByLittleEndianHex.TryGetValue(compactFxHex, out FxDefinition? fx))
+            {
+                return ("-", "-", "-");
+            }
+
+            return (
+                FormatHeader(body.Skip(fxOffset).Take(4)),
+                fx.Name,
+                FormatHeader(body.Skip(fxOffset + 4).Take(2)));
+        }
+
+        static string ReadScaffold(byte[] body, int marker34BodyOffset)
+        {
+            if (marker34BodyOffset + 88 >= body.Length ||
+                (body[marker34BodyOffset + 71] != 0x75 && body[marker34BodyOffset + 71] != 0x76) ||
+                body[marker34BodyOffset + 72] != 0x0c ||
+                body[marker34BodyOffset + 74] != 0x58 ||
+                body[marker34BodyOffset + 75] != 0x37 ||
+                body[marker34BodyOffset + 76] != 0x08 ||
+                body[marker34BodyOffset + 79] != 0x1f ||
+                body[marker34BodyOffset + 80] != 0x06 ||
+                body[marker34BodyOffset + 81] != 0x08 ||
+                body[marker34BodyOffset + 88] != 0x22)
+            {
+                return "-";
+            }
+
+            return FormatHeader(body.Skip(marker34BodyOffset + 71).Take(18));
+        }
+
+        static bool TryParsePosition(string value, out float x, out float y, out float z)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+            string[] parts = value.Split(',', StringSplitOptions.TrimEntries);
+            return parts.Length == 3 &&
+                float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
+                float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y) &&
+                float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out z);
+        }
+
+        static (string Relation, string Distance) CompareOuterPosition(
+            string outerPosition,
+            float x,
+            float y,
+            float z)
+        {
+            if (!TryParsePosition(outerPosition, out float outerX, out float outerY, out float outerZ))
+            {
+                return ("outer position unavailable", "-");
+            }
+
+            double dx = x - outerX;
+            double dy = y - outerY;
+            double dz = z - outerZ;
+            double distance = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            string relation = distance switch
+            {
+                <= 1 => "exact outer movement position",
+                <= 250 => "near outer movement position",
+                <= 5000 => "same-zone movement delta",
+                _ => "different movement position"
+            };
+            return (relation, distance.ToString("0.###", CultureInfo.InvariantCulture));
+        }
+
+        static (string SelectorHex, string Position, string Relation, string Distance) ReadEmbeddedMovement(
+            byte[] body,
+            int marker34BodyOffset,
+            string outerPosition)
+        {
+            int movementMarkerOffset = marker34BodyOffset + 95;
+            if (movementMarkerOffset + 2 >= body.Length ||
+                body[movementMarkerOffset] != 0x00 ||
+                body[movementMarkerOffset + 1] != 0x06)
+            {
+                return ("-", "-", "-", "-");
+            }
+
+            byte selector = body[movementMarkerOffset + 2];
+            string selectorHex = selector.ToString("x2", CultureInfo.InvariantCulture);
+            if (!TryGetProtocol03MovementPayloadInfo(selector, out int payloadBytes, out int positionOffset) ||
+                movementMarkerOffset + 3 + payloadBytes > body.Length)
+            {
+                return (selectorHex, "-", "movement payload unavailable", "-");
+            }
+
+            int absolutePositionOffset = movementMarkerOffset + 3 + positionOffset;
+            if (!TryReadSingleLittleEndian(body, absolutePositionOffset, out float x) ||
+                !TryReadSingleLittleEndian(body, absolutePositionOffset + 4, out float y) ||
+                !TryReadSingleLittleEndian(body, absolutePositionOffset + 8, out float z) ||
+                !IsPlausibleProtocol03Position(x, y, z))
+            {
+                return (selectorHex, "-", "movement position unavailable", "-");
+            }
+
+            string decodedPosition = string.Format(CultureInfo.InvariantCulture, "{0:0.###},{1:0.###},{2:0.###}", x, y, z);
+            (string relation, string distance) = CompareOuterPosition(outerPosition, x, y, z);
+            return (selectorHex, decodedPosition, relation, distance);
+        }
+
+        static string ClassifyLayout(
+            bool hasMarkerFx,
+            bool hasEmbeddedMovement,
+            bool hasNestedReplay)
+        {
+            if (hasMarkerFx &&
+                hasEmbeddedMovement &&
+                hasNestedReplay)
+            {
+                return "marker-34 effect, movement, and nested replay layout";
+            }
+
+            if (hasEmbeddedMovement)
+            {
+                return hasMarkerFx
+                    ? "marker-34 effect and embedded movement layout"
+                    : "marker-34 embedded movement layout";
+            }
+
+            if (hasMarkerFx)
+            {
+                return "marker-34 effect/scaffold layout";
+            }
+
+            if (hasNestedReplay)
+            {
+                return "marker-34 nested replay layout";
+            }
+
+            return "marker-34 scaffold layout";
+        }
+
+        return summaries
+            .Select(summary =>
+            {
+                byte[] body = ParseHexBytes(summary.BodyHex).ToArray();
+                (string markerTagValue, string markerTagHex) = ReadTag(body, 0);
+                (string markerFxHex, string markerFxName, string markerFxFollowupBytes) = ReadFx(body, 0, fxByLittleEndianHex);
+                string markerScaffoldHex = ReadScaffold(body, 0);
+                (string movementSelector, string movementPosition, string movementRelation, string movementDistance) =
+                    ReadEmbeddedMovement(body, 0, summary.Position);
+                int nestedReplayPrefixOffset = Enumerable.Range(0, Math.Max(0, body.Length - nestedPrefix.Length + 1))
+                    .FirstOrDefault(offset => body.AsSpan(offset, nestedPrefix.Length).SequenceEqual(nestedPrefix), -1);
+                int nestedMarker34BodyOffset = nestedReplayPrefixOffset >= 0
+                    ? nestedReplayPrefixOffset + nestedPrefix.Length
+                    : -1;
+                (string nestedTagValue, string nestedTagHex) = nestedMarker34BodyOffset >= 0
+                    ? ReadTag(body, nestedMarker34BodyOffset)
+                    : ("-", "-");
+                (string nestedFxHex, string nestedFxName, string nestedFxFollowupBytes) = nestedMarker34BodyOffset >= 0
+                    ? ReadFx(body, nestedMarker34BodyOffset, fxByLittleEndianHex)
+                    : ("-", "-", "-");
+                string nestedScaffoldHex = nestedMarker34BodyOffset >= 0
+                    ? ReadScaffold(body, nestedMarker34BodyOffset)
+                    : "-";
+                string layoutDisposition = ClassifyLayout(
+                    !markerFxHex.Equals("-", StringComparison.Ordinal),
+                    !movementPosition.Equals("-", StringComparison.Ordinal),
+                    nestedMarker34BodyOffset >= 0);
+
+                return new Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary(
+                    layoutDisposition,
+                    summary.ParserAction,
+                    summary.ActionReason,
+                    summary.BodyBytes,
+                    summary.BodyPrefixHex,
+                    summary.BodySuffixHex,
+                    summary.PostPrefixLeadHex,
+                    summary.MarkerByteHex,
+                    markerTagValue,
+                    FormatProtocol03NestedMovementEmptyHex(markerTagHex),
+                    FormatProtocol03NestedMovementEmptyHex(markerFxHex),
+                    markerFxName,
+                    FormatProtocol03NestedMovementEmptyHex(markerFxFollowupBytes),
+                    FormatProtocol03NestedMovementEmptyHex(markerScaffoldHex),
+                    movementSelector,
+                    movementPosition,
+                    movementRelation,
+                    movementDistance,
+                    nestedReplayPrefixOffset,
+                    nestedMarker34BodyOffset,
+                    nestedTagValue,
+                    FormatProtocol03NestedMovementEmptyHex(nestedTagHex),
+                    FormatProtocol03NestedMovementEmptyHex(nestedFxHex),
+                    nestedFxName,
+                    FormatProtocol03NestedMovementEmptyHex(nestedFxFollowupBytes),
+                    FormatProtocol03NestedMovementEmptyHex(nestedScaffoldHex),
+                    summary.BoundaryHeaderClassification,
+                    summary.BoundaryHeaderHex,
+                    summary.InnerSelectorHex,
+                    summary.OuterSelectorHex,
+                    summary.Position,
+                    summary.SampleFile,
+                    summary.SampleLine);
+            })
+            .OrderBy(summary => summary.BodyBytes)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary> summaries)
+    {
+        static string ClassifyReadiness(Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary summary)
+        {
+            if (summary.NestedMarker34BodyOffset >= 0)
+            {
+                return "layout-ready marker-34 nested replay parser candidate";
+            }
+
+            if (!summary.EmbeddedMovementSelectorHex.Equals("-", StringComparison.Ordinal))
+            {
+                return "layout-ready marker-34 embedded movement parser candidate";
+            }
+
+            if (!summary.MarkerFxHex.Equals("-", StringComparison.Ordinal))
+            {
+                return "layout-ready marker-34 effect/scaffold parser candidate";
+            }
+
+            return "layout-ready marker-34 scaffold parser candidate";
+        }
+
+        static bool IsHeldParserAction(string parserAction)
+        {
+            return parserAction.StartsWith("hold ", StringComparison.Ordinal);
+        }
+
+        static string ClassifyPromotionBlocker(IReadOnlyList<Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary> groupEntries)
+        {
+            if (groupEntries.All(entry => !IsHeldParserAction(entry.ParserAction)))
+            {
+                return "promoted under guarded parser action";
+            }
+
+            if (groupEntries.Any(entry => !IsHeldParserAction(entry.ParserAction)))
+            {
+                return "partially promoted; remaining fixtures still need exact guard";
+            }
+
+            return groupEntries.Count == 1
+                ? "singleton layout still needs exact body-length/suffix guard"
+                : "repeated layout still needs classifier-visible body-length/suffix guard";
+        }
+
+        static string FormatMarkerFx(Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary summary)
+        {
+            return summary.MarkerFxHex.Equals("-", StringComparison.Ordinal)
+                ? "-"
+                : string.Concat(summary.MarkerFxHex, " / ", summary.MarkerFxName, " / ", summary.MarkerFxFollowupBytes);
+        }
+
+        static string FormatNestedReplayOffset(Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary summary)
+        {
+            return summary.NestedMarker34BodyOffset < 0
+                ? "-"
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    "prefix {0}; body {1}",
+                    summary.NestedReplayPrefixOffset,
+                    summary.NestedMarker34BodyOffset);
+        }
+
+        return summaries
+            .GroupBy(ClassifyReadiness, StringComparer.Ordinal)
+            .Select(group =>
+            {
+                Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary[] groupEntries = group.ToArray();
+                Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary sample = groupEntries[0];
+                return new Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary(
+                    group.Key,
+                    ClassifyPromotionBlocker(groupEntries),
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.ParserAction), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.ActionReason), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.LayoutDisposition), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.BodyBytes.ToString(CultureInfo.InvariantCulture)), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.BodyPrefixHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.BodySuffixHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.PostPrefixLeadHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.MarkerByteHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.MarkerTagValue), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(FormatMarkerFx), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.EmbeddedMovementSelectorHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.EmbeddedMovementRelation), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(FormatNestedReplayOffset), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.BoundaryHeaderClassification), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.BoundaryHeaderHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.InnerSelectorHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.OuterSelectorHex), 5),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderByDescending(summary => summary.FixtureCount)
+            .ThenBy(summary => summary.ReadinessDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary> BuildProtocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        byte[] nestedPrefix = ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        (int Offset, byte Value)[] stableOffsetProbes =
+        {
+            (6, 0xff),
+            (37, 0x01),
+            (41, 0xff),
+            (58, 0xff),
+            (72, 0x0c),
+            (74, 0x58),
+            (75, 0x37),
+            (76, 0x08),
+            (79, 0x1f),
+            (80, 0x06),
+            (81, 0x08),
+            (88, 0x22)
+        };
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        var candidates = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture => Enumerable.Range(0, Math.Max(0, fixture.Body.Length - nestedPrefix.Length + 1))
+                .Where(offset => fixture.Body.AsSpan(offset, nestedPrefix.Length).SequenceEqual(nestedPrefix))
+                .Select(offset =>
+                {
+                    int nestedBodyOffset = offset + nestedPrefix.Length;
+                    int availableNestedBodyBytes = fixture.Body.Length - nestedBodyOffset;
+                    string matchedStableOffsets = string.Join(
+                        " ",
+                        stableOffsetProbes
+                            .Where(probe => nestedBodyOffset + probe.Offset < fixture.Body.Length &&
+                                fixture.Body[nestedBodyOffset + probe.Offset] == probe.Value)
+                            .Select(probe => string.Create(
+                                CultureInfo.InvariantCulture,
+                                $"{probe.Offset}:{probe.Value:x2}")));
+                    int stableOffsetMatchCount = matchedStableOffsets.Length == 0
+                        ? 0
+                        : matchedStableOffsets.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+
+                    string nestedTagWindowHex = nestedBodyOffset + 42 <= fixture.Body.Length
+                        ? FormatHeader(fixture.Body.Skip(nestedBodyOffset + 37).Take(5))
+                        : string.Empty;
+                    string nestedKnownFxHex = string.Empty;
+                    string nestedKnownFxName = string.Empty;
+                    string nestedKnownFxFollowupBytes = string.Empty;
+                    int nestedKnownFxOffset = nestedBodyOffset + 54;
+                    if (nestedKnownFxOffset + 4 <= fixture.Body.Length &&
+                        fixture.Body[nestedKnownFxOffset + 3] == 0x28)
+                    {
+                        string compactFxHex = string.Concat(fixture.Body
+                            .Skip(nestedKnownFxOffset)
+                            .Take(4)
+                            .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+                        if (fxByLittleEndianHex.TryGetValue(compactFxHex, out FxDefinition? fx))
+                        {
+                            nestedKnownFxHex = FormatHeader(fixture.Body.Skip(nestedKnownFxOffset).Take(4));
+                            nestedKnownFxName = fx.Name;
+                            nestedKnownFxFollowupBytes = FormatHeader(fixture.Body
+                                .Skip(nestedKnownFxOffset + 4)
+                                .Take(Math.Min(2, Math.Max(0, fixture.Body.Length - nestedKnownFxOffset - 4))));
+                        }
+                    }
+
+                    return new
+                    {
+                        PrefixBodyOffset = offset,
+                        NestedBodyOffset = nestedBodyOffset,
+                        AvailableNestedBodyBytes = availableNestedBodyBytes,
+                        PrefixHex = FormatHeader(nestedPrefix),
+                        NestedTagWindowHex = FormatProtocol03NestedMovementEmptyHex(nestedTagWindowHex),
+                        NestedKnownFxHex = FormatProtocol03NestedMovementEmptyHex(nestedKnownFxHex),
+                        NestedKnownFxName = string.IsNullOrWhiteSpace(nestedKnownFxName) ? "-" : nestedKnownFxName,
+                        NestedKnownFxFollowupBytes = FormatProtocol03NestedMovementEmptyHex(nestedKnownFxFollowupBytes),
+                        StableOffsetMatchCount = stableOffsetMatchCount,
+                        StableOffsetProbeCount = stableOffsetProbes.Length,
+                        MatchedStableOffsets = string.IsNullOrWhiteSpace(matchedStableOffsets) ? "-" : matchedStableOffsets,
+                        fixture.Summary
+                    };
+                }))
+            .ToArray();
+
+        return candidates
+            .GroupBy(candidate => new
+            {
+                candidate.PrefixBodyOffset,
+                candidate.NestedBodyOffset,
+                candidate.AvailableNestedBodyBytes,
+                candidate.PrefixHex,
+                candidate.NestedTagWindowHex,
+                candidate.NestedKnownFxHex,
+                candidate.NestedKnownFxName,
+                candidate.NestedKnownFxFollowupBytes,
+                candidate.StableOffsetMatchCount,
+                candidate.StableOffsetProbeCount,
+                candidate.MatchedStableOffsets
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                string disposition = group.Key.StableOffsetMatchCount == group.Key.StableOffsetProbeCount
+                    ? "nested marker-34 body replay with stable scaffold"
+                    : "nested marker-34 body replay candidate";
+                return new Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary(
+                    disposition,
+                    group.Key.PrefixBodyOffset,
+                    group.Key.NestedBodyOffset,
+                    group.Key.AvailableNestedBodyBytes,
+                    group.Key.PrefixHex,
+                    group.Key.NestedTagWindowHex,
+                    group.Key.NestedKnownFxHex,
+                    group.Key.NestedKnownFxName,
+                    group.Key.NestedKnownFxFollowupBytes,
+                    group.Key.StableOffsetMatchCount,
+                    group.Key.StableOffsetProbeCount,
+                    group.Key.MatchedStableOffsets,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.PrefixBodyOffset)
+            .ThenByDescending(summary => summary.StableOffsetMatchCount)
+            .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.SampleLine);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries,
+        IReadOnlyList<FxDefinition>? fxDefinitions = null)
+    {
+        byte[] replayPrefix = ParseHexBytes("00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34").ToArray();
+        IReadOnlySet<byte> movementSelectors = new HashSet<byte> { 0x08, 0x0a, 0x0c, 0x0e };
+        IReadOnlyDictionary<string, FxDefinition> fxByLittleEndianHex = (fxDefinitions ?? Array.Empty<FxDefinition>())
+            .GroupBy(
+                fx => fx.LittleEndianHex.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        var fixtures = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .ToArray();
+
+        var windows = new List<(
+            string Disposition,
+            int Offset,
+            int Bytes,
+            string Hex,
+            string Interpretation,
+            Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary Summary)>();
+
+        foreach (var fixture in fixtures)
+        {
+            byte[] body = fixture.Body;
+            if (body.Length >= 8 &&
+                body[6] == 0xff &&
+                body[7] == 0x00)
+            {
+                windows.Add((
+                    "primary marker lead",
+                    6,
+                    2,
+                    FormatHeader(body.Skip(6).Take(2)),
+                    "ff marker lead",
+                    fixture.Summary));
+            }
+
+            for (int offset = 0; offset + 4 < body.Length; offset++)
+            {
+                if (body[offset] == 0x01 &&
+                    body[offset + 1] == 0x00 &&
+                    body[offset + 4] == 0xff)
+                {
+                    ushort tag = BinaryPrimitives.ReadUInt16LittleEndian(body.AsSpan(offset + 2, 2));
+                    windows.Add((
+                        "marker-34 tag window",
+                        offset,
+                        5,
+                        FormatHeader(body.Skip(offset).Take(5)),
+                        string.Create(CultureInfo.InvariantCulture, $"tag-le {tag}"),
+                        fixture.Summary));
+                }
+            }
+
+            for (int offset = 0; offset + 5 < body.Length; offset++)
+            {
+                if (body[offset + 3] != 0x28)
+                {
+                    continue;
+                }
+
+                string compactFxHex = string.Concat(body
+                    .Skip(offset)
+                    .Take(4)
+                    .Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
+                if (!fxByLittleEndianHex.TryGetValue(compactFxHex, out FxDefinition? fx))
+                {
+                    continue;
+                }
+
+                windows.Add((
+                    "known effect-style field window",
+                    offset,
+                    6,
+                    FormatHeader(body.Skip(offset).Take(6)),
+                    fx.Name,
+                    fixture.Summary));
+            }
+
+            for (int offset = 0; offset + 17 < body.Length; offset++)
+            {
+                if ((body[offset] == 0x75 || body[offset] == 0x76) &&
+                    body[offset + 1] == 0x0c &&
+                    body[offset + 3] == 0x58 &&
+                    body[offset + 4] == 0x37 &&
+                    body[offset + 5] == 0x08 &&
+                    body[offset + 8] == 0x1f &&
+                    body[offset + 9] == 0x06 &&
+                    body[offset + 10] == 0x08 &&
+                    body[offset + 17] == 0x22)
+                {
+                    windows.Add((
+                        "marker-34 stable scaffold window",
+                        offset,
+                        18,
+                        FormatHeader(body.Skip(offset).Take(18)),
+                        "stable scaffold through marker byte 22",
+                        fixture.Summary));
+                }
+            }
+
+            for (int offset = 0; offset + 16 < body.Length; offset++)
+            {
+                if (body[offset + 1] == 0x00 &&
+                    body[offset + 2] == 0x06 &&
+                    movementSelectors.Contains(body[offset + 3]) &&
+                    TryGetProtocol03MovementPayloadInfo(body[offset + 3], out int movementPayloadBytes, out _))
+                {
+                    int movementWindowBytes = 1 + 3 + movementPayloadBytes;
+                    if (offset + movementWindowBytes > body.Length)
+                    {
+                        continue;
+                    }
+
+                    windows.Add((
+                        "embedded movement payload window",
+                        offset,
+                        movementWindowBytes,
+                        FormatHeader(body.Skip(offset).Take(movementWindowBytes)),
+                        string.Create(CultureInfo.InvariantCulture, $"mode 06 selector {body[offset + 3]:x2}"),
+                        fixture.Summary));
+                }
+            }
+
+            for (int offset = 0; offset + replayPrefix.Length <= body.Length; offset++)
+            {
+                if (!body.AsSpan(offset, replayPrefix.Length).SequenceEqual(replayPrefix))
+                {
+                    continue;
+                }
+
+                windows.Add((
+                    "nested marker-34 replay prefix",
+                    offset,
+                    replayPrefix.Length,
+                    FormatHeader(body.Skip(offset).Take(replayPrefix.Length)),
+                    "replay prefix starts nested marker-34 body",
+                    fixture.Summary));
+            }
+        }
+
+        return windows
+            .GroupBy(window => new
+            {
+                window.Disposition,
+                window.Offset,
+                window.Bytes
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary(
+                    group.Key.Disposition,
+                    group.Key.Offset,
+                    group.Key.Bytes,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Hex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Interpretation), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.Position), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.BodyOffset)
+            .ThenBy(summary => summary.WindowDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(summary => summary.FixtureCount);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary> BuildProtocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries(
+        IEnumerable<Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary> summaries)
+    {
+        static bool TryParsePosition(string value, out float x, out float y, out float z)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+            string[] parts = value.Split(',', StringSplitOptions.TrimEntries);
+            return parts.Length == 3 &&
+                float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
+                float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y) &&
+                float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out z);
+        }
+
+        static (string Relation, string Distance) CompareOuterPosition(
+            string outerPosition,
+            float x,
+            float y,
+            float z)
+        {
+            if (!TryParsePosition(outerPosition, out float outerX, out float outerY, out float outerZ))
+            {
+                return ("outer position unavailable", "-");
+            }
+
+            double dx = x - outerX;
+            double dy = y - outerY;
+            double dz = z - outerZ;
+            double distance = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            string relation = distance switch
+            {
+                <= 1 => "exact outer movement position",
+                <= 250 => "near outer movement position",
+                <= 5000 => "same-zone movement delta",
+                _ => "different movement position"
+            };
+            return (relation, distance.ToString("0.###", CultureInfo.InvariantCulture));
+        }
+
+        var vectorEntries = summaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Body = ParseHexBytes(summary.BodyHex).ToArray()
+            })
+            .SelectMany(fixture => Enumerable.Range(0, Math.Max(0, fixture.Body.Length - 2))
+                .Where(offset => fixture.Body[offset] == 0x00 && fixture.Body[offset + 1] == 0x06)
+                .Select(offset =>
+                {
+                    byte selector = fixture.Body[offset + 2];
+                    bool supportedSelector = TryGetProtocol03MovementPayloadInfo(selector, out int innerPayloadBytes, out int innerPositionOffset);
+                    int positionOffset = supportedSelector
+                        ? offset + 3 + innerPositionOffset
+                        : -1;
+                    bool hasCompletePayload = supportedSelector && offset + 3 + innerPayloadBytes <= fixture.Body.Length;
+                    float x = 0;
+                    float y = 0;
+                    float z = 0;
+                    bool hasPosition = hasCompletePayload &&
+                        TryReadSingleLittleEndian(fixture.Body, positionOffset, out x) &&
+                        TryReadSingleLittleEndian(fixture.Body, positionOffset + 4, out y) &&
+                        TryReadSingleLittleEndian(fixture.Body, positionOffset + 8, out z) &&
+                        IsPlausibleProtocol03Position(x, y, z);
+                    string movementDisposition = supportedSelector switch
+                    {
+                        false => "unsupported marker-34 embedded movement selector",
+                        true when !hasCompletePayload => "incomplete marker-34 embedded movement payload",
+                        true when !hasPosition => "invalid marker-34 embedded movement position",
+                        _ => "decoded marker-34 embedded movement vector"
+                    };
+                    string decodedPosition = hasPosition
+                        ? string.Format(CultureInfo.InvariantCulture, "{0:0.###},{1:0.###},{2:0.###}", x, y, z)
+                        : "-";
+                    (string outerRelation, string outerDistance) = hasPosition
+                        ? CompareOuterPosition(fixture.Summary.Position, x, y, z)
+                        : ("position not decoded", "-");
+                    int postMovementOffset = hasCompletePayload
+                        ? offset + 3 + innerPayloadBytes
+                        : Math.Min(fixture.Body.Length, offset + 3);
+
+                    return new
+                    {
+                        LeadBodyOffset = offset > 0 ? offset - 1 : -1,
+                        MarkerBodyOffset = offset,
+                        LeadByteHex = offset > 0 ? FormatProtocol03Byte(fixture.Body, offset - 1) : "-",
+                        SelectorHex = selector.ToString("x2", CultureInfo.InvariantCulture),
+                        InnerPayloadBytes = supportedSelector ? innerPayloadBytes : -1,
+                        InnerPositionOffset = supportedSelector ? innerPositionOffset : -1,
+                        BodyPositionOffset = hasPosition ? positionOffset : -1,
+                        MovementDisposition = movementDisposition,
+                        PrePositionBytes = supportedSelector && innerPositionOffset > 0 && offset + 3 + innerPositionOffset <= fixture.Body.Length
+                            ? FormatHeader(fixture.Body.Skip(offset + 3).Take(innerPositionOffset))
+                            : "-",
+                        PositionHex = hasPosition
+                            ? FormatHeader(fixture.Body.Skip(positionOffset).Take(12))
+                            : "-",
+                        DecodedPosition = decodedPosition,
+                        fixture.Summary.Position,
+                        OuterPositionRelation = outerRelation,
+                        DistanceFromOuterPosition = outerDistance,
+                        PostMovementLeadHex = FormatHeader(fixture.Body.Skip(postMovementOffset).Take(Math.Min(8, Math.Max(0, fixture.Body.Length - postMovementOffset)))),
+                        fixture.Summary
+                    };
+                }))
+            .ToArray();
+
+        return vectorEntries
+            .GroupBy(entry => new
+            {
+                entry.MovementDisposition,
+                entry.LeadBodyOffset,
+                entry.MarkerBodyOffset,
+                entry.LeadByteHex,
+                entry.SelectorHex,
+                entry.InnerPayloadBytes,
+                entry.InnerPositionOffset,
+                entry.BodyPositionOffset
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                var sample = groupEntries[0].Summary;
+                return new Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary(
+                    group.Key.MovementDisposition,
+                    group.Key.LeadBodyOffset,
+                    group.Key.MarkerBodyOffset,
+                    group.Key.LeadByteHex,
+                    group.Key.SelectorHex,
+                    group.Key.InnerPayloadBytes,
+                    group.Key.InnerPositionOffset,
+                    group.Key.BodyPositionOffset,
+                    groupEntries.Length,
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.PrePositionBytes), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.PositionHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.DecodedPosition), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Position), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.OuterPositionRelation), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.DistanceFromOuterPosition), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => FormatProtocol03NestedMovementEmptyHex(entry.PostMovementLeadHex)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BodyBytes.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderClassification), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.BoundaryHeaderHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.InnerSelectorHex), 8),
+                    CountProtocol03NestedMovementValues(groupEntries.Select(entry => entry.Summary.OuterSelectorHex), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => summary.MarkerBodyOffset)
+            .ThenBy(summary => summary.SelectorHex, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(summary => summary.FixtureCount);
+    }
+
+    public static IEnumerable<Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary> BuildProtocol03NestedMovementMode06HeldTupleBodyPrioritySummaries(
+        IEnumerable<Protocol03NestedMovementMode06HeldTupleBodySummary> summaries,
+        int maxRows = 20)
+    {
+        static (string Action, string Reason) GetPriority(Protocol03NestedMovementMode06HeldTupleBodySummary summary)
+        {
+            return summary.ParserAction switch
+            {
+                "hold mode 06 marker-34 long object-view tuple body as evidence only" => (
+                    "investigate marker-34 long body length rule",
+                    "singleton variable-length marker-34 object-view bodies remain bounded but unpromoted"),
+                "hold mode 06 tuple body as evidence only" => (
+                    "retain low-count or non-dominant mode 06 controls",
+                    "held tuple bodies lack repeated exact body-length evidence for parser promotion"),
+                _ => (
+                    "review held mode 06 tuple body row",
+                    "held parser action remains evidence-only")
+            };
+        }
+
+        static int GetPriorityOrder(string action)
+        {
+            return action switch
+            {
+                "investigate marker-34 long body length rule" => 0,
+                "retain low-count or non-dominant mode 06 controls" => 1,
+                _ => 2
+            };
+        }
+
+        static IReadOnlyDictionary<string, int> CountSingle(IEnumerable<Protocol03NestedMovementMode06HeldTupleBodySummary> rows, Func<Protocol03NestedMovementMode06HeldTupleBodySummary, string> selector, int maxValues = 8)
+        {
+            return CountProtocol03NestedMovementWeightedValues(
+                rows.Select(row => new WeightedValue(selector(row), row.WindowCount)),
+                maxValues);
+        }
+
+        static IReadOnlyDictionary<string, int> CountDictionary(IEnumerable<Protocol03NestedMovementMode06HeldTupleBodySummary> rows, Func<Protocol03NestedMovementMode06HeldTupleBodySummary, IReadOnlyDictionary<string, int>> selector, int maxValues = 8)
+        {
+            return CountProtocol03NestedMovementWeightedValues(
+                rows.SelectMany(row => selector(row).Select(value => new WeightedValue(value.Key, value.Value))),
+                maxValues);
+        }
+
+        return summaries
+            .Select(summary =>
+            {
+                (string action, string reason) = GetPriority(summary);
+                return new
+                {
+                    PriorityAction = action,
+                    PriorityReason = reason,
+                    Summary = summary
+                };
+            })
+            .GroupBy(row => new
+            {
+                row.PriorityAction,
+                row.PriorityReason
+            })
+            .Select(group =>
+            {
+                var rows = group.Select(row => row.Summary).ToArray();
+                Protocol03NestedMovementMode06HeldTupleBodySummary sample = rows[0];
+                return new Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary(
+                    group.Key.PriorityAction,
+                    group.Key.PriorityReason,
+                    rows.Length,
+                    rows.Sum(row => row.WindowCount),
+                    CountSingle(rows, row => row.ParserAction),
+                    CountSingle(rows, row => row.SourceDisposition),
+                    CountSingle(rows, row => row.TailPrefixKind),
+                    CountSingle(rows, row => FormatProtocol03NestedMovementEmptyHex(row.PrefixFirstNonZeroFieldHex)),
+                    CountSingle(rows, row => row.TupleLayoutKind),
+                    CountSingle(rows, row => row.PostPrefixDisposition),
+                    CountSingle(rows, row => row.BodyDisposition),
+                    CountSingle(rows, row => row.BodyBytes.ToString(CultureInfo.InvariantCulture)),
+                    CountDictionary(rows, row => row.FirstNonZeroOffsets),
+                    CountDictionary(rows, row => row.FirstNonZeroFields),
+                    CountDictionary(rows, row => row.HeaderClassifications),
+                    CountDictionary(rows, row => row.HeaderPrefixes),
+                    CountDictionary(rows, row => row.PostPrefixLeads),
+                    CountDictionary(rows, row => row.MarkerBytes),
+                    CountDictionary(rows, row => row.InnerSelectors),
+                    CountDictionary(rows, row => row.OuterSelectors, 12),
+                    CountDictionary(rows, row => row.ObjectClassifications, 12),
+                    CountDictionary(rows, row => row.PayloadBytes, 12),
+                    CountDictionary(rows, row => row.BodySuffixes, 8),
+                    CountDictionary(rows, row => row.PositionSamples, 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetPriorityOrder(summary.PriorityAction))
+            .ThenByDescending(summary => summary.WindowCount)
+            .ThenBy(summary => summary.PriorityReason, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
     }
 
     public static IEnumerable<Protocol03NestedMovementMode06LongTupleBodyTailAnchorSummary> BuildProtocol03NestedMovementMode06LongTupleBodyTailAnchorSummaries(
@@ -3142,6 +7434,62 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.PreAnchorTrailingLeadHex, StringComparer.OrdinalIgnoreCase);
     }
 
+    public static IEnumerable<Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary> BuildProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries(
+        IEnumerable<Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary> summaries)
+    {
+        var entries = summaries
+            .Where(summary => !summary.MovementDisposition.Equals("decoded embedded mode 06 movement window", StringComparison.Ordinal))
+            .SelectMany(summary => summary.InnerSelectors.Select(selector => new
+            {
+                Summary = summary,
+                InnerSelectorHex = selector.Key,
+                WindowCount = selector.Value
+            }))
+            .ToArray();
+
+        return entries
+            .GroupBy(entry => new
+            {
+                entry.Summary.MovementDisposition,
+                entry.InnerSelectorHex
+            })
+            .Select(group =>
+            {
+                var groupEntries = group.ToArray();
+                Protocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummary sample = groupEntries
+                    .OrderByDescending(entry => entry.WindowCount)
+                    .ThenBy(entry => entry.Summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Summary.SampleLine)
+                    .First()
+                    .Summary;
+                int windowCount = groupEntries.Sum(entry => entry.WindowCount);
+
+                return new Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary(
+                    group.Key.MovementDisposition,
+                    group.Key.InnerSelectorHex,
+                    windowCount,
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(entry.Summary.ShapeDisposition, entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(entry.Summary.TrailerDisposition, entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(FormatProtocol03NestedMovementEmptyHex(entry.Summary.PostMovementLeadHex), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(FormatProtocol03NestedMovementEmptyHex(entry.Summary.PostMovementNextLeadHex), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(entry.Summary.BytesRemainingAfterMovement.ToString(CultureInfo.InvariantCulture), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(entry.Summary.PreTailFieldOffset?.ToString(CultureInfo.InvariantCulture) ?? "-", entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(FormatProtocol03NestedMovementEmptyHex(entry.Summary.PreTailFieldHex), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(FormatProtocol03NestedMovementEmptyHex(entry.Summary.PreAnchorPreLeadHex), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(FormatProtocol03NestedMovementEmptyHex(entry.Summary.PreAnchorTrailingLeadHex), entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.Select(entry => new WeightedValue(entry.Summary.TailAnchorKind, entry.WindowCount)), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.SelectMany(entry => entry.Summary.ParserTargets.Select(value => new WeightedValue(value.Key, value.Value))), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.SelectMany(entry => entry.Summary.PreAnchorBodyBytes.Select(value => new WeightedValue(value.Key, value.Value))), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.SelectMany(entry => entry.Summary.BodyBytes.Select(value => new WeightedValue(value.Key, value.Value))), 8),
+                    CountProtocol03NestedMovementWeightedValues(groupEntries.SelectMany(entry => entry.Summary.PostMovementNonZeroByteOffsets.Select(value => new WeightedValue(value.Key, value.Value))), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderByDescending(summary => summary.WindowCount)
+            .ThenBy(summary => summary.MovementDisposition, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.InnerSelectorHex, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string ClassifyProtocol03Mode06EmbeddedMovementTrailerShape(
         string movementDisposition,
         string trailerDisposition,
@@ -3369,6 +7717,116 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded94ByteMarker04ZeroUpdateTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 94 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "object state update", summary.WindowCount))
+        {
+            return ("test guarded mode 06 94-byte marker-04 zero-update tuple body", "94-byte marker-04 zero-update body before object-state boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded95ByteMarker04ZeroUpdateTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 95 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "state marker/object update candidate", summary.WindowCount))
+        {
+            return ("test guarded mode 06 95-byte marker-04 zero-update tuple body", "95-byte marker-04 zero-update body before state/object boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded237ByteMarker04ZeroUpdateTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 237 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "single state marker update", summary.WindowCount))
+        {
+            return ("test guarded mode 06 237-byte marker-04 zero-update tuple body", "237-byte marker-04 zero-update body before paired state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded78ByteMarkerFfNonObjectTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("non-object marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 78 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "single position update", summary.WindowCount) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(summary.InnerSelectors, summary.WindowCount, "0c", "0e") &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.OuterSelectors, "21", summary.WindowCount))
+        {
+            return ("test guarded mode 06 78-byte marker-ff non-object tuple body", "78-byte marker-ff non-object body before single-position boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded119ByteMarker04ZeroUpdateTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 119 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "object state update", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.InnerSelectors, "0e", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.OuterSelectors, "33", summary.WindowCount))
+        {
+            return ("test guarded mode 06 119-byte marker-04 zero-update tuple body", "119-byte marker-04 zero-update body before object-state boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded138ByteMarker4fObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 138 &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderClassifications,
+                summary.WindowCount,
+                "object state update",
+                "position/object state update") &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.InnerSelectors, "0e", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.OuterSelectors, "39", summary.WindowCount))
+        {
+            return ("test guarded mode 06 138-byte marker-4f object-view tuple body", "138-byte marker-4f object-view body before object-state boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker24And25ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3401,6 +7859,18 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-24-26-alt object-view tuple body", "alternate paired 57-byte marker-24/26 object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker29And2aObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3413,6 +7883,22 @@ public static partial class PacketResearcher
                 "28 ff 02 00 00 00 00 00"))
         {
             return ("test guarded mode 06 57-byte marker-29-2a object-view tuple body", "paired 57-byte marker-29/2a object-view body before 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderPrefixes,
+                summary.WindowCount,
+                "28 ff 01 00 00 00 00 00",
+                "28 ff 02 00 00 00 00 00"))
+        {
+            return ("test guarded mode 06 57-byte marker-29-2a-alt object-view tuple body", "alternate paired 57-byte marker-29/2a object-view body before 28 ff state-marker boundary");
         }
 
         if (isDominantTail &&
@@ -3449,6 +7935,22 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderPrefixes,
+                summary.WindowCount,
+                "28 ff 01 00 00 00 00 00",
+                "28 ff 02 00 00 00 00 00"))
+        {
+            return ("test guarded mode 06 57-byte marker-1f-1e-alt object-view tuple body", "alternate paired 57-byte marker-1f/1e object-view body before 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
             summary.PostTupleBodyBytes == 57 &&
@@ -3471,12 +7973,160 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded261ByteMarker2aDeleteViewObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 261 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "delete view candidate", summary.WindowCount))
+        {
+            return ("test guarded mode 06 261-byte marker-2a delete-view object-view tuple body", "261-byte marker-2a object-view body before paired delete-view boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
             summary.PostTupleBodyBytes == 94 &&
             IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(summary.BodySuffixHex))
         {
             return ("test guarded mode 06 94-byte object-view tuple body", "bounded 94-byte object-view tuple body with shared terminal state-marker suffix");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded94ByteResidualExactObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 94)
+        {
+            return ("test guarded mode 06 94-byte residual exact object-view tuple body", "exact residual guarded 94-byte object-view body before accepted object-view boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderClassifications,
+                summary.HeaderPrefixes,
+                summary.OuterSelectors,
+                summary.InnerSelectors,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes is 110 or 119)
+        {
+            return ("test guarded mode 06 marker-34 effect/scaffold object-view tuple body", "marker-34 effect/scaffold body before exact state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06GuardedMarker34NestedReplayObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderClassifications,
+                summary.HeaderPrefixes,
+                summary.OuterSelectors,
+                summary.InnerSelectors,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 265)
+        {
+            return ("test guarded mode 06 marker-34 nested replay object-view tuple body", "265-byte marker-34 nested replay body before exact attribute/effect boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodyPrefixHex,
+                summary.BodySuffixHex,
+                summary.HeaderClassifications,
+                summary.HeaderPrefixes,
+                summary.OuterSelectors,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 123)
+        {
+            return ("test guarded mode 06 123-byte marker-34 embedded movement object-view tuple body", "123-byte marker-34 body with decoded embedded movement before paired state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded158ByteMarker34ObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 158)
+        {
+            return ("test guarded mode 06 158-byte marker-34 object-view tuple body", "158-byte marker-34 object-view body before 00 58 state/object boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded158ByteMarker16ObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 158)
+        {
+            return ("test guarded mode 06 158-byte marker-16 object-view tuple body", "158-byte marker-16 object-view body before 00 58 state/object boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 159)
+        {
+            return ("test guarded mode 06 159-byte marker-16-18 object-view tuple body", "159-byte marker-16/18 object-view body before accepted state/object boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded49ByteMarker0eObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 49)
+        {
+            return ("test guarded mode 06 49-byte marker-0e object-view tuple body", "49-byte marker-0e object-view body before 00 b5 state/object boundary");
         }
 
         if (isDominantTail &&
@@ -3554,6 +8204,18 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker1aObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1aObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-1a object-view tuple body", "57-byte marker-1a object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker19AltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3614,6 +8276,21 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57)
+        {
+            return ("test guarded mode 06 57-byte marker-35-alt object-view tuple body", "alternate 57-byte marker-35 object-view body before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker13ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3662,6 +8339,18 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-1d-alt object-view tuple body", "alternate 57-byte marker-1d object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker25ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3678,6 +8367,175 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker4fObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker4fObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderPrefixes,
+                summary.WindowCount,
+                "28 ff 01 00 00 00 00 00",
+                "28 ff 02 00 00 00 00 00"))
+        {
+            return ("test guarded mode 06 57-byte marker-4f object-view tuple body", "57-byte marker-4f object-view body before 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker64ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker64ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-64 object-view tuple body", "57-byte marker-64 object-view body before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-2e object-view tuple body", "57-byte marker-2e object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker2eAltObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-2e-alt object-view tuple body", "alternate 57-byte marker-2e object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker2e60ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-2e-60 object-view tuple body", "00 60 lead 57-byte marker-2e object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteResidualExactObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57)
+        {
+            return ("test guarded mode 06 57-byte residual exact object-view tuple body", "exact residual guarded 57-byte object-view body before accepted 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker2fObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2fObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-2f object-view tuple body", "57-byte marker-2f object-view body before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker34ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker34ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-34 object-view tuple body", "57-byte marker-34 object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-34-9c object-view tuple body", "57-byte marker-34 object-view body with 9c suffix before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57)
+        {
+            return ("test guarded mode 06 57-byte marker-34-alt object-view tuple body", "alternate 57-byte marker-34 object-view body before 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker31ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker31ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-31 object-view tuple body", "57-byte marker-31 object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker28ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker28ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-28 object-view tuple body", "57-byte marker-28 object-view body before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57)
+        {
+            return ("test guarded mode 06 57-byte marker-28-alt object-view tuple body", "alternate 57-byte marker-28 object-view body before 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker1dB9ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3690,6 +8548,18 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 57-byte marker-1e-b9 object-view tuple body", "57-byte marker-1e-b9 object-view body before 28 ff 02 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             IsProtocol03Mode06Guarded57ByteMarker15EcObjectViewPrefixAndLead(summary.PrefixFirstNonZeroFieldHex, summary.PostPrefixLeads, summary.WindowCount) &&
             summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -3698,6 +8568,32 @@ public static partial class PacketResearcher
             HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
         {
             return ("test guarded mode 06 57-byte marker-15-ec object-view tuple body", "57-byte marker-15-ec object-view body before 28 ff 01 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 260 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 b0 04 00 00 00 00 16", summary.WindowCount) &&
+            IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "object state update", summary.WindowCount))
+        {
+            return ("test guarded mode 06 long embedded marker-16 trailer body", "repeated long body with decoded embedded movement trailer before 94-byte object-state suffix");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 224 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 b6 03 00 00 00 00 24", summary.WindowCount) &&
+            summary.BodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d4 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "28 ff 01 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 long embedded marker-24 trailer body", "repeated long body with decoded embedded movement trailer before 57-byte marker-24 object-view suffix");
         }
 
         if (isDominantTail &&
@@ -3773,6 +8669,56 @@ public static partial class PacketResearcher
             summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
             summary.PostTupleBodyBytes == 53 &&
             HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 e9 07 00 00 00 00 34", summary.WindowCount) &&
+            IsProtocol03Mode06Guarded53ByteMarker34AltObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderPrefixes,
+                summary.WindowCount,
+                "00 62 01 00 28 ff 08 00",
+                "00 62 01 00 28 ff 15 00",
+                "00 62 01 00 28 ff 16 00"))
+        {
+            return ("test guarded mode 06 53-byte marker-34-62-alt object-view tuple body", "alternate 53-byte marker-34 object-view body before 00 62 28 ff state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 53 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 46 05 00 00 00 00 34", summary.WindowCount) &&
+            IsProtocol03Mode06Guarded53ByteMarker34ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                summary.HeaderPrefixes,
+                summary.WindowCount,
+                "00 62 01 00 28 ff 01 00",
+                "00 b7 01 00 28 ff 0b 00"))
+        {
+            return ("test guarded mode 06 53-byte marker-34-46 object-view tuple body", "53-byte marker-34 object-view body before 00 62/00 b7 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 53 &&
+            IsProtocol03Mode06Guarded53ByteMarker31ObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount))
+        {
+            return ("test guarded mode 06 53-byte marker-31 object-view tuple body", "53-byte marker-31 object-view body before 00 c1 state-marker boundary");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 53 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 e9 07 00 00 00 00 34", summary.WindowCount) &&
             HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "single state marker update", summary.WindowCount))
         {
             return ("test guarded mode 06 unclassified 53-byte tuple body", "low-count 53-byte unclassified body before accepted state-marker boundary");
@@ -3815,6 +8761,66 @@ public static partial class PacketResearcher
             return ("test guarded mode 06 non-dominant 49-byte zero-update tuple body", "non-dominant 49-byte zero-update body before shared 00 bc state-marker boundary");
         }
 
+        if (hasSharedBodyAnchor &&
+            summary.TailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("03 02", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 53 &&
+            IsProtocol03Mode06NonDominant53ByteMarker32ObjectViewBodySuffix(summary.BodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 9e 07 00 00 00 00 32", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "single state marker update", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "00 50 01 00 28 ff 06 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 non-dominant 53-byte marker-32 object-view tuple body", "non-dominant 53-byte marker-32 object-view body before shared 00 50 state-marker boundary");
+        }
+
+        if (hasSharedBodyAnchor &&
+            summary.TailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            IsProtocol03Mode06NonDominant70ByteMarker32ObjectViewTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            summary.TupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 70 &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "single state marker update", summary.WindowCount))
+        {
+            return ("test guarded mode 06 non-dominant 70-byte marker-32 object-view tuple body", "non-dominant 70-byte marker-32 object-view body before shared 00 86 state-marker boundary");
+        }
+
+        if (hasSharedBodyAnchor &&
+            summary.TailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 49 &&
+            IsProtocol03Mode06Guarded49ByteMarker03ZeroUpdateTuple(
+                summary.PrefixFirstNonZeroFieldHex,
+                summary.PostPrefixLeads,
+                summary.BodySuffixHex,
+                summary.HeaderPrefixes,
+                summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "state marker/object update candidate", summary.WindowCount))
+        {
+            return ("test guarded mode 06 49-byte marker-03 zero-update tuple body", "49-byte marker-03 zero-update body before shared 00 b4 state/object boundary");
+        }
+
+        if (hasSharedBodyAnchor &&
+            summary.TailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.PostTupleBodyBytes == 49 &&
+            summary.BodySuffixHex.Equals("00 00 00 00 00 00 c8 00 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "02 c8 00 00 00 00 00 02", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderClassifications, "state marker/object update candidate", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.HeaderPrefixes, "00 b4 02 00 00 00 00 00", summary.WindowCount))
+        {
+            return ("test guarded mode 06 49-byte marker-02 zero-update tuple body", "49-byte marker-02 zero-update body before shared 00 b4 state-marker boundary");
+        }
+
         return ("hold mode 06 tuple body as evidence only", "low-count or non-dominant tuple body shape");
     }
 
@@ -3846,6 +8852,24 @@ public static partial class PacketResearcher
 
         if (isDominantTail &&
             hasSharedBodyAnchor &&
+            summary.PrefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            summary.TupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            summary.PostPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            summary.TerminalPostTupleBodyBytes == 96 &&
+            IsProtocol03Mode06Terminal96ByteMarker04ZeroUpdateTuple(
+                summary.BodyPrefixes,
+                summary.BodySuffixes,
+                summary.PostPrefixLeads,
+                summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.MarkerBytes, "04", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.InnerSelectors, "0e", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.OuterSelectors, "25", summary.WindowCount))
+        {
+            return ("test terminal mode 06 96-byte marker-04 zero-update tuple body", "terminal 96-byte marker-04 zero-update body with shared suffix");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
             summary.TerminalPostTupleBodyBytes > 96 &&
             HasOnlyProtocol03Mode06Terminal96ByteBodySuffixes(summary.BodySuffixes, summary.WindowCount) &&
             HasProtocol03NestedMovementSummaryFullCount(summary.PreAnchorFirstNonZeroOffsets, "6", summary.WindowCount) &&
@@ -3857,6 +8881,21 @@ public static partial class PacketResearcher
             HasOnlyProtocol03NestedMovementSummaryKeys(summary.InnerSelectors, summary.WindowCount, "0e", "0c"))
         {
             return ("test terminal mode 06 long embedded marker-34 trailer body", "terminal long body with decoded embedded movement trailer before 96-byte state suffix");
+        }
+
+        if (isDominantTail &&
+            hasSharedBodyAnchor &&
+            summary.TerminalPostTupleBodyBytes > 96 &&
+            HasOnlyProtocol03Mode06Terminal96ByteBodySuffixes(summary.BodySuffixes, summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PreAnchorFirstNonZeroOffsets, "6", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PreAnchorFirstNonZeroFields, "ff 00", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PreTailFieldBytes, "03", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PreAnchorPreLeadBytes, "ff cd cc 4c be 00 00 00", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PreAnchorTrailingLeads, "00 46 05 00 00 00 00 34", summary.WindowCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(summary.PostPrefixLeads, "00 46 05 00 00 00 00 34", summary.WindowCount) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(summary.InnerSelectors, summary.WindowCount, "0e", "0c"))
+        {
+            return ("test terminal mode 06 long embedded marker-34-46 trailer body", "terminal long body with decoded embedded movement trailer before 96-byte state suffix");
         }
 
         if (isDominantTail &&
@@ -3938,7 +8977,189 @@ public static partial class PacketResearcher
     private static bool IsProtocol03Mode06GuardedZeroUpdate94ByteBodySuffix(string bodySuffixHex)
     {
         return bodySuffixHex.Equals("00 1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) ||
-            bodySuffixHex.Equals("00 1f 12 08 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+            bodySuffixHex.Equals("00 1f 12 08 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("00 1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded94ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 96 00 00 00 00 00 04", expectedCount) &&
+            bodySuffixHex.Equals("00 1f f9 07 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "17 00 02 0c c5 29 44 85",
+                "1d 00 02 0c 19 bc 15 93");
+    }
+
+    private static bool IsProtocol03Mode06Guarded94ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 96 00 00 00 00 00 04", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 1f f9 07 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            (boundaryHeaderHex.Equals("17 00 02 0c c5 29 44 85", StringComparison.OrdinalIgnoreCase) ||
+                boundaryHeaderHex.Equals("1d 00 02 0c 19 bc 15 93", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded95ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 96 00 00 00 00 00 04", expectedCount) &&
+            bodySuffixHex.Equals("1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00 25", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 02 02 00 1d 00 02 0c", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded95ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 96 00 00 00 00 00 04", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("1f 42 21 00 00 00 00 00 00 22 00 00 00 00 00 25", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("00 02 02 00 1d 00 02 0c", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded237ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 96 00 00 00 00 00 04", expectedCount) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "00 5d 01 00 88 37 08 00",
+                "00 5e 01 00 88 37 08 00");
+    }
+
+    private static bool IsProtocol03Mode06Guarded237ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 96 00 00 00 00 00 04", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            (boundaryHeaderHex.Equals("00 5d 01 00 88 37 08 00", StringComparison.OrdinalIgnoreCase) ||
+                boundaryHeaderHex.Equals("00 5e 01 00 88 37 08 00", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded78ByteMarkerFfNonObjectTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 00 00 00 00 00 6e 06 00 40 37 08 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 32 32 00 00 00 00 ff", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 1f 01 08 00 00 00 10", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded78ByteMarkerFfNonObjectTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 32 32 00 00 00 00 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 00 00 00 00 00 6e 06 00 40 37 08 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("00 1f 01 08 00 00 00 10", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded119ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 10 00 00 9a 8d 47 00 00 be 42 00 48 3c 47", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 96 00 00 00 00 00 04", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "1d 00 02 0e 00 76 bc 15", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded119ByteMarker04ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 96 00 00 00 00 00 04", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 10 00 00 9a 8d 47 00 00 be 42 00 48 3c 47", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("1d 00 02 0e 00 76 bc 15", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded138ByteMarker4fObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 10 cd 47 24 47 00 20 8a c4 85 7c c9 c5", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 4f", expectedCount) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "07 00 02 08 ce 41 38 47",
+                "15 00 02 0e 05 c3 c7 75");
+    }
+
+    private static bool IsProtocol03Mode06Guarded138ByteMarker4fObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 4f", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 10 cd 47 24 47 00 20 8a c4 85 7c c9 c5", StringComparison.OrdinalIgnoreCase) &&
+            (boundaryHeaderHex.Equals("07 00 02 08 ce 41 38 47", StringComparison.OrdinalIgnoreCase) ||
+                boundaryHeaderHex.Equals("15 00 02 0e 05 c3 c7 75", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsProtocol03Mode06Guarded57ByteObjectViewBodySuffix(string bodySuffixHex)
@@ -4001,6 +9222,36 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c2 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeads.ContainsKey("00 91 05 00 00 00 00 24") &&
+            postPrefixLeads.ContainsKey("00 dc 05 00 00 00 00 26") &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                postPrefixLeads,
+                expectedCount,
+                "00 91 05 00 00 00 00 24",
+                "00 dc 05 00 00 00 00 26");
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            (postPrefixLeadHex.Equals("00 91 05 00 00 00 00 24", StringComparison.OrdinalIgnoreCase) ||
+                postPrefixLeadHex.Equals("00 dc 05 00 00 00 00 26", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c2 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 cf 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded57ByteMarker29And2aObjectViewPrefixAndLead(
         string prefixFirstNonZeroFieldHex,
         IReadOnlyDictionary<string, int> postPrefixLeads,
@@ -4026,6 +9277,33 @@ public static partial class PacketResearcher
     private static bool IsProtocol03Mode06Guarded57ByteMarker29And2aObjectViewBodySuffix(string bodySuffixHex)
     {
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d5 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                postPrefixLeads,
+                expectedCount,
+                "00 66 08 00 00 00 00 29",
+                "00 98 08 00 00 00 00 2a");
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            (postPrefixLeadHex.Equals("00 66 08 00 00 00 00 29", StringComparison.OrdinalIgnoreCase) ||
+                postPrefixLeadHex.Equals("00 98 08 00 00 00 00 2a", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 da 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProtocol03Mode06Guarded57ByteMarker24AltObjectViewPrefixAndLead(
@@ -4078,6 +9356,35 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c1 09 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeads.ContainsKey("00 39 03 00 00 00 00 1f") &&
+            postPrefixLeads.ContainsKey("00 20 03 00 00 00 00 1e") &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                postPrefixLeads,
+                expectedCount,
+                "00 39 03 00 00 00 00 1f",
+                "00 20 03 00 00 00 00 1e");
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            (postPrefixLeadHex.Equals("00 39 03 00 00 00 00 1f", StringComparison.OrdinalIgnoreCase) ||
+                postPrefixLeadHex.Equals("00 20 03 00 00 00 00 1e", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 cb 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(string bodySuffixHex)
     {
         return bodySuffixHex.Equals("00 1f 06 08 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) ||
@@ -4089,6 +9396,446 @@ public static partial class PacketResearcher
     private static bool IsProtocol03Mode06Guarded94ByteMarker34ObjectViewBodySuffix(string bodySuffixHex)
     {
         return bodySuffixHex.Equals("00 1f 06 08 00 00 00 00 00 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded261ByteMarker2aDeleteViewObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 4c 04 00 00 00 00 2a", expectedCount) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "00 04 01 01 73 01 07 80",
+                "00 04 01 01 74 01 08 80");
+    }
+
+    private static bool IsProtocol03Mode06Guarded261ByteMarker2aDeleteViewObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 4c 04 00 00 00 00 2a", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("1f 07 08 00 00 00 00 00 00 22 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            (boundaryHeaderHex.Equals("00 04 01 01 73 01 07 80", StringComparison.OrdinalIgnoreCase) ||
+                boundaryHeaderHex.Equals("00 04 01 01 74 01 08 80", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded94ByteResidualExactObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return Matches(
+                "01 ff",
+                "00 d2 0f 00 00 00 00 4f",
+                "00 1f 06 08 00 00 08 00 10 00 22 01 b9 00 00 00",
+                "b3 00 02 80 80 10 ce 14") ||
+            Matches(
+                "02 ff",
+                "00 e9 07 00 00 00 00 34",
+                "00 1f 06 08 00 00 02 00 10 00 22 00 00 00 00 00",
+                "18 00 02 0c 81 66 f2 48");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, expectedLead, expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, expectedBoundary, expectedCount);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded94ByteResidualExactObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return Matches(
+                "01 ff",
+                "00 d2 0f 00 00 00 00 4f",
+                "00 1f 06 08 00 00 08 00 10 00 22 01 b9 00 00 00",
+                "b3 00 02 80 80 10 ce 14") ||
+            Matches(
+                "02 ff",
+                "00 e9 07 00 00 00 00 34",
+                "00 1f 06 08 00 00 02 00 10 00 22 00 00 00 00 00",
+                "18 00 02 0c 81 66 f2 48");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals(expectedLead, StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                boundaryHeaderHex.Equals(expectedBoundary, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded94ByteResidualExactObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 1f 06 08 00 00 08 00 10 00 22 01 b9 00 00 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("00 1f 06 08 00 00 02 00 10 00 22 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerClassifications,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        IReadOnlyDictionary<string, int> outerSelectors,
+        IReadOnlyDictionary<string, int> innerSelectors,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewBodySuffix(bodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 34", expectedCount) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerClassifications,
+                expectedCount,
+                "single state marker update",
+                "state marker/object update candidate") &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "00 7c 01 00 10 00 00 00",
+                "de c0 02 00 00 00 00 00") &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(outerSelectors, expectedCount, "09", "e5") &&
+            HasProtocol03NestedMovementSummaryFullCount(innerSelectors, "0e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewBodyAndBoundary(bodySuffixHex, boundaryHeaderHex);
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("e7 c0 00 00 00 00 00 c0 57 40 00 00 80 5f d7 6a", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewBodyAndBoundary(
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return (bodySuffixHex.Equals("00 00 04 01 06 fa 01 3e 81 67 17 00 27 00 fa 00", StringComparison.OrdinalIgnoreCase) &&
+                boundaryHeaderHex.Equals("00 7c 01 00 10 00 00 00", StringComparison.OrdinalIgnoreCase)) ||
+            (bodySuffixHex.Equals("e7 c0 00 00 00 00 00 c0 57 40 00 00 80 5f d7 6a", StringComparison.OrdinalIgnoreCase) &&
+                boundaryHeaderHex.Equals("de c0 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34NestedReplayObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerClassifications,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        IReadOnlyDictionary<string, int> outerSelectors,
+        IReadOnlyDictionary<string, int> innerSelectors,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 00 22 00 00 00 00 00 00 00 04 01 06", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 34", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerClassifications, "attribute/effect bundle", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "fb 02 04 80 b3 d5 04 08", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(outerSelectors, "10", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(innerSelectors, "0c", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06GuardedMarker34NestedReplayObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        IReadOnlyList<byte> body,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 00 22 00 00 00 00 00 00 00 04 01 06", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("fb 02 04 80 b3 d5 04 08", StringComparison.OrdinalIgnoreCase) &&
+            MatchesProtocol03Mode06Marker34NestedReplayBody(body);
+    }
+
+    private static bool MatchesProtocol03Mode06Marker34NestedReplayBody(IReadOnlyList<byte> body)
+    {
+        if (body.Count != 265)
+        {
+            return false;
+        }
+
+        if (!HasBytesAt(148, "00 02 ff cd cc 4c be 00 00 00 00 e9 07 00 00 00 00 34") ||
+            !HasBytesAt(203, "01 00 83 07 ff") ||
+            !HasBytesAt(220, "9c 05 00 28 ff 0e") ||
+            !HasBytesAt(249, "00 00 00 00 00 22 00 00 00 00 00 00 00 04 01 06"))
+        {
+            return false;
+        }
+
+        foreach ((int Offset, byte Value) stableByte in new (int Offset, byte Value)[]
+        {
+            (6, 0xff),
+            (37, 0x01),
+            (41, 0xff),
+            (58, 0xff),
+            (72, 0x0c),
+            (74, 0x58),
+            (75, 0x37),
+            (76, 0x08),
+            (79, 0x1f),
+            (80, 0x06),
+            (81, 0x08),
+            (88, 0x22),
+            (172, 0xff),
+            (203, 0x01),
+            (207, 0xff),
+            (224, 0xff),
+            (238, 0x0c),
+            (240, 0x58),
+            (241, 0x37),
+            (242, 0x08),
+            (245, 0x1f),
+            (246, 0x06),
+            (247, 0x08),
+            (254, 0x22),
+        })
+        {
+            if (body[stableByte.Offset] != stableByte.Value)
+            {
+                return false;
+            }
+        }
+
+        return true;
+
+        bool HasBytesAt(int offset, string expectedHex)
+        {
+            byte[] expected = ParseHexBytes(expectedHex).ToArray();
+            if (offset < 0 || offset + expected.Length > body.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < expected.Length; i++)
+            {
+                if (body[offset + i] != expected[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerClassifications,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        IReadOnlyDictionary<string, int> outerSelectors,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewBodySuffix(bodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 34", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerClassifications, "single state marker update", expectedCount) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                headerPrefixes,
+                expectedCount,
+                "15 00 01 00 04 b9 56 3e",
+                "15 00 01 00 04 be 08 3c") &&
+            HasProtocol03NestedMovementSummaryFullCount(outerSelectors, "0b", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewBoundaryHeader(boundaryHeaderHex);
+    }
+
+    private static bool IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("c4 02 4c 3d c7 80 80 80 80 80 80 01 07 08 00 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("c4 02 4c 3d c7 80 80 80 80 80 80 01 12 08 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewBoundaryHeader(string boundaryHeaderHex)
+    {
+        return boundaryHeaderHex.Equals("15 00 01 00 04 b9 56 3e", StringComparison.OrdinalIgnoreCase) ||
+            boundaryHeaderHex.Equals("15 00 01 00 04 be 08 3c", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker34ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded158ByteMarker34ObjectViewBodySuffix(bodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 34", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 58 02 00 00 00 00 0e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker34ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded158ByteMarker34ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("00 58 02 00 00 00 00 0e", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker34ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 00 00 00 00 00 02 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker16ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 b0 04 00 00 00 00 16", expectedCount) &&
+            IsProtocol03Mode06Guarded158ByteMarker16ObjectViewBodySuffix(bodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 58 02 00 00 00 00 16", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker16ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 b0 04 00 00 00 00 16", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded158ByteMarker16ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("00 58 02 00 00 00 00 16", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded158ByteMarker16ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return Matches("01 ff", "00 b0 04 00 00 00 00 16", "00 58 02 00 00 00 00 16") ||
+            Matches("02 ff", "00 cf 03 00 00 00 00 18", "00 8a 02 00 00 00 00 18");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, expectedLead, expectedCount) &&
+                IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewBodySuffix(bodySuffixHex) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, expectedBoundary, expectedCount);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return Matches("01 ff", "00 b0 04 00 00 00 00 16", "00 58 02 00 00 00 00 16") ||
+            Matches("02 ff", "00 cf 03 00 00 00 00 18", "00 8a 02 00 00 00 00 18");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals(expectedLead, StringComparison.OrdinalIgnoreCase) &&
+                IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewBodySuffix(bodySuffixHex) &&
+                boundaryHeaderHex.Equals(expectedBoundary, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 00 00 00 00 00 03 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded49ByteMarker0eObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 20 03 00 00 00 00 0e", expectedCount) &&
+            IsProtocol03Mode06Guarded49ByteMarker0eObjectViewBodySuffix(bodySuffixHex) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 b5 02 00 00 4c 0a 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded49ByteMarker0eObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 20 03 00 00 00 00 0e", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded49ByteMarker0eObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("00 b5 02 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded49ByteMarker0eObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 00 00 01 00 20 03 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProtocol03Mode06Guarded70ByteObjectViewBodySuffix(string bodySuffixHex)
@@ -4232,6 +9979,28 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d7 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1aObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 78 05 00 00 00 00 1a", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1aObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 78 05 00 00 00 00 1a", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1aObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded57ByteMarker19AltObjectViewPrefixAndLead(
         string prefixFirstNonZeroFieldHex,
         IReadOnlyDictionary<string, int> postPrefixLeads,
@@ -4339,6 +10108,51 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 22 b6 00 00 cd 08 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 03 08 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 be 0a 00 00 00 00 35", expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 02 00 00 00 00 00", expectedCount);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 1f ba 00 00 a1 07 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 eb 0f 00 00 00 00 35", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 02 00 00 00 00 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 be 0a 00 00 00 00 35", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 03 08 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 eb 0f 00 00 00 00 35", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 1f ba 00 00 a1 07 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 03 08 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 1f ba 00 00 a1 07 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded57ByteMarker13ObjectViewPrefixAndLead(
         string prefixFirstNonZeroFieldHex,
         IReadOnlyDictionary<string, int> postPrefixLeads,
@@ -4439,6 +10253,28 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c0 09 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 07 03 00 00 00 00 1d", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 07 03 00 00 00 00 1d", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d2 1e 00 00 1d 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded57ByteMarker25ObjectViewPrefixAndLead(
         string prefixFirstNonZeroFieldHex,
         IReadOnlyDictionary<string, int> postPrefixLeads,
@@ -4466,6 +10302,373 @@ public static partial class PacketResearcher
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d9 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsProtocol03Mode06Guarded57ByteMarker4fObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 d2 0f 00 00 00 00 4f", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker4fObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 d2 0f 00 00 00 00 4f", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker4fObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 6a ba 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 57 ba 00 00 cd 08 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 6a ba 00 00 cd 08 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 6a ba 00 00 eb 09 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker64ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 01", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 ec 13 00 00 00 00 64", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker64ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 01", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 ec 13 00 00 00 00 64", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker64ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 5f b9 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2eObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 08 07 00 00 00 00 2e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2eObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 08 07 00 00 00 00 2e", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 63 9a 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2eAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 b0 04 00 00 00 00 2e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2eAltObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 b0 04 00 00 00 00 2e", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2e60ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 60 09 00 00 00 00 2e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2e60ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 60 09 00 00 00 00 2e", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteResidualExactObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return Matches("01 ff", "00 60 09 00 00 00 00 2e", "ff 00 00 00 00 00 00 00 00 63 9a 00 00 11 0a 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("01 ff", "00 40 06 00 00 00 00 1e", "ff 00 00 00 00 00 00 00 00 c1 09 00 00 4c 0a 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("01 ff", "00 e8 03 00 00 00 00 12", "ff 00 00 00 00 00 00 00 00 ef 1a 00 00 4c 0a 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("01 ff", "00 f0 0a 00 00 00 00 36", "ff 00 00 00 00 00 00 00 00 fb b9 00 00 a1 07 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("03 ff", "00 07 03 00 00 00 00 1d", "ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("03 ff", "00 20 03 00 00 00 00 1e", "ff 00 00 00 00 00 00 00 ff 00 00 00 00 b9 07 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("03 ff", "00 07 03 00 00 00 00 1d", "ff 00 00 00 00 00 00 00 ff d2 1e 00 00 1d 0a 00", "28 ff 01 00 00 00 00 00");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, expectedLead, expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, expectedBoundary, expectedCount);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteResidualExactObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return Matches("01 ff", "00 60 09 00 00 00 00 2e", "ff 00 00 00 00 00 00 00 00 63 9a 00 00 11 0a 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("01 ff", "00 40 06 00 00 00 00 1e", "ff 00 00 00 00 00 00 00 00 c1 09 00 00 4c 0a 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("01 ff", "00 e8 03 00 00 00 00 12", "ff 00 00 00 00 00 00 00 00 ef 1a 00 00 4c 0a 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("01 ff", "00 f0 0a 00 00 00 00 36", "ff 00 00 00 00 00 00 00 00 fb b9 00 00 a1 07 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("03 ff", "00 07 03 00 00 00 00 1d", "ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00", "28 ff 01 00 00 00 00 00") ||
+            Matches("03 ff", "00 20 03 00 00 00 00 1e", "ff 00 00 00 00 00 00 00 ff 00 00 00 00 b9 07 00", "28 ff 02 00 00 00 00 00") ||
+            Matches("03 ff", "00 07 03 00 00 00 00 1d", "ff 00 00 00 00 00 00 00 ff d2 1e 00 00 1d 0a 00", "28 ff 01 00 00 00 00 00");
+
+        bool Matches(string expectedPrefix, string expectedLead, string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals(expectedPrefix, StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals(expectedLead, StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                boundaryHeaderHex.Equals(expectedBoundary, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteResidualExactObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 63 9a 00 00 11 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c1 09 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 ef 1a 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 fb b9 00 00 a1 07 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 ca 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 ff 00 00 00 00 b9 07 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 ff d2 1e 00 00 1d 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2fObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 c9 04 00 00 00 00 2f", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2fObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 c9 04 00 00 00 00 2f", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker2fObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c4 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 8c 0a 00 00 00 00 34", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 8c 0a 00 00 00 00 34", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 22 b6 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase))
+        {
+            return HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 e9 07 00 00 00 00 34", expectedCount);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 46 05 00 00 00 00 34", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return (prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase)) ||
+            (prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals("00 46 05 00 00 00 00 34", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 9c 05 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 fd b9 00 00 f4 07 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 8c 0a 00 00 00 00 34", expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 01 00 00 00 00 00", expectedCount);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 0d 0a 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 46 05 00 00 00 00 34", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 02 00 00 00 00 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 8c 0a 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 fd b9 00 00 f4 07 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 46 05 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 0d 0a 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 fd b9 00 00 f4 07 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 00 00 00 00 0d 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker31ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 fb 04 00 00 00 00 31", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker31ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 fb 04 00 00 00 00 31", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker31ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d6 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 27 06 00 00 00 00 28", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 27 06 00 00 00 00 28", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 34 08 00 00 00 00 28", expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 02 00 00 00 00 00", expectedCount);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 fa 09 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 27 06 00 00 00 00 28", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "28 ff 01 00 00 00 00 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        if (prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 34 08 00 00 00 00 28", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase))
+        {
+            return boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 27 06 00 00 00 00 28", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 fa 09 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 99 95 00 00 fa 09 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Guarded57ByteMarker1dB9ObjectViewPrefixAndLead(
         string prefixFirstNonZeroFieldHex,
         IReadOnlyDictionary<string, int> postPrefixLeads,
@@ -4486,6 +10689,28 @@ public static partial class PacketResearcher
     private static bool IsProtocol03Mode06Guarded57ByteMarker1dB9ObjectViewBodySuffix(string bodySuffixHex)
     {
         return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 ca 1e 00 00 b9 07 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 b0 04 00 00 00 00 1e", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewPrefixAndLead(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("00 b0 04 00 00 00 00 1e", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 c1 09 00 00 b9 07 00", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProtocol03Mode06Guarded57ByteMarker15EcObjectViewPrefixAndLead(
@@ -4520,6 +10745,131 @@ public static partial class PacketResearcher
             parts.Skip(5).All(part => part.Equals("00", StringComparison.OrdinalIgnoreCase));
     }
 
+    private static bool IsProtocol03Mode06Guarded53ByteMarker34AltObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("01 00 17 07 ff 00 00 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("01 00 9e 03 ff 00 00 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) ||
+            bodySuffixHex.Equals("01 00 b8 07 ff 00 00 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded53ByteMarker34AltObjectViewBoundaryHeader(string boundaryHeaderHex)
+    {
+        return boundaryHeaderHex.Equals("00 62 01 00 28 ff 08 00", StringComparison.OrdinalIgnoreCase) ||
+            boundaryHeaderHex.Equals("00 62 01 00 28 ff 15 00", StringComparison.OrdinalIgnoreCase) ||
+            boundaryHeaderHex.Equals("00 62 01 00 28 ff 16 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded53ByteMarker34_46ObjectViewBoundaryHeader(string boundaryHeaderHex)
+    {
+        return boundaryHeaderHex.Equals("00 62 01 00 28 ff 01 00", StringComparison.OrdinalIgnoreCase) ||
+            boundaryHeaderHex.Equals("00 b7 01 00 28 ff 0b 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded53ByteMarker31ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return Matches(
+                "01 00 8f 05 ff 00 00 00 00 00 00 00 00 db 1e 00",
+                "00 c1 01 00 28 ff 03 00") ||
+            Matches(
+                "01 00 c0 03 ff 00 00 00 00 00 00 00 00 db 1e 00",
+                "00 c1 01 00 28 ff 07 00");
+
+        bool Matches(string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "00 78 07 00 00 00 00 31", expectedCount) &&
+                HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, expectedBoundary, expectedCount);
+        }
+    }
+
+    private static bool IsProtocol03Mode06Guarded53ByteMarker31ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return Matches(
+                "01 00 8f 05 ff 00 00 00 00 00 00 00 00 db 1e 00",
+                "00 c1 01 00 28 ff 03 00") ||
+            Matches(
+                "01 00 c0 03 ff 00 00 00 00 00 00 00 00 db 1e 00",
+                "00 c1 01 00 28 ff 07 00");
+
+        bool Matches(string expectedSuffix, string expectedBoundary)
+        {
+            return prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+                postPrefixLeadHex.Equals("00 78 07 00 00 00 00 31", StringComparison.OrdinalIgnoreCase) &&
+                bodySuffixHex.Equals(expectedSuffix, StringComparison.OrdinalIgnoreCase) &&
+                boundaryHeaderHex.Equals(expectedBoundary, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static bool IsProtocol03Mode06NonDominant53ByteMarker32ObjectViewBodySuffix(string bodySuffixHex)
+    {
+        return bodySuffixHex.Equals("00 00 9e 07 ff 00 00 00 82 77 00 00 ae 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06NonDominant70ByteMarker32ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 ff 00 00 00 00 00 00 00 00 00 01 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(postPrefixLeads, "02 28 0a 00 00 00 00 32", expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 86 01 00 58 37 08 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06NonDominant70ByteMarker32ObjectViewTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("02 28 0a 00 00 00 00 32", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("00 00 00 00 ff 00 00 00 00 00 00 00 00 00 01 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("00 86 01 00 58 37 08 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProtocol03Mode06Guarded49ByteMarker03ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        string bodySuffixHex,
+        IReadOnlyDictionary<string, int> headerPrefixes,
+        int expectedCount)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            HasOnlyProtocol03NestedMovementSummaryKeys(
+                postPrefixLeads,
+                expectedCount,
+                "02 fa 00 00 00 00 00 03",
+                "03 fa 00 00 00 00 00 03") &&
+            bodySuffixHex.Equals("00 00 00 00 00 00 fa 00 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            HasProtocol03NestedMovementSummaryFullCount(headerPrefixes, "00 b4 02 00 00 00 00 00", expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Guarded49ByteMarker03ZeroUpdateTuple(
+        string prefixFirstNonZeroFieldHex,
+        string postPrefixLeadHex,
+        string bodySuffixHex,
+        string boundaryHeaderHex)
+    {
+        return prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            (postPrefixLeadHex.Equals("02 fa 00 00 00 00 00 03", StringComparison.OrdinalIgnoreCase) ||
+                postPrefixLeadHex.Equals("03 fa 00 00 00 00 00 03", StringComparison.OrdinalIgnoreCase)) &&
+            bodySuffixHex.Equals("00 00 00 00 00 00 fa 00 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("00 b4 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsProtocol03Mode06Terminal96ByteTupleBody(IReadOnlyList<byte> body)
     {
         if (body.Count != 96 ||
@@ -4544,6 +10894,7 @@ public static partial class PacketResearcher
         bool terminalTupleBody,
         string bodySuffixHex,
         string boundaryHeaderHex,
+        string boundaryClassification,
         out string parserAction,
         out string classification)
     {
@@ -4584,6 +10935,19 @@ public static partial class PacketResearcher
         if (terminalTupleBody &&
             anchorBytes.Value == 96 &&
             IsProtocol03Mode06Terminal96ByteTupleBody(anchorBody) &&
+            innerSelector is 0x0e or 0x0c &&
+            preTailFieldHex.Equals("03", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorPreLeadHex.Equals("ff cd cc 4c be 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorTrailingLeadHex.Equals("00 46 05 00 00 00 00 34", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test terminal mode 06 long embedded marker-34-46 trailer body";
+            classification = "mode 06 terminal long embedded movement marker-34-46 trailer body";
+            return true;
+        }
+
+        if (terminalTupleBody &&
+            anchorBytes.Value == 96 &&
+            IsProtocol03Mode06Terminal96ByteTupleBody(anchorBody) &&
             innerSelector is 0x0e or 0x08 &&
             preTailFieldHex.Equals("03", StringComparison.OrdinalIgnoreCase) &&
             preAnchorPreLeadHex.Equals("ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
@@ -4617,6 +10981,34 @@ public static partial class PacketResearcher
         {
             parserAction = "test terminal mode 06 long embedded marker-2a trailer body";
             classification = "mode 06 terminal long embedded movement marker-2a trailer body";
+            return true;
+        }
+
+        if (!terminalTupleBody &&
+            anchorBytes.Value == 94 &&
+            innerSelector == 0x0c &&
+            preTailFieldHex.Equals("01", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorPreLeadHex.Equals("ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorTrailingLeadHex.Equals("00 b0 04 00 00 00 00 16", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryClassification.Equals("object state update", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 long embedded marker-16 trailer body";
+            classification = "mode 06 guarded 94-byte long embedded movement marker-16 trailer body";
+            return true;
+        }
+
+        if (!terminalTupleBody &&
+            anchorBytes.Value == 57 &&
+            innerSelector == 0x0e &&
+            preTailFieldHex.Equals("03", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorPreLeadHex.Equals("ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            preAnchorTrailingLeadHex.Equals("00 b6 03 00 00 00 00 24", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("ff 00 00 00 00 00 00 00 00 d4 1e 00 00 4c 0a 00", StringComparison.OrdinalIgnoreCase) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 long embedded marker-24 trailer body";
+            classification = "mode 06 guarded 57-byte long embedded movement marker-24 trailer body";
             return true;
         }
 
@@ -4826,7 +11218,8 @@ public static partial class PacketResearcher
         }
 
         if (IsProtocol03Mode06GuardedZeroUpdate94ByteBodySuffix(bodySuffixHex) ||
-            IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(bodySuffixHex))
+            IsProtocol03Mode06Guarded94ByteObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded94ByteResidualExactObjectViewBodySuffix(bodySuffixHex))
         {
             return 94;
         }
@@ -4835,19 +11228,37 @@ public static partial class PacketResearcher
             IsProtocol03Mode06Guarded57ByteMarker16ObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker15ObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker19ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker1aObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker19AltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1fObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker29And2aObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker24AltObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1eAnd1fObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker24ObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker33ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker13ObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1dAnd1eObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1eObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1dObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker25ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker4fObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker64ObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker1dB9ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteResidualExactObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker2fObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker34ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker31ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker28ObjectViewBodySuffix(bodySuffixHex) ||
+            IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewBodySuffix(bodySuffixHex) ||
             IsProtocol03Mode06Guarded57ByteMarker15EcObjectViewBodySuffix(bodySuffixHex))
         {
             return 57;
@@ -4877,6 +11288,36 @@ public static partial class PacketResearcher
             suffix.Skip(9).All(value => value == 0x00);
     }
 
+    private static bool IsProtocol03Mode06Terminal96ByteMarker04ZeroUpdateTuple(
+        IReadOnlyDictionary<string, int> bodyPrefixes,
+        IReadOnlyDictionary<string, int> bodySuffixes,
+        IReadOnlyDictionary<string, int> postPrefixLeads,
+        int expectedCount)
+    {
+        return HasProtocol03NestedMovementSummaryFullCount(
+                bodyPrefixes,
+                "00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00",
+                expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(
+                bodySuffixes,
+                "42 21 00 00 00 00 00 00 22 00 00 00 00 00 00 00",
+                expectedCount) &&
+            HasProtocol03NestedMovementSummaryFullCount(
+                postPrefixLeads,
+                "00 96 00 00 00 00 00 04",
+                expectedCount);
+    }
+
+    private static bool IsProtocol03Mode06Terminal96ByteMarker04ZeroUpdateTuple(
+        string postPrefixLeadHex,
+        string bodyPrefixHex,
+        string bodySuffixHex)
+    {
+        return postPrefixLeadHex.Equals("00 96 00 00 00 00 00 04", StringComparison.OrdinalIgnoreCase) &&
+            bodyPrefixHex.Equals("00 00 00 00 00 00 ff 00 00 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            bodySuffixHex.Equals("42 21 00 00 00 00 00 00 22 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool ContainsProtocol03Mode06ContinuationBytes(string bodySuffixHex)
     {
         byte[] suffix = ParseHexBytes(bodySuffixHex).ToArray();
@@ -4897,45 +11338,91 @@ public static partial class PacketResearcher
         {
             "test consuming mode 06 zero-update tuple body" => 0,
             "test guarded mode 06 94-byte zero-update tuple body" => 1,
+            "test guarded mode 06 94-byte marker-04 zero-update tuple body" => 1,
+            "test guarded mode 06 95-byte marker-04 zero-update tuple body" => 1,
+            "test guarded mode 06 237-byte marker-04 zero-update tuple body" => 1,
+            "test guarded mode 06 78-byte marker-ff non-object tuple body" => 1,
+            "test guarded mode 06 119-byte marker-04 zero-update tuple body" => 1,
+            "test guarded mode 06 138-byte marker-4f object-view tuple body" => 1,
             "test guarded mode 06 57-byte object-view tuple body" => 2,
             "test guarded mode 06 57-byte marker-24-25 object-view tuple body" => 2,
             "test guarded mode 06 94-byte object-view tuple body" => 3,
             "test guarded mode 06 94-byte marker-34 object-view tuple body" => 3,
+            "test guarded mode 06 261-byte marker-2a delete-view object-view tuple body" => 3,
+            "test guarded mode 06 94-byte residual exact object-view tuple body" => 3,
             "test guarded mode 06 70-byte object-view tuple body" => 4,
             "test guarded mode 06 57-byte marker-16 object-view tuple body" => 5,
             "test guarded mode 06 57-byte marker-16-17 object-view tuple body" => 6,
             "test guarded mode 06 57-byte marker-15 object-view tuple body" => 7,
             "test guarded mode 06 57-byte marker-19 object-view tuple body" => 8,
+            "test guarded mode 06 57-byte marker-1a object-view tuple body" => 8,
             "test guarded mode 06 57-byte marker-19-alt object-view tuple body" => 8,
             "test guarded mode 06 57-byte marker-1f object-view tuple body" => 8,
+            "test guarded mode 06 57-byte marker-1f-1e-alt object-view tuple body" => 8,
             "test guarded mode 06 57-byte marker-24-26 object-view tuple body" => 9,
+            "test guarded mode 06 57-byte marker-24-26-alt object-view tuple body" => 9,
             "test guarded mode 06 57-byte marker-29-2a object-view tuple body" => 10,
+            "test guarded mode 06 57-byte marker-29-2a-alt object-view tuple body" => 10,
             "test guarded mode 06 57-byte marker-24-alt object-view tuple body" => 11,
             "test guarded mode 06 57-byte marker-1e-1f object-view tuple body" => 12,
             "test guarded mode 06 57-byte marker-24 object-view tuple body" => 13,
             "test guarded mode 06 57-byte marker-33 object-view tuple body" => 14,
+            "test guarded mode 06 57-byte marker-35-alt object-view tuple body" => 14,
             "test guarded mode 06 57-byte marker-13 object-view tuple body" => 15,
             "test guarded mode 06 57-byte marker-1d-1e object-view tuple body" => 16,
             "test guarded mode 06 57-byte marker-1e object-view tuple body" => 16,
             "test guarded mode 06 57-byte marker-1d object-view tuple body" => 17,
+            "test guarded mode 06 57-byte marker-1d-alt object-view tuple body" => 17,
             "test guarded mode 06 57-byte marker-25 object-view tuple body" => 18,
-            "test guarded mode 06 57-byte marker-1d-b9 object-view tuple body" => 19,
-            "test guarded mode 06 57-byte marker-15-ec object-view tuple body" => 20,
-            "test guarded mode 06 53-byte marker-34-b8-15 object-view tuple body" => 21,
-            "test guarded mode 06 53-byte marker-34-62-0f object-view tuple body" => 22,
-            "test guarded mode 06 53-byte marker-34-b8-1c object-view tuple body" => 23,
-            "test guarded mode 06 unclassified tuple body" => 24,
-            "test guarded mode 06 unclassified 53-byte tuple body" => 25,
-            "test guarded mode 06 non-dominant zero-update tuple body" => 26,
-            "test guarded mode 06 non-dominant 49-byte zero-update tuple body" => 27,
-            "test guarded mode 06 long embedded marker-25 trailer body" => 28,
-            "test terminal mode 06 96-byte tuple body" => 29,
-            "test terminal mode 06 long embedded marker-34 trailer body" => 30,
-            "test terminal mode 06 long embedded marker-04 trailer body" => 31,
-            "test terminal mode 06 long embedded marker-2a trailer body" => 32,
-            "test terminal mode 06 long embedded marker-24 trailer body" => 33,
-            "hold mode 06 marker-34 long object-view tuple body as evidence only" => 34,
-            _ => 35
+            "test guarded mode 06 57-byte marker-4f object-view tuple body" => 19,
+            "test guarded mode 06 57-byte marker-64 object-view tuple body" => 19,
+            "test guarded mode 06 57-byte marker-2e object-view tuple body" => 20,
+            "test guarded mode 06 57-byte marker-2e-alt object-view tuple body" => 21,
+            "test guarded mode 06 57-byte marker-2e-60 object-view tuple body" => 21,
+            "test guarded mode 06 57-byte residual exact object-view tuple body" => 21,
+            "test guarded mode 06 57-byte marker-2f object-view tuple body" => 22,
+            "test guarded mode 06 57-byte marker-34 object-view tuple body" => 23,
+            "test guarded mode 06 57-byte marker-34-9c object-view tuple body" => 23,
+            "test guarded mode 06 57-byte marker-34-alt object-view tuple body" => 23,
+            "test guarded mode 06 57-byte marker-31 object-view tuple body" => 24,
+            "test guarded mode 06 57-byte marker-28 object-view tuple body" => 25,
+            "test guarded mode 06 57-byte marker-28-alt object-view tuple body" => 25,
+            "test guarded mode 06 57-byte marker-1d-b9 object-view tuple body" => 26,
+            "test guarded mode 06 57-byte marker-1e-b9 object-view tuple body" => 26,
+            "test guarded mode 06 57-byte marker-15-ec object-view tuple body" => 27,
+            "test guarded mode 06 53-byte marker-34-b8-15 object-view tuple body" => 28,
+            "test guarded mode 06 53-byte marker-34-62-0f object-view tuple body" => 29,
+            "test guarded mode 06 53-byte marker-34-b8-1c object-view tuple body" => 30,
+            "test guarded mode 06 53-byte marker-34-62-alt object-view tuple body" => 31,
+            "test guarded mode 06 53-byte marker-34-46 object-view tuple body" => 31,
+            "test guarded mode 06 53-byte marker-31 object-view tuple body" => 31,
+            "test guarded mode 06 unclassified tuple body" => 31,
+            "test guarded mode 06 49-byte marker-0e object-view tuple body" => 32,
+            "test guarded mode 06 unclassified 53-byte tuple body" => 33,
+            "test guarded mode 06 non-dominant zero-update tuple body" => 34,
+            "test guarded mode 06 non-dominant 49-byte zero-update tuple body" => 35,
+            "test guarded mode 06 non-dominant 53-byte marker-32 object-view tuple body" => 36,
+            "test guarded mode 06 non-dominant 70-byte marker-32 object-view tuple body" => 37,
+            "test guarded mode 06 49-byte marker-03 zero-update tuple body" => 37,
+            "test guarded mode 06 49-byte marker-02 zero-update tuple body" => 37,
+            "test guarded mode 06 long embedded marker-16 trailer body" => 38,
+            "test guarded mode 06 long embedded marker-24 trailer body" => 39,
+            "test guarded mode 06 long embedded marker-25 trailer body" => 40,
+            "test guarded mode 06 marker-34 effect/scaffold object-view tuple body" => 41,
+            "test guarded mode 06 marker-34 nested replay object-view tuple body" => 42,
+            "test guarded mode 06 123-byte marker-34 embedded movement object-view tuple body" => 43,
+            "test guarded mode 06 158-byte marker-34 object-view tuple body" => 44,
+            "test guarded mode 06 158-byte marker-16 object-view tuple body" => 45,
+            "test guarded mode 06 159-byte marker-16-18 object-view tuple body" => 46,
+            "test terminal mode 06 96-byte tuple body" => 47,
+            "test terminal mode 06 96-byte marker-04 zero-update tuple body" => 48,
+            "test terminal mode 06 long embedded marker-34 trailer body" => 49,
+            "test terminal mode 06 long embedded marker-34-46 trailer body" => 50,
+            "test terminal mode 06 long embedded marker-04 trailer body" => 51,
+            "test terminal mode 06 long embedded marker-2a trailer body" => 52,
+            "test terminal mode 06 long embedded marker-24 trailer body" => 53,
+            "hold mode 06 marker-34 long object-view tuple body as evidence only" => 54,
+            _ => 55
         };
     }
 
@@ -5889,10 +12376,7 @@ public static partial class PacketResearcher
         IEnumerable<PacketDumpFileSummary> dumpSummaries)
     {
         Protocol03NpcBaseDynamicCreationObservation[] observations = EnumerateProtocol03NpcBaseDynamicCreationObservations(dumpSummaries)
-            .Where(observation =>
-                !observation.Record.PostCreationObjectViewComplete &&
-                observation.Record.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase) &&
-                observation.Record.PostCreationObjectViewDynamicTailNextHeaderOffset is not null)
+            .Where(observation => IsProtocol03NpcBaseDynamicCreationExtendedBoundaryEvidenceRecord(observation.Record))
             .ToArray();
 
         return observations
@@ -5931,6 +12415,1771 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.TailHeaderOffset)
             .ThenBy(summary => summary.PreHeaderHex, StringComparer.OrdinalIgnoreCase)
             .ThenBy(summary => summary.HeaderPrefixHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> boundarySummaries,
+        int maxRows = 12)
+    {
+        return boundarySummaries
+            .GroupBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary[] summaries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary(
+                    group.Key,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.BoundaryInterpretation, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderClassification, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailHeaderOffset.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderPrefixHex, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.PreHeaderHex, summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> boundarySummaries,
+        int maxRows = 25)
+    {
+        return boundarySummaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Shape = DescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(summary)
+            })
+            .GroupBy(entry => new
+            {
+                entry.Summary.BoundaryInterpretation,
+                entry.Summary.ParserAction,
+                entry.Shape.BodyByteCount,
+                entry.Shape.SeparatorOffset,
+                entry.Shape.PreSeparatorByteCount,
+                entry.Shape.PostSeparatorByteCount
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary[] summaries = entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary(
+                    group.Key.BoundaryInterpretation,
+                    group.Key.ParserAction,
+                    group.Key.BodyByteCount,
+                    group.Key.SeparatorOffset,
+                    group.Key.PreSeparatorByteCount,
+                    group.Key.PostSeparatorByteCount,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderClassification, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailHeaderOffset.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderPrefixHex, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Shape.PreSeparatorPrefixHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Shape.PostSeparatorPrefixHex, entry.Summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.BodyByteCount)
+            .ThenBy(summary => summary.SeparatorOffset, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> boundarySummaries,
+        int maxRows = 25)
+    {
+        return boundarySummaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Fields = TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields(summary)
+            })
+            .Where(entry => entry.Fields is not null)
+            .Select(entry => new
+            {
+                entry.Summary,
+                Fields = entry.Fields!
+            })
+            .GroupBy(entry => new
+            {
+                entry.Summary.BoundaryInterpretation,
+                entry.Summary.ParserAction,
+                entry.Fields.BodyByteCount,
+                entry.Fields.SeparatorOffset,
+                entry.Fields.PostSeparatorByteCount,
+                entry.Fields.PostSeparatorLeadByteHex,
+                entry.Fields.PostSeparatorSecondByteHex,
+                entry.Fields.ZeroRunAfterSecondByte,
+                entry.Fields.FirstNonZeroAfterSecondByteOffset
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary[] summaries = entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary(
+                    group.Key.BoundaryInterpretation,
+                    group.Key.ParserAction,
+                    group.Key.BodyByteCount,
+                    group.Key.SeparatorOffset,
+                    group.Key.PostSeparatorByteCount,
+                    group.Key.PostSeparatorLeadByteHex,
+                    group.Key.PostSeparatorSecondByteHex,
+                    group.Key.ZeroRunAfterSecondByte,
+                    group.Key.FirstNonZeroAfterSecondByteOffset,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderClassification, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailHeaderOffset.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderPrefixHex, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Fields.PostSeparatorPrefixHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Fields.FirstNonZeroWindowHex, entry.Summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.BodyByteCount)
+            .ThenBy(summary => summary.SeparatorOffset)
+            .ThenBy(summary => summary.PostSeparatorLeadByteHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostSeparatorSecondByteHex, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> boundarySummaries,
+        int maxRows = 25)
+    {
+        return boundarySummaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Probe = TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(summary)
+            })
+            .Where(entry => entry.Probe is not null)
+            .Select(entry => new
+            {
+                entry.Summary,
+                Probe = entry.Probe!
+            })
+            .GroupBy(entry => new
+            {
+                entry.Summary.BoundaryInterpretation,
+                entry.Summary.ParserAction,
+                entry.Probe.BodyByteCount,
+                entry.Probe.SeparatorOffset,
+                entry.Probe.PostSeparatorByteCount,
+                entry.Probe.PostSeparatorLeadByteHex,
+                entry.Probe.PostSeparatorSecondByteHex,
+                entry.Probe.ZeroRunAfterSecondByte,
+                entry.Probe.VectorOffset,
+                entry.Probe.PreVectorBridgeOffset,
+                entry.Probe.PreVectorBridgeByteCount,
+                entry.Probe.VectorEncoding,
+                entry.Probe.VectorDisposition
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary[] summaries = entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary(
+                    group.Key.BoundaryInterpretation,
+                    group.Key.ParserAction,
+                    group.Key.BodyByteCount,
+                    group.Key.SeparatorOffset,
+                    group.Key.PostSeparatorByteCount,
+                    group.Key.PostSeparatorLeadByteHex,
+                    group.Key.PostSeparatorSecondByteHex,
+                    group.Key.ZeroRunAfterSecondByte,
+                    group.Key.VectorOffset,
+                    group.Key.PreVectorBridgeOffset,
+                    group.Key.PreVectorBridgeByteCount,
+                    group.Key.VectorEncoding,
+                    group.Key.VectorDisposition,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.VectorSample, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.VectorWindowHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.FirstNonZeroWindowHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderClassification, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailHeaderOffset.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderPrefixHex, summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(summary.ParserAction))
+            .ThenBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorDispositionOrder(summary.VectorDisposition))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.BodyByteCount)
+            .ThenBy(summary => summary.SeparatorOffset)
+            .ThenBy(summary => summary.PostSeparatorLeadByteHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostSeparatorSecondByteHex, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundarySummary> boundarySummaries,
+        int maxRows = 25)
+    {
+        return boundarySummaries
+            .Select(summary => new
+            {
+                Summary = summary,
+                Probe = TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(summary)
+            })
+            .Where(entry => entry.Probe is not null)
+            .Select(entry => new
+            {
+                entry.Summary,
+                Probe = entry.Probe!
+            })
+            .GroupBy(entry => new
+            {
+                entry.Summary.BoundaryInterpretation,
+                entry.Summary.ParserAction,
+                entry.Probe.BodyByteCount,
+                entry.Probe.SeparatorOffset,
+                entry.Probe.PostSeparatorByteCount,
+                entry.Probe.PostSeparatorLeadByteHex,
+                entry.Probe.PostSeparatorSecondByteHex,
+                entry.Probe.ZeroRunAfterSecondByte,
+                entry.Probe.VectorOffset,
+                entry.Probe.PreVectorBridgeOffset,
+                entry.Probe.PreVectorBridgeByteCount,
+                entry.Probe.VectorEncoding,
+                entry.Probe.VectorDisposition,
+                entry.Probe.TailOffset,
+                entry.Probe.TailByteCount,
+                entry.Probe.TailFloatEncoding,
+                entry.Probe.TailDisposition
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary[] summaries = entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundarySummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary(
+                    group.Key.BoundaryInterpretation,
+                    group.Key.ParserAction,
+                    group.Key.BodyByteCount,
+                    group.Key.SeparatorOffset,
+                    group.Key.PostSeparatorByteCount,
+                    group.Key.PostSeparatorLeadByteHex,
+                    group.Key.PostSeparatorSecondByteHex,
+                    group.Key.ZeroRunAfterSecondByte,
+                    group.Key.VectorOffset,
+                    group.Key.PreVectorBridgeOffset,
+                    group.Key.PreVectorBridgeByteCount,
+                    group.Key.VectorEncoding,
+                    group.Key.VectorDisposition,
+                    group.Key.TailOffset,
+                    group.Key.TailByteCount,
+                    group.Key.TailFloatEncoding,
+                    group.Key.TailDisposition,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.VectorSample, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailHex, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailFloatSample, entry.Summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderClassification, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailHeaderOffset.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.HeaderPrefixHex, summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(summary.ParserAction))
+            .ThenBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailDispositionOrder(summary.TailDisposition))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.BodyByteCount)
+            .ThenBy(summary => summary.SeparatorOffset)
+            .ThenBy(summary => summary.PostSeparatorLeadByteHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostSeparatorSecondByteHex, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary> vectorTailSummaries,
+        int maxRows = 25)
+    {
+        return vectorTailSummaries
+            .Select(summary =>
+            {
+                (string parserAction, string actionReason) =
+                    ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(summary);
+                return new
+                {
+                    Summary = summary,
+                    ParserAction = parserAction,
+                    ActionReason = actionReason
+                };
+            })
+            .GroupBy(entry => new
+            {
+                entry.ParserAction,
+                entry.ActionReason
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary[] summaries =
+                    entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary(
+                    group.Key.ParserAction,
+                    group.Key.ActionReason,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.BoundaryInterpretation, summary.CandidateCount)),
+                        5),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ParserAction, summary.CandidateCount)),
+                        5),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.BodyByteCount.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.PostSeparatorLeadByteHex, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.PostSeparatorSecondByteHex, summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ZeroRunAfterSecondByte.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.PreVectorBridgeByteCount.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.PreVectorBridges), 8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.VectorDisposition, summary.CandidateCount)),
+                        5),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.VectorSamples), 8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailByteCount.ToString(CultureInfo.InvariantCulture), summary.CandidateCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.TailDisposition, summary.CandidateCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFloatSamples), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderClassifications), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderPrefixes), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionOrder(summary.ParserAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries(
+        IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary> vectorTailSummaries,
+        int maxRows = 25)
+    {
+        return vectorTailSummaries
+            .Select(summary =>
+            {
+                (string layoutAction, string layoutInterpretation) =
+                    ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(summary);
+                return new
+                {
+                    Summary = summary,
+                    LayoutAction = layoutAction,
+                    LayoutInterpretation = layoutInterpretation,
+                    FieldLayout = FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(summary)
+                };
+            })
+            .Where(entry => entry.LayoutAction.Equals("review bounded vector-tail body", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(entry => new
+            {
+                entry.LayoutAction,
+                entry.LayoutInterpretation,
+                entry.FieldLayout,
+                entry.Summary.BodyByteCount,
+                entry.Summary.SeparatorOffset,
+                entry.Summary.PostSeparatorByteCount,
+                entry.Summary.PostSeparatorLeadByteHex,
+                entry.Summary.PostSeparatorSecondByteHex,
+                entry.Summary.ZeroRunAfterSecondByte,
+                entry.Summary.PreVectorBridgeOffset,
+                entry.Summary.PreVectorBridgeByteCount,
+                entry.Summary.VectorOffset,
+                entry.Summary.VectorEncoding,
+                entry.Summary.TailOffset,
+                entry.Summary.TailByteCount,
+                entry.Summary.TailFloatEncoding,
+                entry.Summary.TailDisposition
+            })
+            .Select(group =>
+            {
+                var entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary[] summaries =
+                    entries.Select(entry => entry.Summary).ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary(
+                    group.Key.LayoutAction,
+                    group.Key.LayoutInterpretation,
+                    group.Key.FieldLayout,
+                    group.Key.BodyByteCount,
+                    group.Key.SeparatorOffset,
+                    group.Key.PostSeparatorByteCount,
+                    group.Key.PostSeparatorLeadByteHex,
+                    group.Key.PostSeparatorSecondByteHex,
+                    group.Key.ZeroRunAfterSecondByte,
+                    group.Key.PreVectorBridgeOffset,
+                    group.Key.PreVectorBridgeByteCount,
+                    group.Key.VectorOffset,
+                    group.Key.VectorEncoding,
+                    group.Key.TailOffset,
+                    group.Key.TailByteCount,
+                    group.Key.TailFloatEncoding,
+                    group.Key.TailDisposition,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.BoundaryInterpretation, summary.CandidateCount)),
+                        5),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ParserAction, summary.CandidateCount)),
+                        5),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.PreVectorBridges), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.VectorSamples), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailHexes), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFloatSamples), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderClassifications), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderPrefixes), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailAvailableBytes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TailFamilies), 8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ParentPreValues), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.TextSamples), 8),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.BodyByteCount)
+            .ThenBy(summary => summary.PostSeparatorLeadByteHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PostSeparatorSecondByteHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.PreVectorBridgeByteCount)
+            .ThenBy(summary => summary.TailByteCount)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 25)
+    {
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate[] candidates =
+            EnumerateProtocol03NpcBaseDynamicCreationObservations(dumpSummaries)
+                .Select(TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate)
+                .Where(candidate => candidate is not null)
+                .Select(candidate => candidate!)
+                .ToArray();
+
+        return candidates
+            .GroupBy(candidate => new
+            {
+                candidate.SemanticAction,
+                candidate.SemanticReason,
+                candidate.ParentPositionRelation
+            })
+            .Select(group =>
+            {
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate[] entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate sample = entries
+                    .OrderBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Line)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary(
+                    group.Key.SemanticAction,
+                    group.Key.SemanticReason,
+                    group.Key.ParentPositionRelation,
+                    entries.Length,
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.FieldLayout, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.BodyByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PostSeparatorLeadByteHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PostSeparatorSecondByteHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.ZeroRunAfterSecondByte.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.VectorSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.ParentPositionSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.VectorToParentDistanceBucket, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.VectorToParentDistanceSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailDisposition, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailFloatSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.HeaderClassification, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.HeaderPrefixHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Text, 1)),
+                        8),
+                    sample.File,
+                    sample.Line);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticActionOrder(summary.SemanticAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ParentPositionRelation, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 25)
+    {
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate[] candidates =
+            EnumerateProtocol03NpcBaseDynamicCreationObservations(dumpSummaries)
+                .Select(TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate)
+                .Where(candidate => candidate is not null)
+                .Select(candidate => TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate(candidate!))
+                .Where(candidate => candidate is not null)
+                .Select(candidate => candidate!)
+                .ToArray();
+
+        return candidates
+            .GroupBy(candidate => new
+            {
+                candidate.SemanticAction,
+                candidate.SemanticReason,
+                candidate.TailFloatKind
+            })
+            .Select(group =>
+            {
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate[] entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate sample = entries
+                    .OrderBy(entry => entry.Source.File, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Source.Line)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary(
+                    group.Key.SemanticAction,
+                    group.Key.SemanticReason,
+                    group.Key.TailFloatKind,
+                    entries.Length,
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.FieldLayout, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.TailByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.TailFloatEncoding, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.TailDisposition, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.TailAxisPattern, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.TailPlanarAxisPattern, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.TailMagnitudeBucket, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.TailMagnitudeSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.TailFloatSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.VectorSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Probe.PreVectorBridgeHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.HeaderClassification, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.HeaderPrefixHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Source.Text, 1)),
+                        8),
+                    sample.Source.File,
+                    sample.Source.Line);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticActionOrder(summary.SemanticAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.TailFloatKind, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    public static IEnumerable<Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary> BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries(
+        IEnumerable<PacketDumpFileSummary> dumpSummaries,
+        int maxRows = 25)
+    {
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate[] candidates =
+            EnumerateProtocol03NpcBaseDynamicCreationObservations(dumpSummaries)
+                .Select(TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate)
+                .Where(candidate => candidate is not null)
+                .Select(candidate => candidate!)
+                .ToArray();
+
+        return candidates
+            .GroupBy(candidate => new
+            {
+                candidate.ControlAction,
+                candidate.ControlReason,
+                candidate.ParentPositionRelation
+            })
+            .Select(group =>
+            {
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate[] entries = group.ToArray();
+                Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate sample = entries
+                    .OrderBy(entry => entry.File, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Line)
+                    .First();
+
+                return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary(
+                    group.Key.ControlAction,
+                    group.Key.ControlReason,
+                    group.Key.ParentPositionRelation,
+                    entries.Length,
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.FieldLayout, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.BodyByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PostSeparatorLeadByteHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PostSeparatorSecondByteHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.ZeroRunAfterSecondByte.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.PreVectorBridgeHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.VectorSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.ParentPositionSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.VectorToParentDistanceBucket, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.VectorToParentDistanceSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailByteCount.ToString(CultureInfo.InvariantCulture), 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailFloatEncoding, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailDisposition, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Probe.TailFloatSample, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.HeaderClassification, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.HeaderPrefixHex, 1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        entries.Select(entry => new WeightedValue(entry.Text, 1)),
+                        8),
+                    sample.File,
+                    sample.Line);
+            })
+            .OrderBy(summary => GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionOrder(summary.ControlAction))
+            .ThenByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.ParentPositionRelation, StringComparer.OrdinalIgnoreCase)
+            .Take(maxRows);
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape DescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary summary)
+    {
+        byte[] preHeaderBytes = ParseHexBytes(summary.PreHeaderHex).ToArray();
+        byte[] headerPrefixBytes = ParseHexBytes(summary.HeaderPrefixHex).ToArray();
+        int separatorOffset = EnumerateProtocol03NpcBaseDynamicCreationBytePairOffsets(preHeaderBytes, 0, 0xcd, 0xab)
+            .DefaultIfEmpty(-1)
+            .First();
+        bool headerStartsWithSeparator = headerPrefixBytes.Length >= 2 &&
+            headerPrefixBytes[0] == 0xcd &&
+            headerPrefixBytes[1] == 0xab;
+
+        if (separatorOffset >= 0)
+        {
+            return new Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(
+                preHeaderBytes.Length,
+                separatorOffset.ToString(CultureInfo.InvariantCulture),
+                separatorOffset,
+                preHeaderBytes.Length - separatorOffset - 2,
+                FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(preHeaderBytes.Take(Math.Min(16, separatorOffset))),
+                FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(preHeaderBytes.Skip(separatorOffset).Take(Math.Min(16, preHeaderBytes.Length - separatorOffset))));
+        }
+
+        if (headerStartsWithSeparator)
+        {
+            return new Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(
+                preHeaderBytes.Length,
+                "header+0",
+                preHeaderBytes.Length,
+                headerPrefixBytes.Length - 2,
+                FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(preHeaderBytes.Take(Math.Min(16, preHeaderBytes.Length))),
+                FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(headerPrefixBytes.Take(Math.Min(16, headerPrefixBytes.Length))));
+        }
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(
+            preHeaderBytes.Length,
+            "-",
+            preHeaderBytes.Length,
+            0,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(preHeaderBytes.Take(Math.Min(16, preHeaderBytes.Length))),
+            "-");
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(IEnumerable<byte> bytes)
+    {
+        string value = FormatHeader(bytes);
+        return value.Length == 0 ? "-" : value;
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields? TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields(
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary summary)
+    {
+        byte[] preHeaderBytes = ParseHexBytes(summary.PreHeaderHex).ToArray();
+        int separatorOffset = EnumerateProtocol03NpcBaseDynamicCreationBytePairOffsets(preHeaderBytes, 0, 0xcd, 0xab)
+            .DefaultIfEmpty(-1)
+            .First();
+        if (separatorOffset < 0)
+        {
+            return null;
+        }
+
+        byte[] postSeparatorBytes = preHeaderBytes.Skip(separatorOffset + 2).ToArray();
+        string leadByteHex = postSeparatorBytes.Length > 0
+            ? postSeparatorBytes[0].ToString("x2", CultureInfo.InvariantCulture)
+            : "-";
+        string secondByteHex = postSeparatorBytes.Length > 1
+            ? postSeparatorBytes[1].ToString("x2", CultureInfo.InvariantCulture)
+            : "-";
+
+        int zeroRunAfterSecondByte = 0;
+        int scanOffset = Math.Min(2, postSeparatorBytes.Length);
+        while (scanOffset + zeroRunAfterSecondByte < postSeparatorBytes.Length &&
+            postSeparatorBytes[scanOffset + zeroRunAfterSecondByte] == 0)
+        {
+            zeroRunAfterSecondByte++;
+        }
+
+        int? firstNonZeroOffset = null;
+        for (int i = Math.Min(2, postSeparatorBytes.Length); i < postSeparatorBytes.Length; i++)
+        {
+            if (postSeparatorBytes[i] != 0)
+            {
+                firstNonZeroOffset = i;
+                break;
+            }
+        }
+
+        string firstNonZeroWindowHex = firstNonZeroOffset is null
+            ? "-"
+            : FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(
+                postSeparatorBytes.Skip(firstNonZeroOffset.Value).Take(Math.Min(8, postSeparatorBytes.Length - firstNonZeroOffset.Value)));
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields(
+            preHeaderBytes.Length,
+            separatorOffset,
+            postSeparatorBytes.Length,
+            leadByteHex,
+            secondByteHex,
+            zeroRunAfterSecondByte,
+            firstNonZeroOffset,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(postSeparatorBytes.Take(Math.Min(16, postSeparatorBytes.Length))),
+            firstNonZeroWindowHex);
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe? TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary summary)
+    {
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields? fields =
+            TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields(summary);
+        if (fields is null)
+        {
+            return null;
+        }
+
+        byte[] preHeaderBytes = ParseHexBytes(summary.PreHeaderHex).ToArray();
+        byte[] postSeparatorBytes = preHeaderBytes.Skip(fields.SeparatorOffset + 2).ToArray();
+        const int vectorOffset = 9;
+        if (postSeparatorBytes.Length < vectorOffset + 24)
+        {
+            return null;
+        }
+
+        if (!TryReadDoubleBigEndian(postSeparatorBytes, vectorOffset, out double x) ||
+            !TryReadDoubleBigEndian(postSeparatorBytes, vectorOffset + 8, out double y) ||
+            !TryReadDoubleBigEndian(postSeparatorBytes, vectorOffset + 16, out double z))
+        {
+            return null;
+        }
+
+        string disposition = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(x, y, z);
+        if (disposition.Equals("non-finite triple", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        byte[] tailBytes = postSeparatorBytes.Skip(vectorOffset + 24).ToArray();
+        int preVectorBridgeOffset = Math.Min(2 + fields.ZeroRunAfterSecondByte, vectorOffset);
+        int preVectorBridgeByteCount = Math.Max(0, vectorOffset - preVectorBridgeOffset);
+        string preVectorBridgeHex = FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(
+            postSeparatorBytes.Skip(preVectorBridgeOffset).Take(preVectorBridgeByteCount));
+        string tailFloatEncoding = DescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailFloatEncoding(tailBytes);
+        string tailFloatSample = FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailFloatSample(tailBytes);
+        string tailDisposition = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTail(tailBytes);
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(
+            fields.BodyByteCount,
+            fields.SeparatorOffset,
+            fields.PostSeparatorByteCount,
+            fields.PostSeparatorLeadByteHex,
+            fields.PostSeparatorSecondByteHex,
+            fields.ZeroRunAfterSecondByte,
+            vectorOffset,
+            preVectorBridgeOffset,
+            preVectorBridgeByteCount,
+            preVectorBridgeHex,
+            "be f64 x3",
+            disposition,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(x, y, z),
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(postSeparatorBytes.Skip(vectorOffset).Take(24)),
+            fields.FirstNonZeroWindowHex,
+            vectorOffset + 24,
+            tailBytes.Length,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(tailBytes),
+            tailFloatEncoding,
+            tailFloatSample,
+            tailDisposition);
+    }
+
+    private static string ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(double x, double y, double z)
+    {
+        if (double.IsNaN(x) ||
+            double.IsNaN(y) ||
+            double.IsNaN(z) ||
+            double.IsInfinity(x) ||
+            double.IsInfinity(y) ||
+            double.IsInfinity(z))
+        {
+            return "non-finite triple";
+        }
+
+        if (Math.Abs(x) <= 4096 &&
+            Math.Abs(y) <= 4096 &&
+            Math.Abs(z) <= 4096)
+        {
+            return "bounded finite triple";
+        }
+
+        if (Math.Abs(x) <= 1000000 &&
+            Math.Abs(y) <= 1000000 &&
+            Math.Abs(z) <= 1000000)
+        {
+            return "wide finite triple";
+        }
+
+        return "outlier finite triple";
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorDispositionOrder(string disposition)
+    {
+        return disposition switch
+        {
+            "bounded finite triple" => 0,
+            "wide finite triple" => 1,
+            "outlier finite triple" => 2,
+            _ => 3
+        };
+    }
+
+    private static string DescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailFloatEncoding(byte[] tailBytes)
+    {
+        if (tailBytes.Length == 0)
+        {
+            return "-";
+        }
+
+        int floatCount = tailBytes.Length / 4;
+        int remainder = tailBytes.Length % 4;
+        if (floatCount == 0)
+        {
+            return "raw";
+        }
+
+        return remainder == 0
+            ? $"be f32 x{floatCount.ToString(CultureInfo.InvariantCulture)}"
+            : $"be f32 x{floatCount.ToString(CultureInfo.InvariantCulture)} + {remainder.ToString(CultureInfo.InvariantCulture)} byte";
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailFloatSample(byte[] tailBytes)
+    {
+        int floatCount = tailBytes.Length / 4;
+        if (floatCount == 0)
+        {
+            return "-";
+        }
+
+        List<string> values = new();
+        for (int offset = 0; offset + 3 < tailBytes.Length; offset += 4)
+        {
+            if (!TryReadSingleBigEndian(tailBytes, offset, out float value))
+            {
+                break;
+            }
+
+            values.Add(FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbeComponent(value));
+        }
+
+        if (tailBytes.Length % 4 != 0)
+        {
+            string remainderHex = FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapePrefix(tailBytes.Skip(floatCount * 4));
+            values.Add($"+{remainderHex}");
+        }
+
+        return values.Count == 0 ? "-" : string.Join(",", values);
+    }
+
+    private static string ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTail(byte[] tailBytes)
+    {
+        if (tailBytes.Length == 0)
+        {
+            return "no post-vector tail";
+        }
+
+        int floatCount = tailBytes.Length / 4;
+        int remainder = tailBytes.Length % 4;
+        bool hasOnlyZeroRemainder = remainder == 0 || tailBytes.Skip(floatCount * 4).All(value => value == 0);
+        if (floatCount == 0)
+        {
+            return tailBytes.All(value => value == 0) ? "zero raw tail" : "raw tail";
+        }
+
+        List<float> values = new();
+        for (int offset = 0; offset + 3 < tailBytes.Length; offset += 4)
+        {
+            if (!TryReadSingleBigEndian(tailBytes, offset, out float value) ||
+                float.IsNaN(value) ||
+                float.IsInfinity(value))
+            {
+                return "non-finite be f32 tail";
+            }
+
+            values.Add(value);
+        }
+
+        bool bounded = values.All(value => Math.Abs(value) <= 1.5f);
+        if (!bounded)
+        {
+            return "outlier be f32 tail";
+        }
+
+        if (tailBytes.Length == 12)
+        {
+            return "bounded be f32 triple tail";
+        }
+
+        if (remainder > 0 && hasOnlyZeroRemainder)
+        {
+            return "bounded be f32 tail plus zero pad";
+        }
+
+        return "bounded be f32 tail";
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTailDispositionOrder(string disposition)
+    {
+        return disposition switch
+        {
+            "bounded be f32 triple tail" => 0,
+            "bounded be f32 tail plus zero pad" => 1,
+            "bounded be f32 tail" => 2,
+            "no post-vector tail" => 3,
+            "zero raw tail" => 4,
+            "raw tail" => 5,
+            "outlier be f32 tail" => 6,
+            "non-finite be f32 tail" => 7,
+            _ => 8
+        };
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary summary)
+    {
+        return FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(
+            summary.PostSeparatorLeadByteHex,
+            summary.PostSeparatorSecondByteHex,
+            summary.ZeroRunAfterSecondByte,
+            summary.PreVectorBridgeOffset,
+            summary.PreVectorBridgeByteCount,
+            summary.VectorOffset,
+            summary.VectorEncoding,
+            summary.TailOffset,
+            summary.TailByteCount,
+            summary.TailFloatEncoding);
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe probe)
+    {
+        return FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(
+            probe.PostSeparatorLeadByteHex,
+            probe.PostSeparatorSecondByteHex,
+            probe.ZeroRunAfterSecondByte,
+            probe.PreVectorBridgeOffset,
+            probe.PreVectorBridgeByteCount,
+            probe.VectorOffset,
+            probe.VectorEncoding,
+            probe.TailOffset,
+            probe.TailByteCount,
+            probe.TailFloatEncoding);
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(
+        string postSeparatorLeadByteHex,
+        string postSeparatorSecondByteHex,
+        int zeroRunAfterSecondByte,
+        int preVectorBridgeOffset,
+        int preVectorBridgeByteCount,
+        int vectorOffset,
+        string vectorEncoding,
+        int tailOffset,
+        int tailByteCount,
+        string tailFloatEncoding)
+    {
+        var fields = new List<string>
+        {
+            $"post[0]=lead {postSeparatorLeadByteHex}",
+            $"post[1]=subtype {postSeparatorSecondByteHex}"
+        };
+
+        if (zeroRunAfterSecondByte > 0)
+        {
+            fields.Add(
+                $"{FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorRange(2, zeroRunAfterSecondByte)}=00 x{zeroRunAfterSecondByte.ToString(CultureInfo.InvariantCulture)}");
+        }
+        else
+        {
+            fields.Add("no zero run after subtype");
+        }
+
+        if (preVectorBridgeByteCount > 0)
+        {
+            fields.Add(
+                $"{FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorRange(preVectorBridgeOffset, preVectorBridgeByteCount)}=bridge {preVectorBridgeByteCount.ToString(CultureInfo.InvariantCulture)} bytes");
+        }
+        else
+        {
+            fields.Add("no pre-vector bridge");
+        }
+
+        fields.Add(
+            $"{FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorRange(vectorOffset, 24)}={vectorEncoding}");
+
+        fields.Add(tailByteCount > 0
+            ? $"{FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorRange(tailOffset, tailByteCount)}={tailFloatEncoding}"
+            : "no post-vector tail");
+
+        return string.Join("; ", fields);
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorRange(int offset, int byteCount)
+    {
+        return byteCount <= 1
+            ? $"post[{offset.ToString(CultureInfo.InvariantCulture)}]"
+            : $"post[{offset.ToString(CultureInfo.InvariantCulture)}..{(offset + byteCount - 1).ToString(CultureInfo.InvariantCulture)}]";
+    }
+
+    private static (string ParserAction, string ActionReason) ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary summary)
+    {
+        return ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(
+            summary.VectorDisposition,
+            summary.TailDisposition);
+    }
+
+    private static (string ParserAction, string ActionReason) ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe probe)
+    {
+        return ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(
+            probe.VectorDisposition,
+            probe.TailDisposition);
+    }
+
+    private static (string ParserAction, string ActionReason) ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(
+        string vectorDisposition,
+        string tailDisposition)
+    {
+        if (!vectorDisposition.Equals("bounded finite triple", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                "hold non-finite vector control",
+                "pre-vector layout exists but the candidate be f64 triple is not bounded and finite");
+        }
+
+        if (tailDisposition.Equals("bounded be f32 triple tail", StringComparison.OrdinalIgnoreCase) ||
+            tailDisposition.Equals("bounded be f32 tail plus zero pad", StringComparison.OrdinalIgnoreCase) ||
+            tailDisposition.Equals("bounded be f32 tail", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                "review bounded vector-tail body",
+                "bounded be f64 vector followed by bounded be f32 tail fields");
+        }
+
+        if (tailDisposition.Equals("no post-vector tail", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                "hold no-tail control",
+                "bounded be f64 vector reaches the later header with no post-vector tail");
+        }
+
+        if (tailDisposition.Equals("zero raw tail", StringComparison.OrdinalIgnoreCase) ||
+            tailDisposition.Equals("raw tail", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                "hold raw-tail control",
+                "post-vector tail is too short or raw for the bounded be f32 tail model");
+        }
+
+        return (
+            "hold outlier-tail control",
+            "post-vector tail does not fit the bounded be f32 tail model");
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionOrder(string parserAction)
+    {
+        return parserAction switch
+        {
+            "review bounded vector-tail body" => 0,
+            "hold no-tail control" => 1,
+            "hold raw-tail control" => 2,
+            "hold outlier-tail control" => 3,
+            "hold non-finite vector control" => 4,
+            _ => 5
+        };
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate? TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate(
+        Protocol03NpcBaseDynamicCreationObservation observation)
+    {
+        if (!IsProtocol03NpcBaseDynamicCreationExtendedBoundaryEvidenceRecord(observation.Record))
+        {
+            return null;
+        }
+
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary boundarySummary =
+            CreateProtocol03NpcBaseDynamicCreationExtendedBoundarySingletonSummary(observation);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe? probe =
+            TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(boundarySummary);
+        if (probe is null ||
+            !probe.VectorDisposition.Equals("bounded finite triple", StringComparison.OrdinalIgnoreCase) ||
+            !(probe.TailDisposition.Equals("bounded be f32 triple tail", StringComparison.OrdinalIgnoreCase) ||
+                probe.TailDisposition.Equals("bounded be f32 tail plus zero pad", StringComparison.OrdinalIgnoreCase) ||
+                probe.TailDisposition.Equals("bounded be f32 tail", StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        Protocol03NpcBaseVector3d? parentPosition =
+            TryReadProtocol03CreationAttributeVector3d(observation.Record.CreationAttributes, 27);
+        Protocol03NpcBaseVector3d vector = DecodeProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(probe);
+        double? distance = parentPosition is null
+            ? null
+            : DistanceProtocol03NpcBaseVectors(vector, parentPosition.Value);
+        (string semanticAction, string semanticReason, string parentPositionRelation) =
+            ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemantic(parentPosition, distance);
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate(
+            observation.File,
+            observation.Line,
+            observation.Record.Text,
+            boundarySummary.HeaderClassification,
+            boundarySummary.HeaderPrefixHex,
+            probe,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(probe),
+            semanticAction,
+            semanticReason,
+            parentPositionRelation,
+            parentPosition is null
+                ? "-"
+                : FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(parentPosition.Value.X, parentPosition.Value.Y, parentPosition.Value.Z),
+            distance is null
+                ? "-"
+                : ClassifyProtocol03NpcBaseDynamicCreationVectorDistance(distance.Value),
+            distance is null
+                ? "-"
+                : FormatProtocol03NpcBaseDynamicCreationVectorDistance(distance.Value));
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate? TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate(
+        Protocol03NpcBaseDynamicCreationObservation observation)
+    {
+        if (!IsProtocol03NpcBaseDynamicCreationExtendedBoundaryEvidenceRecord(observation.Record))
+        {
+            return null;
+        }
+
+        Protocol03NpcBaseDynamicCreationExtendedBoundarySummary boundarySummary =
+            CreateProtocol03NpcBaseDynamicCreationExtendedBoundarySingletonSummary(observation);
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe? probe =
+            TryDescribeProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(boundarySummary);
+        if (probe is null ||
+            !probe.VectorDisposition.Equals("bounded finite triple", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        (string controlAction, string controlReason) =
+            ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutAction(probe);
+        if (!controlAction.StartsWith("hold ", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        Protocol03NpcBaseVector3d? parentPosition =
+            TryReadProtocol03CreationAttributeVector3d(observation.Record.CreationAttributes, 27);
+        Protocol03NpcBaseVector3d vector = DecodeProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(probe);
+        double? distance = parentPosition is null
+            ? null
+            : DistanceProtocol03NpcBaseVectors(vector, parentPosition.Value);
+        (_, _, string parentPositionRelation) =
+            ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemantic(parentPosition, distance);
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate(
+            observation.File,
+            observation.Line,
+            observation.Record.Text,
+            boundarySummary.HeaderClassification,
+            boundarySummary.HeaderPrefixHex,
+            probe,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayout(probe),
+            controlAction,
+            controlReason,
+            parentPositionRelation,
+            parentPosition is null
+                ? "-"
+                : FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(parentPosition.Value.X, parentPosition.Value.Y, parentPosition.Value.Z),
+            distance is null
+                ? "-"
+                : ClassifyProtocol03NpcBaseDynamicCreationVectorDistance(distance.Value),
+            distance is null
+                ? "-"
+                : FormatProtocol03NpcBaseDynamicCreationVectorDistance(distance.Value));
+    }
+
+    private static bool IsProtocol03NpcBaseDynamicCreationExtendedBoundaryEvidenceRecord(
+        Protocol03NamedProfileRecord record)
+    {
+        if (record.PostCreationObjectViewDynamicTailNextHeaderOffset is null)
+        {
+            return false;
+        }
+
+        return (!record.PostCreationObjectViewComplete &&
+                record.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase)) ||
+            record.PostCreationObjectViewParseStatus.Equals("dynamic creation bounded by reviewed post-separator body", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundarySummary CreateProtocol03NpcBaseDynamicCreationExtendedBoundarySingletonSummary(
+        Protocol03NpcBaseDynamicCreationObservation observation)
+    {
+        string preHeaderHex = FormatProtocol03NpcBaseDynamicCreationSummaryHex(observation.Record.PostCreationObjectViewDynamicTailPreHeaderHex);
+        string headerPrefixHex = FormatProtocol03NpcBaseDynamicCreationSummaryHex(observation.Record.PostCreationObjectViewDynamicTailNextHeaderHex);
+        string boundaryInterpretation = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidate(preHeaderHex, headerPrefixHex);
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundarySummary(
+            observation.Record.PostCreationObjectViewDynamicTailNextHeaderOffset!.Value,
+            preHeaderHex,
+            headerPrefixHex,
+            observation.Record.PostCreationObjectViewDynamicTailNextHeaderClassification,
+            boundaryInterpretation,
+            ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryParserAction(
+                boundaryInterpretation,
+                observation.Record.PostCreationObjectViewDynamicTailNextHeaderClassification,
+                1),
+            1,
+            new Dictionary<string, int>
+            {
+                [observation.Record.PostCreationObjectViewDynamicTailAvailableBytes.ToString(CultureInfo.InvariantCulture)] = 1
+            },
+            new Dictionary<string, int>
+            {
+                [ClassifyProtocol03NpcBaseDynamicCreationTailPrefix(observation.Record.PostCreationObjectViewDynamicTailPrefixHex)] = 1
+            },
+            new Dictionary<string, int>
+            {
+                [FormatProtocol03NpcBaseDynamicCreationParentPreValue(observation.Record)] = 1
+            },
+            new Dictionary<string, int>
+            {
+                [observation.Record.Text] = 1
+            },
+            observation.File,
+            observation.Line);
+    }
+
+    private static Protocol03NpcBaseVector3d DecodeProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe probe)
+    {
+        byte[] vectorBytes = ParseHexBytes(probe.VectorWindowHex).ToArray();
+        _ = TryReadDoubleBigEndian(vectorBytes, 0, out double x);
+        _ = TryReadDoubleBigEndian(vectorBytes, 8, out double y);
+        _ = TryReadDoubleBigEndian(vectorBytes, 16, out double z);
+        return new Protocol03NpcBaseVector3d(x, y, z);
+    }
+
+    private static Protocol03NpcBaseVector3d? TryReadProtocol03CreationAttributeVector3d(
+        IReadOnlyList<Protocol03CreationAttributeSample> attributes,
+        int index)
+    {
+        string? valueHex = attributes.FirstOrDefault(attribute => attribute.Index == index)?.ValueHex;
+        if (string.IsNullOrWhiteSpace(valueHex))
+        {
+            return null;
+        }
+
+        byte[] bytes = ParseHexBytes(valueHex).ToArray();
+        if (bytes.Length != 24 ||
+            !TryReadDoubleLittleEndian(bytes, 0, out double x) ||
+            !TryReadDoubleLittleEndian(bytes, 8, out double y) ||
+            !TryReadDoubleLittleEndian(bytes, 16, out double z))
+        {
+            return null;
+        }
+
+        return new Protocol03NpcBaseVector3d(x, y, z);
+    }
+
+    private static (string SemanticAction, string SemanticReason, string ParentPositionRelation) ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemantic(
+        Protocol03NpcBaseVector3d? parentPosition,
+        double? distance)
+    {
+        if (parentPosition is null || distance is null)
+        {
+            return (
+                "hold missing parent position evidence",
+                "reviewed vector-tail body has no decoded parent Position attribute to compare",
+                "parent Position missing");
+        }
+
+        if (distance.Value <= 0.001)
+        {
+            return (
+                "review duplicate parent position",
+                "reviewed be f64 vector exact-matches decoded parent Position",
+                "exact parent Position match");
+        }
+
+        if (distance.Value <= 10)
+        {
+            return (
+                "review near parent position",
+                "reviewed be f64 vector is close to decoded parent Position but not an exact duplicate",
+                "near parent Position");
+        }
+
+        return (
+            "treat as non-position vector body field",
+            "reviewed be f64 vector is bounded but does not match decoded parent Position",
+            "different from parent Position");
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticActionOrder(string semanticAction)
+    {
+        return semanticAction switch
+        {
+            "treat as non-position vector body field" => 0,
+            "review near parent position" => 1,
+            "review duplicate parent position" => 2,
+            "hold missing parent position evidence" => 3,
+            _ => 4
+        };
+    }
+
+    private static Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate? TryCreateProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate source)
+    {
+        float[] values = DecodeProtocol03NpcBaseDynamicCreationExtendedBoundaryTailFloats(source.Probe.TailHex);
+        if (values.Length == 0)
+        {
+            return null;
+        }
+
+        int remainder = source.Probe.TailByteCount % 4;
+        bool hasZeroPad = remainder > 0 &&
+            ParseHexBytes(source.Probe.TailHex)
+                .Skip(values.Length * 4)
+                .All(value => value == 0);
+        string tailFloatKind = FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailFloatKind(values.Length, hasZeroPad);
+        double magnitude = Math.Sqrt(values.Take(Math.Min(3, values.Length)).Sum(value => value * value));
+        (string semanticAction, string semanticReason) =
+            ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemantic(source.Probe, values, hasZeroPad, magnitude);
+
+        return new Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate(
+            source,
+            semanticAction,
+            semanticReason,
+            tailFloatKind,
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailAxisPattern(values),
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailPlanarAxisPattern(values),
+            ClassifyProtocol03NpcBaseDynamicCreationVectorDistance(magnitude),
+            FormatProtocol03NpcBaseDynamicCreationVectorDistance(magnitude));
+    }
+
+    private static float[] DecodeProtocol03NpcBaseDynamicCreationExtendedBoundaryTailFloats(string tailHex)
+    {
+        byte[] bytes = ParseHexBytes(tailHex).ToArray();
+        List<float> values = new();
+        for (int offset = 0; offset + 3 < bytes.Length; offset += 4)
+        {
+            if (!TryReadSingleBigEndian(bytes, offset, out float value) ||
+                float.IsNaN(value) ||
+                float.IsInfinity(value))
+            {
+                break;
+            }
+
+            values.Add(value);
+        }
+
+        return values.ToArray();
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailFloatKind(int floatCount, bool hasZeroPad)
+    {
+        return hasZeroPad
+            ? $"be f32 x{floatCount.ToString(CultureInfo.InvariantCulture)} plus zero pad"
+            : $"be f32 x{floatCount.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static (string SemanticAction, string SemanticReason) ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemantic(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe probe,
+        IReadOnlyList<float> values,
+        bool hasZeroPad,
+        double magnitude)
+    {
+        bool bounded = values.All(value => Math.Abs(value) <= 1.5f);
+        bool middleAxisZero = values.Count >= 3 && IsApproximatelyZero(values[1]);
+        if (probe.TailDisposition.Equals("bounded be f32 triple tail", StringComparison.OrdinalIgnoreCase) &&
+            values.Count == 3 &&
+            bounded &&
+            middleAxisZero &&
+            magnitude <= 1.25)
+        {
+            return (
+                "review planar direction-like f32 tail",
+                "bounded f32 triple has a zero middle component and sub-unit-scale magnitude");
+        }
+
+        if (probe.TailDisposition.Equals("bounded be f32 tail plus zero pad", StringComparison.OrdinalIgnoreCase) &&
+            values.Count == 3 &&
+            bounded &&
+            middleAxisZero &&
+            hasZeroPad)
+        {
+            return (
+                "review padded planar f32 tail",
+                "bounded f32 triple has a zero middle component plus a zero pad byte");
+        }
+
+        if (probe.TailDisposition.Equals("bounded be f32 tail plus zero pad", StringComparison.OrdinalIgnoreCase) &&
+            values.Count == 4 &&
+            bounded &&
+            hasZeroPad)
+        {
+            return (
+                "review padded bounded f32 quad tail",
+                "bounded four-float tail carries an additional bounded component plus a zero pad byte");
+        }
+
+        return (
+            "hold tail semantic control",
+            "bounded tail does not fit the repeated planar triple or padded quad shapes");
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticActionOrder(string semanticAction)
+    {
+        return semanticAction switch
+        {
+            "review planar direction-like f32 tail" => 0,
+            "review padded planar f32 tail" => 1,
+            "review padded bounded f32 quad tail" => 2,
+            "hold tail semantic control" => 3,
+            _ => 4
+        };
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailAxisPattern(IReadOnlyList<float> values)
+    {
+        string[] labels = { "x", "y", "z", "w" };
+        return string.Join(
+            "/",
+            values.Take(labels.Length).Select((value, index) => $"{labels[index]}{FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailAxisSign(value)}"));
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailPlanarAxisPattern(IReadOnlyList<float> values)
+    {
+        if (values.Count < 3)
+        {
+            return "fewer than three axes";
+        }
+
+        List<string> zeroAxes = new();
+        if (IsApproximatelyZero(values[0]))
+        {
+            zeroAxes.Add("x0");
+        }
+
+        if (IsApproximatelyZero(values[1]))
+        {
+            zeroAxes.Add("y0");
+        }
+
+        if (IsApproximatelyZero(values[2]))
+        {
+            zeroAxes.Add("z0");
+        }
+
+        return zeroAxes.Count == 0 ? "no planar zero axis" : string.Join("/", zeroAxes);
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryTailAxisSign(float value)
+    {
+        if (IsApproximatelyZero(value))
+        {
+            return "0";
+        }
+
+        return value > 0 ? "+" : "-";
+    }
+
+    private static bool IsApproximatelyZero(float value)
+    {
+        return Math.Abs(value) < 0.0005f;
+    }
+
+    private static string ClassifyProtocol03NpcBaseDynamicCreationVectorDistance(double distance)
+    {
+        return distance switch
+        {
+            <= 0.001 => "exact",
+            <= 10 => "<=10",
+            <= 100 => "<=100",
+            <= 1000 => "<=1k",
+            <= 2500 => "<=2.5k",
+            <= 5000 => "<=5k",
+            _ => ">5k"
+        };
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationVectorDistance(double distance)
+    {
+        return distance.ToString("0.###", CultureInfo.InvariantCulture);
+    }
+
+    private static double DistanceProtocol03NpcBaseVectors(Protocol03NpcBaseVector3d left, Protocol03NpcBaseVector3d right)
+    {
+        double x = left.X - right.X;
+        double y = left.Y - right.Y;
+        double z = left.Z - right.Z;
+        return Math.Sqrt((x * x) + (y * y) + (z * z));
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(double x, double y, double z)
+    {
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "{0},{1},{2}",
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbeComponent(x),
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbeComponent(y),
+            FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbeComponent(z));
+    }
+
+    private static string FormatProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbeComponent(double value)
+    {
+        if (Math.Abs(value) < 0.0005)
+        {
+            value = 0;
+        }
+
+        double absolute = Math.Abs(value);
+        return absolute is > 0 and < 0.001 || absolute >= 1000000
+            ? value.ToString("0.###e+0", CultureInfo.InvariantCulture)
+            : value.ToString("0.###", CultureInfo.InvariantCulture);
     }
 
     private static string ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryCandidate(
@@ -5975,6 +14224,98 @@ public static partial class PacketResearcher
         return candidateCount > 1
             ? "evidence only; repeated later lead"
             : "evidence only; single-sample lead";
+    }
+
+    private static int GetProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionOrder(string parserAction)
+    {
+        return parserAction switch
+        {
+            "review for parser promotion" => 0,
+            "evidence only; repeated later lead" => 1,
+            "evidence only; post-separator lead" => 2,
+            "evidence only; single-sample lead" => 3,
+            "reject as separator collision" => 4,
+            _ => 5
+        };
+    }
+
+    public static IEnumerable<Protocol03SelectorFfRepeatListDecodedRow> BuildProtocol03SelectorFfRepeatListDecodedRows(
+        IEnumerable<Protocol03SelectorFfRepeatListCandidate> candidates)
+    {
+        return candidates
+            .Where(candidate =>
+                candidate.RepeatStride == 18 &&
+                candidate.RepeatRecordCount == 2 &&
+                candidate.ContinuationOffset == 36 &&
+                candidate.ContinuationOffset == candidate.RepeatStride * candidate.RepeatRecordCount &&
+                candidate.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(candidate => candidate.File, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(candidate => candidate.Line)
+            .ThenBy(candidate => candidate.SelectorOffset)
+            .ThenBy(candidate => candidate.PositionOffset)
+            .Select(candidate =>
+            {
+                int continuationMarkerOffset = CountProtocol03SelectorFfRepeatListHexBytes(candidate.ContinuationPrefixBeforeMarkerHex);
+                return new Protocol03SelectorFfRepeatListDecodedRow(
+                    ClassifyProtocol03SelectorFfRepeatListDecodedRowParserAction(candidate, continuationMarkerOffset),
+                    ClassifyProtocol03SelectorFfRepeatListContinuationMarkerRole(candidate, continuationMarkerOffset),
+                    candidate.File,
+                    candidate.Line,
+                    candidate.Direction,
+                    candidate.PacketOffset,
+                    candidate.ViewId,
+                    candidate.UpdateCount,
+                    candidate.FirstSelector,
+                    candidate.Classification,
+                    candidate.SegmentClassification,
+                    candidate.SelectorOffset,
+                    candidate.PayloadBytes,
+                    candidate.PositionOffset,
+                    candidate.PositionHex,
+                    candidate.X,
+                    candidate.Y,
+                    candidate.Z,
+                    candidate.RepeatStride,
+                    candidate.RepeatRecordCount,
+                    candidate.ContinuationOffset,
+                    candidate.ContinuationBytes,
+                    candidate.Entry1LeadHex,
+                    candidate.Entry1ZeroRun,
+                    candidate.Entry1FieldOffset,
+                    candidate.Entry1FieldHex,
+                    candidate.Entry1FieldValue,
+                    candidate.Entry1FieldLayoutKind,
+                    candidate.Entry1SecondaryFieldOffset,
+                    candidate.Entry1SecondaryFieldHex,
+                    candidate.Entry1SecondaryFieldValue,
+                    candidate.Entry1EffectiveFieldOffset,
+                    candidate.Entry1EffectiveFieldHex,
+                    candidate.Entry1EffectiveFieldValue,
+                    candidate.Entry1EffectiveFieldSource,
+                    candidate.Entry2LeadHex,
+                    candidate.Entry2ZeroRun,
+                    candidate.Entry2FieldOffset,
+                    candidate.Entry2FieldHex,
+                    candidate.Entry2FieldValue,
+                    candidate.Entry2FieldLayoutKind,
+                    candidate.Entry2SecondaryFieldOffset,
+                    candidate.Entry2SecondaryFieldHex,
+                    candidate.Entry2SecondaryFieldValue,
+                    candidate.Entry2EffectiveFieldOffset,
+                    candidate.Entry2EffectiveFieldHex,
+                    candidate.Entry2EffectiveFieldValue,
+                    candidate.Entry2EffectiveFieldSource,
+                    candidate.ContinuationPrefixHex,
+                    candidate.ContinuationPrefixBeforeMarkerHex,
+                    continuationMarkerOffset,
+                    candidate.ContinuationMarkerHex,
+                    candidate.PostMarkerLeadHex,
+                    candidate.PostMarkerZeroRun,
+                    candidate.PostMarkerFirstFieldOffset,
+                    candidate.PostMarkerFirstFieldHex,
+                    candidate.PostMarkerFirstFieldValue,
+                    candidate.PostMarkerFieldLayoutKind);
+            });
     }
 
     public static IEnumerable<Protocol03SelectorFfRepeatListFieldSummary> BuildProtocol03SelectorFfRepeatListFieldSummaries(
@@ -6089,6 +14430,46 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.ZeroRun)
             .ThenBy(summary => summary.FieldOffset ?? int.MaxValue)
             .ThenBy(summary => summary.FieldHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static int CountProtocol03SelectorFfRepeatListHexBytes(string hex)
+    {
+        return string.IsNullOrWhiteSpace(hex)
+            ? 0
+            : ParseHexBytes(hex).Count();
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListDecodedRowParserAction(
+        Protocol03SelectorFfRepeatListCandidate candidate,
+        int continuationMarkerOffset)
+    {
+        if (candidate.RepeatStride == 18 &&
+            candidate.RepeatRecordCount == 2 &&
+            candidate.ContinuationOffset == 36 &&
+            continuationMarkerOffset == 3 &&
+            candidate.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+        {
+            return "decode two-entry stride-18 list before continuation marker";
+        }
+
+        return "review selector-ff repeat-list candidate";
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListContinuationMarkerRole(
+        Protocol03SelectorFfRepeatListCandidate candidate,
+        int continuationMarkerOffset)
+    {
+        if (!candidate.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review non-ff continuation marker byte";
+        }
+
+        if (continuationMarkerOffset == 3)
+        {
+            return "continuation-local +3 marker/flag candidate";
+        }
+
+        return $"continuation-local +{continuationMarkerOffset.ToString(CultureInfo.InvariantCulture)} marker/flag candidate";
     }
 
     public static IEnumerable<Protocol03SelectorFfRepeatListShapeSummary> BuildProtocol03SelectorFfRepeatListShapeSummaries(
@@ -6383,6 +14764,94 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.PostMarkerFirstFieldHex, StringComparer.OrdinalIgnoreCase);
     }
 
+    public static IEnumerable<Protocol03SelectorFfRepeatListEntryPairSummary> BuildProtocol03SelectorFfRepeatListEntryPairSummaries(
+        IEnumerable<Protocol03SelectorFfRepeatListCandidate> candidates,
+        IReadOnlyList<AbilityDefinition>? abilities = null,
+        IReadOnlyList<ItemCommandEntry>? items = null,
+        IReadOnlyList<GameObjectEntry>? gameObjects = null,
+        IReadOnlyList<AnimationDefinition>? animations = null)
+    {
+        IReadOnlyDictionary<int, IReadOnlyList<string>> resourceReferencesByValue = BuildProtocol03SelectorFfRepeatListFieldResourceReferenceIndex(
+            abilities ?? Array.Empty<AbilityDefinition>(),
+            items ?? Array.Empty<ItemCommandEntry>(),
+            gameObjects ?? Array.Empty<GameObjectEntry>(),
+            animations ?? Array.Empty<AnimationDefinition>());
+
+        return candidates
+            .Where(candidate =>
+                candidate.RepeatRecordCount == 2 &&
+                candidate.ContinuationOffset == candidate.RepeatStride * 2 &&
+                candidate.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(candidate => new
+            {
+                candidate.RepeatStride,
+                candidate.RepeatRecordCount,
+                candidate.ContinuationOffset,
+                candidate.ContinuationPrefixHex,
+                candidate.Entry1FieldHex,
+                candidate.Entry1FieldValue,
+                candidate.Entry2EffectiveFieldHex,
+                candidate.Entry2EffectiveFieldValue
+            })
+            .Select(group =>
+            {
+                Protocol03SelectorFfRepeatListCandidate sample = group.First();
+                return new Protocol03SelectorFfRepeatListEntryPairSummary(
+                    group.Key.RepeatStride,
+                    group.Key.RepeatRecordCount,
+                    group.Key.ContinuationOffset,
+                    group.Key.ContinuationPrefixHex,
+                    group.Key.Entry1FieldHex,
+                    group.Key.Entry1FieldValue,
+                    group.Key.Entry2EffectiveFieldHex,
+                    group.Key.Entry2EffectiveFieldValue,
+                    group.Count(),
+                    group
+                        .Select(candidate => FormatProtocol03SelectorFfRepeatListFieldLabel(candidate.PostMarkerFirstFieldHex, candidate.PostMarkerFirstFieldValue))
+                        .Where(value => !string.IsNullOrWhiteSpace(value))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Count(),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.Entry2EffectiveFieldSource), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.Entry1FieldLayoutKind), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.Entry2FieldLayoutKind), 8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        group.Select(candidate => new WeightedValue(
+                            FormatProtocol03SelectorFfRepeatListFieldLabel(candidate.PostMarkerFirstFieldHex, candidate.PostMarkerFirstFieldValue),
+                            1)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.PostMarkerFieldLayoutKind), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.UpdateCount.ToString(CultureInfo.InvariantCulture)), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.FirstSelector), 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => candidate.SegmentClassification), 8),
+                    CountProtocol03SelectorFfRepeatListResourceReferences(group, candidate => candidate.Entry1FieldValue, resourceReferencesByValue, 8),
+                    CountProtocol03SelectorFfRepeatListResourceReferences(group, candidate => candidate.Entry2EffectiveFieldValue, resourceReferencesByValue, 8),
+                    CountProtocol03SelectorFfRepeatListResourceReferences(group, candidate => candidate.PostMarkerFirstFieldValue, resourceReferencesByValue, 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(group.Select(candidate => ClassifyManageBonusCaptureScope(candidate.File)), 8),
+                    group
+                        .GroupBy(candidate => new { candidate.File, candidate.Line, candidate.PositionOffset })
+                        .Select(positionGroup => positionGroup.First())
+                        .OrderBy(candidate => candidate.File, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(candidate => candidate.Line)
+                        .ThenBy(candidate => candidate.PositionOffset)
+                        .Take(5)
+                        .Select(candidate => new Protocol03SelectorFfRepeatListShapePositionSample(
+                            candidate.File,
+                            candidate.Line,
+                            candidate.PositionOffset,
+                            candidate.PositionHex,
+                            candidate.X,
+                            candidate.Y,
+                            candidate.Z))
+                        .ToArray(),
+                    sample.File,
+                    sample.Line);
+            })
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1FieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2EffectiveFieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationPrefixHex, StringComparer.OrdinalIgnoreCase);
+    }
+
     public static IEnumerable<Protocol03SelectorFfRepeatListContinuationMarkerSummary> BuildProtocol03SelectorFfRepeatListContinuationMarkerSummaries(
         IEnumerable<Protocol03SelectorFfRepeatListCandidate> candidates,
         IEnumerable<PacketDumpFileSummary>? dumpSummaries = null,
@@ -6525,6 +14994,212 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.PostMarkerZeroRun)
             .ThenBy(summary => summary.PostMarkerFirstFieldOffset ?? int.MaxValue)
             .ThenBy(summary => summary.PostMarkerFirstFieldHex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03SelectorFfRepeatListContinuationParserActionSummary> BuildProtocol03SelectorFfRepeatListContinuationParserActionSummaries(
+        IEnumerable<Protocol03SelectorFfRepeatListContinuationMarkerSummary> markerSummaries)
+    {
+        return markerSummaries
+            .GroupBy(summary => new
+            {
+                ParserAction = ClassifyProtocol03SelectorFfRepeatListContinuationParserAction(summary),
+                ActionReason = ClassifyProtocol03SelectorFfRepeatListContinuationParserActionReason(summary)
+            })
+            .Select(group =>
+            {
+                Protocol03SelectorFfRepeatListContinuationMarkerSummary[] summaries = group.ToArray();
+                Protocol03SelectorFfRepeatListContinuationMarkerSummary sample = summaries[0];
+
+                return new Protocol03SelectorFfRepeatListContinuationParserActionSummary(
+                    group.Key.ParserAction,
+                    group.Key.ActionReason,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.CandidateCount),
+                    summaries.Sum(summary => summary.ShapeCount),
+                    summaries.Sum(summary => summary.CandidatesWithHeaderWindows),
+                    summaries.Sum(summary => summary.CandidatesWithVendorHeaderWindows),
+                    summaries.Sum(summary => summary.HeaderWindowCount),
+                    summaries.Sum(summary => summary.VendorHeaderWindowCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ContinuationPrefixBeforeMarkerHex, summary.CandidateCount)),
+                        12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ContinuationPrefixes), 12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.PostMarkerFieldLayoutKind, summary.CandidateCount)),
+                        12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(
+                            FormatProtocol03SelectorFfRepeatListFieldLabel(summary.PostMarkerFirstFieldHex, summary.PostMarkerFirstFieldValue),
+                            summary.CandidateCount)),
+                        12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry1Fields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2PrimaryFields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2SecondaryFields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2EffectiveFields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2EffectiveSources), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderRegions), 12),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.SelectMany(summary => summary.VendorHeaderWindows.Select(window => new WeightedValue(
+                            $"{window.Name} [{window.EncodedHeader} {window.Direction}]",
+                            window.Count))),
+                        12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.FirstSelectors), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.SegmentClassifications), 12),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static IEnumerable<Protocol03SelectorFfRepeatListParserCoverageSummary> BuildProtocol03SelectorFfRepeatListParserCoverageSummaries(
+        IEnumerable<Protocol03SelectorFfRepeatListContinuationParserActionSummary> actionSummaries)
+    {
+        return actionSummaries
+            .GroupBy(summary => new
+            {
+                ParserCase = FormatProtocol03SelectorFfRepeatListParserCoverageCase(summary),
+                CoverageDisposition = ClassifyProtocol03SelectorFfRepeatListParserCoverageDisposition(summary)
+            })
+            .Select(group =>
+            {
+                Protocol03SelectorFfRepeatListContinuationParserActionSummary[] summaries = group.ToArray();
+                Protocol03SelectorFfRepeatListContinuationParserActionSummary sample = summaries
+                    .OrderByDescending(summary => summary.CandidateCount)
+                    .ThenByDescending(summary => summary.HeaderWindowCount)
+                    .ThenBy(summary => summary.SampleFile, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(summary => summary.SampleLine)
+                    .First();
+
+                return new Protocol03SelectorFfRepeatListParserCoverageSummary(
+                    group.Key.ParserCase,
+                    group.Key.CoverageDisposition,
+                    summaries.Length,
+                    summaries.Sum(summary => summary.MarkerRowCount),
+                    summaries.Sum(summary => summary.CandidateCount),
+                    summaries.Sum(summary => summary.ShapeCount),
+                    summaries.Sum(summary => summary.CandidatesWithHeaderWindows),
+                    summaries.Sum(summary => summary.CandidatesWithVendorHeaderWindows),
+                    summaries.Sum(summary => summary.HeaderWindowCount),
+                    summaries.Sum(summary => summary.VendorHeaderWindowCount),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ParserAction, summary.MarkerRowCount)),
+                        8),
+                    CountProtocol03SelectorFfRepeatListWeightedValues(
+                        summaries.Select(summary => new WeightedValue(summary.ActionReason, summary.MarkerRowCount)),
+                        8),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ContinuationPrefixBeforeMarkers), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.ContinuationPrefixes), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.PostMarkerLayouts), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.PostMarkerFields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry1Fields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2EffectiveFields), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.Entry2EffectiveSources), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.HeaderRegions), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.VendorHeaderWindows), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.FirstSelectors), 12),
+                    MergeProtocol03SelectorFfRepeatListCountDictionaries(summaries.Select(summary => summary.SegmentClassifications), 12),
+                    sample.SampleFile,
+                    sample.SampleLine);
+            })
+            .OrderByDescending(summary => summary.CoveredCandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.CoverageDisposition, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListContinuationParserAction(
+        Protocol03SelectorFfRepeatListContinuationMarkerSummary summary)
+    {
+        if (!summary.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review non-ff continuation marker byte";
+        }
+
+        if (summary.PostMarkerFirstFieldOffset is null)
+        {
+            return "model +3 ff as continuation marker; review missing post-marker field";
+        }
+
+        if (summary.VendorHeaderWindowCount > 0)
+        {
+            return "model +3 ff as continuation marker; keep vendor windows as collision controls";
+        }
+
+        if (summary.HeaderWindowCount > 0)
+        {
+            return "model +3 ff as continuation marker; keep header windows as byte-window controls";
+        }
+
+        return "model +3 ff as continuation marker before post-marker field";
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListContinuationParserActionReason(
+        Protocol03SelectorFfRepeatListContinuationMarkerSummary summary)
+    {
+        if (!summary.ContinuationMarkerHex.Equals("ff", StringComparison.OrdinalIgnoreCase))
+        {
+            return "continuation marker byte is not the stable ff value";
+        }
+
+        if (summary.PostMarkerFirstFieldOffset is null)
+        {
+            return "marker is stable but no post-marker u16 was extracted";
+        }
+
+        if (summary.VendorHeaderWindowCount > 0)
+        {
+            return "stable marker plus vendor-looking byte windows that prior boundary work treats as collision controls";
+        }
+
+        if (summary.HeaderWindowCount > 0)
+        {
+            return "stable marker plus known-header byte windows without vendor promotion evidence";
+        }
+
+        return "stable marker and post-marker field with no embedded header-window evidence";
+    }
+
+    private static string FormatProtocol03SelectorFfRepeatListParserCoverageCase(
+        Protocol03SelectorFfRepeatListContinuationParserActionSummary summary)
+    {
+        if (summary.ParserAction.Contains("non-ff continuation marker", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review selector-ff two-entry continuation marker byte";
+        }
+
+        if (summary.ParserAction.Contains("missing post-marker field", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review selector-ff two-entry continuation post-marker field";
+        }
+
+        return "decode selector-ff two-entry repeat list plus +3 ff continuation marker";
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListParserCoverageDisposition(
+        Protocol03SelectorFfRepeatListContinuationParserActionSummary summary)
+    {
+        if (summary.ParserAction.Contains("non-ff continuation marker", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review non-ff continuation marker";
+        }
+
+        if (summary.ParserAction.Contains("missing post-marker field", StringComparison.OrdinalIgnoreCase))
+        {
+            return "review missing post-marker field";
+        }
+
+        if (summary.VendorHeaderWindowCount > 0)
+        {
+            return "covered with vendor-window collision controls";
+        }
+
+        if (summary.HeaderWindowCount > 0)
+        {
+            return "covered with known-header byte-window controls";
+        }
+
+        return "covered ordinary marker/post-marker rows";
     }
 
     public static IEnumerable<Protocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummary> BuildProtocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries(
@@ -7996,6 +16671,165 @@ public static partial class PacketResearcher
             .ThenBy(summary => summary.ParserPriority, StringComparer.OrdinalIgnoreCase);
     }
 
+    public static IEnumerable<Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow> BuildProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(
+        IEnumerable<Protocol03SelectorFfRepeatListVendorBoundaryTargetSummary> targetSummaries,
+        IEnumerable<Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary>? bodyWindowProbeSummaries = null)
+    {
+        Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary[] probes = bodyWindowProbeSummaries?.ToArray() ??
+            Array.Empty<Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary>();
+
+        return targetSummaries
+            .SelectMany(target => target.TargetInterpretations
+                .Where(entry => entry.Value > 0)
+                .Select(entry =>
+                {
+                    string interpretation = entry.Key;
+                    string parserPriority = GetProtocol03SelectorFfRepeatListVendorBoundaryParserPriority(interpretation);
+                    bool isModeledFieldOverlap = IsProtocol03SelectorFfRepeatListModeledFieldOverlap(interpretation);
+                    Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary[] matchingProbes = probes
+                        .Where(probe => MatchesProtocol03SelectorFfRepeatListVendorBoundaryDecisionProbe(target, interpretation, probe))
+                        .ToArray();
+                    string evidenceDisposition = ClassifyProtocol03SelectorFfRepeatListVendorBoundaryDecisionEvidence(
+                        isModeledFieldOverlap,
+                        matchingProbes);
+                    (string Decision, string Reason) parserDecision =
+                        GetProtocol03SelectorFfRepeatListVendorBoundaryDecision(evidenceDisposition);
+
+                    return new Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow(
+                        parserDecision.Decision,
+                        parserDecision.Reason,
+                        evidenceDisposition,
+                        parserPriority,
+                        isModeledFieldOverlap,
+                        interpretation,
+                        target.Name,
+                        target.Direction,
+                        target.EncodedHeader,
+                        target.Protocols,
+                        target.HeaderRegion,
+                        target.HeaderPayloadOffset,
+                        target.HeaderObjectOffset,
+                        entry.Value,
+                        entry.Value,
+                        target.ShapeCount,
+                        target.TargetLocalOffsets,
+                        FilterProtocol03SelectorFfRepeatListTargetBodySpanBytes(target.TargetBodySpanBytes, interpretation),
+                        target.TargetBodyHexes,
+                        target.PositionOffsets,
+                        target.WindowHexes,
+                        target.ContinuationPrefixes,
+                        CountProtocol03SelectorFfRepeatListWeightedValues(
+                            matchingProbes.SelectMany(probe => probe.WindowHalfU16ResourceReferences
+                                .Where(reference => reference.Key.StartsWith("low ", StringComparison.OrdinalIgnoreCase))
+                                .Select(reference => new WeightedValue(reference.Key, reference.Value))),
+                            8),
+                        CountProtocol03SelectorFfRepeatListWeightedValues(
+                            matchingProbes.SelectMany(probe => probe.WindowHalfU16ResourceReferences
+                                .Where(reference => reference.Key.StartsWith("high ", StringComparison.OrdinalIgnoreCase))
+                                .Select(reference => new WeightedValue(reference.Key, reference.Value))),
+                            8),
+                        CountProtocol03SelectorFfRepeatListWeightedValues(
+                            matchingProbes.SelectMany(probe => probe.NearbyU16LengthMatches
+                                .Select(match => new WeightedValue(match.Key, match.Value))),
+                            8),
+                        target.Entry1Fields,
+                        target.Entry1ResourceReferences,
+                        target.Entry2EffectiveFields,
+                        target.Entry2EffectiveResourceReferences,
+                        target.PostMarkerFields,
+                        target.PostMarkerResourceReferences,
+                        target.FirstSelectors,
+                        target.SampleFile,
+                        target.SampleLine);
+                }))
+            .OrderBy(row => GetProtocol03SelectorFfRepeatListVendorBoundaryDecisionOrder(row.ParserDecision))
+            .ThenBy(row => row.IsModeledFieldOverlap)
+            .ThenByDescending(row => row.HeaderWindowCount)
+            .ThenBy(row => row.ParserPriority, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.HeaderPayloadOffset)
+            .ThenBy(row => row.HeaderObjectOffset);
+    }
+
+    private static bool MatchesProtocol03SelectorFfRepeatListVendorBoundaryDecisionProbe(
+        Protocol03SelectorFfRepeatListVendorBoundaryTargetSummary target,
+        string interpretation,
+        Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary probe)
+    {
+        return target.Name.Equals(probe.Name, StringComparison.OrdinalIgnoreCase) &&
+            target.Direction.Equals(probe.Direction, StringComparison.OrdinalIgnoreCase) &&
+            target.EncodedHeader.Equals(probe.EncodedHeader, StringComparison.OrdinalIgnoreCase) &&
+            interpretation.Equals(probe.TargetInterpretation, StringComparison.OrdinalIgnoreCase) &&
+            target.HeaderRegion.Equals(probe.BodyRegion, StringComparison.OrdinalIgnoreCase) &&
+            target.TargetLocalOffsets.ContainsKey(probe.TargetLocalOffset);
+    }
+
+    private static string ClassifyProtocol03SelectorFfRepeatListVendorBoundaryDecisionEvidence(
+        bool isModeledFieldOverlap,
+        IReadOnlyList<Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummary> matchingProbes)
+    {
+        if (isModeledFieldOverlap)
+        {
+            return "modeled field overlap";
+        }
+
+        if (matchingProbes.Count == 0)
+        {
+            return "unprobed boundary target";
+        }
+
+        string strongestProbeEvidence = matchingProbes
+            .Select(ClassifyProtocol03SelectorFfRepeatListVendorBodyWindowEvidence)
+            .OrderBy(GetProtocol03SelectorFfRepeatListVendorBodyWindowEvidenceOrder)
+            .First();
+
+        return strongestProbeEvidence;
+    }
+
+    private static (string Decision, string Reason) GetProtocol03SelectorFfRepeatListVendorBoundaryDecision(
+        string evidenceDisposition)
+    {
+        return evidenceDisposition switch
+        {
+            "modeled field overlap" => (
+                "suppress nested vendor RPC as modeled selector-ff field overlap",
+                "header-looking bytes land inside a modeled repeat-list, terminal-tail, or position-overlap field"),
+            "nearby length-match candidate" => (
+                "test selector-ff body-length boundary",
+                "nearby u16 matches body span or offset evidence"),
+            "low-half item/gameobject collision control" => (
+                "suppress nested vendor RPC as packed resource-field collision",
+                "low half of the four-byte window resolves to item/gameobject resources"),
+            "low-half resource collision control" => (
+                "suppress nested vendor RPC unless corroborated by capture context",
+                "low half resolves only to lower-confidence resource labels"),
+            "high-half header-byte collision control" => (
+                "suppress nested vendor RPC as header-byte collision",
+                "only the header-looking high half resolves, usually to animation ids"),
+            "unprobed boundary target" => (
+                "queue selector-ff boundary probe",
+                "target has no matching body-window probe yet"),
+            _ => (
+                "queue selector-ff body-length investigation",
+                "no length-match or resource-collision control explains the row")
+        };
+    }
+
+    private static int GetProtocol03SelectorFfRepeatListVendorBoundaryDecisionOrder(string parserDecision)
+    {
+        return parserDecision switch
+        {
+            "test selector-ff body-length boundary" => 0,
+            "queue selector-ff body-length investigation" => 1,
+            "queue selector-ff boundary probe" => 2,
+            "suppress nested vendor RPC as packed resource-field collision" => 3,
+            "suppress nested vendor RPC unless corroborated by capture context" => 4,
+            "suppress nested vendor RPC as header-byte collision" => 5,
+            "suppress nested vendor RPC as modeled selector-ff field overlap" => 6,
+            _ => 7
+        };
+    }
+
     private static string CreateProtocol03SelectorFfRepeatListVendorBoundaryTargetKey(Protocol03SelectorFfRepeatListVendorBoundaryTargetSummary target)
     {
         return string.Join(
@@ -9288,6 +18122,796 @@ public static partial class PacketResearcher
             .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
             .Take(maxValues)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string ReadManageBonusPayloadWord(string payloadHex, int byteOffset)
+    {
+        byte[] bytes = ParseHexBytes(payloadHex).ToArray();
+        return bytes.Length < byteOffset + 2
+            ? string.Empty
+            : FormatHeader(bytes.Skip(byteOffset).Take(2));
+    }
+
+    private static int ReadManageBonusPayloadWordValue(string payloadHex, int byteOffset)
+    {
+        byte[] bytes = ParseHexBytes(payloadHex).ToArray();
+        return ReadUInt16LittleEndian(bytes, byteOffset);
+    }
+
+    private static (string On, string Off)? SplitManageBonusTradeStatePair(string value)
+    {
+        string[] parts = value.Split(" -> ", StringSplitOptions.None);
+        return parts.Length == 2
+            ? (parts[0], parts[1])
+            : null;
+    }
+
+    private static IReadOnlyList<ManageBonusTradeStateCompanionMapFieldSummary> BuildManageBonusTradeStateCompanionMapFieldSummaries(
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionObservation> pairObservations)
+    {
+        return pairObservations
+            .Where(observation =>
+                observation.OnCompanionByte11Value is not null &&
+                observation.OffCompanionByte11Value is not null)
+            .GroupBy(observation => new
+            {
+                OnCompanionByte11Value = observation.OnCompanionByte11Value!,
+                OffCompanionByte11Value = observation.OffCompanionByte11Value!
+            })
+            .Select(group =>
+            {
+                ManageBonusTradeStateByte15TransitionObservation[] observations = group.ToArray();
+                string[] companionField0Pairs = observations
+                    .Where(observation => observation.OnCompanionField0 is not null && observation.OffCompanionField0 is not null)
+                    .Select(observation => $"{observation.OnCompanionField0} -> {observation.OffCompanionField0}")
+                    .ToArray();
+                string[] companionField1Pairs = observations
+                    .Where(observation => observation.OnCompanionField1 is not null && observation.OffCompanionField1 is not null)
+                    .Select(observation => $"{observation.OnCompanionField1} -> {observation.OffCompanionField1}")
+                    .ToArray();
+                string[] onCompanionField1Values = observations
+                    .Select(observation => observation.OnCompanionField1)
+                    .Where(value => value is not null)
+                    .Select(value => value!)
+                    .ToArray();
+                string[] offCompanionField1Values = observations
+                    .Select(observation => observation.OffCompanionField1)
+                    .Where(value => value is not null)
+                    .Select(value => value!)
+                    .ToArray();
+                IReadOnlyDictionary<string, int> topCompanionField1Pairs =
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(companionField1Pairs, 8);
+
+                return new ManageBonusTradeStateCompanionMapFieldSummary(
+                    group.Key.OnCompanionByte11Value,
+                    ReadLittleEndianHexWordValue(group.Key.OnCompanionByte11Value),
+                    group.Key.OffCompanionByte11Value,
+                    ReadLittleEndianHexWordValue(group.Key.OffCompanionByte11Value),
+                    observations.Length,
+                    observations.Count(observation =>
+                        observation.OnCompanionField1 is not null &&
+                        observation.OffCompanionField1 is not null &&
+                        observation.OnCompanionField1.Equals(observation.OffCompanionField1, StringComparison.OrdinalIgnoreCase)),
+                    companionField0Pairs.Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    companionField1Pairs.Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    topCompanionField1Pairs.Values.Sum(),
+                    onCompanionField1Values.Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    offCompanionField1Values.Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(companionField0Pairs, 8),
+                    topCompanionField1Pairs,
+                    BuildManageBonusTradeStateRepeatBuckets(companionField1Pairs, 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(onCompanionField1Values, 8),
+                    CountProtocol03SelectorFfRepeatListFieldSummaryValues(offCompanionField1Values, 8));
+            })
+            .OrderByDescending(summary => summary.CompanionPairCombinationCount)
+            .ThenBy(summary => summary.OnCompanionByte11ValueInt)
+            .ThenBy(summary => summary.OffCompanionByte11ValueInt)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ManageBonusTradeStateCompanionMapFieldSummary> BuildManageBonusTradeStateCompanionMapFieldSummariesFromShapePairs(
+        IReadOnlyDictionary<string, int> companionShapePairs)
+    {
+        Dictionary<string, int> companionByte11Pairs = new(StringComparer.OrdinalIgnoreCase);
+        foreach (KeyValuePair<string, int> entry in companionShapePairs)
+        {
+            (string On, string Off)? shapePair = SplitManageBonusTradeStatePair(entry.Key);
+            if (shapePair is not { } pair)
+            {
+                continue;
+            }
+
+            ManageBonusTradeStateCompanionShape? onShape = ParseManageBonusTradeStateCompanionShape(pair.On);
+            ManageBonusTradeStateCompanionShape? offShape = ParseManageBonusTradeStateCompanionShape(pair.Off);
+            if (onShape is null || offShape is null)
+            {
+                continue;
+            }
+
+            string companionByte11Pair = $"{onShape.Byte11Value} -> {offShape.Byte11Value}";
+            companionByte11Pairs[companionByte11Pair] = companionByte11Pairs.GetValueOrDefault(companionByte11Pair) + entry.Value;
+        }
+
+        return companionByte11Pairs
+            .Select(entry =>
+            {
+                (string On, string Off)? pair = SplitManageBonusTradeStatePair(entry.Key);
+                ManageBonusTradeStateCompanionMapFields fields = pair is null
+                    ? new ManageBonusTradeStateCompanionMapFields(
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        new Dictionary<string, int>(),
+                        new Dictionary<string, int>(),
+                        new Dictionary<string, int>(),
+                        new Dictionary<string, int>(),
+                        new Dictionary<string, int>())
+                    : BuildManageBonusTradeStateCompanionMapFields(companionShapePairs, pair.Value.On, pair.Value.Off);
+                return new ManageBonusTradeStateCompanionMapFieldSummary(
+                    pair is null ? string.Empty : pair.Value.On,
+                    pair is null ? -1 : ReadLittleEndianHexWordValue(pair.Value.On),
+                    pair is null ? string.Empty : pair.Value.Off,
+                    pair is null ? -1 : ReadLittleEndianHexWordValue(pair.Value.Off),
+                    entry.Value,
+                    fields.SameCompanionField1Pairs,
+                    fields.CompanionField0PairDistinctCount,
+                    fields.CompanionField1PairDistinctCount,
+                    fields.ListedCompanionField1PairCount,
+                    fields.OnCompanionField1DistinctCount,
+                    fields.OffCompanionField1DistinctCount,
+                    fields.CompanionField0Pairs,
+                    fields.CompanionField1Pairs,
+                    fields.CompanionField1PairRepeatBuckets,
+                    fields.OnCompanionField1Values,
+                    fields.OffCompanionField1Values);
+            })
+            .OrderByDescending(summary => summary.CompanionPairCombinationCount)
+            .ThenBy(summary => summary.OnCompanionByte11ValueInt)
+            .ThenBy(summary => summary.OffCompanionByte11ValueInt)
+            .ToArray();
+    }
+
+    private static ManageBonusTradeStateCompanionMapFields BuildManageBonusTradeStateCompanionMapFields(
+        IReadOnlyDictionary<string, int> companionShapePairs,
+        string onCompanionByte11Value,
+        string offCompanionByte11Value)
+    {
+        List<WeightedValue> companionField0Pairs = new();
+        List<WeightedValue> companionField1Pairs = new();
+        List<WeightedValue> onCompanionField1Values = new();
+        List<WeightedValue> offCompanionField1Values = new();
+        int sameCompanionField1Pairs = 0;
+
+        foreach (KeyValuePair<string, int> entry in companionShapePairs)
+        {
+            (string On, string Off)? shapePair = SplitManageBonusTradeStatePair(entry.Key);
+            if (shapePair is not { } pair)
+            {
+                continue;
+            }
+
+            ManageBonusTradeStateCompanionShape? onShape = ParseManageBonusTradeStateCompanionShape(pair.On);
+            ManageBonusTradeStateCompanionShape? offShape = ParseManageBonusTradeStateCompanionShape(pair.Off);
+            if (onShape is null ||
+                offShape is null ||
+                !onShape.Byte11Value.Equals(onCompanionByte11Value, StringComparison.OrdinalIgnoreCase) ||
+                !offShape.Byte11Value.Equals(offCompanionByte11Value, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (onShape.Field1.Equals(offShape.Field1, StringComparison.OrdinalIgnoreCase))
+            {
+                sameCompanionField1Pairs += entry.Value;
+            }
+
+            companionField0Pairs.Add(new WeightedValue($"{onShape.Field0} -> {offShape.Field0}", entry.Value));
+            companionField1Pairs.Add(new WeightedValue($"{onShape.Field1} -> {offShape.Field1}", entry.Value));
+            onCompanionField1Values.Add(new WeightedValue(onShape.Field1, entry.Value));
+            offCompanionField1Values.Add(new WeightedValue(offShape.Field1, entry.Value));
+        }
+
+        return new ManageBonusTradeStateCompanionMapFields(
+            sameCompanionField1Pairs,
+            companionField0Pairs
+                .Select(pair => pair.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count(),
+            companionField1Pairs
+                .Select(pair => pair.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count(),
+            CountProtocol03SelectorFfRepeatListWeightedValues(companionField1Pairs, 8).Values.Sum(),
+            onCompanionField1Values
+                .Select(pair => pair.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count(),
+            offCompanionField1Values
+                .Select(pair => pair.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count(),
+            CountProtocol03SelectorFfRepeatListWeightedValues(companionField0Pairs, 8),
+            CountProtocol03SelectorFfRepeatListWeightedValues(companionField1Pairs, 8),
+            BuildManageBonusTradeStateRepeatBuckets(companionField1Pairs, 8),
+            CountProtocol03SelectorFfRepeatListWeightedValues(onCompanionField1Values, 8),
+            CountProtocol03SelectorFfRepeatListWeightedValues(offCompanionField1Values, 8));
+    }
+
+    private static IReadOnlyDictionary<string, int> BuildManageBonusTradeStateRepeatBuckets(
+        IEnumerable<string> values,
+        int maxBuckets)
+    {
+        return BuildManageBonusTradeStateRepeatBuckets(
+            values.Select(value => new WeightedValue(value, 1)),
+            maxBuckets);
+    }
+
+    private static IReadOnlyDictionary<string, int> BuildManageBonusTradeStateRepeatBuckets(
+        IEnumerable<WeightedValue> values,
+        int maxBuckets)
+    {
+        return values
+            .Where(value => !string.IsNullOrWhiteSpace(value.Value))
+            .GroupBy(value => value.Value, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.Sum(value => value.Count))
+            .GroupBy(count => count)
+            .OrderBy(group => group.Key)
+            .Take(maxBuckets)
+            .ToDictionary(
+                group => group.Key == 1 ? "1 hit" : $"{group.Key.ToString(CultureInfo.InvariantCulture)} hits",
+                group => group.Count(),
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static ManageBonusTradeStateCompanionShape? ParseManageBonusTradeStateCompanionShape(string value)
+    {
+        string[] parts = value.Split('/');
+        return parts.Length == 5
+            ? new ManageBonusTradeStateCompanionShape(parts[0], parts[1], parts[2], parts[3], parts[4])
+            : null;
+    }
+
+    private static int ReadLittleEndianHexWordValue(string value)
+    {
+        byte[] bytes = ParseHexBytes(value).ToArray();
+        return bytes.Length < 2
+            ? -1
+            : ReadUInt16LittleEndian(bytes, 0);
+    }
+
+    private static bool HasAnyProtocol04Header(Protocol04PacketSequenceSample sequence, params string[] headers)
+    {
+        return sequence.Headers.Any(header => headers.Contains(header, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static string FormatProtocol04Sequence(IReadOnlyList<string> headers)
+    {
+        List<string> runs = new();
+        for (int i = 0; i < headers.Count;)
+        {
+            string header = headers[i];
+            int count = 1;
+            while (i + count < headers.Count && headers[i + count].Equals(header, StringComparison.OrdinalIgnoreCase))
+            {
+                count++;
+            }
+
+            runs.Add(count == 1 ? header : $"{header} x{count}");
+            i += count;
+        }
+
+        return string.Join(" -> ", runs);
+    }
+
+    private static IReadOnlyList<string> BuildManageBonusStateFieldReferences(
+        int fieldValue,
+        IReadOnlyList<AttributeDefinition> attributes,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        List<string> references = new();
+        references.AddRange(ManageBonusSemanticAttributeCandidates(attributes, fieldValue, creationIndex: true)
+            .Take(2)
+            .Select(candidate => $"creation {candidate}"));
+        references.AddRange(ManageBonusSemanticAttributeCandidates(attributes, fieldValue, creationIndex: false)
+            .Take(2)
+            .Select(candidate => $"update {candidate}"));
+        references.AddRange(gameObjectsById[fieldValue]
+            .Select(entry => $"go {entry.CodeName}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .Take(2));
+
+        return references.Count == 0
+            ? Array.Empty<string>()
+            : references.ToArray();
+    }
+
+    private static IReadOnlyDictionary<string, int> BuildManageBonusTradeStateCompanionFieldReferences(
+        IReadOnlyDictionary<string, int> fieldValues,
+        IReadOnlyList<AttributeDefinition> attributes,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        return CountProtocol03SelectorFfRepeatListWeightedValues(fieldValues.SelectMany(entry =>
+        {
+            int fieldValue = ReadLittleEndianHexWordValue(entry.Key);
+            IReadOnlyList<string> references = fieldValue < 0
+                ? Array.Empty<string>()
+                : BuildManageBonusStateFieldReferences(fieldValue, attributes, gameObjectsById);
+            if (references.Count == 0)
+            {
+                return new[] { new WeightedValue($"{entry.Key} ({fieldValue}) no local reference", entry.Value) };
+            }
+
+            return references.Select(reference => new WeightedValue($"{entry.Key} ({fieldValue}) {reference}", entry.Value));
+        }), 8);
+    }
+
+    private static IReadOnlyDictionary<string, int> BuildManageBonusTradeStateCompanionFieldPairReferences(
+        IReadOnlyDictionary<string, int> fieldPairs,
+        IReadOnlyList<AttributeDefinition> attributes,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        return CountProtocol03SelectorFfRepeatListWeightedValues(fieldPairs.Select(entry =>
+        {
+            (string On, string Off)? pair = SplitManageBonusTradeStatePair(entry.Key);
+            string reference = pair is null
+                ? $"{entry.Key} no local reference"
+                : $"{FormatManageBonusTradeStateCompanionFieldReference(pair.Value.On, attributes, gameObjectsById)} -> {FormatManageBonusTradeStateCompanionFieldReference(pair.Value.Off, attributes, gameObjectsById)}";
+            return new WeightedValue(reference, entry.Value);
+        }), 8);
+    }
+
+    private static string FormatManageBonusTradeStateCompanionFieldReference(
+        string fieldHex,
+        IReadOnlyList<AttributeDefinition> attributes,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        int fieldValue = ReadLittleEndianHexWordValue(fieldHex);
+        IReadOnlyList<string> references = fieldValue < 0
+            ? Array.Empty<string>()
+            : BuildManageBonusStateFieldReferences(fieldValue, attributes, gameObjectsById);
+        string referenceText = references.Count == 0
+            ? "no local reference"
+            : string.Join("; ", references.Take(3));
+        return $"{fieldHex} ({fieldValue}) {referenceText}";
+    }
+
+    private static string[] ManageBonusSemanticAttributeCandidates(
+        IReadOnlyList<AttributeDefinition> attributes,
+        int fieldValue,
+        bool creationIndex)
+    {
+        return attributes
+            .Where(attribute => creationIndex ? attribute.CreationIndex == fieldValue : attribute.UpdateIndex == fieldValue)
+            .GroupBy(attribute => attribute.AttributeName, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => IsManageBonusInteractionAttributeName(group.Key))
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(group => $"{group.Key} ({group.Count()})")
+            .ToArray();
+    }
+
+    private static bool IsManageBonusInteractionAttributeName(string name)
+    {
+        string[] terms =
+        {
+            "buy",
+            "sell",
+            "vendor",
+            "shop",
+            "merchant",
+            "talk",
+            "giver",
+            "taker",
+            "putactive",
+            "use",
+            "trade",
+            "loot",
+            "market",
+            "inventory",
+            "active",
+            "interaction",
+            "currentstate"
+        };
+
+        return terms.Any(term => name.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string ClassifyManageBonusStateSemanticFamily(ManageBonusStateIdLongFormFieldLeadSummary lead)
+    {
+        if (ManageBonusStateReferenceContains(lead, "SecureTradeFlag", "secure trade", "trade"))
+        {
+            return "trade state";
+        }
+
+        if (ManageBonusStateReferenceContains(lead, "vendor", "market", "shop", "merchant", "buy", "sell"))
+        {
+            return "vendor or market state";
+        }
+
+        if (ManageBonusStateReferenceContains(lead, "TalkActiveTracker", "interaction", "currentstate", "active", "giver", "taker", "loot", "use"))
+        {
+            return "interaction state";
+        }
+
+        if (lead.FieldReferences.Any(reference => reference.StartsWith("go Mclothing_", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "clothing item id";
+        }
+
+        if (lead.FieldReferences.Any(reference => reference.StartsWith("go ", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "game object id";
+        }
+
+        if (lead.FieldReferences.Any(reference =>
+            reference.StartsWith("creation ", StringComparison.OrdinalIgnoreCase) ||
+            reference.StartsWith("update ", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "object attribute index";
+        }
+
+        return "unresolved state id";
+    }
+
+    private static string DescribeManageBonusStateSemanticFamily(string family)
+    {
+        return family switch
+        {
+            "trade state" => "field id overlaps trade/secure-trade attributes and same-packet action-state rows",
+            "vendor or market state" => "field id names or packet context point at vendor, marketplace, buy, or sell state",
+            "interaction state" => "field id overlaps talk, active, loot, use, or interaction attributes",
+            "clothing item id" => "field id resolves to imported clothing game-object rows, likely inventory/equipment catalog state",
+            "game object id" => "field id resolves to imported game-object rows outside the strongest clothing families",
+            "object attribute index" => "field id resolves to local creation/update attribute indexes without an interaction keyword",
+            _ => "field id has no local resource reference yet"
+        };
+    }
+
+    private static int GetManageBonusStateSemanticFamilyPriority(string family)
+    {
+        return family switch
+        {
+            "trade state" => 0,
+            "vendor or market state" => 1,
+            "interaction state" => 2,
+            "object attribute index" => 3,
+            "game object id" => 4,
+            "clothing item id" => 5,
+            _ => 6
+        };
+    }
+
+    private static bool ManageBonusStateReferenceContains(
+        ManageBonusStateIdLongFormFieldLeadSummary lead,
+        params string[] terms)
+    {
+        return lead.FieldReferences.Any(reference =>
+            terms.Any(term => reference.Contains(term, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static string FormatManageBonusStateFieldLeadLabel(ManageBonusStateIdLongFormFieldLeadSummary lead)
+    {
+        string references = lead.FieldReferences.Count == 0
+            ? "no local reference"
+            : string.Join("; ", lead.FieldReferences.Take(3));
+        return $"{lead.Field0}/{lead.Field1} ({lead.Field1Value}) {references}";
+    }
+
+    private static string ClassifyManageBonusCaptureScope(string file)
+    {
+        string normalized = file.Replace('\\', '/');
+
+        if (ManageBonusStringContainsAny(normalized, "vendor", "merchant", "market", "shop", "buy", "sell", "buyed"))
+        {
+            return "vendor/market";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "trade"))
+        {
+            return "trade";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "inventory", "inv_"))
+        {
+            return "inventory";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "loot"))
+        {
+            return "loot";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "hardline", "doors", "door", "static"))
+        {
+            return "static interaction";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "npc", "mission", "collector", "archivist"))
+        {
+            return "npc/mission";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "actions", "interaction", "two-person", "2_person"))
+        {
+            return "interaction";
+        }
+
+        if (ManageBonusStringContainsAny(normalized, "combat", "ability"))
+        {
+            return "combat/ability";
+        }
+
+        return "other";
+    }
+
+    private static bool ManageBonusStringContainsAny(string value, params string[] terms)
+    {
+        return terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsManageBonusTradeStateValuePayload(ManageBonusPayloadSample payload)
+    {
+        return payload.PayloadLength == 20 &&
+            payload.Field0.Equals("45 03", StringComparison.OrdinalIgnoreCase) &&
+            payload.Field1.Equals("11 00", StringComparison.OrdinalIgnoreCase) &&
+            payload.Field2.Equals("00 02", StringComparison.OrdinalIgnoreCase) &&
+            payload.Field1.Equals(ReadManageBonusPayloadWord(payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int GetManageBonusTradeStateProtocolBlockDistance(
+        Protocol04PacketSequenceSample? sequence,
+        ManageBonusTradeStatePacketRow off,
+        ManageBonusTradeStatePacketRow on)
+    {
+        int? offBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, off.ManageBonusIndex);
+        int? onBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, on.ManageBonusIndex);
+        return offBlockIndex is int offIndex && onBlockIndex is int onIndex
+            ? Math.Abs(onIndex - offIndex)
+            : 0;
+    }
+
+    private static string FormatManageBonusTradeStatePairHeaderWindow(
+        Protocol04PacketSequenceSample? sequence,
+        ManageBonusTradeStatePacketRow off,
+        ManageBonusTradeStatePacketRow on)
+    {
+        Protocol04RpcFlowBlockSample[] blocks = sequence?.Blocks?.ToArray() ?? Array.Empty<Protocol04RpcFlowBlockSample>();
+        if (blocks.Length == 0)
+        {
+            return "blocks unavailable";
+        }
+
+        int? offBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, off.ManageBonusIndex);
+        int? onBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, on.ManageBonusIndex);
+        if (offBlockIndex is not int offIndex || onBlockIndex is not int onIndex)
+        {
+            return "pair blocks unresolved";
+        }
+
+        int first = Math.Min(offIndex, onIndex);
+        int last = Math.Max(offIndex, onIndex);
+        int start = Math.Max(0, first - 1);
+        int end = Math.Min(blocks.Length - 1, last + 1);
+        return FormatProtocol04Sequence(blocks
+            .Where(block => block.Index >= start && block.Index <= end)
+            .OrderBy(block => block.Index)
+            .Select(block => block.Header)
+            .ToArray());
+    }
+
+    private static string[] FindManageBonusTradeStateBetweenPairB2Values(
+        Protocol04PacketSequenceSample? sequence,
+        ManageBonusTradeStatePacketRow off,
+        ManageBonusTradeStatePacketRow on)
+    {
+        Protocol04RpcFlowBlockSample[] blocks = sequence?.Blocks?.ToArray() ?? Array.Empty<Protocol04RpcFlowBlockSample>();
+        if (blocks.Length == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        int? offBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, off.ManageBonusIndex);
+        int? onBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, on.ManageBonusIndex);
+        if (offBlockIndex is not int offIndex || onBlockIndex is not int onIndex)
+        {
+            return Array.Empty<string>();
+        }
+
+        int first = Math.Min(offIndex, onIndex);
+        int last = Math.Max(offIndex, onIndex);
+        return blocks
+            .Where(block => block.Index > first && block.Index < last && HeaderEquals(block.Header, "80 b2"))
+            .Select(FormatManageBonusTradeStateB2BlockValue)
+            .Where(value => value.Length > 0)
+            .ToArray();
+    }
+
+    private static string? FindManageBonusTradeStatePrecedingB3Value(
+        Protocol04PacketSequenceSample? sequence,
+        ManageBonusTradeStatePacketRow off,
+        ManageBonusTradeStatePacketRow on)
+    {
+        Protocol04RpcFlowBlockSample[] blocks = sequence?.Blocks?.ToArray() ?? Array.Empty<Protocol04RpcFlowBlockSample>();
+        if (blocks.Length == 0)
+        {
+            return null;
+        }
+
+        int? offBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, off.ManageBonusIndex);
+        int? onBlockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, on.ManageBonusIndex);
+        if (offBlockIndex is not int offIndex || onBlockIndex is not int onIndex)
+        {
+            return null;
+        }
+
+        int first = Math.Min(offIndex, onIndex);
+        return blocks
+            .Where(block => block.Index < first && HeaderEquals(block.Header, "80 b3"))
+            .OrderByDescending(block => block.Index)
+            .Select(FormatManageBonusTradeStateB3BlockValue)
+            .FirstOrDefault(value => value.Length > 0);
+    }
+
+    private static ManageBonusTradeStateCompanionBlock? FindManageBonusTradeStateNextCompanionBlock(
+        Protocol04PacketSequenceSample? sequence,
+        ManageBonusTradeStatePacketRow row)
+    {
+        Protocol04RpcFlowBlockSample[] blocks = sequence?.Blocks?.ToArray() ?? Array.Empty<Protocol04RpcFlowBlockSample>();
+        if (blocks.Length == 0)
+        {
+            return null;
+        }
+
+        int? blockIndex = FindManageBonusTradeStateProtocolBlockIndex(sequence, row.ManageBonusIndex);
+        if (blockIndex is not int index)
+        {
+            return null;
+        }
+
+        Protocol04RpcFlowBlockSample? companion = blocks.FirstOrDefault(block =>
+            block.Index == index + 1 &&
+            HeaderEquals(block.Header, "80 bc") &&
+            block.PayloadLength == 20 &&
+            !IsManageBonusTradeStateProtocolBlock(block));
+
+        return companion is null
+            ? null
+            : FormatManageBonusTradeStateCompanionBlock(companion);
+    }
+
+    private static ManageBonusTradeStateCompanionBlock? FormatManageBonusTradeStateCompanionBlock(
+        Protocol04RpcFlowBlockSample block)
+    {
+        byte[] payload = ReconstructProtocol04RpcFlowBlockPayload(block);
+        if (payload.Length < 17)
+        {
+            return null;
+        }
+
+        string field0 = FormatPayloadWord(payload, 0);
+        string field1 = FormatPayloadWord(payload, 2);
+        string field2 = FormatPayloadWord(payload, 4);
+        string byte11 = FormatPayloadWord(payload, 11);
+        string byte15 = FormatPayloadWord(payload, 15);
+        return new ManageBonusTradeStateCompanionBlock(
+            field0,
+            field1,
+            field2,
+            byte11,
+            byte15,
+            $"{field0}/{field1}/{field2}/{byte11}/{byte15}");
+    }
+
+    private static byte[] ReconstructProtocol04RpcFlowBlockPayload(Protocol04RpcFlowBlockSample block)
+    {
+        byte[] payload = new byte[block.PayloadLength];
+        byte[] prefix = ParseHexBytes(block.PayloadPrefixHex).ToArray();
+        Array.Copy(prefix, payload, Math.Min(prefix.Length, payload.Length));
+
+        if (!block.PayloadSuffixHex.Equals("-", StringComparison.Ordinal))
+        {
+            byte[] suffix = ParseHexBytes(block.PayloadSuffixHex).ToArray();
+            int suffixStart = Math.Max(0, payload.Length - suffix.Length);
+            Array.Copy(suffix, 0, payload, suffixStart, Math.Min(suffix.Length, payload.Length - suffixStart));
+        }
+
+        return payload;
+    }
+
+    private static string FormatManageBonusTradeStateB2BlockValue(Protocol04RpcFlowBlockSample block)
+    {
+        byte[] payload = ParseHexBytes(block.PayloadPrefixHex).ToArray();
+        return payload.Length >= 6
+            ? $"{FormatPayloadWord(payload, 0)}/{FormatPayloadWord(payload, 2)}/{FormatPayloadWord(payload, 4)}"
+            : string.Empty;
+    }
+
+    private static string FormatManageBonusTradeStateB3BlockValue(Protocol04RpcFlowBlockSample block)
+    {
+        byte[] payload = ParseHexBytes(block.PayloadPrefixHex).ToArray();
+        return payload.Length >= 2
+            ? FormatPayloadWord(payload, 0)
+            : string.Empty;
+    }
+
+    private static bool IsManageBonusTradeStateB2MirrorValue(string value, string field1, string byte11Value)
+    {
+        return value.Equals($"{field1}/{byte11Value}/08 02", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasManageBonusTradeStateB2Mirror(
+        ManageBonusTradeStateByte15TransitionObservation observation,
+        string field1,
+        string byte11Value)
+    {
+        return observation.BetweenPairB2Values.Any(value =>
+            IsManageBonusTradeStateB2MirrorValue(value, field1, byte11Value));
+    }
+
+    private static bool IsManageBonusTradeStateB3MatchValue(string value, string field1)
+    {
+        return value.Equals(field1, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int? FindManageBonusTradeStateProtocolBlockIndex(
+        Protocol04PacketSequenceSample? sequence,
+        int manageBonusIndex)
+    {
+        if (sequence?.Blocks is null)
+        {
+            return null;
+        }
+
+        return sequence.Blocks
+            .Where(IsManageBonusTradeStateProtocolBlock)
+            .OrderBy(block => block.Index)
+            .Skip(manageBonusIndex)
+            .Select(block => (int?)block.Index)
+            .FirstOrDefault();
+    }
+
+    private static bool IsManageBonusTradeStateProtocolBlock(Protocol04RpcFlowBlockSample block)
+    {
+        return HeaderEquals(block.Header, "80 bc") &&
+            block.PayloadLength == 20 &&
+            block.PayloadPrefixHex.StartsWith("45 03 11 00 00 02 00 00 00 11 00", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasSamePacketOppositeManageBonusTradeStateByte15(
+        IReadOnlyList<PacketDumpFileSummary> files,
+        ManageBonusPayloadWithFile entry,
+        string byte11Value,
+        string byte15Value)
+    {
+                        string oppositeByte15 = byte15Value.Equals("00 00", StringComparison.OrdinalIgnoreCase)
+            ? "01 00"
+            : byte15Value.Equals("01 00", StringComparison.OrdinalIgnoreCase)
+                ? "00 00"
+                : string.Empty;
+        if (oppositeByte15.Length == 0)
+        {
+            return false;
+        }
+
+        PacketDumpFileSummary? file = files.FirstOrDefault(file => file.File.Equals(entry.File, StringComparison.Ordinal));
+        if (file is null)
+        {
+            return false;
+        }
+
+        return file.ManageBonusPayloads.Any(payload =>
+            payload.Line == entry.Payload.Line &&
+            payload.PayloadLength == 20 &&
+            payload.Field0.Equals("45 03", StringComparison.OrdinalIgnoreCase) &&
+            payload.Field1.Equals("11 00", StringComparison.OrdinalIgnoreCase) &&
+            payload.Field2.Equals("00 02", StringComparison.OrdinalIgnoreCase) &&
+            ReadManageBonusPayloadWord(payload.PayloadHex, 11).Equals(byte11Value, StringComparison.OrdinalIgnoreCase) &&
+            ReadManageBonusPayloadWord(payload.PayloadHex, 15).Equals(oppositeByte15, StringComparison.OrdinalIgnoreCase));
     }
 
     private static IEnumerable<Protocol03NestedMovementObservation> EnumerateProtocol03NestedMovementObservations(
@@ -10720,6 +20344,7 @@ public static partial class PacketResearcher
         List<FriendListStatusPayloadSample> friendListStatusPayloads = new();
         List<CoderAttributePayloadSample> coderAttributePayloads = new();
         List<ManageBonusPayloadSample> manageBonusPayloads = new();
+        List<ManageBonusTradeStatePayloadSample> manageBonusTradeStatePayloads = new();
         Dictionary<string, RpcHeaderEntry[]> localByEncodedHeader = localHeaders
             .Where(entry => entry.EncodedHeader.Contains(" ", StringComparison.Ordinal))
             .GroupBy(entry => entry.EncodedHeader, StringComparer.OrdinalIgnoreCase)
@@ -10849,6 +20474,7 @@ public static partial class PacketResearcher
             AbilityUnloadPayloads = abilityUnloadPayloads.Count == 0 ? null : abilityUnloadPayloads,
             FriendListStatusPayloads = friendListStatusPayloads.Count == 0 ? null : friendListStatusPayloads,
             CoderAttributePayloads = coderAttributePayloads.Count == 0 ? null : coderAttributePayloads,
+            ManageBonusTradeStatePayloads = manageBonusTradeStatePayloads.Count == 0 ? null : manageBonusTradeStatePayloads,
             KnownHeaderContexts = knownHeaderContexts.Count == 0
                 ? null
                 : knownHeaderContexts.Values
@@ -10924,6 +20550,7 @@ public static partial class PacketResearcher
             friendListStatusPayloads.AddRange(DetectFriendListStatusPayloads(bytes, sampleLine, directionHint));
             coderAttributePayloads.AddRange(DetectCoderAttributePayloads(bytes, sampleLine, directionHint));
             manageBonusPayloads.AddRange(DetectManageBonusPayloads(bytes, sampleLine, directionHint));
+            manageBonusTradeStatePayloads.AddRange(DetectManageBonusTradeStatePayloads(bytes, sampleLine, directionHint));
         }
 
         void RecordKnownHeaderContext(KnownEncodedHeaderHit hit, IReadOnlyList<byte> lineBytes, int sampleLine)
@@ -11189,7 +20816,9 @@ public static partial class PacketResearcher
 
     private static bool ShouldRecordProtocol04SequenceBlocks(IReadOnlyList<string> headers)
     {
-        return headers.Any(header => VendorAdjacentProtocol04Headers.Contains(header));
+        return headers.Any(header => VendorAdjacentProtocol04Headers.Contains(header)) ||
+            (headers.Any(header => HeaderEquals(header, "80 bc")) &&
+                headers.Any(header => HeaderEquals(header, "80 b2") || HeaderEquals(header, "80 b3")));
     }
 
     public static IEnumerable<VendorTransactionFlowSample> DetectVendorTransactionFlows(
@@ -11739,6 +21368,7 @@ public static partial class PacketResearcher
             int? entryCount = null;
             int? parsedEntryCount = null;
             List<int> entryIds = new();
+            List<Unknown6dEntryRecord> entryRecords = new();
             if (listPayloadOffset >= 0 && listPayloadOffset + 3 <= block.Payload.Length)
             {
                 listFlag = block.Payload[listPayloadOffset];
@@ -11749,7 +21379,14 @@ public static partial class PacketResearcher
                 for (int i = 0; i < parsedEntryCount.Value; i++)
                 {
                     int recordOffset = recordsOffset + (i * 6);
-                    entryIds.Add(ReadUInt16LittleEndian(block.Payload, recordOffset + 1));
+                    int entryId = ReadUInt16LittleEndian(block.Payload, recordOffset + 1);
+                    entryIds.Add(entryId);
+                    entryRecords.Add(new Unknown6dEntryRecord(
+                        FormatHeader(block.Payload.Skip(recordOffset).Take(1)),
+                        block.Payload[recordOffset],
+                        FormatPayloadWord(block.Payload, recordOffset + 1),
+                        entryId,
+                        FormatHeader(block.Payload.Skip(recordOffset + 3).Take(3))));
                 }
             }
 
@@ -11765,6 +21402,7 @@ public static partial class PacketResearcher
                 entryCount,
                 parsedEntryCount,
                 entryIds,
+                entryRecords,
                 FormatHeader(block.Payload));
         }
     }
@@ -12249,6 +21887,44 @@ public static partial class PacketResearcher
                 FormatPayloadWord(block.Payload, 4),
                 ReadUInt16LittleEndian(block.Payload, 4),
                 FormatHeader(block.Payload));
+        }
+    }
+
+    public static IEnumerable<ManageBonusTradeStatePayloadSample> DetectManageBonusTradeStatePayloads(
+        IReadOnlyList<byte> bytes,
+        int lineNumber = 0,
+        string? directionHint = null)
+    {
+        foreach (ManageBonusPayloadSample payload in DetectManageBonusPayloads(bytes, lineNumber, directionHint))
+        {
+            if (!IsManageBonusTradeStateValuePayload(payload))
+            {
+                continue;
+            }
+
+            string repeatedField1 = ReadManageBonusPayloadWord(payload.PayloadHex, 9);
+            string variantValue = ReadManageBonusPayloadWord(payload.PayloadHex, 11);
+            int variantValueInt = ReadManageBonusPayloadWordValue(payload.PayloadHex, 11);
+            string byte15Value = ReadManageBonusPayloadWord(payload.PayloadHex, 15);
+            int byte15ValueInt = ReadManageBonusPayloadWordValue(payload.PayloadHex, 15);
+
+            yield return new ManageBonusTradeStatePayloadSample(
+                payload.Line,
+                payload.PayloadLength,
+                payload.Field0,
+                payload.Field1,
+                payload.Field1Value,
+                payload.Field2,
+                payload.Field2Value,
+                repeatedField1,
+                ReadManageBonusPayloadWordValue(payload.PayloadHex, 9),
+                variantValue,
+                variantValueInt,
+                DescribeManageBonusTradeStateVariantRole(variantValueInt),
+                byte15Value,
+                byte15ValueInt,
+                DescribeManageBonusTradeStateByte15State(byte15ValueInt),
+                payload.PayloadHex);
         }
     }
 
@@ -13602,6 +23278,25 @@ public static partial class PacketResearcher
                 return consumedBytes > 4;
             }
 
+            if (TryFindProtocol03Object599DynamicCreationReviewedPostSeparatorBodyBoundary(
+                bytes,
+                postCreationAttributeOffset,
+                bytes.Count,
+                out int reviewedObjectViewOffset))
+            {
+                tailNextHeaderOffset = reviewedObjectViewOffset - postCreationAttributeOffset;
+                tailPreHeaderHex = FormatHeader(bytes
+                    .Skip(postCreationAttributeOffset)
+                    .Take(tailNextHeaderOffset));
+                tailNextHeaderHex = FormatHeader(bytes
+                    .Skip(reviewedObjectViewOffset)
+                    .Take(Math.Min(8, Math.Max(0, bytes.Count - reviewedObjectViewOffset))));
+                tailNextHeaderClassification = ClassifyProtocol03ObjectView(bytes[reviewedObjectViewOffset + 2], bytes[reviewedObjectViewOffset + 3]);
+                consumedBytes = reviewedObjectViewOffset - objectViewOffset;
+                parseStatus = "dynamic creation bounded by reviewed post-separator body";
+                return consumedBytes > 4;
+            }
+
             if (TryFindProtocol03ObjectViewHeader(
                 bytes,
                 postCreationAttributeOffset,
@@ -13640,6 +23335,138 @@ public static partial class PacketResearcher
             bytes[offset + 2] == 0x00 &&
             bytes[offset + 3] == 0x00 &&
             bytes[offset + 4] == 0x00;
+    }
+
+    private static bool TryFindProtocol03Object599DynamicCreationReviewedPostSeparatorBodyBoundary(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int end,
+        out int headerOffset)
+    {
+        headerOffset = -1;
+        int maxCandidate = Math.Min(end - 4, offset + Protocol03DynamicTailExtendedBoundarySearchBytes);
+        for (int candidate = offset; candidate <= maxCandidate; candidate++)
+        {
+            if (!LooksLikeProtocol03ObjectViewHeader(bytes, candidate, includeNpcBasePostCreationTailSelectors: true))
+            {
+                continue;
+            }
+
+            string classification = ClassifyProtocol03ObjectView(bytes[candidate + 2], bytes[candidate + 3]);
+            if (classification.Equals("unclassified object-view update", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (!IsProtocol03Object599DynamicCreationReviewedPostSeparatorBody(bytes, offset, candidate - offset))
+            {
+                continue;
+            }
+
+            headerOffset = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsProtocol03Object599DynamicCreationReviewedPostSeparatorBody(
+        IReadOnlyList<byte> bytes,
+        int offset,
+        int bodyByteCount)
+    {
+        if (bodyByteCount <= 0 || offset + bodyByteCount > bytes.Count)
+        {
+            return false;
+        }
+
+        int separatorOffset = -1;
+        for (int i = 0; i + 1 < bodyByteCount; i++)
+        {
+            if (bytes[offset + i] == 0xcd && bytes[offset + i + 1] == 0xab)
+            {
+                separatorOffset = i;
+                break;
+            }
+        }
+
+        if (separatorOffset != 9 && separatorOffset != 13)
+        {
+            return false;
+        }
+
+        int postSeparatorOffset = separatorOffset + 2;
+        int postSeparatorByteCount = bodyByteCount - postSeparatorOffset;
+        if (postSeparatorByteCount < 45)
+        {
+            return false;
+        }
+
+        int postStart = offset + postSeparatorOffset;
+        byte lead = bytes[postStart];
+        byte subtype = bytes[postStart + 1];
+        if (!((lead == 0x02 && (subtype == 0x05 || subtype == 0x09)) ||
+            (lead == 0x03 && subtype == 0x0d)))
+        {
+            return false;
+        }
+
+        int zeroRunAfterSecondByte = 0;
+        while (2 + zeroRunAfterSecondByte < postSeparatorByteCount &&
+            bytes[postStart + 2 + zeroRunAfterSecondByte] == 0x00)
+        {
+            zeroRunAfterSecondByte++;
+        }
+
+        if (zeroRunAfterSecondByte != 3 && zeroRunAfterSecondByte != 5)
+        {
+            return false;
+        }
+
+        const int vectorOffset = 9;
+        int preVectorBridgeOffset = 2 + zeroRunAfterSecondByte;
+        int preVectorBridgeByteCount = vectorOffset - preVectorBridgeOffset;
+        if (preVectorBridgeByteCount != 2 && preVectorBridgeByteCount != 4)
+        {
+            return false;
+        }
+
+        bool bridgeHasNonzeroByte = false;
+        for (int i = 0; i < preVectorBridgeByteCount; i++)
+        {
+            if (bytes[postStart + preVectorBridgeOffset + i] != 0x00)
+            {
+                bridgeHasNonzeroByte = true;
+                break;
+            }
+        }
+
+        if (!bridgeHasNonzeroByte ||
+            postSeparatorByteCount < vectorOffset + 24 ||
+            !TryReadDoubleBigEndian(bytes, postStart + vectorOffset, out double x) ||
+            !TryReadDoubleBigEndian(bytes, postStart + vectorOffset + 8, out double y) ||
+            !TryReadDoubleBigEndian(bytes, postStart + vectorOffset + 16, out double z) ||
+            !ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorProbe(x, y, z)
+                .Equals("bounded finite triple", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        int tailOffset = vectorOffset + 24;
+        int tailByteCount = postSeparatorByteCount - tailOffset;
+        if (!((lead == 0x02 && (tailByteCount == 12 || tailByteCount == 13)) ||
+            (lead == 0x03 && tailByteCount == 17)))
+        {
+            return false;
+        }
+
+        byte[] tailBytes = bytes
+            .Skip(postStart + tailOffset)
+            .Take(tailByteCount)
+            .ToArray();
+        string tailDisposition = ClassifyProtocol03NpcBaseDynamicCreationExtendedBoundaryVectorTail(tailBytes);
+        return tailDisposition.Equals("bounded be f32 triple tail", StringComparison.OrdinalIgnoreCase) ||
+            tailDisposition.Equals("bounded be f32 tail plus zero pad", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryFindProtocol03ObjectViewHeader(
@@ -14344,6 +24171,7 @@ public static partial class PacketResearcher
             : FormatHeader(prefix.Skip(prefixFirstNonZeroOffset.Value).Take(Math.Min(2, prefix.Length - prefixFirstNonZeroOffset.Value)));
         string postPrefixLeadHex = FormatHeader(tail.Skip(postPrefixTailOffset).Take(Math.Min(8, tail.Length - postPrefixTailOffset)));
         string tailPrefixKind = ClassifyProtocol03NestedMovementMode06TailPrefix(lead);
+        string bodyPrefixHex = FormatHeader(body.Take(Math.Min(16, body.Length)));
         string bodySuffixHex = FormatHeader(body.Skip(Math.Max(0, body.Length - 16)).Take(Math.Min(16, body.Length)));
 
         string parserAction;
@@ -14354,6 +24182,7 @@ public static partial class PacketResearcher
                 terminalTupleBody,
                 bodySuffixHex,
                 boundaryHeaderHex,
+                boundaryClassification,
                 out parserAction,
                 out classification))
         {
@@ -14369,6 +24198,20 @@ public static partial class PacketResearcher
         {
             parserAction = "test terminal mode 06 96-byte tuple body";
             classification = "mode 06 terminal 96-byte tuple body";
+        }
+        else if (terminalTupleBody &&
+            tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Terminal96ByteMarker04ZeroUpdateTuple(
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 96 &&
+            selector == 0x25)
+        {
+            parserAction = "test terminal mode 06 96-byte marker-04 zero-update tuple body";
+            classification = "mode 06 terminal 96-byte marker-04 zero-update tuple body";
         }
         else if (terminalTupleBody)
         {
@@ -14389,6 +24232,113 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 94-byte zero-update tuple body";
             classification = "mode 06 guarded 94-byte zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded94ByteMarker04ZeroUpdateTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 94 &&
+            boundaryClassification.Equals("object state update", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 94-byte marker-04 zero-update tuple body";
+            classification = "mode 06 guarded 94-byte marker-04 zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded95ByteMarker04ZeroUpdateTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 95 &&
+            boundaryClassification.Equals("state marker/object update candidate", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 95-byte marker-04 zero-update tuple body";
+            classification = "mode 06 guarded 95-byte marker-04 zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded237ByteMarker04ZeroUpdateTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 237 &&
+            boundaryClassification.Equals("single state marker update", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 237-byte marker-04 zero-update tuple body";
+            classification = "mode 06 guarded 237-byte marker-04 zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded78ByteMarkerFfNonObjectTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("non-object marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 78 &&
+            boundaryClassification.Equals("single position update", StringComparison.Ordinal) &&
+            selector == 0x21)
+        {
+            parserAction = "test guarded mode 06 78-byte marker-ff non-object tuple body";
+            classification = "mode 06 guarded 78-byte marker-ff non-object tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded119ByteMarker04ZeroUpdateTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 119 &&
+            boundaryClassification.Equals("object state update", StringComparison.Ordinal) &&
+            selector == 0x33)
+        {
+            parserAction = "test guarded mode 06 119-byte marker-04 zero-update tuple body";
+            classification = "mode 06 guarded 119-byte marker-04 zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded138ByteMarker4fObjectViewTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 138 &&
+            (boundaryClassification.Equals("object state update", StringComparison.Ordinal) ||
+                boundaryClassification.Equals("position/object state update", StringComparison.Ordinal)) &&
+            selector == 0x39)
+        {
+            parserAction = "test guarded mode 06 138-byte marker-4f object-view tuple body";
+            classification = "mode 06 guarded 138-byte marker-4f object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded261ByteMarker2aDeleteViewObjectViewTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodyPrefixHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 261 &&
+            boundaryClassification.Equals("delete view candidate", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 261-byte marker-2a delete-view object-view tuple body";
+            classification = "mode 06 guarded 261-byte marker-2a delete-view object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker24And25ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
@@ -14413,6 +24363,17 @@ public static partial class PacketResearcher
             classification = "mode 06 guarded 57-byte marker-24/26 object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker24And26AltObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-24-26-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-24/26 alternate object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker29And2aObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
             tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14422,6 +24383,17 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 57-byte marker-29-2a object-view tuple body";
             classification = "mode 06 guarded 57-byte marker-29/2a object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker29And2aAltObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded57ByteMarker16ObjectViewBoundaryHeader(boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-29-2a-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-29/2a alternate object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker24AltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
@@ -14473,6 +24445,15 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 94-byte object-view tuple body";
             classification = "mode 06 guarded 94-byte object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded94ByteResidualExactObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 94)
+        {
+            parserAction = "test guarded mode 06 94-byte residual exact object-view tuple body";
+            classification = "mode 06 guarded 94-byte residual exact object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
@@ -14531,6 +24512,17 @@ public static partial class PacketResearcher
             classification = "mode 06 guarded 57-byte marker-19 object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker1aObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1aObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-1a object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-1a object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker19AltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
             tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14553,6 +24545,17 @@ public static partial class PacketResearcher
             classification = "mode 06 guarded 57-byte marker-1f object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1fAnd1eAltObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded57ByteMarker16ObjectViewBoundaryHeader(boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-1f-1e-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-1f/1e alternate object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker24ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
             tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14573,6 +24576,15 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 57-byte marker-33 object-view tuple body";
             classification = "mode 06 guarded 57-byte marker-33 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker35AltObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57)
+        {
+            parserAction = "test guarded mode 06 57-byte marker-35-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-35-alt object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker13ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
@@ -14619,6 +24631,17 @@ public static partial class PacketResearcher
             classification = "mode 06 guarded 57-byte marker-1d object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1dAltObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-1d-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-1d alternate object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker25ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
             tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14628,6 +24651,143 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 57-byte marker-25 object-view tuple body";
             classification = "mode 06 guarded 57-byte marker-25 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker4fObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker4fObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded57ByteMarker16ObjectViewBoundaryHeader(boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-4f object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-4f object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker64ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker64ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-64 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-64 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-2e object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-2e object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker2eAltObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-2e-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-2e-alt object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker2e60ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2eObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-2e-60 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-2e-60 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteResidualExactObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57)
+        {
+            parserAction = "test guarded mode 06 57-byte residual exact object-view tuple body";
+            classification = "mode 06 guarded 57-byte residual exact object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker2fObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker2fObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-2f object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-2f object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker34ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker34ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-34 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-34 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker34_9cObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-34-9c object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-34-9c object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker34AltObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57)
+        {
+            parserAction = "test guarded mode 06 57-byte marker-34-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-34-alt object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker31ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker31ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 01 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-31 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-31 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker28ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker28ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-28 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-28 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker28AltObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57)
+        {
+            parserAction = "test guarded mode 06 57-byte marker-28-alt object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-28-alt object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker1dB9ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
@@ -14641,6 +24801,17 @@ public static partial class PacketResearcher
             classification = "mode 06 guarded 57-byte marker-1d-b9 object-view tuple body";
         }
         else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 57 &&
+            IsProtocol03Mode06Guarded57ByteMarker1eB9ObjectViewBodySuffix(bodySuffixHex) &&
+            boundaryHeaderHex.Equals("28 ff 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 57-byte marker-1e-b9 object-view tuple body";
+            classification = "mode 06 guarded 57-byte marker-1e-b9 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
             IsProtocol03Mode06Guarded57ByteMarker15EcObjectViewPrefixAndLead(prefixFirstNonZeroFieldHex, postPrefixLeadHex) &&
             tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14650,6 +24821,69 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 57-byte marker-15-ec object-view tuple body";
             classification = "mode 06 guarded 57-byte marker-15-ec object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06GuardedMarker34EffectScaffoldObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodyPrefixHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes is 110 or 119)
+        {
+            parserAction = "test guarded mode 06 marker-34 effect/scaffold object-view tuple body";
+            classification = "mode 06 guarded marker-34 effect/scaffold object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06GuardedMarker34NestedReplayObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, body, bodyPrefixHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 265)
+        {
+            parserAction = "test guarded mode 06 marker-34 nested replay object-view tuple body";
+            classification = "mode 06 guarded marker-34 nested replay object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded123ByteMarker34EmbeddedMovementObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodyPrefixHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 123)
+        {
+            parserAction = "test guarded mode 06 123-byte marker-34 embedded movement object-view tuple body";
+            classification = "mode 06 guarded 123-byte marker-34 embedded movement object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded158ByteMarker34ObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 158)
+        {
+            parserAction = "test guarded mode 06 158-byte marker-34 object-view tuple body";
+            classification = "mode 06 guarded 158-byte marker-34 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded158ByteMarker16ObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 158)
+        {
+            parserAction = "test guarded mode 06 158-byte marker-16 object-view tuple body";
+            classification = "mode 06 guarded 158-byte marker-16 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded159ByteMarker16And18ObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 159)
+        {
+            parserAction = "test guarded mode 06 159-byte marker-16-18 object-view tuple body";
+            classification = "mode 06 guarded 159-byte marker-16/18 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            IsProtocol03Mode06Guarded49ByteMarker0eObjectViewTuple(prefixFirstNonZeroFieldHex, postPrefixLeadHex, bodySuffixHex, boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 49)
+        {
+            parserAction = "test guarded mode 06 49-byte marker-0e object-view tuple body";
+            classification = "mode 06 guarded 49-byte marker-0e object-view tuple body";
         }
         else if (tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
@@ -14700,6 +24934,43 @@ public static partial class PacketResearcher
             postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
             postTupleBodyBytes == 53 &&
             postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded53ByteMarker34AltObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded53ByteMarker34AltObjectViewBoundaryHeader(boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 53-byte marker-34-62-alt object-view tuple body";
+            classification = "mode 06 guarded 53-byte marker-34-62-alt object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            prefixFirstNonZeroFieldHex.Equals("03 ff", StringComparison.OrdinalIgnoreCase) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 53 &&
+            postPrefixLeadHex.Equals("00 46 05 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
+            IsProtocol03Mode06Guarded53ByteMarker34ObjectViewBodySuffix(bodySuffixHex) &&
+            IsProtocol03Mode06Guarded53ByteMarker34_46ObjectViewBoundaryHeader(boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 53-byte marker-34-46 object-view tuple body";
+            classification = "mode 06 guarded 53-byte marker-34-46 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 53 &&
+            IsProtocol03Mode06Guarded53ByteMarker31ObjectViewTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodySuffixHex,
+                boundaryHeaderHex))
+        {
+            parserAction = "test guarded mode 06 53-byte marker-31 object-view tuple body";
+            classification = "mode 06 guarded 53-byte marker-31 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker plus zero-padded ff continuation lead", StringComparison.Ordinal) &&
+            prefixFirstNonZeroFieldHex.Equals("02 ff", StringComparison.OrdinalIgnoreCase) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 53 &&
+            postPrefixLeadHex.Equals("00 e9 07 00 00 00 00 34", StringComparison.OrdinalIgnoreCase) &&
             boundaryClassification.Equals("single state marker update", StringComparison.Ordinal))
         {
             parserAction = "test guarded mode 06 unclassified 53-byte tuple body";
@@ -14728,6 +24999,60 @@ public static partial class PacketResearcher
         {
             parserAction = "test guarded mode 06 non-dominant 49-byte zero-update tuple body";
             classification = "mode 06 non-dominant 49-byte zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            prefixFirstNonZeroFieldHex.Equals("03 02", StringComparison.OrdinalIgnoreCase) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 53 &&
+            IsProtocol03Mode06NonDominant53ByteMarker32ObjectViewBodySuffix(bodySuffixHex) &&
+            postPrefixLeadHex.Equals("00 9e 07 00 00 00 00 32", StringComparison.OrdinalIgnoreCase) &&
+            boundaryClassification.Equals("single state marker update", StringComparison.Ordinal) &&
+            boundaryHeaderHex.Equals("00 50 01 00 28 ff 06 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 non-dominant 53-byte marker-32 object-view tuple body";
+            classification = "mode 06 non-dominant 53-byte marker-32 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            IsProtocol03Mode06NonDominant70ByteMarker32ObjectViewTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            tupleLayoutKind.Equals("unclassified object-view tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("unclassified object-view update", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 70 &&
+            boundaryClassification.Equals("single state marker update", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 non-dominant 70-byte marker-32 object-view tuple body";
+            classification = "mode 06 non-dominant 70-byte marker-32 object-view tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 49 &&
+            IsProtocol03Mode06Guarded49ByteMarker03ZeroUpdateTuple(
+                prefixFirstNonZeroFieldHex,
+                postPrefixLeadHex,
+                bodySuffixHex,
+                boundaryHeaderHex) &&
+            boundaryClassification.Equals("state marker/object update candidate", StringComparison.Ordinal))
+        {
+            parserAction = "test guarded mode 06 49-byte marker-03 zero-update tuple body";
+            classification = "mode 06 guarded 49-byte marker-03 zero-update tuple body";
+        }
+        else if (tailPrefixKind.Equals("ff marker-prefixed tail", StringComparison.Ordinal) &&
+            prefixFirstNonZeroFieldHex.Equals("01 ff", StringComparison.OrdinalIgnoreCase) &&
+            tupleLayoutKind.Equals("zero-update marker tuple", StringComparison.Ordinal) &&
+            postPrefixDisposition.Equals("non-object-view post-prefix lead", StringComparison.Ordinal) &&
+            postTupleBodyBytes == 49 &&
+            bodySuffixHex.Equals("00 00 00 00 00 00 c8 00 ff 00 00 00 00 00 00 00", StringComparison.OrdinalIgnoreCase) &&
+            postPrefixLeadHex.Equals("02 c8 00 00 00 00 00 02", StringComparison.OrdinalIgnoreCase) &&
+            boundaryClassification.Equals("state marker/object update candidate", StringComparison.Ordinal) &&
+            boundaryHeaderHex.Equals("00 b4 02 00 00 00 00 00", StringComparison.OrdinalIgnoreCase))
+        {
+            parserAction = "test guarded mode 06 49-byte marker-02 zero-update tuple body";
+            classification = "mode 06 guarded 49-byte marker-02 zero-update tuple body";
         }
         else
         {
@@ -15362,6 +25687,25 @@ public static partial class PacketResearcher
         return true;
     }
 
+    private static bool TryReadSingleBigEndian(IReadOnlyList<byte> payload, int offset, out float value)
+    {
+        value = 0;
+        if (offset + 3 >= payload.Count)
+        {
+            return false;
+        }
+
+        Span<byte> bytes = stackalloc byte[4];
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = payload[offset + i];
+        }
+
+        int bits = BinaryPrimitives.ReadInt32BigEndian(bytes);
+        value = BitConverter.Int32BitsToSingle(bits);
+        return true;
+    }
+
     private static bool TryReadDoubleLittleEndian(byte[] payload, int offset, out double value)
     {
         value = 0;
@@ -15371,6 +25715,25 @@ public static partial class PacketResearcher
         }
 
         long bits = BinaryPrimitives.ReadInt64LittleEndian(payload.AsSpan(offset, 8));
+        value = BitConverter.Int64BitsToDouble(bits);
+        return true;
+    }
+
+    private static bool TryReadDoubleBigEndian(IReadOnlyList<byte> payload, int offset, out double value)
+    {
+        value = 0;
+        if (offset + 7 >= payload.Count)
+        {
+            return false;
+        }
+
+        Span<byte> bytes = stackalloc byte[8];
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = payload[offset + i];
+        }
+
+        long bits = BinaryPrimitives.ReadInt64BigEndian(bytes);
         value = BitConverter.Int64BitsToDouble(bits);
         return true;
     }
@@ -15559,6 +25922,70 @@ public static partial class PacketResearcher
         int Line,
         Protocol03NamedProfileRecord Record);
 
+    private sealed record PacketLocation(string File, int Line);
+
+    private sealed record Unknown6dPayloadWithFile(string File, Unknown6dPayloadSample Payload);
+
+    private sealed record Unknown6dEntryRecordWithFile(string File, Unknown6dPayloadSample Payload, Unknown6dEntryRecord Record);
+
+    private sealed record Unknown80c1PayloadWithFile(string File, Unknown80c1PayloadSample Payload);
+
+    private sealed record ManageBonusPayloadWithFile(string File, ManageBonusPayloadSample Payload);
+
+    private sealed record ManageBonusTradeStatePacketRow(
+        string File,
+        ManageBonusPayloadSample Payload,
+        int ManageBonusIndex,
+        string Byte11Value,
+        int Byte11ValueInt,
+        string Byte15Value);
+
+    private sealed record ManageBonusTradeStateByte15TransitionObservation(
+        PacketLocation Packet,
+        string Field0,
+        string Field1,
+        int Field1Value,
+        string Field2,
+        int Field2Value,
+        string Byte11Value,
+        int Byte11ValueInt,
+        int RowDistance,
+        int AbsoluteRowDistance,
+        int ProtocolBlockDistance,
+        string PairHeaderWindow,
+        IReadOnlyList<string> BetweenPairB2Values,
+        string? PrecedingB3Value,
+        string? OnCompanionField0,
+        string? OnCompanionField1,
+        string? OnCompanionByte11Value,
+        string? OnCompanionShape,
+        string? OnCompanionByte15Value,
+        string? OffCompanionField0,
+        string? OffCompanionField1,
+        string? OffCompanionByte11Value,
+        string? OffCompanionShape,
+        string? OffCompanionByte15Value,
+        string CaptureScope,
+        string PacketSequence,
+        bool HasSamePacketB2,
+        bool HasSamePacketB3,
+        bool HasSamePacketVendorOrMarket,
+        bool HasSamePacketObjectInteraction,
+        string SampleFile,
+        int SampleLine,
+        int OffManageBonusIndex,
+        int OnManageBonusIndex,
+        string OffSamplePayloadHex,
+        string OnSamplePayloadHex);
+
+    private sealed record ManageBonusTradeStateCompanionBlock(
+        string Field0,
+        string Field1,
+        string Field2,
+        string Byte11Value,
+        string Byte15Value,
+        string Shape);
+
     private sealed record Protocol03NpcBaseDynamicTailHeaderLikeLead(
         int Offset,
         int ViewId,
@@ -15575,7 +26002,111 @@ public static partial class PacketResearcher
         string BodyPrefixHex,
         string PostSeparatorPrefixHex);
 
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShape(
+        int BodyByteCount,
+        string SeparatorOffset,
+        int PreSeparatorByteCount,
+        int PostSeparatorByteCount,
+        string PreSeparatorPrefixHex,
+        string PostSeparatorPrefixHex);
+
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFields(
+        int BodyByteCount,
+        int SeparatorOffset,
+        int PostSeparatorByteCount,
+        string PostSeparatorLeadByteHex,
+        string PostSeparatorSecondByteHex,
+        int ZeroRunAfterSecondByte,
+        int? FirstNonZeroAfterSecondByteOffset,
+        string PostSeparatorPrefixHex,
+        string FirstNonZeroWindowHex);
+
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe(
+        int BodyByteCount,
+        int SeparatorOffset,
+        int PostSeparatorByteCount,
+        string PostSeparatorLeadByteHex,
+        string PostSeparatorSecondByteHex,
+        int ZeroRunAfterSecondByte,
+        int VectorOffset,
+        int PreVectorBridgeOffset,
+        int PreVectorBridgeByteCount,
+        string PreVectorBridgeHex,
+        string VectorEncoding,
+        string VectorDisposition,
+        string VectorSample,
+        string VectorWindowHex,
+        string FirstNonZeroWindowHex,
+        int TailOffset,
+        int TailByteCount,
+        string TailHex,
+        string TailFloatEncoding,
+        string TailFloatSample,
+        string TailDisposition);
+
+    private readonly record struct Protocol03NpcBaseVector3d(double X, double Y, double Z);
+
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate(
+        string File,
+        int Line,
+        string Text,
+        string HeaderClassification,
+        string HeaderPrefixHex,
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe Probe,
+        string FieldLayout,
+        string SemanticAction,
+        string SemanticReason,
+        string ParentPositionRelation,
+        string ParentPositionSample,
+        string VectorToParentDistanceBucket,
+        string VectorToParentDistanceSample);
+
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticCandidate(
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticCandidate Source,
+        string SemanticAction,
+        string SemanticReason,
+        string TailFloatKind,
+        string TailAxisPattern,
+        string TailPlanarAxisPattern,
+        string TailMagnitudeBucket,
+        string TailMagnitudeSample);
+
+    private sealed record Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticCandidate(
+        string File,
+        int Line,
+        string Text,
+        string HeaderClassification,
+        string HeaderPrefixHex,
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbe Probe,
+        string FieldLayout,
+        string ControlAction,
+        string ControlReason,
+        string ParentPositionRelation,
+        string ParentPositionSample,
+        string VectorToParentDistanceBucket,
+        string VectorToParentDistanceSample);
+
     private sealed record WeightedValue(string Value, int Count);
+
+    private sealed record ManageBonusTradeStateCompanionMapFields(
+        int SameCompanionField1Pairs,
+        int CompanionField0PairDistinctCount,
+        int CompanionField1PairDistinctCount,
+        int ListedCompanionField1PairCount,
+        int OnCompanionField1DistinctCount,
+        int OffCompanionField1DistinctCount,
+        IReadOnlyDictionary<string, int> CompanionField0Pairs,
+        IReadOnlyDictionary<string, int> CompanionField1Pairs,
+        IReadOnlyDictionary<string, int> CompanionField1PairRepeatBuckets,
+        IReadOnlyDictionary<string, int> OnCompanionField1Values,
+        IReadOnlyDictionary<string, int> OffCompanionField1Values);
+
+    private sealed record ManageBonusTradeStateCompanionShape(
+        string Field0,
+        string Field1,
+        string Field2,
+        string Byte11Value,
+        string Byte15Value);
 
     private sealed record Protocol03SelectorLayout(
         string Classification,

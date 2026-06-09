@@ -95,6 +95,33 @@ assert_contains "$triage_out" 'PacketLog.txt:3:selector ff compact vendor family
 assert_contains "$triage_out" 'PacketLog.txt:4:selector ff continuation shapes: 00 41 00 ff 00 00 00 00 b0 74 and 00 00 00 ff 00 00 00 00 1b ee'
 assert_contains "$triage_out" 'sub/old.log:1:interaction lead: 80 c8'
 
+sanitize_source="$tmp_root/sanitize-source"
+mkdir -p "$sanitize_source/nested"
+printf 'Client->AUTH [00:00] packet size: 1\nAuth TF key: |aa bb|\n\nClient->GAME [00:01] packet size: 4\n81 0e 00 00\000\nencrypted=true MS_EstablishUDPSessionReply\n\nGAME->Client [00:02] packet size: 4\n80 bc 00 00\n\nClient->MARGIN [00:03] packet size: 1\nMS_EstablishUDPSession\n\nClient->WORLD [00:04] packet size: 4\n00 06 0e 00\n' > "$sanitize_source/handshake.log"
+printf 'AUTH->Client [00:00] packet size: 1\nCERT Challenge\n\nWORLD->Client [00:01] packet size: 4\n0c 57 02 00\n' > "$sanitize_source/nested/world.txt"
+
+sanitize_out="$tmp_root/sanitized"
+"$repo_root/scripts/sanitize-packet-log-game-world.sh" \
+  --source "$sanitize_source" \
+  --out "$sanitize_out" >/dev/null
+
+assert_file "$sanitize_out/handshake.log"
+assert_file "$sanitize_out/nested/world.txt"
+assert_contains "$sanitize_out/handshake.log" 'Client->GAME [00:01] packet size: 4'
+assert_contains "$sanitize_out/handshake.log" 'GAME->Client [00:02] packet size: 4'
+assert_contains "$sanitize_out/handshake.log" 'Client->WORLD [00:04] packet size: 4'
+assert_contains "$sanitize_out/nested/world.txt" 'WORLD->Client [00:01] packet size: 4'
+assert_not_contains "$sanitize_out/handshake.log" 'Client->AUTH'
+assert_not_contains "$sanitize_out/handshake.log" 'Auth TF key'
+assert_not_contains "$sanitize_out/handshake.log" 'Client->MARGIN'
+assert_not_contains "$sanitize_out/handshake.log" 'MS_EstablishUDPSession'
+assert_not_contains "$sanitize_out/handshake.log" 'MS_EstablishUDPSessionReply'
+assert_not_contains "$sanitize_out/nested/world.txt" 'CERT Challenge'
+if LC_ALL=C od -An -tx1 "$sanitize_out/handshake.log" | grep -Eq '(^| )00( |$)'; then
+  echo "Sanitized packet log still contains NUL bytes" >&2
+  exit 1
+fi
+
 collect_source="$tmp_root/collect-source"
 mkdir -p "$collect_source"
 printf 'collect packet lead: 810e 01000850\n' > "$collect_source/PacketLog.txt"

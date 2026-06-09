@@ -127,9 +127,13 @@ public static class ReportWriter
         AppendProtocol04ServerPayloadShapeSummary(builder, report);
         AppendProtocol03ObjectViewSummary(builder, report);
         AppendProtocol03SelectorFfRepeatListResourceReferences(builder, report);
+        AppendProtocol03SelectorFfRepeatListDecodedRows(builder, report);
         AppendProtocol03SelectorFfRepeatListShapeSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListEffectiveShapeSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListEntryPairSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListContinuationMarkerSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListContinuationParserActionSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListParserCoverageSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorContinuationBodyOffsetSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorPrePositionBodyOffsetSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries(builder, report);
@@ -139,6 +143,7 @@ public static class ReportWriter
         AppendProtocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListHeaderNameSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListHeaderRegionSummaries(builder, report);
+        AppendProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorBoundaryPrioritySummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorBoundaryInterpretationSummaries(builder, report);
         AppendProtocol03SelectorFfRepeatListVendorBoundaryTargetSummaries(builder, report);
@@ -1594,84 +1599,115 @@ public static class ReportWriter
 
     private static void AppendUnknown6dPayloadSummary(StringBuilder builder, PacketResearchReport report)
     {
-        Unknown6dPayloadWithFile[] payloads = report.PacketDumpFiles
-            .SelectMany(file => (file.Unknown6dPayloads ?? Array.Empty<Unknown6dPayloadSample>())
-                .Select(payload => new Unknown6dPayloadWithFile(file.File, payload)))
-            .ToArray();
+        Unknown6dListRecordShapeSummary[] summaries = report.Unknown6dListRecordShapeSummaries.Count == 0
+            ? PacketResearcher.BuildUnknown6dListRecordShapeSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.AbilityDefinitions,
+                report.ItemCommandEntries,
+                report.GameObjectEntries,
+                report.AnimationDefinitions).ToArray()
+            : report.Unknown6dListRecordShapeSummaries.ToArray();
+        Unknown6dEntryIdSummary[] entrySummaries = report.Unknown6dEntryIdSummaries.Count == 0
+            ? PacketResearcher.BuildUnknown6dEntryIdSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.AbilityDefinitions,
+                report.ItemCommandEntries,
+                report.GameObjectEntries,
+                report.AnimationDefinitions).ToArray()
+            : report.Unknown6dEntryIdSummaries.ToArray();
+        Unknown6dEntryTailFlagSummary[] tailFlagSummaries = report.Unknown6dEntryTailFlagSummaries.Count == 0
+            ? PacketResearcher.BuildUnknown6dEntryTailFlagSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.AbilityDefinitions,
+                report.ItemCommandEntries,
+                report.GameObjectEntries,
+                report.AnimationDefinitions).ToArray()
+            : report.Unknown6dEntryTailFlagSummaries.ToArray();
+        Unknown6dPacketContextSummary[] contextSummaries = report.Unknown6dPacketContextSummaries.Count == 0
+            ? PacketResearcher.BuildUnknown6dPacketContextSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.AbilityDefinitions,
+                report.ItemCommandEntries,
+                report.GameObjectEntries,
+                report.AnimationDefinitions).ToArray()
+            : report.Unknown6dPacketContextSummaries.ToArray();
 
-        if (payloads.Length == 0)
+        if (summaries.Length == 0 && entrySummaries.Length == 0 && tailFlagSummaries.Length == 0 && contextSummaries.Length == 0)
         {
             return;
         }
 
-        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
-            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
-            {
-                Packet = new PacketLocation(file.File, sequence.Line),
-                Sequence = FormatSequence(sequence.Headers)
-            }))
-            .GroupBy(entry => entry.Packet)
-            .ToDictionary(group => group.Key, group => group.First().Sequence);
-
-        var groups = payloads
-            .GroupBy(entry => new
-            {
-                entry.Payload.PayloadLength,
-                entry.Payload.ModeHex,
-                entry.Payload.Field1,
-                entry.Payload.ListOffset,
-                entry.Payload.ListFlag,
-                entry.Payload.EntryCount,
-                entry.Payload.ParsedEntryCount
-            })
-            .Select(group => new
-            {
-                group.Key.PayloadLength,
-                group.Key.ModeHex,
-                group.Key.Field1,
-                group.Key.ListOffset,
-                ListFlag = group.Key.ListFlag?.ToString(CultureInfo.InvariantCulture) ?? "-",
-                EntryCount = group.Key.EntryCount?.ToString(CultureInfo.InvariantCulture) ?? "-",
-                ParsedEntryCount = group.Key.ParsedEntryCount?.ToString(CultureInfo.InvariantCulture) ?? "-",
-                EntryIds = FormatEntryIds(group.SelectMany(entry => entry.Payload.EntryIds)),
-                Count = group.Count(),
-                CaptureScopes = group
-                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
-                    .OrderByDescending(scope => scope.Count())
-                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
-                    .Take(5)
-                    .Select(scope => $"{scope.Key} ({scope.Count()})")
-                    .ToArray(),
-                Sequences = group
-                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
-                        ? sequence
-                        : "unsequenced")
-                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
-                    .OrderByDescending(sequence => sequence.Count())
-                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
-                    .Take(5)
-                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
-                    .ToArray(),
-                Sample = group.First()
-            })
-            .OrderByDescending(group => group.Count)
-            .ThenBy(group => group.PayloadLength)
-            .ToArray();
-
-        builder.AppendLine("## Unknown `6d` Protocol 04 Payload Groups");
-        builder.AppendLine();
-        builder.AppendLine("This isolates top-level protocol 04 `6d` server payloads as an unknown list-bearing structure. The third word is a packet-coordinate offset to a list descriptor: flag byte, little-endian entry count, then six-byte records with ids at record offset +1.");
-        builder.AppendLine();
-        builder.AppendLine("| Payload bytes | Mode | Field 1 | List offset | List flag | Entry count | Parsed entries | Entry ids | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
-        builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
-        foreach (var group in groups)
+        if (summaries.Length > 0)
         {
-            Unknown6dPayloadWithFile sample = group.Sample;
-            builder.AppendLine(
-                $"| {group.PayloadLength} | `{group.ModeHex}` | `{group.Field1}` | {group.ListOffset} | {group.ListFlag} | {group.EntryCount} | {group.ParsedEntryCount} | {group.EntryIds} | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+            builder.AppendLine("## Unknown `6d` Protocol 04 Payload Groups");
+            builder.AppendLine();
+            builder.AppendLine("This isolates top-level protocol 04 `6d` server payloads as an unknown list-bearing structure. The third word is a packet-coordinate offset to a list descriptor: flag byte, little-endian entry count, then six-byte records with a prefix byte, an id at record offset +1, and a three-byte tail.");
+            builder.AppendLine();
+            builder.AppendLine("| Payload bytes | Mode | Field 1 | List offset | List flag | Entry count | Parsed entries | Total records | Distinct ids | Record prefixes | Record tails | Tail u16 +0 | Tail u16 +1 | Top entry ids | Entry id resources | Entry id attributes | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+            builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |");
+            foreach (Unknown6dListRecordShapeSummary summary in summaries)
+            {
+                builder.AppendLine(
+                    $"| {summary.PayloadLength} | `{summary.ModeHex}` | `{summary.Field1}` | {summary.ListOffset} | {FormatNullableInt(summary.ListFlag)} | {FormatNullableInt(summary.EntryCount)} | {FormatNullableInt(summary.ParsedEntryCount)} | {summary.TotalRecordCount} | {summary.DistinctEntryIdCount} | {FormatManageBonusCountDictionary(summary.RecordPrefixes, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTails, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTailU16Offset0Values, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTailU16Offset1Values, "<br>")} | {FormatManageBonusCountDictionary(summary.EntryIds, "<br>")} | {FormatManageBonusCountDictionary(summary.EntryIdResourceReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.EntryIdAttributeReferences, "<br>")} | {summary.PayloadCount} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` | `{summary.SamplePayloadHex}` |");
+            }
+
+            builder.AppendLine();
         }
 
-        builder.AppendLine();
+        if (contextSummaries.Length > 0)
+        {
+            builder.AppendLine("## Unknown `6d` Packet Context Rollup");
+            builder.AppendLine();
+            builder.AppendLine("This groups `6d` payloads by mode and field 1, then keeps packet-neighbor context, same-packet `80 c1` fields, record tails, and resource or attribute collisions visible as semantic leads.");
+            builder.AppendLine();
+            builder.AppendLine("| Mode | Field 1 | Payloads | Packets | Records | Distinct ids | Entry counts | Nonzero tail records | Same-packet 80 c1 | 80 c1 fields | Previous headers | Next headers | Record tails | Entry id resources | Entry id attributes | Capture scopes | Top packet sequences | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Unknown6dPacketContextSummary summary in contextSummaries)
+            {
+                builder.AppendLine(
+                    $"| `{summary.ModeHex}` | `{summary.Field1}` | {summary.PayloadCount} | {summary.PacketCount} | {summary.TotalRecordCount} | {summary.DistinctEntryIdCount} | {FormatManageBonusCountDictionary(summary.EntryCounts, "<br>")} | {summary.NonzeroTailRecordCount} | {summary.SamePacket80c1PayloadCount} | {FormatManageBonusCountDictionary(summary.SamePacket80c1Fields, "<br>")} | {FormatManageBonusCountDictionary(summary.PreviousHeaders, "<br>")} | {FormatManageBonusCountDictionary(summary.NextHeaders, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTails, "<br>")} | {FormatManageBonusCountDictionary(summary.EntryIdResourceReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.EntryIdAttributeReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+
+            builder.AppendLine();
+        }
+
+        if (entrySummaries.Length > 0)
+        {
+            builder.AppendLine("## Unknown `6d` Entry Id Correlations");
+            builder.AppendLine();
+            builder.AppendLine("This groups the parsed six-byte `6d` records by entry id across payload shapes, preserving mode coverage, tail flags, packet context, and imported resource or local attribute-index overlaps.");
+            builder.AppendLine();
+            builder.AppendLine("| Entry id | Id bytes | Records | Payloads | Modes | Payload shapes | Record prefixes | Record tails | Tail u16 +1 | Resources | Attributes | Capture scopes | Top packet sequences | Sample |");
+            builder.AppendLine("| ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Unknown6dEntryIdSummary summary in entrySummaries)
+            {
+                builder.AppendLine(
+                    $"| {summary.EntryId} | {FormatManageBonusCountDictionary(summary.EntryIdHexes, "<br>")} | {summary.TotalRecordCount} | {summary.PayloadCount} | {FormatManageBonusCountDictionary(summary.Modes, "<br>")} | {FormatManageBonusCountDictionary(summary.PayloadShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordPrefixes, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTails, "<br>")} | {FormatManageBonusCountDictionary(summary.RecordTailU16Offset1Values, "<br>")} | {FormatManageBonusCountDictionary(summary.ResourceReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.AttributeReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+
+            builder.AppendLine();
+        }
+
+        if (tailFlagSummaries.Length > 0)
+        {
+            builder.AppendLine("## Unknown `6d` Nonzero Tail Flags");
+            builder.AppendLine();
+            builder.AppendLine("This keeps only six-byte `6d` records whose three-byte tail is not `00 00 00`, grouped by entry id and exact tail bytes. It is a focused view of candidate flags or sub-state bits.");
+            builder.AppendLine();
+            builder.AppendLine("| Entry id | Id bytes | Tail | Tail u16 +0 | Tail u16 +1 | Flag records | Total records for id | Flag payloads | Total payloads for id | Modes | Payload shapes | Resources | Attributes | Capture scopes | Top packet sequences | Sample |");
+            builder.AppendLine("| ---: | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Unknown6dEntryTailFlagSummary summary in tailFlagSummaries)
+            {
+                builder.AppendLine(
+                    $"| {summary.EntryId} | {FormatManageBonusCountDictionary(summary.EntryIdHexes, "<br>")} | `{summary.TailHex}` | {FormatManageBonusCountDictionary(summary.TailU16Offset0Values, "<br>")} | {FormatManageBonusCountDictionary(summary.TailU16Offset1Values, "<br>")} | {summary.FlagRecordCount} | {summary.TotalEntryRecordCount} | {summary.FlagPayloadCount} | {summary.TotalEntryPayloadCount} | {FormatManageBonusCountDictionary(summary.Modes, "<br>")} | {FormatManageBonusCountDictionary(summary.PayloadShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.ResourceReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.AttributeReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+
+            builder.AppendLine();
+        }
     }
 
     private static void AppendUnknown80c1PayloadSummary(StringBuilder builder, PacketResearchReport report)
@@ -1680,71 +1716,100 @@ public static class ReportWriter
             .SelectMany(file => (file.Unknown80c1Payloads ?? Array.Empty<Unknown80c1PayloadSample>())
                 .Select(payload => new Unknown80c1PayloadWithFile(file.File, payload)))
             .ToArray();
+        Unknown80c1PacketContextSummary[] contextSummaries = report.Unknown80c1PacketContextSummaries.Count == 0
+            ? PacketResearcher.BuildUnknown80c1PacketContextSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.AbilityDefinitions,
+                report.ItemCommandEntries,
+                report.GameObjectEntries,
+                report.AnimationDefinitions).ToArray()
+            : report.Unknown80c1PacketContextSummaries.ToArray();
 
-        if (payloads.Length == 0)
+        if (payloads.Length == 0 && contextSummaries.Length == 0)
         {
             return;
         }
 
-        Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
-            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
-            {
-                Packet = new PacketLocation(file.File, sequence.Line),
-                Sequence = FormatSequence(sequence.Headers)
-            }))
-            .GroupBy(entry => entry.Packet)
-            .ToDictionary(group => group.Key, group => group.First().Sequence);
-
-        var groups = payloads
-            .GroupBy(entry => new
-            {
-                entry.Payload.PayloadLength,
-                entry.Payload.Field0,
-                entry.Payload.Field1
-            })
-            .Select(group => new
-            {
-                group.Key.PayloadLength,
-                group.Key.Field0,
-                group.Key.Field1,
-                Count = group.Count(),
-                CaptureScopes = group
-                    .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
-                    .OrderByDescending(scope => scope.Count())
-                    .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
-                    .Take(5)
-                    .Select(scope => $"{scope.Key} ({scope.Count()})")
-                    .ToArray(),
-                Sequences = group
-                    .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
-                        ? sequence
-                        : "unsequenced")
-                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
-                    .OrderByDescending(sequence => sequence.Count())
-                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
-                    .Take(5)
-                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
-                    .ToArray(),
-                Sample = group.First()
-            })
-            .OrderByDescending(group => group.Count)
-            .ThenBy(group => group.PayloadLength)
-            .ToArray();
-
-        builder.AppendLine("## Unknown `80 c1` Protocol 04 Payload Groups");
-        builder.AppendLine();
-        builder.AppendLine("This isolates top-level protocol 04 `80 c1` server payloads as a short unknown structure. The current corpus only has a repeated two-word payload in the `saikungnorthwestbroken` state-bundle sequence.");
-        builder.AppendLine();
-        builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
-        builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- |");
-        foreach (var group in groups)
+        if (payloads.Length > 0)
         {
-            Unknown80c1PayloadWithFile sample = group.Sample;
-            builder.AppendLine(
-                $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+            Dictionary<PacketLocation, string> sequencesByPacket = report.PacketDumpFiles
+                .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+                {
+                    Packet = new PacketLocation(file.File, sequence.Line),
+                    Sequence = FormatSequence(sequence.Headers)
+                }))
+                .GroupBy(entry => entry.Packet)
+                .ToDictionary(group => group.Key, group => group.First().Sequence);
+
+            var groups = payloads
+                .GroupBy(entry => new
+                {
+                    entry.Payload.PayloadLength,
+                    entry.Payload.Field0,
+                    entry.Payload.Field1
+                })
+                .Select(group => new
+                {
+                    group.Key.PayloadLength,
+                    group.Key.Field0,
+                    group.Key.Field1,
+                    Count = group.Count(),
+                    CaptureScopes = group
+                        .GroupBy(entry => FormatPacketCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                        .OrderByDescending(scope => scope.Count())
+                        .ThenBy(scope => scope.Key, StringComparer.OrdinalIgnoreCase)
+                        .Take(5)
+                        .Select(scope => $"{scope.Key} ({scope.Count()})")
+                        .ToArray(),
+                    Sequences = group
+                        .Select(entry => sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out string? sequence)
+                            ? sequence
+                            : "unsequenced")
+                        .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                        .OrderByDescending(sequence => sequence.Count())
+                        .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                        .Take(5)
+                        .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                        .ToArray(),
+                    Sample = group.First()
+                })
+                .OrderByDescending(group => group.Count)
+                .ThenBy(group => group.PayloadLength)
+                .ToArray();
+
+            builder.AppendLine("## Unknown `80 c1` Protocol 04 Payload Groups");
+            builder.AppendLine();
+            builder.AppendLine("This isolates top-level protocol 04 `80 c1` server payloads as a short unknown structure. Current samples are fixed four-byte payloads that recur inside dense state-bundle sequences.");
+            builder.AppendLine();
+            builder.AppendLine("| Payload bytes | Field 0 | Field 1 | Count | Capture scopes | Top packet sequences | Sample | Sample payload |");
+            builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- |");
+            foreach (var group in groups)
+            {
+                Unknown80c1PayloadWithFile sample = group.Sample;
+                builder.AppendLine(
+                    $"| {group.PayloadLength} | `{group.Field0}` | `{group.Field1}` | {group.Count} | {FormatDistinct(group.CaptureScopes, 5)} | {FormatDistinct(group.Sequences, 5)} | `{sample.File}:{sample.Payload.Line}` | `{sample.Payload.PayloadHex}` |");
+            }
+
+            builder.AppendLine();
         }
 
-        builder.AppendLine();
+        if (contextSummaries.Length > 0)
+        {
+            builder.AppendLine("## Unknown `80 c1` Packet Context Rollup");
+            builder.AppendLine();
+            builder.AppendLine("This groups fixed `80 c1` payloads by their two payload words, then preserves neighboring protocol 04 headers, same-packet state-bundle families, and local resource/attribute collisions so the short structure can be treated as packet context before semantic naming.");
+            builder.AppendLine();
+            builder.AppendLine("| Field 0 | Field 1 | Payloads | Packets | Same-packet 6d | Same-packet 80 b2 | Same-packet 80 b3 | Same-packet 80 bc | Payload shapes | Previous headers | Next headers | 6d shapes | 80 b2 fields | 80 b3 fields | 80 bc shapes | Field 0 local refs | Field 1 local refs | Capture scopes | Top packet sequences | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Unknown80c1PacketContextSummary summary in contextSummaries)
+            {
+                builder.AppendLine(
+                    $"| `{summary.Field0}` | `{summary.Field1}` ({summary.Field1Value}) | {summary.PayloadCount} | {summary.PacketCount} | {summary.SamePacket6dPayloadCount} | {summary.SamePacket80b2PayloadCount} | {summary.SamePacket80b3PayloadCount} | {summary.SamePacket80bcPayloadCount} | {FormatManageBonusCountDictionary(summary.PayloadShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.PreviousHeaders, "<br>")} | {FormatManageBonusCountDictionary(summary.NextHeaders, "<br>")} | {FormatManageBonusCountDictionary(summary.SamePacket6dShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.SamePacket80b2Fields, "<br>")} | {FormatManageBonusCountDictionary(summary.SamePacket80b3Fields, "<br>")} | {FormatManageBonusCountDictionary(summary.SamePacket80bcShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.Field0LocalReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.Field1LocalReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+
+            builder.AppendLine();
+        }
     }
 
     private static void AppendProtocol04StateFieldLinks(StringBuilder builder, PacketResearchReport report)
@@ -2012,8 +2077,22 @@ public static class ReportWriter
         AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementSummaries(builder, report);
         AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerSummaries(builder, report);
         AppendProtocol03NestedMovementMode06LongTupleBodyPreAnchorEmbeddedMovementTrailerShapeSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries(builder, report);
         AppendProtocol03NestedMovementMode06PostContinuationTupleBodySummaries(builder, report);
         AppendProtocol03NestedMovementMode06TupleBodyParserActionSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06HeldTupleBodyPrioritySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyOffsetSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyLayoutSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries(builder, report);
+        AppendProtocol03NestedMovementMode06HeldTupleBodySummaries(builder, report);
         AppendProtocol03MovementStateTailLeads(builder, samples);
         AppendProtocol03VariableSelectorTailFamilies(builder, report, samples);
         AppendProtocol03SelectorFfPackedFieldLeads(builder, report, samples);
@@ -2072,6 +2151,35 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| {FormatTableText(summary.FieldRole)} | {FormatTableText(summary.FieldLayoutKind)} | {summary.ZeroRun} | {FormatNullableInt(summary.FieldOffset)} | {FormatProtocol03NullableU16Field(summary.FieldHex)} | {summary.CandidateCount} | {FormatResourceReferences(summary.ResourceReferences, 8)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListDecodedRows(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListDecodedRow[] rows = report.Protocol03SelectorFfRepeatListDecodedRows
+            .OrderBy(row => row.File, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.Line)
+            .ThenBy(row => row.SelectorOffset)
+            .ThenBy(row => row.PositionOffset)
+            .Take(40)
+            .ToArray();
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Repeat List Decoded Rows");
+        builder.AppendLine();
+        builder.AppendLine("These are normalized parser rows for exact selector `ff` two-entry stride-18 repeat lists. The JSON export keeps the full row set; this Markdown section shows bounded samples with the continuation-local marker offset made explicit.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Entries | Continuation marker | Post-marker field | Context | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListDecodedRow row in rows)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(row.ParserAction)} | {FormatSelectorFfRepeatListDecodedRowEntries(row)} | {FormatSelectorFfRepeatListDecodedRowContinuation(row)} | {FormatProtocol03RepeatRecordFieldShape(row.PostMarkerZeroRun, row.PostMarkerFirstFieldOffset, row.PostMarkerFirstFieldHex)}<br>{FormatTableText(row.PostMarkerFieldLayoutKind)} | {FormatSelectorFfRepeatListDecodedRowContext(row)} | `{row.File}:{row.Line}` |");
         }
 
         builder.AppendLine();
@@ -2169,6 +2277,36 @@ public static class ReportWriter
         builder.AppendLine();
     }
 
+    private static void AppendProtocol03SelectorFfRepeatListEntryPairSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListEntryPairSummary[] summaries = report.Protocol03SelectorFfRepeatListEntryPairSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenBy(summary => summary.Entry1FieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.Entry2EffectiveFieldHex, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(summary => summary.ContinuationPrefixHex, StringComparer.OrdinalIgnoreCase)
+            .Take(30)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Repeat List Entry Pair Summary");
+        builder.AppendLine();
+        builder.AppendLine("This groups the modeled selector `ff` repeat lists by entry-1 field, normalized entry-2 field, and continuation prefix. It keeps post-marker spread and resource collisions visible so the two-record stride/list hypothesis can be ranked before parser promotion.");
+        builder.AppendLine();
+        builder.AppendLine("| Entry 1 field | Entry 2 effective field | Continuation | Candidates | Distinct post-marker fields | Entry 2 sources | Entry layouts | Post-marker fields | Entry 1 refs | Entry 2 refs | Post-marker refs | Capture scopes | First selectors | Position samples | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListEntryPairSummary summary in summaries)
+        {
+            string entryLayouts = $"entry1 {FormatCountDictionary(summary.Entry1Layouts, 3)}<br>entry2 {FormatCountDictionary(summary.Entry2Layouts, 3)}";
+            builder.AppendLine(
+                $"| {FormatProtocol03NullableU16Field(summary.Entry1FieldHex)} | {FormatProtocol03NullableU16Field(summary.Entry2EffectiveFieldHex)} | `{FormatEmptyHex(summary.ContinuationPrefixHex)}` | {summary.CandidateCount} | {summary.DistinctPostMarkerFieldCount} | {FormatCountDictionary(summary.Entry2EffectiveSources, 4)} | {entryLayouts} | {FormatCountDictionary(summary.PostMarkerFields, 6)} | {FormatCountDictionary(summary.Entry1ResourceReferences, 4)} | {FormatCountDictionary(summary.Entry2EffectiveResourceReferences, 4)} | {FormatCountDictionary(summary.PostMarkerResourceReferences, 4)} | {FormatCountDictionary(summary.CaptureScopes, 6)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendProtocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries(StringBuilder builder, PacketResearchReport report)
     {
         Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummary[] summaries = report.Protocol03SelectorFfRepeatListEffectiveShapeHeaderSummaries
@@ -2230,6 +2368,66 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| `{FormatEmptyHex(summary.ContinuationPrefixBeforeMarkerHex)}` | `{FormatEmptyHex(summary.ContinuationMarkerHex)}` | {FormatProtocol03RepeatRecordFieldShape(summary.PostMarkerZeroRun, summary.PostMarkerFirstFieldOffset, summary.PostMarkerFirstFieldHex)} | {FormatTableText(summary.PostMarkerFieldLayoutKind)} | {summary.CandidateCount} | {summary.ShapeCount} | {summary.CandidatesWithHeaderWindows} | {summary.CandidatesWithVendorHeaderWindows} | {FormatSelectorFfRepeatListHeaderWindows(summary.HeaderWindows, 4)} | {FormatSelectorFfRepeatListHeaderWindows(summary.VendorHeaderWindows, 4)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry1ResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2PrimaryFields, 5)} | {FormatCountDictionary(summary.Entry2SecondaryFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.Entry2EffectiveSources, 4)} | {FormatCountDictionary(summary.PostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.VendorEntry1ResourceReferences, 5)} | {FormatCountDictionary(summary.VendorEntry2EffectiveResourceReferences, 5)} | {FormatCountDictionary(summary.VendorPostMarkerResourceReferences, 5)} | {FormatCountDictionary(summary.PostMarkerLeadHexes, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | {FormatSelectorFfRepeatListShapePositions(summary.PositionSamples, 4)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListContinuationParserActionSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListContinuationParserActionSummary[] summaries = report.Protocol03SelectorFfRepeatListContinuationParserActionSummaries
+            .OrderByDescending(summary => summary.CandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.ParserAction, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Continuation Parser Actions");
+        builder.AppendLine();
+        builder.AppendLine("This turns the continuation marker evidence into conservative parser actions. It models continuation-local byte `+3 = ff` as a continuation marker/flag before the post-marker field, while keeping header-looking windows as byte-window collision or boundary controls instead of nested RPC decodes.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Rows | Candidates | Headers | Prefix families | Post-marker fields | Entry fields | Header regions | Vendor windows | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListContinuationParserActionSummary summary in summaries)
+        {
+            string headers = $"known candidates {summary.CandidatesWithHeaderWindows.ToString(CultureInfo.InvariantCulture)}<br>vendor candidates {summary.CandidatesWithVendorHeaderWindows.ToString(CultureInfo.InvariantCulture)}<br>windows {summary.HeaderWindowCount.ToString(CultureInfo.InvariantCulture)} / vendor {summary.VendorHeaderWindowCount.ToString(CultureInfo.InvariantCulture)}";
+            string entryFields = $"entry1 {FormatCountDictionary(summary.Entry1Fields, 3)}<br>entry2 primary {FormatCountDictionary(summary.Entry2PrimaryFields, 3)}<br>entry2 effective {FormatCountDictionary(summary.Entry2EffectiveFields, 3)}<br>sources {FormatCountDictionary(summary.Entry2EffectiveSources, 3)}";
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.MarkerRowCount} | {summary.CandidateCount} / shapes {summary.ShapeCount} | {headers} | pre {FormatCountDictionary(summary.ContinuationPrefixBeforeMarkers, 5)}<br>full {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | layouts {FormatCountDictionary(summary.PostMarkerLayouts, 4)}<br>fields {FormatCountDictionary(summary.PostMarkerFields, 5)} | {entryFields} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.VendorHeaderWindows, 5)} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListParserCoverageSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListParserCoverageSummary[] summaries = report.Protocol03SelectorFfRepeatListParserCoverageSummaries
+            .OrderByDescending(summary => summary.CoveredCandidateCount)
+            .ThenByDescending(summary => summary.HeaderWindowCount)
+            .ThenBy(summary => summary.CoverageDisposition, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Parser Coverage");
+        builder.AppendLine();
+        builder.AppendLine("This compacts the continuation-marker action rows into parser coverage buckets. The parser case models the two-entry selector `ff` repeat list and continuation-local `+3 = ff` marker; known-header and vendor-window hits stay as explicit collision-control fixtures.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser case | Coverage | Action rows | Covered candidates | Headers | Parser actions | Prefix families | Post-marker fields | Entry fields | Header controls | First selectors | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListParserCoverageSummary summary in summaries)
+        {
+            string headers = $"known candidates {summary.CandidatesWithHeaderWindows.ToString(CultureInfo.InvariantCulture)}<br>vendor candidates {summary.CandidatesWithVendorHeaderWindows.ToString(CultureInfo.InvariantCulture)}<br>windows {summary.HeaderWindowCount.ToString(CultureInfo.InvariantCulture)} / vendor {summary.VendorHeaderWindowCount.ToString(CultureInfo.InvariantCulture)}";
+            string postMarker = $"layouts {FormatCountDictionary(summary.PostMarkerLayouts, 4)}<br>fields {FormatCountDictionary(summary.PostMarkerFields, 5)}";
+            string entryFields = $"entry1 {FormatCountDictionary(summary.Entry1Fields, 3)}<br>entry2 {FormatCountDictionary(summary.Entry2EffectiveFields, 3)}<br>sources {FormatCountDictionary(summary.Entry2EffectiveSources, 3)}";
+            string headerControls = $"regions {FormatCountDictionary(summary.HeaderRegions, 5)}<br>vendor {FormatCountDictionary(summary.VendorHeaderWindows, 5)}";
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserCase)} | {FormatTableText(summary.CoverageDisposition)} | {summary.ActionRowCount} / marker rows {summary.MarkerRowCount} | {summary.CoveredCandidateCount} / shapes {summary.ShapeCount} | {headers} | actions {FormatCountDictionary(summary.ParserActions, 4)}<br>reasons {FormatCountDictionary(summary.ActionReasons, 4)} | pre {FormatCountDictionary(summary.ContinuationPrefixBeforeMarkers, 5)}<br>full {FormatCountDictionary(summary.ContinuationPrefixes, 5)} | {postMarker} | {entryFields} | {headerControls} | {FormatCountDictionary(summary.FirstSelectors, 6)} | `{summary.SampleFile}:{summary.SampleLine}` |");
         }
 
         builder.AppendLine();
@@ -2530,6 +2728,41 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| {FormatTableText(summary.ParserPriority)} | {(summary.IsModeledFieldOverlap ? "yes" : "no")} | {summary.TargetCount} | {summary.CandidateCount} | {summary.HeaderWindowCount} | {summary.ShapeCount} | {FormatCountDictionary(summary.TargetInterpretations, 5)} | {FormatCountDictionary(summary.Headers, 5)} | {FormatCountDictionary(summary.HeaderRegions, 5)} | {FormatCountDictionary(summary.PayloadOffsets, 5)} | {FormatCountDictionary(summary.ObjectOffsets, 5)} | {FormatCountDictionary(summary.TargetLocalOffsets, 5)} | {FormatCountDictionary(summary.TargetBodySpanBytes, 5)} | {FormatCountDictionary(summary.TargetBodyHexes, 5)} | {FormatCountDictionary(summary.PositionOffsets, 5)} | {FormatCountDictionary(summary.Entry1Fields, 5)} | {FormatCountDictionary(summary.Entry2EffectiveFields, 5)} | {FormatCountDictionary(summary.PostMarkerFields, 5)} | {FormatSelectorFfRepeatListVendorInterpretationTargets(summary.TopTargets, 5)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow[] rows = (report.Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows.Count == 0 &&
+                report.Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03SelectorFfRepeatListVendorBoundaryDecisionRows(
+                        report.Protocol03SelectorFfRepeatListVendorBoundaryTargetSummaries,
+                        report.Protocol03SelectorFfRepeatListVendorBodyWindowProbeSummaries)
+                    : report.Protocol03SelectorFfRepeatListVendorBoundaryDecisionRows)
+            .OrderBy(row => row.IsModeledFieldOverlap)
+            .ThenByDescending(row => row.HeaderWindowCount)
+            .ThenBy(row => row.ParserDecision, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.HeaderPayloadOffset)
+            .Take(40)
+            .ToArray();
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("## Protocol 03 Selector ff Vendor Boundary Decision Rows");
+        builder.AppendLine();
+        builder.AppendLine("This turns each exact selector `ff` vendor-window target into a parser decision. Suppression rows are negative fixtures for avoiding false nested vendor RPC decodes; queued rows remain body-length parser work.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser decision | Evidence | Header | Target | Priority | Interpretation | Region | Counts | Local offsets | Body spans | Window hexes | Length matches | Low-half refs | High-half refs | Shape fields | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03SelectorFfRepeatListVendorBoundaryDecisionRow row in rows)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(row.ParserDecision)}<br>{FormatTableText(row.DecisionReason)} | {FormatTableText(row.EvidenceDisposition)} | {FormatTableText(row.Name)}<br>`{row.EncodedHeader}` [{FormatSlashList(row.Protocols, 4)} {FormatTableText(row.Direction)}] | payload +{row.HeaderPayloadOffset.ToString(CultureInfo.InvariantCulture)}<br>object +{row.HeaderObjectOffset.ToString(CultureInfo.InvariantCulture)} | {FormatTableText(row.ParserPriority)} | {FormatTableText(row.TargetInterpretation)} | {FormatTableText(row.HeaderRegion)} | candidates {row.CandidateCount}<br>windows {row.HeaderWindowCount}<br>shapes {row.ShapeCount} | {FormatCountDictionary(row.TargetLocalOffsets, 5)} | {FormatCountDictionary(row.TargetBodySpanBytes, 5)} | {FormatCountDictionary(row.WindowHexes, 5)} | {FormatCountDictionary(row.NearbyU16LengthMatches, 5)} | {FormatCountDictionary(row.LowHalfResourceReferences, 5)} | {FormatCountDictionary(row.HighHalfResourceReferences, 5)} | entry1 {FormatCountDictionary(row.Entry1Fields, 3)}<br>entry2 {FormatCountDictionary(row.Entry2EffectiveFields, 3)}<br>post {FormatCountDictionary(row.PostMarkerFields, 3)} | `{row.SampleFile}:{row.SampleLine}` |");
         }
 
         builder.AppendLine();
@@ -3222,6 +3455,30 @@ public static class ReportWriter
         builder.AppendLine();
     }
 
+    private static void AppendProtocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary[] summaries = report.Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Unsupported Embedded Control Selectors");
+        builder.AppendLine();
+        builder.AppendLine("This rolls unsupported `00 06 <selector>` trailer-control collisions up by selector byte so the residual pre-anchor queue has concrete decode targets without changing live consumption.");
+        builder.AppendLine();
+        builder.AppendLine("| Movement disposition | Selector | Windows | Shape dispositions | Trailer dispositions | Post-movement leads | Next leads | Bytes remaining | Pre-tail offsets | Pre-tail fields | Pre-leads | Trailing leads | Tail anchors | Parser targets | Pre-anchor bytes | Body bytes | Nonzero trailer offsets | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06UnsupportedEmbeddedControlSelectorSummary summary in summaries.Take(25))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.MovementDisposition)} | `{FormatEmptyHex(summary.InnerSelectorHex)}` | {summary.WindowCount} | {FormatCountDictionary(summary.ShapeDispositions, 5)} | {FormatCountDictionary(summary.TrailerDispositions, 5)} | {FormatCountDictionary(summary.PostMovementLeads, 5)} | {FormatCountDictionary(summary.PostMovementNextLeads, 5)} | {FormatCountDictionary(summary.BytesRemainingAfterMovement, 5)} | {FormatCountDictionary(summary.PreTailFieldOffsets, 5)} | {FormatCountDictionary(summary.PreTailFields, 5)} | {FormatCountDictionary(summary.PreAnchorPreLeads, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.TailAnchorKinds, 5)} | {FormatCountDictionary(summary.ParserTargets, 5)} | {FormatCountDictionary(summary.PreAnchorBodyBytes, 5)} | {FormatCountDictionary(summary.BodyBytes, 5)} | {FormatCountDictionary(summary.PostMovementNonZeroByteOffsets, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
     private static void AppendProtocol03NestedMovementMode06TupleBodyParserActionSummaries(StringBuilder builder, PacketResearchReport report)
     {
         Protocol03NestedMovementMode06TupleBodyParserActionSummary[] summaries = report.Protocol03NestedMovementMode06TupleBodyParserActionSummaries
@@ -3241,6 +3498,361 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.EvidenceRowCount} | {summary.WindowCount} | {FormatCountDictionary(summary.TailPrefixKinds, 5)} | {FormatCountDictionary(summary.TupleLayouts, 5)} | {FormatCountDictionary(summary.PostPrefixDispositions, 5)} | {FormatCountDictionary(summary.BodyDispositions, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.FirstNonZeroOffsets, 5)} | {FormatCountDictionary(summary.FirstNonZeroFields, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.OuterSelectors, 8)} | {FormatCountDictionary(summary.ObjectClassifications, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06HeldTupleBodyPrioritySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary[] summaries = report.Protocol03NestedMovementMode06HeldTupleBodyPrioritySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Held Tuple Body Priority Rollup");
+        builder.AppendLine();
+        builder.AppendLine("This separates held parser work targets from low-count controls so the residual mode 06 tuple-body queue is easier to triage.");
+        builder.AppendLine();
+        builder.AppendLine("| Priority action | Reason | Held rows | Windows | Parser actions | Source dispositions | Body bytes | Post-prefix leads | Marker bytes | Inner selectors | Header classifications | Header prefixes | Body suffixes | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06HeldTupleBodyPrioritySummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.PriorityAction)} | {FormatTableText(summary.PriorityReason)} | {summary.HeldRowCount} | {summary.WindowCount} | {FormatCountDictionary(summary.ParserActions, 5)} | {FormatCountDictionary(summary.SourceDispositions, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 8)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.PositionSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyFixtureSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyFixtureSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Fixtures");
+        builder.AppendLine();
+        builder.AppendLine("These are the full-body marker-34 parser/evidence rows behind the long-body priority bucket. The generated JSON keeps `BodyHex` for each row; this table keeps compact offsets and boundary hints.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Body bytes | Body prefix | Body suffix | First nonzero | Nonzero offsets | Tail/body/boundary offsets | Tuple | Header | Selectors | Position | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyFixtureSummary summary in summaries)
+        {
+            string offsets = string.Format(
+                CultureInfo.InvariantCulture,
+                "tail {0}; continuation {1}; body {2}; boundary {3}; post-continuation {4}",
+                summary.TailStartOffset,
+                summary.ContinuationCutOffset,
+                summary.BodyOffset,
+                summary.BoundaryCutOffset,
+                summary.PostContinuationBoundaryOffset);
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.BodyBytes} | `{FormatEmptyHex(summary.BodyPrefixHex)}` | `{FormatEmptyHex(summary.BodySuffixHex)}` | {summary.FirstNonZeroOffset?.ToString(CultureInfo.InvariantCulture) ?? "-"} / `{FormatEmptyHex(summary.FirstNonZeroFieldHex)}` | {FormatTableText(summary.BodyNonZeroOffsets)} | {FormatTableText(offsets)} | {FormatTableText(summary.TupleLayoutKind)} / {FormatTableText(summary.PostPrefixDisposition)} / `{FormatEmptyHex(summary.PostPrefixLeadHex)}` | {FormatTableText(summary.BoundaryHeaderClassification)} / `{FormatEmptyHex(summary.BoundaryHeaderHex)}` | `{FormatEmptyHex(summary.OuterSelectorHex)}` / `{FormatEmptyHex(summary.InnerSelectorHex)}` | {FormatTableText(summary.Position)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyOffsetSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyOffsetSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Offset Scaffold");
+        builder.AppendLine();
+        builder.AppendLine("This summarizes nonzero byte offsets across the full marker-34 long-body fixtures, exposing stable scaffold bytes and repeated variable fields across promoted and held rows.");
+        builder.AppendLine();
+        builder.AppendLine("| Body offset | Disposition | Present | Nonzero | Byte values | u16 LE | u16 BE | u32 LE | Body bytes | Boundary headers | Selectors | Sample |");
+        builder.AppendLine("| ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyOffsetSummary summary in summaries.Take(80))
+        {
+            builder.AppendLine(
+                $"| {summary.BodyOffset} | {FormatTableText(summary.OffsetDisposition)} | {summary.PresentFixtureCount} | {summary.NonZeroFixtureCount} | {FormatCountDictionary(summary.ByteValues, 5)} | {FormatCountDictionary(summary.U16LeValues, 5)} | {FormatCountDictionary(summary.U16BeValues, 5)} | {FormatCountDictionary(summary.U32LeValues, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Interior Windows");
+        builder.AppendLine();
+        builder.AppendLine("This extracts embedded movement-like leads inside marker-34 long bodies so nested body hypotheses can be tested separately from the outer boundary rule.");
+        builder.AppendLine();
+        builder.AppendLine("| Window disposition | Body offset | Window | Fixtures | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | ---: | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyInteriorWindowSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.WindowDisposition)} | {summary.BodyOffset} | `{FormatEmptyHex(summary.WindowHex)}` | {summary.FixtureCount} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Known FX Windows");
+        builder.AppendLine();
+        builder.AppendLine("This resolves imported FX IDs inside marker-34 long bodies and preserves the adjacent bytes needed to test whether the window is an effect/state field.");
+        builder.AppendLine();
+        builder.AppendLine("| Body offset | FX | Name | Fixtures | Follow-up bytes | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyKnownFxWindowSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {summary.BodyOffset} | `{FormatEmptyHex(summary.FxHex)}` | {FormatTableText(summary.FxName)} | {summary.FixtureCount} | {FormatCountDictionary(summary.FollowupBytes, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body FX Field Roles");
+        builder.AppendLine();
+        builder.AppendLine("This maps known FX windows to their marker-34 body-relative role so nested replay hits are compared against the outer marker-34 schema.");
+        builder.AppendLine();
+        builder.AppendLine("| Disposition | Scope | Body offset | Relative offset | FX | Name | Fixtures | Follow-up bytes | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyFxFieldRoleSummary summary in summaries)
+        {
+            string scope = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} @ {1}",
+                summary.Marker34BodyScope,
+                summary.Marker34BodyOffset);
+            builder.AppendLine(
+                $"| {FormatTableText(summary.FieldDisposition)} | {FormatTableText(scope)} | {summary.BodyOffset} | {summary.Marker34RelativeOffset} | `{FormatEmptyHex(summary.FxHex)}` | {FormatTableText(summary.FxName)} | {summary.FixtureCount} | {FormatCountDictionary(summary.FollowupBytes, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Structural Roles");
+        builder.AppendLine();
+        builder.AppendLine("This maps marker-34 lead, tag, effect, and scaffold windows to marker-34 body-relative offsets across outer and nested replay bodies.");
+        builder.AppendLine();
+        builder.AppendLine("| Disposition | Scope | Body offset | Relative offset | Bytes | Fixtures | Window values | Interpretations | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyStructuralRoleSummary summary in summaries)
+        {
+            string scope = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} @ {1}",
+                summary.Marker34BodyScope,
+                summary.Marker34BodyOffset);
+            builder.AppendLine(
+                $"| {FormatTableText(summary.FieldDisposition)} | {FormatTableText(scope)} | {summary.BodyOffset} | {summary.Marker34RelativeOffset} | {summary.WindowBytes} | {summary.FixtureCount} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.Interpretations, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyLayoutSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyLayoutSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Layouts");
+        builder.AppendLine();
+        builder.AppendLine("This composes marker-34 tag, effect, scaffold, embedded-movement, and nested-replay fields into one row per long-body fixture.");
+        builder.AppendLine();
+        builder.AppendLine("| Layout | Parser action | Reason | Body bytes | Tag | FX | Scaffold | Movement | Nested replay | Nested tag | Nested FX | Nested scaffold | Boundary header | Selectors | Position | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyLayoutSummary summary in summaries)
+        {
+            string markerFx = string.Equals(summary.MarkerFxHex, "-", StringComparison.Ordinal)
+                ? "-"
+                : $"`{FormatEmptyHex(summary.MarkerFxHex)}` / {FormatTableText(summary.MarkerFxName)} / `{FormatEmptyHex(summary.MarkerFxFollowupBytes)}`";
+            string movement = string.Equals(summary.EmbeddedMovementSelectorHex, "-", StringComparison.Ordinal)
+                ? "-"
+                : $"selector `{FormatEmptyHex(summary.EmbeddedMovementSelectorHex)}` / {FormatTableText(summary.EmbeddedMovementPosition)} / {FormatTableText(summary.EmbeddedMovementRelation)} / {FormatTableText(summary.EmbeddedMovementDistance)}";
+            string nestedReplay = summary.NestedMarker34BodyOffset < 0
+                ? "-"
+                : string.Format(
+                    CultureInfo.InvariantCulture,
+                    "prefix {0}; body {1}",
+                    summary.NestedReplayPrefixOffset,
+                    summary.NestedMarker34BodyOffset);
+            string nestedFx = string.Equals(summary.NestedFxHex, "-", StringComparison.Ordinal)
+                ? "-"
+                : $"`{FormatEmptyHex(summary.NestedFxHex)}` / {FormatTableText(summary.NestedFxName)} / `{FormatEmptyHex(summary.NestedFxFollowupBytes)}`";
+            builder.AppendLine(
+                $"| {FormatTableText(summary.LayoutDisposition)} | {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.BodyBytes} | {FormatTableText(summary.MarkerTagValue)} / `{FormatEmptyHex(summary.MarkerTagWindowHex)}` | {markerFx} | `{FormatEmptyHex(summary.MarkerScaffoldHex)}` | {movement} | {FormatTableText(nestedReplay)} | {FormatTableText(summary.NestedTagValue)} / `{FormatEmptyHex(summary.NestedTagWindowHex)}` | {nestedFx} | `{FormatEmptyHex(summary.NestedScaffoldHex)}` | {FormatTableText(summary.BoundaryHeaderClassification)} / `{FormatEmptyHex(summary.BoundaryHeaderHex)}` | `{FormatEmptyHex(summary.OuterSelectorHex)}` / `{FormatEmptyHex(summary.InnerSelectorHex)}` | {FormatTableText(summary.Position)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Parser Readiness");
+        builder.AppendLine();
+        builder.AppendLine("This groups the marker-34 long-body layouts into parser-promotion candidates and reports whether each bucket is still held or already covered by a guarded parser action.");
+        builder.AppendLine();
+        builder.AppendLine("| Readiness | Promotion blocker | Fixtures | Parser actions | Reasons | Layouts | Body bytes | Body suffixes | Post-prefix leads | Marker bytes | Tags | FX | Movement selectors | Movement relations | Nested replay | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyParserReadinessSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ReadinessDisposition)} | {FormatTableText(summary.PromotionBlocker)} | {summary.FixtureCount} | {FormatCountDictionary(summary.ParserActions, 5)} | {FormatCountDictionary(summary.ActionReasons, 5)} | {FormatCountDictionary(summary.Layouts, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.MarkerTags, 5)} | {FormatCountDictionary(summary.MarkerFxs, 5)} | {FormatCountDictionary(summary.EmbeddedMovementSelectors, 5)} | {FormatCountDictionary(summary.EmbeddedMovementRelations, 5)} | {FormatCountDictionary(summary.NestedReplayOffsets, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Nested Replay Candidates");
+        builder.AppendLine();
+        builder.AppendLine("This detects marker-34 prefix patterns inside marker-34 long bodies and checks whether the following bytes replay the stable marker-34 scaffold.");
+        builder.AppendLine();
+        builder.AppendLine("| Disposition | Prefix offset | Nested body offset | Available nested bytes | Prefix | Nested tag | Nested FX | Stable offsets | Fixtures | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyNestedReplaySummary summary in summaries)
+        {
+            string nestedFx = string.Equals(summary.NestedKnownFxHex, "-", StringComparison.Ordinal)
+                ? "-"
+                : $"`{FormatEmptyHex(summary.NestedKnownFxHex)}` / {FormatTableText(summary.NestedKnownFxName)} / `{FormatEmptyHex(summary.NestedKnownFxFollowupBytes)}`";
+            string stableOffsets = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}/{1}: {2}",
+                summary.StableOffsetMatchCount,
+                summary.StableOffsetProbeCount,
+                summary.MatchedStableOffsets);
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ReplayDisposition)} | {summary.PrefixBodyOffset} | {summary.NestedBodyOffset} | {summary.AvailableNestedBodyBytes} | `{FormatEmptyHex(summary.PrefixHex)}` | `{FormatEmptyHex(summary.NestedTagWindowHex)}` | {nestedFx} | {FormatTableText(stableOffsets)} | {summary.FixtureCount} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Field Windows");
+        builder.AppendLine();
+        builder.AppendLine("This folds the marker-34 offset, FX, embedded-movement, and nested-replay evidence into decoder-facing field windows.");
+        builder.AppendLine();
+        builder.AppendLine("| Window disposition | Body offset | Bytes | Fixtures | Window values | Interpretations | Body bytes | Boundary headers | Selectors | Positions | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyFieldWindowSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.WindowDisposition)} | {summary.BodyOffset} | {summary.WindowBytes} | {summary.FixtureCount} | {FormatCountDictionary(summary.WindowHexes, 5)} | {FormatCountDictionary(summary.Interpretations, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.Positions, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary[] summaries = report.Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Marker-34 Long Body Embedded Movement Vectors");
+        builder.AppendLine();
+        builder.AppendLine("This decodes embedded marker-34 movement payloads with the same selector-specific little-endian float rules used by the nested movement parser.");
+        builder.AppendLine();
+        builder.AppendLine("| Disposition | Lead offset | Marker offset | Lead | Selector | Payload bytes | Position offset | Fixtures | Pre-position | Position bytes | Decoded positions | Outer positions | Relation | Distance | Post movement | Body bytes | Boundary headers | Selectors | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06Marker34LongBodyEmbeddedMovementVectorSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.MovementDisposition)} | {summary.LeadBodyOffset} | {summary.MarkerBodyOffset} | `{FormatEmptyHex(summary.LeadByteHex)}` | `{FormatEmptyHex(summary.SelectorHex)}` | {summary.InnerPayloadBytes} | {summary.BodyPositionOffset} | {summary.FixtureCount} | {FormatCountDictionary(summary.PrePositionBytes, 5)} | {FormatCountDictionary(summary.PositionHexes, 5)} | {FormatCountDictionary(summary.DecodedPositions, 5)} | {FormatCountDictionary(summary.OuterPositions, 5)} | {FormatCountDictionary(summary.OuterPositionRelations, 5)} | {FormatCountDictionary(summary.DistancesFromOuterPosition, 5)} | {FormatCountDictionary(summary.PostMovementLeads, 5)} | {FormatCountDictionary(summary.BodyByteLengths, 5)} | {FormatCountDictionary(summary.BoundaryHeaderClassifications, 5)} / {FormatCountDictionary(summary.BoundaryHeaderPrefixes, 5)} | {FormatCountDictionary(summary.OuterSelectors, 5)} / {FormatCountDictionary(summary.InnerSelectors, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendProtocol03NestedMovementMode06HeldTupleBodySummaries(StringBuilder builder, PacketResearchReport report)
+    {
+        Protocol03NestedMovementMode06HeldTupleBodySummary[] summaries = report.Protocol03NestedMovementMode06HeldTupleBodySummaries
+            .ToArray();
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Protocol 03 Mode 06 Held Tuple Body Rows");
+        builder.AppendLine();
+        builder.AppendLine("This lists only tuple body rows whose current parser action is hold/evidence-only. It is the residual work queue for the next mode 06 decoder rules.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Source | Windows | Body bytes | Tail prefix | Prefix field | Tuple layout | Post-prefix disposition | Body disposition | Body suffixes | First nonzero | Pre-anchor first nonzero | Pre-anchor trailing leads | Pre-anchor pre-leads | Pre-tail fields | Header classifications | Header prefixes | Post-prefix leads | Marker bytes | Inner selectors | Payload bytes | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (Protocol03NestedMovementMode06HeldTupleBodySummary summary in summaries.Take(50))
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {FormatTableText(summary.SourceDisposition)} | {summary.WindowCount} | {summary.BodyBytes} | {FormatTableText(summary.TailPrefixKind)} | `{FormatEmptyHex(summary.PrefixFirstNonZeroFieldHex)}` | {FormatTableText(summary.TupleLayoutKind)} | {FormatTableText(summary.PostPrefixDisposition)} | {FormatTableText(summary.BodyDisposition)} | {FormatCountDictionary(summary.BodySuffixes, 5)} | {FormatCountDictionary(summary.FirstNonZeroOffsets, 5)} / {FormatCountDictionary(summary.FirstNonZeroFields, 5)} | {FormatCountDictionary(summary.PreAnchorFirstNonZeroOffsets, 5)} / {FormatCountDictionary(summary.PreAnchorFirstNonZeroFields, 5)} | {FormatCountDictionary(summary.PreAnchorTrailingLeads, 5)} | {FormatCountDictionary(summary.PreAnchorPreLeadBytes, 5)} | {FormatCountDictionary(summary.PreTailFieldBytes, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 5)} | {FormatCountDictionary(summary.PostPrefixLeads, 5)} | {FormatCountDictionary(summary.MarkerBytes, 5)} | {FormatCountDictionary(summary.InnerSelectors, 5)} | {FormatCountDictionary(summary.PayloadBytes, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
         }
 
         builder.AppendLine();
@@ -4486,6 +5098,23 @@ public static class ReportWriter
     private static string FormatNullableInt(int? value)
     {
         return value?.ToString(CultureInfo.InvariantCulture) ?? "-";
+    }
+
+    private static string FormatManageBonusDecoderWord(string? fieldHex, int? fieldValue)
+    {
+        if (string.IsNullOrWhiteSpace(fieldHex))
+        {
+            return "-";
+        }
+
+        return fieldValue is null
+            ? $"`{fieldHex}`"
+            : $"`{fieldHex}` ({FormatNullableInt(fieldValue)})";
+    }
+
+    private static string FormatManageBonusDecoderTransition(string? onFieldHex, int? onFieldValue, string? offFieldHex, int? offFieldValue)
+    {
+        return $"{FormatManageBonusDecoderWord(onFieldHex, onFieldValue)} -> {FormatManageBonusDecoderWord(offFieldHex, offFieldValue)}";
     }
 
     private static IEnumerable<Protocol03SelectorFfPositionLead> FindProtocol03SelectorFfPositionLeads(
@@ -6043,9 +6672,11 @@ public static class ReportWriter
         int unboundedDynamicCreations = dynamicTailLeads.Count(candidate =>
             !candidate.PostCreationObjectViewComplete &&
             candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase));
+        int reviewedPostSeparatorBodyBoundaries = dynamicTailLeads.Count(candidate =>
+            candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation bounded by reviewed post-separator body", StringComparison.OrdinalIgnoreCase));
         builder.AppendLine();
         builder.AppendLine("Dynamic creation tail prefixes start after a nested Object599 dynamic creation body has parsed its declared attribute stream. They are byte leads for the next segmentation pass, not decoded payloads.");
-        builder.AppendLine($"Across {dynamicTailLeads.Length} measured nested dynamic creations, {unboundedDynamicCreations} parsed the Object599 body but did not expose another object-view header inside the current eight-byte search window.");
+        builder.AppendLine($"Across {dynamicTailLeads.Length} measured nested dynamic creations, {unboundedDynamicCreations} parsed the Object599 body but did not expose another object-view header inside the current eight-byte search window; {reviewedPostSeparatorBodyBoundaries} are bounded by the reviewed post-separator body rule.");
         builder.AppendLine();
         builder.AppendLine("| Tail family | Follow-up complete | Parse status | Available bytes | Captured bytes | Records | Parent pre-values | Lead prefixes | Header-like leads | Distinct names | Text samples | Sample |");
         builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | ---: | --- | --- |");
@@ -6165,7 +6796,14 @@ public static class ReportWriter
                 !candidate.PostCreationObjectViewComplete &&
                 candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation parsed; next boundary not found", StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Protocol03NamedProfileRecordCandidate[] extendedBoundaryCandidates = unboundedDynamicCreations
+        Protocol03NamedProfileRecordCandidate[] reviewedPostSeparatorBodyBoundaries = boundaryLeads
+            .Where(candidate =>
+                candidate.PostCreationObjectViewParseStatus.Equals("dynamic creation bounded by reviewed post-separator body", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Protocol03NamedProfileRecordCandidate[] extendedBoundaryEvidence = unboundedDynamicCreations
+            .Concat(reviewedPostSeparatorBodyBoundaries)
+            .ToArray();
+        Protocol03NamedProfileRecordCandidate[] extendedBoundaryCandidates = extendedBoundaryEvidence
             .Where(candidate => candidate.PostCreationObjectViewDynamicTailNextHeaderOffset is not null)
             .ToArray();
         if (extendedBoundaryCandidates.Length == 0)
@@ -6183,8 +6821,8 @@ public static class ReportWriter
         builder.AppendLine();
         builder.AppendLine("### Protocol 03 NPC_BASE Dynamic Creation Extended Boundary Candidates");
         builder.AppendLine();
-        builder.AppendLine("This scans unbounded nested Object599 dynamic creation tails beyond the conservative eight-byte parser window and up to 64 bytes after the parsed creation attribute stream. These are evidence leads only: they do not mark the parent object-view as complete.");
-        builder.AppendLine($"Across {unboundedDynamicCreations.Length} unbounded dynamic creation tails, {extendedBoundaryCandidates.Length} expose a later plausible object-view header between byte offsets {minOffset} and {maxOffset} after the parsed nested creation attribute stream.");
+        builder.AppendLine("This scans nested Object599 dynamic creation tails beyond the conservative eight-byte parser window and up to 64 bytes after the parsed creation attribute stream. Unbounded rows remain evidence leads; reviewed post-separator vector-tail rows may now mark the parent object-view as complete.");
+        builder.AppendLine($"Across {extendedBoundaryEvidence.Length} extended-boundary dynamic creation tails ({unboundedDynamicCreations.Length} unbounded and {reviewedPostSeparatorBodyBoundaries.Length} reviewed post-separator bodies), {extendedBoundaryCandidates.Length} expose a later plausible object-view header between byte offsets {minOffset} and {maxOffset} after the parsed nested creation attribute stream.");
         builder.AppendLine();
         builder.AppendLine("| Tail header offset | Pre-header bytes | Header prefix | Header classification | Boundary interpretation | Parser action | Records | Tail bytes | Tail families | Parent pre-values | Distinct names | Text samples | Sample |");
         builder.AppendLine("| ---: | --- | --- | --- | --- | --- | ---: | --- | --- | --- | ---: | --- | --- |");
@@ -6267,15 +6905,86 @@ public static class ReportWriter
         if (report.Protocol03NpcBaseDynamicCreationTailSummaries.Count == 0 &&
             report.Protocol03NpcBaseDynamicCreationHeaderLikeLeadSummaries.Count == 0 &&
             report.Protocol03NpcBaseDynamicCreationBodyAnchorSummaries.Count == 0 &&
-            report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count == 0)
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries.Count == 0 &&
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries.Count == 0)
         {
             return;
         }
 
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary[] extendedBoundaryParserActions =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries.Count == 0 &&
+                report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries(
+                        report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary[] extendedBoundaryBodyShapes =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries.Count == 0 &&
+                report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries(
+                        report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary[] extendedBoundaryPostSeparatorFields =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries.Count == 0 &&
+                report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries(
+                        report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary[] extendedBoundaryPostSeparatorVectorProbes =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries.Count == 0 &&
+                report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries(
+                        report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary[] extendedBoundaryPostSeparatorVectorTails =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries.Count == 0 &&
+                report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries(
+                        report.Protocol03NpcBaseDynamicCreationExtendedBoundarySummaries).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary[] extendedBoundaryPostSeparatorLayoutActions =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries.Count == 0 &&
+                extendedBoundaryPostSeparatorVectorTails.Length > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries(
+                        extendedBoundaryPostSeparatorVectorTails).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary[] extendedBoundaryPostSeparatorReviewedBodyLayouts =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries.Count == 0 &&
+                extendedBoundaryPostSeparatorVectorTails.Length > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries(
+                        extendedBoundaryPostSeparatorVectorTails).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary[] extendedBoundaryPostSeparatorVectorSemantics =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries.Count == 0 &&
+                report.PacketDumpFiles.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries(
+                        report.PacketDumpFiles).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary[] extendedBoundaryPostSeparatorTailSemantics =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries.Count == 0 &&
+                report.PacketDumpFiles.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries(
+                        report.PacketDumpFiles).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummaries.ToArray();
+        Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary[] extendedBoundaryPostSeparatorControlSemantics =
+            report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries.Count == 0 &&
+                report.PacketDumpFiles.Count > 0
+                    ? PacketResearcher.BuildProtocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries(
+                        report.PacketDumpFiles).ToArray()
+                    : report.Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummaries.ToArray();
+
         builder.AppendLine();
         builder.AppendLine("### Protocol 03 NPC_BASE Dynamic Creation Summary Exports");
         builder.AppendLine();
-        builder.AppendLine("These rows mirror the Object599 nested dynamic-creation tail evidence in machine-readable JSON fields. They preserve exact tail families, header-like offsets, `cd ab` body anchors, and extended boundary candidates without widening parser completion rules.");
+        builder.AppendLine("These rows mirror the Object599 nested dynamic-creation tail evidence in machine-readable JSON fields. They preserve exact tail families, header-like offsets, `cd ab` body anchors, extended boundary candidates, parser-action rollups, body-shape groupings, post-separator field leads, conservative post-separator vector probes, post-vector tail shapes, post-separator layout actions, reviewed body layouts, vector semantic checks, and tail semantic checks without widening parser completion rules.");
 
         if (report.Protocol03NpcBaseDynamicCreationTailSummaries.Count > 0)
         {
@@ -6310,6 +7019,126 @@ public static class ReportWriter
             {
                 builder.AppendLine(
                     $"| {summary.LeadOffset} | {summary.ViewId} | `{summary.UpdateCountHex}` | `{summary.FirstSelector}` | {summary.BodySeparatorOffset} | {summary.CandidateCount} | {FormatCountDictionary(summary.CompleteParents, 5)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.ParseStatuses, 5)} | {FormatCountDictionary(summary.BodyPrefixes, 3)} | {FormatCountDictionary(summary.PostSeparatorPrefixes, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryParserActions.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Parser action | Boundary rows | Candidates | Boundary interpretations | Header classifications | Header offsets | Header prefixes | Pre-header prefixes | Tail bytes | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryParserActionSummary summary in extendedBoundaryParserActions.Take(12))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.ParserAction)} | {summary.BoundaryRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.BoundaryInterpretations, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.TailHeaderOffsets, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.PreHeaderPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryBodyShapes.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Boundary interpretation | Parser action | Body bytes | Separator offset | Pre-separator bytes | Post-separator bytes | Boundary rows | Candidates | Header classifications | Header offsets | Header prefixes | Pre-separator prefixes | Post-separator prefixes | Tail bytes | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryBodyShapeSummary summary in extendedBoundaryBodyShapes.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.BoundaryInterpretation)} | {FormatTableText(summary.ParserAction)} | {summary.BodyByteCount} | {FormatTableText(summary.SeparatorOffset)} | {summary.PreSeparatorByteCount} | {summary.PostSeparatorByteCount} | {summary.BoundaryRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.TailHeaderOffsets, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.PreSeparatorPrefixes, 3)} | {FormatCountDictionary(summary.PostSeparatorPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorFields.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | First nonzero offset | Boundary rows | Candidates | Header classifications | Header offsets | Header prefixes | Post-separator prefixes | First nonzero windows | Tail bytes | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | ---: | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorFieldSummary summary in extendedBoundaryPostSeparatorFields.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.BoundaryInterpretation)} | {FormatTableText(summary.ParserAction)} | {summary.BodyByteCount} | {summary.SeparatorOffset} | {summary.PostSeparatorByteCount} | `{FormatEmptyHex(summary.PostSeparatorLeadByteHex)}` | `{FormatEmptyHex(summary.PostSeparatorSecondByteHex)}` | {summary.ZeroRunAfterSecondByte} | {summary.FirstNonZeroAfterSecondByteOffset?.ToString(CultureInfo.InvariantCulture) ?? "-"} | {summary.BoundaryRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.TailHeaderOffsets, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.PostSeparatorPrefixes, 3)} | {FormatCountDictionary(summary.FirstNonZeroWindows, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorLayoutActions.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Parser action | Reason | Layout rows | Candidates | Boundary interpretations | Source parser actions | Body bytes | Lead bytes | Second bytes | Zero-runs | Bridge byte counts | Pre-vector bridges | Vector dispositions | Vector samples | Tail bytes | Tail dispositions | Tail float samples | Header classifications | Header prefixes | Tail bytes available | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorLayoutActionSummary summary in extendedBoundaryPostSeparatorLayoutActions.Take(12))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.LayoutRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.BoundaryInterpretations, 5)} | {FormatCountDictionary(summary.SourceParserActions, 5)} | {FormatCountDictionary(summary.BodyByteCounts, 5)} | {FormatCountDictionary(summary.PostSeparatorLeadBytes, 5)} | {FormatCountDictionary(summary.PostSeparatorSecondBytes, 5)} | {FormatCountDictionary(summary.ZeroRunsAfterSecondByte, 5)} | {FormatCountDictionary(summary.PreVectorBridgeByteCounts, 5)} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorDispositions, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.TailByteCounts, 5)} | {FormatCountDictionary(summary.TailDispositions, 5)} | {FormatCountDictionary(summary.TailFloatSamples, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorReviewedBodyLayouts.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Layout action | Interpretation | Field layout | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run | Bridge offset | Bridge bytes | Vector offset | Vector encoding | Tail offset | Tail bytes | Tail encoding | Tail disposition | Layout rows | Candidates | Boundary interpretations | Source parser actions | Pre-vector bridges | Vector samples | Tail hexes | Tail float samples | Header classifications | Header prefixes | Tail bytes available | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorReviewedBodyLayoutSummary summary in extendedBoundaryPostSeparatorReviewedBodyLayouts.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.LayoutAction)} | {FormatTableText(summary.LayoutInterpretation)} | {FormatTableText(summary.FieldLayout)} | {summary.BodyByteCount} | {summary.SeparatorOffset} | {summary.PostSeparatorByteCount} | `{FormatEmptyHex(summary.PostSeparatorLeadByteHex)}` | `{FormatEmptyHex(summary.PostSeparatorSecondByteHex)}` | {summary.ZeroRunAfterSecondByte} | {summary.PreVectorBridgeOffset} | {summary.PreVectorBridgeByteCount} | {summary.VectorOffset} | {FormatTableText(summary.VectorEncoding)} | {summary.TailOffset} | {summary.TailByteCount} | {FormatTableText(summary.TailFloatEncoding)} | {FormatTableText(summary.TailDisposition)} | {summary.LayoutRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.BoundaryInterpretations, 5)} | {FormatCountDictionary(summary.SourceParserActions, 5)} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.TailHexes, 4)} | {FormatCountDictionary(summary.TailFloatSamples, 4)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorVectorSemantics.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Semantic action | Reason | Parent position relation | Candidates | Field layouts | Body bytes | Lead bytes | Second bytes | Zero-runs | Bridge byte counts | Pre-vector bridges | Vector samples | Parent position samples | Vector-parent distances | Distance samples | Tail dispositions | Tail float samples | Header classifications | Header prefixes | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorSemanticSummary summary in extendedBoundaryPostSeparatorVectorSemantics.Take(12))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.SemanticAction)} | {FormatTableText(summary.SemanticReason)} | {FormatTableText(summary.ParentPositionRelation)} | {summary.CandidateCount} | {FormatCountDictionary(summary.FieldLayouts, 3)} | {FormatCountDictionary(summary.BodyByteCounts, 5)} | {FormatCountDictionary(summary.PostSeparatorLeadBytes, 5)} | {FormatCountDictionary(summary.PostSeparatorSecondBytes, 5)} | {FormatCountDictionary(summary.ZeroRunsAfterSecondByte, 5)} | {FormatCountDictionary(summary.PreVectorBridgeByteCounts, 5)} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.ParentPositionSamples, 4)} | {FormatCountDictionary(summary.VectorToParentDistanceBuckets, 5)} | {FormatCountDictionary(summary.VectorToParentDistanceSamples, 5)} | {FormatCountDictionary(summary.TailDispositions, 5)} | {FormatCountDictionary(summary.TailFloatSamples, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorTailSemantics.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Tail semantic action | Reason | Tail float kind | Candidates | Field layouts | Tail bytes | Tail encodings | Tail dispositions | Axis patterns | Planar axes | Magnitudes | Magnitude samples | Tail float samples | Vector samples | Pre-vector bridges | Header classifications | Header prefixes | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorTailSemanticSummary summary in extendedBoundaryPostSeparatorTailSemantics.Take(12))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.SemanticAction)} | {FormatTableText(summary.SemanticReason)} | {FormatTableText(summary.TailFloatKind)} | {summary.CandidateCount} | {FormatCountDictionary(summary.FieldLayouts, 3)} | {FormatCountDictionary(summary.TailByteCounts, 5)} | {FormatCountDictionary(summary.TailFloatEncodings, 5)} | {FormatCountDictionary(summary.TailDispositions, 5)} | {FormatCountDictionary(summary.TailAxisPatterns, 5)} | {FormatCountDictionary(summary.TailPlanarAxisPatterns, 5)} | {FormatCountDictionary(summary.TailMagnitudeBuckets, 5)} | {FormatCountDictionary(summary.TailMagnitudeSamples, 5)} | {FormatCountDictionary(summary.TailFloatSamples, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorControlSemantics.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Control action | Reason | Parent position relation | Candidates | Field layouts | Body bytes | Lead bytes | Second bytes | Zero-runs | Bridge byte counts | Pre-vector bridges | Vector samples | Parent position samples | Vector-parent distances | Distance samples | Tail bytes | Tail encodings | Tail dispositions | Tail float samples | Header classifications | Header prefixes | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorControlSemanticSummary summary in extendedBoundaryPostSeparatorControlSemantics.Take(12))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.ControlAction)} | {FormatTableText(summary.ControlReason)} | {FormatTableText(summary.ParentPositionRelation)} | {summary.CandidateCount} | {FormatCountDictionary(summary.FieldLayouts, 3)} | {FormatCountDictionary(summary.BodyByteCounts, 5)} | {FormatCountDictionary(summary.PostSeparatorLeadBytes, 5)} | {FormatCountDictionary(summary.PostSeparatorSecondBytes, 5)} | {FormatCountDictionary(summary.ZeroRunsAfterSecondByte, 5)} | {FormatCountDictionary(summary.PreVectorBridgeByteCounts, 5)} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.ParentPositionSamples, 4)} | {FormatCountDictionary(summary.VectorToParentDistanceBuckets, 5)} | {FormatCountDictionary(summary.VectorToParentDistanceSamples, 5)} | {FormatCountDictionary(summary.TailByteCounts, 5)} | {FormatCountDictionary(summary.TailFloatEncodings, 5)} | {FormatCountDictionary(summary.TailDispositions, 5)} | {FormatCountDictionary(summary.TailFloatSamples, 5)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorVectorProbes.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | Bridge offset | Bridge bytes | Vector offset | Encoding | Disposition | Boundary rows | Candidates | Pre-vector bridges | Vector samples | Vector windows | First nonzero windows | Header classifications | Header offsets | Header prefixes | Tail bytes | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorProbeSummary summary in extendedBoundaryPostSeparatorVectorProbes.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.BoundaryInterpretation)} | {FormatTableText(summary.ParserAction)} | {summary.BodyByteCount} | {summary.SeparatorOffset} | {summary.PostSeparatorByteCount} | `{FormatEmptyHex(summary.PostSeparatorLeadByteHex)}` | `{FormatEmptyHex(summary.PostSeparatorSecondByteHex)}` | {summary.ZeroRunAfterSecondByte} | {summary.PreVectorBridgeOffset} | {summary.PreVectorBridgeByteCount} | {summary.VectorOffset} | {FormatTableText(summary.VectorEncoding)} | {FormatTableText(summary.VectorDisposition)} | {summary.BoundaryRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.VectorWindows, 3)} | {FormatCountDictionary(summary.FirstNonZeroWindows, 3)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.TailHeaderOffsets, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+            }
+        }
+
+        if (extendedBoundaryPostSeparatorVectorTails.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("| Boundary interpretation | Parser action | Body bytes | Separator offset | Post-separator bytes | Lead byte | Second byte | Zero-run after second | Bridge offset | Bridge bytes | Vector offset | Vector encoding | Vector disposition | Tail offset | Tail bytes | Tail encoding | Tail disposition | Boundary rows | Candidates | Pre-vector bridges | Vector samples | Tail hexes | Tail float samples | Header classifications | Header offsets | Header prefixes | Tail bytes available | Tail families | Parent pre-values | Text samples | Sample |");
+            builder.AppendLine("| --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            foreach (Protocol03NpcBaseDynamicCreationExtendedBoundaryPostSeparatorVectorTailSummary summary in extendedBoundaryPostSeparatorVectorTails.Take(25))
+            {
+                builder.AppendLine(
+                    $"| {FormatTableText(summary.BoundaryInterpretation)} | {FormatTableText(summary.ParserAction)} | {summary.BodyByteCount} | {summary.SeparatorOffset} | {summary.PostSeparatorByteCount} | `{FormatEmptyHex(summary.PostSeparatorLeadByteHex)}` | `{FormatEmptyHex(summary.PostSeparatorSecondByteHex)}` | {summary.ZeroRunAfterSecondByte} | {summary.PreVectorBridgeOffset} | {summary.PreVectorBridgeByteCount} | {summary.VectorOffset} | {FormatTableText(summary.VectorEncoding)} | {FormatTableText(summary.VectorDisposition)} | {summary.TailOffset} | {summary.TailByteCount} | {FormatTableText(summary.TailFloatEncoding)} | {FormatTableText(summary.TailDisposition)} | {summary.BoundaryRowCount} | {summary.CandidateCount} | {FormatCountDictionary(summary.PreVectorBridges, 5)} | {FormatCountDictionary(summary.VectorSamples, 5)} | {FormatCountDictionary(summary.TailHexes, 4)} | {FormatCountDictionary(summary.TailFloatSamples, 4)} | {FormatCountDictionary(summary.HeaderClassifications, 5)} | {FormatCountDictionary(summary.TailHeaderOffsets, 5)} | {FormatCountDictionary(summary.HeaderPrefixes, 3)} | {FormatCountDictionary(summary.TailAvailableBytes, 5)} | {FormatCountDictionary(summary.TailFamilies, 5)} | {FormatCountDictionary(summary.ParentPreValues, 5)} | {FormatCountDictionary(summary.TextSamples, 5)} | `{summary.SampleFile}:{summary.SampleLine}` |");
             }
         }
 
@@ -7107,6 +7936,9 @@ public static class ReportWriter
         AppendManageBonusAttributeCandidates(builder, report, payloads);
         AppendManageBonusInteractionAttributeCandidates(builder, report, payloads);
         AppendManageBonusInteractionLayoutLeads(builder, report, payloads);
+        AppendManageBonusInteractionSequenceContextLeads(builder, report, payloads);
+        AppendManageBonusSemanticFamilyLeads(builder, report, payloads);
+        AppendManageBonusStateIdLongFormFieldLeads(builder, report);
         AppendManageBonusFxCandidates(builder, report, payloads);
 
         var vendorOpenCandidates = payloads
@@ -7619,6 +8451,814 @@ public static class ReportWriter
         {
             builder.AppendLine(
                 $"| `{candidate.FieldHex}` ({candidate.FieldValue}) | {FormatTableText(candidate.AttributeName)} | {candidate.IndexKind} | {candidate.DefinitionCount} | {candidate.PayloadCount} | {candidate.RepeatedByte9} | {candidate.RepeatedByte11} | {FormatCandidateList(candidate.Field0Families)} | `{candidate.Sample.File}:{candidate.Sample.Payload.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusInteractionSequenceContextLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<PayloadWithFile> payloads)
+    {
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        Dictionary<int, PayloadWithFile[]> payloadsByField = payloads
+            .GroupBy(entry => (int)entry.Payload.Field1Value)
+            .ToDictionary(group => group.Key, group => group.ToArray());
+
+        var candidates = report.AttributeDefinitions
+            .SelectMany(attribute => new[]
+            {
+                new AttributeCandidateHit(attribute.CreationIndex, "creation", attribute),
+                new AttributeCandidateHit(attribute.UpdateIndex, "update", attribute)
+            })
+            .Where(hit => payloadsByField.ContainsKey(hit.FieldValue))
+            .Where(hit => IsInteractionAttributeName(hit.Attribute.AttributeName))
+            .GroupBy(hit => new
+            {
+                hit.FieldValue,
+                hit.IndexKind,
+                hit.Attribute.AttributeName
+            })
+            .Select(group =>
+            {
+                PayloadWithFile[] fieldPayloads = payloadsByField[group.Key.FieldValue];
+                PayloadWithFile sample = fieldPayloads.First();
+                int samePacketVendorOrMarket = fieldPayloads.Count(entry =>
+                    TryGetProtocol04Sequence(sequencesByPacket, entry, out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "5e", "5f", "69", "80 e4", "80 e7", "81 0d", "81 0e", "81 0f", "81 11", "81 12", "81 25"));
+                int samePacketObjectInteraction = fieldPayloads.Count(entry =>
+                    TryGetProtocol04Sequence(sequencesByPacket, entry, out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "80 c3", "80 c7", "80 c8"));
+                int relevantCaptureContexts = fieldPayloads.Count(entry => IsInteractionCaptureContext(entry.File));
+                string[] captureContexts = fieldPayloads
+                    .GroupBy(entry => FormatInteractionCaptureScope(entry.File), StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(context => context.Count())
+                    .ThenBy(context => context.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(6)
+                    .Select(context => $"{context.Key} ({context.Count()})")
+                    .ToArray();
+                string[] topSequences = fieldPayloads
+                    .Select(entry => TryGetProtocol04Sequence(sequencesByPacket, entry, out Protocol04PacketSequenceSample? sequence)
+                        ? FormatSequence(sequence!.Headers)
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray();
+
+                return new
+                {
+                    group.Key.FieldValue,
+                    FieldHex = sample.Payload.Field1,
+                    group.Key.IndexKind,
+                    group.Key.AttributeName,
+                    DefinitionCount = group.Count(),
+                    PayloadCount = fieldPayloads.Length,
+                    SamePacketVendorOrMarket = samePacketVendorOrMarket,
+                    SamePacketObjectInteraction = samePacketObjectInteraction,
+                    RelevantCaptureContexts = relevantCaptureContexts,
+                    CaptureContexts = captureContexts,
+                    TopSequences = topSequences,
+                    Sample = sample
+                };
+            })
+            .OrderByDescending(candidate => candidate.SamePacketVendorOrMarket + candidate.SamePacketObjectInteraction)
+            .ThenByDescending(candidate => candidate.RelevantCaptureContexts)
+            .ThenByDescending(candidate => candidate.PayloadCount)
+            .ThenBy(candidate => candidate.FieldValue)
+            .ThenBy(candidate => candidate.AttributeName)
+            .Take(25)
+            .ToArray();
+
+        if (candidates.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor and Interaction `80 bc` Sequence Context");
+        builder.AppendLine();
+        builder.AppendLine("This checks interaction-looking field 1 candidates against same-packet protocol 04 headers and capture-file context. Same-packet hits are stronger than filename context; filename context is still useful for prioritizing paired vendor, NPC, inventory, trade, and loot captures.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 1 | Candidate attribute | Index kind | Definitions | Payloads | Same-packet vendor/market headers | Same-packet object-interaction headers | Relevant capture contexts | Capture contexts | Top packet sequences | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |");
+        foreach (var candidate in candidates)
+        {
+            builder.AppendLine(
+                $"| `{candidate.FieldHex}` ({candidate.FieldValue}) | {FormatTableText(candidate.AttributeName)} | {candidate.IndexKind} | {candidate.DefinitionCount} | {candidate.PayloadCount} | {candidate.SamePacketVendorOrMarket} | {candidate.SamePacketObjectInteraction} | {candidate.RelevantCaptureContexts} | {FormatCandidateList(candidate.CaptureContexts)} | {FormatCandidateList(candidate.TopSequences)} | `{candidate.Sample.File}:{candidate.Sample.Payload.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusSemanticFamilyLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<PayloadWithFile> payloads)
+    {
+        var b2ByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.PlayerAttributePayloads.Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        var b3ByPacket = report.PacketDumpFiles
+            .SelectMany(file => (file.AbilityUnloadPayloads ?? Array.Empty<AbilityUnloadPayloadSample>()).Select(payload => new
+            {
+                Packet = new PacketLocation(file.File, payload.Line),
+                Payload = payload
+            }))
+            .ToLookup(entry => entry.Packet, entry => entry.Payload);
+        Dictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket = report.PacketDumpFiles
+            .SelectMany(file => file.Protocol04PacketSequences.Select(sequence => new
+            {
+                Packet = new PacketLocation(file.File, sequence.Line),
+                Sequence = sequence
+            }))
+            .GroupBy(entry => entry.Packet)
+            .ToDictionary(group => group.Key, group => group.First().Sequence);
+        ILookup<int, GameObjectEntry> gameObjectsById = report.GameObjectEntries.ToLookup(entry => entry.GoId);
+
+        var leads = payloads
+            .Where(entry => entry.Payload.PayloadLength == 20)
+            .GroupBy(entry => entry.Payload.Field0, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                PayloadWithFile[] entries = group.ToArray();
+                int byte9RepeatCount = entries.Count(entry =>
+                    entry.Payload.Field1.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 9), StringComparison.OrdinalIgnoreCase));
+                int byte11RepeatCount = entries.Count(entry =>
+                    entry.Payload.Field2.Equals(PayloadWordAtByteOffset(entry.Payload.PayloadHex, 11), StringComparison.OrdinalIgnoreCase));
+                int samePacketB2Matches = entries.Sum(entry =>
+                    b2ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b2 => b2.Field0Value == entry.Payload.Field1Value));
+                int samePacketB3Matches = entries.Sum(entry =>
+                    b3ByPacket[new PacketLocation(entry.File, entry.Payload.Line)]
+                        .Count(b3 => b3.Field0Value == entry.Payload.Field1Value));
+                int samePacketVendorOrMarket = entries.Count(entry =>
+                    TryGetProtocol04Sequence(sequencesByPacket, entry, out Protocol04PacketSequenceSample? sequence) &&
+                    HasAnyProtocol04Header(sequence, "5e", "5f", "69", "80 e4", "80 e7", "81 0d", "81 0e", "81 0f", "81 11", "81 12", "81 25"));
+                int interactionCandidatePayloads = entries.Count(entry =>
+                    HasManageBonusFieldAttributeCandidate(report.AttributeDefinitions, entry.Payload.Field1Value));
+                string[] topField1References = entries
+                    .GroupBy(entry => new
+                    {
+                        entry.Payload.Field1Value,
+                        entry.Payload.Field1
+                    })
+                    .OrderByDescending(field => field.Count())
+                    .ThenBy(field => field.Key.Field1Value)
+                    .Take(6)
+                    .Select(field => FormatManageBonusSemanticFieldReference(
+                        field.Key.Field1Value,
+                        field.Key.Field1,
+                        field.Count(),
+                        report.AttributeDefinitions,
+                        gameObjectsById))
+                    .ToArray();
+                string[] topSequences = entries
+                    .Select(entry => TryGetProtocol04Sequence(sequencesByPacket, entry, out Protocol04PacketSequenceSample? sequence)
+                        ? FormatSequence(sequence!.Headers)
+                        : "unsequenced")
+                    .GroupBy(sequence => sequence, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(sequence => sequence.Count())
+                    .ThenBy(sequence => sequence.Key, StringComparer.OrdinalIgnoreCase)
+                    .Take(5)
+                    .Select(sequence => $"{sequence.Key} ({sequence.Count()})")
+                    .ToArray();
+
+                return new
+                {
+                    Field0 = group.Key,
+                    Count = entries.Length,
+                    DistinctField1 = entries.Select(entry => entry.Payload.Field1).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    Byte9RepeatCount = byte9RepeatCount,
+                    Byte11RepeatCount = byte11RepeatCount,
+                    SamePacketB2Matches = samePacketB2Matches,
+                    SamePacketB3Matches = samePacketB3Matches,
+                    SamePacketVendorOrMarket = samePacketVendorOrMarket,
+                    InteractionCandidatePayloads = interactionCandidatePayloads,
+                    TopField1References = topField1References,
+                    TopSequences = topSequences,
+                    Inference = ClassifyManageBonusSemanticFamily(
+                        entries.Length,
+                        byte9RepeatCount,
+                        byte11RepeatCount,
+                        samePacketB2Matches,
+                        samePacketB3Matches,
+                        samePacketVendorOrMarket,
+                        interactionCandidatePayloads),
+                    Sample = entries.First()
+                };
+            })
+            .OrderByDescending(lead => lead.Byte9RepeatCount + lead.SamePacketB2Matches + lead.SamePacketB3Matches)
+            .ThenByDescending(lead => lead.SamePacketVendorOrMarket + lead.InteractionCandidatePayloads)
+            .ThenByDescending(lead => lead.Count)
+            .ThenBy(lead => lead.Field0, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Semantic Field Family Leads");
+        builder.AppendLine();
+        builder.AppendLine("This scores `80 bc` field-0 families using local semantic evidence: field-1 self-repeat at byte 9, same-packet `80 b2`/`80 b3` short-state matches, vendor/market packet context, interaction-looking attribute definitions, and resource symbol references. These are decode priorities, not final field names.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 0 | Inference | Payloads | Distinct field 1 | Field 1 repeats at byte 9 | Field 2 repeats at byte 11 | Same-packet `80 b2` matches | Same-packet `80 b3` matches | Same-packet vendor/market headers | Interaction candidate payloads | Top field 1 references | Top packet sequences | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |");
+        foreach (var lead in leads)
+        {
+            builder.AppendLine(
+                $"| `{lead.Field0}` | {FormatCandidateList(lead.Inference)} | {lead.Count} | {lead.DistinctField1} | {lead.Byte9RepeatCount} | {lead.Byte11RepeatCount} | {lead.SamePacketB2Matches} | {lead.SamePacketB3Matches} | {lead.SamePacketVendorOrMarket} | {lead.InteractionCandidatePayloads} | {FormatCandidateList(lead.TopField1References)} | {FormatCandidateList(lead.TopSequences)} | `{lead.Sample.File}:{lead.Sample.Payload.Line}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusStateIdLongFormFieldLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusStateIdLongFormFieldLeadSummary[] leads = report.ManageBonusStateIdLongFormFieldLeadSummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusStateIdLongFormFieldLeadSummaries(
+                report.PacketDumpFiles,
+                report.AttributeDefinitions,
+                report.GameObjectEntries).ToArray()
+            : report.ManageBonusStateIdLongFormFieldLeadSummaries.ToArray();
+
+        if (leads.Length == 0)
+        {
+            return;
+        }
+
+        AppendManageBonusStateIdLongFormSemanticFamilies(builder, report, leads);
+        AppendManageBonusTradeStateValueLeads(builder, report);
+
+        builder.AppendLine("### `80 bc` Long-Form State Field Leads");
+        builder.AppendLine();
+        builder.AppendLine("This groups self-repeating `80 bc` rows where field 1 is repeated at byte 9, then checks same-packet short-state corroboration. These are per-field semantic leads, not final names.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 0 | Field 1 | Field reference | Payloads | Same-packet `80 b2` matches | `80 b2` value mirrors | Same-packet `80 b3` matches | Field 2 values | Byte 11 values | Byte 15 values | Same-packet vendor/market headers | Top packet sequences | Sample |");
+        builder.AppendLine("| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | ---: | --- | --- |");
+        foreach (var lead in leads)
+        {
+            string topPacketSequences = FormatManageBonusCountDictionary(lead.TopPacketSequences, "<br>");
+            builder.AppendLine(
+                $"| `{lead.Field0}` | `{lead.Field1}` ({lead.Field1Value}) | {FormatManageBonusStateFieldReference(lead)} | {lead.PayloadCount} | {lead.SamePacketB2Matches} | {lead.SamePacketB2ValueMirrors} | {lead.SamePacketB3Matches} | {FormatManageBonusCountDictionary(lead.Field2Values)} | {FormatManageBonusCountDictionary(lead.Byte11Values)} | {FormatManageBonusCountDictionary(lead.Byte15Values)} | {lead.SamePacketVendorOrMarketHeaders} | {topPacketSequences} | `{lead.SampleFile}:{lead.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusStateIdLongFormSemanticFamilies(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<ManageBonusStateIdLongFormFieldLeadSummary> fieldLeads)
+    {
+        ManageBonusStateIdLongFormSemanticFamilySummary[] summaries = report.ManageBonusStateIdLongFormSemanticFamilySummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusStateIdLongFormSemanticFamilySummaries(fieldLeads).ToArray()
+            : report.ManageBonusStateIdLongFormSemanticFamilySummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Long-Form Semantic Families");
+        builder.AppendLine();
+        builder.AppendLine("This rolls up the long-form `80 bc` state-id leads by local resource reference so action/state rows do not get buried under item-catalog ids.");
+        builder.AppendLine();
+        builder.AppendLine("| Family | Interpretation | Distinct fields | Payloads | Same-packet `80 b2` matches | `80 b2` value mirrors | Same-packet `80 b3` matches | Same-packet vendor/market headers | Top field references | Top fields | Top packet sequences | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |");
+        foreach (ManageBonusStateIdLongFormSemanticFamilySummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.SemanticFamily)} | {FormatTableText(summary.Interpretation)} | {summary.DistinctFields} | {summary.PayloadCount} | {summary.SamePacketB2Matches} | {summary.SamePacketB2ValueMirrors} | {summary.SamePacketB3Matches} | {summary.SamePacketVendorOrMarketHeaders} | {FormatManageBonusCountDictionary(summary.TopFieldReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.TopFields, "<br>")} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | {FormatManageBonusSemanticFamilySample(summary)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateValueLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusTradeStateValueSummary[] summaries = report.ManageBonusTradeStateValueSummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusTradeStateValueSummaries(
+                report.PacketDumpFiles,
+                attributes: report.AttributeDefinitions,
+                gameObjects: report.GameObjectEntries).ToArray()
+            : report.ManageBonusTradeStateValueSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        AppendManageBonusTradeStateByte15PairLeads(builder, report, summaries);
+        AppendManageBonusTradeStateByte15TransitionLeads(builder, report);
+        AppendManageBonusTradeStateCompanionMapLeads(builder, report);
+        AppendManageBonusTradeStateParserActionLeads(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionLeads(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionSamples(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionParserCoverage(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionDecoderRows(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionDetectionActions(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionDetections(builder, report);
+        AppendManageBonusTradeStateSerializedTransitionFieldRoles(builder, report);
+        AppendManageBonusTradeStatePayloadDecoder(builder, report);
+
+        builder.AppendLine("### `80 bc` Trade-State Value Leads");
+        builder.AppendLine();
+        builder.AppendLine("This narrows the `45 03` / `11 00` long-form trade-state candidate by the remaining fixed-width value fields. Field 2, byte 11, and byte 15 are value leads; local references are candidate overlaps, not final names.");
+        builder.AppendLine();
+        builder.AppendLine("| Field 2 | Field 2 references | Byte 11 | Byte 11 references | Byte 15 | Payloads | Same-packet `80 b2` matches | `80 b2` value mirrors | Linked `80 b2` field 1 values | Linked `80 b2` field 2 values | Opposite byte-15 rows in same packet | Same-packet `80 b3` matches | Same-packet vendor/market headers | Same-packet object-interaction headers | Capture scopes | Top packet sequences | Sample files | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateValueSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{summary.Field2}` ({summary.Field2Value}) | {FormatManageBonusCountDictionary(summary.Field2References, "<br>")} | `{summary.Byte11Value}` ({summary.Byte11ValueInt}) | {FormatManageBonusCountDictionary(summary.Byte11References, "<br>")} | `{summary.Byte15Value}` ({summary.Byte15ValueInt}) | {summary.PayloadCount} | {summary.SamePacketB2Matches} | {summary.SamePacketB2ValueMirrors} | {FormatManageBonusCountDictionary(summary.SamePacketB2Field1Values)} | {FormatManageBonusCountDictionary(summary.SamePacketB2Field2Values)} | {summary.SamePacketOppositeByte15Rows} | {summary.SamePacketB3Matches} | {summary.SamePacketVendorOrMarketHeaders} | {summary.SamePacketObjectInteractionHeaders} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | {FormatManageBonusCountDictionary(summary.SampleFiles, "<br>")} | {FormatManageBonusTradeStateSample(summary)} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateByte15PairLeads(
+        StringBuilder builder,
+        PacketResearchReport report,
+        IReadOnlyList<ManageBonusTradeStateValueSummary> valueSummaries)
+    {
+        ManageBonusTradeStateByte15PairSummary[] summaries = report.ManageBonusTradeStateByte15PairSummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusTradeStateByte15PairSummaries(valueSummaries).ToArray()
+            : report.ManageBonusTradeStateByte15PairSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Trade-State Byte-15 Pair Leads");
+        builder.AppendLine();
+        builder.AppendLine("This compacts the `45 03` / `11 00` trade-state value rows into byte-15 off/on pairs for each byte-11 value. Paired rows mean the opposite byte-15 value appears in the same packet for the same field key.");
+        builder.AppendLine();
+        builder.AppendLine("| Byte 11 | Off payloads | On payloads | Same-packet paired rows | Off `80 b2` mirrors | On `80 b2` mirrors | Off `80 b3` matches | On `80 b3` matches | Vendor/market headers | Linked `80 b2` field 1 values | Linked `80 b2` field 2 values | Capture scopes | Top packet sequences | Samples |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateByte15PairSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{summary.Byte11Value}` ({summary.Byte11ValueInt}) | {summary.OffPayloadCount} | {summary.OnPayloadCount} | {summary.SamePacketPairedRows} | {summary.OffSamePacketB2ValueMirrors} | {summary.OnSamePacketB2ValueMirrors} | {summary.OffSamePacketB3Matches} | {summary.OnSamePacketB3Matches} | {summary.SamePacketVendorOrMarketHeaders} | {FormatManageBonusCountDictionary(summary.LinkedB2Field1Values)} | {FormatManageBonusCountDictionary(summary.LinkedB2Field2Values)} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | off `{summary.OffSampleFile}:{summary.OffSampleLine}`<br>on `{summary.OnSampleFile}:{summary.OnSampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateCompanionMapLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        ManageBonusTradeStateCompanionMapSummary[] summaries = report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                transitionSummaries,
+                attributes: report.AttributeDefinitions,
+                gameObjects: report.GameObjectEntries).ToArray()
+            : report.ManageBonusTradeStateCompanionMapSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Trade-State Companion Byte-11 Map Leads");
+        builder.AppendLine();
+        builder.AppendLine("This compacts the byte-15 transition rows by trade byte-11 and the immediate non-trade `80 bc` companion byte-11 pair after each on/off trade row. Companion pair counts require both immediate companion byte-11 values; transition counts keep the parent off/on transition totals. Field-0 and field-1 columns are scoped to the companion byte-11 row rather than copied from the whole parent transition. Byte-11 and field-1 references are local attribute/gameobject candidates, not final gameplay semantics.");
+        builder.AppendLine();
+        builder.AppendLine("| Trade byte 11 | On companion byte 11 | Off companion byte 11 | Companion byte-11 pair references | On companion byte-11 references | Off companion byte-11 references | Companion pair combinations | Transition pair combinations | Same companion byte-11 pairs | Transition complete refresh pairs | Transition `80 b2`-only refresh pairs | Transition unmatched pairs | Same companion field-1 pairs | Companion field coverage | Companion field-1 repeat buckets | Companion field-0 pairs | Companion field-1 pairs | Companion field-1 pair references | On companion field-1 values | Off companion field-1 values | On companion field-1 references | Off companion field-1 references | Capture scopes | Pair header windows | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateCompanionMapSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{summary.TradeByte11Value}` ({summary.TradeByte11ValueInt}) | `{summary.OnCompanionByte11Value}` ({summary.OnCompanionByte11ValueInt}) | `{summary.OffCompanionByte11Value}` ({summary.OffCompanionByte11ValueInt}) | {FormatManageBonusCountDictionary(summary.CompanionByte11PairReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.OnCompanionByte11References, "<br>")} | {FormatManageBonusCountDictionary(summary.OffCompanionByte11References, "<br>")} | {summary.CompanionPairCombinationCount} | {summary.TransitionPairCombinationCount} | {summary.SameCompanionByte11Pairs} | {summary.TransitionCompleteStateRefreshPairs} | {summary.TransitionB2OnlyStateRefreshPairs} | {summary.TransitionUnmatchedStateRefreshPairs} | {summary.SameCompanionField1Pairs} | field0 pairs {summary.CompanionField0PairDistinctCount}; field1 pairs {summary.CompanionField1PairDistinctCount}; listed field1 pairs {summary.ListedCompanionField1PairCount}/{summary.CompanionPairCombinationCount}; on values {summary.OnCompanionField1DistinctCount}; off values {summary.OffCompanionField1DistinctCount} | {FormatManageBonusCountDictionary(summary.CompanionField1PairRepeatBuckets, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField0Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1PairReferences, "<br>")} | {FormatManageBonusCountDictionary(summary.OnCompanionField1Values, "<br>")} | {FormatManageBonusCountDictionary(summary.OffCompanionField1Values, "<br>")} | {FormatManageBonusCountDictionary(summary.OnCompanionField1References, "<br>")} | {FormatManageBonusCountDictionary(summary.OffCompanionField1References, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPairHeaderWindows, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateParserActionLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        ManageBonusTradeStateParserActionSummary[] summaries =
+            report.ManageBonusTradeStateParserActionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateParserActionSummaries(companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateParserActionSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Trade-State Parser Action Leads");
+        builder.AppendLine();
+        builder.AppendLine("This turns the trade-state companion map into a parser work queue. Promotion rows have adjacent byte-15 off/on trade-state rows, stable companion byte-11 pairs, short-state refresh evidence, and broad companion field-1 tails; control rows preserve lower-count variants for before/after captures.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Reason | Companion map rows | Transition pairs | Companion pairs | Stable companion byte-11 pairs | Complete refresh pairs | `80 b2`-only refresh pairs | Unmatched pairs | Same companion field-1 pairs | Companion field-1 pair count | Trade byte 11 values | Companion byte-11 pairs | Companion field-0 pairs | Companion field-1 repeat buckets | Capture scopes | Pair header windows | Sample |");
+        builder.AppendLine("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateParserActionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | {FormatTableText(summary.ActionReason)} | {summary.CompanionMapRows} | {summary.TransitionPairCombinationCount} | {summary.CompanionPairCombinationCount} | {summary.StableCompanionByte11Pairs} | {summary.CompleteStateRefreshPairs} | {summary.B2OnlyStateRefreshPairs} | {summary.UnmatchedStateRefreshPairs} | {summary.SameCompanionField1Pairs} | {summary.CompanionField1PairDistinctCount} | {FormatManageBonusCountDictionary(summary.TradeByte11Values, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionByte11Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField0Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1PairRepeatBuckets, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPairHeaderWindows, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        ManageBonusTradeStateSerializedTransitionSummary[] summaries =
+            report.ManageBonusTradeStateSerializedTransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSummaries(
+                    transitionSummaries,
+                    companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Transition Layouts");
+        builder.AppendLine();
+        builder.AppendLine("This emits the compact parser-facing layout for the trade-state transition rows. Trade shapes are field0/field1/field2/byte11/byte15, and companion columns are the immediate non-trade `80 bc` rows after each on/off trade row.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Trade on shape | Trade off shape | Companion byte-11 pair | Refresh | Transition pairs | Companion pairs | Stable companion byte-11 pairs | Complete refresh pairs | `80 b2`-only refresh pairs | Unmatched pairs | Between-pair `80 b2` values | Preceding `80 b3` values | Companion field-0 pairs | Companion field-1 pairs | Companion field-1 repeat buckets | Capture scopes | Pair header windows | Sample |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserAction)} | `{summary.TradeOnShape}` | `{summary.TradeOffShape}` | `{summary.OnCompanionByte11Value}` ({summary.OnCompanionByte11ValueInt}) -> `{summary.OffCompanionByte11Value}` ({summary.OffCompanionByte11ValueInt}) | {FormatTableText(summary.RefreshClassification)} | {summary.TransitionPairCombinationCount} | {summary.CompanionPairCombinationCount} | {summary.StableCompanionByte11Pairs} | {summary.CompleteStateRefreshPairs} | {summary.B2OnlyStateRefreshPairs} | {summary.UnmatchedStateRefreshPairs} | {FormatManageBonusCountDictionary(summary.BetweenPairB2Values, "<br>")} | {FormatManageBonusCountDictionary(summary.PrecedingB3Values, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField0Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1PairRepeatBuckets, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPairHeaderWindows, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionSamples(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        ManageBonusTradeStateSerializedTransitionSample[] samples =
+            report.ManageBonusTradeStateSerializedTransitionSamples.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSamples(
+                    report.PacketDumpFiles,
+                    companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionSamples.ToArray();
+
+        if (samples.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Transition Samples");
+        builder.AppendLine();
+        builder.AppendLine("These are representative packet-level fixtures for the serialized transition layouts above. They preserve row distance, protocol-block distance, immediate companion shapes, short-state context, and the exact on/off trade-state payloads.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser action | Refresh | Observed pairs | Trade on shape | Trade off shape | Companion byte-11 pair | Pair header window | Distance | Between-pair `80 b2` values | Preceding `80 b3` | Companion shapes | Packet context | Sample | Payloads |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionSample sample in samples)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(sample.ParserAction)} | {FormatTableText(sample.RefreshClassification)} | {sample.ObservedPairCount} | `{sample.TradeOnShape}` | `{sample.TradeOffShape}` | `{sample.OnCompanionByte11Value}` ({sample.OnCompanionByte11ValueInt}) -> `{sample.OffCompanionByte11Value}` ({sample.OffCompanionByte11ValueInt}) | {FormatTableText(sample.PairHeaderWindow)} | rows {sample.RowDistance}; blocks {sample.ProtocolBlockDistance} | {FormatCandidateList(sample.BetweenPairB2Values)} | {FormatTableText(sample.PrecedingB3Value ?? "none")} | on `{sample.OnCompanionShape ?? "-"}`<br>off `{sample.OffCompanionShape ?? "-"}` | {FormatTableText(sample.CaptureScope)}; B2 {(sample.HasSamePacketB2 ? "yes" : "no")}; B3 {(sample.HasSamePacketB3 ? "yes" : "no")}<br>{FormatTableText(sample.PacketSequence)} | `{sample.SampleFile}:{sample.SampleLine}` off index {sample.OffManageBonusIndex}, on index {sample.OnManageBonusIndex} | off `{sample.OffSamplePayloadHex}`<br>on `{sample.OnSamplePayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionParserCoverage(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        IReadOnlyList<ManageBonusTradeStateSerializedTransitionSample> samples =
+            report.ManageBonusTradeStateSerializedTransitionSamples.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSamples(
+                    report.PacketDumpFiles,
+                    companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionSamples;
+        ManageBonusTradeStateSerializedTransitionParserCoverageSummary[] summaries =
+            report.ManageBonusTradeStateSerializedTransitionParserCoverageSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionParserCoverageSummaries(samples).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionParserCoverageSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Parser Coverage");
+        builder.AppendLine();
+        builder.AppendLine("This compacts the fixture samples into parser cases, weighted by observed pair count. Use this as the checklist for implementing and testing the serialized transition decoder.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser case | Sample rows | Observed pairs | Trade byte-11 values | Companion byte-11 pairs | Trade shape pairs | Between-pair `80 b2` values | Preceding `80 b3` values | Pair header windows | Capture scopes | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionParserCoverageSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserCase)} | {summary.SampleRows} | {summary.ObservedPairCount} | {FormatManageBonusCountDictionary(summary.TradeByte11Values, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionByte11Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.TradeShapePairs, "<br>")} | {FormatManageBonusCountDictionary(summary.BetweenPairB2Values, "<br>")} | {FormatManageBonusCountDictionary(summary.PrecedingB3Values, "<br>")} | {FormatManageBonusCountDictionary(summary.PairHeaderWindows, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionDecoderRows(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        IReadOnlyList<ManageBonusTradeStateSerializedTransitionSample> samples =
+            report.ManageBonusTradeStateSerializedTransitionSamples.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSamples(
+                    report.PacketDumpFiles,
+                    companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionSamples;
+        ManageBonusTradeStateSerializedTransitionDecoderRow[] rows =
+            report.ManageBonusTradeStateSerializedTransitionDecoderRows.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDecoderRows(samples).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionDecoderRows.ToArray();
+
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Decoder Rows");
+        builder.AppendLine();
+        builder.AppendLine("These are normalized parser rows derived from the fixture samples. They expose typed fields for the trade rows, the between-pair `80 b2` mirror, the optional preceding `80 b3`, and the immediate companion rows.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser case | Observed pairs | Trade fields | Byte-15 transition | Between-pair `80 b2` | Preceding `80 b3` | Companion fields | Window | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionDecoderRow row in rows)
+        {
+            string tradeFields =
+                $"field0 `{row.TradeField0}`; field1 {FormatManageBonusDecoderWord(row.TradeField1, row.TradeField1Value)}; field2 {FormatManageBonusDecoderWord(row.TradeField2, row.TradeField2Value)}; byte11 {FormatManageBonusDecoderWord(row.TradeByte11Value, row.TradeByte11ValueInt)}";
+            string b2 =
+                $"{FormatManageBonusDecoderWord(row.BetweenPairB2Field0, row.BetweenPairB2Field0Value)} / {FormatManageBonusDecoderWord(row.BetweenPairB2Field1, row.BetweenPairB2Field1Value)} / {FormatManageBonusDecoderWord(row.BetweenPairB2Field2, row.BetweenPairB2Field2Value)}";
+            string companion =
+                $"field0 {FormatManageBonusDecoderTransition(row.OnCompanionField0, null, row.OffCompanionField0, null)}; byte11 {FormatManageBonusDecoderTransition(row.OnCompanionByte11Value, row.OnCompanionByte11ValueInt, row.OffCompanionByte11Value, row.OffCompanionByte11ValueInt)}; byte15 {FormatManageBonusDecoderTransition(row.OnCompanionByte15Value, row.OnCompanionByte15ValueInt, row.OffCompanionByte15Value, row.OffCompanionByte15ValueInt)}";
+
+            builder.AppendLine(
+                $"| {FormatTableText(row.ParserCase)} | {row.ObservedPairCount} | {tradeFields} | {FormatManageBonusDecoderTransition(row.OnTradeByte15Value, row.OnTradeByte15ValueInt, row.OffTradeByte15Value, row.OffTradeByte15ValueInt)} | {b2} | {FormatManageBonusDecoderWord(row.PrecedingB3Value, row.PrecedingB3ValueInt)} | {companion} | {FormatTableText(row.PairHeaderWindow)}; blocks {row.ProtocolBlockDistance} | `{row.SampleFile}:{row.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionDetectionActions(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusTradeStateSerializedTransitionDetection[] detections =
+            report.ManageBonusTradeStateSerializedTransitionDetections.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDetections(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionDetections.ToArray();
+        ManageBonusTradeStateSerializedTransitionDetectionActionSummary[] summaries =
+            report.ManageBonusTradeStateSerializedTransitionDetectionActionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDetectionActionSummaries(detections).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionDetectionActionSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Detection Actions");
+        builder.AppendLine();
+        builder.AppendLine("This groups the packet-level transition detections by parser action. It is the corpus-wide implementation checklist for the serialized trade-state transition parser, including review controls where the on/off trade rows exist but companion evidence is incomplete.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser case | Detections | Companion coverage | Short-state checks | Variants | Trade shape pairs | Companion shape pairs | Short-state values | Windows | Capture scopes | Sample |");
+        builder.AppendLine("| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionDetectionActionSummary summary in summaries)
+        {
+            string companionCoverage =
+                $"{summary.DetectionsWithCompanionShapes.ToString(CultureInfo.InvariantCulture)} with companion shapes";
+            string shortStateChecks =
+                $"same-packet B2 {summary.SamePacketB2Count.ToString(CultureInfo.InvariantCulture)}<br>same-packet B3 {summary.SamePacketB3Count.ToString(CultureInfo.InvariantCulture)}";
+            string variants =
+                $"values {FormatManageBonusCountDictionary(summary.VariantValues, "<br>")}<br>roles {FormatManageBonusCountDictionary(summary.VariantRoles, "<br>")}";
+            string shortStateValues =
+                $"B2 {FormatManageBonusCountDictionary(summary.BetweenPairB2Values, "<br>")}<br>B3 {FormatManageBonusCountDictionary(summary.PrecedingB3Values, "<br>")}";
+
+            builder.AppendLine(
+                $"| {FormatTableText(summary.ParserCase)} | {summary.DetectionCount} | {companionCoverage} | {shortStateChecks} | {variants} | {FormatManageBonusCountDictionary(summary.TradeShapePairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionShapePairs, "<br>")} | {shortStateValues} | {FormatManageBonusCountDictionary(summary.PairHeaderWindows, "<br>")} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionDetections(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusTradeStateSerializedTransitionDetection[] detections =
+            report.ManageBonusTradeStateSerializedTransitionDetections.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionDetections(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionDetections.ToArray();
+
+        if (detections.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Transition Detections");
+        builder.AppendLine();
+        builder.AppendLine("These are parser-safe packet-level detections: an `01 00` on row immediately followed by the same variant's `00 00` off row, with a mirrored between-pair `80 b2` tuple. Markdown lists the top 32 rows; JSON keeps the generated detection set.");
+        builder.AppendLine();
+        builder.AppendLine("| Parser case | Variant | Window | Distance | Short-state context | Companion shapes | Packet context | Sample | Payloads |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionDetection detection in detections.Take(32))
+        {
+            string shortState =
+                $"B2 {FormatCandidateList(detection.BetweenPairB2Values)}; B3 {FormatTableText(detection.PrecedingB3Value ?? "none")}";
+            string companion =
+                $"on `{detection.OnCompanionShape ?? "-"}`<br>off `{detection.OffCompanionShape ?? "-"}`";
+            string packetContext =
+                $"{FormatTableText(detection.CaptureScope)}; B2 {(detection.HasSamePacketB2 ? "yes" : "no")}; B3 {(detection.HasSamePacketB3 ? "yes" : "no")}<br>{FormatTableText(detection.PacketSequence)}";
+
+            builder.AppendLine(
+                $"| {FormatTableText(detection.ParserCase)} | `{detection.VariantValue}` ({detection.VariantValueInt})<br>{FormatTableText(detection.VariantRole)} | {FormatTableText(detection.PairHeaderWindow)} | rows {detection.RowDistance}; blocks {detection.ProtocolBlockDistance} | {shortState} | {companion} | {packetContext} | `{detection.SampleFile}:{detection.SampleLine}` on index {detection.OnManageBonusIndex}, off index {detection.OffManageBonusIndex} | on `{detection.OnSamplePayloadHex}`<br>off `{detection.OffSamplePayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateSerializedTransitionFieldRoles(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<ManageBonusTradeStateByte15TransitionSummary> transitionSummaries =
+            report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStateByte15TransitionSummaries;
+        IReadOnlyList<ManageBonusTradeStateCompanionMapSummary> companionMapSummaries =
+            report.ManageBonusTradeStateCompanionMapSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateCompanionMapSummaries(
+                    transitionSummaries,
+                    attributes: report.AttributeDefinitions,
+                    gameObjects: report.GameObjectEntries).ToArray()
+                : report.ManageBonusTradeStateCompanionMapSummaries;
+        IReadOnlyList<ManageBonusTradeStateSerializedTransitionSample> samples =
+            report.ManageBonusTradeStateSerializedTransitionSamples.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionSamples(
+                    report.PacketDumpFiles,
+                    companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionSamples;
+        ManageBonusTradeStateSerializedTransitionFieldRoleSummary[] summaries =
+            report.ManageBonusTradeStateSerializedTransitionFieldRoleSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStateSerializedTransitionFieldRoleSummaries(samples, companionMapSummaries).ToArray()
+                : report.ManageBonusTradeStateSerializedTransitionFieldRoleSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Serialized Trade-State Field Roles");
+        builder.AppendLine();
+        builder.AppendLine("This assigns parser-facing roles to the fixed fields in the serialized transition fixtures. The roles describe packet structure and corroborating evidence; they are not final gameplay-time field names.");
+        builder.AppendLine();
+        builder.AppendLine("| Field role | Interpretation | Observed pairs | Values | Parser cases | Sample |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- |");
+        foreach (ManageBonusTradeStateSerializedTransitionFieldRoleSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| {FormatTableText(summary.FieldRole)} | {FormatTableText(summary.Interpretation)} | {summary.ObservedPairCount} | {FormatManageBonusCountDictionary(summary.Values, "<br>")} | {FormatManageBonusCountDictionary(summary.ParserCases, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStatePayloadDecoder(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusTradeStatePayloadDecodeSummary[] summaries =
+            report.ManageBonusTradeStatePayloadDecodeSummaries.Count == 0
+                ? PacketResearcher.BuildManageBonusTradeStatePayloadDecodeSummaries(report.PacketDumpFiles).ToArray()
+                : report.ManageBonusTradeStatePayloadDecodeSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Trade-State Payload Decoder");
+        builder.AppendLine();
+        builder.AppendLine("This decodes individual `45 03/11 00/00 02` manage-bonus payload rows after field 1 repeats at byte offset 9. It classifies byte 11 as a transition variant and byte 15 as the serialized on/off flag; same-packet adjacency remains covered by the transition tables above.");
+        builder.AppendLine();
+        builder.AppendLine("| Variant byte 11 | Variant role | Byte 15 | State | Payloads | Capture scopes | Sample | Sample payload |");
+        builder.AppendLine("| --- | --- | --- | --- | ---: | --- | --- | --- |");
+        foreach (ManageBonusTradeStatePayloadDecodeSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{summary.VariantValue}` ({summary.VariantValueInt}) | {FormatTableText(summary.VariantRole)} | `{summary.Byte15Value}` ({summary.Byte15ValueInt}) | {FormatTableText(summary.StateName)} | {summary.PayloadCount} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | `{summary.SampleFile}:{summary.SampleLine}` | `{summary.SamplePayloadHex}` |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendManageBonusTradeStateByte15TransitionLeads(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        ManageBonusTradeStateByte15TransitionSummary[] summaries = report.ManageBonusTradeStateByte15TransitionSummaries.Count == 0
+            ? PacketResearcher.BuildManageBonusTradeStateByte15TransitionSummaries(report.PacketDumpFiles).ToArray()
+            : report.ManageBonusTradeStateByte15TransitionSummaries.ToArray();
+
+        if (summaries.Length == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### `80 bc` Trade-State Byte-15 Transition Leads");
+        builder.AppendLine();
+        builder.AppendLine("This mines actual same-packet off/on byte-15 pairs for each `45 03` / `11 00` byte-11 value. Pair combinations preserve row order among `80 bc` trade-state payloads in the packet. Companion shapes are immediate non-trade `80 bc` rows after the on/off trade-state rows, formatted as field0/field1/field2/byte11/byte15.");
+        builder.AppendLine();
+        builder.AppendLine("| Byte 11 | Paired packets | Pair combinations | Off before on | On before off | Adjacent row pairs | Row distance | Adjacent block pairs | Block distance | Same-packet `80 b2` packets | Same-packet `80 b3` packets | Between-pair `80 b2` mirrors | Preceding `80 b3` matches | Complete refresh pairs | `80 b2`-only refresh pairs | Unmatched pairs | On companions | Off companions | Both companions | On companion byte-15 matches | Off companion byte-15 matches | Same companion field-1 pairs | Same companion byte-11 pairs | Vendor/market packets | Object-interaction packets | Capture scopes | Pair header windows | Between-pair `80 b2` values | Preceding `80 b3` values | Companion field-0 pairs | Companion field-1 pairs | Companion byte-11 pairs | On companion shapes | Off companion shapes | Companion shape pairs | Top packet sequences | Sample |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        foreach (ManageBonusTradeStateByte15TransitionSummary summary in summaries)
+        {
+            builder.AppendLine(
+                $"| `{summary.Byte11Value}` ({summary.Byte11ValueInt}) | {summary.PairedPacketCount} | {summary.PairCombinationCount} | {summary.OffBeforeOnPairs} | {summary.OnBeforeOffPairs} | {summary.AdjacentPairCombinations} | {summary.MinManageBonusRowDistance}-{summary.MaxManageBonusRowDistance} | {summary.AdjacentProtocolBlockPairs} | {summary.MinProtocolBlockDistance}-{summary.MaxProtocolBlockDistance} | {summary.SamePacketB2Packets} | {summary.SamePacketB3Packets} | {summary.BetweenPairB2MirrorPairs} | {summary.PrecedingB3MatchPairs} | {summary.CompleteStateRefreshPairs} | {summary.B2OnlyStateRefreshPairs} | {summary.UnmatchedStateRefreshPairs} | {summary.OnCompanionRows} | {summary.OffCompanionRows} | {summary.BothCompanionRows} | {summary.OnCompanionByte15Matches} | {summary.OffCompanionByte15Matches} | {summary.SameCompanionField1Pairs} | {summary.SameCompanionByte11Pairs} | {summary.SamePacketVendorOrMarketPackets} | {summary.SamePacketObjectInteractionPackets} | {FormatManageBonusCountDictionary(summary.CaptureScopes)} | {FormatManageBonusCountDictionary(summary.TopPairHeaderWindows, "<br>")} | {FormatManageBonusCountDictionary(summary.BetweenPairB2Values)} | {FormatManageBonusCountDictionary(summary.PrecedingB3Values)} | {FormatManageBonusCountDictionary(summary.CompanionField0Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionField1Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionByte11Pairs, "<br>")} | {FormatManageBonusCountDictionary(summary.OnCompanionShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.OffCompanionShapes, "<br>")} | {FormatManageBonusCountDictionary(summary.CompanionShapePairs, "<br>")} | {FormatManageBonusCountDictionary(summary.TopPacketSequences, "<br>")} | `{summary.SampleFile}:{summary.SampleLine}` off index {summary.OffManageBonusIndex}, on index {summary.OnManageBonusIndex}<br>off `{summary.OffSamplePayloadHex}`<br>on `{summary.OnSamplePayloadHex}` |");
         }
 
         builder.AppendLine();
@@ -9450,6 +11090,53 @@ public static class ReportWriter
             : formatted;
     }
 
+    private static string FormatSelectorFfRepeatListDecodedRowEntries(Protocol03SelectorFfRepeatListDecodedRow row)
+    {
+        string entry1 = FormatProtocol03RepeatRecordFieldShape(row.Entry1ZeroRun, row.Entry1FieldOffset, row.Entry1FieldHex);
+        string entry2 = FormatProtocol03RepeatRecordFieldShape(row.Entry2ZeroRun, row.Entry2FieldOffset, row.Entry2FieldHex);
+        string entry2Secondary = row.Entry2SecondaryFieldOffset is null
+            ? "-"
+            : $"+{row.Entry2SecondaryFieldOffset.Value.ToString(CultureInfo.InvariantCulture)} {FormatProtocol03NullableU16Field(row.Entry2SecondaryFieldHex)}";
+        string entry2Effective = row.Entry2EffectiveFieldOffset is null
+            ? "-"
+            : $"+{row.Entry2EffectiveFieldOffset.Value.ToString(CultureInfo.InvariantCulture)} {FormatProtocol03NullableU16Field(row.Entry2EffectiveFieldHex)}";
+
+        return string.Join("<br>", new[]
+        {
+            $"stride {row.RepeatStride.ToString(CultureInfo.InvariantCulture)}, records {row.RepeatRecordCount.ToString(CultureInfo.InvariantCulture)}",
+            $"entry1 {entry1} ({FormatTableText(row.Entry1FieldLayoutKind)})",
+            $"entry2 primary {entry2} ({FormatTableText(row.Entry2FieldLayoutKind)})",
+            $"entry2 secondary {entry2Secondary}",
+            $"entry2 effective {entry2Effective} ({FormatTableText(row.Entry2EffectiveFieldSource)})"
+        });
+    }
+
+    private static string FormatSelectorFfRepeatListDecodedRowContinuation(Protocol03SelectorFfRepeatListDecodedRow row)
+    {
+        return string.Join("<br>", new[]
+        {
+            $"list +{row.ContinuationOffset.ToString(CultureInfo.InvariantCulture)}, bytes {row.ContinuationBytes.ToString(CultureInfo.InvariantCulture)}",
+            $"prefix `{FormatEmptyHex(row.ContinuationPrefixHex)}`",
+            $"pre-marker `{FormatEmptyHex(row.ContinuationPrefixBeforeMarkerHex)}`",
+            $"marker +{row.ContinuationMarkerOffset.ToString(CultureInfo.InvariantCulture)} `{FormatEmptyHex(row.ContinuationMarkerHex)}`",
+            FormatTableText(row.ContinuationMarkerRole)
+        });
+    }
+
+    private static string FormatSelectorFfRepeatListDecodedRowContext(Protocol03SelectorFfRepeatListDecodedRow row)
+    {
+        string direction = string.IsNullOrWhiteSpace(row.Direction)
+            ? "-"
+            : FormatTableText(row.Direction);
+        return string.Join("<br>", new[]
+        {
+            $"{direction}; view {row.ViewId.ToString(CultureInfo.InvariantCulture)}, count {row.UpdateCount.ToString(CultureInfo.InvariantCulture)}, first `{row.FirstSelector}`",
+            FormatTableText(row.SegmentClassification),
+            $"payload bytes {row.PayloadBytes.ToString(CultureInfo.InvariantCulture)}, selector +{row.SelectorOffset.ToString(CultureInfo.InvariantCulture)}",
+            $"position +{row.PositionOffset.ToString(CultureInfo.InvariantCulture)} {FormatCoordinate(row.X)},{FormatCoordinate(row.Y)},{FormatCoordinate(row.Z)}"
+        });
+    }
+
     private static string FormatSelectorFfRepeatListHeaderWindows(
         IReadOnlyList<Protocol03SelectorFfRepeatListHeaderWindowSummary> summaries,
         int take)
@@ -10318,6 +12005,34 @@ public static class ReportWriter
             : $"{string.Join("; ", parts.Take(maxValues))}; +{parts.Length - maxValues} more";
     }
 
+    private static string FormatManageBonusCountDictionary(IReadOnlyDictionary<string, int> values, string separator = "; ")
+    {
+        return values.Count == 0
+            ? "-"
+            : string.Join(separator, values.Select(entry => $"{entry.Key} ({entry.Value})"));
+    }
+
+    private static string FormatManageBonusStateFieldReference(ManageBonusStateIdLongFormFieldLeadSummary lead)
+    {
+        string references = lead.FieldReferences.Count == 0
+            ? "no local reference"
+            : string.Join("; ", lead.FieldReferences.Select(FormatTableText));
+        return $"`{lead.Field1}` ({lead.Field1Value}) {references} ({lead.PayloadCount})";
+    }
+
+    private static string FormatManageBonusSemanticFamilySample(ManageBonusStateIdLongFormSemanticFamilySummary summary)
+    {
+        string references = summary.SampleFieldReferences.Count == 0
+            ? "no local reference"
+            : string.Join("; ", summary.SampleFieldReferences.Select(FormatTableText));
+        return $"`{summary.SampleField0}/{summary.SampleField1}` ({summary.SampleField1Value}) {references}; `{summary.SampleFile}:{summary.SampleLine}`";
+    }
+
+    private static string FormatManageBonusTradeStateSample(ManageBonusTradeStateValueSummary summary)
+    {
+        return $"`{summary.SampleFile}:{summary.SampleLine}` `{summary.SamplePayloadHex}`";
+    }
+
     private static bool IsThreeByteZeroTailPreHeader(string value)
     {
         return TryReadThreeByteZeroTailPreHeaderValue(value) is not null;
@@ -10776,6 +12491,179 @@ public static class ReportWriter
         }
 
         return Path.GetFileName(normalized);
+    }
+
+    private static bool TryGetProtocol04Sequence(
+        IReadOnlyDictionary<PacketLocation, Protocol04PacketSequenceSample> sequencesByPacket,
+        PayloadWithFile entry,
+        out Protocol04PacketSequenceSample? sequence)
+    {
+        return sequencesByPacket.TryGetValue(new PacketLocation(entry.File, entry.Payload.Line), out sequence);
+    }
+
+    private static bool HasAnyProtocol04Header(Protocol04PacketSequenceSample? sequence, params string[] headers)
+    {
+        if (sequence is null)
+        {
+            return false;
+        }
+
+        return sequence.Headers.Any(header => headers.Contains(header, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static bool IsInteractionCaptureContext(string file)
+    {
+        return FormatInteractionCaptureScope(file) != "other";
+    }
+
+    private static string FormatInteractionCaptureScope(string file)
+    {
+        string normalized = file.Replace('\\', '/');
+
+        if (ContainsAnyIgnoreCase(normalized, "vendor", "merchant", "market", "shop", "buy", "sell", "buyed"))
+        {
+            return "vendor/market";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "trade"))
+        {
+            return "trade";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "inventory", "inv_"))
+        {
+            return "inventory";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "loot"))
+        {
+            return "loot";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "hardline", "doors", "door", "static"))
+        {
+            return "static interaction";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "npc", "mission", "collector", "archivist"))
+        {
+            return "npc/mission";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "actions", "interaction", "two-person", "2_person"))
+        {
+            return "interaction";
+        }
+
+        if (ContainsAnyIgnoreCase(normalized, "combat", "ability"))
+        {
+            return "combat/ability";
+        }
+
+        return "other";
+    }
+
+    private static bool ContainsAnyIgnoreCase(string value, params string[] terms)
+    {
+        return terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasManageBonusFieldAttributeCandidate(IReadOnlyList<AttributeDefinition> attributes, int fieldValue)
+    {
+        return attributes.Any(attribute =>
+            (attribute.CreationIndex == fieldValue || attribute.UpdateIndex == fieldValue) &&
+            IsInteractionAttributeName(attribute.AttributeName));
+    }
+
+    private static string FormatManageBonusSemanticFieldReference(
+        int fieldValue,
+        string fieldHex,
+        int count,
+        IReadOnlyList<AttributeDefinition> attributes,
+        ILookup<int, GameObjectEntry> gameObjectsById)
+    {
+        List<string> references = new();
+        references.AddRange(SemanticAttributeCandidates(attributes, fieldValue, creationIndex: true)
+            .Take(2)
+            .Select(candidate => $"creation {candidate}"));
+        references.AddRange(SemanticAttributeCandidates(attributes, fieldValue, creationIndex: false)
+            .Take(2)
+            .Select(candidate => $"update {candidate}"));
+        references.AddRange(gameObjectsById[fieldValue]
+            .Select(entry => $"go {entry.CodeName}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .Take(2));
+
+        string referenceText = references.Count == 0
+            ? "no local reference"
+            : string.Join("; ", references.Select(FormatTableText));
+        return $"`{fieldHex}` ({fieldValue}) {referenceText} ({count})";
+    }
+
+    private static string[] SemanticAttributeCandidates(
+        IReadOnlyList<AttributeDefinition> attributes,
+        int fieldValue,
+        bool creationIndex)
+    {
+        return attributes
+            .Where(attribute => creationIndex ? attribute.CreationIndex == fieldValue : attribute.UpdateIndex == fieldValue)
+            .GroupBy(attribute => attribute.AttributeName, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => IsInteractionAttributeName(group.Key))
+            .ThenByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Take(8)
+            .Select(group => $"{group.Key} ({group.Count()})")
+            .ToArray();
+    }
+
+    private static string[] ClassifyManageBonusSemanticFamily(
+        int payloadCount,
+        int byte9RepeatCount,
+        int byte11RepeatCount,
+        int samePacketB2Matches,
+        int samePacketB3Matches,
+        int samePacketVendorOrMarket,
+        int interactionCandidatePayloads)
+    {
+        List<string> inference = new();
+        if (byte9RepeatCount == payloadCount && (samePacketB2Matches > 0 || samePacketB3Matches > 0))
+        {
+            inference.Add("state-id long-form candidate");
+        }
+        else if (byte9RepeatCount * 10 >= payloadCount * 8)
+        {
+            inference.Add("field1 self-repeat schema");
+        }
+
+        if (samePacketB2Matches > 0)
+        {
+            inference.Add("links to 80 b2 short state");
+        }
+
+        if (samePacketB3Matches > 0)
+        {
+            inference.Add("links to 80 b3 unload state");
+        }
+
+        if (samePacketVendorOrMarket > 0)
+        {
+            inference.Add("vendor/market co-packet context");
+        }
+
+        if (interactionCandidatePayloads > 0)
+        {
+            inference.Add("interaction attribute-index candidates");
+        }
+
+        if (byte11RepeatCount > 0 && byte11RepeatCount * 2 >= payloadCount)
+        {
+            inference.Add("field2 value mirror schema");
+        }
+
+        return inference.Count == 0
+            ? new[] { "state-bundle shape" }
+            : inference.ToArray();
     }
 
     private static bool IsInteractionAttributeName(string name)

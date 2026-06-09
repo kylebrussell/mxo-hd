@@ -294,7 +294,7 @@ generate_report() {
   printf -- '- Preserve the original files separately before editing or importing anything.\n'
   printf -- '- Inspect matches with surrounding lines; embedded hits inside encrypted or unrelated bodies are leads only.\n'
   printf -- '- Record sender, provenance, CR1/CR2 status, action context, character handle, coordinates, known object ids, and known item GoIDs.\n'
-  printf -- '- Import only text logs or text-like dumps that contain no passwords, session tokens, private keys, client binaries, or unrelated game assets.\n'
+  printf -- '- Import only reviewed text logs or text-like dumps that clear repository safety review; leave binaries and unrelated game assets out of Git.\n'
 }
 
 if [[ -n "$out_file" ]]; then
