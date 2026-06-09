@@ -557,6 +557,10 @@ public static partial class PacketResearcher
             itemCommandEntries,
             vendorPriceEntries,
             vendorInventoryEntries).ToList();
+        List<VendorSellRequestAddressingSummary> vendorSellRequestAddressingSummaries = BuildVendorSellRequestAddressingSummaries(
+            dumpSummaries,
+            abilityDefinitions,
+            itemCommandEntries).ToList();
         List<ManageBonusStateIdLongFormFieldLeadSummary> allManageBonusStateIdLongFormFieldLeadSummaries =
             BuildManageBonusStateIdLongFormFieldLeadSummaries(
                 dumpSummaries,
@@ -674,6 +678,7 @@ public static partial class PacketResearcher
             StaticObjectEntries = staticObjectEntries,
             VendorBuyPriceLeadSummaries = vendorBuyPriceLeadSummaries,
             VendorSellPriceLeadSummaries = vendorSellPriceLeadSummaries,
+            VendorSellRequestAddressingSummaries = vendorSellRequestAddressingSummaries,
             ManageBonusStateIdLongFormFieldLeadSummaries = manageBonusStateIdLongFormFieldLeadSummaries,
             ManageBonusStateIdLongFormSemanticFamilySummaries = manageBonusStateIdLongFormSemanticFamilySummaries,
             ManageBonusTradeStateValueSummaries = manageBonusTradeStateValueSummaries,
@@ -11654,6 +11659,134 @@ public static partial class PacketResearcher
                 yield return new VendorSellPriceField("+5 ability code u32", transaction.AbilityId, transaction.AbilityBaseId, true);
             }
         }
+    }
+
+    public static IEnumerable<VendorSellRequestAddressingSummary> BuildVendorSellRequestAddressingSummaries(
+        IReadOnlyList<PacketDumpFileSummary> dumpSummaries,
+        IReadOnlyList<AbilityDefinition> abilityDefinitions,
+        IReadOnlyList<ItemCommandEntry> itemCommandEntries)
+    {
+        Dictionary<uint, AbilityDefinition> abilitiesById = abilityDefinitions
+            .GroupBy(entry => entry.AbilityId)
+            .ToDictionary(group => group.Key, group => group.First());
+        Dictionary<uint, ItemCommandEntry> itemsById = itemCommandEntries
+            .GroupBy(entry => entry.ItemId)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        // Pair each sell REQUEST field (SellPayloadPrefixHex) with the item/ability the
+        // server RESPONSE (81 12) resolved it to. The question we answer: is that request
+        // field a global item/ability identifier (stable across files/sessions) or could it
+        // be a session-relative vendor-list index / DB inventory slot?
+        var transactions = dumpSummaries
+            .SelectMany(file => (file.VendorSellTransactions ?? Array.Empty<VendorSellTransactionSample>())
+                .SelectMany(transaction => EnumerateVendorSellPriceFields(transaction)
+                    .Select(field => new
+                    {
+                        File = file.File,
+                        Transaction = transaction,
+                        Field = field,
+                        ItemName = ResolveSellItemName(field)
+                    })));
+
+        foreach (var group in transactions
+            .GroupBy(entry => entry.Transaction.SellPayloadPrefixHex)
+            .OrderBy(group => ParseSellRequestSecondByte(group.Key)))
+        {
+            string[] resolvedItemNames = group
+                .Select(entry => entry.ItemName)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(name => name, StringComparer.Ordinal)
+                .ToArray();
+            int distinctFileCount = group
+                .Select(entry => entry.File)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+            int distinctItemCount = resolvedItemNames.Length;
+
+            string classification;
+            if (distinctItemCount == 1 && distinctFileCount >= 2)
+            {
+                classification = "global item identifier";
+            }
+            else if (distinctItemCount == 1)
+            {
+                classification = "stable-single-file";
+            }
+            else
+            {
+                classification = "ambiguous";
+            }
+
+            yield return new VendorSellRequestAddressingSummary(
+                group.Key,
+                ParseSellRequestSecondByte(group.Key),
+                resolvedItemNames,
+                distinctItemCount,
+                distinctFileCount,
+                group.Count(),
+                classification,
+                group.Select(entry => new VendorTransactionSampleLocation(
+                        entry.File,
+                        entry.Transaction.Line,
+                        entry.Transaction.NextLine))
+                    .Take(8)
+                    .ToArray());
+        }
+
+        IEnumerable<VendorSellPriceField> EnumerateVendorSellPriceFields(VendorSellTransactionSample transaction)
+        {
+            if ((transaction.NormalItemId & AbilityCodeFlag) == 0)
+            {
+                yield return new VendorSellPriceField("+1 normal item u32", transaction.NormalItemId, transaction.NormalItemId, false);
+            }
+
+            if ((transaction.AbilityId & AbilityCodeFlag) != 0)
+            {
+                yield return new VendorSellPriceField("+5 ability code u32", transaction.AbilityId, transaction.AbilityBaseId, true);
+            }
+        }
+
+        string ResolveSellItemName(VendorSellPriceField field)
+        {
+            if (field.IsAbility)
+            {
+                if (abilitiesById.TryGetValue(field.PriceId, out AbilityDefinition? ability))
+                {
+                    return !string.IsNullOrWhiteSpace(ability.DisplayName)
+                        ? ability.DisplayName
+                        : (!string.IsNullOrWhiteSpace(ability.CodeName) ? ability.CodeName : $"ability:0x{field.PriceId:x8}");
+                }
+
+                return $"ability:0x{field.PriceId:x8}";
+            }
+
+            if (itemsById.TryGetValue(field.PriceId, out ItemCommandEntry? item))
+            {
+                return !string.IsNullOrWhiteSpace(item.DisplayName)
+                    ? item.DisplayName
+                    : (!string.IsNullOrWhiteSpace(item.Symbol) ? item.Symbol : $"item:0x{field.PriceId:x8}");
+            }
+
+            return $"item:0x{field.PriceId:x8}";
+        }
+    }
+
+    private static int ParseSellRequestSecondByte(string sellPayloadPrefixHex)
+    {
+        if (string.IsNullOrWhiteSpace(sellPayloadPrefixHex))
+        {
+            return -1;
+        }
+
+        string[] parts = sellPayloadPrefixHex.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2)
+        {
+            return -1;
+        }
+
+        return int.TryParse(parts[1], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int value)
+            ? value
+            : -1;
     }
 
     private static string FormatVendorBuyAckDetail(VendorBuyAckSample ack)

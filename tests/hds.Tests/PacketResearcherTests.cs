@@ -671,6 +671,75 @@ public class PacketResearcherTests
     }
 
     [Fact]
+    public void BuildVendorSellRequestAddressingSummaries_ClassifiesCrossFileStableFieldAsGlobalIdentifier()
+    {
+        VendorSellTransactionSample MakeSell(string requestPrefix, uint normalItemId) => new VendorSellTransactionSample(
+            20,
+            "client",
+            requestPrefix,
+            22,
+            "server",
+            new[] { "80 e7", "80 e4", "5f", "81 12" },
+            new[] { new VendorSellAckSample("58 00 01", "58 00", 88, "01", 1) },
+            "00 00 00 00 00 00 00 00 00 00 00 00 00",
+            "field",
+            normalItemId,
+            "00 00 00 00",
+            0,
+            0,
+            new long[] { 5000 },
+            new uint[] { 5000 },
+            new uint[] { 7, 7 });
+
+        // Request field "00 55" resolves to item 43060 in BOTH files (cross-file stable -> global).
+        // Request field "00 52" resolves to a different item 43061 (single file).
+        PacketDumpFileSummary fileA = CreateEmptyPacketDump("session-a.txt")
+            with
+            {
+                VendorSellTransactions = new[]
+                {
+                    MakeSell("00 55", 43060),
+                    MakeSell("00 52", 43061)
+                }
+            };
+        PacketDumpFileSummary fileB = CreateEmptyPacketDump("session-b.txt")
+            with
+            {
+                VendorSellTransactions = new[]
+                {
+                    MakeSell("00 55", 43060)
+                }
+            };
+
+        VendorSellRequestAddressingSummary[] summaries = PacketResearcher.BuildVendorSellRequestAddressingSummaries(
+                new[] { fileA, fileB },
+                Array.Empty<AbilityDefinition>(),
+                new[]
+                {
+                    new ItemCommandEntry(43060, "Submachinegun11", "FM-13SK", "items.txt", 2),
+                    new ItemCommandEntry(43061, "Pistol07", "Beretta", "items.txt", 3)
+                })
+            .ToArray();
+
+        VendorSellRequestAddressingSummary stable = Assert.Single(summaries, summary => summary.RequestFieldHex == "00 55");
+        Assert.Equal(0x55, stable.RequestFieldSecondByte);
+        Assert.Equal(1, stable.DistinctItemCount);
+        Assert.Equal(2, stable.DistinctFileCount);
+        Assert.Equal(2, stable.TransactionCount);
+        Assert.Equal("global item identifier", stable.Classification);
+        Assert.Equal(new[] { "FM-13SK" }, stable.ResolvedItemNames);
+
+        VendorSellRequestAddressingSummary singleFile = Assert.Single(summaries, summary => summary.RequestFieldHex == "00 52");
+        Assert.Equal(0x52, singleFile.RequestFieldSecondByte);
+        Assert.Equal(1, singleFile.DistinctItemCount);
+        Assert.Equal(1, singleFile.DistinctFileCount);
+        Assert.Equal("stable-single-file", singleFile.Classification);
+
+        // Ordered by second byte: 0x52 before 0x55.
+        Assert.Equal(new[] { "00 52", "00 55" }, summaries.Select(s => s.RequestFieldHex).ToArray());
+    }
+
+    [Fact]
     public void ReportWriter_SeparatesVendorTopLevelRpcHitsFromEmbeddedByteHits()
     {
         const string rpcLabel = "81 0d [server] CR2:SERVER_VENDOR_OPEN";

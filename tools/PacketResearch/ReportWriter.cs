@@ -9507,6 +9507,7 @@ public static class ReportWriter
         AppendVendorTransactionFieldLeads(builder, flows);
         AppendVendorBuyItemPriceLeads(builder, flows, report);
         AppendVendorSellItemPriceLeads(builder, flows, report);
+        AppendVendorSellRequestAddressing(builder, report);
     }
 
     private static void AppendVendorOpenHeaderFieldLeads(
@@ -10413,6 +10414,63 @@ public static class ReportWriter
                 $"| `{FormatEmptyHex(group.Key.SellPayloadPrefixHex)}` | {FormatTableText(group.Key.ResponseField)} | {group.Key.ResponseId.ToString(CultureInfo.InvariantCulture)} | {reference} | {priceText} | {expectedSell.ToString(CultureInfo.InvariantCulture)} | {priceMatch} | {ackItemValues} | {ackFlags} | {cashDeltas} | {sellValues} | {valueKinds} | {vendorRows.Length} | {samples} |");
         }
 
+        builder.AppendLine();
+    }
+
+    private static void AppendVendorSellRequestAddressing(
+        StringBuilder builder,
+        PacketResearchReport report)
+    {
+        IReadOnlyList<VendorSellRequestAddressingSummary> rows = report.VendorSellRequestAddressingSummaries;
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        builder.AppendLine("### Vendor Sell Request Addressing");
+        builder.AppendLine();
+        builder.AppendLine("This classifies the `CLIENT_VENDOR_SELL` (`81 11`) REQUEST field (`SellPayloadPrefixHex`, whose second byte varies) by pairing each request field with the item/ability the server `81 12` RESPONSE resolved it to, then checking whether that mapping is a single stable item ACROSS different source files (sessions/players). A request field that resolves to one item across two or more files is a global item/ability identifier (the server must resolve a code to an item), which rules out a raw DB inventory-slot lookup. A field seen in only one file cannot be distinguished from a session-relative index; a field that resolves to multiple items is ambiguous.");
+        builder.AppendLine();
+        builder.AppendLine("| Request field | Second byte | Distinct items | Distinct files | Txn count | Classification | Resolved item(s) |");
+        builder.AppendLine("| --- | ---: | ---: | ---: | ---: | --- | --- |");
+
+        foreach (VendorSellRequestAddressingSummary row in rows)
+        {
+            string secondByte = row.RequestFieldSecondByte >= 0
+                ? $"0x{row.RequestFieldSecondByte:x2}"
+                : "-";
+            string items = row.ResolvedItemNames.Count == 0
+                ? "(none)"
+                : FormatTableText(string.Join(", ", row.ResolvedItemNames));
+            builder.AppendLine(
+                $"| `{FormatEmptyHex(row.RequestFieldHex)}` | {secondByte} | {row.DistinctItemCount.ToString(CultureInfo.InvariantCulture)} | {row.DistinctFileCount.ToString(CultureInfo.InvariantCulture)} | {row.TransactionCount.ToString(CultureInfo.InvariantCulture)} | {row.Classification} | {items} |");
+        }
+
+        builder.AppendLine();
+
+        int globalCount = rows.Count(row => row.Classification == "global item identifier");
+        int ambiguousCount = rows.Count(row => row.Classification == "ambiguous");
+        int singleFileCount = rows.Count(row => row.Classification == "stable-single-file");
+
+        string verdict;
+        if (globalCount > 0 && ambiguousCount == 0)
+        {
+            verdict = $"VERDICT: {globalCount} request field(s) resolve to a single stable item across two or more files and none are ambiguous, so the `81 11` request field is a GLOBAL item/ability code (or index into a stable global table), NOT a per-session DB inventory slot. A server sell handler that assumes inventory-slot addressing is WRONG.";
+        }
+        else if (globalCount > 0 && ambiguousCount > 0)
+        {
+            verdict = $"VERDICT: {globalCount} request field(s) are cross-file-stable global item identifiers but {ambiguousCount} are ambiguous (resolve to multiple items); the field is most consistent with a global item code, but the ambiguous rows warrant inspection before ruling out slot-like behavior.";
+        }
+        else if (ambiguousCount > 0)
+        {
+            verdict = $"VERDICT: no request field is cross-file-stable and {ambiguousCount} resolve to multiple items; the data does NOT establish a global item identifier and is consistent with a session-relative index or slot.";
+        }
+        else
+        {
+            verdict = $"VERDICT: all {singleFileCount} request field(s) resolve to a single item but each is observed in only one file, so global-vs-session-relative addressing CANNOT be distinguished from this data; more cross-session captures are needed.";
+        }
+
+        builder.AppendLine(verdict);
         builder.AppendLine();
     }
 

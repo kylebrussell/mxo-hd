@@ -272,6 +272,16 @@ public sealed record VendorSellPriceLeadSummary(
     int VendorInventoryRowCount,
     IReadOnlyList<VendorTransactionSampleLocation> Samples);
 
+public sealed record VendorSellRequestAddressingSummary(
+    string RequestFieldHex,
+    int RequestFieldSecondByte,
+    IReadOnlyList<string> ResolvedItemNames,
+    int DistinctItemCount,
+    int DistinctFileCount,
+    int TransactionCount,
+    string Classification,
+    IReadOnlyList<VendorTransactionSampleLocation> Samples);
+
 public sealed record Protocol04ServerPayloadShapeSample(
     int Line,
     string Header,
@@ -3607,6 +3617,8 @@ public sealed record PacketResearchReport(
     public IReadOnlyList<VendorBuyPriceLeadSummary> VendorBuyPriceLeadSummaries { get; init; } = Array.Empty<VendorBuyPriceLeadSummary>();
 
     public IReadOnlyList<VendorSellPriceLeadSummary> VendorSellPriceLeadSummaries { get; init; } = Array.Empty<VendorSellPriceLeadSummary>();
+
+    public IReadOnlyList<VendorSellRequestAddressingSummary> VendorSellRequestAddressingSummaries { get; init; } = Array.Empty<VendorSellRequestAddressingSummary>();
 
     public IReadOnlyList<ManageBonusStateIdLongFormFieldLeadSummary> ManageBonusStateIdLongFormFieldLeadSummaries { get; init; } = Array.Empty<ManageBonusStateIdLongFormFieldLeadSummary>();
 
