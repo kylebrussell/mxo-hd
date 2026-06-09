@@ -14,7 +14,11 @@ namespace hds
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_VENDOR_OPEN,0);
             pak.AddByteArray(new byte[]{0x7c, 0xad, 0xd9, 0x43});
-            // ToDo: Research what position should be here - Vendor or Player and why ?
+            // Decode findings (docs/PACKET-RESEARCH.md): the 81 0d SERVER_VENDOR_OPEN payload
+            // begins `7c ad d9 43` (decode-confirmed, emitted above) and observed payload lengths
+            // are 60/72/100/200/208/480/760 bytes. Whether the position block here should carry the
+            // vendor's position or the player's stayed UNRESOLVED during decoding; we keep emitting
+            // the player position (current behavior) pending a definitive capture.
             pak.AddByteArray(Store.currentClient.playerInstance.Position.getValue());
             pak.AddByteArray(new byte[]{0x20,0x00}); // Always 20 00 (i think its an offset)
 
@@ -27,7 +31,19 @@ namespace hds
 
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
-        
+
+        // LEAD (capture-pending): the decoded vendor sell reply sequence is
+        // 80 e7 -> 80 e4 (cash) -> 5f (sell ack) -> 81 12 (sell complete). The cash update is sent
+        // via SendInfoCurrent and the slot clear via sendInventoryItemDelete (0x5f). This method
+        // emits a best-effort "sell complete" (0x81 0x12 == SERVER opcode 0x8112) acknowledgement so
+        // the client closes out the transaction. The exact body of 81 12 is NOT proven, so we send
+        // an empty-bodied ack; this is a lead and must be confirmed against a real capture.
+        public void SendVendorSellAck(WorldClient client)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x8112, 0); // 81 12 SERVER vendor sell complete (lead, body unconfirmed)
+            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+        }
 
     }
 }

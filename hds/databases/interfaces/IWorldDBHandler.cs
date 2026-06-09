@@ -53,6 +53,7 @@ namespace hds.databases.interfaces{
         void UpdateInventorySlot(UInt16 sourceSlot, UInt16 destSlot, UInt32 charId);
         UInt16 GetFirstNewSlot();
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID);
+        void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId);
         void setBackground(string backgroundText);
         UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);

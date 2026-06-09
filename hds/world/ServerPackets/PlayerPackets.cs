@@ -98,12 +98,10 @@ namespace hds
 
         public void sendAttribute(WorldClient client, UInt16 attributeValue, byte type)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_ATTRIBUTE, 0);
-            pak.AddByte(type);
-            pak.AddUint16(attributeValue, 0);
-            pak.AddHexBytes("000802");
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            // Byte-exact with the previous inline build:
+            //   80 b2 | <type> | <attributeValue big-endian> | 00 08 02
+            byte[] message = AttributeBundle.Build80b2Attribute(type, attributeValue);
+            client.messageQueue.addRpcMessage(message);
         }
 
         public void sendEXPCurrent(WorldClient client, UInt32 exp)
@@ -236,11 +234,16 @@ namespace hds
             //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2110011000802"));
             
             //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("81A500000700052300687474703A2F2F6D786F656D752E696E666F2F666F72756D2F696E6465782E70687000")); // Has forum url - but is not flash traffic - or ? 
+            // TODO: lead-only family (80 bc 55 00 super-jump), not yet modeled byte-exact.
             client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc55005100000b0000003702330000000000000000")); // this adds super jump points dude
             // Code Write bonuses
-            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b225000f001900"));
-            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80b2ca0300000802"));
-            client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc4503ca030025000000ca03000000000000000000"));
+            // Was: 80b225000f001900  (80 b2 attribute form with a non-default 00 19 00 tail)
+            client.messageQueue.addRpcMessage(AttributeBundle.Build80b2Attribute(0x25, 0x000f, new byte[] { 0x00, 0x19, 0x00 }));
+            // Was: 80b2ca0300000802  (80 b2 short-tail attribute form)
+            client.messageQueue.addRpcMessage(AttributeBundle.Build80b2Attribute(0xca, 0x0300));
+            // Was: 80bc4503ca030025000000ca03000000000000000000  (45 03 family, byte-9 field1 repeat)
+            client.messageQueue.addRpcMessage(AttributeBundle.Build80bc4503(0x03ca, 0x25));
+            // TODO: lead-only family (80 bc 45 00, no byte-9 self-repeat), not yet modeled byte-exact.
             client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc45004d0000250000008902300000000000000000"));
             //client.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("2E070000000000000000002400000000000000000000000000000000000000000000000011005768617427732075702062726F736B6900"));
             

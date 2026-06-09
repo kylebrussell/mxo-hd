@@ -39,8 +39,27 @@ namespace hds
 
         public void processItemDelete(ref byte[] packet)
         {
-            // ToDo: implement
-            throw new NotImplementedException();
+            if (packet.Length < 2)
+            {
+                Output.WriteDebugLog("[INVENTORY] Item delete/recycle packet too short.");
+                return;
+            }
+
+            // LEAD (capture-pending): like processItemMove, we treat packet[0..1] as the raw
+            // inventory slot. The slot-vs-itemcode byte interpretation for recycle is unproven.
+            byte[] slotBytes = {packet[0], packet[1]};
+            UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
+            removeItemAtSlot(slot);
+        }
+
+        // Removes an item from a given inventory slot (DB row delete + client packet).
+        // Shared by the recycle handler and the vendor sell flow.
+        public void removeItemAtSlot(UInt16 slot)
+        {
+            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, Store.currentClient.playerData.getCharID());
+
+            ServerPackets pak = new ServerPackets();
+            pak.sendInventoryItemDelete(slot, Store.currentClient);
         }
 
 

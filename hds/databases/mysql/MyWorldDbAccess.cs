@@ -930,6 +930,14 @@ namespace hds.databases{
                                   itemGoID + "', slot = '" + slotId.ToString() + "', created = NOW() ");
         }
 
+        public void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId)
+        {
+	        // Mirrors AddItemToInventory / UpdateInventorySlot: same `inventory` table, same
+	        // charId+slot keying, same string-concat style used everywhere else in this class.
+	        ExecuteNonResultQuery("DELETE FROM inventory WHERE charId = '" + charId.ToString() +
+	                              "' AND slot = '" + slotId.ToString() + "' LIMIT 1");
+        }
+
         public UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId)
         {
 	        OpenConnection();

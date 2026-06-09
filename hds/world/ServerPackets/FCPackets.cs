@@ -31,14 +31,15 @@ namespace hds
 
         public void SendCrewInfo(WorldClient client, Crew crew, List<CrewMember> members)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_CREW_MEMBERS_LIST, 0);
-            
+            byte[] packet;
+
             if (crew.crewId == 0)
             {
-                pak.AddHexBytes("15A0070000000000000000000000000000000000000000210000000000230000000000");
-                client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-                
+                PacketContent emptyPak = new PacketContent();
+                emptyPak.AddUint16((UInt16) RPCResponseHeaders.SERVER_CREW_MEMBERS_LIST, 0);
+                emptyPak.AddHexBytes("15A0070000000000000000000000000000000000000000210000000000230000000000");
+                packet = emptyPak.ReturnFinalPacket();
+
                 // Finalize the packet - we have now crew data
                 /*
                 pak.addUintShort(0);
@@ -48,11 +49,6 @@ namespace hds
             }
             else
             {
-                pak.AddUint32(client.playerData.getCharID(), 1);
-                pak.AddUint32(crew.crewId, 1);
-                pak.AddUShort(crew.org);
-                pak.AddUint16(33, 1); // CrewName Offset
-
                 UInt32 charIdCaptain = 0;
                 UInt32 charIdFM = 0;
                 foreach (CrewMember member in members)
@@ -68,64 +64,116 @@ namespace hds
                     }
                 }
 
-                pak.AddUint32(charIdCaptain, 1);
-                pak.AddUint32(charIdFM, 1);
-                pak.AddUint32(crew.money, 1);
-
-                UInt16 offsetMemberList =
-                    (ushort) (33 + crew.crewName.Length +
-                              3); // baseoffset + full crewname size (inkl. size byte and 0 termination)
-                pak.AddUint16(offsetMemberList, 1);
-                pak.AddHexBytes("14020000"); // Constant in every log from medanon, sonyblack and afterwhoruneo
-                // pak.addUint16(calculatedFullSize,1);
-                
-                
-                PacketContent memberData = new PacketContent();
-                memberData.AddSizedTerminatedString(crew.crewName);
-                memberData.AddUint16((ushort) members.Count,1);
-                foreach (CrewMember member in members)
-                {
-                    memberData.AddByte(0x00);
-                    memberData.AddUint32(member.charId,1);
-                    memberData.AddStringWithFixedSized(member.handle,31);
-                    memberData.AddUShort(member.isOnline);
-                }
-                
-                memberData.AddByteArray(new byte[]{0x00, 0x00, 0x00});
-                
-                UInt16 finalFullSize = (UInt16) (pak.ReturnFinalPacket().Length + memberData.ReturnFinalPacket().Length);
-                pak.AddUint16(finalFullSize, 1);
-                pak.AddByteArray(memberData.ReturnFinalPacket());
-
+                packet = BuildCrewInfoPacket(client.playerData.getCharID(), crew, members, charIdCaptain, charIdFM);
             }
 
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            client.messageQueue.addRpcMessage(packet);
         }
+
+        // Pure layout builder for the 80 86 / SERVER_CREW_MEMBERS_LIST packet (populated crew variant).
+        // Extracted from SendCrewInfo so the decoded wire layout can be golden-tested without a live Store/WorldClient.
+        // Decoded field order (see docs/PACKET-RESEARCH.md, 80 86 decode):
+        //   opcode 80 86, char id (u32), crew/org id (u32), org reputation byte, crew-name offset (u16),
+        //   captain char id (u32), first-mate char id (u32), money (u32), member-list offset (u16),
+        //   constant 14 02 00 00, full size (u16), then member-data block.
+        internal static byte[] BuildCrewInfoPacket(UInt32 charId, Crew crew, List<CrewMember> members,
+            UInt32 charIdCaptain, UInt32 charIdFM)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_CREW_MEMBERS_LIST, 0);
+
+            pak.AddUint32(charId, 1);
+            pak.AddUint32(crew.crewId, 1);
+            pak.AddUShort(crew.org);
+            pak.AddUint16(33, 1); // CrewName Offset
+
+            pak.AddUint32(charIdCaptain, 1);
+            pak.AddUint32(charIdFM, 1);
+            pak.AddUint32(crew.money, 1);
+
+            UInt16 offsetMemberList =
+                (ushort) (33 + crew.crewName.Length +
+                          3); // baseoffset + full crewname size (inkl. size byte and 0 termination)
+            pak.AddUint16(offsetMemberList, 1);
+            // 14 02 00 00 : decode-confirmed stable constant in every sampled 80 86 log
+            // (medanon, sonyblack, afterwhoruneo). Follows the member-list offset, precedes the full-size u16.
+            pak.AddHexBytes("14020000");
+            // pak.addUint16(calculatedFullSize,1);
+
+
+            PacketContent memberData = new PacketContent();
+            memberData.AddSizedTerminatedString(crew.crewName);
+            memberData.AddUint16((ushort) members.Count,1);
+            foreach (CrewMember member in members)
+            {
+                memberData.AddByte(0x00);
+                memberData.AddUint32(member.charId,1);
+                memberData.AddStringWithFixedSized(member.handle,31);
+                memberData.AddUShort(member.isOnline);
+            }
+
+            memberData.AddByteArray(new byte[]{0x00, 0x00, 0x00});
+
+            UInt16 finalFullSize = (UInt16) (pak.ReturnFinalPacket().Length + memberData.ReturnFinalPacket().Length);
+            pak.AddUint16(finalFullSize, 1);
+            pak.AddByteArray(memberData.ReturnFinalPacket());
+
+            return pak.ReturnFinalPacket();
+        }
+
+        // Alignment of the faction-info mode-1 payload. 1=Zion, 3=Mero (decode confirms sampled 7c logs
+        // carry only 1 and 3; 2=Machine is presumed but unobserved). The Faction data model carries no
+        // alignment/side field yet, so we emit the Zion default; wire this to faction data once the model
+        // gains an alignment property. See docs/PACKET-RESEARCH.md (7c SERVER_FACTION_PLAYER_INFO mode 1).
+        internal const ushort FactionAlignmentDefault = 1;
 
         public void SendFactionInfo(WorldClient client, Faction faction, bool sendToAllMembers)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddUShort((ushort) RPCResponseHeaders.SERVER_FACTION_PLAYER_INFO);
-            pak.AddUint32(Store.currentClient.playerData.getCharID(), 1);
-            pak.AddUint32(faction.factionId, 1);
-            pak.AddHexBytes("010000010F00"); // Currently unknown
-            pak.AddUint16(52, 1); // 52 size for the "next" part but its constant at this time (as string has no size)
-            pak.AddUShort(
-                1); // ToDo: Should be Alignment : 1=Zion, 3 Mero, 2 Machine? Logs has only 1 and 3 (needs more testing and setup)
-            pak.AddStringWithFixedSized(faction.name,
-                42); // 32 is more realistic - but after that there is much "dummy" data which differs
+            byte[] packet = BuildFactionInfoPacket(
+                Store.currentClient.playerData.getCharID(),
+                faction.factionId,
+                FactionAlignmentDefault,
+                faction.name,
+                faction.masterPlayerCharId,
+                faction.money);
 
-            pak.AddUint32(faction.masterPlayerCharId, 1);
-            pak.AddUint32(faction.money, 1);
             if (sendToAllMembers)
             {
-                Store.world.SendRPCToFactionMembers(faction.factionId, client, pak.ReturnFinalPacket(), true);
+                Store.world.SendRPCToFactionMembers(faction.factionId, client, packet, true);
             }
             else
             {
-                client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());    
+                client.messageQueue.addRpcMessage(packet);
             }
-            
+
+        }
+
+        // Pure layout builder for the 7c / SERVER_FACTION_PLAYER_INFO packet, mode 1 (faction summary).
+        // Extracted from SendFactionInfo so the decoded wire layout can be golden-tested without a live Store.
+        // Decoded field order (see docs/PACKET-RESEARCH.md, 7c mode-1 decode):
+        //   opcode 7c, char id (u32), faction id (u32), mode-1 prefix+flag, data-length (u16),
+        //   alignment (1 byte), faction name (fixed 42), master char id (u32), money (u32).
+        internal static byte[] BuildFactionInfoPacket(UInt32 charId, UInt32 factionId, ushort alignment,
+            string factionName, UInt32 masterPlayerCharId, UInt32 money)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUShort((ushort) RPCResponseHeaders.SERVER_FACTION_PLAYER_INFO);
+            pak.AddUint32(charId, 1);
+            pak.AddUint32(factionId, 1);
+            // 01 00 00 01 0F 00 : decoded mode-1 prefix (01 00 00 01) + count/flag (0F 00) from the
+            // 7c SERVER_FACTION_PLAYER_INFO decode. Not unknown - this is the fixed mode-1 header.
+            pak.AddHexBytes("010000010F00");
+            // Decoded data-length field for the mode-1 payload that follows. Constant 52 here because the
+            // trailing name is a fixed-size 42-byte field (no length prefix), so the payload length is fixed.
+            pak.AddUint16(52, 1);
+            // Alignment: 1=Zion, 3=Mero (see FactionAlignmentDefault). AddUShort emits a single byte.
+            pak.AddUShort(alignment);
+            pak.AddStringWithFixedSized(factionName,
+                42); // 32 is more realistic - but after that there is much "dummy" data which differs
+
+            pak.AddUint32(masterPlayerCharId, 1);
+            pak.AddUint32(money, 1);
+            return pak.ReturnFinalPacket();
         }
 
         public void SendFactionCreationError(WorldClient client)

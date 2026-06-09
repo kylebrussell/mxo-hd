@@ -119,6 +119,31 @@ namespace hds
             return true;
         }
 
+        // Pure, unit-testable sell helper mirroring TryApplyBuy. No Store/DB access.
+        //
+        // Rule for non-sellable items: GetSellPrice returns 0 for items flagged NonSellable in
+        // the decoded csv (see VendorPricingTests.SellPriceIsZeroForNonSellableItems). A buyback
+        // value of 0 is therefore the explicit "this item cannot be sold" signal, so we reject the
+        // sell (return false) and leave cash unchanged. NoBuyBackPrice (1) is only produced for an
+        // empty/zero itemGoId; that is treated as a normal (if trivial) sale for 1, mirroring how
+        // TryApplyBuy still proceeds on its DefaultBuyPrice fallback path. newCash is clamped to
+        // UInt32.MaxValue so a huge buyback can never overflow the cash field.
+        public static bool TryApplySell(long currentCash, UInt32 itemGoId, out UInt32 newCash, out UInt32 price)
+        {
+            price = GetSellPrice(itemGoId);
+            if (price == 0)
+            {
+                newCash = currentCash <= 0
+                    ? 0
+                    : (UInt32)Math.Min(currentCash, UInt32.MaxValue);
+                return false;
+            }
+
+            long baseCash = currentCash < 0 ? 0 : currentCash;
+            newCash = (UInt32)Math.Min(baseCash + (long)price, (long)UInt32.MaxValue);
+            return true;
+        }
+
         internal static IReadOnlyDictionary<UInt32, VendorPriceEntry> LoadPriceData(string path)
         {
             Dictionary<UInt32, VendorPriceEntry> prices = new Dictionary<UInt32, VendorPriceEntry>();

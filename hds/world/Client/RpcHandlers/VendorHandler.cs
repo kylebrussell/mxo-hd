@@ -37,8 +37,50 @@ namespace hds{
 
         public void processSellItem(ref byte[] packet){
             ServerPackets packets = new ServerPackets();
-            packets.sendSystemChatMessage(Store.currentClient,
-                "Vendor selling is not available until the sell packet format is decoded.", "MODAL");
+
+            if (packet.Length < 2)
+            {
+                Output.WriteDebugLog("[VENDOR] Sell packet too short.");
+                return;
+            }
+
+            // LEAD (capture-pending): the CLIENT_VENDOR_SELL (81 11) field layout is not proven.
+            // The observed payloads carry short item/ability codes, but the inventory is
+            // slot-addressed and every other proven inventory mutation (processItemMove,
+            // processMountItem, processUnmountItem) reads raw slot bytes from packet[0..]. We follow
+            // that precedent and treat packet[0..1] as the inventory slot of the item being sold.
+            // The slot-vs-itemcode byte interpretation is the key capture-pending assumption here.
+            byte[] slotBytes = {packet[0], packet[1]};
+            UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
+
+            UInt32 itemGoID = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+            if (itemGoID == 0)
+            {
+                packets.sendSystemChatMessage(Store.currentClient,
+                    "There is nothing to sell in that slot.", "MODAL");
+                return;
+            }
+
+            long currentCash = Store.currentClient.playerData.getInfo();
+            if (!VendorPricing.TryApplySell(currentCash, itemGoID, out UInt32 newCash, out UInt32 _))
+            {
+                packets.sendSystemChatMessage(Store.currentClient,
+                    "This item cannot be sold.", "MODAL");
+                return;
+            }
+
+            // Remove the sold item from the inventory (DB row delete + client delete packet).
+            InventoryHandler inventory = new InventoryHandler();
+            inventory.removeItemAtSlot(slot);
+
+            // Credit the player (mirrors processBuyItem's cash flow).
+            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
+            Store.currentClient.playerData.setInfo(newCash);
+            packets.SendInfoCurrent(Store.currentClient, newCash);
+
+            // Best-effort sell acknowledgement (lead: 5f ack already sent via the item delete,
+            // 81 12 sell complete here). See SendVendorSellAck for the capture-pending caveat.
+            packets.SendVendorSellAck(Store.currentClient);
         }
     }
 }
