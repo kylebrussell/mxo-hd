@@ -46,6 +46,17 @@ public class CombatPacketTests
     }
 
     [Fact]
+    public void HyperSpeedUsesRetailMovementScaleAndRealInnerStrength()
+    {
+        // Retail: 02 00 02 88 05 8c 1e 66 66 e6 3e 80 90 <IS> b0 56 06 00 28 <ctr> 02 ...
+        string hex = Hex(AbilityPackets_BuildHyperSpeed(207, 2));
+        Assert.StartsWith("0200" + "0288058c1e" + "6666e63e" + "8090" + "cf00" + "b056060028" + "02", hex);
+    }
+
+    private static byte[] AbilityPackets_BuildHyperSpeed(ushort innerStrength, byte counter) =>
+        ServerPackets.BuildHyperSpeedUpdate(innerStrength, counter);
+
+    [Fact]
     public void NpcDeathMatchesRetail()
     {
         // Parts 01 and 04: UseCount=2, StopFollowActiveTracker=0, IsDead=1, Health=0,

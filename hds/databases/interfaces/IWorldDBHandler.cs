@@ -37,6 +37,7 @@ namespace hds.databases.interfaces{
         void DeleteCrew(UInt32 crewId);
 
         void updateLocationByHL(UInt16 district, UInt16 hardline);
+        List<UInt16> GetHardlineIdsForDistrict(UInt16 district);
         void updateSourceHlForObjectTracking(UInt16 sourceDistrict, UInt16 sourceHl, UInt32 lastObjectId);
         void SetPlayerValues();
         void SetRsiValues();

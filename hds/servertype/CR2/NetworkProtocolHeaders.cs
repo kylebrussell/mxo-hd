@@ -119,6 +119,7 @@ namespace hds
         SERVER_CODER_UNKNOWN = 0x8178,
         
         SERVER_EXIT_HL = 0x80fb,
+        SERVER_HARDLINE_STATUS = 0x6d, // answers CLIENT_HARDLINE_STATUS_REQUEST (0x6c): synced hardlines of a district
         SERVER_JACKOUT_FINISH = 0x80fd,
         SERVER_PLAYER_EXP   = 0x80e5,
         SERVER_PLAYER_EXP_ANIM   = 0x80e6,

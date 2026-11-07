@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace hds
@@ -46,9 +47,24 @@ namespace hds
                     thisclient.playerData.lastSaveTime = TimeUtils.getUnixTimeUint32();
                 }
 
-                CheckToSaveClientData(thisclient);                
+                CheckToSaveClientData(thisclient);
+                RegenerateInnerStrength(thisclient);
                 CheckForFinalJackout(thisclient);
                 CheckForStaticViews(thisclient);
+            }
+        }
+
+        private static void RegenerateInnerStrength(WorldClient thisclient)
+        {
+            if (thisclient == null || !thisclient.playerData.getOnWorld())
+            {
+                return;
+            }
+
+            UInt16? innerStrength = AbilityHandler.RegenerateInnerStrength(thisclient);
+            if (innerStrength.HasValue)
+            {
+                new ServerPackets().sendISCurrent(thisclient, innerStrength.Value);
             }
         }
 

@@ -446,6 +446,24 @@ namespace hds.databases{
             
         }
 
+        public List<UInt16> GetHardlineIdsForDistrict(UInt16 district)
+        {
+	        List<UInt16> ids = new List<UInt16>();
+	        OpenConnection();
+	        queryExecuter = conn.CreateCommand();
+	        queryExecuter.CommandText =
+		        "SELECT HardLineId FROM data_hardlines WHERE DistrictId = '" + district + "' ORDER BY HardLineId";
+	        dr = queryExecuter.ExecuteReader();
+	        while (dr.Read())
+	        {
+		        ids.Add(Convert.ToUInt16(dr.GetValue(0)));
+	        }
+
+	        dr.Close();
+	        CloseConnection();
+	        return ids;
+        }
+
         public void updateLocationByHL(UInt16 district, UInt16 hardline)
         {
 	        OpenConnection();

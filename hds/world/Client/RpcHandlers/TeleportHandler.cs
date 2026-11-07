@@ -1,14 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using hds.shared;
 
 namespace hds
 {
     class TeleportHandler
     {
-        // ToDo: ALL!
+        /// <summary>
+        /// 6c &lt;district u32&gt; &lt;u32&gt;: the client asks which hardlines of a district are synced, for the
+        /// hardline map. Every hardline counts as synced until per-character sync is stored.
+        /// </summary>
         public void processHardlineStatusRequest(ref byte[] packet)
         {
-            // NEED TO BE DONE CORRECTLY
+            if (packet.Length < 2)
+            {
+                return;
+            }
+
+            UInt16 district = (UInt16)(packet[0] | (packet[1] << 8));
+            List<UInt16> hardlines = Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
+            Output.WriteDebugLog("[HARDLINE] Status for district " + district + ": " + hardlines.Count + " hardlines");
+            new ServerPackets().SendHardlineStatus(Store.currentClient, district, hardlines);
         }
 
         public void processTeleportReset(ref byte[] packet)

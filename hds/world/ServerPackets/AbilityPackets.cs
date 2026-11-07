@@ -134,17 +134,28 @@ namespace hds
             }
         }
 
-        public void SendHyperSpeed()
+        public void SendHyperSpeed(UInt16 innerStrength)
         {
-            byte[] updateCount =
-                NumericalUtils.uint16ToByteArrayShort(Store.currentClient.playerData.assignSpawnIdCounter());
+            byte counter = (byte)Store.currentClient.playerData.assignSpawnIdCounter();
+            Store.currentClient.messageQueue.addObjectMessage(BuildHyperSpeedUpdate(innerStrength, counter), false);
+            Store.currentClient.FlushQueue();
+        }
+
+        /// <summary>
+        /// Own-view Hyper-Speed, as retail sent it: RippleMagnitude 5, NoiseLevel 30, MovementScale 0.45
+        /// (<c>66 66 e6 3e</c>), InnerStrengthAvailable, EffectID 0x28000656, EffectCounter, then group 5.
+        /// This used to send MovementScale 1.925 (<c>66 66 f6 3f</c>) and Inner Strength 50 every time.
+        /// </summary>
+        public static byte[] BuildHyperSpeedUpdate(UInt16 innerStrength, byte counter)
+        {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
-            pak.AddHexBytes("0288058c1e6666F63F80903200b056060028");
-            pak.AddByteArray(updateCount);
+            pak.AddHexBytes("0288058c1e6666e63e8090");
+            pak.AddUint16(innerStrength, 1);
+            pak.AddHexBytes("b056060028");
+            pak.AddByte(counter);
             pak.AddHexBytes("0200000000");
-            Store.currentClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            Store.currentClient.FlushQueue();
+            return pak.ReturnFinalPacket();
         }
 
         public void SendHyperJumpID(UInt32 possibleJumpID)
@@ -293,7 +304,10 @@ namespace hds
 
             PacketContent pak = new PacketContent();
             pak.AddUint16(viewId, 1);
-            pak.AddByteArray(new byte[] {0x02, 0x80, 0x80, 0x80, 0x90, 0xed, 0x00, 0x30});
+            // Groups: InnerStrengthAvailable (was a fixed 237), then EffectID + EffectCounter.
+            pak.AddByteArray(new byte[] {0x02, 0x80, 0x80, 0x80, 0x90});
+            pak.AddUint16(AbilityHandler.CurrentInnerStrength(Store.currentClient), 1);
+            pak.AddByte(0x30);
             pak.AddUint32(animId, 0);
             pak.AddUShort(Store.currentClient.playerData.assignSpawnIdCounter());
             Store.currentClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
