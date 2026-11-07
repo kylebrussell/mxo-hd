@@ -37,6 +37,11 @@ Later the same day:
 - **Death reaches everyone.** The NPC death now goes to every player who has the NPC spawned, like the health updates already did.
 - **Corpse window is not reliable.** It opened in 3 of 4 kills. The one miss had a byte-identical death and loot sequence, so it varies on the client side.
 
+Ranged attacks, tried 2026-11-07 with a revolver and a rifle equipped:
+- **The client asks to draw first.** The tooltip over a mob changes to "Fire!". A double-click then sends RPC `0x3d 01` (draw / combat stance), and `0x3d 00` a few seconds later.
+- **The server now answers.** Retail answered with the own-view CombatantMode `02 00 02 80 80 80 80 80 80 02 21` (`22` for at rest), and the server now does too.
+- **The client still never fires.** It never sends the ranged attack (`0x41 <target>`). Retail clients sent `3d 01`, `41` and `40` together in one packet, without waiting for an answer, so the client itself decides not to fire. Loading FirearmsAbility, HandgunsAbility, RiflesAbility and GunmanAbility for the character didn't change that. Unknown so far: what the client checks before firing.
+
 Still open:
 - **No fall animation.** In the test the mobs stood on top of each other, so a fall couldn't be seen.
 - **Combatant order.** In the init packet retail lists the attacker first; ours lists the target first.

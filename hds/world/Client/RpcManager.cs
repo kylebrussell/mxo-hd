@@ -42,6 +42,10 @@ namespace hds{
 			        CombatManager.GetHandler(Store.currentClient).ProcessLeaveCloseCombat(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_COMBAT_STANCE:
+		            CombatManager.GetHandler(Store.currentClient).ProcessCombatStance(ref rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
 		            Output.WriteRpcLog("RANGE COMBAT REQUEST");
