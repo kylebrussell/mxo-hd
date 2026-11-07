@@ -66,6 +66,15 @@ namespace hds
             return sendCounter < MaxObjectSends && nowTickMs - lastSentTick >= ObjectResendIntervalMs;
         }
 
+        /// <summary>
+        /// True when a client ack up to ackSeq covers this message. A message that has never been
+        /// sent can't be acked: its neededAck is still 0, which every ack would otherwise match.
+        /// </summary>
+        public bool IsAckedBy(UInt16 ackSeq)
+        {
+            return sendCounter > 0 && neededAck <= ackSeq;
+        }
+
         public void MarkObjectSent(long nowTickMs)
         {
             isSent = true;

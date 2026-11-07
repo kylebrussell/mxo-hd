@@ -334,8 +334,11 @@ namespace hds
             {
                 foreach (SequencedMessage message in messageQueue.ObjectMessagesQueue)
                 {
-                    // Check first reality then packetstation for the correct way we handle this
-                    if (message.getNeededAck() <= ackSeq)
+                    // Only a message that has gone out can be acked. A queued-but-unsent message
+                    // still has neededAck 0, so without the sendCounter check any client ack that
+                    // arrived before the next flush deleted it unsent. That dropped the self-spawn
+                    // about half the time and left the client at "Negotiating with Servers...".
+                    if (message.IsAckedBy(ackSeq))
                     {
                         ackedObjectMessages.Add(message);
                     }
@@ -348,7 +351,8 @@ namespace hds
             {
                 foreach (SequencedMessage message in messageQueue.RPCMessagesQueue)
                 {
-                    if (message.getNeededAck() <= ackSeq)
+                    // Same rule as object messages: never drop an RPC that hasn't been sent.
+                    if (message.IsAckedBy(ackSeq))
                     {
                         ackedRPCMessages.Add(message);
                     }
