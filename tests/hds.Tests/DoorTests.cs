@@ -24,6 +24,14 @@ public class DoorTests
     }
 
     [Fact]
+    public void HardlineStatusMatchesRetail()
+    {
+        // Retail (trinitys second_pc_010): 6d 01 00 00 00 08 00 01 29 00 | 00 30 00 00 00 00 | 00 31 00 ...
+        Assert.Equal("6d" + "0100" + "0000" + "0800" + "01" + "0300" + "003000000000" + "003100000000" + "003700000000",
+            Hex(ServerPackets.BuildHardlineStatus(1, new ushort[] { 0x30, 0x31, 0x37 })));
+    }
+
+    [Fact]
     public void DoorClosesAfterTwentySecondsAndIsRemovedAtTwentySix()
     {
         OpenDoor door = new OpenDoor { ViewId = 0x12, OpenedAt = 100, Stage = DoorStage.Open };

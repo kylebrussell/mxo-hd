@@ -58,6 +58,35 @@ namespace hds
             Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
 
+        /// <summary>
+        /// Retail reply to 6c &lt;district u32&gt; (trinitys second_pc_010, 12:41:50):
+        /// 6d &lt;district u16&gt; 00 00 08 00 01 &lt;count u16&gt;, then per synced hardline 00 &lt;id u16&gt; 00 00 00.
+        /// The ids are data_hardlines.HardLineId for that district (Slums: 48, 49, 55, 72, ...).
+        /// </summary>
+        public static byte[] BuildHardlineStatus(UInt16 district, IList<UInt16> syncedHardlines)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte((byte)RPCResponseHeaders.SERVER_HARDLINE_STATUS);
+            pak.AddUint16(district, 1);
+            pak.AddUint16(0, 1);
+            pak.AddUint16(8, 1);    // offset of the list descriptor below
+            pak.AddByte(0x01);
+            pak.AddUint16((UInt16)syncedHardlines.Count, 1);
+            foreach (UInt16 id in syncedHardlines)
+            {
+                pak.AddByte(0x00);
+                pak.AddUint16(id, 1);
+                pak.AddHexBytes("000000");
+            }
+            return pak.ReturnFinalPacket();
+        }
+
+        public void SendHardlineStatus(WorldClient client, UInt16 district, IList<UInt16> syncedHardlines)
+        {
+            client.messageQueue.addRpcMessage(BuildHardlineStatus(district, syncedHardlines));
+            client.FlushQueue();
+        }
+
         public void SendInteractionSubway(WorldClient client, double x, double y, double z)
         {
             PacketContent pak = new PacketContent();
