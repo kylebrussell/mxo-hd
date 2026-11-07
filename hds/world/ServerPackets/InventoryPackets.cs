@@ -22,16 +22,25 @@ namespace hds
 
         public void sendInventoryItemAdd(UInt16 freeSlot, UInt32 itemId, ushort amount, UInt16 type, WorldClient client)
         {
+            client.messageQueue.addRpcMessage(BuildInventoryItemAdd(freeSlot, itemId, amount, type));
+        }
+
+        /// <summary>
+        /// 5e "add item to slot": slot (u16 LE), item id (u32 LE), 4-byte descriptor "00 00 amount type",
+        /// then 01. Matches retail exactly; a 30,000 weapon bought into slot 0 was
+        /// "5e 00 00 c1 09 00 00 00 00 00 10 01".
+        /// </summary>
+        internal static byte[] BuildInventoryItemAdd(UInt16 slot, UInt32 itemId, ushort amount, UInt16 type)
+        {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x5e);
-            pak.AddUint16(freeSlot, 1);
+            pak.AddUint16(slot, 1);
             pak.AddUint32(itemId, 1);
             pak.AddUint16(0,1);
             pak.AddUShort(amount);
             pak.AddUShort(type);
             pak.AddUShort(1);
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-            
+            return pak.ReturnFinalPacket();
         }
 
         public void sendInventoryItemDelete(UInt16 slot, WorldClient client)

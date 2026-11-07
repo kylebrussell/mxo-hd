@@ -33,19 +33,44 @@ namespace hds
         }
 
         /// <summary>
-        /// Item descriptor we put in 81 12 for items we added ourselves. Retail used "00 00 00 XX" for
+        /// Item descriptor we put in 81 0f / 81 12 for items we added ourselves. Retail buys of vendor
+        /// items used exactly "00 00 00 10", the same as our 5e add. Retail sells used "00 00 00 XX" for
         /// normal items, with XX matching the trailing type byte of the 5e item-add message (0x14,
         /// 0x18, 0x28, 0x34, 0x38, 0x44 seen). Our 5e add sends type 0x10. The meaning of XX isn't
         /// fully decoded.
         /// </summary>
-        public static readonly byte[] DefaultSellItemDescriptor = {0x00, 0x00, 0x00, 0x10};
+        public static readonly byte[] DefaultItemDescriptor = {0x00, 0x00, 0x00, 0x10};
 
         // Retail answers every CLIENT_VENDOR_SELL (81 11) with one RPC list, in this order
         // (11 sells in research/packet-dumps, see docs/TODO.md):
         //   80 e7 (+price, reason 7) -> 80 e4 (new cash, reason 7) -> 5f (remove slot) -> 81 12.
         public void SendVendorSellAck(WorldClient client, UInt32 goId, UInt32 price)
         {
-            client.messageQueue.addRpcMessage(BuildVendorSellAck(goId, DefaultSellItemDescriptor, price));
+            client.messageQueue.addRpcMessage(BuildVendorSellAck(goId, DefaultItemDescriptor, price));
+        }
+
+        // Retail answers every CLIENT_VENDOR_BUY (81 0e) with one RPC list, in this order
+        // (45 buys in research/packet-dumps, see docs/TODO.md):
+        //   5e (add item) -> 80 e7 (-price, reason 8) -> 80 e4 (new cash, reason 8) -> 81 0f.
+        public void SendVendorBuyAck(WorldClient client, UInt32 goId, UInt32 price)
+        {
+            client.messageQueue.addRpcMessage(BuildVendorBuyAck(goId, DefaultItemDescriptor, price));
+        }
+
+        /// <summary>
+        /// 81 0f "buy complete": item GoID (u32 LE), 4-byte item descriptor (same as in the 5e add),
+        /// price (u32 LE), then 00. Retail 30,000 weapon (GoID 0x09c1):
+        /// "81 0f c1 09 00 00 00 00 00 10 30 75 00 00 00".
+        /// </summary>
+        internal static byte[] BuildVendorBuyAck(UInt32 goId, byte[] descriptor, UInt32 price)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x810f, 0);
+            pak.AddUint32(goId, 1);
+            pak.AddByteArray(descriptor);
+            pak.AddUint32(price, 1);
+            pak.AddByte(0x00);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
