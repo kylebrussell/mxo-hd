@@ -59,6 +59,9 @@ namespace hds
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
 
+		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
+		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
+
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
 	    public UInt32 lastSaveTime;

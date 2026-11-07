@@ -45,98 +45,65 @@ namespace hds
 
         public void processObjectInteraction(StaticWorldObject staticWorldObject, GameObjectItem item)
         {
-            WorldServer.gameServerEntities.Add(staticWorldObject);
             UInt16 typeId = NumericalUtils.ByteArrayToUint16(staticWorldObject.type, 1);
+            Output.WriteDebugLog("[DOOR] Use of static " + staticWorldObject.mxoStaticId + " type " + typeId +
+                                 " (" + item.getName() + ")");
 
-            NumericalUtils.uint16ToByteArrayShort(Store.currentClient.playerData.assignSpawnIdCounter());
-            ServerPackets packets = new ServerPackets();
-            packets.sendSystemChatMessage(Store.currentClient,
-                "Door ID " + staticWorldObject.mxoStaticId + " Type ID " + typeId.ToString() + " POS X:" +
-                staticWorldObject.pos_x.ToString() + " Y:" + staticWorldObject.pos_y.ToString() + " Z:" +
-                staticWorldObject.pos_z.ToString() + typeId, "BROADCAST");
-
-            FieldInfo objectField = typeof(GameObjectDefinitions).GetField("Object" + typeId);
-
-            if (objectField == null)
+            if (typeId == 592)
             {
+                new TeleportHandler().processHardlineExitRequest();
                 return;
             }
-            
-            if (objectField.FieldType == typeof(AttributeClass363))
+
+            FieldInfo objectField = typeof(GameObjectDefinitions).GetField("Object" + typeId);
+            Type doorClass = objectField?.FieldType;
+            GameObject door;
+            if (doorClass == typeof(AttributeClass363))
             {
-                AttributeClass363 door363 = new AttributeClass363("DOOR363", typeId);
-                door363.SetRelatedStaticObjId(staticWorldObject.mxoStaticId);
-                door363.DisableAllAttributes();
-                door363.Orientation.enable();
-                door363.Position.enable();
-                door363.CurrentState.enable();
-                // Set Values
-                door363.Position.setValue(NumericalUtils.doublesToLtVector3d(staticWorldObject.pos_x,
-                    staticWorldObject.pos_y, staticWorldObject.pos_z));
-                door363.Orientation.setValue(StringUtils.hexStringToBytes(staticWorldObject.quat));
-                //door363.Orientation.setValue(StringUtils.hexStringToBytes("000000000000803F0000000000000000")); // ToDo: Replace it with staticWorldObject.quat when it is okay
-                door363.CurrentState.setValue(StringUtils.hexStringToBytes("34080000"));
-
-                // ToDo: We make a little Entity "Hack" so that we have a unique id : metrid + fullmxostatic_id is entity
-                String entity363MxOHackString = "" + staticWorldObject.metrId + "" + staticWorldObject.mxoStaticId;
-                UInt64 entity363Id = UInt64.Parse(entity363MxOHackString);
-
-                packets.SendSpawnGameObject(Store.currentClient, door363, entity363Id);
+                AttributeClass363 d = new AttributeClass363("DOOR363", typeId);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
             }
-            else if (objectField.FieldType == typeof(AttributeClass364))
+            else if (doorClass == typeof(AttributeClass364))
             {
-                AttributeClass364 door364 = new AttributeClass364("DOOR364", typeId);
-                door364.SetRelatedStaticObjId(staticWorldObject.mxoStaticId);
-                door364.DisableAllAttributes();
-                door364.Orientation.enable();
-                door364.Position.enable();
-                door364.CurrentState.enable();
-                // Set Values
-                door364.Position.setValue(NumericalUtils.doublesToLtVector3d(staticWorldObject.pos_x,
-                    staticWorldObject.pos_y, staticWorldObject.pos_z));
-                door364.CurrentState.setValue(StringUtils.hexStringToBytes("34080000"));
-                door364.Orientation.setValue(StringUtils.hexStringToBytes(staticWorldObject.quat));
-                //door364.Orientation.setValue(StringUtils.hexStringToBytes("000000000000803F0000000000000000")); // ToDo: Replace it with staticWorldObject.quat when it is okay
-
-                // ToDo: We make a little Entity "Hack" so that we have a unique id : metrid + fullmxostatic_id is entity
-                String entityMxOHackString = "" + staticWorldObject.metrId + "" + staticWorldObject.mxoStaticId;
-                UInt64 entityId = UInt64.Parse(entityMxOHackString);
-
-                packets.SendSpawnGameObject(Store.currentClient, door364, entityId);
-            } else if (objectField.FieldType == typeof(AttributeClass365))
+                AttributeClass364 d = new AttributeClass364("DOOR364", typeId);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
+            }
+            else if (doorClass == typeof(AttributeClass365))
             {
-                AttributeClass365 door364 = new AttributeClass365("DOOR365", typeId);
-                door364.SetRelatedStaticObjId(staticWorldObject.mxoStaticId);
-                door364.DisableAllAttributes();
-                door364.Orientation.enable();
-                door364.Position.enable();
-                door364.CurrentState.enable();
-                // Set Values
-                door364.Position.setValue(NumericalUtils.doublesToLtVector3d(staticWorldObject.pos_x,
-                    staticWorldObject.pos_y, staticWorldObject.pos_z));
-                door364.CurrentState.setValue(StringUtils.hexStringToBytes("34080000"));
-                door364.Orientation.setValue(StringUtils.hexStringToBytes(staticWorldObject.quat));
-                //door364.Orientation.setValue(StringUtils.hexStringToBytes("000000000000803F0000000000000000")); // ToDo: Replace it with staticWorldObject.quat when it is okay
-
-                // ToDo: We make a little Entity "Hack" so that we have a unique id : metrid + fullmxostatic_id is entity
-                String entityMxOHackString = "" + staticWorldObject.metrId + "" + staticWorldObject.mxoStaticId;
-                UInt64 entityId = UInt64.Parse(entityMxOHackString);
-
-                packets.SendSpawnGameObject(Store.currentClient, door364, entityId);
+                AttributeClass365 d = new AttributeClass365("DOOR365", typeId);
+                door = PrepareDoor(d, d.Position, d.Orientation, d.CurrentState, staticWorldObject);
+            }
+            else
+            {
+                new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                    "Unknown Object Interaction with Object Type " + typeId + " and Name " + item.getName(), "MODAL");
+                return;
             }
 
-            switch (typeId)
-            {
-                case 592:
-                    new TeleportHandler().processHardlineExitRequest();
-                    break;
+            // ToDo: We make a little Entity "Hack" so that we have a unique id : metrid + fullmxostatic_id is entity
+            UInt64 entityId = UInt64.Parse("" + staticWorldObject.metrId + staticWorldObject.mxoStaticId);
+            new ServerPackets().SendSpawnGameObject(Store.currentClient, door, entityId);
 
-                default:
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
-                        "Unknown Object Interaction with Object Type " + staticWorldObject.type + " and Name " +
-                        item.getName(), "MODAL");
-                    break;
+            ClientView view = Store.currentClient.viewMan.FindViewForEntity(entityId);
+            if (view != null)
+            {
+                DoorLifecycle.Opened(Store.currentClient, view.ViewID, entityId);
             }
+        }
+
+        private static GameObject PrepareDoor(GameObject door, Attribute position, Attribute orientation,
+            Attribute currentState, StaticWorldObject staticWorldObject)
+        {
+            door.SetRelatedStaticObjId(staticWorldObject.mxoStaticId);
+            door.DisableAllAttributes();
+            orientation.enable();
+            position.enable();
+            currentState.enable();
+            position.setValue(NumericalUtils.doublesToLtVector3d(staticWorldObject.pos_x,
+                staticWorldObject.pos_y, staticWorldObject.pos_z));
+            orientation.setValue(StringUtils.hexStringToBytes(staticWorldObject.quat));
+            currentState.setValue(NumericalUtils.uint32ToByteArray(DoorLifecycle.StateOpen, 1));
+            return door;
         }
 
         public void processObjectStatic(ref byte[] packet)
