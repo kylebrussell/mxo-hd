@@ -7,6 +7,18 @@ namespace hds{
 
     class VendorHandler{
 
+        /// <summary>
+        /// Inventory slot addressed by a CLIENT_VENDOR_SELL (81 11) request: the first two bytes,
+        /// big-endian. Confirmed with the real 7.6005 client on 2026-11-06: selling the item in DB
+        /// slot 0 sent "00 00" and the item in DB slot 11 sent "00 0b". The retail captures'
+        /// "00 45".."00 58" are slots 69..88, i.e. items on later inventory pages. Reading these bytes
+        /// little-endian (the old parse) turned slot 11 into 2816, so only slot 0 could be sold.
+        /// </summary>
+        internal static UInt16 ParseSellSlot(byte[] packet)
+        {
+            return NumericalUtils.ByteArrayToUint16(new[] {packet[0], packet[1]}, 0);
+        }
+
         public void processBuyItem(ref byte[] packet){
             if (packet.Length < 4)
             {
@@ -44,18 +56,7 @@ namespace hds{
                 return;
             }
 
-            // The CLIENT_VENDOR_SELL (81 11) request field is SESSION-RELATIVE, not a global item code.
-            // Evidence: the decoder's "Vendor Sell Request Addressing" pass (docs/generated/
-            // packet-research-summary.md) shows distinct request-field values collapsing onto the SAME
-            // item (00 51 and 00 55 both -> Ragaini Combat Shotgun; 00 52 and 00 53 both -> Dada shoes).
-            // A global item code could not behave that way, so the "short item/ability code" reading is
-            // ruled out. The field is consistent with session-relative addressing -- either a DB
-            // inventory slot or a vendor-window list index -- which matches every other proven inventory
-            // mutation (processItemMove/processMountItem/processUnmountItem reads raw slot bytes from
-            // packet[0..]). We treat packet[0..1] as the inventory slot. Remaining capture-pending
-            // ambiguity: DB inventory slot vs vendor-list index (both session-relative).
-            byte[] slotBytes = {packet[0], packet[1]};
-            UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
+            UInt16 slot = ParseSellSlot(packet);
 
             UInt32 itemGoID = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
             if (itemGoID == 0)
