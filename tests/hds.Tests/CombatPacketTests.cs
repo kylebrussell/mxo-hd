@@ -32,6 +32,20 @@ public class CombatPacketTests
     }
 
     [Fact]
+    public void AppearanceUpdateSelectsOnlyRsiDescription()
+    {
+        // Retail: 02 00 02 80 01 <15 RSI bytes>. Male, hat 44, coat 23, everything else 0.
+        int[] rsi = new int[22];
+        rsi[2] = 44;
+        rsi[5] = 23;
+        byte[] rsiBytes = PacketsUtils.getRSIBytes(rsi);
+
+        Assert.Equal(13, rsiBytes.Length); // packed parts; RSIDescription itself is 15 bytes
+        Assert.Equal("0200028001" + "160005c0" + "000000000000000000" + "0000",
+            Hex(ServerPackets.BuildAppearanceUpdate(rsiBytes)));
+    }
+
+    [Fact]
     public void NpcDeathMatchesRetail()
     {
         // Parts 01 and 04: UseCount=2, StopFollowActiveTracker=0, IsDead=1, Health=0,
