@@ -60,19 +60,29 @@ namespace hds
 
             if(emoteByte>0)
             {
-                byte[] emotePak = { 0x01, 0x28, 0x01, 0x40, 0x00, 0x25, emoteByte, 0x00, 0x00, 0x10 };
-                PacketContent pak = new PacketContent();
-                pak.AddUint16(2, 1);
-                pak.AddByteArray(emotePak);
-                pak.AddFloatLtVector3f(xPos, yPos, zPos);
-                pak.AddHexBytes("b9513222"); // We dont know what they are - maybe rotation ?
-                pak.AddByte(0x00);
-                //pak.addByteArray(client.playerInstance.Position.getValue());
-                client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+                client.playerData.emoteCounter++;
+                client.messageQueue.addObjectMessage(BuildEmoteUpdate(client.playerData.emoteCounter, emoteByte,
+                    xPos, yPos, zPos, (UInt32)(TimeUtils.GetSimTimeSeconds() * 1000)), false);
                 client.FlushQueue();
             }
             
 
+        }
+
+        /// <summary>
+        /// Own-view emote: <c>02 00 01 28 &lt;counter&gt; 40 00 25 &lt;emote&gt; 00 00 10 &lt;x y z f32&gt; &lt;start sim ms u32&gt;</c>
+        /// (retail clap: <c>28 06 40 00 25 04 00 00 10 &lt;pos&gt; b3 a6 5e 18</c>). The start time is server sim time
+        /// in milliseconds; this used to be a fixed value copied from one capture (b9 51 32 22), far from the
+        /// sim clock, so the animation didn't play, and a stray 00 followed the entry.
+        /// </summary>
+        public static byte[] BuildEmoteUpdate(byte counter, byte emote, float x, float y, float z, UInt32 simMs)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByteArray(new byte[] { 0x01, 0x28, counter, 0x40, 0x00, 0x25, emote, 0x00, 0x00, 0x10 });
+            pak.AddFloatLtVector3f(x, y, z);
+            pak.AddUint32(simMs, 1);
+            return pak.ReturnFinalPacket();
         }
 
         public void sendMoodChange(WorldClient client, byte moodByte)

@@ -157,17 +157,31 @@ namespace hds
             // ToDo: maybe remove or improve (i am not sure how this is written)
             //HyperJumpCalculatedStepMovement(xPos, yPos, zPos, xDest, yDest, zDest, clientJumpIdUnknown, maybeMaxHeight);
 
-            // ToDo: this is just the old way testing
-            float distance = Maths.getDistance(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest);
-            
-            UInt16 duration = (UInt16) (distance * 1.25f);
+            // JumpEndTime is server sim time in milliseconds (retail: the 0x82 packet sim time x 1000 plus
+            // ~9 s for a hyperjump). This used to be Unix seconds, decades ahead of the sim clock, so the
+            // client stayed in the air for good and stopped sending movement.
+            float peak = BitConverter.ToSingle(BitConverter.GetBytes(peakHeight), 0);
+            UInt32 endTime = JumpEndTime(TimeUtils.GetSimTimeSeconds(), peak);
 
-            UInt32 startTime = TimeUtils.getUnixTimeUint32();
-            UInt32 endTime = startTime + duration;
-            
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpID(jumpId);
             packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime);
+            Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
+        }
+
+        /// <summary>Gravity in world units (centimetres) per second squared.</summary>
+        private const double Gravity = 981.0;
+
+        /// <summary>
+        /// Jump end time in sim milliseconds: up to the peak height (a float the client sends, world units)
+        /// and back down, 2·sqrt(2h/g), at least 0.5 s. A retail hyperjump with peak 10300 lasted 9.9 s;
+        /// this gives 9.2 s.
+        /// </summary>
+        public static UInt32 JumpEndTime(float simTimeSeconds, float peakHeight)
+        {
+            double h = Math.Max(0.0, double.IsFinite(peakHeight) ? peakHeight : 0.0);
+            double seconds = Math.Max(0.5, 2.0 * Math.Sqrt(2.0 * h / Gravity));
+            return (UInt32)Math.Round((simTimeSeconds + seconds) * 1000.0);
         }
         
         
@@ -247,16 +261,18 @@ namespace hds
             float yPos = (float) y;
             float zPos = (float) z;
 
-            float distance = Maths.getDistance(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest);
-            UInt16 duration = (UInt16) (distance * 0.5);
-
-            UInt32 startTime = TimeUtils.getUnixTimeUint32();
-            UInt32 endTime = startTime + duration;
+            // Start/end are server sim time in ms, like JumpEndTime (these used to be Unix seconds). The fall to
+            // the new destination is timed as a drop from the current height above it.
+            float simSeconds = TimeUtils.GetSimTimeSeconds();
+            UInt32 startTime = (UInt32)Math.Round(simSeconds * 1000.0);
+            // A straight drop of H takes sqrt(2H/g), which is JumpEndTime's up-and-down time for a peak of H/4.
+            UInt32 endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, yPos - yDest) / 4f);
 
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpID(clientJumpIdUnknown);
             packets.SendHyperJumpUpdate(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest, startTime,
                 endTime);
+            Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
     }
 }

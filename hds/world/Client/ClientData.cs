@@ -30,6 +30,9 @@ namespace hds
 		
 		public List<BuffSkill> currentBuffs;
 		public List<Mission> currentMissionList;
+		public int selectedMissionIndex = -1;   // last mission whose info the client asked for
+		public ushort missionInstanceCounter = 0x2e; // retail instances looked like 0x2f, 0x48
+		public Mission activeMission;
 		
 		private float clientSimTime;
         public long lastSimTimeUpdate = 0; // 0 until the first sim-time stamped packet went out
@@ -52,6 +55,9 @@ namespace hds
 		// Pending loot from killed mob (cleared after accepting)
 		public UInt32 pendingLootMoney = 0;
 		public bool hasLootPending = false;
+
+		// Counts emotes; the own-view emote update carries it so each emote is a new one
+		public byte emoteCounter = 0;
 
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
