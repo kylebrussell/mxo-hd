@@ -33,6 +33,15 @@ public class EquipPacketTests
     }
 
     [Fact]
+    public void EmoteUpdateCarriesSimTimeAndNothingAfter()
+    {
+        // Retail clap: 01 28 06 40 00 25 04 00 00 10 <x y z> b3 a6 5e 18 (and the view list's 00 00 follows).
+        byte[] update = ServerPackets.BuildEmoteUpdate(6, 4, 0f, 95f, 0f, 0x185ea6b3);
+        Assert.Equal("0200" + "012806400025040000" + "10" + "00000000" + "0000be42" + "00000000" + "b3a65e18",
+            StringUtils.bytesToString_NS(update).ToLowerInvariant());
+    }
+
+    [Fact]
     public void ClearingTheWeaponSendsZero()
     {
         // Retail, after "64 69 4f" (unequip to bag slot 0x4f).

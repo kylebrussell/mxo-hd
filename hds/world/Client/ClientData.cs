@@ -53,6 +53,9 @@ namespace hds
 		public UInt32 pendingLootMoney = 0;
 		public bool hasLootPending = false;
 
+		// Counts emotes; the own-view emote update carries it so each emote is a new one
+		public byte emoteCounter = 0;
+
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
 	    public UInt32 lastSaveTime;

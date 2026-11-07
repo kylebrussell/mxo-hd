@@ -390,7 +390,7 @@ foreach ($line in @($Chat)) {
 if ($Walk -and $ok) {
     # Each entry is KEY:seconds, held in order with a 1 s pause between, e.g. -Walk W:2,A:0.5,Space:0.2.
     # W/S = forward/back, A/D = turn, Q/E = strafe, Space = jump.
-    $keys = @{ SPACE = 0x20; LEFT = 0x25; UP = 0x26; RIGHT = 0x27; DOWN = 0x28; SHIFT = 0x10 }
+    $keys = @{ SPACE = 0x20; LEFT = 0x25; UP = 0x26; RIGHT = 0x27; DOWN = 0x28; SHIFT = 0x10; ESCAPE = 0x1B; ENTER = 0x0D; TAB = 0x09 }
     foreach ($step in $Walk) {
         $name, $seconds = $step -split ':'
         $name = $name.ToUpperInvariant()
