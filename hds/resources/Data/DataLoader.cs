@@ -19,6 +19,7 @@ namespace hds
         public List<GameObjectItem> GODB = new List<GameObjectItem>(); // Holds the GameObjects
         public List<ClothingItem> ClothingRSIDB = new List<ClothingItem>();
         public List<StaticWorldObject> WorldObjectsDB = new List<StaticWorldObject>();
+        public Dictionary<UInt32, StaticWorldObject> WorldObjectsById = new Dictionary<UInt32, StaticWorldObject>();
         public List<EmoteItem> Emotes = new List<EmoteItem>();
         public List<NewRSIItem> newRSIItemsDb = new List<NewRSIItem>();
         public List<Vendor> Vendors = new List<Vendor>();
@@ -544,6 +545,19 @@ namespace hds
 
         public void loadWorldObjectsDb(string path)
         {
+            var loadTimer = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                LoadWorldObjectsFile(path);
+            }
+            finally
+            {
+                Output.WriteLine("[DATA] " + Path.GetFileName(path) + " loaded in " + loadTimer.ElapsedMilliseconds + " ms");
+            }
+        }
+
+        private void LoadWorldObjectsFile(string path)
+        {
             Output.Write("Loading Static Objects from " + path + " - please wait...");
 
             ArrayList staticWorldObjects = loadCSV(path, ',');
@@ -573,6 +587,8 @@ namespace hds
                     worldObject.quat = data[10];
 
                     WorldObjectsDB.Add(worldObject);
+                    // First object with an id wins, matching the List.Find this index replaces.
+                    WorldObjectsById.TryAdd(worldObject.mxoStaticId, worldObject);
                     AddWorldObjectToWorldServer(worldObject);
                     worldObject = null;
                 }
@@ -853,10 +869,9 @@ namespace hds
                              StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray(objectId, 0)));
             StaticWorldObject worldObject = null;
 
-            worldObject = WorldObjectsDB.Find(delegate(StaticWorldObject temp)
-            {
-                return temp.mxoStaticId == objectId;
-            });
+            // Indexed lookup: this used to scan all ~2.8M static objects for every client request, and
+            // the client sends dozens of these while a district streams in.
+            WorldObjectsById.TryGetValue(objectId, out worldObject);
             if (worldObject == null)
             {
                 worldObject = new StaticWorldObject();
