@@ -40,6 +40,38 @@ namespace hds
         {
             sendCounter++;
         }
+
+        /// <summary>How long an unacked object message waits before it is sent again.</summary>
+        public const long ObjectResendIntervalMs = 1500;
+
+        /// <summary>An object message is sent at most this many times, then dropped.</summary>
+        public const int MaxObjectSends = 10;
+
+        private long lastSentTick;
+
+        /// <summary>
+        /// Object messages stay queued until the client acks the packet that carried them
+        /// (DeletedAckedPackets). One is due when it hasn't been sent yet, or when it was sent at
+        /// least ObjectResendIntervalMs ago and is still unacked. The old check compared a counter
+        /// (0, 4000, 8000...) against Unix time, so a message was sent exactly once; a single lost
+        /// self-spawn left the client at "Negotiating with Servers..." for good.
+        /// </summary>
+        public bool IsObjectSendDue(long nowTickMs)
+        {
+            if (!isSent)
+            {
+                return true;
+            }
+
+            return sendCounter < MaxObjectSends && nowTickMs - lastSentTick >= ObjectResendIntervalMs;
+        }
+
+        public void MarkObjectSent(long nowTickMs)
+        {
+            isSent = true;
+            lastSentTick = nowTickMs;
+            sendCounter++;
+        }
         
         public void increaseResendTime()
         {

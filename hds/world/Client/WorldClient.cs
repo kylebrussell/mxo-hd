@@ -108,7 +108,8 @@ namespace hds
             {
                 foreach (SequencedMessage message in messageQueue.ObjectMessagesQueue)
                 {
-                    if (message.sendCounter >= 10 && message.getResendTime() >= TimeUtils.getUnixTimeUint32())
+                    // Give up on object messages the client still hasn't acked after the last allowed send.
+                    if (message.sendCounter >= SequencedMessage.MaxObjectSends)
                     {
                         ackedObjectMessages.Add(message);
                     }
@@ -185,18 +186,15 @@ namespace hds
                 if (messageQueue.ObjectMessagesQueue.Count > 0)
                 {
                     UInt16 sendingSSeq = playerData.calculateNextPossibleSseq();
+                    long nowTick = Environment.TickCount64;
                     lock (messageQueue.ObjectMessagesQueue.SyncRoot)
                     {
                         foreach (SequencedMessage messageObjects in messageQueue.ObjectMessagesQueue)
                         {
-                            // Just append each message...
-                            if (messageObjects.getResendTime() >= TimeUtils.getUnixTimeUint32() ||
-                                messageObjects.getResendTime() == 0 && messageObjects.isSent==sent)
+                            // New messages, plus unacked ones whose resend interval has passed.
+                            if (messageObjects.IsObjectSendDue(nowTick))
                             {
-                                // Check if this really save the resendtime or not
-                                messageObjects.increaseResendTime();
-                                messageObjects.IncreaseSentCounter();
-                                messageObjects.isSent = true;
+                                messageObjects.MarkObjectSent(nowTick);
                                 bool canAddThePak = packet.addObjectContent(messageObjects);
                                 if (canAddThePak == false)
                                 {
