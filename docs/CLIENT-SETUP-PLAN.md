@@ -117,8 +117,10 @@ To compare sessions, the packet log has every encrypted world packet in both dir
 Driving the client without a human: `tools/RealClient/Invoke-RealClient.ps1` does the whole login and some in-game actions in one command. It prints a JSON summary and exits non-zero on failure. Example, which relogs TheNeo, teleports to Arison, opens the vendor and checks that the merchant window appeared:
 
 ```
-tools/RealClient/Invoke-RealClient.ps1 -Relaunch -Login -CharacterRow 2 -WaitWorld -Teleport 1194,8,-150 -DoubleClick 540,660 -CheckVendorWindow
+tools/RealClient/Invoke-RealClient.ps1 -Relaunch -Handle TheNeo -SetPosition 111534,695,-7188.31 -SetRotation 31 -Login -CharacterRow 2 -WaitWorld -Teleport 1194,8,-150 -DoubleClick 540,660 -CheckVendorWindow
 ```
+
+The server now saves where the player moved, teleported and faced, so `-SetPosition`/`-SetRotation` put the character back at the start the click point was measured from. They update the `characters` row through `docker exec` with the container's own credentials. `-Walk W:2,A:0.5,Q:1` holds movement keys (W/S forward and back, A/D turn, Q/E strafe).
 
 Lessons built into it:
 - All keyboard input is posted as window messages to the client's own window, so it works whatever is in front and can never type into another application.
@@ -134,6 +136,28 @@ Server bugs found on the way:
 - **Margin: "Loading Character" never finished.** Only the MOTD reply was flagged as the last character-data reply, so with an empty `<Motd>` the client waited forever. `MarginClient.loadCharacter` now ends with the retail empty `0f` reply flagged as last (`… 10 27 0d 01 0f 10 00 00 00`).
 - **World: the server crashed on the UDP session start.** `MyWorldDbAccess.SetPlayerValues` read integer columns with `GetDecimal`, which MySqlConnector rejects (`InvalidCastException`). All `GetDecimal` reads now go through `Convert.ToDecimal(dr.GetValue(n))`.
 - **Auth: the plaintext password was logged.** The decrypted login blob, which contains the plaintext password, went to the console and `ServerLog.txt`. Only the MD5 part is logged now.
+
+### Movement (verified 2026-11-07 with the real client)
+
+The client reports its own movement in protocol 03, view 2: `02 03 02 00 <sub-view> … 00 00`, often followed by an RPC list (`04 01 …`) in the same packet.
+- **Sub-view** is a bitmask:
+  - `01`: a state update.
+  - `02`: the real names (`60 <len> last <len> first`), sent once after the self-spawn.
+  - `03`: both.
+- **State update:** `<flags> [action u8] [yaw u8] [b20 u8] [x y z f32 LE]`. Each flag bit adds the field in that order: `02` action, `04` yaw, `20` an unidentified byte, `08` position.
+  - The client sent `02`, `04`, `06`, `08`, `0a` and `26` while walking, turning and strafing.
+  - Actions seen: 03 walk forward, 00 stop, 3c/3d strafe.
+  - Yaw moves 5 per step while turning. It is what the server saves as `rotation`.
+  - The same layout parses about 97% of the retail updates under `research/`.
+  - Bits `01`, `10`, `40` and `80`, and some older captures that add 4 bytes after the position, are not parsed. The parser checks that a view id or the end of the packet follows, so a wrong guess is never stored as a position.
+- **Fixed:**
+  - Yaw/position combinations other than `04`, `08`, `0a` and `0e` were dropped, so turning while moving lost the position.
+  - `0a` (action + position) stored the action as the yaw, so `rotation` was saved as 0.
+  - After any update except action-only, the parser stopped on the `00 00` that ends the view list. Any RPCs in the same packet were never handled. The five RPCs in the spawn reply (`80 be`, `3f`, `3e`, `81 48`, `0c`) were always lost this way, since the names were read from the wrong byte. They have no handlers yet, so they only show up in the RPC log now.
+  - The update forwarded to other players included everything to the end of the client's packet, RPCs included. It now forwards just the update.
+  - `?gotopos` didn't update the stored position, so the next save and relog put the player back where they had been.
+- **Check:** walk, turn and strafe, relog. The saved x/z/rotation match the client's last report (for example rotation 239 = last yaw `ef`), and the character comes back in the same spot facing the same way.
+- The client answers the self-spawn with RPC `80 be` (logged as header 190). It doesn't always include the names sub-view, so `-WaitWorld` waits for either.
 
 ## Platform options on Apple Silicon
 

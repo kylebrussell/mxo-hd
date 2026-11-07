@@ -6,11 +6,13 @@ login -> world -> in-game action check takes one command instead of a dozen manu
 .DESCRIPTION
 Steps run in this order, each only when its switch or parameter is given:
   -Relaunch     Kill a running client, wait until the server drops its world session, start the launcher.
+  -SetPosition / -SetRotation  With -Handle: set the character's saved position/facing before logging in.
   -Login        Log in (username + placeholder password; needs MXO_DEV_ANY_PASSWORD=1 on the server),
                 then CONTINUE, select the character row, SELECT.
-  -WaitWorld    Wait until the server log shows the client answered the self-spawn ("[MPM] Parsing 02 View").
+  -WaitWorld    Wait until the server log shows the client answered the self-spawn (RPC 80 be, header 190).
   -Teleport     "?gotopos x y z" (the server multiplies by 100).
   -Chat         Type a chat line and press Enter.
+  -Walk         Hold movement keys in turn, KEY:seconds each, e.g. -Walk W:2,A:0.5,Space:0.2.
   -DoubleClick  Double-click a point on the 1024x768 game screen.
   -Screenshot   Save a screenshot of the primary screen.
 Exit code 0 when every requested step succeeded, 1 otherwise. A one-line JSON summary is printed last.
@@ -19,7 +21,7 @@ Prerequisites (see docs/CLIENT-SETUP-PLAN.md): the patched launcher.exe, autoexe
 local server, and the server running with MXO_DEV_ANY_PASSWORD=1 and MXO_PACKET_LOG=1.
 
 .EXAMPLE
-./Invoke-RealClient.ps1 -Relaunch -Login -WaitWorld -Teleport 1194,8,-150 -DoubleClick 540,660 -Screenshot vendor.png
+./Invoke-RealClient.ps1 -Relaunch -Handle TheNeo -SetPosition 111534,695,-7188.31 -SetRotation 31 -Login -WaitWorld -Teleport 1194,8,-150 -DoubleClick 540,660 -CheckVendorWindow
 #>
 [CmdletBinding()]
 param(
@@ -27,12 +29,20 @@ param(
     [string]$ServerLog = (Join-Path $PSScriptRoot '..\..\ServerLog.txt'),
     [string]$Username = 'loluser',
     [ValidateRange(0, 9)][int]$CharacterRow = 2,
+    # Before logging in, set this character's saved position (x,y,z in database units) and/or facing
+    # (0-255). Positions are now saved as the player moves, so a scenario whose screen coordinates were
+    # measured from a known start (like the vendor click) needs that start restored. Needs -Handle.
+    [double[]]$SetPosition,
+    [ValidateRange(0, 255)][int]$SetRotation = -1,
+    [ValidatePattern('^[A-Za-z0-9_]+$')][string]$Handle,
+    [string]$DbContainer = 'mxo-hd-mysql',
     [switch]$Relaunch,
     [switch]$Login,
     [switch]$WaitWorld,
     [int]$WorldTimeoutSeconds = 180,
     [double[]]$Teleport,
     [string[]]$Chat,
+    [string[]]$Walk,
     [int[]]$DoubleClick,
     [switch]$CheckVendorWindow,
     [string]$Screenshot
@@ -177,6 +187,20 @@ public static class MxoInput
         PostMessage(top, WM_KEYUP, (IntPtr)vk, (IntPtr)(1 | (scan << 16) | 0xC0000000)); Thread.Sleep(30);
     }
 
+    // Hold a key: key-down, auto-repeat downs every 50 ms like a real keyboard, then key-up.
+    public static void PostKeyHold(IntPtr top, byte vk, int ms)
+    {
+        uint scan = MapVirtualKey(vk, 0);
+        PostMessage(top, WM_KEYDOWN, (IntPtr)vk, (IntPtr)(1 | (scan << 16)));
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sw.ElapsedMilliseconds < ms)
+        {
+            Thread.Sleep(50);
+            PostMessage(top, WM_KEYDOWN, (IntPtr)vk, (IntPtr)(1 | (scan << 16) | 0x40000000));
+        }
+        PostMessage(top, WM_KEYUP, (IntPtr)vk, (IntPtr)(1 | (scan << 16) | 0xC0000000));
+    }
+
     public static void PostText(IntPtr top, string text)
     {
         foreach (char c in text) { PostMessage(top, WM_CHAR, (IntPtr)c, (IntPtr)1); Thread.Sleep(30); }
@@ -192,6 +216,13 @@ function Get-ClientProcess { Get-Process -Name matrix -ErrorAction SilentlyConti
 function Count-LogMatches([string]$pattern) {
     if (-not (Test-Path $ServerLog)) { return 0 }
     return @(Select-String -Path $ServerLog -Pattern $pattern -SimpleMatch).Count
+}
+
+# The client answers the self-spawn with RPC 80 be (logged as header 190), sometimes together with a
+# sub-view 02 update ("[MPM] Parsing 02 View"). Count either; only the increase matters.
+function Count-WorldReplies {
+    if (-not (Test-Path $ServerLog)) { return 0 }
+    return @(Select-String -Path $ServerLog -Pattern '\[MPM\] Parsing 02 View|RPC \(Header 190 ').Count
 }
 
 # All input is posted as window messages to the client's own window, so it works whatever is in
@@ -233,8 +264,25 @@ if ($Relaunch) {
     if (-not $summary.launcherStarted) { $ok = $false }
 }
 
+if (($SetPosition -or $SetRotation -ge 0) -and $ok) {
+    if (-not $Handle) { throw '-SetPosition/-SetRotation need -Handle' }
+    $sets = @()
+    if ($SetPosition) {
+        if ($SetPosition.Count -ne 3) { throw '-SetPosition takes x,y,z' }
+        $inv = [Globalization.CultureInfo]::InvariantCulture
+        $sets += 'x={0},y={1},z={2}' -f $SetPosition[0].ToString($inv), $SetPosition[1].ToString($inv), $SetPosition[2].ToString($inv)
+    }
+    if ($SetRotation -ge 0) { $sets += "rotation=$SetRotation" }
+    # Runs after -Relaunch has waited for the old session to drop, so its final save can't overwrite
+    # this. The container's own environment supplies the credentials.
+    $sql = "update characters set $($sets -join ',') where handle='$Handle'"
+    docker exec $DbContainer sh -c "mysql -u`"`$MYSQL_USER`" -p`"`$MYSQL_PASSWORD`" `"`$MYSQL_DATABASE`" -e `"$sql`"" 2>$null
+    $summary.characterReset = ($LASTEXITCODE -eq 0)
+    if (-not $summary.characterReset) { $ok = $false }
+}
+
 if ($Login -and $ok) {
-    $spawnsBefore = Count-LogMatches '[MPM] Parsing 02 View'
+    $spawnsBefore = Count-WorldReplies
     $authBefore = Count-LogMatches "accepted $Username without checking"
     $marginBefore = Count-LogMatches 'Margin client Connected'
     Click-Launcher 247 172            # login console
@@ -261,10 +309,10 @@ if ($Login -and $ok) {
 }
 
 if ($WaitWorld -and $ok) {
-    if (-not $spawnsBefore) { $spawnsBefore = Count-LogMatches '[MPM] Parsing 02 View' }
+    if (-not $spawnsBefore) { $spawnsBefore = Count-WorldReplies }
     $t0 = Get-Date
-    while (((Get-Date) - $t0).TotalSeconds -lt $WorldTimeoutSeconds -and (Count-LogMatches '[MPM] Parsing 02 View') -le $spawnsBefore) { Start-Sleep 2 }
-    $summary.inWorld = (Count-LogMatches '[MPM] Parsing 02 View') -gt $spawnsBefore
+    while (((Get-Date) - $t0).TotalSeconds -lt $WorldTimeoutSeconds -and (Count-WorldReplies) -le $spawnsBefore) { Start-Sleep 2 }
+    $summary.inWorld = (Count-WorldReplies) -gt $spawnsBefore
     $summary.worldWaitSeconds = [int]((Get-Date) - $t0).TotalSeconds
     $spawnLine = Select-String -Path $ServerLog -Pattern '\[SPAWN\] Queued self-spawn for charId (\d+)' | Select-Object -Last 1
     if ($spawnLine) { $summary.charId = [int]$spawnLine.Matches[0].Groups[1].Value }
@@ -288,6 +336,21 @@ if ($Teleport -and $ok) {
 
 foreach ($line in @($Chat)) {
     if ($ok -and $line) { Send-Chat $line; Start-Sleep 2 }
+}
+
+if ($Walk -and $ok) {
+    # Each entry is KEY:seconds, held in order with a 1 s pause between, e.g. -Walk W:2,A:0.5,Space:0.2.
+    # W/S = forward/back, A/D = turn, Q/E = strafe, Space = jump.
+    $keys = @{ SPACE = 0x20; LEFT = 0x25; UP = 0x26; RIGHT = 0x27; DOWN = 0x28; SHIFT = 0x10 }
+    foreach ($step in $Walk) {
+        $name, $seconds = $step -split ':'
+        $name = $name.ToUpperInvariant()
+        $vk = if ($keys.ContainsKey($name)) { [byte]$keys[$name] } elseif ($name.Length -eq 1) { [byte][char]$name } else { throw "Unknown key '$name' in -Walk" }
+        [MxoInput]::PostKeyHold((Get-ClientWindow), $vk, [int]([double]$seconds * 1000))
+        Start-Sleep 1
+    }
+    $summary.walked = $true
+    Start-Sleep 2
 }
 
 if ($DoubleClick -and $ok) {
