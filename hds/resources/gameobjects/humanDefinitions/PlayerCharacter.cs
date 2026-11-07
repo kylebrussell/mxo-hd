@@ -34,122 +34,69 @@ namespace hds
 			return offset;
 		}
 		
-		public int parseAttributes(ref byte[] buffer, int _offset)
-		{
-			_offset++;
-			byte flag = 0x00;
-			flag = BufferHandler.readByte(ref buffer,ref _offset);
-
-            byte[] stateData = new byte[buffer.Length - _offset+2];
-            ArrayUtils.copy(buffer, _offset-2, stateData, 0, buffer.Length - _offset+2);
-			//Flag Bits{0,0,0,0,Vector3f Position Update,  Yaw Update,Animation Update, AttributesPacked Update?}
-
-			double x = 0;
-			double y = 0;
-			double z = 0;
-            
-            switch (flag)
-            {
-                case 0x02:
-                    Action.setValue(BufferHandler.readBytes(ref buffer, ref _offset, Action.getSize()));
-                    _offset = _offset + 2;
-                break;
-
-
-                case 0x04:
-                    YawInterval.setValue(BufferHandler.readBytes(ref buffer, ref _offset, YawInterval.getSize()));
-                break;
-
-
-                case 0x08:
-                    x = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    y = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    z = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-                break;
-	                
-	            case 0x0a:
-		            YawInterval.setValue(BufferHandler.readByte(ref buffer, ref _offset));
-		            x = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-		            y = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-		            z = (double)NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-		            Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-		         break;
-
-                case 0x0e:
-                    // UInt16 unknown + LtVector3f
-                    UInt16 unknown = NumericalUtils.ByteArrayToUint16(BufferHandler.readBytes(ref buffer, ref _offset, 2), 1);
-                    x = NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    y = NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    z = NumericalUtils.byteArrayToFloat(BufferHandler.readBytes(ref buffer, ref _offset, 4), 1);
-                    Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-                break;
-	            
-	                default:
-		                // ToDo: we need a proper way to proove if there is a 00 00 04 somewhere (and if set the offset to it)
-		                
-		                // If this doesnt match we need to write this somewhere...
-		                string message = "RPCMAIN : Unknown Client 03 Request Packet \r\n" +
-		                                 "Flag: " + flag + "\r\n " +
-		                                 "Content: \n" +
-		                                 StringUtils.bytesToString(stateData) + "\r\n";
-		                Output.WriteClientViewRequestLog(message);
-		                
-		                // ...and we dont want to crash so we just say "offset is full packet"
-		                _offset = buffer.Length - 1;
-		                break;
-            }
-            
-            Store.world.SendViewPacketToAllPlayers(stateData, Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1), Store.currentClient.playerData.getEntityId());
-			return _offset;
-		}
-		
-		public int parseAttributes2(ref byte[] buffer, int _offset){
-			int offset = _offset;
-			byte flag = 0x00;
-			flag = BufferHandler.readByte(ref buffer,ref offset);			
-						
-			if ((flag & 0x60)!=0){
-				byte lastnameLength = BufferHandler.readByte(ref buffer,ref offset);
-				RealLastName.setValue(BufferHandler.readBytes(ref buffer,ref offset,lastnameLength));
-				byte firstnameLength = BufferHandler.readByte(ref buffer,ref offset);
-				RealFirstName.setValue(BufferHandler.readBytes(ref buffer,ref offset,firstnameLength));
-                //Store.currentClient.messageQueue.addObjectMessage(StringUtils.hexStringToBytes("0200028080808080101100"));
-			}
-			
-			return offset;
-		}
-		
-		
+		/// <summary>
+		/// The player's own view (2) in a client protocol 03 section; <paramref name="_offset"/> is at the
+		/// sub-view byte. Stores the action, yaw, position and names it carries, forwards the state part to
+		/// the other players, and returns the offset after the entry. When the entry can't be walked it
+		/// returns the packet length, so nothing after it is misread.
+		/// </summary>
 		public int parseAutoView(ref byte[] buffer, int _offset)
 		{
-
-			_offset = _offset +2;
-			byte subview = buffer[_offset];
-						
-			switch(subview){
-				case 0x01:
-					#if DEBUG
-					Output.WriteLine("[MPM] Parsing selfview Attributes");
-					#endif
-					//Self view Attributes only
-					_offset = parseAttributes(ref buffer,_offset);
-				break;
-				
-				case 0x02:
-					Output.WriteLine("[MPM] Parsing 02 View");
-					_offset = parseAttributes2(ref buffer,_offset);
-				break;
-				
-				default:
-					//TODO: put something here
-					#if DEBUG
-					Output.WriteLine("[MPM] Nothing to Parse autoview so no offset");
-					#endif
-					break;
+			if (!SelfViewEntry.TryParse(buffer, _offset, out SelfViewEntry entry, out string failure))
+			{
+				byte[] rest = new byte[Math.Max(0, buffer.Length - _offset)];
+				ArrayUtils.copy(buffer, _offset, rest, 0, rest.Length);
+				Output.WriteClientViewRequestLog("[03] Self view not parsed (" + failure + "): " + StringUtils.bytesToString_NS(rest));
+				if (rest.Length > 0 && (rest[0] & SelfViewEntry.PartState) != 0)
+				{
+					// Still let the other players see it, as before this parser knew the layout.
+					ForwardStateToOthers(rest);
+				}
+				return buffer.Length;
 			}
-			
-			return _offset;
+
+			SelfViewUpdate state = entry.State;
+			if (state != null)
+			{
+				#if DEBUG
+				Output.WriteLine("[MPM] Parsing selfview Attributes");
+				#endif
+				if (state.Action.HasValue)
+				{
+					Action.setValue(state.Action.Value);
+				}
+				if (state.Yaw.HasValue)
+				{
+					YawInterval.setValue(state.Yaw.Value);
+				}
+				if (state.HasPosition)
+				{
+					Position.setValue(NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z));
+				}
+
+				// Forward "01 <flags> <fields>" followed by the 00 00 that ends a client view list (the shape
+				// the view forwarding was written against). This used to copy to the end of the packet,
+				// which also forwarded any RPCs the client sent in the same packet.
+				int length = state.End - state.Start;
+				byte[] stateData = new byte[1 + length + 2];
+				stateData[0] = SelfViewEntry.PartState;
+				ArrayUtils.copy(buffer, state.Start, stateData, 1, length);
+				ForwardStateToOthers(stateData);
+			}
+
+			if (entry.LastName != null)
+			{
+				Output.WriteLine("[MPM] Parsing 02 View");
+				RealLastName.setValue(entry.LastName);
+				RealFirstName.setValue(entry.FirstName);
+			}
+
+			return entry.End;
+		}
+
+		private static void ForwardStateToOthers(byte[] stateData)
+		{
+			Store.world.SendViewPacketToAllPlayers(stateData, Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1), Store.currentClient.playerData.getEntityId());
 		}
 		
 		public byte[] GetSelfUpdateAttributes(List<Attribute> attributesNeedsUpdate, bool addAttributeLen){
