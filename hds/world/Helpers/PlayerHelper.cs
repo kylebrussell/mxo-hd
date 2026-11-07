@@ -97,6 +97,10 @@ namespace hds
 
         public byte[] teleport(int x, int y, int z)
         {
+            // The client doesn't report its position after a teleport until it moves, so record it here;
+            // otherwise the next save (and relog) puts the player back where they were before teleporting.
+            Store.currentClient.playerInstance.Position.setValue(
+                NumericalUtils.doublesToLtVector3d(x * 100.0, y * 100.0, z * 100.0));
             return PacketsUtils.createTeleportPacket(x, y, z);
         }
 
