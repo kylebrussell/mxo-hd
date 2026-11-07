@@ -373,6 +373,12 @@ namespace hds
             return requiredSeconds;
         }
 
+        /// <summary>
+        /// Mobs wander around their spawn point. MXO_MOB_WANDER=0 keeps them still, so a scripted test
+        /// against the real client can find a mob at the same place on screen every time.
+        /// </summary>
+        public static readonly bool WanderEnabled = Environment.GetEnvironmentVariable("MXO_MOB_WANDER") != "0";
+
         public void DoMobUpdate(object e)
         {
             if (isUpdateable)
@@ -392,6 +398,10 @@ namespace hds
                         break;
                     case (int) statusList.STANDING_BACK:
                     case (int) statusList.STANDING:
+                        if (!WanderEnabled)
+                        {
+                            break; // stay at the spawn point (MXO_MOB_WANDER=0)
+                        }
                         // Starts walking
                         currentState = (int) statusList.WALKING;
                         // ToDo: start walking NPC and recalculate
@@ -420,20 +430,37 @@ namespace hds
                 healthC -= hitValue;
             hitCounter++;
 
-            // Format 04 80 80 80 80 c0 <uint16 health> c0 <uint32 fxid> 01(but unknown for what it is) <uint8 random>
-            // Example Full: send 02 03 <viewID> 04 80 80 80 c0 02 00 c0 c1 01 00 28 01 01 00 00;
             var hitPacket = new PacketContent();
-            hitPacket.AddByte(0x04);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0xc0);
-            hitPacket.AddUint16(healthC, 1);
-            hitPacket.AddByte(0xc0);
-            hitPacket.AddUint32(hitFxId, 1); // FX ID 
-            hitPacket.AddByte(0x01);
-            hitPacket.AddUShort(hitCounter); // Animation Count or something - must be an another as before
+            hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(hitPacket, this);
+        }
+
+        /// <summary>
+        /// NPC view update for a hit, matching retail:
+        /// <c>04 80 80 80 40 &lt;health u16&gt;</c> for health alone (what retail sent for most hits), or with an
+        /// effect <c>04 80 80 80 c0 &lt;health u16&gt; c0 &lt;effect id u32&gt; 01 &lt;counter u8&gt;</c> (ability hits; retail
+        /// effect ids are 0x28xxxxxx). The group bytes select attribute 27 (health) and 34/35 (effect, counter).
+        /// </summary>
+        public static byte[] BuildHitUpdate(UInt16 health, uint effectId, byte counter)
+        {
+            var pak = new PacketContent();
+            pak.AddByte(0x04);
+            pak.AddByte(0x80);
+            pak.AddByte(0x80);
+            pak.AddByte(0x80);
+            if (effectId == 0)
+            {
+                pak.AddByte(0x40);
+                pak.AddUint16(health, 1);
+                return pak.ReturnFinalPacket();
+            }
+            pak.AddByte(0xc0);
+            pak.AddUint16(health, 1);
+            pak.AddByte(0xc0);
+            pak.AddUint32(effectId, 1);
+            pak.AddByte(0x01);
+            pak.AddByte(counter);
+            return pak.ReturnFinalPacket();
         }
 
         public void updateAnimation(byte animationByte)
@@ -546,26 +573,10 @@ namespace hds
         /// </summary>
         private void SendPlayerDamagePacket(WorldClient client, UInt16 newHealth, uint fxId, UInt16 hitCounter)
         {
-            // Format: 04 80 80 80 c0 <uint16 health> c0 <uint32 fxid> 01 <uint16 hitCounter>
-            // This updates the player's self-view (view ID 2) with new health and hit FX
-            var hitPacket = new PacketContent();
-            hitPacket.AddByte(0x04);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0x80);
-            hitPacket.AddByte(0xc0);
-            hitPacket.AddUint16(newHealth, 1);
-            hitPacket.AddByte(0xc0);
-            hitPacket.AddUint32(fxId, 1);
-            hitPacket.AddByte(0x01);
-            hitPacket.AddUShort(hitCounter);
-
-            // Send to player's self-view (view ID 2)
-            PacketContent pak = new PacketContent();
-            pak.AddUint16(2, 1); // Self-view is always view ID 2
-            pak.AddByteArray(hitPacket.ReturnFinalPacket());
-
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            // The player's own view has its own attribute layout: this used to send the NPC hit format
+            // (04 80 80 80 c0 ...) to view 2, which the client couldn't parse, so the player's health never
+            // changed on screen and the rest of the packet was lost.
+            client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(newHealth), false);
         }
     }
 }

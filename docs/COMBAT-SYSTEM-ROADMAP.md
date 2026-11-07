@@ -16,6 +16,35 @@ The combat system is functional with bidirectional combat and tactical options:
 - **Tactics system** implements rock-paper-scissors combat (Phase 5 partial)
 - **Inner Strength** drains during combat and tactic changes
 
+### Real-client check (2026-11-07, 7.6005 client)
+
+Before this check the server-side combat ran (damage, death, loot), but the client showed none of it. Melee against a Blackwoods now plays out on screen:
+- **Engage:** double-click → "You enter combat".
+- **Damage:** the mob's health bar drains and damage numbers float over both fighters, and the player's health bar drops.
+- **Death:** at 0 HP the NPC stops offering "Close Combat" and the Corpse window opens.
+- **Loot:** Take All pays out (`[LOOT] Player received N info`) and the corpse dissolves into code.
+
+What was wrong:
+- **Per-tick update to the combat handler.** Every tick sent a hard-coded blob to the combat handler (ILCombatHandler) view. It didn't fit the object's layout, so the client dropped the rest of the packet, the health updates included. Retail sends the handler's state once, at combat start, and nothing per round. The per-tick update is removed.
+- **Player's health.** It was sent in the NPC hit format to the own view (view 2), which has its own attribute layout. It is now `02 00 02 80 80 80 40 <hp>`: own-view attribute 27, as retail sent it.
+- **Hit effects.** NPC hits carried effect ids from `FX.cs` that aren't valid ids. Retail ids are `0x28xxxxxx`; most `FX.cs` entries are stored byte-reversed, and the hand-combat ones aren't in that family at all. Retail sent most hits as health alone (6,531 against 448 with an effect), so melee and ranged hits now do the same: `04 80 80 80 40 <hp>`.
+- **Delete-view.** `sendDeleteViewPacket` wrote an extra `00` after the view id. The client then read the next view id one byte off and dropped everything after it. That is where the NPC death went.
+- **NPC death.** It is now the retail NPC death: `05 01 c2 02 00 80 80 e0 01 00 00 80 80 03 fd 07 00 00 00 00 00 00`. That sets IsDead=1, Health=0 and CurrentState=0x7fd, and the death goes out before the combat teardown.
+  - The retail death I first copied (`04 c2 …`) came from a player in PvP, which uses another layout.
+  - Adding a guessed movement part (`02 01 0d`) made the client reject the update.
+
+Still open:
+- **No fall animation.** In the test the mobs stood on top of each other, so a fall couldn't be seen.
+- **Death and health only reach the attacker.** Other players don't see them.
+- **Combatant order.** In the init packet retail lists the attacker first; ours lists the target first.
+- **Forwarding code.** `WorldServer.SendViewPacketToAllPlayers` still writes the extra `00` after a deleted view.
+
+To repeat the check, start the server with `MXO_MOB_WANDER=0` so the test mobs stay on their spawn point, then:
+```
+tools/RealClient/Invoke-RealClient.ps1 -Relaunch -Handle TheNeo -SetPosition 24500,500,-1900 -SetRotation 126 -Login -WaitWorld -DoubleClick 500,640
+```
+After about 60 s, `-Click 348,358` presses Take All.
+
 ### What Works
 
 - ILCombatHandler (Object55) game object spawns correctly

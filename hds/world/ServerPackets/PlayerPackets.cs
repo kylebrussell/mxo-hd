@@ -19,7 +19,9 @@ namespace hds
             pak.AddByte(0x01);
             pak.AddUint16(1,1); // Num Views to delete - current just this one (maybe later more)
             pak.AddUint16(viewIdToDelete, 1);
-            pak.AddByte(0x00);
+            // Nothing after the view id: retail's next view update starts right here
+            // (01 00 01 01 00 <view> <next view id> ...). An extra 00 used to make the client read the
+            // next view id one byte off and drop the rest of the packet (e.g. the NPC death after combat).
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
             client.FlushQueue();
@@ -167,6 +169,21 @@ namespace hds
         }
 
         // Updates the Inner Strenght Value
+        /// <summary>
+        /// The player's own view (2): <c>02 00 02 80 80 80 40 &lt;health u16&gt;</c>. Own-view attribute 27 is
+        /// Health (group 3, bit 6); retail sent exactly this during combat.
+        /// </summary>
+        public static byte[] BuildSelfHealthUpdate(UInt16 health)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByte(0x02);
+            pak.AddByteArray(new byte[] { 0x80, 0x80, 0x80 });
+            pak.AddByte(0x40);
+            pak.AddUint16(health, 1);
+            return pak.ReturnFinalPacket();
+        }
+
         public void sendISCurrent(WorldClient client, UInt16 innerStrengthValue )
         {
             PacketContent pak = new PacketContent();
