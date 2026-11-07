@@ -53,6 +53,11 @@ namespace hds
             // left tutorial characters at "Negotiating with Servers..." for good.
             uint districtId = Store.currentClient.playerData.getDistrictId();
 
+            // The weapon in the weapon slot is the one in hand (EquippedItemID); nothing set it before, so a
+            // player who logged out holding a weapon came back empty-handed.
+            UInt32 weapon = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(InventoryHandler.WeaponSlot);
+            Store.currentClient.playerInstance.EquippedItemID.setValue(weapon);
+
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
             //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
