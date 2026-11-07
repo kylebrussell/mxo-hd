@@ -38,6 +38,14 @@ namespace hds
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
 
+        // Per-object counter carried by animation blocks in movement updates (retail increments it per use)
+        private byte animationSeq = 0;
+
+        public byte NextAnimationSeq()
+        {
+            return ++animationSeq;
+        }
+
         // Combat tracking - which player is this mob fighting
         private WorldClient combatTarget = null;
         private UInt16 mobHitCounter = 0;

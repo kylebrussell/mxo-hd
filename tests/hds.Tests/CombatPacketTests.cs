@@ -102,6 +102,15 @@ public class CombatPacketTests
     }
 
     [Fact]
+    public void NpcDeathCarriesTheDeadStanceAndAnimation()
+    {
+        // 07 01 | 1d 0d00 <seq> 0100 2b00 2500 <yaw> <pos> | the retail part 04 below
+        Assert.Equal("0701" + "1d" + "0d00" + "05" + "0100" + "2b00" + "2500" + "80" + "0000803f" + "00000040" + "00004040" +
+                     "c202008080e0010000808003fd07000000000000",
+            Hex(ServerPackets.BuildNpcDeathUpdate(5, 0x80, 1f, 2f, 3f)));
+    }
+
+    [Fact]
     public void NpcDeathMatchesRetail()
     {
         // Parts 01 and 04: UseCount=2, StopFollowActiveTracker=0, IsDead=1, Health=0,
