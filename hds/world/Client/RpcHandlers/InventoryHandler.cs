@@ -79,6 +79,12 @@ namespace hds
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
+            if (sourceSlot == WeaponSlot)
+            {
+                UnequipWeapon(destSlot);
+                return;
+            }
+
             UInt32 clothingItemId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(rpcData[0]);
             DataLoader dataLoader = DataLoader.getInstance();
             ClothingItem item = dataLoader.getItemValues(clothingItemId);
@@ -161,11 +167,61 @@ namespace hds
         }
 
 
+        /// <summary>The weapon slot on the paper doll; clothing uses 0x61 (hat) to 0x68 (shoes).</summary>
+        public const byte WeaponSlot = 0x69;
+
+        /// <summary>
+        /// Equip a weapon (RPC 0x63 with destination 0x69), as retail did: move any weapon already held
+        /// to a free bag slot, move this one into the weapon slot (65 src 00 69 00) and set the player's
+        /// EquippedItemID.
+        /// </summary>
+        private void EquipWeapon(byte sourceSlot)
+        {
+            UInt32 charId = Store.currentClient.playerData.getCharID();
+            UInt32 weaponGoid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+            ServerPackets pak = new ServerPackets();
+
+            if (Store.dbManager.WorldDbHandler.IsSlotinUseByItem(WeaponSlot))
+            {
+                UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+                Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, freeSlot, charId);
+                pak.sendInventoryItemMove(WeaponSlot, freeSlot, Store.currentClient);
+            }
+
+            Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot, WeaponSlot, charId);
+            pak.sendInventoryItemMove(sourceSlot, WeaponSlot, Store.currentClient);
+            SetEquippedItem(weaponGoid);
+            Output.WriteDebugLog("[INVENTORY] Equipped weapon " + weaponGoid + " from slot " + sourceSlot);
+        }
+
+        /// <summary>Unequip the weapon to the slot the client chose (65 69 00 dst 00), or a free one.</summary>
+        private void UnequipWeapon(byte destSlot)
+        {
+            UInt32 charId = Store.currentClient.playerData.getCharID();
+            UInt16 toSlot = destSlot != 0 ? destSlot : Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, toSlot, charId);
+            new ServerPackets().sendInventoryItemMove(WeaponSlot, toSlot, Store.currentClient);
+            SetEquippedItem(0);
+            Output.WriteDebugLog("[INVENTORY] Unequipped weapon to slot " + toSlot);
+        }
+
+        private static void SetEquippedItem(UInt32 goid)
+        {
+            Store.currentClient.playerInstance.EquippedItemID.setValue(goid);
+            Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildEquippedItemUpdate(goid), false);
+            Store.currentClient.FlushQueue();
+        }
+
         public void processMountItem(ref byte[] rpcData)
         {
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
+            if (destSlot == WeaponSlot)
+            {
+                EquipWeapon(sourceSlot);
+                return;
+            }
 
             UInt32 clothingItemId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(rpcData[0]);
             DataLoader dataLoader = DataLoader.getInstance();
@@ -233,6 +289,14 @@ namespace hds
                     partColor = "shoecolor";
                     break;
 
+            }
+
+            if (toRealSlotId == 0)
+            {
+                // Not a known clothing item. This used to carry on and move the item to inventory slot 0.
+                Output.WriteDebugLog("[INVENTORY] Mount request for item " + clothingItemId + " from slot " +
+                                     sourceSlot + " to " + destSlot + " ignored: not a known clothing item");
+                return;
             }
 
             if (partModel != null)

@@ -152,9 +152,15 @@ Server bugs found on the way:
 
 **Appearance update fixed.** It was `02 00 02 80 89 <13 bytes>`. The group bytes `80 89` also claim MovementScale and another group after it. The packed RSI is only 13 bytes, while RSIDescription is 15, so the client read past the update. After taking off a coat the hat vanished from the character, although the hat was still worn. Retail sends `02 00 02 80 01 <15 bytes>`: RSIDescription alone, zero-padded. The server now does the same (`ServerPackets.BuildAppearanceUpdate`), and equip and unequip keep the rest of the outfit.
 
+**Weapons:** these use the same RPCs, with slot `0x69`:
+- **Equip:** the client sends `63 <bag slot> 69`. Retail answered with the own-view EquippedItemID (attribute 31: `02 00 02 80 80 80 80 08 <goid u32>`) and a move `65 <bag slot> 00 69 00`. The server now does the same, and moves a weapon already held to a free bag slot first.
+- **Unequip:** the client sends `64 69 <bag slot>` (0 = any). The server moves the weapon there and sends EquippedItemID 0.
+- **Spawn:** the weapon in slot `0x69` is the EquippedItemID, so a player keeps it after relogging.
+- **Before this:** weapons aren't clothing, so the server moved them to bag slot 0. A request for any other unknown item is now ignored instead.
+- **Checked with the real client:** equip a revolver, swap to a rifle, relog, unequip. Retail also sent a batch of `80 bc` RPCs after a weapon change, which look like a stat refresh; those aren't sent.
+
 **Not done yet:**
-- **Other players:** the update only goes to the wearer's own view, so others don't see the change.
-- **Weapons:** not tried.
+- **Other players:** clothing and weapon updates only go to the wearer's own view, so others don't see the change.
 - **TheNeo's saved data:** glasses are 0 although glasses are worn, and pants and shoes are 0.
 
 **Server crash fixed on the way:** `MessageQueue.addRpcMessage` added to the RPC list without the lock that the flush thread holds while enumerating it. A login crashed the server with "Collection was modified".

@@ -78,6 +78,10 @@ namespace hds
             client.playerInstance.TitleAbility.enable();
             client.playerInstance.CharacterID.enable(); // It was set when grabbing from database
             client.playerInstance.RSIDescription.setValue(rsi);
+            if (NumericalUtils.ByteArrayToUint32(client.playerInstance.EquippedItemID.getValue(), 1) != 0)
+            {
+                client.playerInstance.EquippedItemID.enable(); // weapon in hand, see PlayerHandler.processSpawn
+            }
             client.playerInstance.InnerStrengthMax.enable();
             client.playerInstance.Position.enable();
             client.playerInstance.Level.enable();

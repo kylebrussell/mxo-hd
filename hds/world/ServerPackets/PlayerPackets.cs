@@ -93,6 +93,19 @@ namespace hds
             client.FlushQueue();
         }
 
+        /// <summary>
+        /// Own-view EquippedItemID (attribute 31: group 4, bit 3), as retail sent it after a weapon
+        /// equip/unequip: <c>02 00 02 80 80 80 80 08 &lt;item goid u32 LE&gt;</c> (0 = nothing in hand).
+        /// </summary>
+        public static byte[] BuildEquippedItemUpdate(UInt32 goid)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByteArray(new byte[] { 0x02, 0x80, 0x80, 0x80, 0x80, 0x08 });
+            pak.AddUint32(goid, 1);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>RSIDescription is 15 bytes; PacketsUtils.getRSIBytes packs the parts into 13.</summary>
         public const int RsiDescriptionSize = 15;
 
