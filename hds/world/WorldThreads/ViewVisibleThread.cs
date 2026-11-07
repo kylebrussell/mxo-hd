@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using hds.shared;
@@ -22,6 +22,9 @@ namespace hds
             Output.WriteLine("[WORLD SERVER]View Visible Thread started");
             while (true)
             {
+              // An exception escaping this loop ends the thread and the server; log it and try again next pass.
+              try
+              {
                 List<WorldClient> clients = SnapshotClients();
                 List<Mob> mobs = SnapshotMobs();
                 List<Subway> subways = SnapshotSubways();
@@ -58,6 +61,11 @@ namespace hds
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
+              }
+              catch (Exception ex)
+              {
+                Output.WriteLine("[VIEWS] Visibility pass failed: " + ex);
+              }
                 Thread.Sleep(500);
             }
         }
@@ -362,13 +370,13 @@ namespace hds
                     }
                 }
 
-                if (thisclient.viewMan.views.Count == 0)
+                if (thisclient.viewMan.Count == 0)
                 {
                     continue;
                 }
 
                 List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = new List<ClientView>(thisclient.viewMan.views);
+                List<ClientView> viewSnapshot = thisclient.viewMan.Snapshot();
                 foreach (ClientView view in viewSnapshot)
                 {
                     if (!view.viewCreated || view.GoID != SubwayTypeId)
@@ -541,13 +549,13 @@ namespace hds
                     }
                 }
 
-                if (thisclient.viewMan.views.Count == 0)
+                if (thisclient.viewMan.Count == 0)
                 {
                     continue;
                 }
 
                 List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = new List<ClientView>(thisclient.viewMan.views);
+                List<ClientView> viewSnapshot = thisclient.viewMan.Snapshot();
                 foreach (ClientView view in viewSnapshot)
                 {
                     if (!view.viewCreated)
@@ -671,14 +679,14 @@ namespace hds
                     }
                 }
 
-                if (currentClient.viewMan.views.Count == 0)
+                if (currentClient.viewMan.Count == 0)
                 {
                     continue;
                 }
 
                 UInt16 playerGoId = NumericalUtils.ByteArrayToUint16(currentClient.playerInstance.GetGoid(), 1);
                 List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = new List<ClientView>(currentClient.viewMan.views);
+                List<ClientView> viewSnapshot = currentClient.viewMan.Snapshot();
                 foreach (ClientView view in viewSnapshot)
                 {
                     if (!view.viewCreated || view.GoID != playerGoId)

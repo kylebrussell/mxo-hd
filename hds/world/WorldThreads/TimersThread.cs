@@ -42,15 +42,28 @@ namespace hds
         {
             foreach (WorldClient thisclient in clients)
             {
-                if (thisclient != null && thisclient.playerData.lastSaveTime == 0)
+                if (thisclient == null)
                 {
-                    thisclient.playerData.lastSaveTime = TimeUtils.getUnixTimeUint32();
+                    continue;
                 }
 
-                CheckToSaveClientData(thisclient);
-                RegenerateInnerStrength(thisclient);
-                CheckForFinalJackout(thisclient);
-                CheckForStaticViews(thisclient);
+                // An exception here used to end the timer thread and with it the whole server (e.g. a failed save).
+                try
+                {
+                    if (thisclient.playerData.lastSaveTime == 0)
+                    {
+                        thisclient.playerData.lastSaveTime = TimeUtils.getUnixTimeUint32();
+                    }
+
+                    CheckToSaveClientData(thisclient);
+                    RegenerateInnerStrength(thisclient);
+                    CheckForFinalJackout(thisclient);
+                    CheckForStaticViews(thisclient);
+                }
+                catch (Exception ex)
+                {
+                    Output.WriteLine("[TIMERS] Client update failed for charId " + thisclient.playerData.getCharID() + ": " + ex.Message);
+                }
             }
         }
 

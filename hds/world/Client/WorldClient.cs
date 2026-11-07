@@ -393,6 +393,10 @@ namespace hds
             ArrayUtils.copy(packet, 1, processedPacket, 0, packet.Length - 1);
             decValues = new ArrayList();
             decValues = cypher.decrypt(packet, packet.Length);
+            if (decValues == null)
+            {
+                return null; // corrupt packet, already logged
+            }
             processedPacket = (byte[]) decValues[0];
 
 
@@ -446,6 +450,10 @@ namespace hds
                             stopwatch.Start();
                             processedPacket = DecryptReceivedPacket(packet);
                             stopwatch.Stop();
+                            if (processedPacket == null)
+                            {
+                                return;
+                            }
                             TimeSpan ts = stopwatch.Elapsed;
 
                             Output.WritePacketLog(this, processedPacket, "CLIENT",
@@ -456,6 +464,12 @@ namespace hds
                         protocolManager.Parse(encrypted, processedPacket);
                         FlushQueue();
                     }
+                }
+                catch (Exception ex)
+                {
+                    // This runs on the socket receive callback: an exception escaping here ends the process and
+                    // drops every player, so log it and drop just this packet.
+                    Output.WriteLine("[CLIENT] Packet handling failed for charId " + playerData.getCharID() + ": " + ex);
                 }
                 finally
                 {
