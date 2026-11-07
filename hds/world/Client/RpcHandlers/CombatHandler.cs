@@ -114,6 +114,16 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// ILCombatHandler StartTime: u32 sim time in milliseconds. Retail: 55 d3 9a 03 = 60,478,293 ms while its
+        /// packet clock read 60,479.35 s. This used to send the float-seconds bytes instead (e.g. 11.1 s read as
+        /// ~1.09e9 ms, days in the client's future), so the client never saw its close-combat fight end and kept
+        /// the player locked in the fight stance afterwards.
+        /// </summary>
+        public static UInt32 CombatStartTime()
+        {
+            return (UInt32)Math.Round(TimeUtils.GetSimTimeSeconds() * 1000.0);
+        }
         /// <summary>40 &lt;target u32&gt; 00 &lt;rest of the request&gt;: the server's answer to a 0x40 close-combat request.</summary>
         public static byte[] BuildCloseCombatEcho(byte[] request)
         {
@@ -180,7 +190,7 @@ namespace hds
             ilCombatHandler.StartTime.enable();
             ilCombatHandler.Position.enable();
 
-            ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
+            ilCombatHandler.StartTime.setValue(CombatStartTime());
             ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
             currentSession.CombatHandlerObject = ilCombatHandler;
 
@@ -512,7 +522,7 @@ namespace hds
             ilCombatHandler.StartTime.enable();
             ilCombatHandler.Position.enable();
 
-            ilCombatHandler.StartTime.setValue(TimeUtils.getCurrentSimTime());
+            ilCombatHandler.StartTime.setValue(CombatStartTime());
             ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
             currentSession.CombatHandlerObject = ilCombatHandler;
 

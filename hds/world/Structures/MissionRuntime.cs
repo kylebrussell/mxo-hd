@@ -14,6 +14,9 @@ namespace hds
     /// </summary>
     public static class MissionRuntime
     {
+        /// <summary>Retail's 80 e4 after a completed mission carried reason 2 (80 e4 ... 02 00 00 00).</summary>
+        public const UInt32 MissionRewardInfoReason = 0x02;
+
         public const byte ObjectiveOpen = 0;
         public const byte ObjectiveDone = 1;
 
@@ -210,14 +213,10 @@ namespace hds
             Mission mission = data.activeMission;
             ServerPackets packets = new ServerPackets();
 
-            PlayerRewards.GrantExperience(client, (UInt32)Math.Max(0, mission.exp));
-            PlayerRewards.GrantInfo(client, (UInt32)Math.Max(0, mission.info), ServerPackets.InfoReasonLoad);
-            packets.sendSystemChatMessage(client,
-                "Mission complete: " + mission.title + " (+" + mission.exp + " EXP, +" + mission.info + " info)",
-                "SYSTEM");
-
-            // Clear the own-view MissionKey as retail did when a mission ended.
-            packets.SendMissionAbort(client);
+            // Retail order: the mission-end message (status 03 = complete), then the rewards.
+            packets.SendMissionComplete(client, (UInt32)Math.Max(0, mission.exp), (UInt32)Math.Max(0, mission.info));
+            PlayerRewards.GrantExperience(client, (UInt32)Math.Max(0, mission.exp), ServerPackets.ExpGainMission);
+            PlayerRewards.GrantInfo(client, (UInt32)Math.Max(0, mission.info), MissionRewardInfoReason);
             Output.WriteDebugLog("[MISSION] Completed '" + mission.title + "'");
             End(client);
         }
@@ -287,7 +286,7 @@ namespace hds
     /// <summary>Experience and info rewards for a specific client (safe off the client's own thread).</summary>
     public static class PlayerRewards
     {
-        public static void GrantExperience(WorldClient client, UInt32 amount)
+        public static void GrantExperience(WorldClient client, UInt32 amount, byte gainType = ServerPackets.ExpGainFighting)
         {
             if (amount == 0)
             {
@@ -297,7 +296,7 @@ namespace hds
             long exp = client.playerData.getExperience() + amount;
             client.playerData.setExperience(exp);
             Store.dbManager.WorldDbHandler.SaveExperience(client, exp);
-            new ServerPackets().SendEXPGain(client, amount);
+            new ServerPackets().SendEXPGain(client, amount, gainType);
         }
 
         public static void GrantInfo(WorldClient client, UInt32 amount, UInt32 reason)

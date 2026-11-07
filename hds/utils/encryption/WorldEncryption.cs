@@ -102,7 +102,9 @@ namespace hds
 
             if (crc32plainDataToCompare != crc32fromPacket)
             {
-                Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crc32FromPacketBytes) +" generated: " + StringUtils.bytesToString(crc32.checksumB(packetCheckData,1)) + ")");
+                Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crc32FromPacketBytes) +" generated: " + StringUtils.bytesToString(crc32.checksumB(packetCheckData,1)) + ") wire " + encryptedData.Length +
+                                 " bytes, decrypted head " + StringUtils.bytesToString(decryptedPacket.Length > 32 ? ArraySegmentCopy(decryptedPacket, 32) : decryptedPacket) +
+                                 " wire head " + StringUtils.bytesToString(ArraySegmentCopy(encryptedData, Math.Min(24, encryptedData.Length))));
                 return null;
             }
             
@@ -128,6 +130,13 @@ namespace hds
             response.Add(sseq);
 			
             return response;
+        }
+
+        private static byte[] ArraySegmentCopy(byte[] source, int count)
+        {
+            byte[] result = new byte[Math.Min(count, source.Length)];
+            Array.Copy(source, result, result.Length);
+            return result;
         }
 
         public byte[] getPaddedBytes(byte[] packet)

@@ -74,6 +74,16 @@ public class CombatPacketTests
     }
 
     [Fact]
+    public void CombatStartTimeIsSimMilliseconds()
+    {
+        // Retail StartTime 55 d3 9a 03 = 60,478,293 ms while the packet clock read 60,479.35 s.
+        // The float-seconds bytes this used to send kept the client locked in combat after every fight.
+        long ms = CombatHandler.CombatStartTime();
+        long expected = (long)(TimeUtils.GetSimTimeSeconds() * 1000);
+        Assert.InRange(ms, expected - 1000, expected + 1000);
+    }
+
+    [Fact]
     public void CloseCombatEchoMatchesRetail()
     {
         // Client 40 2f 00 22 00 01 6b, server 40 2f 00 22 00 00 6b

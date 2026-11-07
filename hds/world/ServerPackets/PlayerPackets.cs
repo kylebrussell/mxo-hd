@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Text;
@@ -211,18 +211,23 @@ namespace hds
         /// experience". Retail after a 391-EXP kill: 80 e6 87 01 00 00 01 00 00 00. This used to carry the
         /// player's total (also at login), so every kill announced the whole total as gained.
         /// </summary>
-        public static byte[] BuildEXPGain(UInt32 gain)
+        public static byte[] BuildEXPGain(UInt32 gain, byte gainType = ExpGainFighting)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_EXP_ANIM, 0);
             pak.AddUint32(gain, 1);
-            pak.AddHexBytes("01000000");
+            pak.AddByte(gainType);
+            pak.AddHexBytes("000000");
             return pak.ReturnFinalPacket();
         }
 
-        public void SendEXPGain(WorldClient client, UInt32 gain)
+        /// <summary>80 e6 gain types: 01 = "from fighting" (kills), 02 = mission rewards (retail mission completions).</summary>
+        public const byte ExpGainFighting = 0x01;
+        public const byte ExpGainMission = 0x02;
+
+        public void SendEXPGain(WorldClient client, UInt32 gain, byte gainType = ExpGainFighting)
         {
-            client.messageQueue.addRpcMessage(BuildEXPGain(gain));
+            client.messageQueue.addRpcMessage(BuildEXPGain(gain, gainType));
         }
 
         /// <summary>Reason codes the retail server put on 80 e7 / 80 e4 cash messages.</summary>
