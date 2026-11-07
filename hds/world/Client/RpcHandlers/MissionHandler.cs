@@ -8,32 +8,44 @@ namespace hds
 {
     public class MissionHandler
     {
+        /// <summary>
+        /// Client RPC 0x809b: <c>&lt;txn u16&gt; 01</c>. Retail sent no mission id here; the mission is the one
+        /// whose info the client asked for last. (The second byte, always 01, used to be read as the id.)
+        /// </summary>
         public void ProcessMissionaccept(ref byte[] packet)
         {
-            // ToDo: figure out if time and diffulty is in the packet
-            byte[] contactBytes = { packet[0], packet[1] };
-            UInt16 contactId = NumericalUtils.ByteArrayToUint16(contactBytes, 1);
-            ushort missionId = packet[2];
-
             #if DEBUG
             Output.WriteRpcLog("Mission Accept Data:" + StringUtils.bytesToString(packet));
             #endif
-            ServerPackets pak = new ServerPackets();
+            PacketReader reader = new PacketReader(packet);
+            UInt16 txn = reader.ReadUInt16(1);
 
+            ClientData data = Store.currentClient.playerData;
+            List<Mission> list = data.currentMissionList;
+            if (list == null || data.selectedMissionIndex < 0 || data.selectedMissionIndex >= list.Count)
+            {
+                Output.WriteDebugLog("[MISSION] Accept without a selected mission ignored");
+                return;
+            }
+
+            Mission mission = list[data.selectedMissionIndex];
             new TeamHandler().checkAndCreateMissionTeam(Store.currentClient);
-            
-            pak.sendMissionAccept(Store.currentClient, contactId, missionId);
-            
-            pak.SendSetMissionObjective(1, 0, "Follow the white Rabbit!", Store.currentClient);
-            pak.SendSetMissionObjective(2, 0, "Wake UP!", Store.currentClient);
-            pak.SendSetMissionObjective(3, 0, "Watch Matrix Resurrections", Store.currentClient);
+
+            data.missionInstanceCounter++;
+            data.activeMission = mission;
+            ServerPackets pak = new ServerPackets();
+            pak.sendMissionAccept(Store.currentClient, txn, data.missionInstanceCounter, mission);
+
+            // Retail sends every objective at once, numbered from 0, state 0 (open).
+            List<MissionObjective> objectives = mission.phases.Count > 0
+                ? mission.phases[0].missionObjectives
+                : new List<MissionObjective>();
+            for (int i = 0; i < objectives.Count; i++)
+            {
+                pak.SendSetMissionObjective((ushort)i, 0, objectives[i].description, Store.currentClient);
+            }
             Store.currentClient.FlushQueue();
-            
-            // pak.SendSetMissionObjective(2, 0, "Success", Store.currentClient);
-            // pak.SendSetMissionObjective(3, 1, "Talk to Morpheus", Store.currentClient);
-            // pak.SendSetMissionObjective(4, 1, "Talk to Niobe", Store.currentClient);
-            // pak.SendSetMissionObjective(5, 2, "Failed Remain", Store.currentClient);
-            // pak.SendSetMissionObjective(6, 0, "Failed Clear", Store.currentClient);
+            Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "' with " + objectives.Count + " objectives");
         }
 
         public void processMissionList(ref byte[] packet)
@@ -41,20 +53,17 @@ namespace hds
             
             new TeamHandler().checkAndCreateMissionTeam(Store.currentClient);
             PacketReader reader = new PacketReader(packet);
-            
-            UInt16 contactId = reader.ReadUInt16(1);
-            uint orgID = reader.ReadUint8();
-            // ToDo: Load the possible missions from the given contactId
 
-            /*
-            byte[] contactBytes = { packet[0], packet[1] };
-            UInt16 contactId = NumericalUtils.ByteArrayToUint16(contactBytes,1);
-            uint orgID = packet[2];
-            */
+            // Retail: the first u16 is a per-session request number the server copies back into every
+            // reply (5, 6, 7, ...), not a contact id.
+            UInt16 txn = reader.ReadUInt16(1);
+            uint orgID = reader.ReadUint8();
+
             ServerPackets pak = new ServerPackets();
-            
-            Store.currentClient.playerData.currentMissionList = DataLoader.getInstance().FindMissions(contactId, orgID); 
-            pak.sendMissionList(contactId, orgID, Store.currentClient.playerData.currentMissionList, Store.currentClient);
+            Store.currentClient.playerData.currentMissionList = DataLoader.getInstance().FindMissions(txn, orgID);
+            Store.currentClient.playerData.selectedMissionIndex = -1;
+            pak.sendMissionList(txn, orgID, Store.currentClient.playerData.currentMissionList, Store.currentClient);
+            Output.WriteDebugLog("[MISSION] Listed " + Store.currentClient.playerData.currentMissionList.Count + " missions");
         }
 
         public void processInvitePlayerToMissionTeam(ref byte[] packet)
@@ -69,24 +78,29 @@ namespace hds
 
         public void processLoadMissionInfo(ref byte[] packet)
         {
+            // Client RPC 0x8098: <txn u16> <mission index u16> 01 <difficulty u8> 00
             PacketReader reader = new PacketReader(packet);
-            UInt16 incrementMissionRequest = reader.ReadUInt16(1);
-            // ToDo: we need to capture the mission index from list (which means we need to store the list in the session somewhere?)
+            UInt16 txn = reader.ReadUInt16(1);
             UInt16 missionIndexFromList = reader.ReadUInt16(1);
-
-            Mission theMission = Store.currentClient.playerData.currentMissionList[missionIndexFromList];
-            
             uint missionTime = reader.ReadUint8();
-            uint difficulty = reader.ReadUint8();
-            
-            uint unknownLastByte = reader.ReadUint8();
-            
+            byte difficulty = (byte)reader.ReadUint8();
+
+            List<Mission> list = Store.currentClient.playerData.currentMissionList;
+            if (list == null || missionIndexFromList >= list.Count)
+            {
+                // This used to index the list unchecked and throw.
+                Output.WriteDebugLog("[MISSION] Info for unknown mission index " + missionIndexFromList);
+                return;
+            }
+
+            Store.currentClient.playerData.selectedMissionIndex = missionIndexFromList;
             ServerPackets pak = new ServerPackets();
-            pak.sendMissionInfo(theMission, Store.currentClient);
+            pak.sendMissionInfo(list[missionIndexFromList], txn, difficulty, Store.currentClient);
         }
 
         public void processAbortMission(ref byte[] packet)
         {
+            Store.currentClient.playerData.activeMission = null;
             ServerPackets pak = new ServerPackets();
             pak.SendMissionAbort(Store.currentClient);
         }

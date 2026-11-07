@@ -74,6 +74,21 @@ namespace hds
                 XmlDocument missionDocument = new XmlDocument();
                 missionDocument.Load(file);
 
+                // The checked-in mission files use <config><data title=… description=… exp=… info=…> with
+                // <objective1 description=… command=… dial=…/>, <objective2 …/>, … children. Only the
+                // <mission><phase> layout below was read before, so no mission ever loaded and every
+                // contact offered an empty list.
+                XmlNode dataNode = missionDocument.SelectSingleNode("config/data");
+                if (dataNode != null)
+                {
+                    Mission configMission = ParseConfigMission(dataNode);
+                    if (configMission != null)
+                    {
+                        missions.Add(configMission);
+                    }
+                    continue;
+                }
+
                 XmlNode missionNode = missionDocument.SelectSingleNode("mission");
                 if (missionNode != null && missionNode.HasChildNodes)
                 {
@@ -142,6 +157,52 @@ namespace hds
                     missions.Add(theMission);
                 }
             }
+        }
+
+        /// <summary>Reads a mission in the &lt;config&gt;&lt;data&gt; layout (title, description, exp, info, objectiveN).</summary>
+        public static Mission ParseConfigMission(XmlNode dataNode)
+        {
+            string Attr(XmlNode node, string name) => node.Attributes?[name]?.Value;
+
+            string title = Attr(dataNode, "title");
+            if (string.IsNullOrEmpty(title))
+            {
+                return null;
+            }
+
+            Mission mission = new Mission();
+            mission.title = title;
+            mission.description = Attr(dataNode, "description") ?? "";
+            if (int.TryParse(Attr(dataNode, "exp"), out int exp)) mission.exp = exp;
+            if (int.TryParse(Attr(dataNode, "info"), out int info)) mission.info = info;
+
+            MissionPhase phase = new MissionPhase();
+            var objectives = new List<KeyValuePair<int, XmlNode>>();
+            foreach (XmlNode child in dataNode.ChildNodes)
+            {
+                if (child.NodeType == XmlNodeType.Element && child.Name.StartsWith("objective") &&
+                    int.TryParse(child.Name.Substring("objective".Length), out int number))
+                {
+                    objectives.Add(new KeyValuePair<int, XmlNode>(number, child));
+                }
+            }
+
+            foreach (var entry in objectives.OrderBy(o => o.Key))
+            {
+                MissionObjective objective = new MissionObjective();
+                objective.description = Attr(entry.Value, "description") ?? "";
+                objective.command = Attr(entry.Value, "command") ?? "";
+                objective.dialog = Attr(entry.Value, "dial") ?? "";
+                string item = Attr(entry.Value, "item");
+                if (!string.IsNullOrEmpty(item))
+                {
+                    objective.itemId = StringUtils.hexStringToBytes(item);
+                }
+                phase.missionObjectives.Add(objective);
+            }
+
+            mission.phases.Add(phase);
+            return mission;
         }
 
         public List<Mission> FindMissions(UInt16 contactId, uint orgId)

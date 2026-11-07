@@ -24,6 +24,7 @@ namespace hds
              * Raj: 18 80 95 00 00 00 00 00 00 01 00 01 00 22 00 00 00 f3 13 00 58 a5 11 00 0a (just one mission in list "The Hunter" - PB i think)
              * Raj: 18 80 95 00 00 00 00 00 00 01 00 01 00 34 00 00 00 15 14 00 58 a8 11 00 0a (just one mission in list "Pretty Retribution" - PB i think)
              */
+            // contactId is the client's request number (retail copied it back), see MissionHandler.
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_RESPONSE_LIST,0);
             pak.AddUint32(0, 0); // Unknown UInt32
@@ -31,7 +32,7 @@ namespace hds
             pak.AddUint16((ushort) missions.Count,1); // len of missions "categorys" to list
             pak.AddUShort(0);
             pak.AddUShort((ushort)orgID);
-            pak.AddHexBytes("000000000000000000000000"); // The big unknown part - maybe some informations about the contact
+            pak.AddHexBytes("d0070000310000b4c00c0028"); // as in the retail (Neo) list header
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
 
             
@@ -48,7 +49,7 @@ namespace hds
                 missionListPak.AddUint16(contactId, 1);
                 missionListPak.AddUint16(i, 1);
                 missionListPak.AddHexBytes("0f0001"); // curently unknown
-                missionListPak.AddUint32(0,1); // ContactId or something (if zero it just takes from the org but maybe needed for special contacts - seen d0070000 (Tyndal))
+                missionListPak.AddUint32(0x07d0,1); // every retail capture has d0 07 00 00 here
                 missionListPak.AddUint16(0,1); // Unknown
                 missionListPak.AddSizedTerminatedString(mission.title);
                 client.messageQueue.addRpcMessage(missionListPak.ReturnFinalPacket());
@@ -63,12 +64,15 @@ namespace hds
             
         }
 
-        public void sendMissionInfo(Mission mission, WorldClient client)
+        public void sendMissionInfo(Mission mission, UInt16 txn, byte difficulty, WorldClient client)
         {
-            // Test a MissionList 
+            // 8099 00000000 <txn> 2f 00 01 00 00 00 <difficulty echoed> ... (retail)
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_INFO_RESPONSE, 0);
-            pak.AddHexBytes("0000000000002f000100000002");
+            pak.AddUint32(0, 1);
+            pak.AddUint16(txn, 1);
+            pak.AddHexBytes("2f0001000000");
+            pak.AddByte(difficulty);
 
             // ToDo: calculate distance for the first and last location 
             float firstLocationDistance = 120 * 100;
@@ -76,49 +80,89 @@ namespace hds
             
             pak.AddFloat(firstLocationDistance,1);
             pak.AddFloat(maxLocationDistance,1);
-            pak.AddHexBytes("000000000000000000d0060000310000b4c00c0028");
+            pak.AddHexBytes("000000000000000000d0070000310000b4c00c0028");
             pak.AddHexBytes("42000001000002000D001300020002030200FFFFFDFF");
             pak.AddSizedTerminatedString(mission.description);
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
             client.FlushQueue();
         }
 
-        public void sendMissionAccept(WorldClient client, UInt16 contactId, ushort missionId)
+        public void sendMissionAccept(WorldClient client, UInt16 txn, UInt16 instance, Mission mission)
         {
-            // This is still a testing message mate
+            client.messageQueue.addObjectMessage(BuildMissionKeyUpdate(instance), false);
+            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title));
+            client.messageQueue.addRpcMessage(BuildMissionBriefing(mission.description));
 
-            PacketContent selfUpdate = new PacketContent();
-            selfUpdate.AddHexBytes("0200028040002a03020000");
-            client.messageQueue.addObjectMessage(selfUpdate.ReturnFinalPacket(), false);
+            // Waypoint (809e <idx> <x y z doubles> 01 00 00 00 <object id>); still the retail capture's spot.
+            PacketContent locationMessage = new PacketContent();
+            locationMessage.AddHexBytes("809E00000000000026DB40000000008078C1400000000000F8B1C00100000022018007");
+            client.messageQueue.addRpcMessage(locationMessage.ReturnFinalPacket());
+            client.FlushQueue();
+        }
+
+        /// <summary>
+        /// Own-view MissionKey (attribute 13: group 1, bit 6) = 00 &lt;instance u16&gt; 02, as retail set it on accept
+        /// (<c>02 00 02 80 40 00 2f 00 02</c>). This used to carry other instance bytes plus a stray 00 00.
+        /// </summary>
+        public static byte[] BuildMissionKeyUpdate(UInt16 instance)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("0200028040");
+            pak.AddByte(0x00);
+            pak.AddUint16(instance, 1);
+            pak.AddByte(0x02);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// 809c: the accepted mission's name. Layout from the retail Assassination capture, with the offsets
+        /// recomputed for the title length: title at 0x2b, then an empty string, then a u32 list.
+        /// </summary>
+        public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title)
+        {
+            const int titleOffset = 0x2b;
+            int emptyOffset = titleOffset + 2 + title.Length + 1;
+            int listOffset = emptyOffset + 3;
 
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_SET_NAME, 0);
-            pak.AddHexBytes("00000000");
-            pak.AddUint16(contactId, 1);
-            pak.AddHexBytes("2B0001002F0002D0070000310000B4C00C002814000026700A00280100003E003B00000E00417373617373696E6174696F6E000100000300AA0600009C070000DC050000");
+            pak.AddUint32(0, 1);
+            pak.AddUint16(txn, 1);
+            pak.AddUint16(titleOffset, 1);
+            pak.AddHexBytes("0100");
+            pak.AddUint16(instance, 1);
+            pak.AddHexBytes("02D0070000310000B4C00C002814000026700A0028010000");
+            pak.AddUint16((UInt16)listOffset, 1);
+            pak.AddUint16((UInt16)emptyOffset, 1);
+            pak.AddByte(0x00);
+            pak.AddSizedTerminatedString(title);
+            pak.AddSizedTerminatedString("");
+            pak.AddHexBytes("0300AA0600009C070000DC050000");
+            return pak.ReturnFinalPacket();
+        }
 
-            PacketContent pak2 = new PacketContent();
-            pak2.AddHexBytes("80A33000030078001A000000030000003C000010EF4600007FC30020E4C50088DB4600007FC300E0ABC500000000000032015768696C65206F7665727420636F6E666C696374207365727665732069747320707572706F73652C20736F6D6574696D65732061206D6F726520737562746C6520617070726F6163682069732072657175697265642E20496E207468697320636173652C20616E20617373617373696E6174696F6E2E0D0A0D0A496E206F7264657220746F2072656163682042656E67742C20796F752077696C6C206669727374206E65656420746F206163717569726520612063657274696E2044617461204469736B207468617420686F6C64");
-
-            // This tells the location 
-            PacketContent locationMessage = new PacketContent();
-            locationMessage.AddHexBytes("809E00000000000026DB40000000008078C1400000000000F8B1C00100000022018007");
-
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-            client.messageQueue.addRpcMessage(pak2.ReturnFinalPacket());
-            client.messageQueue.addRpcMessage(locationMessage.ReturnFinalPacket());
-            
-            /*
-            PacketContent pakWayPoint = new PacketContent();
-            pakWayPoint.addHexBytes("01000213001200020C9DE1B8D747F0BF2D443752BA450000");
-            client.messageQueue.addObjectMessage(pakWayPoint.returnFinalPacket(),false);
-            */
-            client.FlushQueue();
-
+        /// <summary>
+        /// 80a3: the mission briefing. Header fields (text offset 0x30, two mission-area vectors) from the retail
+        /// capture, then the text as a sized string. The old hex declared a 306-byte string but stopped after
+        /// 206 bytes, so the client read past the message.
+        /// </summary>
+        public static byte[] BuildMissionBriefing(string text)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80A3");
+            pak.AddHexBytes("300003007800" + "1A000000" + "03000000" + "3C00" +
+                            "0010EF4600007FC30020E4C5" + "0088DB4600007FC300E0ABC5" + "000000000000");
+            pak.AddSizedTerminatedString(text ?? "");
+            return pak.ReturnFinalPacket();
         }
 
         public void SendMissionAbort(WorldClient client)
         {
+            // Retail cleared the own-view MissionKey on abort (02 00 02 80 40 00 00 00 00).
+            PacketContent clear = new PacketContent();
+            clear.AddHexBytes("020002804000000000");
+            client.messageQueue.addObjectMessage(clear.ReturnFinalPacket(), false);
+
             PacketContent pak = new PacketContent();
             pak.AddHexBytes("80a20800000000b4658db5000000000000000000000000000000");
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
