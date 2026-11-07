@@ -54,6 +54,7 @@ param(
     [int[]]$DoubleClick,
     [int[]]$Click,
     [int[]]$LauncherClick,
+    [int[]]$RightClick,
     [switch]$CheckVendorWindow,
     [string]$Screenshot
 )
@@ -199,6 +200,18 @@ public static class MxoInput
         IntPtr lp = MakeLParam(p.X, p.Y);
         PostMessage(target, WM_LBUTTONDOWN, (IntPtr)1, lp); Thread.Sleep(50);
         PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(150);
+    }
+
+    // A single in-game right-click (radial menus), cursor moved there first.
+    public static void PostGameRightClick(IntPtr top, int dx, int dy)
+    {
+        Physical();
+        const uint WM_RBUTTONDOWN = 0x204, WM_RBUTTONUP = 0x205;
+        POINT p; IntPtr target = ChildAt(top, dx, dy, out p);
+        POINT screen = p; ClientToScreen(target, ref screen); SetCursorPos(screen.X, screen.Y); Thread.Sleep(80);
+        IntPtr lp = MakeLParam(p.X, p.Y);
+        PostMessage(target, WM_RBUTTONDOWN, (IntPtr)2, lp); Thread.Sleep(50);
+        PostMessage(target, WM_RBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(150);
     }
 
     public static void PostKey(IntPtr top, byte vk)
@@ -419,6 +432,13 @@ if ($LauncherClick -and $ok) {
     Click-Launcher $LauncherClick[0] $LauncherClick[1]
     $summary.launcherClicked = $true
     Start-Sleep 1
+}
+
+if ($RightClick -and $ok) {
+    if ($RightClick.Count -ne 2) { throw '-RightClick takes x,y' }
+    [MxoInput]::PostGameRightClick((Get-ClientWindow), $RightClick[0], $RightClick[1])
+    $summary.rightClicked = $true
+    Start-Sleep 2
 }
 
 if ($Click -and $ok) {
