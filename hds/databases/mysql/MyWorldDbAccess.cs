@@ -950,7 +950,9 @@ namespace hds.databases{
 
             UInt32 GoID = 0;
             while (dr.Read()){
-                GoID  = (UInt32)dr.GetInt32(0);
+                // goid is a bigint; ability codes such as 0x80001c00 (2147490816) don't fit in an
+                // Int32, and GetInt32 threw OverflowException, which crashed the server on recycle.
+                GoID  = Convert.ToUInt32(Convert.ToInt64(dr.GetValue(0)));
             }
             dr.Close();
 	        CloseConnection();

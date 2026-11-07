@@ -45,20 +45,31 @@ namespace hds
                 return;
             }
 
-            // LEAD (capture-pending): like processItemMove, we treat packet[0..1] as the raw
-            // inventory slot. The slot-vs-itemcode byte interpretation for recycle is unproven.
+            // CLIENT_ITEM_RECYCLE (5d) body: slot u16 little-endian, then 01 01. Confirmed with the
+            // real client: recycling the item in slot 10 sent "0a 00 01 01"; retail "5d 04 00 01 01".
             byte[] slotBytes = {packet[0], packet[1]};
             UInt16 slot = NumericalUtils.ByteArrayToUint16(slotBytes, 1);
-            removeItemAtSlot(slot);
-        }
 
-        // Removes an item from a given inventory slot (DB row delete + client packet).
-        // Shared by the recycle handler and the vendor sell flow.
-        public void removeItemAtSlot(UInt16 slot)
-        {
-            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, Store.currentClient.playerData.getCharID());
-
+            UInt32 charId = Store.currentClient.playerData.getCharID();
+            UInt32 itemGoId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
             ServerPackets pak = new ServerPackets();
+            if (itemGoId == 0)
+            {
+                pak.sendSystemChatMessage(Store.currentClient, "There is nothing to recycle in that slot.", "MODAL");
+                return;
+            }
+
+            // Retail order: 80 e7 (+value, reason 0x0f) -> 80 e4 (new cash, 0x0f) -> 5f (remove slot).
+            long currentCash = Store.currentClient.playerData.getInfo();
+            UInt32 value = VendorPricing.GetRecyclePrice(itemGoId);
+            UInt32 newCash = (UInt32)Math.Min(Math.Max(currentCash, 0) + (long)value, UInt32.MaxValue);
+
+            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
+            Store.currentClient.playerData.setInfo(newCash);
+
+            pak.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonRecycle);
+            pak.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonRecycle);
             pak.sendInventoryItemDelete(slot, Store.currentClient);
         }
 
