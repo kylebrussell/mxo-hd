@@ -246,8 +246,9 @@ namespace hds
             // Drain IS for combat round
             DrainCombatIS(session.Attacker);
 
-            // Send position update packet
-            SendCombatUpdatePacket(session);
+            // No per-round update to the combat handler view: retail sends its state once, at combat start
+            // (see docs/COMBAT-SYSTEM-ROADMAP.md). The old hard-coded update here didn't match the object's
+            // layout, and the client dropped the rest of the packet with it, including the health updates.
 
             // Apply damage to defender if we have a valid target
             if (session.DefenderMob != null)
@@ -265,7 +266,9 @@ namespace hds
                     damage = CombatCalculator.CalculateMeleeDamageWithTactics(
                         playerLevel, mobLevel,
                         session.AttackerTactic, session.DefenderTactic);
-                    fxId = CombatCalculator.GetRandomMeleeHitFx();
+                    // Health-only hit update, as retail sent for plain attacks; the FX.cs hit ids
+                    // aren't valid effect ids (see CombatCalculator.MeleeHitFxIds).
+                    fxId = 0;
                 }
                 else
                 {
@@ -279,7 +282,7 @@ namespace hds
                     damage = CombatCalculator.CalculateRangedDamageWithTactics(
                         playerLevel, mobLevel, distance,
                         session.AttackerTactic, session.DefenderTactic);
-                    fxId = CombatCalculator.GetRandomRangedHitFx();
+                    fxId = 0; // health-only, as for melee
                     Output.WriteDebugLog($"[COMBAT] Range combat: distance={distance:F1}m");
                 }
 
@@ -297,6 +300,7 @@ namespace hds
 
                 // Phase 3: Mob attacks the player back (with player's defensive tactic applied)
                 bool playerDied = session.DefenderMob.updateCombat(session.AttackerTactic);
+                session.Attacker.FlushQueue();
                 if (playerDied)
                 {
                     Output.WriteDebugLog("[COMBAT] Player died in combat!");
@@ -338,24 +342,6 @@ namespace hds
         }
 
         /// <summary>
-        /// Sends combat update packet on timer tick.
-        /// </summary>
-        private void SendCombatUpdatePacket(CombatSession session)
-        {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16(session.CombatHandlerViewId, 1);
-            pak.AddUShort(3); // Position update flag
-            pak.AddByteArray(session.Attacker.playerInstance.Position.getValue());
-
-            // COMBAT UPDATE BLOB - Still hardcoded until structure is understood
-            // See CombatHandler documentation for byte breakdown
-            pak.AddHexBytes("030000000000000001020100000000002869C00000000000CF8B42002869400000000000CF8BC2000003006E290000A6009C0FF60E0200000000000000000000000000000000E54E00008B0B002400000000000000000000000000000000350000005200000000100010000000000000000000000000000000000000000000000000010000005864EBD9C000000000004491C000000040AF08EA400000");
-
-            session.Attacker.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            session.Attacker.FlushQueue();
-        }
-
-        /// <summary>
         /// Called when combat ends for any reason.
         /// </summary>
         private void HandleCombatEnd(CombatSession session, CombatSession.CombatEndReason reason)
@@ -371,19 +357,24 @@ namespace hds
             }
 
             ServerPackets packets = new ServerPackets();
-            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId);
-            RemoveCombatHandlerEntity(session);
+            bool defenderDied = reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null;
 
-            // If defender died, trigger death/loot sequence
-            if (reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null)
+            // The death goes out first, in its own packet, so nothing sent with the combat teardown can
+            // keep the client from seeing it.
+            if (defenderDied)
             {
-                // Mark the mob as dead and lootable
                 session.MarkDefenderDead();
-
-                // Send death animation using the mob's view ID (not combat handler view ID)
                 UInt16 mobViewId = session.GetDefenderViewId();
                 Output.WriteDebugLog($"[COMBAT] Sending death for mob view {mobViewId}");
                 packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
+            }
+
+            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId);
+            RemoveCombatHandlerEntity(session);
+
+            // If defender died, trigger the experience/loot sequence
+            if (defenderDied)
+            {
 
                 // Award experience
                 UInt16 mobLevel = session.DefenderMob.getLevel();

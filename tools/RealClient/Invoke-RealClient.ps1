@@ -14,6 +14,7 @@ Steps run in this order, each only when its switch or parameter is given:
   -Chat         Type a chat line and press Enter.
   -Walk         Hold movement keys in turn, KEY:seconds each, e.g. -Walk W:2,A:0.5,Space:0.2.
   -DoubleClick  Double-click a point on the 1024x768 game screen.
+  -Click        Click a point on the game screen once (UI buttons), after any double-click.
   -Screenshot   Save a screenshot of the primary screen.
 Exit code 0 when every requested step succeeded, 1 otherwise. A one-line JSON summary is printed last.
 
@@ -44,6 +45,7 @@ param(
     [string[]]$Chat,
     [string[]]$Walk,
     [int[]]$DoubleClick,
+    [int[]]$Click,
     [switch]$CheckVendorWindow,
     [string]$Screenshot
 )
@@ -177,6 +179,17 @@ public static class MxoInput
         PostMessage(target, WM_LBUTTONDOWN, (IntPtr)1, lp); Thread.Sleep(30);
         PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(30);
         PostMessage(target, WM_LBUTTONDBLCLK, (IntPtr)1, lp); Thread.Sleep(30);
+        PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(150);
+    }
+
+    // A single in-game click (UI buttons), with the real cursor moved there first like PostDoubleClick.
+    public static void PostGameClick(IntPtr top, int dx, int dy)
+    {
+        Physical();
+        POINT p; IntPtr target = ChildAt(top, dx, dy, out p);
+        POINT screen = p; ClientToScreen(target, ref screen); SetCursorPos(screen.X, screen.Y); Thread.Sleep(80);
+        IntPtr lp = MakeLParam(p.X, p.Y);
+        PostMessage(target, WM_LBUTTONDOWN, (IntPtr)1, lp); Thread.Sleep(50);
         PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(150);
     }
 
@@ -363,6 +376,13 @@ if ($DoubleClick -and $ok) {
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # uses the targeted object
     $summary.doubleClicked = $true
     Start-Sleep 4
+}
+
+if ($Click -and $ok) {
+    if ($Click.Count -ne 2) { throw '-Click takes x,y' }
+    [MxoInput]::PostGameClick((Get-ClientWindow), $Click[0], $Click[1])
+    $summary.clicked = $true
+    Start-Sleep 3
 }
 
 function Capture-Screen {

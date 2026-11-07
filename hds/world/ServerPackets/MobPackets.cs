@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -53,27 +53,29 @@ namespace hds
 
         public void SendNpcDies(UInt16 viewId, WorldClient client, Mob theMob)
         {
-            // Falls to ground like dead lol
-
-            //activate loot+f
             PacketContent pak = new PacketContent();
             pak.AddUint16(viewId, 1);
-            pak.AddHexBytes("0501c20200808100000000e0010000c0830000de810303fd070000000000000000");
+            pak.AddByteArray(BuildNpcDeathUpdate());
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            
-            PacketContent fallToGroundPak = new PacketContent();
-            fallToGroundPak.AddUint16(viewId, 1);
-            fallToGroundPak.AddHexBytes("02010d000000000000000000000000000000");
-            client.messageQueue.addObjectMessage(fallToGroundPak.ReturnFinalPacket(), false);
-            
-            // lie on the ground
-            PacketContent pak2 = new PacketContent();
-            pak2.AddUint16(viewId, 1);
-            pak2.AddHexBytes("02010d000000000000000000000000000000");
-            client.messageQueue.addObjectMessage(pak2.ReturnFinalPacket(), false);
-
             client.FlushQueue();
+        }
 
+        /// <summary>
+        /// NPC_BASE view update for a death, as retail sent it when NPCs died (a zombie killed in melee,
+        /// and with an extra effect after an ability kill):
+        /// <c>05 01 c2 02 00 80 80 e0 01 00 00 80 80 03 fd 07 00 00 00 00 00 00</c>.
+        /// 05 = parts 01 (one byte, 01) and 04 (attribute groups). The groups select, by view index in
+        /// AttributeClass3827: UseCount=2, StopFollowActiveTracker=0, IsDead=1, Health=0,
+        /// CurrentState=0x7fd (dead) and ConditionStateFlags=0. Verified with the 7.6005 client: the NPC
+        /// stops offering combat and the corpse can be looted. The retail zombie death also carried a
+        /// movement part (02, flags 1d) whose layout isn't known; guessing it (02 01 0d) made the
+        /// client reject the whole update.
+        /// </summary>
+        public static byte[] BuildNpcDeathUpdate()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("0501c202008080e0010000808003fd07000000000000");
+            return pak.ReturnFinalPacket();
         }
 
 

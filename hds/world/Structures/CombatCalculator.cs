@@ -54,6 +54,9 @@ namespace hds
         /// <summary>
         /// Hand combat hit FX IDs for visual variety.
         /// These correspond to different hit locations/animations.
+        /// Not sent to the client: these FX.cs values aren't valid effect ids (retail effect ids are
+        /// 0x28xxxxxx; most FX.cs entries are stored byte-reversed), and retail melee hits update the
+        /// NPC's health alone. See CombatHandler.HandleCombatTick.
         /// </summary>
         private static readonly uint[] MeleeHitFxIds = new uint[]
         {
