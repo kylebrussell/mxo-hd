@@ -79,17 +79,66 @@ namespace hds.auth
 
         public void ProcessGetPublicKey_Request(PacketReader reader)
         {
-            PacketContent responsePacket = new PacketContent();
-            responsePacket.AddByte(0x12);
-            responsePacket.AddByte((byte) AuthOpcode.AS_GetPublicKeyReply);
-            responsePacket.AddUint32(0, 1);
-            responsePacket.AddByteArray(TimeUtils.getUnixTime()); // Maybe reversed
-            // implicit RSA version = 0x00000004
-            responsePacket.AddUint32(4, 1);
-            responsePacket.AddUint32(0, 0);
-            responsePacket.AddByte(0x00);
-            
-            authClientSession.SendAsync(responsePacket.ReturnFinalPacket());
+            authClientSession.SendAsync(BuildPublicKeyReply(TimeUtils.getUnixTimeUint32()));
+        }
+
+        /// <summary>Key id the launcher caches in pubkey.dat; a cached match skips verification.</summary>
+        public const uint ServerPublicKeyId = 4;
+
+        /// <summary>Size of the AS_GetPublicKeyReply fixed part, counted from the opcode byte.</summary>
+        public const int PublicKeyReplyFixedSize = 0x12;
+
+        // PKCS#1 v1.5 signatures are deterministic, so sign the server key once.
+        private static readonly Lazy<byte[]> ServerKeySignature = new Lazy<byte[]>(() =>
+            MxoRSA.SignServerKeyWithRoot(MxoRSA.ServerPublicModulus(), MxoRSA.ServerPublicExponent()));
+
+        /// <summary>
+        /// Builds a framed AS_GetPublicKeyReply that launcher.exe accepts on a fresh install
+        /// (layout decompiled from FUN_00444e20 / FUN_00447f50, see docs/CLIENT-SETUP-PLAN.md):
+        /// opcode, Status u32, CurrentTime u32, PublicKeyId u32, u16 offset of N, E u8,
+        /// u16 offset of Signature, then each array as [u16 length][bytes]. Offsets count from
+        /// the opcode byte; multi-byte integers are little-endian, N and Signature big-endian.
+        /// </summary>
+        public static byte[] BuildPublicKeyReply(uint unixTime)
+        {
+            byte[] modulus = MxoRSA.ServerPublicModulus();
+            byte[] signature = ServerKeySignature.Value;
+            int modulusOffset = PublicKeyReplyFixedSize;
+            int signatureOffset = modulusOffset + 2 + modulus.Length;
+
+            PacketContent body = new PacketContent();
+            body.AddByte((byte) AuthOpcode.AS_GetPublicKeyReply);
+            body.AddUint32(0, 1);                                // Status: success
+            body.AddUint32(unixTime, 1);                         // CurrentTime
+            body.AddUint32(ServerPublicKeyId, 1);                // PublicKeyId
+            body.AddUint16((UInt16) modulusOffset, 1);           // -> N
+            body.AddByte(MxoRSA.ServerPublicExponent());         // E
+            body.AddUint16((UInt16) signatureOffset, 1);         // -> Signature
+            body.AddUint16((UInt16) modulus.Length, 1);
+            body.AddByteArray(modulus);
+            body.AddUint16((UInt16) signature.Length, 1);
+            body.AddByteArray(signature);
+
+            return FrameAuthMessage(body.ReturnFinalPacket());
+        }
+
+        /// <summary>
+        /// Auth TCP length prefix: one byte when the body is under 0x80 bytes, otherwise a
+        /// big-endian u16 with the 0x8000 flag set (same rule getOpCode reads).
+        /// </summary>
+        public static byte[] FrameAuthMessage(byte[] body)
+        {
+            if (body.Length >= 0x8000)
+                throw new ArgumentException("Auth message too long for the TCP length prefix.", nameof(body));
+
+            byte[] prefix = body.Length < 0x80
+                ? new[] {(byte) body.Length}
+                : NumericalUtils.uint16ToByteArray((UInt16) (body.Length | 0x8000), 0);
+
+            byte[] framed = new byte[prefix.Length + body.Length];
+            Buffer.BlockCopy(prefix, 0, framed, 0, prefix.Length);
+            Buffer.BlockCopy(body, 0, framed, prefix.Length, body.Length);
+            return framed;
         }
 
 

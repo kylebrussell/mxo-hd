@@ -28,8 +28,56 @@ namespace hds
             rsa.FromXmlString(privKeyXML);
 			
 			return rsa.SignData(md5fromStructure, HashAlgorithmName.MD5, RSASignaturePadding.Pkcs1);
-			
-		}		
-		
+
+		}
+
+		// Key roles, as decompiled from launcher.exe (see docs/CLIENT-SETUP-PLAN.md):
+		//  - privKeyXML  (1024-bit, e=17) is the auth *server* key: the launcher encrypts the
+		//    login blob to it (OAEP) and verifies auth replies with it.
+		//  - privKeyXML2 (2048-bit, e=17) is the *root* key: the launcher embeds its modulus
+		//    and uses it to verify the server key sent in AS_GetPublicKeyReply.
+
+		/// <summary>Big-endian modulus of the auth server key (128 bytes).</summary>
+		public static byte[] ServerPublicModulus() => ParametersOf(privKeyXML).Modulus;
+
+		/// <summary>Public exponent of the auth server key as a single byte (17).</summary>
+		public static byte ServerPublicExponent() => SingleByteExponent(privKeyXML);
+
+		/// <summary>Big-endian modulus of the root key (256 bytes); this is what a patched launcher embeds.</summary>
+		public static byte[] RootPublicModulus() => ParametersOf(privKeyXML2).Modulus;
+
+		/// <summary>Public exponent of the root key as a single byte (17); the launcher hardcodes 0x11.</summary>
+		public static byte RootPublicExponent() => SingleByteExponent(privKeyXML2);
+
+		/// <summary>
+		/// Signs the server key the way launcher.exe verifies it: RSASSA-PKCS1-v1.5 with MD5 by the
+		/// root key over (modulus as 128 big-endian bytes || exponent as one byte).
+		/// </summary>
+		public static byte[] SignServerKeyWithRoot(byte[] serverModulus, byte serverExponent)
+		{
+			byte[] message = new byte[serverModulus.Length + 1];
+			Buffer.BlockCopy(serverModulus, 0, message, 0, serverModulus.Length);
+			message[serverModulus.Length] = serverExponent;
+
+			using RSA root = RSA.Create();
+			root.FromXmlString(privKeyXML2);
+			return root.SignData(message, HashAlgorithmName.MD5, RSASignaturePadding.Pkcs1);
+		}
+
+		private static RSAParameters ParametersOf(string xml)
+		{
+			using RSA key = RSA.Create();
+			key.FromXmlString(xml);
+			return key.ExportParameters(false);
+		}
+
+		private static byte SingleByteExponent(string xml)
+		{
+			byte[] exponent = ParametersOf(xml).Exponent;
+			if (exponent.Length != 1)
+				throw new InvalidOperationException("Launcher protocol carries the public exponent as one byte.");
+			return exponent[0];
+		}
+
 	}
 }

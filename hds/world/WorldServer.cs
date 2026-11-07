@@ -127,9 +127,15 @@ namespace hds
         
         private void ListenForAllClients()
         {
-            byte[] byteTrue = new byte[4];
-            byteTrue[byteTrue.Length - 1] = 1;
-            socket.IOControl(SIO_UDP_CONNRESET, byteTrue, null);
+            // SIO_UDP_CONNRESET stops Windows from surfacing ICMP "port unreachable" as receive
+            // errors. It is a Windows-only ioctl: on macOS/Linux it throws and the unhandled
+            // exception kills the whole server process (auth included), so only apply it there.
+            if (OperatingSystem.IsWindows())
+            {
+                byte[] byteTrue = new byte[4];
+                byteTrue[byteTrue.Length - 1] = 1;
+                socket.IOControl(SIO_UDP_CONNRESET, byteTrue, null);
+            }
 
             serverport = 10000;
             udplistener = new IPEndPoint(IPAddress.Any, serverport);

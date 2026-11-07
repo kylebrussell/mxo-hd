@@ -56,7 +56,21 @@ SERVER_PID="$!"
 
 for _ in $(seq 1 90); do
   if grep -q "Im'running :D" "$LOG_FILE"; then
-    echo "Smoke test passed: server reached ready state."
+    # The ready line prints before listener threads finish starting; a listener crash
+    # (e.g. a Windows-only socket call) kills the process right after it. Confirm the
+    # server is still alive and the auth port accepts connections.
+    sleep 3
+    if ! kill -0 "$SERVER_PID" >/dev/null 2>&1; then
+      echo "Server exited right after reporting ready." >&2
+      cat "$LOG_FILE" >&2
+      exit 1
+    fi
+    if ! nc -z 127.0.0.1 11000 >/dev/null 2>&1; then
+      echo "Server reported ready but auth port 11000 is not accepting connections." >&2
+      cat "$LOG_FILE" >&2
+      exit 1
+    fi
+    echo "Smoke test passed: server reached ready state and auth port 11000 accepts connections."
     exit 0
   fi
 
