@@ -261,16 +261,18 @@ namespace hds
             float yPos = (float) y;
             float zPos = (float) z;
 
-            float distance = Maths.getDistance(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest);
-            UInt16 duration = (UInt16) (distance * 0.5);
-
-            UInt32 startTime = TimeUtils.getUnixTimeUint32();
-            UInt32 endTime = startTime + duration;
+            // Start/end are server sim time in ms, like JumpEndTime (these used to be Unix seconds). The fall to
+            // the new destination is timed as a drop from the current height above it.
+            float simSeconds = TimeUtils.GetSimTimeSeconds();
+            UInt32 startTime = (UInt32)Math.Round(simSeconds * 1000.0);
+            // A straight drop of H takes sqrt(2H/g), which is JumpEndTime's up-and-down time for a peak of H/4.
+            UInt32 endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, yPos - yDest) / 4f);
 
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpID(clientJumpIdUnknown);
             packets.SendHyperJumpUpdate(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest, startTime,
                 endTime);
+            Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
     }
 }
