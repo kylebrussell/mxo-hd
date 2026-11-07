@@ -114,6 +114,18 @@ namespace hds
             }
         }
 
+        /// <summary>40 &lt;target u32&gt; 00 &lt;rest of the request&gt;: the server's answer to a 0x40 close-combat request.</summary>
+        public static byte[] BuildCloseCombatEcho(byte[] request)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x40);
+            for (int i = 0; i < request.Length; i++)
+            {
+                pak.AddByte(i == 4 ? (byte)0x00 : request[i]);
+            }
+            return pak.ReturnFinalPacket();
+        }
+
         public void ProcessRequestCloseCombat(ref byte[] packet)
         {
 #if DEBUG
@@ -135,6 +147,10 @@ namespace hds
             }
 
             StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+
+            // Retail echoed the request with its flag byte cleared: client 40 2f 00 22 00 01 6b -> server
+            // 40 2f 00 22 00 00 6b. Without it the client never confirmed the fight on its side.
+            client.messageQueue.addRpcMessage(BuildCloseCombatEcho(packet));
 
             // Create combat session
             currentSession = new CombatSession(
@@ -184,6 +200,8 @@ namespace hds
 
             // Send combat initialization packet
             packets.SendCombatInitialize(client, theView.ViewID, targetViewWithSpawnId);
+            client.playerData.combatGeneration++;
+            client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(targetViewWithSpawnId, 0x01));
 
             // Send the combat state data (still using hardcoded blob until we understand it better)
             SendCombatStateBlob(client, theView.ViewID);
@@ -389,7 +407,13 @@ namespace hds
                 packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
             }
 
-            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId);
+            byte[] combatCentre = null;
+            if (session.CombatHandlerObject is AttributeClass3664 combatObject)
+            {
+                combatCentre = combatObject.Position.getValue();
+            }
+            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId, session.TargetViewSpawnId,
+                combatCentre, session.RoundNumber);
             RemoveCombatHandlerEntity(session);
 
             // If defender died, trigger the experience/loot sequence
@@ -399,8 +423,11 @@ namespace hds
                 // Award experience
                 UInt16 mobLevel = session.DefenderMob.getLevel();
                 UInt32 expGained = (UInt32)(mobLevel * 100); // Simple exp formula
+                PlayerRewards.GrantExperience(session.Attacker, expGained);
                 Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
-                // TODO: Actually add exp to player via session.Attacker.playerData or similar
+
+                MissionRuntime.OnMobDefeated(session.Attacker, session.DefenderMob);
+                UInt32 missionItem = MissionRuntime.LootItemFor(session.Attacker.playerData, session.DefenderMob);
 
                 // Calculate loot money based on mob level (50-150 per level)
                 Random rand = new Random();
@@ -410,9 +437,10 @@ namespace hds
                 session.Attacker.playerData.pendingLootMoney = lootMoney;
                 session.Attacker.playerData.hasLootPending = true;
 
-                // Send loot window to player (empty item array for now)
-                UInt32[] emptyItems = new UInt32[0];
-                packets.SendLootWindow(lootMoney, session.Attacker, emptyItems);
+                // Loot window: the money, plus a mission's LOOT item when this mob carries one
+                session.Attacker.playerData.pendingLootItem = missionItem;
+                UInt32[] lootItems = missionItem != 0 ? new[] { missionItem } : new UInt32[0];
+                packets.SendLootWindow(lootMoney, session.Attacker, lootItems);
                 Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info");
             }
 
@@ -504,6 +532,8 @@ namespace hds
 
             // Send combat initialization packet
             packets.SendCombatInitialize(client, theView.ViewID, targetViewWithSpawnId);
+            client.playerData.combatGeneration++;
+            client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(targetViewWithSpawnId, 0x01));
 
             // Send the combat state data
             SendCombatStateBlob(client, theView.ViewID);
@@ -518,38 +548,22 @@ namespace hds
         /// <summary>
         /// Handles player death - sets death state and triggers respawn flow.
         /// </summary>
-        private void HandlePlayerDeath(WorldClient player)
+        public static void HandlePlayerDeath(WorldClient player)
         {
             Output.WriteDebugLog("[COMBAT] Processing player death");
 
-            // Set the IsDead attribute on player
             player.playerInstance.IsDead.setValue(true);
+            player.playerInstance.Health.setValue((UInt16)0);
+            player.playerData.isDead = true;
+            player.playerData.respawnPending = false;
 
-            // Send death packet to player
-            ServerPackets packets = new ServerPackets();
+            // Retail death: own view IsDead/Health/ConditionStateFlags, then the death system message. The client
+            // shows its own death UI and asks to respawn with 81 4c (TeleportHandler.ProcessRespawnRequest).
+            player.messageQueue.addObjectMessage(ServerPackets.BuildSelfDeathUpdate(), false);
+            player.messageQueue.addRpcMessage(ServerPackets.BuildDeathMessage());
+            player.FlushQueue();
 
-            // Build player death state update - marks player as dead
-            // This uses the same self-view update pattern
-            PacketContent deathPacket = new PacketContent();
-            deathPacket.AddUint16(2, 1); // Self-view ID
-
-            // Update flags to include death state
-            // Format: attribute group flags + IsDead value
-            // IsDead is in the self-view attributes array
-            var updateAttributes = new System.Collections.Generic.List<Attribute>();
-            updateAttributes.Add(player.playerInstance.IsDead);
-            updateAttributes.Add(player.playerInstance.Health);
-
-            byte[] updateData = player.playerInstance.GetSelfUpdateAttributes(updateAttributes, true);
-            deathPacket.AddByteArray(updateData);
-
-            player.messageQueue.addObjectMessage(deathPacket.ReturnFinalPacket(), false);
-
-            // TODO: Send proper death animation/effects
-            // TODO: Start respawn timer or show hardline respawn prompt
-            // For now, just leave player in dead state - they can respawn via hardline
-
-            Output.WriteDebugLog("[COMBAT] Player death state set - respawn via hardline");
+            Output.WriteDebugLog("[COMBAT] Player died; waiting for the respawn request");
         }
 
         private void RemoveCombatHandlerEntity(CombatSession session)
@@ -584,7 +598,7 @@ namespace hds
                 combatTimer?.Dispose();
 
                 ServerPackets packets = new ServerPackets();
-                packets.SendCombatEnd(client, ilCombatViewId);
+                packets.SendCombatEnd(client, ilCombatViewId, 0);
                 client.FlushQueue();
             }
         }
