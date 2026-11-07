@@ -106,6 +106,19 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// Own-view CombatantMode (attribute 43: group 6, bit 1), as retail sent it after RPC 0x3d:
+        /// <c>02 00 02 80 80 80 80 80 80 02 &lt;mode&gt;</c> (0x21 weapon drawn, 0x22 at rest).
+        /// </summary>
+        public static byte[] BuildCombatantModeUpdate(byte mode)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByteArray(new byte[] { 0x02, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02 });
+            pak.AddByte(mode);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>RSIDescription is 15 bytes; PacketsUtils.getRSIBytes packs the parts into 13.</summary>
         public const int RsiDescriptionSize = 15;
 

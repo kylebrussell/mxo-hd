@@ -47,6 +47,26 @@ namespace hds
             }
         }
 
+        /// <summary>CombatantMode with a weapon drawn / ready to fight (retail).</summary>
+        public const byte CombatantModeReady = 0x21;
+
+        /// <summary>CombatantMode at rest (retail; also what the spawn sends).</summary>
+        public const byte CombatantModeIdle = 0x22;
+
+        /// <summary>
+        /// RPC 0x3d: the client asks to draw its weapon (01) or stand down (00), e.g. before firing at a
+        /// target. Retail answered with the own-view CombatantMode (0x21 / 0x22); without an answer the
+        /// client gave up (it sent 00 shortly after) and never sent its ranged attack.
+        /// </summary>
+        public void ProcessCombatStance(ref byte[] packet)
+        {
+            byte mode = packet.Length > 0 && packet[0] != 0 ? CombatantModeReady : CombatantModeIdle;
+            client.playerInstance.CombatantMode.setValue(mode);
+            client.messageQueue.addObjectMessage(ServerPackets.BuildCombatantModeUpdate(mode), false);
+            client.FlushQueue();
+            Output.WriteDebugLog($"[COMBAT] Combat stance {(mode == CombatantModeReady ? "ready" : "idle")}");
+        }
+
         public void ProcessChangeTactic(ref byte[] packet)
         {
             PacketReader reader = new PacketReader(packet);

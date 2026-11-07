@@ -13,6 +13,14 @@ public class EquipPacketTests
             StringUtils.bytesToString_NS(ServerPackets.BuildEquippedItemUpdate(2565)).ToLowerInvariant());
     }
 
+    [Theory]
+    [InlineData(0x21, "0200028080808080800221")] // retail answer to 3d 01 (weapon drawn)
+    [InlineData(0x22, "0200028080808080800222")] // at rest
+    public void CombatantModeUpdateMatchesRetail(byte mode, string expected)
+    {
+        Assert.Equal(expected, StringUtils.bytesToString_NS(ServerPackets.BuildCombatantModeUpdate(mode)).ToLowerInvariant());
+    }
+
     [Fact]
     public void ClearingTheWeaponSendsZero()
     {

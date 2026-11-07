@@ -9,6 +9,7 @@ namespace hds
         CLIENT_SPAWN_READY = 0x05,
         CLIENT_CHAT = 0x28,
         CLIENT_WHISPER = 0x29,
+        CLIENT_COMBAT_STANCE = 0x3d, // 01 = draw weapon / ready, 00 = stand down
         CLIENT_CLOSE_COMBAT = 0x40,
         CLIENT_RANGE_COMBAT = 0x41,
         CLIENT_LEAVE_COMBAT = 0x44,
