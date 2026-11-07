@@ -6,6 +6,8 @@ login -> world -> in-game action check takes one command instead of a dozen manu
 .DESCRIPTION
 Steps run in this order, each only when its switch or parameter is given:
   -Relaunch     Kill a running client, wait until the server drops its world session, start the launcher.
+  -NewInstance  Start another launcher next to the running client(s), for a second player.
+  -ClientPid    Drive this client process (from a previous run's clientPid) when several are running.
   -SetPosition / -SetRotation  With -Handle: set the character's saved position/facing before logging in.
   -Login        Log in (username + placeholder password; needs MXO_DEV_ANY_PASSWORD=1 on the server),
                 then CONTINUE, select the character row, SELECT.
@@ -38,7 +40,12 @@ param(
     [ValidatePattern('^[A-Za-z0-9_]+$')][string]$Handle,
     [string]$DbContainer = 'mxo-hd-mysql',
     [switch]$Relaunch,
+    # Drive one client of several (a second player). -NewInstance starts another launcher without
+    # closing the running client(s); the summary's clientPid is the one to pass on later runs.
+    [int]$ClientPid,
+    [switch]$NewInstance,
     [switch]$Login,
+    [switch]$StopAtSelect,
     [switch]$WaitWorld,
     [int]$WorldTimeoutSeconds = 180,
     [double[]]$Teleport,
@@ -46,6 +53,7 @@ param(
     [string[]]$Walk,
     [int[]]$DoubleClick,
     [int[]]$Click,
+    [int[]]$LauncherClick,
     [switch]$CheckVendorWindow,
     [string]$Screenshot
 )
@@ -224,7 +232,10 @@ public static class MxoInput
 $summary = [ordered]@{}
 $ok = $true
 
-function Get-ClientProcess { Get-Process -Name matrix -ErrorAction SilentlyContinue | Select-Object -First 1 }
+function Get-ClientProcess {
+    if ($ClientPid) { return Get-Process -Id $ClientPid -ErrorAction SilentlyContinue }
+    Get-Process -Name matrix -ErrorAction SilentlyContinue | Select-Object -First 1
+}
 
 function Count-LogMatches([string]$pattern) {
     if (-not (Test-Path $ServerLog)) { return 0 }
@@ -251,6 +262,8 @@ function Get-ClientWindow {
 }
 
 # Launcher layout: the window is 500x420 physical pixels; offsets measured from the 7.6005 launcher.
+# A second launcher started while another client runs can come up DPI-scaled (1000x840); these
+# offsets don't fit that one.
 function Click-Launcher([int]$dx, [int]$dy) {
     [MxoInput]::PostClick((Get-ClientWindow), $dx, $dy)
 }
@@ -258,23 +271,35 @@ function Click-Launcher([int]$dx, [int]$dy) {
 function Type-Client([string]$text) { [MxoInput]::PostText((Get-ClientWindow), $text) }
 function Press-Client([byte]$vk) { [MxoInput]::PostKey((Get-ClientWindow), $vk) }
 
-if ($Relaunch) {
-    $before = Count-LogMatches 'Removed inactive Client'
-    $p = Get-ClientProcess
-    if ($p) {
-        Get-Process -Name matrix -ErrorAction SilentlyContinue | Stop-Process
-        $t0 = Get-Date
-        # The server drops a dead world session after ~30 s; there is nothing to wait for if the
-        # killed client never got past the launcher, so cap the wait.
-        while (((Get-Date) - $t0).TotalSeconds -lt 45 -and (Count-LogMatches 'Removed inactive Client') -le $before) { Start-Sleep 2 }
-        $summary.sessionDroppedAfterSeconds = [int]((Get-Date) - $t0).TotalSeconds
+if ($Relaunch -or $NewInstance) {
+    if ($Relaunch) {
+        $before = Count-LogMatches 'Removed inactive Client'
+        $p = Get-ClientProcess
+        if ($p) {
+            # Only the targeted client: with -ClientPid another instance (a second player) keeps running.
+            if ($ClientPid) { $p | Stop-Process } else { Get-Process -Name matrix -ErrorAction SilentlyContinue | Stop-Process }
+            $t0 = Get-Date
+            # The server drops a dead world session after ~30 s; there is nothing to wait for if the
+            # killed client never got past the launcher, so cap the wait.
+            while (((Get-Date) - $t0).TotalSeconds -lt 45 -and (Count-LogMatches 'Removed inactive Client') -le $before) { Start-Sleep 2 }
+            $summary.sessionDroppedAfterSeconds = [int]((Get-Date) - $t0).TotalSeconds
+        }
     }
+    $existing = @(Get-Process -Name matrix -ErrorAction SilentlyContinue | ForEach-Object Id)
     Start-Process -FilePath (Join-Path $ClientDir 'launcher.exe') -ArgumentList '-nopatch', '-noeula' -WorkingDirectory $ClientDir | Out-Null
     $t0 = Get-Date
-    while (-not (Get-ClientProcess) -and ((Get-Date) - $t0).TotalSeconds -lt 30) { Start-Sleep 1 }
+    $new = $null
+    while (-not $new -and ((Get-Date) - $t0).TotalSeconds -lt 30) {
+        Start-Sleep 1
+        $new = Get-Process -Name matrix -ErrorAction SilentlyContinue | Where-Object { $existing -notcontains $_.Id } | Select-Object -First 1
+    }
     Start-Sleep 6
-    $summary.launcherStarted = [bool](Get-ClientProcess)
-    if (-not $summary.launcherStarted) { $ok = $false }
+    $summary.launcherStarted = [bool]$new
+    if ($new) {
+        # Every later step in this run drives the instance just started.
+        $ClientPid = $new.Id
+        $summary.clientPid = $new.Id
+    } else { $ok = $false }
 }
 
 if (($SetPosition -or $SetRotation -ge 0) -and $ok) {
@@ -304,12 +329,19 @@ if ($Login -and $ok) {
     $t0 = Get-Date
     while (((Get-Date) - $t0).TotalSeconds -lt 30 -and (Count-LogMatches "accepted $Username without checking") -le $authBefore) { Start-Sleep 1 }
     $summary.authAccepted = (Count-LogMatches "accepted $Username without checking") -gt $authBefore
-    if (-not $summary.authAccepted) { $ok = $false }
+    # Not a failure yet: the auth line can reach the log late; reaching the margin server settles it.
     # Patch-notes page: Enter acts as CONTINUE. Clicking CONTINUE was unreliable (the embedded web page
     # can swallow the click), and it sits where the next page's SELECT is, so a retry click is unsafe.
     Start-Sleep 8
     Press-Client 0x0D
     Start-Sleep 4
+}
+
+if ($Login -and $ok -and $StopAtSelect) {
+    $summary.stoppedAtSelect = $true   # leave the character list on screen (with -Screenshot to read it)
+    $summary.authAccepted = (Count-LogMatches "accepted $Username without checking") -gt $authBefore
+    if (-not $summary.authAccepted) { $ok = $false }
+} elseif ($Login -and $ok) {
     $rowY = [int](93 + 14.5 * $CharacterRow)   # row 2 (TheNeo for loluser) measured at y=122
     Click-Launcher 229 $rowY
     Start-Sleep 1
@@ -318,6 +350,10 @@ if ($Login -and $ok) {
     $t0 = Get-Date
     while (((Get-Date) - $t0).TotalSeconds -lt 60 -and (Count-LogMatches 'Margin client Connected') -le $marginBefore) { Start-Sleep 1 }
     $summary.reachedMargin = (Count-LogMatches 'Margin client Connected') -gt $marginBefore
+    if ($summary.reachedMargin -and -not $summary.authAccepted) {
+        # The auth line can reach the log after the 30 s wait above; reaching the margin server proves it.
+        $summary.authAccepted = (Count-LogMatches "accepted $Username without checking") -gt $authBefore
+    }
     if (-not $summary.reachedMargin) { $ok = $false }   # still in the launcher: a tool problem, not a stall
 }
 
@@ -376,6 +412,13 @@ if ($DoubleClick -and $ok) {
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # uses the targeted object
     $summary.doubleClicked = $true
     Start-Sleep 4
+}
+
+if ($LauncherClick -and $ok) {
+    if ($LauncherClick.Count -ne 2) { throw '-LauncherClick takes x,y' }
+    Click-Launcher $LauncherClick[0] $LauncherClick[1]
+    $summary.launcherClicked = $true
+    Start-Sleep 1
 }
 
 if ($Click -and $ok) {

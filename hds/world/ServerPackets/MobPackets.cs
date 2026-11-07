@@ -51,13 +51,15 @@ namespace hds
 
         }
 
+        /// <summary>
+        /// Sends the NPC's death to every player who has it spawned (each through their own view of it),
+        /// not only to the killer, so bystanders see it die too.
+        /// </summary>
         public void SendNpcDies(UInt16 viewId, WorldClient client, Mob theMob)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16(viewId, 1);
-            pak.AddByteArray(BuildNpcDeathUpdate());
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            client.FlushQueue();
+            PacketContent death = new PacketContent();
+            death.AddByteArray(BuildNpcDeathUpdate());
+            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(death, theMob);
         }
 
         /// <summary>

@@ -122,6 +122,13 @@ tools/RealClient/Invoke-RealClient.ps1 -Relaunch -Handle TheNeo -SetPosition 111
 
 The server now saves where the player moved, teleported and faced, so `-SetPosition`/`-SetRotation` put the character back at the start the click point was measured from. They update the `characters` row through `docker exec` with the container's own credentials. `-Walk W:2,A:0.5,Q:1` holds movement keys (W/S forward and back, A/D turn, Q/E strafe).
 
+A second client, for a second player, partly works:
+- **Starting it.** `-NewInstance` starts another launcher without closing the running client and reports its `clientPid`. Pass that as `-ClientPid` on later runs; `-Relaunch -ClientPid N` restarts only that client.
+- **Choosing a character.** `-StopAtSelect` leaves the character list on screen so you can read the rows (`loluser2`: 0 TesterArchive in district 5, 1 Trinitys in district 1). `-LauncherClick x,y` clicks the launcher.
+- **Reliability.** The second launcher started once next to an in-game client. Later it exited at once with code 0, even with everything else closed but one client. `-clone` is refused ("deprecated, multiple instances are supported without it").
+- **Sizing.** A second launcher can come up drawn at double size (1000×840), where the fixed launcher offsets miss. A row click then lands on the empty row and opens character creation.
+- **Untested.** Two players in the same place hasn't been seen on screen yet.
+
 Lessons built into it:
 - All keyboard input is posted as window messages to the client's own window, so it works whatever is in front and can never type into another application.
 - Find the client window by title. `Process.MainWindowHandle` can point at a launcher tooltip.

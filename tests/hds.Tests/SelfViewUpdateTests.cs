@@ -156,6 +156,19 @@ public class SelfViewUpdateTests
     }
 
     [Fact]
+    public void ForwardedUpdateIsJustTheStatePart()
+    {
+        // The client's packet carries RPCs after the update; other players must get only the update,
+        // as one view-list entry with nothing after it.
+        byte[] packet = Hex("02 03 02 00 01 0a 00 00 60 dc 47 f0 bf 2d 44 00 a0 c3 c5 00 00 04 01 00 31 01 02 80 c9");
+        Assert.True(SelfViewEntry.TryParse(packet, 4, out SelfViewEntry entry, out _));
+
+        byte[] forwarded = WorldServer.BuildViewUpdate(0x00a1, entry.State.ToForwardedUpdate(packet));
+
+        Assert.Equal("a100010a000060dc47f0bf2d4400a0c3c5", StringUtils.bytesToString_NS(forwarded).ToLowerInvariant());
+    }
+
+    [Fact]
     public void UnknownViewStopsAtTheEndOfThePacket()
     {
         byte[] packet = Hex("02 03 05 00 01 08 00 00 04 01");

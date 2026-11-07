@@ -352,57 +352,46 @@ namespace hds
         /// <param name="data">Packet Stream without ViewID</param>
         /// <param name="charId">from charId</param>
         /// <param name="goId">from GoId</param>
+        /// <summary>
+        /// Forwards a player's own-view update (<c>01 &lt;flags&gt; &lt;fields&gt;</c>) to the players who already
+        /// see that player. Players who don't are left to ViewVisibleThread, which spawns (and deletes) views
+        /// by range and district.
+        /// </summary>
         public void SendViewPacketToAllPlayers(byte[] data,UInt32 charId, UInt32 goId, UInt64 entityId)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
             lock (Clients)
             {
                 foreach (string clientKey in Clients.Keys)
                 {
                     WorldClient client = Clients[clientKey] as WorldClient;
-                    if (client.playerData.getCharID() != charId)
+                    if (client == null || client.playerData.getCharID() == charId)
                     {
-                        #if DEBUG
-                        Output.Write("[ViewThread] Handle View For all Packet for charId : " + charId.ToString());
-                        #endif
-                        // Get or generate a View for the GoID 
-                        ClientView view = client.viewMan.GetViewForEntityAndGo(entityId, goId);
-                        PacketContent viewPacket = new PacketContent();
-
-                        if (view.viewCreated == false)
-                        {
-                            // if view is new , add the viewId at the end (cause its creation)
-                            // Remove the 03 01 00 (as it was generate previosly)
-                            viewPacket.AddByteArray(data);
-                            viewPacket.AddUint16(view.ViewID,1);
-                            viewPacket.AddByte(0x00);
-
-                        }
-                        else
-                        {
-                            // Update View
-                            viewPacket.AddUint16(view.ViewID,1);
-                            viewPacket.AddByteArray(data);
-                            viewPacket.AddByte(0x00);  
-                        }
-
-                        if (view.viewNeedsToBeDeleted)
-                        {
-                            // Delete one View
-                            viewPacket.AddByte(0x01);
-                            viewPacket.AddByte(0x00);
-                            viewPacket.AddByte(0x01); // Comand (Delete)
-                            viewPacket.AddUint16(1,1); // NumViews to Delete
-                            viewPacket.AddUint16(view.ViewID,1);
-                            viewPacket.AddByte(0x00);
-                        }
-
-                        
-                        client.messageQueue.addObjectMessage(viewPacket.ReturnFinalPacket(), false);
-                        client.FlushQueue();
+                        continue;
                     }
+
+                    // This used to create a view for every connected client (any district, any distance) and,
+                    // when the view didn't exist yet, send the movement bytes as if they were a spawn; it also
+                    // added stray 00 bytes after the update and after deletes, which made the client misread the
+                    // rest of the packet.
+                    ClientView view = client.viewMan.FindViewForEntity(entityId);
+                    if (view == null || !view.viewCreated)
+                    {
+                        continue;
+                    }
+
+                    client.messageQueue.addObjectMessage(BuildViewUpdate(view.ViewID, data), false);
+                    client.FlushQueue();
                 }
             }
+        }
+
+        /// <summary>One view-list entry: the view id followed directly by the update.</summary>
+        public static byte[] BuildViewUpdate(UInt16 viewId, byte[] data)
+        {
+            PacketContent viewPacket = new PacketContent();
+            viewPacket.AddUint16(viewId, 1);
+            viewPacket.AddByteArray(data);
+            return viewPacket.ReturnFinalPacket();
         }
 
         public void SendSelfViewUpdate(PacketContent pak, UInt16 viewId, WorldClient client, bool isTimed)
