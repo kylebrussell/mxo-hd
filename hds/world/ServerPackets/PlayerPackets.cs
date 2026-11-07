@@ -89,13 +89,29 @@ namespace hds
 
         public void sendAppeareanceUpdate(WorldClient client, byte[] rsibytes)
         {
+            client.messageQueue.addObjectMessage(BuildAppearanceUpdate(rsibytes), false);
+            client.FlushQueue();
+        }
+
+        /// <summary>RSIDescription is 15 bytes; PacketsUtils.getRSIBytes packs the parts into 13.</summary>
+        public const int RsiDescriptionSize = 15;
+
+        /// <summary>
+        /// Own-view RSIDescription update, as retail sent it: <c>02 00 02 80 01 &lt;15 RSI bytes&gt;</c>
+        /// (group 1, bit 0 = own-view attribute 7). The packed parts are zero-padded to 15 bytes; retail
+        /// values end in zeros too. This used to send the 13 packed bytes under group bytes 80 89, which
+        /// also claim MovementScale and another group after it, so the client read past the update.
+        /// </summary>
+        public static byte[] BuildAppearanceUpdate(byte[] rsibytes)
+        {
+            byte[] rsi = new byte[RsiDescriptionSize];
+            Array.Copy(rsibytes, rsi, Math.Min(rsibytes.Length, RsiDescriptionSize));
+
             PacketContent pak = new PacketContent();
             pak.AddUint16(2,1);
-            pak.AddByteArray(new byte[] {  0x02, 0x80, 0x89 });
-            pak.AddByteArray(rsibytes);
-
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            client.FlushQueue();
+            pak.AddByteArray(new byte[] { 0x02, 0x80, 0x01 });
+            pak.AddByteArray(rsi);
+            return pak.ReturnFinalPacket();
         }
 
         public void sendAttribute(WorldClient client, UInt16 attributeValue, byte type)

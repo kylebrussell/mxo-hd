@@ -41,7 +41,12 @@ namespace hds
             content.append(messageBlock);
 
             SequencedMessage message = new SequencedMessage(content.getBytes());
-            RPCMessagesQueue.Add(message);
+            // Same lock as the flush and ack code: the flush thread enumerates this list while packet
+            // handlers add to it, and an unlocked Add crashed the server ("Collection was modified").
+            lock (RPCMessagesQueue.SyncRoot)
+            {
+                RPCMessagesQueue.Add(message);
+            }
         }
 
         public void addObjectMessage(byte[]messageBlock,bool isTimed)

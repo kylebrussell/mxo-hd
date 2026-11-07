@@ -144,6 +144,21 @@ Server bugs found on the way:
 - **World: the server crashed on the UDP session start.** `MyWorldDbAccess.SetPlayerValues` read integer columns with `GetDecimal`, which MySqlConnector rejects (`InvalidCastException`). All `GetDecimal` reads now go through `Convert.ToDecimal(dr.GetValue(n))`.
 - **Auth: the plaintext password was logged.** The decrypted login blob, which contains the plaintext password, went to the console and `ServerLog.txt`. Only the MD5 part is logged now.
 
+### Clothing (verified 2026-11-07 with the real client)
+
+**What works:** with the inventory open (`I`), double-clicking clothing in the bags equips it, and double-clicking it on the paper doll takes it off.
+- **Equip:** the client sends RPC `0x63` `<from slot> <to slot>`. The server moves the item into the wear slot for its type (`0x61` hat … `0x68` shoes), moves anything already worn there to the first free bag slot, and updates the look.
+- **Unequip:** the client sends RPC `0x64` `<slot> 00`.
+
+**Appearance update fixed.** It was `02 00 02 80 89 <13 bytes>`. The group bytes `80 89` also claim MovementScale and another group after it. The packed RSI is only 13 bytes, while RSIDescription is 15, so the client read past the update. After taking off a coat the hat vanished from the character, although the hat was still worn. Retail sends `02 00 02 80 01 <15 bytes>`: RSIDescription alone, zero-padded. The server now does the same (`ServerPackets.BuildAppearanceUpdate`), and equip and unequip keep the rest of the outfit.
+
+**Not done yet:**
+- **Other players:** the update only goes to the wearer's own view, so others don't see the change.
+- **Weapons:** not tried.
+- **TheNeo's saved data:** glasses are 0 although glasses are worn, and pants and shoes are 0.
+
+**Server crash fixed on the way:** `MessageQueue.addRpcMessage` added to the RPC list without the lock that the flush thread holds while enumerating it. A login crashed the server with "Collection was modified".
+
 ### Movement (verified 2026-11-07 with the real client)
 
 The client reports its own movement in protocol 03, view 2: `02 03 02 00 <sub-view> … 00 00`, often followed by an RPC list (`04 01 …`) in the same packet.

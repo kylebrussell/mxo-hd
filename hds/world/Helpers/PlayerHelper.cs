@@ -131,13 +131,7 @@ namespace hds
                 current[pos] = value;
                 Store.currentClient.playerData.setRsiValues(current);
                 byte[] rsiData = PacketsUtils.getRSIBytes(current);
-
-                DynamicArray din = new DynamicArray();
-                byte[] rsiChangeHeader = {0x02, 0x00, 0x02, 0x80, 0x89};
-                din.append(rsiChangeHeader);
-                din.append(rsiData);
-
-                return din.getBytes();
+                return ServerPackets.BuildAppearanceUpdate(rsiData);
             }
             else
             {
