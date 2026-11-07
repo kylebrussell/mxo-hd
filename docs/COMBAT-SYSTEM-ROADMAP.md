@@ -33,11 +33,13 @@ What was wrong:
   - The retail death I first copied (`04 c2 …`) came from a player in PvP, which uses another layout.
   - Adding a guessed movement part (`02 01 0d`) made the client reject the update.
 
+Later the same day:
+- **Death reaches everyone.** The NPC death now goes to every player who has the NPC spawned, like the health updates already did.
+- **Corpse window is not reliable.** It opened in 3 of 4 kills. The one miss had a byte-identical death and loot sequence, so it varies on the client side.
+
 Still open:
 - **No fall animation.** In the test the mobs stood on top of each other, so a fall couldn't be seen.
-- **Death and health only reach the attacker.** Other players don't see them.
 - **Combatant order.** In the init packet retail lists the attacker first; ours lists the target first.
-- **Forwarding code.** `WorldServer.SendViewPacketToAllPlayers` still writes the extra `00` after a deleted view.
 
 To repeat the check, start the server with `MXO_MOB_WANDER=0` so the test mobs stay on their spawn point, then:
 ```

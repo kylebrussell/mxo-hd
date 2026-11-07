@@ -46,12 +46,9 @@ namespace hds
 			{
 				byte[] rest = new byte[Math.Max(0, buffer.Length - _offset)];
 				ArrayUtils.copy(buffer, _offset, rest, 0, rest.Length);
+				// Not forwarded: without knowing where the update ends, the other players would get the rest of
+				// this packet (including the client's RPCs) as view data.
 				Output.WriteClientViewRequestLog("[03] Self view not parsed (" + failure + "): " + StringUtils.bytesToString_NS(rest));
-				if (rest.Length > 0 && (rest[0] & SelfViewEntry.PartState) != 0)
-				{
-					// Still let the other players see it, as before this parser knew the layout.
-					ForwardStateToOthers(rest);
-				}
 				return buffer.Length;
 			}
 
@@ -74,14 +71,9 @@ namespace hds
 					Position.setValue(NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z));
 				}
 
-				// Forward "01 <flags> <fields>" followed by the 00 00 that ends a client view list (the shape
-				// the view forwarding was written against). This used to copy to the end of the packet,
-				// which also forwarded any RPCs the client sent in the same packet.
-				int length = state.End - state.Start;
-				byte[] stateData = new byte[1 + length + 2];
-				stateData[0] = SelfViewEntry.PartState;
-				ArrayUtils.copy(buffer, state.Start, stateData, 1, length);
-				ForwardStateToOthers(stateData);
+				// Other players see this player through a view of their own; the update goes there unchanged.
+				// This used to copy to the end of the packet, which also forwarded the client's RPCs.
+				ForwardStateToOthers(state.ToForwardedUpdate(buffer));
 			}
 
 			if (entry.LastName != null)

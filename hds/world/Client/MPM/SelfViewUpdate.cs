@@ -87,6 +87,18 @@ namespace hds
             return true;
         }
 
+        /// <summary>
+        /// The update as other players' views receive it: <c>01 &lt;flags&gt; &lt;fields&gt;</c>, the same layout
+        /// (retail entries for other players look like <c>&lt;view&gt; 01 0a 3e &lt;x y z&gt;</c>).
+        /// </summary>
+        public byte[] ToForwardedUpdate(byte[] buffer)
+        {
+            byte[] update = new byte[1 + End - Start];
+            update[0] = SelfViewEntry.PartState;
+            Array.Copy(buffer, Start, update, 1, End - Start);
+            return update;
+        }
+
         private static float ReadSingle(byte[] buffer, int pos)
         {
             byte[] value = { buffer[pos], buffer[pos + 1], buffer[pos + 2], buffer[pos + 3] };
