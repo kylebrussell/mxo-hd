@@ -198,7 +198,34 @@ namespace hds
                 {
                     objective.itemId = StringUtils.hexStringToBytes(item);
                 }
+                if (ushort.TryParse(Attr(entry.Value, "idNpc"), out ushort objectiveNpc)) objective.npcId = objectiveNpc;
                 phase.missionObjectives.Add(objective);
+            }
+
+            // <npcN type="FRIENDLY|HOSTILE" x y z idNpc handle rsi level maxHP />; positions use the same units as
+            // ?gotopos (world units / 100).
+            foreach (XmlNode child in dataNode.ChildNodes)
+            {
+                if (child.NodeType != XmlNodeType.Element || !child.Name.StartsWith("npc") ||
+                    !int.TryParse(child.Name.Substring("npc".Length), out _))
+                {
+                    continue;
+                }
+
+                MissionNpc npc = new MissionNpc();
+                ushort.TryParse(Attr(child, "idNpc"), out npc.id);
+                npc.handle = Attr(child, "handle") ?? "NPC";
+                npc.friendly = string.Equals(Attr(child, "type"), "FRIENDLY", StringComparison.OrdinalIgnoreCase);
+                double.TryParse(Attr(child, "x"), NumberStyles.Float, CultureInfo.InvariantCulture, out double nx);
+                double.TryParse(Attr(child, "y"), NumberStyles.Float, CultureInfo.InvariantCulture, out double ny);
+                double.TryParse(Attr(child, "z"), NumberStyles.Float, CultureInfo.InvariantCulture, out double nz);
+                npc.x = nx * 100;
+                npc.y = ny * 100;
+                npc.z = nz * 100;
+                npc.rsiHex = Attr(child, "rsi") ?? "";
+                if (ushort.TryParse(Attr(child, "level"), out ushort level)) npc.level = level;
+                if (ushort.TryParse(Attr(child, "maxHP"), out ushort maxHp)) npc.maxHealth = maxHp;
+                mission.npcs.Add(npc);
             }
 
             mission.phases.Add(phase);

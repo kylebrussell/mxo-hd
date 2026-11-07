@@ -216,7 +216,7 @@ namespace hds
             Store.dbManager.WorldDbHandler.SaveExperience(Store.currentClient, newExperienceValue);
 
             ServerPackets packets = new ServerPackets();
-            packets.sendEXPCurrent(Store.currentClient, (UInt32)newExperienceValue);
+            packets.SendEXPGain(Store.currentClient, expToIncrement);
         }
 
         public void ProcessSetBackgroundRequest(ref byte[] packetData)
@@ -257,6 +257,14 @@ namespace hds
 
             ServerPackets packet = new ServerPackets();
             packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
+
+            UInt32 missionItem = Store.currentClient.playerData.pendingLootItem;
+            if (missionItem != 0)
+            {
+                Store.currentClient.playerData.pendingLootItem = 0;
+                MissionRuntime.OnMissionItemLooted(Store.currentClient, missionItem);
+            }
+
             packet.SendLootAccepted(Store.currentClient);
         }
 

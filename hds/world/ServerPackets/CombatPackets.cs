@@ -70,10 +70,11 @@ namespace hds
             pak.AddUint32(1, 1);              // Attacker slot/round (1)
             pak.AddUint32(3, 1);              // Combat type (3 = melee?)
 
-            // Combatant IDs
-            pak.AddUint32(targetViewSpawnId, 1);                  // Target view+spawn ID
+            // Combatant IDs. Retail (player-started fight): 02 00 44 00 | 2f 00 22 00 = attacker (player, view 2)
+            // first, then the defender. This used to send the target first, telling the client the NPC attacked.
             pak.AddUint16(2, 1);                                   // Player view ID
             pak.AddUint16(client.playerData.selfSpawnIdCounter, 1); // Player spawn ID
+            pak.AddUint32(targetViewSpawnId, 1);                  // Target view+spawn ID
             pak.AddHexBytes("010102");                             // State flags
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
@@ -167,13 +168,107 @@ namespace hds
         /// </summary>
         /// <param name="client">The player whose combat is ending</param>
         /// <param name="combatViewId">View ID of the ILCombatHandler to delete</param>
-        public void SendCombatEnd(WorldClient client, UInt16 combatViewId)
+        public void SendCombatEnd(WorldClient client, UInt16 combatViewId, UInt32 targetViewSpawnId,
+            byte[] combatCentre = null, UInt32 rounds = 0)
         {
-            // Remove combat mode from player
-            SendLeaveCombatMode(client);
+            // Retail releases the attacker with a final record on the combat view, RPC 46 <target> 00, an own-view
+            // position handoff and then the delete of the combat view; the out-of-combat reset follows ~10 s
+            // later. Sending that reset at once and nothing else left the client locked in its fight stance.
+            if (combatCentre != null && combatCentre.Length == 24)
+            {
+                PacketContent final = new PacketContent();
+                final.AddUint16(combatViewId, 1);
+                final.AddByteArray(BuildCombatViewFinalRecord(combatCentre, rounds));
+                final.AddUint16(combatViewId, 1);
+                final.AddByteArray(BuildCombatViewAttackerPosition(client.playerInstance.Position.getValue()));
+                client.messageQueue.addObjectMessage(final.ReturnFinalPacket(), false);
+            }
 
-            // Delete the combat handler view
-            sendDeleteViewPacket(client, combatViewId);
+            client.messageQueue.addRpcMessage(BuildCombatTargetFlag(targetViewSpawnId, 0x00));
+
+            // Delete the combat view and hand the player back their position in the same packet, as retail did
+            // (01 00 01 01 00 <view> followed by 02 00 01 0c <yaw> <pos> <time>).
+            PacketContent delete = new PacketContent();
+            delete.AddUint16(1, 1);
+            delete.AddByte(0x01);
+            delete.AddUint16(1, 1);
+            delete.AddUint16(combatViewId, 1);
+            client.messageQueue.addObjectMessage(delete.ReturnFinalPacket(), false);
+
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            byte yaw = client.playerInstance.YawInterval.getValue()[0];
+            UInt32 simMs = (UInt32)Math.Round(TimeUtils.GetSimTimeSeconds() * 1000.0);
+            client.messageQueue.addObjectMessage(BuildSelfPositionHandoff(yaw, (float)x, (float)y, (float)z, simMs), false);
+            client.FlushQueue();
+
+            int generation = client.playerData.combatGeneration;
+            System.Threading.Timer timer = null;
+            timer = new System.Threading.Timer(_ =>
+            {
+                timer?.Dispose();
+                if (client.playerData.combatGeneration == generation)
+                {
+                    SendLeaveCombatMode(client);
+                    client.FlushQueue();
+                }
+            }, null, LeaveCombatDelayMs, System.Threading.Timeout.Infinite);
+        }
+
+        /// <summary>
+        /// Combat view (ILCombatHandler) part 01 closing the fight. Retail ticks were
+        /// <c>01 &lt;centre f64×3&gt; &lt;counter u32&gt; 00000000 00</c> (no round entries); the last one set flags bit 31,
+        /// added a u32 result of 2 and carried the finishing round entry. We send it without the entry.
+        /// </summary>
+        public static byte[] BuildCombatViewFinalRecord(byte[] centre, UInt32 counter)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x01);
+            pak.AddByteArray(centre);
+            pak.AddUint32(counter, 1);
+            pak.AddUint32(0x80000000, 1);
+            pak.AddUint32(2, 1);
+            pak.AddByte(0x00); // round entries
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>Combat view part 02: <c>02 01 &lt;attacker position f64×3&gt;</c>, sent right after the final record.</summary>
+        public static byte[] BuildCombatViewAttackerPosition(byte[] position)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("0201");
+            pak.AddByteArray(position);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>Retail cleared the combat stance and flags about 10 s after the kill (11 s in another capture).</summary>
+        public const int LeaveCombatDelayMs = 10000;
+
+        /// <summary>
+        /// RPC 46 &lt;target view u16&gt; &lt;spawn u16&gt; &lt;flag&gt;: retail bracketed every close-combat fight with
+        /// flag 01 at the start and 00 when it ended (46 2f 00 22 00 01 ... 46 2f 00 22 00 00).
+        /// </summary>
+        public static byte[] BuildCombatTargetFlag(UInt32 targetViewSpawnId, byte flag)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x46);
+            pak.AddUint32(targetViewSpawnId, 1);
+            pak.AddByte(flag);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Own-view state part with yaw (flag 0x04) and position (flag 0x08) as f32, then the sim time in ms:
+        /// retail 02 00 01 0c 66 &lt;x y z f32&gt; &lt;time u32&gt; just before deleting the combat view.
+        /// </summary>
+        public static byte[] BuildSelfPositionHandoff(byte yaw, float x, float y, float z, UInt32 simMs)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("0200010c");
+            pak.AddByte(yaw);
+            pak.AddFloatLtVector3f(x, y, z);
+            pak.AddUint32(simMs, 1);
+            return pak.ReturnFinalPacket();
         }
     }
 }

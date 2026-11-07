@@ -85,16 +85,25 @@ namespace hds
             UInt32 crc32fromPacket = reader.ReadUInt32(1);
             UInt16 decryptionLen = (ushort) ((reader.ReadUInt16(1)) - 4 + 10);
             reader.SetOffsetOverrideValue(4);
-            
+
             byte[] crc32FromPacketBytes = NumericalUtils.uint32ToByteArray(crc32fromPacket, 1); // ToDo: Remove when working
-            
+
+            // A corrupt or foreign datagram can declare a length past the end of the buffer; reading it used to
+            // throw inside the receive callback and take the whole server down.
+            if (decryptionLen > decryptedPacket.Length - 4)
+            {
+                Output.WriteLine("Dropping packet: declared length " + decryptionLen + " exceeds " + (decryptedPacket.Length - 4) + " bytes");
+                return null;
+            }
+
             // Verify CRC32 Data part
             byte[] packetCheckData = reader.ReadBytes(decryptionLen);
             UInt32 crc32plainDataToCompare = NumericalUtils.ByteArrayToUint32(crc32.checksumB(packetCheckData,1),1);
 
             if (crc32plainDataToCompare != crc32fromPacket)
             {
-                Output.WriteLine("Oh oh, CRC didnt matched in this packet (From packet: " + StringUtils.bytesToString(crc32FromPacketBytes) +" generated: " + StringUtils.bytesToString(crc32.checksumB(packetCheckData,1)));
+                Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crc32FromPacketBytes) +" generated: " + StringUtils.bytesToString(crc32.checksumB(packetCheckData,1)) + ")");
+                return null;
             }
             
             // as we read the whole packet for verifiy we reset the offset to read the other things

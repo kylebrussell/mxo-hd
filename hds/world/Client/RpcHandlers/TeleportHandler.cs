@@ -109,11 +109,113 @@ namespace hds
             packets.sendJackoutEffect(Store.currentClient);
         }
 
-        public void processGameFinish()
+        /// <summary>80 fe &lt;mode&gt;: 01 confirms a death respawn (go to the Loading Area), 00 quits.</summary>
+        public void processGameFinish(ref byte[] packet)
         {
-            Store.dbManager.WorldDbHandler.SetOnlineStatus(Store.currentClient.playerData.getCharID(), 0);
+            WorldClient client = Store.currentClient;
+            if (packet.Length > 0 && packet[0] == 0x01 && client.playerData.respawnPending)
+            {
+                RespawnAtNearestHardline(client);
+                return;
+            }
+
+            Store.dbManager.WorldDbHandler.SetOnlineStatus(client.playerData.getCharID(), 0);
             ServerPackets packets = new ServerPackets();
-            packets.sendExitGame(Store.currentClient);
+            packets.sendExitGame(client);
+        }
+
+        /// <summary>
+        /// 81 4c from a dead player. Retail (three deaths in the afterwhoruneo/morpheuzzz captures) healed the
+        /// player in place and answered 80 fd 00 00 00 00 01 01; the client then confirms with 80 fe 01.
+        /// </summary>
+        public void ProcessRespawnRequest()
+        {
+            WorldClient client = Store.currentClient;
+            if (!client.playerData.isDead)
+            {
+                Output.WriteDebugLog("[DEATH] Respawn request from a living player ignored");
+                return;
+            }
+
+            UInt16 maxHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+            client.playerInstance.Health.setValue(maxHealth);
+            client.playerData.respawnPending = true;
+
+            client.messageQueue.addObjectMessage(ServerPackets.BuildSelfRespawnHeal(maxHealth), false);
+            client.messageQueue.addRpcMessage(ServerPackets.BuildRespawnToLoadingArea());
+            client.FlushQueue();
+            Output.WriteDebugLog("[DEATH] Respawn: healed to " + maxHealth + ", sending the player to the Loading Area");
+        }
+
+        /// <summary>
+        /// Retail sent the dead player to the Loading Area and let them pick a hardline there (80 ff), but the
+        /// client shows no hardline picker in our LA yet, so the player reconstructs at the hardline nearest to
+        /// where they died, through the same world reset (81 07) a hardline teleport uses.
+        /// </summary>
+        public static void RespawnAtNearestHardline(WorldClient client)
+        {
+            client.playerData.respawnPending = false;
+            client.playerData.isDead = false;
+            client.playerInstance.IsDead.setValue(false);
+
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            UInt16 district = (UInt16)client.playerData.getDistrictId();
+            UInt16 hardline = Store.dbManager.WorldDbHandler.GetNearestHardline(district, x, z);
+            Output.WriteDebugLog("[DEATH] Reconstructing at hardline " + hardline + " in district " + district);
+
+            if (hardline != 0)
+            {
+                Store.dbManager.WorldDbHandler.updateLocationByHL(district, hardline);
+            }
+
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_LOAD_RPC_RESET, 0);
+            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            client.FlushQueue();
+        }
+
+        /// <summary>
+        /// Moves the player into the Loading Area (la.metr) through the usual world reset (81 07 → client 81 08
+        /// → 06 load world). There the client asks for hardline status (6c) and picks one with 80 ff.
+        /// </summary>
+        public static void GoToLoadingArea(WorldClient client)
+        {
+            client.playerData.respawnPending = false;
+            client.playerData.isDead = false;
+            client.playerInstance.IsDead.setValue(false);
+            client.playerData.setDistrictId((uint)MxOLocations.LA);
+            client.playerData.setDistrict("la");
+            // Retail's self-spawn in the Loading Area put the player at (0, 95, 0); the death spot is far outside
+            // the LA geometry and left the client floating in an empty sky.
+            client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 95, 0));
+
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_LOAD_RPC_RESET, 0);
+            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            client.FlushQueue();
+            Output.WriteDebugLog("[DEATH] Loading the Loading Area");
+        }
+
+        /// <summary>80 ff &lt;district u32&gt; &lt;hardline u32&gt;: the player picked a hardline in the Loading Area.</summary>
+        public void ProcessLoadingAreaHardline(ref byte[] packet)
+        {
+            if (packet.Length < 8)
+            {
+                return;
+            }
+
+            PacketReader reader = new PacketReader(packet);
+            UInt16 district = (UInt16)reader.ReadUInt32(1);
+            UInt16 hardline = (UInt16)reader.ReadUInt32(1);
+            Output.WriteDebugLog("[DEATH] Leaving the Loading Area for district " + district + " hardline " + hardline);
+
+            Store.dbManager.WorldDbHandler.updateLocationByHL(district, hardline);
+
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_LOAD_RPC_RESET, 0);
+            Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            Store.currentClient.FlushQueue();
         }
     }
 }

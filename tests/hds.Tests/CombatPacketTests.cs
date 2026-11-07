@@ -57,6 +57,41 @@ public class CombatPacketTests
         ServerPackets.BuildHyperSpeedUpdate(innerStrength, counter);
 
     [Fact]
+    public void CombatTargetFlagMatchesRetail()
+    {
+        // Retail: 46 2f 00 22 00 01 at the start of a fight and 46 2f 00 22 00 00 at the kill
+        // (target view 0x2f, spawn 0x22; our packed id is spawn << 16 | view).
+        Assert.Equal("462f00220001", Hex(ServerPackets.BuildCombatTargetFlag(0x0022002f, 0x01)));
+        Assert.Equal("462f00220000", Hex(ServerPackets.BuildCombatTargetFlag(0x0022002f, 0x00)));
+    }
+
+    [Fact]
+    public void PositionHandoffMatchesRetailLayout()
+    {
+        // Retail: 02 00 01 0c 66 <x y z f32> <time u32>
+        Assert.Equal("0200010c" + "66" + "0000803f" + "00000040" + "00004040" + "78563412",
+            Hex(ServerPackets.BuildSelfPositionHandoff(0x66, 1f, 2f, 3f, 0x12345678)));
+    }
+
+    [Fact]
+    public void CloseCombatEchoMatchesRetail()
+    {
+        // Client 40 2f 00 22 00 01 6b, server 40 2f 00 22 00 00 6b
+        byte[] request = { 0x2f, 0x00, 0x22, 0x00, 0x01, 0x6b };
+        Assert.Equal("402f002200006b", Hex(CombatHandler.BuildCloseCombatEcho(request)));
+    }
+
+    [Fact]
+    public void CombatViewFinalRecordFollowsTheRetailHeader()
+    {
+        // Retail final record: 01 <centre> 0d 00 00 00 | 00 00 00 80 | 02 00 00 00 | <entries>
+        byte[] centre = new byte[24];
+        centre[7] = 0x40;
+        Assert.Equal("01" + "0000000000000040" + new string('0', 32) + "0d000000" + "00000080" + "02000000" + "00",
+            Hex(ServerPackets.BuildCombatViewFinalRecord(centre, 0x0d)));
+    }
+
+    [Fact]
     public void NpcDeathMatchesRetail()
     {
         // Parts 01 and 04: UseCount=2, StopFollowActiveTracker=0, IsDead=1, Health=0,

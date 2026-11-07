@@ -446,6 +446,27 @@ namespace hds.databases{
             
         }
 
+        public UInt16 GetNearestHardline(UInt16 district, double x, double z)
+        {
+	        UInt16 nearest = 0;
+	        OpenConnection();
+	        queryExecuter = conn.CreateCommand();
+	        queryExecuter.CommandText = "SELECT HardLineId FROM data_hardlines WHERE DistrictId = '" + district +
+	                                    "' ORDER BY (X - (" + x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+	                                    "))*(X - (" + x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+	                                    ")) + (Z - (" + z.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+	                                    "))*(Z - (" + z.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")) LIMIT 1";
+	        dr = queryExecuter.ExecuteReader();
+	        if (dr.Read())
+	        {
+		        nearest = Convert.ToUInt16(dr.GetValue(0));
+	        }
+
+	        dr.Close();
+	        CloseConnection();
+	        return nearest;
+        }
+
         public List<UInt16> GetHardlineIdsForDistrict(UInt16 district)
         {
 	        List<UInt16> ids = new List<UInt16>();
@@ -728,12 +749,16 @@ namespace hds.databases{
 			
 			int rotation =client.playerInstance.YawInterval.getValue()[0];
 
-			string positionQuery = "update characters set x =" + x + " ,y=" + y + " ,z=" + z + " , rotation=" +
-			                       rotation + ", districtId=" + client.playerData.getDistrictId() + " where handle='" +
-			                       handle + "' ";
-			ExecuteNonResultQuery(positionQuery);
-			Output.WriteLine(StringUtils.bytesToString(StringUtils.stringToBytes(positionQuery)));
-			Output.writeToLogForConsole("[WORLD DB ACCESS ]" + positionQuery);
+			// The Loading Area (location 0x385) is a waiting room between death and a hardline: it doesn't fit the
+			// tinyint districtId column and isn't a place to log back in to, so keep the last real location.
+			if (!client.playerData.DistrictIsLA())
+			{
+				string positionQuery = "update characters set x =" + x + " ,y=" + y + " ,z=" + z + " , rotation=" +
+				                       rotation + ", districtId=" + client.playerData.getDistrictId() + " where handle='" +
+				                       handle + "' ";
+				ExecuteNonResultQuery(positionQuery);
+				Output.writeToLogForConsole("[WORLD DB ACCESS ]" + positionQuery);
+			}
 
 			string rsiQuery = "update rsivalues set sex='" + rsiValues[0] + "',body='" + rsiValues[1] + "',hat='" +
 			                  rsiValues[2] + "',face='" + rsiValues[3] + "',shirt='" + rsiValues[4] + "',coat='" +

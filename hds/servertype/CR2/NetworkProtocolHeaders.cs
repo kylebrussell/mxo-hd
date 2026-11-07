@@ -32,7 +32,9 @@ namespace hds
         // Hardline
         CLIENT_HARDLINE_STATUS_REQUEST = 0x6c,
         CLIENT_HARDLINE_EXIT_LA_CONFIRM = 0xfc,
-        CLIENT_EXIT_GAME_FINISH = 0xfe,
+        CLIENT_EXIT_GAME_FINISH = 0xfe,          // 80 fe <mode>: 00 = quit, 01 = go to the Loading Area after death
+        CLIENT_LA_SELECT_HARDLINE = 0xff,        // 80 ff <district u32> <hardline u32>: leave the Loading Area
+        CLIENT_RESPAWN_REQUEST = 0x14c,          // 81 4c (no body): the dead player asks to respawn
 
         CLIENT_HANDLE_MISSION_INVITE = 0x6f,
 

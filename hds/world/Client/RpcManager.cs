@@ -138,8 +138,16 @@ namespace hds{
 		            new TeleportHandler().processHardlineExitConfirm(ref rpcData);
 		            break;
 			    case (int)RPCRequestHeader.CLIENT_EXIT_GAME_FINISH:
-				    new TeleportHandler().processGameFinish();
+				    new TeleportHandler().processGameFinish(ref rpcData);
 				    break;
+
+		        case (int) RPCRequestHeader.CLIENT_RESPAWN_REQUEST:
+		            new TeleportHandler().ProcessRespawnRequest();
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_LA_SELECT_HARDLINE:
+		            new TeleportHandler().ProcessLoadingAreaHardline(ref rpcData);
+		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_READY_WORLDCHANGE:
 		            new TeleportHandler().processTeleportReset(ref rpcData);

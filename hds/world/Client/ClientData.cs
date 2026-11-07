@@ -59,6 +59,19 @@ namespace hds
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
 
+		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
+		public int combatGeneration = 0;
+
+		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
+		public bool isDead = false;
+		public bool respawnPending = false;
+
+		// Running mission: which objective is next, the NPCs it spawned, and the inventory slot of its item
+		public int missionObjectiveIndex = 0;
+		public int missionItemSlot = -1;
+		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
+		public UInt32 pendingLootItem = 0;
+
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
 

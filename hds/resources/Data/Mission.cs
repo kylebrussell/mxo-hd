@@ -17,6 +17,19 @@ namespace hds
 
         public DIFFICULT missionDifficult = DIFFICULT.EASY;
         public MISSION_LENGTH missionLength = MISSION_LENGTH.SHORT;
-        public List<MissionPhase> phases = new List<MissionPhase>(); 
+        public List<MissionPhase> phases = new List<MissionPhase>();
+        public List<MissionNpc> npcs = new List<MissionNpc>();
+    }
+
+    /// <summary>An NPC a mission spawns when accepted. Position is in world units.</summary>
+    public class MissionNpc
+    {
+        public ushort id;
+        public string handle;
+        public bool friendly;
+        public double x, y, z;
+        public string rsiHex;
+        public ushort level = 1;
+        public ushort maxHealth = 500;
     }
 }

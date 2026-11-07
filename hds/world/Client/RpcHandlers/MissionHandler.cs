@@ -44,6 +44,9 @@ namespace hds
             {
                 pak.SendSetMissionObjective((ushort)i, 0, objectives[i].description, Store.currentClient);
             }
+
+            // Spawns the mission's NPCs and points the waypoint at the first objective's NPC.
+            MissionRuntime.Start(Store.currentClient, mission);
             Store.currentClient.FlushQueue();
             Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "' with " + objectives.Count + " objectives");
         }
@@ -100,7 +103,7 @@ namespace hds
 
         public void processAbortMission(ref byte[] packet)
         {
-            Store.currentClient.playerData.activeMission = null;
+            MissionRuntime.End(Store.currentClient);
             ServerPackets pak = new ServerPackets();
             pak.SendMissionAbort(Store.currentClient);
         }

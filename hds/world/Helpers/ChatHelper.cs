@@ -160,6 +160,12 @@ namespace hds
                     pak.sendSystemChatMessage(Store.currentClient, "Teleported!", "BROADCAST");
                 }
 
+                if (command.Equals("?die"))
+                {
+                    // Dev command: run the player death path without needing a mob strong enough to win.
+                    CombatHandler.HandlePlayerDeath(Store.currentClient);
+                }
+
                 if (command.Equals("?rsi") && commands.Length == 3)
                 {
                     //parse the rsi part and value
