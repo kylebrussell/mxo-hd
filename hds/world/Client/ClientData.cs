@@ -32,7 +32,8 @@ namespace hds
 		public List<Mission> currentMissionList;
 		
 		private float clientSimTime;
-        public long lastSimTimeUpdate = 0; // Timer
+        public long lastSimTimeUpdate = 0; // 0 until the first sim-time stamped packet went out
+        public float lastSimTimeSeconds = 0; // sim time (seconds) stamped on the last timed packet
         private bool UDPSessionEstablished;
 
         public UInt16 currentSelectedTargetViewId = 2;
