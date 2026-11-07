@@ -158,6 +158,45 @@ namespace hds
             client.messageQueue.addRpcMessage(message);
         }
 
+        /// <summary>
+        /// Own view at death, retail (F1 pvp death): 02 00 02 80 80 80 c1 01 00 00 80 80 01 00 00 00 01 =
+        /// IsDead (own-view attribute 21) = 1, Health = 0, ConditionStateFlags = 0x01000000.
+        /// </summary>
+        public static byte[] BuildSelfDeathUpdate()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("020002" + "808080c1" + "01" + "0000" + "8080" + "01" + "00000001");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>2e: the death system message (string id 0x60000092), byte-identical in all three retail deaths.</summary>
+        public static byte[] BuildDeathMessage()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("2e67" + "0000000000000000000000" + "92000060" + "00000000000000000000000000000000000000");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>Own view on respawn: Health = max and ConditionStateFlags cleared (02 00 02 80 80 80 c0 &lt;hp&gt; 80 80 01 00000000).</summary>
+        public static byte[] BuildSelfRespawnHeal(UInt16 maxHealth)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("020002808080c0");
+            pak.AddUint16(maxHealth, 1);
+            pak.AddHexBytes("8080" + "01" + "00000000");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>80 fd 00 00 00 00 01 01: the death variant of the jack-out finish (00 00 = quit).</summary>
+        public static byte[] BuildRespawnToLoadingArea()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_JACKOUT_FINISH, 0);
+            pak.AddHexBytes("000000000101");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>80 e5: the player's absolute experience, sent while loading the world.</summary>
         public void sendEXPCurrent(WorldClient client, UInt32 exp)
         {
             PacketContent pak = new PacketContent();
@@ -165,13 +204,25 @@ namespace hds
             pak.AddUint32(exp, 1);
             pak.AddHexBytes("00000000");
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-            
-            PacketContent pakAnimation = new PacketContent();
-            pakAnimation.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_EXP_ANIM, 0);
-            pakAnimation.AddUint32(exp, 1);
-            pakAnimation.AddByte(0x01); // Gain Type
-            pakAnimation.AddHexBytes("000000");
-            client.messageQueue.addRpcMessage(pakAnimation.ReturnFinalPacket());
+        }
+
+        /// <summary>
+        /// 80 e6 &lt;gain u32&gt; 01 00 00 00: an experience gain; the client adds it and shows "You gained N
+        /// experience". Retail after a 391-EXP kill: 80 e6 87 01 00 00 01 00 00 00. This used to carry the
+        /// player's total (also at login), so every kill announced the whole total as gained.
+        /// </summary>
+        public static byte[] BuildEXPGain(UInt32 gain)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_EXP_ANIM, 0);
+            pak.AddUint32(gain, 1);
+            pak.AddHexBytes("01000000");
+            return pak.ReturnFinalPacket();
+        }
+
+        public void SendEXPGain(WorldClient client, UInt32 gain)
+        {
+            client.messageQueue.addRpcMessage(BuildEXPGain(gain));
         }
 
         /// <summary>Reason codes the retail server put on 80 e7 / 80 e4 cash messages.</summary>

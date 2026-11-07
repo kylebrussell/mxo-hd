@@ -33,6 +33,11 @@ namespace hds
         private bool is_spawned = true;
         public bool isUpdateable = false;
 
+        // Friendly NPCs are spawned as non-enemies (no combat offered); mission NPCs remember their mission id
+        public bool isFriendly = false;
+        public ushort missionNpcId = 0;
+        public ushort missionInstance = 0;
+
         // Combat tracking - which player is this mob fighting
         private WorldClient combatTarget = null;
         private UInt16 mobHitCounter = 0;
@@ -298,6 +303,29 @@ namespace hds
             themob.IsDead.setValue(false);
             themob.IsEnemy.setValue(true);
             themob.IsFriendly.setValue(false);
+
+            if (isFriendly)
+            {
+                if (missionInstance != 0)
+                {
+                    // Retail talkable mission NPCs carry the mission's key: 00 <instance u16> 02 (Regulus: 00 48 00 02).
+                    // Hostile mission NPCs don't get it: with it the client stayed locked in close combat after the kill.
+                    themob.MissionKey.enable();
+                    themob.MissionKey.setValue(new byte[] { 0x00, (byte)missionInstance, (byte)(missionInstance >> 8), 0x02 });
+                }
+
+                // Retail talkable NPCs (Regulus, Armor in the first-mission capture) send DontAttack,
+                // TalkDefaultable and TalkActiveTracker and no IsEnemy/IsFriendly; double-clicking them then
+                // sends 80 c7 <view> <spawn> 09 00 instead of starting combat.
+                themob.IsEnemy.disable();
+                themob.IsFriendly.disable();
+                themob.DontAttack.enable();
+                themob.DontAttack.setValue(0x01);
+                themob.TalkDefaultable.enable();
+                themob.TalkDefaultable.setValue(0x01);
+                themob.TalkActiveTracker.enable();
+                themob.TalkActiveTracker.setValue(0x01);
+            }
             themob.StealthAwareness.setValue(0x11);
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);

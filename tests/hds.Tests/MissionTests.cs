@@ -63,6 +63,62 @@ public class MissionTests
     }
 
     [Fact]
+    public void LoadsMissionNpcsInWorldUnits()
+    {
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(@"<config><data title=""T"">
+            <objective1 description=""Talk to Denise."" idNpc=""5"" command=""TALK"" dial=""Hi %"" />
+            <npc1 type=""FRIENDLY"" x=""296"" y=""5"" z=""-25"" idNpc=""5"" handle=""Denise"" rsi=""86010058"" level=""60"" />
+            <npc2 type=""HOSTILE"" x=""296"" y=""5"" z=""-22"" idNpc=""6"" handle=""Andromeda"" rsi=""13050008"" level=""5"" maxHP=""500"" />
+          </data></config>");
+
+        Mission mission = DataLoader.ParseConfigMission(doc.SelectSingleNode("config/data"));
+
+        Assert.Equal(5, mission.phases[0].missionObjectives[0].npcId);
+        Assert.Collection(mission.npcs,
+            n =>
+            {
+                Assert.Equal("Denise", n.handle);
+                Assert.True(n.friendly);
+                Assert.Equal(29600, n.x);
+                Assert.Equal(500, n.y);
+                Assert.Equal(-2500, n.z);
+                Assert.Equal(60, n.level);
+            },
+            n =>
+            {
+                Assert.Equal("Andromeda", n.handle);
+                Assert.False(n.friendly);
+                Assert.Equal(6, n.id);
+                Assert.Equal(500, n.maxHealth);
+            });
+    }
+
+    [Fact]
+    public void ExperienceGainCarriesTheGainNotTheTotal()
+    {
+        // Retail after a 391-EXP kill: 80 e6 87 01 00 00 01 00 00 00
+        Assert.Equal("80e6" + "87010000" + "01000000", Hex(ServerPackets.BuildEXPGain(391)));
+    }
+
+    [Fact]
+    public void WaypointMatchesRetail()
+    {
+        // Retail: 80 9e 00 <27800 f64> <8945 f64> <-4600 f64> 01 00 00 00 22 01 80 07
+        Assert.Equal("809e00" + "000000000026db40" + "000000008078c140" + "0000000000f8b1c0" + "0100000022018007",
+            Hex(ServerPackets.BuildMissionWaypoint(27800, 8945, -4600)));
+    }
+
+    [Fact]
+    public void NpcDialogMatchesRetail()
+    {
+        // Retail "Armor" dialog header: 80 a1 1f 12 00 28 00 00 00 00 14 00 00 00 00 00 1c 00 01 00 06 00 Armor 00 <sized text>
+        Assert.Equal("80a1" + "1f120028" + "00000000" + "1400" + "0000" + "0000" + "1c00" + "0100" +
+                     "0600" + "41726d6f7200" + "0300" + "486900",
+            Hex(ServerPackets.BuildNpcDialog("Armor", "Hi")));
+    }
+
+    [Fact]
     public void MissionKeyUpdateMatchesRetail()
     {
         Assert.Equal("02000280400" + "02f0002", Hex(ServerPackets.BuildMissionKeyUpdate(0x2f)));

@@ -20,7 +20,8 @@ namespace hds
         private enum objectTypesDynamic : int
         {
             SUBWAY = 0x02,
-            LOOT = 0x05
+            LOOT = 0x05,
+            TALK = 0x09 // double-click on an NPC: 80 c7 <view u16> <spawn u16> 09 00
         }
 
         public void processTarget(ref byte[] packet)
@@ -265,6 +266,16 @@ namespace hds
                     theTestArrayLoots[0] =
                         NumericalUtils.ByteArrayToUint32(StringUtils.hexStringToBytes("8e220000"), 1);
                     pak.SendLootWindow(5000, Store.currentClient, theTestArrayLoots);
+                    break;
+
+                case (int) objectTypesDynamic.TALK:
+                    UInt16 talkViewId = (UInt16)(packet[0] | (packet[1] << 8));
+                    ClientView talkView = Store.currentClient.viewMan.getViewById(talkViewId);
+                    Mob talkMob = talkView == null
+                        ? null
+                        : MissionRuntime.FindMissionMob(Store.currentClient.playerData, talkView.entityId);
+                    Output.WriteDebugLog("[MISSION] Talk to view " + talkViewId + (talkMob != null ? " (" + talkMob.getName() + ")" : ""));
+                    MissionRuntime.OnTalk(Store.currentClient, talkMob);
                     break;
 
 

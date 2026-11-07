@@ -93,11 +93,51 @@ namespace hds
             client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title));
             client.messageQueue.addRpcMessage(BuildMissionBriefing(mission.description));
 
-            // Waypoint (809e <idx> <x y z doubles> 01 00 00 00 <object id>); still the retail capture's spot.
-            PacketContent locationMessage = new PacketContent();
-            locationMessage.AddHexBytes("809E00000000000026DB40000000008078C1400000000000F8B1C00100000022018007");
-            client.messageQueue.addRpcMessage(locationMessage.ReturnFinalPacket());
             client.FlushQueue();
+        }
+
+        /// <summary>
+        /// 809e: mission waypoint. Retail: 80 9e 00 &lt;x y z f64&gt; 01 00 00 00 22 01 80 07
+        /// (27800, 8945, -4600 in the capture). The trailing id is kept as retail sent it.
+        /// </summary>
+        public static byte[] BuildMissionWaypoint(double x, double y, double z)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("809E00");
+            pak.AddDouble(x, 1);
+            pak.AddDouble(y, 1);
+            pak.AddDouble(z, 1);
+            pak.AddHexBytes("0100000022018007");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// 80a1: NPC dialog window. Retail (first-mission capture, "Armor"):
+        /// 80 a1 1f 12 00 28 | 00 00 00 00 | 14 00 | 00 00 | 00 00 | &lt;text offset u16&gt; | 01 00 | sized speaker | sized text.
+        /// Offsets count from the 80 a1 header; the speaker always starts at 0x14.
+        /// </summary>
+        public static byte[] BuildNpcDialog(string speaker, string text)
+        {
+            speaker = speaker ?? "";
+            const int speakerOffset = 0x14;
+            int textOffset = speakerOffset + 2 + speaker.Length + 1;
+
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80A1");
+            pak.AddHexBytes("1F120028" + "00000000");
+            pak.AddUint16(speakerOffset, 1);
+            pak.AddUint16(0, 1);
+            pak.AddUint16(0, 1);
+            pak.AddUint16((UInt16)textOffset, 1);
+            pak.AddUint16(1, 1);
+            pak.AddSizedTerminatedString(speaker);
+            pak.AddSizedTerminatedString(text ?? "");
+            return pak.ReturnFinalPacket();
+        }
+
+        public void SendNpcDialog(WorldClient client, string speaker, string text)
+        {
+            client.messageQueue.addRpcMessage(BuildNpcDialog(speaker, text));
         }
 
         /// <summary>
