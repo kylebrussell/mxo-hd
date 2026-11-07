@@ -17,6 +17,11 @@ namespace hds
 		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
 		private static readonly bool EnableClientViewRequestLog = GetEnvFlag("MXO_CLIENT_VIEW_LOG", false);
 		private static readonly bool EnableServerLog = GetEnvFlag("MXO_SERVER_LOG", true);
+		// Echo per-RPC debug notes ("Handle RPC Client Request Header ...", "Region Object ID ...") into
+		// the player's chat. Off by default: right after a teleport the client sends dozens of object
+		// requests, and the hundreds of resulting chat messages coincided with the client stopping to
+		// act on server RPCs.
+		public static readonly bool ChatDebugEnabled = GetEnvFlag("MXO_CHAT_DEBUG", false);
 		
 		public Output (){}
 

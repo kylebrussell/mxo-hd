@@ -32,9 +32,15 @@ namespace hds
             UInt16 goId = NumericalUtils.ByteArrayToUint16(objectValues.type, 1);
             
             ServerPackets pak = new ServerPackets();
-            #if DEBUG
-                pak.sendSystemChatMessage(Store.currentClient,"Region Object ID " + objectID + " (GoType ID: " + goId + ") in Sector ID" + sectorID + " X:" + xPos + "Y:" + yPos + "Z:" + zPos,"BROADCAST");
-            #endif
+            string regionNote = "Region Object ID " + objectID + " (GoType ID: " + goId + ") in Sector ID" + sectorID + " X:" + xPos + "Y:" + yPos + "Z:" + zPos;
+            if (Output.ChatDebugEnabled)
+            {
+                pak.sendSystemChatMessage(Store.currentClient, regionNote, "BROADCAST");
+            }
+            else
+            {
+                Output.WriteDebugLog(regionNote);
+            }
 
             // TRy to spawn
             switch (goId)
