@@ -48,7 +48,8 @@ namespace hds
         public void processSpawn()
         {
 
-            if (Store.currentClient.playerData.getDistrictId()> 0)
+            uint districtId = Store.currentClient.playerData.getDistrictId();
+            if (districtId > 0)
             {
                 // REFACTOR!!!!
                 byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
@@ -56,6 +57,14 @@ namespace hds
 
                 Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
                 Store.currentClient.playerData.setOnWorld(true);
+                Output.WriteLine("[SPAWN] Queued self-spawn for charId " + Store.currentClient.playerData.getCharID() +
+                                 " (" + rsiObject.Length + " bytes, districtId " + districtId + ")");
+            }
+            else
+            {
+                // Without the self-spawn the client sits at "Negotiating with Servers..." for good.
+                Output.WriteLine("[SPAWN] Skipped self-spawn for charId " + Store.currentClient.playerData.getCharID() +
+                                 ": districtId is 0");
             }
             
 

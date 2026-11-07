@@ -60,6 +60,20 @@ public class VendorSellTests
         Assert.Equal((uint)680, newCash);
     }
 
+    // Request bytes recorded from the real 7.6005 client against this server (2026-11-06):
+    // the item in DB slot 0 sent "00 00", the item in DB slot 11 sent "00 0b".
+    [Theory]
+    [InlineData(new byte[] {0x00, 0x00}, 0)]
+    [InlineData(new byte[] {0x00, 0x0b}, 11)]
+    // Retail capture sell fields (docs/generated/packet-research-summary.md) are later inventory pages.
+    [InlineData(new byte[] {0x00, 0x45}, 69)]
+    [InlineData(new byte[] {0x00, 0x55}, 85)]
+    [InlineData(new byte[] {0x00, 0x58}, 88)]
+    public void ParseSellSlotReadsTheSlotBigEndian(byte[] request, int expectedSlot)
+    {
+        Assert.Equal((ushort)expectedSlot, VendorHandler.ParseSellSlot(request));
+    }
+
     [Fact]
     public void TryApplySellUsesDefaultBuybackForUnknownItem()
     {

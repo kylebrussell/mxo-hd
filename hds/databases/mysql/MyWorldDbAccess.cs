@@ -66,7 +66,7 @@ namespace hds.databases{
 			UInt32 userId = new UInt32();
 			
 			while(dr.Read()){
-				userId = (UInt32)dr.GetDecimal(0);	
+				userId = (UInt32)Convert.ToDecimal(dr.GetValue(0));	
 			}
 			
 			dr.Close();
@@ -462,7 +462,7 @@ namespace hds.databases{
                 Store.currentClient.playerData.setDistrict(disKey);
                 Store.currentClient.playerData.setDistrictId((uint)dr.GetInt16(5));
                 Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-                //Store.currentClient.playerInstance.YawInterval.setValue((byte)dr.GetDecimal(3));
+                //Store.currentClient.playerInstance.YawInterval.setValue((byte)Convert.ToDecimal(dr.GetValue(3)));
             }
             dr.Close();
 	        CloseConnection();
@@ -497,24 +497,24 @@ namespace hds.databases{
 				double z = dr.GetDouble(3);
 
 				Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x,y,z));
-				Store.currentClient.playerInstance.YawInterval.setValue((byte)dr.GetDecimal(4));	
-				Store.currentClient.playerInstance.Health.setValue((UInt16)dr.GetDecimal(5));	
-				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)dr.GetDecimal(6));	
+				Store.currentClient.playerInstance.YawInterval.setValue((byte)Convert.ToDecimal(dr.GetValue(4)));	
+				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(dr.GetValue(5)));	
+				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(dr.GetValue(6)));	
 				
-				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)dr.GetDecimal(7));	
-				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)dr.GetDecimal(8));	
+				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(dr.GetValue(7)));	
+				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(dr.GetValue(8)));	
 				
-				Store.currentClient.playerInstance.Level.setValue((byte)dr.GetDecimal(9));
+				Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(dr.GetValue(9)));
 				
-   				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) dr.GetDecimal(10));
-				Store.currentClient.playerInstance.OrganizationID.setValue((byte)dr.GetDecimal(11));
+   				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(dr.GetValue(10)));
+				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(dr.GetValue(11)));
 
-				//data.setPlayerValue("pvpFlag",(int)dr.GetDecimal(12));
+				//data.setPlayerValue("pvpFlag",(int)Convert.ToDecimal(dr.GetValue(12)));
 				Store.currentClient.playerInstance.RealFirstName.setValue(dr.GetString(13));
 				Store.currentClient.playerInstance.RealLastName.setValue(dr.GetString(14));
 
-				Store.currentClient.playerData.setExperience((long)dr.GetDecimal(15));
-				Store.currentClient.playerData.setInfo((long)dr.GetDecimal(16));
+				Store.currentClient.playerData.setExperience((long)Convert.ToDecimal(dr.GetValue(15)));
+				Store.currentClient.playerData.setInfo((long)Convert.ToDecimal(dr.GetValue(16)));
 				Store.currentClient.playerData.setDistrict(dr.GetString(17));
                 Store.currentClient.playerData.setDistrictId((uint)dr.GetInt16(18));
                 
@@ -529,13 +529,13 @@ namespace hds.databases{
 				Store.currentClient.playerInstance.CrewID.enable();
 				Store.currentClient.playerInstance.CrewID.setValue(crewId);
 
-				Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16) dr.GetDecimal(21));
-				Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16) dr.GetDecimal(22));
-				Store.currentClient.playerInstance.ReputationNiobe.setValue((UInt16) dr.GetDecimal(23));
-				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue((UInt16) dr.GetDecimal(24));
-				Store.currentClient.playerInstance.ReputationCypherites.setValue((UInt16) dr.GetDecimal(25));
-				Store.currentClient.playerInstance.ReputationGMOrganization.setValue((UInt16) dr.GetDecimal(26));
-				Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16) dr.GetDecimal(27));
+				Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16) Convert.ToDecimal(dr.GetValue(21)));
+				Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16) Convert.ToDecimal(dr.GetValue(22)));
+				Store.currentClient.playerInstance.ReputationNiobe.setValue((UInt16) Convert.ToDecimal(dr.GetValue(23)));
+				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue((UInt16) Convert.ToDecimal(dr.GetValue(24)));
+				Store.currentClient.playerInstance.ReputationCypherites.setValue((UInt16) Convert.ToDecimal(dr.GetValue(25)));
+				Store.currentClient.playerInstance.ReputationGMOrganization.setValue((UInt16) Convert.ToDecimal(dr.GetValue(26)));
+				Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16) Convert.ToDecimal(dr.GetValue(27)));
 				
 
 			}
@@ -665,7 +665,7 @@ namespace hds.databases{
 			while(dr.Read()){
 				//we will read just one row
 				for(int i = 0;i<rsiValues.Length;i++){
-					int temp =(int) dr.GetDecimal(i); //int to int
+					int temp =(int) Convert.ToDecimal(dr.GetValue(i)); //int to int
 					rsiValues[i]=temp;
 				}
 			}

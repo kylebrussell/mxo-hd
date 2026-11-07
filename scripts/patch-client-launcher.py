@@ -10,7 +10,10 @@ root key (privKeyXML2) in hds/utils/encryption/MxoRSA.cs. The original file is
 never modified. See docs/CLIENT-SETUP-PLAN.md.
 
 Usage: scripts/patch-client-launcher.py <launcher.exe> [--out <path>] [--force]
-Then start the patched copy with: <patched>.exe -nopatch -clone
+Then keep the original (e.g. as launcher_stock.exe), copy the patched file over
+launcher.exe, and start it with: launcher.exe -nopatch
+(The launcher refuses to run under any other name or with -clone; it re-launches
+itself from %TEMP% with -clone on its own.)
 """
 import argparse
 import base64
@@ -74,7 +77,8 @@ def main():
 
     written = out.read_bytes()
     assert all(written[o:o + SLOT_LEN] == key for o in SLOTS)
-    print(f"wrote {out} ({len(written):,} bytes); start it with: {out.name} -nopatch -clone")
+    print(f"wrote {out} ({len(written):,} bytes); copy it over launcher.exe (keep the original) "
+          "and start it with: launcher.exe -nopatch")
     return 0
 
 

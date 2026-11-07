@@ -158,7 +158,7 @@ namespace hds.databases{
 
             while (dr.Read())
             {
-                charId = (UInt32)dr.GetDecimal(0);
+                charId = (UInt32)Convert.ToDecimal(dr.GetValue(0));
             }
 
             conn.Close();

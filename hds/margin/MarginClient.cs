@@ -229,7 +229,7 @@ namespace hds{
 
 
 
-        private void SendMarginCharData(byte[] data, byte opcode, NetworkStream client, UInt16 shortAfterId, bool isLast)
+        private void SendMarginCharData(byte[] data, byte opcode, NetworkStream client, UInt16 shortAfterId, bool isLast, bool emptyDataBlock = false)
         {
             // This Method will be used to send the real Data to the client
 
@@ -258,7 +258,7 @@ namespace hds{
 	            pak.AddUShort(0);
             }
             pak.AddUShort(opcode);
-            if (data.Length > 0)
+            if (data.Length > 0 || emptyDataBlock)
             {
 	            pak.AddByteArray(new byte[]{0x10, 0x00});
 	            pak.AddUint16((UInt16)data.Length,1);
@@ -718,6 +718,14 @@ namespace hds{
 				announcement.append(text);
 				
 				SendMarginCharData(announcement.getBytes(), 0x0d, client, 10000, true);
+			}
+			else
+			{
+				// Without a MOTD nothing above is flagged as the last reply, and the client waits
+				// at "Loading Character" forever. Retail ends the load with an empty 0x0f reply
+				// flagged as last (10 00 00 00 00 <charId> 10 27 0d 01 0f 10 00 00 00 in the
+				// RajkoPacketsNearTheEnd captures).
+				SendMarginCharData(empty, 0x0f, client, 10000, true, emptyDataBlock: true);
 			}
 			/* End of the MOTD */
 

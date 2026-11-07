@@ -36,16 +36,22 @@ namespace hds
 
         public void sendInventoryItemDelete(UInt16 slot, WorldClient client)
         {
-            // LEAD (capture-pending): the exact server->client "remove item from slot" opcode is
-            // not proven. Decode notes place a `5f` reply in the vendor sell sequence
-            // (80 e7 -> 80 e4 cash -> 5f sell ack -> 81 12 sell complete), so we use 0x5f here.
-            // Shape is modelled on sendInventoryItemMove (single-byte opcode + slot uint16 +
-            // trailing 0x00) since the move packet is the closest proven inventory mutation.
+            client.messageQueue.addRpcMessage(BuildInventoryItemDelete(slot));
+        }
+
+        /// <summary>
+        /// 5f "remove item from slot": slot as u16 little-endian, then 01. All 70 retail 5f messages
+        /// in the captures (after sells, recycles and marketplace listings) end in 01; we used to
+        /// send 00, and the client left the item in the grid. Retail FM-13SK sell, slot 88:
+        /// "5f 58 00 01".
+        /// </summary>
+        internal static byte[] BuildInventoryItemDelete(UInt16 slot)
+        {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x5f);
             pak.AddUint16(slot, 1);
-            pak.AddByte(0x00);
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            pak.AddByte(0x01);
+            return pak.ReturnFinalPacket();
         }
         
     }

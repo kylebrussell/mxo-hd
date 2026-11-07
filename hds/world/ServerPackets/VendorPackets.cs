@@ -32,17 +32,36 @@ namespace hds
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
 
-        // LEAD (capture-pending): the decoded vendor sell reply sequence is
-        // 80 e7 -> 80 e4 (cash) -> 5f (sell ack) -> 81 12 (sell complete). The cash update is sent
-        // via SendInfoCurrent and the slot clear via sendInventoryItemDelete (0x5f). This method
-        // emits a best-effort "sell complete" (0x81 0x12 == SERVER opcode 0x8112) acknowledgement so
-        // the client closes out the transaction. The exact body of 81 12 is NOT proven, so we send
-        // an empty-bodied ack; this is a lead and must be confirmed against a real capture.
-        public void SendVendorSellAck(WorldClient client)
+        /// <summary>
+        /// Item descriptor we put in 81 12 for items we added ourselves. Retail used "00 00 00 XX" for
+        /// normal items, with XX matching the trailing type byte of the 5e item-add message (0x14,
+        /// 0x18, 0x28, 0x34, 0x38, 0x44 seen). Our 5e add sends type 0x10. The meaning of XX isn't
+        /// fully decoded.
+        /// </summary>
+        public static readonly byte[] DefaultSellItemDescriptor = {0x00, 0x00, 0x00, 0x10};
+
+        // Retail answers every CLIENT_VENDOR_SELL (81 11) with one RPC list, in this order
+        // (11 sells in research/packet-dumps, see docs/TODO.md):
+        //   80 e7 (+price, reason 7) -> 80 e4 (new cash, reason 7) -> 5f (remove slot) -> 81 12.
+        public void SendVendorSellAck(WorldClient client, UInt32 goId, UInt32 price)
+        {
+            client.messageQueue.addRpcMessage(BuildVendorSellAck(goId, DefaultSellItemDescriptor, price));
+        }
+
+        /// <summary>
+        /// 81 12 "sell complete": status 00, item GoID (u32 LE), 4-byte item descriptor, sell price
+        /// (u32 LE). Retail FM-13SK sell (GoID 43060, 5000):
+        /// "81 12 00 34 a8 00 00 00 00 00 34 88 13 00 00".
+        /// </summary>
+        internal static byte[] BuildVendorSellAck(UInt32 goId, byte[] descriptor, UInt32 price)
         {
             PacketContent pak = new PacketContent();
-            pak.AddUint16(0x8112, 0); // 81 12 SERVER vendor sell complete (lead, body unconfirmed)
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            pak.AddUint16(0x8112, 0);
+            pak.AddByte(0x00);
+            pak.AddUint32(goId, 1);
+            pak.AddByteArray(descriptor);
+            pak.AddUint32(price, 1);
+            return pak.ReturnFinalPacket();
         }
 
     }

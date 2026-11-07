@@ -9,7 +9,9 @@ public class DataPathTests
     {
         string path = DataLoader.ResolveDataPath(@"data\missions");
 
-        Assert.DoesNotContain("\\", path);
+        // Both separators are normalised to the platform's own, so the other one must be gone.
+        string foreignSeparator = Path.DirectorySeparatorChar == '/' ? "\\" : "/";
+        Assert.DoesNotContain(foreignSeparator, path);
         Assert.EndsWith(Path.Combine("data", "missions"), path);
     }
 
