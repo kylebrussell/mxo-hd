@@ -48,25 +48,20 @@ namespace hds
         public void processSpawn()
         {
 
+            // Always spawn. District 0 is the Tutorial (MxOLocations.TUTORIAL), a real world the client has
+            // already loaded via sendWorldCMD; the old "districtId > 0" check skipped the self-spawn there and
+            // left tutorial characters at "Negotiating with Servers..." for good.
             uint districtId = Store.currentClient.playerData.getDistrictId();
-            if (districtId > 0)
-            {
-                // REFACTOR!!!!
-                byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
-                //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
 
-                Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
-                Store.currentClient.playerData.setOnWorld(true);
-                Output.WriteLine("[SPAWN] Queued self-spawn for charId " + Store.currentClient.playerData.getCharID() +
-                                 " (" + rsiObject.Length + " bytes, districtId " + districtId + ")");
-            }
-            else
-            {
-                // Without the self-spawn the client sits at "Negotiating with Servers..." for good.
-                Output.WriteLine("[SPAWN] Skipped self-spawn for charId " + Store.currentClient.playerData.getCharID() +
-                                 ": districtId is 0");
-            }
-            
+            // REFACTOR!!!!
+            byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
+            //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
+
+            Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
+            Store.currentClient.playerData.setOnWorld(true);
+            Output.WriteLine("[SPAWN] Queued self-spawn for charId " + Store.currentClient.playerData.getCharID() +
+                             " (" + rsiObject.Length + " bytes, districtId " + districtId + ")");
+
 
         }
 

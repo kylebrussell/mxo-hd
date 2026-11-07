@@ -267,9 +267,11 @@ namespace hds
             {
                 for (int i = 0; i < messageQueue.ackOnlyCount; i++)
                 {
+                    // Ack-only packets are a bare 02 (retail too). This used to set isFinal/timed on
+                    // `packet` - the content packet - instead of ackPacket, which stamped sim time on
+                    // whatever content went out in the same flush.
                     WorldPacket ackPacket = new WorldPacket(playerData);
-                    packet.isFinal = true;
-                    packet.timed = true;
+                    ackPacket.isFinal = true;
                     worldPackets.Add(ackPacket);
                 }
                 messageQueue.ackOnlyCount = 0;

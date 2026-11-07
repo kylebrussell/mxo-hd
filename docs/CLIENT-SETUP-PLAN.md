@@ -104,16 +104,31 @@ Open: **the client sometimes stops acting on server RPCs partway through a sessi
 - The client requests dozens of static objects (RPC `c9`).
 - The server used to answer each request with two debug chat messages, hundreds within seconds and 5–7 per packet.
 - With those debug messages moved to the server log (`MXO_CHAT_DEBUG=1` brings them back), the vendor opened in 2 of 2 sessions, against 0 of 3 just before. Earlier sessions with the flood sometimes worked, so this is likely but not proven.
+- Later, with the real-client tool below, the full relog → teleport → open-vendor sequence succeeded in 12 of 12 sessions (6 before and 6 after the ack-only fix). The stall has not come back without the flood, so resending RPC lists is on hold until it does.
 
 Two related fixes changed nothing measurable on their own:
 - The server sim time on `0x82` packets is now seconds of uptime, like retail. It used to be Unix seconds ÷ 1000, decided by comparing raw float bits.
 - Object-message resends are now opt-in (`MXO_OBJECT_RESEND=1`).
 
-A known remaining bug: the ack-only branch of `FlushQueue` sets `timed` on the content packet instead of the ack packet.
+The ack-only branch of `FlushQueue` used to set `timed` on the content packet instead of the ack packet. Fixed: ack-only packets are now a bare `02`, as in retail.
 
 To compare sessions, the packet log has every encrypted world packet in both directions. The scratch parser used for this listed direction, time, PSS/CSEQ/SSEQ, size and leading bytes for a time range.
 
-Driving the client without a human: run `launcher.exe -nopatch -noeula`, focus the launcher window (it doesn't come to the front by itself), type the username, then any placeholder password with `MXO_DEV_ANY_PASSWORD=1`, then CONTINUE, select the character, and SELECT. In game, `?gotopos x y z` teleports. It multiplies by 100, so pass the database/static-object coordinates divided by 100. The chat box ignores pasted text, so type commands key by key. `Windowed = 1` stalls the client at "Registering with Servers..." and isn't usable.
+Driving the client without a human: `tools/RealClient/Invoke-RealClient.ps1` does the whole login and some in-game actions in one command. It prints a JSON summary and exits non-zero on failure. Example, which relogs TheNeo, teleports to Arison, opens the vendor and checks that the merchant window appeared:
+
+```
+tools/RealClient/Invoke-RealClient.ps1 -Relaunch -Login -CharacterRow 2 -WaitWorld -Teleport 1194,8,-150 -DoubleClick 540,660 -CheckVendorWindow
+```
+
+Lessons built into it:
+- All keyboard input is posted as window messages to the client's own window, so it works whatever is in front and can never type into another application.
+- Find the client window by title. `Process.MainWindowHandle` can point at a launcher tooltip.
+- Press Enter on the patch-notes page rather than clicking CONTINUE. The embedded page can swallow the click, and CONTINUE sits where the next page's SELECT is.
+- Don't tap Alt to focus the launcher. That enters menu mode and swallows the next click.
+- In game, the client picks the object under the real cursor, so double-clicks move the cursor first. Like a player, target with one double-click, then use with a second.
+- The fullscreen game can be captured with a normal screen copy.
+
+To do it by hand: run `launcher.exe -nopatch -noeula`, focus the launcher window (it doesn't come to the front by itself), type the username, then any placeholder password with `MXO_DEV_ANY_PASSWORD=1`, then CONTINUE, select the character, and SELECT. In game, `?gotopos x y z` teleports. It multiplies by 100, so pass the database/static-object coordinates divided by 100. The chat box ignores pasted text, so type commands key by key. `Windowed = 1` stalls the client at "Registering with Servers..." and isn't usable.
 
 Server bugs found on the way:
 - **Margin: "Loading Character" never finished.** Only the MOTD reply was flagged as the last character-data reply, so with an empty `<Motd>` the client waited forever. `MarginClient.loadCharacter` now ends with the retail empty `0f` reply flagged as last (`… 10 27 0d 01 0f 10 00 00 00`).
