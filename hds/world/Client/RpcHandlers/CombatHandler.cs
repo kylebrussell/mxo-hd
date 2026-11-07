@@ -136,6 +136,36 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// Retail's ability hit on an NPC: Health together with EffectID 0x280001b7 and its counter
+        /// (04 80 80 80 c0 75 03 c0 b7 01 00 28 01 01). Used when an ability has no effect of its own.
+        /// </summary>
+        public const UInt32 DefaultAbilityHitFx = 0x280001b7;
+
+        /// <summary>
+        /// An attack ability used on the player's current close-combat target hits it. Returns false when the
+        /// target isn't the one being fought (the ability then only costs Inner Strength, as before).
+        /// </summary>
+        public bool ApplyAbilityToTarget(UInt16 targetViewId, UInt16 damage, UInt32 fxId)
+        {
+            CombatSession session = currentSession;
+            if (session == null || !session.IsActive || session.DefenderMob == null ||
+                session.GetDefenderViewId() != targetViewId)
+            {
+                return false;
+            }
+
+            Output.WriteDebugLog($"[COMBAT] Ability hits {session.DefenderMob.getName()} for {damage}");
+            bool died = session.ApplyDamageToDefender(damage, fxId == 0 ? DefaultAbilityHitFx : fxId);
+            client.FlushQueue();
+            if (died)
+            {
+                Output.WriteDebugLog($"[COMBAT] {session.DefenderMob.getName()} died from an ability!");
+                session.Stop(CombatSession.CombatEndReason.DefenderDied);
+            }
+            return true;
+        }
+
         public void ProcessRequestCloseCombat(ref byte[] packet)
         {
 #if DEBUG
