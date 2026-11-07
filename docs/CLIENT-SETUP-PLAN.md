@@ -80,6 +80,29 @@ Addresses are virtual addresses in `launcher.exe` (image base `0x400000`).
 
 The Ghidra project is kept at `~/Developer/mxo-client/ghidra/` (project `mxo`). The headless scripts used are in the session scratchpad and can be added to `tools/` if we keep doing this.
 
+## Windows setup (verified 2026-11-06)
+
+**First milestone reached:** the real client logged in, passed the margin handshake and entered the world as `TheNeo` on a Windows 11 PC, with no human at the keyboard once the dev login switch below was on. Several of the notes above turned out to be wrong for client 7.6005:
+
+1. **Get the client.** Download `https://files.mxoemu.info/MxO_7.6005.7z` (1,327,331,186 bytes, SHA-256 `619F01A3339D6B0C99866DE7EC4F0671D211D0375E8A416F7B0D8C75E58E18B2`) and extract it outside the repo, for example `~/Developer/mxo-client/MxO/`.
+2. **Patch the launcher, then put it in place as `launcher.exe`.** Run `scripts/patch-client-launcher.py <client>/launcher.exe`, keep the original as `launcher_stock.exe`, and copy `launcher_hd.exe` over `launcher.exe`. The launcher copies itself to `%TEMP%\MatrixOnline.0\matrix.exe` and starts that copy with `-nopatch -clone`. If the file isn't named `launcher.exe`, or you pass `-clone` yourself, it shows "Please run the game by using launcher.exe…" and quits.
+3. **Start it with `launcher.exe -nopatch -noeula`, and never with `-clone`.** `-nopatch` stops the patcher from restoring a stock launcher. `-noeula` skips the 2006 user-agreement screen, which otherwise appears on every start. Accept the agreement once yourself first.
+4. **Point the client at the local server in `autoexec.cfg`, not `useropts.cfg`.** `autoexec.cfg` pulls in `useropts.cfg` by a relative path, which isn't found from the temp copy. So add these lines straight to `autoexec.cfg` (the "do not edit" warning only means the patcher overwrites it):
+   ```
+   UseLaunchPad = 0
+   AuthServerDNSName = "localauth.mxoemu.info"
+   MarginServerDNSSuffix = ".local.mxoemu.info"
+   ```
+   **Without this the launcher logs in to the public MxOEmu server.** The built-in `auth.lith.thematrixonline.net` now resolves to `host.rajko.info` (37.48.122.61). The launcher also loads its patch-notes page over plain HTTP from `patch.lith.thematrixonline.net`, even with `-nopatch`.
+5. **Windows Defender flags the patched launcher** as `Trojan:Win32/Bearfoos.A!ml`. The stock `launcher.exe`, `client.dll` and `mxowrap.dll` scan clean, and the patched file differs from stock only in the two 256-byte key slots. The `!ml` suffix marks a machine-learning guess, not a signature match. Defender kills `matrix.exe` about a second after the margin connect, and the launcher then reports "clienthasfailed". To get past it, allow the detection and exclude the client folder and `%TEMP%\MatrixOnline.0`. That's a decision for whoever owns the machine.
+6. **Run the server with `MXO_PACKET_LOG=1`.** To drive the client without typing a real password, also set `MXO_DEV_ANY_PASSWORD=1` for local use only. With it set, existing accounts log in with any password. The launcher still refuses an empty password ("Login request not sent - bad parameters?"), so type any placeholder.
+7. **Flow:** log in, then CONTINUE, select a character, then SELECT. The first run shows a detail auto-detect dialog with a Continue button, then the intro videos and "Loading Character", then the world. Old Direct3D games drop out of fullscreen when they lose focus. Restore the window rather than launching `matrix.exe` again, which only shows the `-clone` warning.
+
+Server bugs found on the way:
+- **Margin: "Loading Character" never finished.** Only the MOTD reply was flagged as the last character-data reply, so with an empty `<Motd>` the client waited forever. `MarginClient.loadCharacter` now ends with the retail empty `0f` reply flagged as last (`… 10 27 0d 01 0f 10 00 00 00`).
+- **World: the server crashed on the UDP session start.** `MyWorldDbAccess.SetPlayerValues` read integer columns with `GetDecimal`, which MySqlConnector rejects (`InvalidCastException`). All `GetDecimal` reads now go through `Convert.ToDecimal(dr.GetValue(n))`.
+- **Auth: the plaintext password was logged.** The decrypted login blob, which contains the plaintext password, went to the console and `ServerLog.txt`. Only the MD5 part is logged now.
+
 ## Platform options on Apple Silicon
 
 For protocol work, broken graphics are fine. We only need the client to log in, enter the world and send and receive packets.

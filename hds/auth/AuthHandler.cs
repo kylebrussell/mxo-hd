@@ -82,6 +82,15 @@ namespace hds.auth
             authClientSession.SendAsync(BuildPublicKeyReply(TimeUtils.getUnixTimeUint32()));
         }
 
+        /// <summary>
+        /// Local-testing switch: with MXO_DEV_ANY_PASSWORD=1 an existing account logs in with any
+        /// password, so the real client can be driven without a human typing credentials.
+        /// Never set this on a server other people can reach.
+        /// </summary>
+        public static readonly bool DevAcceptAnyPassword =
+            Environment.GetEnvironmentVariable("MXO_DEV_ANY_PASSWORD") == "1" ||
+            string.Equals(Environment.GetEnvironmentVariable("MXO_DEV_ANY_PASSWORD"), "true", StringComparison.OrdinalIgnoreCase);
+
         /// <summary>Key id the launcher caches in pubkey.dat; a cached match skips verification.</summary>
         public const uint ServerPublicKeyId = 4;
 
@@ -231,12 +240,12 @@ namespace hds.auth
             byte[] receivedMD5 = new byte[16];
             ArrayUtils.copy(decryptedBlob, 1, receivedMD5, 0, 16);
             
-            // Security says that must be the same
-            Output.WriteLine("Decrypted (TF) blob:" + StringUtils.bytesToString(decryptedBlob));
+            // Security says that must be the same. Only log the MD5 part: the rest of the blob
+            // carries the plaintext password.
+            Output.WriteLine("Received MD5(challenge):" + StringUtils.bytesToString(receivedMD5));
             if (!ArrayUtils.equal(receivedMD5, md5edChallenge))
             {
                 Output.WriteLine("The Md5 from client and Our Md5 are not same, aborting");
-                Output.WriteLine("Decrypted (TF) blob:" + StringUtils.bytesToString(decryptedBlob));
                 Output.WriteLine("Stored MD5ed Challenge:" + StringUtils.bytesToString(md5edChallenge));
                 throw new AuthException("Md5 challenge differs");
             }
@@ -250,17 +259,25 @@ namespace hds.auth
             Output.OptWriteLine("-> Password decrypted, size:" + passSize);
 
             // Set WorldList password
-            wl.setPassword(StringUtils.bytesToString_NS(md5.digest(passwordB)));
-            
+            string passwordMd5 = StringUtils.bytesToString_NS(md5.digest(passwordB));
+            wl.setPassword(passwordMd5);
+
             try
             {
                 using (var dbContext = new MatrixDbContext(Store.config.dbParams))
                 {
+                    string username = wl.getUsername();
+                    bool anyPassword = DevAcceptAnyPassword;
                     var user = dbContext.Users
-                        .Where(u => u.Username ==
-                                    wl.getUsername())
-                        .Single(u => u.Passwordmd5 ==
-                                     StringUtils.bytesToString_NS(md5.digest(passwordB)));
+                        .Where(u => u.Username == username)
+                        .Single(u => anyPassword || u.Passwordmd5 == passwordMd5);
+
+                    if (anyPassword)
+                    {
+                        // FetchWorldList matches on the stored hash, so hand it that instead.
+                        wl.setPassword(user.Passwordmd5);
+                        Output.WriteLine("-> MXO_DEV_ANY_PASSWORD: accepted " + username + " without checking the password");
+                    }
 
                     if (user.AccountStatus.Equals(1))
                     {
