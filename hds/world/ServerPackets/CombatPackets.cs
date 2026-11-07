@@ -34,12 +34,12 @@ namespace hds
         /// <param name="client">The player leaving combat</param>
         public void SendLeaveCombatMode(WorldClient client)
         {
-            // TODO: Determine the correct packet to exit combat mode
-            // Likely similar to SendEnterCombatMode but with different CombatantMode value
+            // Retail combat end: state field 0 and ConditionStateFlags 0 (enter sets 0x000c / 0x00100000).
+            // This used to end group 6 with no attribute bits and then four stray bytes.
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);              // View ID 2 (player's self view)
             pak.AddByte(0x03);                // Update type
-            pak.AddHexBytes("010C00808400808080800000001000"); // CombatantMode = 0?
+            pak.AddHexBytes("01000080808080808001" + "00000000");
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
         }

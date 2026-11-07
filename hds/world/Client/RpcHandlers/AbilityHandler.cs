@@ -42,18 +42,61 @@ namespace hds
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
 
-            // lets create a message for the client - we will later execute the right AbilityScript for it 
-            ServerPackets pak = new ServerPackets();
-            pak.sendSystemChatMessage(Store.currentClient,
-                "Ability ID is " + AbilityID.ToString() + " and the name is " + currentAbility.getAbilityName() +
-                " and Target ViewId Is " + currentTargetViewId, "BROADCAST");
-
-            // ToDo: do something with the entity (or queue a fx hit animation or something lol)    
+            Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
+                                 currentTargetViewId);
             ProcessAbilityScript(this.currentAbility);
+        }
+
+        /// <summary>
+        /// Inner Strength an ability costs. The data files have no per-ability costs; retail costs seen in
+        /// captures ran from 11 to 40 (Hyper-Speed 40, Logic Blast 3.0 11), so this is a placeholder.
+        /// </summary>
+        public const UInt16 DefaultAbilityCost = 20;
+
+        /// <summary>Inner Strength regained per timer tick (2 s); retail regenerated about 4 a second.</summary>
+        public const UInt16 InnerStrengthRegenPerTick = 8;
+
+        public static UInt16 CurrentInnerStrength(WorldClient client)
+        {
+            return NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthAvailable.getValue(), 1);
+        }
+
+        public static UInt16 MaxInnerStrength(WorldClient client)
+        {
+            return NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthMax.getValue(), 1);
+        }
+
+        /// <summary>Takes the cost off Inner Strength (never below 0) and returns the new value.</summary>
+        public static UInt16 SpendInnerStrength(WorldClient client, UInt16 cost)
+        {
+            UInt16 current = CurrentInnerStrength(client);
+            UInt16 remaining = (UInt16)Math.Max(0, current - cost);
+            client.playerInstance.InnerStrengthAvailable.setValue(remaining);
+            return remaining;
+        }
+
+        /// <summary>
+        /// Regenerates Inner Strength towards the maximum; returns the new value, or null when it was full.
+        /// </summary>
+        public static UInt16? RegenerateInnerStrength(WorldClient client)
+        {
+            UInt16 current = CurrentInnerStrength(client);
+            UInt16 max = MaxInnerStrength(client);
+            if (max == 0 || current >= max)
+            {
+                return null;
+            }
+            UInt16 next = (UInt16)Math.Min(max, current + InnerStrengthRegenPerTick);
+            client.playerInstance.InnerStrengthAvailable.setValue(next);
+            return next;
         }
 
         public void ProcessAbilityScript(AbilityItem abilityItem)
         {
+            // The cost is paid when the ability is used. This used to set Inner Strength to 50 after every
+            // ability (and Hyper-Speed and the cast animation sent their own fixed values, 50 and 237).
+            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, DefaultAbilityCost);
+
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();
             if (this.currentAbility.getCastingTime() > 0)
@@ -66,7 +109,11 @@ namespace hds
 
             if (currentAbility.getAbilityID() == 12 || currentAbility.getAbilityID() == 184)
             {
-                pak.SendHyperSpeed();
+                pak.SendHyperSpeed(innerStrength);
+            }
+            else
+            {
+                pak.sendISCurrent(Store.currentClient, innerStrength);
             }
 
             if (currentAbility.getAbilityID() == 970)
@@ -74,8 +121,6 @@ namespace hds
                 // Spawn Code Write Window
                 pak.SendCodeWriterWindow();
             }
-
-            pak.sendISCurrent(Store.currentClient, 50);
         }
 
         public void abilityAnimateTheTarget(object e)
