@@ -50,17 +50,28 @@ namespace hds
         private long lastSentTick;
 
         /// <summary>
+        /// Resending unacked object messages is off unless MXO_OBJECT_RESEND=1. With it on, the real
+        /// client stopped acting on server RPC lists partway through some sessions (vendor windows
+        /// and chat stopped appearing), so it stays opt-in until that is understood.
+        /// </summary>
+        public static bool ObjectResendEnabled = Environment.GetEnvironmentVariable("MXO_OBJECT_RESEND") == "1";
+
+        /// <summary>
         /// Object messages stay queued until the client acks the packet that carried them
-        /// (DeletedAckedPackets). One is due when it hasn't been sent yet, or when it was sent at
-        /// least ObjectResendIntervalMs ago and is still unacked. The old check compared a counter
-        /// (0, 4000, 8000...) against Unix time, so a message was sent exactly once; a single lost
-        /// self-spawn left the client at "Negotiating with Servers..." for good.
+        /// (DeletedAckedPackets). One is due when it hasn't been sent yet; with ObjectResendEnabled,
+        /// also when it was sent at least ObjectResendIntervalMs ago and is still unacked. The old
+        /// resend check compared a counter (0, 4000, 8000...) against Unix time and never passed.
         /// </summary>
         public bool IsObjectSendDue(long nowTickMs)
         {
             if (!isSent)
             {
                 return true;
+            }
+
+            if (!ObjectResendEnabled)
+            {
+                return false;
             }
 
             return sendCounter < MaxObjectSends && nowTickMs - lastSentTick >= ObjectResendIntervalMs;

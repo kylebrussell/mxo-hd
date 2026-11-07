@@ -15,9 +15,15 @@ namespace hds{
 
 		public void HandleRpc(int header,ref byte[] rpcData){
             ServerPackets pak = new ServerPackets();
-			#if DEBUG
-            pak.sendSystemChatMessage(Store.currentClient, "Handle RPC Client Request Header " + StringUtils.bytesToString_NS(NumericalUtils.int32ToByteArray(header,0)) , "BROADCAST");
-			#endif
+            string handleNote = "Handle RPC Client Request Header " + StringUtils.bytesToString_NS(NumericalUtils.int32ToByteArray(header, 0));
+            if (Output.ChatDebugEnabled)
+            {
+                pak.sendSystemChatMessage(Store.currentClient, handleNote, "BROADCAST");
+            }
+            else
+            {
+                Output.WriteDebugLog(handleNote);
+            }
 		    switch (header)
 		    {
 

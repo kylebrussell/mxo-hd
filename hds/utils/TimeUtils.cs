@@ -25,17 +25,22 @@ namespace hds{
 			return result;
 		}
 
+        private static readonly System.Diagnostics.Stopwatch SimClock = System.Diagnostics.Stopwatch.StartNew();
+
+        /// <summary>
+        /// Server sim time in seconds since the server started. Retail sent small uptime values
+        /// here (e.g. 0x47967b67 = 76,918.8 s). This used to send Unix seconds / 1000 (about
+        /// 1,794,055 "kiloseconds"), which barely advances; the real client stopped acting on
+        /// server RPCs mid-session right at one of those timed packets.
+        /// </summary>
+        public static float GetSimTimeSeconds()
+        {
+            return (float)SimClock.Elapsed.TotalSeconds;
+        }
+
         public static byte[] getCurrentSimTime()
         {
-            
-            
-            TimeSpan ts = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0));
-             
-            //long timeSim = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            //UInt32 simTimeTicks = (UInt32)timeSim;
-            float timeSimFloat = (UInt32)ts.TotalSeconds * (1.0f / 1000.0f);
-            byte[] result = NumericalUtils.floatToByteArray(timeSimFloat, 1);
-            return result;
+            return NumericalUtils.floatToByteArray(GetSimTimeSeconds(), 1);
         }
 
 		

@@ -31,20 +31,23 @@ namespace hds{
 
             long currentCash = Store.currentClient.playerData.getInfo();
             ServerPackets packets = new ServerPackets();
-            if (!VendorPricing.TryApplyBuy(currentCash, itemGoID, out UInt32 newCash, out UInt32 _))
+            if (!VendorPricing.TryApplyBuy(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
             {
                 packets.sendSystemChatMessage(Store.currentClient,
                     "You do not have enough information to buy this item.", "MODAL");
                 return;
             }
 
+            // Retail order: 5e (add item, sent by processItemAdd) -> 80 e7 (-price) -> 80 e4 (new cash)
+            // -> 81 0f (buy complete), all with reason 8.
             InventoryHandler inventory = new InventoryHandler();
             inventory.processItemAdd(itemGoID,0x10);
 
             Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
             Store.currentClient.playerData.setInfo(newCash);
-            packets.SendInfoCurrent(Store.currentClient, newCash);
-
+            packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorBuy);
+            packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorBuy);
+            packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
         }
 
         public void processSellItem(ref byte[] packet){

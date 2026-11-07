@@ -74,6 +74,16 @@ public class VendorSellTests
         Assert.Equal((ushort)expectedSlot, VendorHandler.ParseSellSlot(request));
     }
 
+    [Theory]
+    // The real client offered "Recycle Detect Vulnerability for $i 500?" (10,000 ability code).
+    [InlineData(0x80001c00u, 500u)]
+    // Retail recycles of 30,000 weapons paid 1,500.
+    [InlineData(7873u, 1500u)]
+    public void RecyclePaysFivePercentOfTheVendorPrice(uint goId, uint expected)
+    {
+        Assert.Equal(expected, VendorPricing.GetRecyclePrice(goId));
+    }
+
     [Fact]
     public void TryApplySellUsesDefaultBuybackForUnknownItem()
     {

@@ -279,5 +279,13 @@ This checklist tracks the current modernization push from "builds locally" to "f
     - `81 12 00` + GoID + 4-byte descriptor + u32 price
 
     It's tested byte for byte against the retail FM-13SK sell (`VendorSellReplyTests`). Live: selling the Shotgun (slot 10) cleared the cell, updated cash to match the DB, and listed the item under Buy Back. The descriptor (`00 00 00 XX`) is only partly decoded; we send `00 00 00 10`.
-  - Same retail pattern, not applied yet: vendor **buy** replies are `5e` + `80 e7` (negative delta, reason 8) + `80 e4` (reason 8) + `81 0f`, and **recycle** replies are `80 e7`/`80 e4` with reason `0x0f` + `5f`. Our buy and recycle paths still send the old shapes (recycle's `5f` now ends in `01`).
+  - **Vendor buy (2026-11-07):** the reply now matches the 45 retail buys: `5e` add (slot, GoID, `00 00 00 10`, `01`), then `80 e7` (−price, reason 8), then `80 e4` (reason 8), then `81 0f` (GoID, descriptor, price, `00`). Live: Detect Vulnerability appeared in the grid and cash dropped by 10,000.
+  - **Recycle (2026-11-07):**
+    - Request: `5d` + slot (u16 LE) + `01 01`.
+    - Reply: `80 e7` (+value, reason `0x0f`), then `80 e4` (reason `0x0f`), then `5f`.
+    - Value: 5% of the vendor price. The client computes it itself ("Recycle Detect Vulnerability for $i 500?"), and retail recycles of 30,000 weapons paid 1,500.
+    - Live: the client printed "You gained 500 information from recycling an item." The reason code drives that message.
+    - Fixed along the way: reading `goid` with `GetInt32` overflowed on ability codes (`0x80001c00`) and crashed the server.
+  - **Item move:** `65` + source slot + destination slot (both u16 LE) + `00`. The server echoes the request, exactly as retail does. Verified live.
+  - **Unhandled but harmless:** the client sends `3f <slot> 00 10 00 00 00` (214 times in retail). The retail server never replied to it.
   - The vendor experiment flow: `?gotopos 1194 8 -150` (`?gotopos` multiplies by 100) puts TheNeo next to Arison, the Mariah Projects item vendor. Double-click the vendor, select an inventory item, then click Sell.

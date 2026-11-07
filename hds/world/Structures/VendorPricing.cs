@@ -45,6 +45,23 @@ namespace hds
             return DefaultBuyPrice;
         }
 
+        /// <summary>
+        /// Info paid for recycling an item: 5% of its vendor price. The real client computes and shows
+        /// this itself ("Recycle Detect Vulnerability for $i 500?" for the 10,000 ability), and retail
+        /// recycles of 30,000 weapons paid 1,500.
+        /// </summary>
+        public static UInt32 GetRecyclePrice(UInt32 itemGoId)
+        {
+            UInt32 price = GetBuyPrice(itemGoId);
+            if (price == DefaultBuyPrice && (itemGoId & AbilityCodeFlag) != 0)
+            {
+                // Leveled ability codes aren't in the price table; fall back to the base code.
+                price = GetBuyPrice(itemGoId & AbilityCodeMask);
+            }
+
+            return price / 20;
+        }
+
         public static UInt32 GetSellPrice(UInt32 itemGoId)
         {
             if (itemGoId == 0)

@@ -20,6 +20,9 @@ namespace hds
         public bool timed = false;
         public bool isRPCReset = false;
 
+        /// <summary>Minimum gap between two sim-time stamped (0x82) packets.</summary>
+        public const float SimTimeIntervalSeconds = 3.0f;
+
         public WorldPacket(ClientData _playerData)
         {
             this.playerData = _playerData;
@@ -69,10 +72,14 @@ namespace hds
             playerData.IncrementSseq();
             this.neededAckSSeq = playerData.getSseq();
 
-            if ((NumericalUtils.ByteArrayToUint32(TimeUtils.getCurrentSimTime(), 1) - playerData.lastSimTimeUpdate) > 3)
+            // Stamp the sim time on the first packet and then at most every SimTimeIntervalSeconds.
+            // This used to subtract raw float bit patterns, so when it fired was arbitrary.
+            float simNow = TimeUtils.GetSimTimeSeconds();
+            if (playerData.lastSimTimeUpdate == 0 || simNow - playerData.lastSimTimeSeconds >= SimTimeIntervalSeconds)
             {
                 timed = true;
-                playerData.lastSimTimeUpdate = NumericalUtils.ByteArrayToUint32(TimeUtils.getCurrentSimTime(),1);
+                playerData.lastSimTimeUpdate = 1;
+                playerData.lastSimTimeSeconds = simNow;
             }
 
 

@@ -100,6 +100,17 @@ The Ghidra project is kept at `~/Developer/mxo-client/ghidra/` (project `mxo`). 
 
 Fixed: **about half of world logins used to stall at "Negotiating with Servers..."**. The server queued the self-spawn after the client's `CLIENT_SPAWN_READY` (RPC 5), but `DeletedAckedPackets` deleted any queued message with `neededAck <= ackSeq`. An unsent message still has `neededAck` 0, so a client ack arriving before the next flush deleted the spawn unsent; the packet log showed the 199-byte self-spawn object packet missing entirely. Messages now only count as acked once sent (`SequencedMessage.IsAckedBy`). Verified: a fresh login and two relogins in one server run all reached the world.
 
+Open: **the client sometimes stops acting on server RPCs partway through a session.** No chat, vendor windows or other RPC-driven UI shows up after that point, though packets keep arriving and are acked. In 2026-11-07 tests it always happened in the burst right after a teleport:
+- The client requests dozens of static objects (RPC `c9`).
+- The server used to answer each request with two debug chat messages, hundreds within seconds and 5–7 per packet.
+- With those debug messages moved to the server log (`MXO_CHAT_DEBUG=1` brings them back), the vendor opened in 2 of 2 sessions, against 0 of 3 just before. Earlier sessions with the flood sometimes worked, so this is likely but not proven.
+
+Two related fixes changed nothing measurable on their own:
+- The server sim time on `0x82` packets is now seconds of uptime, like retail. It used to be Unix seconds ÷ 1000, decided by comparing raw float bits.
+- Object-message resends are now opt-in (`MXO_OBJECT_RESEND=1`).
+
+A known remaining bug: the ack-only branch of `FlushQueue` sets `timed` on the content packet instead of the ack packet.
+
 To compare sessions, the packet log has every encrypted world packet in both directions. The scratch parser used for this listed direction, time, PSS/CSEQ/SSEQ, size and leading bytes for a time range.
 
 Driving the client without a human: run `launcher.exe -nopatch -noeula`, focus the launcher window (it doesn't come to the front by itself), type the username, then any placeholder password with `MXO_DEV_ANY_PASSWORD=1`, then CONTINUE, select the character, and SELECT. In game, `?gotopos x y z` teleports. It multiplies by 100, so pass the database/static-object coordinates divided by 100. The chat box ignores pasted text, so type commands key by key. `Windowed = 1` stalls the client at "Registering with Servers..." and isn't usable.
