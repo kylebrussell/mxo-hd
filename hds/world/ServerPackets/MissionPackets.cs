@@ -196,6 +196,34 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// 80 a2: mission end, 24 bytes after the header. Retail's completed first mission (crashover2k
+        /// create_char_devoted, 06:10:51): 80 a2 00 | 01000000 | 2d020000 | 08520000 | b80b0000 | 00x7 =
+        /// status 00 (complete), 1, 557 (not shown as payment; an id?), info 21,000, EXP 3,000. The client's
+        /// Mission summary shows "Payment: $i info, +EXP XP" from the last two. Status 08 is the abort.
+        /// </summary>
+        public static byte[] BuildMissionComplete(UInt32 exp, UInt32 info)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80A2");
+            pak.AddByte(0x00);
+            pak.AddUint32(1, 1);
+            pak.AddUint32(0, 1);
+            pak.AddUint32(info, 1);
+            pak.AddUint32(exp, 1);
+            pak.AddHexBytes("00000000000000");
+            return pak.ReturnFinalPacket();
+        }
+
+        public void SendMissionComplete(WorldClient client, UInt32 exp, UInt32 info)
+        {
+            // Retail cleared the own-view MissionKey when the mission ended (02 00 02 80 40 00 00 00 00).
+            PacketContent clear = new PacketContent();
+            clear.AddHexBytes("020002804000000000");
+            client.messageQueue.addObjectMessage(clear.ReturnFinalPacket(), false);
+            client.messageQueue.addRpcMessage(BuildMissionComplete(exp, info));
+        }
+
         public void SendMissionAbort(WorldClient client)
         {
             // Retail cleared the own-view MissionKey on abort (02 00 02 80 40 00 00 00 00).

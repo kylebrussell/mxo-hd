@@ -102,6 +102,22 @@ public class MissionTests
     }
 
     [Fact]
+    public void MissionCompleteMatchesRetail()
+    {
+        // Retail first-mission completion: 80 a2 00 01000000 2d020000 08520000 b80b0000 00x7
+        // (we send 0 for the 557 field; info and EXP are what the client shows as payment)
+        byte[] message = ServerPackets.BuildMissionComplete(3000, 21000);
+        Assert.Equal(26, message.Length);
+        Assert.Equal("80a2" + "00" + "01000000" + "00000000" + "08520000" + "b80b0000" + "00000000000000", Hex(message));
+    }
+
+    [Fact]
+    public void MissionExperienceUsesTheMissionGainType()
+    {
+        Assert.Equal("80e6" + "f4010000" + "02000000", Hex(ServerPackets.BuildEXPGain(500, ServerPackets.ExpGainMission)));
+    }
+
+    [Fact]
     public void WaypointMatchesRetail()
     {
         // Retail: 80 9e 00 <27800 f64> <8945 f64> <-4600 f64> 01 00 00 00 22 01 80 07
