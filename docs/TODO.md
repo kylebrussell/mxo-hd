@@ -272,5 +272,12 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [ ] Use new packet evidence to implement vendor selling.
   - New buy/open/sell evidence should first be used to map the `CLIENT_VENDOR_BUY` and `CLIENT_VENDOR_SELL` sequence bytes plus related `5e`, `5f`, `80 e7`, `80 e4`, `81 0f`, and `81 12` follow-up packets. Final sell semantics still need known before/after cash and inventory state, but the checked-in corpus now has true top-level `CLIENT_VENDOR_SELL` anchors.
   - **Resolved 2026-11-06 with the real client: the `81 11` field is the inventory slot, 2 bytes big-endian.** Selling the item in DB slot 0 (AutomaticRifle7) sent `00 00`, and the item in DB slot 11 (Submachinegun7) sent `00 0b`. A vendor-list index can't produce those values. The retail `00 45`..`00 58` are slots 69..88, i.e. later inventory pages. `processSellItem` read the bytes little-endian, so every slot except 0 failed with "nothing to sell". Fixed in `VendorHandler.ParseSellSlot` with tests.
-  - **Open: the client UI doesn't reflect a server-side sell.** After the slot-0 sell the server removed the DB row and credited 3,000 (10% of 30,000), but the client kept showing the rifle and the old cash. So the current reply (`sendInventoryItemDelete`, `SendInfoCurrent`, best-guess `81 12`) isn't what the client acts on. The next step is to log the server's outgoing RPCs for a sell and compare them with the retail `80 e7 -> 80 e4 -> 5f -> 81 12` sequence.
+  - **Resolved 2026-11-07: the client UI now updates after a sell.** Our reply used to be `5f` (ending in `00`), `80 e4` (reason 0), and an empty `81 12`, and the client ignored it. All 11 retail sells in `research/packet-dumps` get the same four-message RPC list, which we now send:
+    - `80 e7` + i64 cash delta + u32 reason 7
+    - `80 e4` + u32 new cash + u32 reason 7
+    - `5f` + slot (u16 LE) + `01`
+    - `81 12 00` + GoID + 4-byte descriptor + u32 price
+
+    It's tested byte for byte against the retail FM-13SK sell (`VendorSellReplyTests`). Live: selling the Shotgun (slot 10) cleared the cell, updated cash to match the DB, and listed the item under Buy Back. The descriptor (`00 00 00 XX`) is only partly decoded; we send `00 00 00 10`.
+  - Same retail pattern, not applied yet: vendor **buy** replies are `5e` + `80 e7` (negative delta, reason 8) + `80 e4` (reason 8) + `81 0f`, and **recycle** replies are `80 e7`/`80 e4` with reason `0x0f` + `5f`. Our buy and recycle paths still send the old shapes (recycle's `5f` now ends in `01`).
   - The vendor experiment flow: `?gotopos 1194 8 -150` (`?gotopos` multiplies by 100) puts TheNeo next to Arison, the Mariah Projects item vendor. Double-click the vendor, select an inventory item, then click Sell.

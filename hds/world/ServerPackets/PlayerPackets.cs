@@ -120,13 +120,50 @@ namespace hds
             client.messageQueue.addRpcMessage(pakAnimation.ReturnFinalPacket());
         }
 
-        public void SendInfoCurrent(WorldClient client, UInt32 info)
+        /// <summary>Reason codes the retail server put on 80 e7 / 80 e4 cash messages.</summary>
+        public const UInt32 InfoReasonLoad = 0x00;
+        public const UInt32 InfoReasonVendorSell = 0x07;
+        public const UInt32 InfoReasonVendorBuy = 0x08;
+        public const UInt32 InfoReasonRecycle = 0x0f;
+
+        public void SendInfoCurrent(WorldClient client, UInt32 info, UInt32 reason = InfoReasonLoad)
+        {
+            client.messageQueue.addRpcMessage(BuildInfoCurrent(info, reason));
+        }
+
+        /// <summary>
+        /// 80 e4: new absolute cash (u32 LE), then a reason code (u32 LE). Retail only used reason 0
+        /// while loading the world; every mid-session change carried a nonzero reason and came right
+        /// after an 80 e7. Retail FM-13SK sell: "80 e4 97 e1 7a 00 07 00 00 00" (8,053,143, reason 7).
+        /// </summary>
+        internal static byte[] BuildInfoCurrent(UInt32 info, UInt32 reason)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_INFO, 0);
             pak.AddUint32(info, 1);
-            pak.AddHexBytes("00000000");
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            pak.AddUint32(reason, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        public void SendInfoDelta(WorldClient client, long delta, UInt32 reason)
+        {
+            client.messageQueue.addRpcMessage(BuildInfoDelta(delta, reason));
+        }
+
+        /// <summary>
+        /// 80 e7: signed cash change (i64 LE), then the reason code (u32 LE). Retail FM-13SK sell:
+        /// "80 e7 88 13 00 00 00 00 00 00 07 00 00 00" (+5000, reason 7).
+        /// </summary>
+        internal static byte[] BuildInfoDelta(long delta, UInt32 reason)
+        {
+            byte[] deltaBytes = new byte[8];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(deltaBytes, delta);
+
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x80e7, 0);
+            pak.AddByteArray(deltaBytes);
+            pak.AddUint32(reason, 1);
+            return pak.ReturnFinalPacket();
         }
 
         // Updates the Inner Strenght Value

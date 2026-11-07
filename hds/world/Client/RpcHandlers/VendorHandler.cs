@@ -67,25 +67,24 @@ namespace hds{
             }
 
             long currentCash = Store.currentClient.playerData.getInfo();
-            if (!VendorPricing.TryApplySell(currentCash, itemGoID, out UInt32 newCash, out UInt32 _))
+            if (!VendorPricing.TryApplySell(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
             {
                 packets.sendSystemChatMessage(Store.currentClient,
                     "This item cannot be sold.", "MODAL");
                 return;
             }
 
-            // Remove the sold item from the inventory (DB row delete + client delete packet).
-            InventoryHandler inventory = new InventoryHandler();
-            inventory.removeItemAtSlot(slot);
-
-            // Credit the player (mirrors processBuyItem's cash flow).
+            // Update the DB first, then answer in the retail order:
+            // 80 e7 (+price) -> 80 e4 (new cash) -> 5f (remove slot) -> 81 12 (sell complete).
+            UInt32 charId = Store.currentClient.playerData.getCharID();
+            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
             Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
             Store.currentClient.playerData.setInfo(newCash);
-            packets.SendInfoCurrent(Store.currentClient, newCash);
 
-            // Best-effort sell acknowledgement (lead: 5f ack already sent via the item delete,
-            // 81 12 sell complete here). See SendVendorSellAck for the capture-pending caveat.
-            packets.SendVendorSellAck(Store.currentClient);
+            packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorSell);
+            packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorSell);
+            packets.sendInventoryItemDelete(slot, Store.currentClient);
+            packets.SendVendorSellAck(Store.currentClient, itemGoID, price);
         }
     }
 }
