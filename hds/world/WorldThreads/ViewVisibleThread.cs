@@ -739,12 +739,19 @@ namespace hds
 
                     ClientView view = otherclient.viewMan.GetViewForEntityAndGo(deadClient.playerData.getEntityId(),
                         NumericalUtils.ByteArrayToUint16(deadClient.playerInstance.GetGoid(), 1));
-
-                    Store.dbManager.WorldDbHandler.SetOnlineStatus(otherclient.playerData.getCharID(), 0);
-                    ServerPackets pak = new ServerPackets();
-                    pak.sendDeleteViewPacket(otherclient, view.ViewID);
-                    Store.margin.RemoveClientsByCharId(otherclient.playerData.getCharID());
+                    if (view != null)
+                    {
+                        new ServerPackets().sendDeleteViewPacket(otherclient, view.ViewID);
+                    }
                 }
+
+                // Release the dead client's own character. This used to run inside the loop above
+                // with otherclient's charId, so it marked the *other* players offline and dropped
+                // *their* margin entries, while the dead character stayed "already in use" until
+                // a server restart.
+                UInt32 deadCharId = deadClient.playerData.getCharID();
+                Store.dbManager.WorldDbHandler.SetOnlineStatus(deadCharId, 0);
+                Store.margin.RemoveClientsByCharId(deadCharId);
 
                 string handle = StringUtils.charBytesToString_NZ(deadClient.playerInstance.CharacterName.getValue());
                 new BuddylistHandler().ProcessAnnounceFriendsOffline(deadClient.playerData.getCharID(), handle);
