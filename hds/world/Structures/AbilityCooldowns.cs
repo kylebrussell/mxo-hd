@@ -43,6 +43,12 @@ namespace hds
         {
             { 6, new Cooldown(60) },            // Consistent Technique
             { 55, new Cooldown(43) },           // Patcher
+            // Lower Logic Blasts / Logic Bomb 1 were not captured; the client tooltip gives Logic Blast 1.0
+            // "Re-use Timer: 4secs", so they follow Logic Blast 3.0 / Logic Bomb 2 below.
+            { 57, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 1.0
+            { 58, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 2.0
+            { 59, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 3 (old id)
+            { 60, new Cooldown(2, VirusDamage1, 2) },  // Logic Bomb 1
             { 72, new Cooldown(13) },           // Resist Combat
             { 77, new Cooldown(4, Heal2, 4) },  // Repair RSI 1.0
             { 97, new Cooldown(58) },           // UI Lag 1.0

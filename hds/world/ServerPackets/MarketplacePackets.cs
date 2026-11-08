@@ -60,9 +60,10 @@ namespace hds
             return Framed(0x8125, morePages ? 1u : 0u, rows.ReturnFinalPacket(), rows.ReturnFinalPacket().Length);
         }
 
-        /// <summary>81 2a, the player's own listings when the marketplace opens: goid, descriptor, sold (u8),
-        /// listing id, price, delist price, listed time. Retail's one sample (1 listing, 25 bytes) gave the length
-        /// as 24 (18 00), so the length is written as 24 per listing; with several listings that is a guess.</summary>
+        /// <summary>81 2a, the player's own listings when the marketplace opens: 24 bytes per listing, goid,
+        /// descriptor, listing id, price, delist price, listed time. Retail's one sample had a 00 after the descriptor
+        /// (25 bytes, length still 24); with that byte the 7.6005 client read every field one byte early (a 101,000
+        /// listing showed 25,856,000, and De-list sent listing id 256 for 1), so it is left out.</summary>
         public static byte[] MyListings(IList<MarketListing> listings)
         {
             PacketContent rows = new PacketContent();
@@ -70,7 +71,6 @@ namespace hds
             {
                 rows.AddUint32(listing.GoId, 1);
                 rows.AddUint32(listing.Descriptor, 1);
-                rows.AddByte(listing.Sold ? (byte) 1 : (byte) 0);
                 rows.AddUint32(listing.Id, 1);
                 rows.AddUint32(listing.Price, 1);
                 rows.AddUint32(listing.DelistPrice, 1);

@@ -123,7 +123,11 @@ namespace hds{
             client.FlushQueue();
         }
 
-        /// <summary>Client 81 26 &lt;listing id&gt; &lt;slot&gt;: buy a listing.</summary>
+        /// <summary>
+        /// Client 81 26 &lt;listing id&gt; &lt;slot&gt;: buy a listing. The client's De-list button sends the same request
+        /// for the player's own listing: the item comes back for the delist price (no capture shows retail's answer,
+        /// so it gets the buyer's records).
+        /// </summary>
         public void ProcessBuyItem(ref byte[] packet)
         {
             UInt32 listingId;
@@ -138,6 +142,8 @@ namespace hds{
             MarketListing listing;
             UInt16 slot;
             long newInfo;
+            bool delist;
+            UInt32 cost;
             lock (BuyLock)
             {
                 listing = Db.Find(listingId);
@@ -147,14 +153,11 @@ namespace hds{
                     return;
                 }
 
-                if (listing.SellerCharId == buyerId)
-                {
-                    Notice(buyer, "You cannot buy your own item.");
-                    return;
-                }
+                delist = listing.SellerCharId == buyerId;
+                cost = delist ? listing.DelistPrice : listing.Price;
 
                 long info = buyer.playerData.getInfo();
-                if (info < listing.Price)
+                if (info < cost)
                 {
                     Notice(buyer, "You do not have enough information.");
                     return;
@@ -177,7 +180,7 @@ namespace hds{
 
                 slot = (UInt16) free;
                 Db.AddInventoryItem(buyerId, slot, listing.GoId, listing.Descriptor);
-                newInfo = info - listing.Price;
+                newInfo = info - cost;
                 buyer.playerData.setInfo(newInfo);
                 Store.dbManager.WorldDbHandler.SaveInfo(buyer, newInfo);
             }
@@ -186,13 +189,17 @@ namespace hds{
             byte amount = (byte) ((listing.Descriptor >> 16) & 0xff);
             byte type = (byte) (listing.Descriptor >> 24);
             buyer.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(slot, listing.GoId, amount, type));
-            buyer.messageQueue.addRpcMessage(ServerPackets.BuildInfoDelta(-(long) listing.Price, MarketplacePackets.InfoReasonMarketplace));
+            buyer.messageQueue.addRpcMessage(ServerPackets.BuildInfoDelta(-(long) cost, MarketplacePackets.InfoReasonMarketplace));
             buyer.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent((UInt32) newInfo, MarketplacePackets.InfoReasonMarketplace));
             buyer.messageQueue.addRpcMessage(MarketplacePackets.Bought(listing, (byte) slot));
             buyer.FlushQueue();
-            Output.WriteDebugLog("[MARKET] " + buyerId + " bought listing " + listing.Id + " for " + listing.Price);
+            Output.WriteDebugLog("[MARKET] " + buyerId + (delist ? " delisted" : " bought") + " listing " + listing.Id +
+                                 " for " + cost);
 
-            PaySeller(listing);
+            if (!delist)
+            {
+                PaySeller(listing);
+            }
         }
 
         /// <summary>Retail's seller side is not captured: pay at once, with the buyer's packets for an info change.</summary>

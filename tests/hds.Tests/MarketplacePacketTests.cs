@@ -43,9 +43,10 @@ public class MarketplacePacketTests
     [Fact]
     public void MyListingsMatchesRetailOpen()
     {
-        // request_open_marketplace_loadingarea: one listing at 2,000,000 (delist price 100,000).
+        // request_open_marketplace_loadingarea: one listing at 2,000,000 (delist price 100,000), without the sample's
+        // 00 after the descriptor (the real client read the fields one byte early with it).
         var listing = new MarketListing {Id = 0x0012d186, GoId = 0x9af0, Descriptor = 0x04000000, Price = 2000000, DelistPrice = 100000, Created = 0x4a6e0830};
-        Assert.Equal(H("81 2a 09 00 00 00 00 00 00 18 00 f0 9a 00 00 00 00 00 04 00 86 d1 12 00 80 84 1e 00 a0 86 01 00 30 08 6e 4a"),
+        Assert.Equal(H("81 2a 09 00 00 00 00 00 00 18 00 f0 9a 00 00 00 00 00 04 86 d1 12 00 80 84 1e 00 a0 86 01 00 30 08 6e 4a"),
             H(MarketplacePackets.MyListings(new List<MarketListing> {listing})));
         Assert.Equal(100000u, MarketplacePackets.DelistPriceFor(2000000));
     }
