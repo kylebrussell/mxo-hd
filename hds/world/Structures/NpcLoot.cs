@@ -66,9 +66,8 @@ namespace hds
         {
             foreach (UInt32 goid in items)
             {
-                UInt16 slot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-                Store.dbManager.WorldDbHandler.AddItemToInventory(slot, goid);
-                new ServerPackets().sendInventoryItemAdd(slot, goid, 0, 0, client);
+                // Stacks onto an existing stack (Code Bits, pills) and refuses a full bag
+                UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
                 Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
             }
         }

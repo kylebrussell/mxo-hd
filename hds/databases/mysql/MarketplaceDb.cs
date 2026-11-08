@@ -153,6 +153,18 @@ namespace hds.databases
             }
         }
 
+        /// <summary>Items in the stack at that slot (the count column; 0 and 1 both mean a single item).</summary>
+        public int GetInventoryCount(UInt32 charId, UInt16 slot)
+        {
+            using (var conn = Open())
+            using (var cmd = Cmd(conn, "SELECT count FROM inventory WHERE charId = @c AND slot = @s LIMIT 1",
+                       "@c", (long) charId, "@s", (int) slot))
+            {
+                object value = cmd.ExecuteScalar();
+                return value == null || value is DBNull ? 0 : Convert.ToInt32(value);
+            }
+        }
+
         public void RemoveInventoryItem(UInt32 charId, UInt16 slot)
         {
             using (var conn = Open())

@@ -55,6 +55,12 @@ namespace hds
             }
 
             UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            if (freeSlot == 0)
+            {
+                pak.sendSystemChatMessage(client, "Your inventory is full.", "BROADCAST");
+                Output.WriteDebugLog("[INVENTORY] No free bag slot for item " + itemID);
+                return 0;
+            }
             Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemID);
             pak.sendInventoryItemAdd(freeSlot, itemID, 0, type, client);
             return freeSlot;
@@ -178,6 +184,17 @@ namespace hds
 
             DelayedActions.AfterFor(client, castTime, () =>
             {
+                // The item may have been moved or listed during the cast: then nothing is used up and nothing happens
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                {
+                    lock (data.cooldownEndsAt)
+                    {
+                        data.cooldownEndsAt.Remove((UInt16)goid);
+                    }
+                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " left slot " + slot + " during the cast; not used");
+                    return;
+                }
+
                 AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
                     TimeUtils.GetSimTimeSeconds());
                 RemoveOne(client, slot);

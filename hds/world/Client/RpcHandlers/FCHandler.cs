@@ -84,6 +84,8 @@ namespace hds
         /// Client 78 &lt;type 1=faction 2=crew&gt; &lt;amount u32&gt; &lt;1=deposit 0=withdraw&gt;, answered with 79 to every
         /// online member (two-person capture 09:43:35: "78 02 64 00 00 00 01" then "79 02 64 00 00 00 &lt;char&gt; 01").
         /// </summary>
+        private static readonly object BankLock = new object();
+
         public void ProcessDepositMoney(ref byte[] rpcData)
         {
             if (rpcData.Length < 6)
@@ -104,25 +106,30 @@ namespace hds
                 return;
             }
 
-            long bank = type == SocialPackets.GroupFaction ? db.FetchFaction(groupId).money : db.GetCrewData(groupId).money;
-            long info = client.playerData.getInfo();
-            if (!CanMoveMoney(deposit, info, bank, amount))
+            // Check and move under one lock: two members withdrawing at once both passed the balance check.
+            long newInfo;
+            lock (BankLock)
             {
-                // The client has LTTRGS_ codes for this (e.g. CREWBANKINSUFFICIENTFUNDS) but no capture shows how they
-                // were delivered, so say it in plain text; nothing is moved.
-                new ServerPackets().sendSystemChatMessage(client,
-                    deposit ? "You do not have that much information." : "The bank does not hold that much information.", "SYSTEM");
-                return;
-            }
+                long bank = type == SocialPackets.GroupFaction ? db.FetchFaction(groupId).money : db.GetCrewData(groupId).money;
+                long info = client.playerData.getInfo();
+                if (!CanMoveMoney(deposit, info, bank, amount))
+                {
+                    // The client has LTTRGS_ codes for this (e.g. CREWBANKINSUFFICIENTFUNDS) but no capture shows how they
+                    // were delivered, so say it in plain text; nothing is moved.
+                    new ServerPackets().sendSystemChatMessage(client,
+                        deposit ? "You do not have that much information." : "The bank does not hold that much information.", "SYSTEM");
+                    return;
+                }
 
-            long newInfo = deposit ? info - amount : info + amount;
-            if (type == SocialPackets.GroupFaction)
-            {
-                if (deposit) db.IncreaseFactionMoney(groupId, amount); else db.DecreaseFactionMoney(groupId, amount);
-            }
-            else
-            {
-                if (deposit) db.IncreaseCrewMoney(groupId, amount); else db.DecreaseCrewMoney(groupId, amount);
+                newInfo = deposit ? info - amount : info + amount;
+                if (type == SocialPackets.GroupFaction)
+                {
+                    if (deposit) db.IncreaseFactionMoney(groupId, amount); else db.DecreaseFactionMoney(groupId, amount);
+                }
+                else
+                {
+                    if (deposit) db.IncreaseCrewMoney(groupId, amount); else db.DecreaseCrewMoney(groupId, amount);
+                }
             }
 
             db.SaveInfo(client, newInfo);

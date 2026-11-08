@@ -76,8 +76,13 @@ namespace hds{
                 Store.currentClient.playerData.setOnWorld(false);
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
-                // The client dropped all its views with the old world.
+                // The client dropped all its views with the old world, and any fight with them.
+                CombatManager.GetHandler(Store.currentClient).AbandonCombat();
                 Store.currentClient.viewMan.Clear();
+                lock (Store.currentClient.playerData.openDoors)
+                {
+                    Store.currentClient.playerData.openDoors.Clear(); // their views went with the old world
+                }
                 PlayerHandler handler = new PlayerHandler();
                 handler.processAttributes();
                 handler.processPlayerSetup();

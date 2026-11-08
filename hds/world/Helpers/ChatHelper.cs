@@ -160,7 +160,14 @@ namespace hds
                     pak.sendSystemChatMessage(Store.currentClient, "Teleported!", "BROADCAST");
                 }
 
-                if (command.Equals("?additem") && commands.Length == 2)
+                if (command.Equals("?additem") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1")
+                {
+                    // Creating items from nothing, sellable on the Marketplace: only on dev servers
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        "?additem is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+                else if (command.Equals("?additem") && commands.Length == 2)
                 {
                     // Dev command: put an item (by goid) into the first free bag slot with the same item-add
                     // RPC (5e) that looting and buying use. A gun added this way becomes the client's Free Fire

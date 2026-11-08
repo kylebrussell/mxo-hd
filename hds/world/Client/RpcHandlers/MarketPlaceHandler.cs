@@ -92,6 +92,13 @@ namespace hds{
                 return;
             }
 
+            // A listing holds one item: listing a stack would delete the whole stack and sell one.
+            if (Db.GetInventoryCount(charId, placement.Slot) > 1)
+            {
+                Notice(client, "Only single items can be listed. Split the stack first.");
+                return;
+            }
+
             MarketListing listing = new MarketListing
             {
                 Category = placement.Category,

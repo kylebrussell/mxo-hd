@@ -1087,19 +1087,36 @@ namespace hds.databases{
 	        OpenConnection();
             UInt32 charID = Store.currentClient.playerData.getCharID();
 
-            // We want the next free slot which is not in the "wearing" range (which starts with 97)
-            string sqlQuery = "SELECT inv.slot +1 as freeSlot FROM inventory inv WHERE NOT EXISTS (SELECT * FROM inventory inv2 WHERE inv2.slot = inv.slot + 1 AND charID = '" + charID.ToString() + "') AND charID = '" + charID.ToString() + "' AND slot<97 LIMIT 1";
+            // The lowest free bag slot, 1-96 (worn items start at 97). The old query returned the slot after the first
+            // used slot whose successor was free: 97 (a worn slot) when 96 was used, 0 for an empty bag.
+            string sqlQuery = "SELECT slot FROM inventory WHERE charId = '" + charID.ToString() + "' AND slot BETWEEN 1 AND " + LastBagSlot;
             queryExecuter = conn.CreateCommand();
             queryExecuter.CommandText = sqlQuery;
             dr = queryExecuter.ExecuteReader();
 
-            UInt16 freeSlot = 0;
+            var used = new System.Collections.Generic.HashSet<int>();
             while (dr.Read()){
-                freeSlot = (UInt16)dr.GetInt16(0);
+                used.Add(Convert.ToInt32(dr.GetValue(0)));
             }
             dr.Close();
 	        CloseConnection();
-            return freeSlot;
+            return LowestFreeBagSlot(used);
+        }
+
+        /// <summary>Last bag slot; 97 and up are worn items.</summary>
+        public const int LastBagSlot = 96;
+
+        /// <summary>The lowest bag slot (1-96) not in <paramref name="used"/>, or 0 when the bag is full.</summary>
+        public static UInt16 LowestFreeBagSlot(System.Collections.Generic.ICollection<int> used)
+        {
+            for (int slot = 1; slot <= LastBagSlot; slot++)
+            {
+                if (!used.Contains(slot))
+                {
+                    return (UInt16)slot;
+                }
+            }
+            return 0;
         }
 
         public void AddItemToInventory (UInt16 slotId, UInt32 itemGoID)

@@ -47,6 +47,32 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Drops the fight without the combat teardown packets, for a world reload (hardline teleport, Loading Area,
+        /// jack-out): the client has already dropped every view, so the teardown would address views it no longer
+        /// has, and an NPC that aggroed must not keep hitting the player in the next world.
+        /// </summary>
+        public void AbandonCombat()
+        {
+            CombatSession session = currentSession;
+            if (session == null)
+            {
+                isCombatRunning = false;
+                return;
+            }
+
+            Mob defender = session.DefenderMob;
+            session.OnCombatEnd -= HandleCombatEnd;
+            session.OnCombatTick -= HandleCombatTick;
+            session.Stop(CombatSession.CombatEndReason.AttackerFled);
+            defender?.clearCombatTarget();
+            RemoveCombatHandlerEntity(session);
+            isCombatRunning = false;
+            currentSession = null;
+            client.playerData.combatGeneration++; // the pending leave-combat reset belongs to the old world
+            Output.WriteDebugLog("[COMBAT] Fight dropped: the player's world reloaded");
+        }
+
         /// <summary>CombatantMode with a weapon drawn / ready to fight (retail).</summary>
         public const byte CombatantModeReady = 0x21;
 
@@ -385,7 +411,7 @@ namespace hds
                 bool playerDied = session.Type == CombatSession.CombatType.Ranged &&
                                   RangedWeapons.IsGun(session.DefenderMob.getWeapon())
                     ? NpcReturnFire(session)
-                    : session.DefenderMob.updateCombat(session.AttackerTactic);
+                    : session.DefenderMob.updateCombat(session.AttackerTactic, session.Attacker);
                 session.Attacker.FlushQueue();
                 if (playerDied)
                 {
@@ -740,7 +766,7 @@ namespace hds
                 UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
                 damage = CombatCalculator.CalculateMobDamageWithTactics(mob.getLevel(), playerLevel, session.AttackerTactic);
                 damage = (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(mob.getWeapon())));
-                died = mob.HitCombatTarget(damage);
+                died = mob.HitCombatTarget(damage, 0, player);
             }
             Output.WriteDebugLog($"[COMBAT] {mob.getName()} fires back: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
 
