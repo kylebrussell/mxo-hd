@@ -408,10 +408,21 @@ namespace hds
 
                 // Phase 3: Mob attacks the player back (with player's defensive tactic applied). An NPC with a gun
                 // shoots back in a gunfight; others keep the close-combat counterattack.
-                bool playerDied = session.Type == CombatSession.CombatType.Ranged &&
-                                  RangedWeapons.IsGun(session.DefenderMob.getWeapon())
-                    ? NpcReturnFire(session)
-                    : session.DefenderMob.updateCombat(session.AttackerTactic, session.Attacker);
+                bool playerDied;
+                if (session.Type == CombatSession.CombatType.Ranged && RangedWeapons.IsGun(session.DefenderMob.getWeapon()))
+                {
+                    playerDied = NpcReturnFire(session);
+                }
+                else if (session.Type == CombatSession.CombatType.Ranged && !NpcInMeleeReach(session))
+                {
+                    // A melee NPC can't hit a shooter from afar: it runs up this round and hits from the next
+                    NpcClosesIn(session);
+                    playerDied = false;
+                }
+                else
+                {
+                    playerDied = session.DefenderMob.updateCombat(session.AttackerTactic, session.Attacker);
+                }
                 session.Attacker.FlushQueue();
                 if (playerDied)
                 {
@@ -593,6 +604,19 @@ namespace hds
                 return;
             }
 
+            // The first shot needs the target in range as much as the later ones do
+            float metres = CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
+                targetMob.getXPos(), targetMob.getYPos(), targetMob.getZPos());
+            if (metres > RangedWeapons.RangeMetres(PlayerGun(client)))
+            {
+                Output.WriteDebugLog($"[COMBAT] Range combat refused: target {metres:F1} m away");
+                client.playerInstance.CombatantMode.setValue(CombatantModeIdle);
+                client.messageQueue.addObjectMessage(ServerPackets.BuildCombatantModeUpdate(CombatantModeIdle), false);
+                new ServerPackets().sendSystemChatMessage(client, "Target is out of range.", "SYSTEM");
+                client.FlushQueue();
+                return;
+            }
+
             StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
 
             currentSession = new CombatSession(
@@ -723,6 +747,35 @@ namespace hds
         {
             byte attackClass = RangedWeapons.AttackClass(PlayerGun(player));
             return attackClass == 0 ? RangedWeapons.ClassPistol : attackClass;
+        }
+
+        /// <summary>How close (metres) a melee NPC must be to hit a player.</summary>
+        public const float MeleeReachMetres = 3f;
+
+        public static bool InMeleeReach(float metres)
+        {
+            return metres <= MeleeReachMetres;
+        }
+
+        private static bool NpcInMeleeReach(CombatSession session)
+        {
+            Mob mob = session.DefenderMob;
+            return InMeleeReach(CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
+                mob.getXPos(), mob.getYPos(), mob.getZPos()));
+        }
+
+        /// <summary>The NPC runs up to arm's length and faces the player, as an aggroing NPC does.</summary>
+        private static void NpcClosesIn(CombatSession session)
+        {
+            Mob mob = session.DefenderMob;
+            double px = 0, py = 0, pz = 0;
+            NumericalUtils.LtVector3dToDoubles(session.Attacker.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+            MobAggro.StopPoint(px, pz, mob.getXPos(), mob.getZPos(), MobAggro.MeleeDistanceUnits, out double x, out double z);
+            mob.setXPos(x);
+            mob.setZPos(z);
+            mob.setRotation(MobAggro.YawTowards(x, z, px, pz));
+            mob.updateAnimation((byte)Mob.Animations.STAND);
+            Output.WriteDebugLog($"[COMBAT] {mob.getName()} closes in on the shooter");
         }
 
         /// <summary>

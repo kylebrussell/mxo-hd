@@ -162,7 +162,10 @@ namespace hds
             if (data.isDead || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
                 (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
             {
-                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " ignored: dead or its timer is running");
+                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");
+                // Answered like retail's refused uses, so the client doesn't wait on it
+                client.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(abilityId, AbilityCooldowns.DeniedTimerRunning));
+                client.FlushQueue();
                 return true;
             }
 
