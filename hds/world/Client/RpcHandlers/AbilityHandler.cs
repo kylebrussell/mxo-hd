@@ -70,7 +70,10 @@ namespace hds
 
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
-                Output.WriteDebugLog("[ABILITY] Still cooling down; ignored");
+                Output.WriteDebugLog("[ABILITY] Still cooling down; denied");
+                Store.currentClient.messageQueue.addRpcMessage(
+                    AbilityCooldowns.BuildDenied(AbilityID, AbilityCooldowns.DeniedTimerRunning));
+                Store.currentClient.FlushQueue();
                 return;
             }
 
