@@ -170,6 +170,27 @@ public class PlayerProgressionTests
         Assert.Null(AbilityProgression.GrantOf(45));
     }
 
+    // ---- buying abilities --------------------------------------------------------------------------------------
+
+    [Fact]
+    public void BuyingAnAbilityMatchesRetail()
+    {
+        // others_buyawakend: 81 0e 00 08 00 80 00 at 100 info, bag slot 0x58.
+        const uint awakened = 0x80000800;
+        Assert.True(AbilityProgression.IsAbilityCode(awakened));
+        Assert.False(AbilityProgression.IsAbilityCode(2399));
+
+        Assert.Equal("5e58002e0000000108008001", Hex(ServerPackets.BuildAbilityCodeAdd(0x58, awakened)));
+        Assert.Equal("810f2e000000010800806400000000", Hex(ServerPackets.BuildAbilityCodeBuyAck(awakened, 100)));
+    }
+
+    [Fact]
+    public void KnownAbilityEntrySharesTheCodeStorageLayout()
+    {
+        Assert.Equal("5e2400000000000108008000",
+            Hex(ServerPackets.BuildKnownAbilityAdd(0x24, AbilityProgression.AbilityCodeValue(0x80000800))));
+    }
+
     // ---- attributes --------------------------------------------------------------------------------------------
 
     [Fact]
@@ -180,6 +201,32 @@ public class PlayerProgressionTests
         Assert.Equal(2, raise.Points);
 
         Assert.Equal("80b60800000000000100005100000009", Hex(ServerPackets.BuildAttributeRaised(0x51, 9)));
+    }
+
+    [Fact]
+    public void SpentPointsListUsesRetailLayout()
+    {
+        // Warboy, level 50: 03 4e000000 1600 52000000 1900 54000000 0200.
+        byte[] list = CharacterAttributes.BuildSpentPoints(new Dictionary<byte, ushort>
+        {
+            { CharacterAttributes.Focus, 30 }, { CharacterAttributes.Perception, 8 }, { CharacterAttributes.Reason, 8 },
+            { CharacterAttributes.Belief, 33 }, { CharacterAttributes.Vitality, 10 }
+        });
+        Assert.Equal("034e000000160052000000190054000000" + "0200", Hex(list));
+    }
+
+    [Fact]
+    public void FreshCharacterHasSpentNothing()
+    {
+        Assert.Equal("00", Hex(CharacterAttributes.BuildSpentPoints(CharacterAttributes.All.ToDictionary(
+            a => a, a => CharacterAttributes.StartingValue))));
+    }
+
+    [Fact]
+    public void CharactersWithoutRowsKeepTheOldList()
+    {
+        Assert.Equal("03510000000400520000000b00540000000100",
+            Hex(CharacterAttributes.BuildSpentPoints(new Dictionary<byte, ushort>())));
     }
 
     [Fact]

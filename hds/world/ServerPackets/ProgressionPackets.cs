@@ -50,6 +50,40 @@ namespace hds
             return StringUtils.hexStringToBytes("2e1700000000000000000000008900006000000000000000000000000000000000000000");
         }
 
+        /// <summary>A bought ability in the bag: <c>5e 58 00 2e 00 00 00 01 08 00 80 01</c> (retail, Awakened in slot 0x58).</summary>
+        public static byte[] BuildAbilityCodeAdd(UInt16 slot, UInt32 abilityGoid)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x5e);
+            pak.AddUint16(slot, 1);
+            pak.AddUint32(AbilityProgression.AbilityCodeItem, 1);
+            pak.AddUint32(AbilityProgression.AbilityCodeValue(abilityGoid), 1);
+            pak.AddByte(0x01);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>The 81 0f answer to buying an ability: <c>81 0f 2e 00 00 00 01 08 00 80 64 00 00 00 00</c> (retail, 100 info).</summary>
+        public static byte[] BuildAbilityCodeBuyAck(UInt32 abilityGoid, UInt32 price)
+        {
+            return BuildVendorBuyAck(AbilityProgression.AbilityCodeItem,
+                NumericalUtils.uint32ToByteArray(AbilityProgression.AbilityCodeValue(abilityGoid), 1), price);
+        }
+
+        /// <summary>
+        /// A new entry in the known-abilities list, which also holds code storage: <c>5e slot u16, 00 00 00 00, value u32, 00</c>.
+        /// No capture uploads an ability, so this follows the code storage records of the same list.
+        /// </summary>
+        public static byte[] BuildKnownAbilityAdd(UInt16 slot, UInt32 value)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x5e);
+            pak.AddUint16(slot, 1);
+            pak.AddUint32(0, 1);
+            pak.AddUint32(value, 1);
+            pak.AddByte(0x00);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>80 b2: ability u16, level u16, slot u16. Retail: <c>80 b2 74 02 32 00 89 01</c>.</summary>
         public static byte[] BuildAbilityLoad(UInt16 ability, UInt16 level, UInt16 slot)
         {

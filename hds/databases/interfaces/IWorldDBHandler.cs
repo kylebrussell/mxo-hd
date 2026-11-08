@@ -56,6 +56,8 @@ namespace hds.databases.interfaces{
         /// <summary>The level of that ability in that slot, or null if the character has no such ability there.</summary>
         int? GetAbilityLevelAtSlot(UInt32 charId, UInt16 slot, Int32 abilityGoId);
         void SetAbilityLevel(UInt32 charId, UInt16 slot, int level);
+        bool HasAbility(UInt32 charId, Int32 abilityGoId);
+        void AddAbility(UInt32 charId, UInt16 slot, Int32 abilityGoId, int level);
         void SaveLevel(UInt32 charId, int level, UInt16 health, UInt16 maxHealth, UInt16 innerStrength, UInt16 maxInnerStrength);
         Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId);
         void SetCharacterAttribute(UInt32 charId, byte attribute, UInt16 value);

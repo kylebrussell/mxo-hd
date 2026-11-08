@@ -140,6 +140,24 @@ namespace hds
         /// <summary>The slot retail gave hidden abilities and attributes in 80 b2 (bytes 08 02).</summary>
         public const UInt16 HiddenSlot = 0x0208;
 
+        /// <summary>
+        /// The bag item of a bought ability. Retail, buying Awakened (81 0e 00 08 00 80 00): the bag got item 46 with the
+        /// ability's value, 0x80000801, as its descriptor: <c>5e 58 00 2e 00 00 00 01 08 00 80 01</c>.
+        /// </summary>
+        public const UInt32 AbilityCodeItem = 46;
+
+        /// <summary>Ability goids have the top bit set and sell on vendors like items (vendor_items.csv).</summary>
+        public static bool IsAbilityCode(UInt32 goid)
+        {
+            return (goid & 0x80000000) != 0;
+        }
+
+        /// <summary>The value at level 1, in the known-abilities packing (0x80000000 | id &lt;&lt; 10 | level).</summary>
+        public static UInt32 AbilityCodeValue(UInt32 goid)
+        {
+            return goid | 1;
+        }
+
         public static UInt32 LevelPrice(int level)
         {
             return (UInt32)(200 * level * level);
@@ -279,6 +297,36 @@ namespace hds
                 case Belief: return 25;
                 default: return 26;
             }
+        }
+
+        /// <summary>The fixed list of spent points the margin sent for every character before attributes were saved.</summary>
+        private static readonly byte[] LegacySpentPoints = StringUtils.hexStringToBytes("03510000000400520000000b00540000000100");
+
+        /// <summary>
+        /// The end of the margin's character block: count u8, then attribute u32 and points spent u16 for each raised
+        /// attribute. The client takes the points it offers from this. Retail, level 17 Trinity with base 8/5/8:
+        /// <c>03 51000000 0400 52000000 0b00 54000000 0100</c> (Reason 12, Belief 16, Vitality 9).
+        /// </summary>
+        public static byte[] BuildSpentPoints(Dictionary<byte, UInt16> values)
+        {
+            if (values.Count == 0)
+            {
+                return LegacySpentPoints;
+            }
+
+            List<byte> list = new List<byte> { 0 };
+            foreach (byte attribute in All)
+            {
+                if (values.TryGetValue(attribute, out UInt16 value) && value > StartingValue)
+                {
+                    list[0]++;
+                    list.AddRange(new byte[] { attribute, 0, 0, 0 });
+                    UInt16 spent = (UInt16)(value - StartingValue);
+                    list.Add((byte)spent);
+                    list.Add((byte)(spent >> 8));
+                }
+            }
+            return list.ToArray();
         }
 
         public struct Raise

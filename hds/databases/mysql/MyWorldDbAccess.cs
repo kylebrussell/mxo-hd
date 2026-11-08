@@ -1293,6 +1293,22 @@ namespace hds.databases{
 		    return level == null ? (int?)null : Convert.ToInt32(level);
 	    }
 
+	    public bool HasAbility(UInt32 charId, Int32 abilityGoId)
+	    {
+		    OpenConnection();
+		    queryExecuter = conn.CreateCommand();
+		    queryExecuter.CommandText = "SELECT COUNT(*) FROM char_abilities WHERE char_id = '" + charId + "' AND ability_id = '" + abilityGoId + "'";
+		    long rows = Convert.ToInt64(queryExecuter.ExecuteScalar());
+		    CloseConnection();
+		    return rows > 0;
+	    }
+
+	    public void AddAbility(UInt32 charId, UInt16 slot, Int32 abilityGoId, int level)
+	    {
+		    ExecuteNonResultQuery("INSERT INTO char_abilities SET char_id = '" + charId + "', slot = '" + slot + "', ability_id = '" + abilityGoId +
+		                          "', level = '" + level + "', is_loaded = 0, ability_name = 'Ability " + abilityGoId + "', added = NOW()");
+	    }
+
 	    public void SetAbilityLevel(UInt32 charId, UInt16 slot, int level)
 	    {
 		    ExecuteNonResultQuery("UPDATE char_abilities SET level = '" + level + "' WHERE char_id = '" + charId + "' AND slot = '" + slot + "'");

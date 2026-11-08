@@ -211,9 +211,27 @@ namespace hds.databases{
             queryExecuter.ExecuteNonQuery();
             conn.Close();
 
+            SetStartingAttributes(charID);
+        }
+
+        public void SetStartingAttributes(UInt32 charID)
+        {
             foreach (byte attribute in CharacterAttributes.All)
             {
                 addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.StartingValue, 0);
+            }
+        }
+
+        public Dictionary<byte, UInt16> LoadCharacterAttributes(int charId)
+        {
+            using (MatrixDbContext dbContext = CreateDbContext())
+            {
+                Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
+                foreach (CharAbility row in dbContext.CharAbilities.Where(ca => ca.CharId == charId && ca.Slot >= CharacterAttributes.FirstSlot))
+                {
+                    attributes[(byte)(row.Slot - CharacterAttributes.FirstSlot)] = (UInt16)row.Level;
+                }
+                return attributes;
             }
         }
 
