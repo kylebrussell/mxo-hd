@@ -52,26 +52,6 @@ namespace hds
             }
         }
 
-        public void SendWhisperMesage(WorldClient client, string receiverHandle, string message)
-        {
-            string senderHandleStringWithPrefix = "SOE+MXO+" + Store.worldConfig.serverName + "+" +
-                                                  StringUtils.charBytesToString_NZ(Store.currentClient.playerInstance
-                                                      .CharacterName.getValue());
-            
-            PacketContent pak = new PacketContent();
-            pak.AddByte((byte) RPCResponseHeaders.SERVER_CHAT_MESSAGE_RESPONSE);
-            pak.AddByte(0x11);
-            pak.AddByte(0x00);
-            pak.AddUint32(0,1); // Always zero
-            pak.AddUint32(36,1); // Offset Handle Name- maybe its only UInt16 - always 36
-            pak.AddUint32((uint) (36 + senderHandleStringWithPrefix.Length + 3), 1);
-            pak.AddHexBytes("000000000000000000000000000000000000000000"); 
-            pak.AddSizedTerminatedString(senderHandleStringWithPrefix);
-            pak.AddSizedTerminatedString(message);
-            
-            Store.world.SendRPCToOnePlayerByHandle(pak.ReturnFinalPacket(), receiverHandle);
-        }
-
         public void sendSystemChatMessage(WorldClient client, string message, string type)
         {
             byte typeByte;

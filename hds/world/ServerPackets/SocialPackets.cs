@@ -60,7 +60,8 @@ namespace hds
 
         // Friend list (80 d7) status byte: in the list sent at login 3b for a friend who is online and 3c for one who
         // is not (entilsar capture: the 3b handles are exactly those that also got 80 de). Answering adds, retail
-        // sent 84 for 27 handles and 41 for two; we read 41 as "no such handle" (not confirmed).
+        // sent 84 for 27 handles and 41 (with flag 0e instead of 8e) for two. The same 84/41 pair answers tells
+        // (2c), where 41 came back for a mistyped handle, so 41 = "no such handle".
         public const byte FriendOnlineListed = 0x3b;
         public const byte FriendListed = 0x3c;
         public const byte FriendAdded = 0x84;
@@ -250,15 +251,28 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
-        /// <summary>80 d7 08 00 &lt;status&gt; 00 00 8e &lt;sized handle&gt;: one friend list entry / add result.</summary>
+        /// <summary>The flag byte after a chat-service result: 8e normally, 0e with the failure code 41
+        /// (both in 80 d7 friend answers and in 2c tell acknowledgements).</summary>
+        private static byte ResultFlag(byte status) => status == FriendNotFound ? (byte) 0x0e : (byte) 0x8e;
+
+        /// <summary>80 d7 08 00 &lt;status&gt; 00 00 &lt;8e|0e&gt; &lt;sized handle&gt;: one friend list entry / add result.</summary>
         public static byte[] FriendListStatus(byte status, string handleWithPrefix)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_FRIENDLIST_STATUS_ADD, 0);
             pak.AddUint16(8, 1);
-            pak.AddByteArray(new byte[] {status, 0x00, 0x00, 0x8e});
+            pak.AddByteArray(new byte[] {status, 0x00, 0x00, ResultFlag(status)});
             pak.AddSizedTerminatedString(handleWithPrefix);
             return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>2c &lt;counter&gt; &lt;84|41&gt; 00 00 &lt;8e|0e&gt;: answer to the sender's tell (client 29), echoing the
+        /// client's per-tell counter. Retail: 84/8e when delivered (entilsar capture, counters 00..07), 41/0e for a
+        /// handle nobody has (mxopackets1_medanon_niobe3dualduality 03:12:51, "/tell afterehoruneo").</summary>
+        public static byte[] TellResult(byte counter, bool delivered)
+        {
+            byte status = delivered ? FriendAdded : FriendNotFound;
+            return new byte[] {0x2c, counter, status, 0x00, 0x00, ResultFlag(status)};
         }
 
         /// <summary>80 de 05 00 00 &lt;sized handle&gt;: a friend came online.</summary>

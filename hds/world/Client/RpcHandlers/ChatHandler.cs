@@ -51,19 +51,29 @@ namespace hds
 
         public void ProcessWhisperPlayer(ref byte[] rpcData)
         {
-            PacketReader reader = new PacketReader(rpcData);
-            // We read the offset but we dont need it really
-            UInt16 offsetName = reader.ReadUInt16(1);
-            UInt16 offsetMessage = reader.ReadUInt16(1);
-            uint unknownZeroShort = reader.ReadUint8();
-            uint chatCounter = reader.ReadUint8(); // ChatCounter (increment by 1 each message)
-            string receiverHandleServerString = reader.ReadSizedZeroTerminatedString();
-            string receiverMessage = reader.ReadSizedZeroTerminatedString();
+            // 29 07 00 2e 00 00 <counter> 25 00 "SOE+MXO+Vector-Hostile+AfterWhoruNeo" 23 00 <text>
+            // (mxopackets1_entilsar_enti_lastday2 21:45:22; the counter went 00, 01, 02 ... per tell).
+            string receiverHandleServerString;
+            string receiverMessage;
+            if (rpcData.Length < 6 ||
+                !SocialRequests.TryReadSized(rpcData, (rpcData[0] | (rpcData[1] << 8)) - 1, out receiverHandleServerString) ||
+                !SocialRequests.TryReadSized(rpcData, (rpcData[2] | (rpcData[3] << 8)) - 1, out receiverMessage))
+            {
+                return;
+            }
 
-            string cleanHandle = receiverHandleServerString.Replace("SOE+MXO+" + Store.worldConfig.serverName +"+", "");
-            
-            ServerPackets packets = new ServerPackets();
-            packets.SendWhisperMesage(Store.currentClient, cleanHandle, receiverMessage);
+            byte chatCounter = rpcData[5];
+            // The handle carries the "SOE+MXO+<server>+" prefix; whatever the server name, the handle follows the last '+'.
+            string cleanHandle = receiverHandleServerString.Substring(receiverHandleServerString.LastIndexOf('+') + 1);
+            WorldClient receiver = SocialHandler.FindOnlineByHandle(cleanHandle);
+            if (receiver != null)
+            {
+                string sender = "SOE+MXO+" + Store.worldConfig.serverName + "+" + SocialHandler.HandleOf(Store.currentClient);
+                SocialHandler.Send(receiver, SocialPackets.ChatMessage(SocialPackets.ChatTell, 0, sender, receiverMessage));
+            }
+
+            // Retail answered every tell with 2c: delivered, or 41 when nobody had that handle.
+            SocialHandler.Send(Store.currentClient, SocialPackets.TellResult(chatCounter, receiver != null));
         }
     }
 }

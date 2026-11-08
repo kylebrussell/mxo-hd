@@ -150,6 +150,27 @@ public class SocialPacketTests
     }
 
     [Fact]
+    public void TellPacketsMatchRetail()
+    {
+        string afterWhoruNeo = "SOE+MXO+Vector-Hostile+AfterWhoruNeo";
+        // mxopackets1_entilsar_enti_lastday2 21:45:46: an incoming tell (channel 11, char id 0, prefixed handle).
+        Assert.Equal(H("2e 11 00 00 00 00 00 24 00 00 00 4b 00 00 00" + Zeros(21) + " 25 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 41 66 74 65 72 57 68 6f 72 75 4e 65 6f 00 10 00 64 61 73 20 32 2e 20 6a 65 74 7a 74 20 32 32 00"),
+            H(SocialPackets.ChatMessage(SocialPackets.ChatTell, 0, afterWhoruNeo, "das 2. jetzt 22")));
+        // Same capture 21:59:08: delivered tell number 1; mxopackets1_medanon_niobe3dualduality 03:12:51: no such handle.
+        Assert.Equal(H("2c 01 84 00 00 8e"), H(SocialPackets.TellResult(1, true)));
+        Assert.Equal(H("2c 00 41 00 00 0e"), H(SocialPackets.TellResult(0, false)));
+    }
+
+    [Fact]
+    public void FriendNotFoundCarriesFailureFlag()
+    {
+        // mxopackets1_crashover2k_009_session_complete: adding "Trigas" was answered with 41 and flag 0e.
+        Assert.Equal(H("80 d7 08 00 41 00 00 0e 1e 00 53 4f 45 2b 4d 58 4f 2b 56 65 63 74 6f 72 2d 48 6f 73 74 69 6c 65 2b 54 72 69 67 61 73 00"),
+            H(SocialPackets.FriendListStatus(SocialPackets.FriendNotFound, "SOE+MXO+Vector-Hostile+Trigas")));
+        Assert.Equal((byte) 0x8e, SocialPackets.FriendListStatus(SocialPackets.FriendAdded, "x")[7]);
+    }
+
+    [Fact]
     public void LootModeEchoesMode()
     {
         Assert.Equal(H("80 90 02"), H(SocialPackets.LootMode(2)));

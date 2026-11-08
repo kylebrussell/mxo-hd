@@ -80,62 +80,68 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Client 78 &lt;type 1=faction 2=crew&gt; &lt;amount u32&gt; &lt;1=deposit 0=withdraw&gt;, answered with 79 to every
+        /// online member (two-person capture 09:43:35: "78 02 64 00 00 00 01" then "79 02 64 00 00 00 &lt;char&gt; 01").
+        /// </summary>
         public void ProcessDepositMoney(ref byte[] rpcData)
         {
-            PacketReader reader = new PacketReader(rpcData);
-            uint type = reader.ReadUint8();
-            UInt32 moneyToDepositOrTake = reader.ReadUInt32(1);
-            uint IsGivingMoney = reader.ReadUint8();
-
-            ServerPackets packet = new ServerPackets();
-            switch (type)
+            if (rpcData.Length < 6)
             {
-                case 1:
-                    // This is too faction
-                    if (IsGivingMoney==1)
-                    {
-                        UInt32 newMoneyAmount = (UInt32) Store.currentClient.playerData.getInfo() - moneyToDepositOrTake;
-                        // Update Info
-                        Store.dbManager.WorldDbHandler.IncreaseFactionMoney(NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.FactionID.getValue(),1), moneyToDepositOrTake);
-                        Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient,newMoneyAmount);
-                        Store.currentClient.playerData.setInfo(newMoneyAmount);
-                    }
-                    else
-                    {
-                        UInt32 newMoneyAmount = (UInt32) Store.currentClient.playerData.getInfo() + moneyToDepositOrTake;
-                        // Update Info
-                        Store.dbManager.WorldDbHandler.DecreaseFactionMoney(NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.FactionID.getValue(),1), moneyToDepositOrTake);
-                        Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient,newMoneyAmount);
-                        Store.currentClient.playerData.setInfo(newMoneyAmount);
-                    }
-
-                    //ProcessFactionInfoUpdate();
-                    break;
-                case 2:
-                    // This is to crew
-                    if (IsGivingMoney==1)
-                    {
-                        UInt32 newMoneyAmount = (UInt32) Store.currentClient.playerData.getInfo() - moneyToDepositOrTake;
-                        // Update Info
-                        Store.dbManager.WorldDbHandler.IncreaseCrewMoney(NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.CrewID.getValue(),1), moneyToDepositOrTake);
-                        Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient,newMoneyAmount);
-                        Store.currentClient.playerData.setInfo(newMoneyAmount);
-                    }
-                    else
-                    {
-                        UInt32 newMoneyAmount = (UInt32) Store.currentClient.playerData.getInfo() + moneyToDepositOrTake;
-                        // Update Info
-                        Store.dbManager.WorldDbHandler.DecreaseCrewMoney(NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.CrewID.getValue(),1), moneyToDepositOrTake);
-                        Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient,newMoneyAmount);
-                        Store.currentClient.playerData.setInfo(newMoneyAmount);
-                    }
-                    //ProcessCrewInfoUpdate();
-                    break;
+                return;
             }
 
-            packet.SendMoneyUpdateFactionCrew(Store.currentClient, (ushort) type, moneyToDepositOrTake, (ushort) IsGivingMoney);
-            packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
-            
+            byte type = rpcData[0];
+            UInt32 amount = BitConverter.ToUInt32(rpcData, 1);
+            bool deposit = rpcData[5] == 1;
+            WorldClient client = Store.currentClient;
+            var db = Store.dbManager.WorldDbHandler;
+
+            UInt32 groupId = NumericalUtils.ByteArrayToUint32(
+                (type == SocialPackets.GroupFaction ? client.playerInstance.FactionID : client.playerInstance.CrewID).getValue(), 1);
+            if (groupId == 0 || (type != SocialPackets.GroupFaction && type != SocialPackets.GroupCrew))
+            {
+                return;
+            }
+
+            long bank = type == SocialPackets.GroupFaction ? db.FetchFaction(groupId).money : db.GetCrewData(groupId).money;
+            long info = client.playerData.getInfo();
+            if (!CanMoveMoney(deposit, info, bank, amount))
+            {
+                // The client has LTTRGS_ codes for this (e.g. CREWBANKINSUFFICIENTFUNDS) but no capture shows how they
+                // were delivered, so say it in plain text; nothing is moved.
+                new ServerPackets().sendSystemChatMessage(client,
+                    deposit ? "You do not have that much information." : "The bank does not hold that much information.", "SYSTEM");
+                return;
+            }
+
+            long newInfo = deposit ? info - amount : info + amount;
+            if (type == SocialPackets.GroupFaction)
+            {
+                if (deposit) db.IncreaseFactionMoney(groupId, amount); else db.DecreaseFactionMoney(groupId, amount);
+            }
+            else
+            {
+                if (deposit) db.IncreaseCrewMoney(groupId, amount); else db.DecreaseCrewMoney(groupId, amount);
+            }
+
+            db.SaveInfo(client, newInfo);
+            client.playerData.setInfo(newInfo);
+
+            ServerPackets packet = new ServerPackets();
+            packet.SendMoneyUpdateFactionCrew(client, type, amount, (ushort) (deposit ? 1 : 0));
+            packet.SendInfoCurrent(client, (UInt32) newInfo);
+        }
+
+        /// <summary>A deposit needs that much information on the player, a withdrawal that much in the bank.</summary>
+        internal static bool CanMoveMoney(bool deposit, long playerInfo, long bank, UInt32 amount)
+        {
+            if (amount == 0)
+            {
+                return false;
+            }
+
+            return deposit ? playerInfo >= amount : bank >= amount;
         }
 
         

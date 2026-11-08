@@ -137,6 +137,16 @@ public class SocialHandlerTests
     }
 
     [Fact]
+    public void BankMovesNeedTheMoney()
+    {
+        Assert.True(FCHandler.CanMoveMoney(true, 100, 0, 100));    // deposit all you have
+        Assert.False(FCHandler.CanMoveMoney(true, 99, 5000, 100)); // the bank's money does not count
+        Assert.True(FCHandler.CanMoveMoney(false, 0, 100, 100));
+        Assert.False(FCHandler.CanMoveMoney(false, 5000, 99, 100));
+        Assert.False(FCHandler.CanMoveMoney(true, 100, 100, 0));
+    }
+
+    [Fact]
     public void OwnViewGroupIdsMatchRetail()
     {
         var player = new PlayerCharacter();
