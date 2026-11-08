@@ -185,6 +185,20 @@ namespace hds
                     Store.currentClient.FlushQueue();
                 }
 
+                if (command.Equals("?tradebot"))
+                {
+                    // Dev command: trade with a partner played by the server, to test the trade window with one client
+                    if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    {
+                        TradeHandler.StartBotTrade(Store.currentClient);
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?tradebot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?die"))
                 {
                     // Dev command: run the player death path without needing a mob strong enough to win.

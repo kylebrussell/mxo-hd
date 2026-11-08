@@ -771,6 +771,7 @@ namespace hds
                     continue;
                 }
 
+                TradeHandler.Abort(deadClient);
                 CombatManager.RemoveClient(deadClient);
                 foreach (WorldClient otherclient in allClients)
                 {
