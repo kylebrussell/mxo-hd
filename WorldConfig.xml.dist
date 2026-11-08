@@ -4,6 +4,8 @@
   <IsPvPServer>false</IsPvPServer>
   <PvPMaxSafeLevel>16</PvPMaxSafeLevel>
   <FixedBinkIDOverride>0</FixedBinkIDOverride>
+  <!-- true: the hardline map lists only hardlines the character uploaded at a booth (retail) -->
+  <HardlineUploadRequired>false</HardlineUploadRequired>
   <WorldEvents>
     <weather>bluesky2</weather>
   </WorldEvents>

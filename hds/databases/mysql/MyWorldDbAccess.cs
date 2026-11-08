@@ -475,6 +475,38 @@ namespace hds.databases{
 	        return ids;
         }
 
+        /// <summary>Hardlines of a district the character has uploaded (char_hardlines).</summary>
+        public List<UInt16> GetUploadedHardlines(UInt32 charId, UInt16 district)
+        {
+	        List<UInt16> ids = new List<UInt16>();
+	        OpenConnection();
+	        queryExecuter = conn.CreateCommand();
+	        queryExecuter.CommandText = "SELECT hl_id FROM char_hardlines WHERE char_id = '" + charId +
+	                                    "' AND district_id = '" + district + "' ORDER BY hl_id";
+	        dr = queryExecuter.ExecuteReader();
+	        while (dr.Read())
+	        {
+		        ids.Add(Convert.ToUInt16(dr.GetValue(0)));
+	        }
+
+	        dr.Close();
+	        CloseConnection();
+	        return ids;
+        }
+
+        /// <summary>Records an uploaded hardline; false if the character already had it.</summary>
+        public bool AddUploadedHardline(UInt32 charId, UInt16 district, UInt16 hardline)
+        {
+	        if (GetUploadedHardlines(charId, district).Contains(hardline))
+	        {
+		        return false;
+	        }
+
+	        ExecuteNonResultQuery("INSERT INTO char_hardlines (char_id, hl_id, district_id, added) VALUES ('" + charId +
+	                              "', '" + hardline + "', '" + district + "', NOW())");
+	        return true;
+        }
+
         public void updateLocationByHL(UInt16 district, UInt16 hardline)
         {
 	        OpenConnection();

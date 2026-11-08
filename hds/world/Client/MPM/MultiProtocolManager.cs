@@ -76,6 +76,8 @@ namespace hds{
                 Store.currentClient.playerData.setOnWorld(false);
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
+                // The client dropped all its views with the old world.
+                Store.currentClient.viewMan.Clear();
                 PlayerHandler handler = new PlayerHandler();
                 handler.processAttributes();
                 handler.processPlayerSetup();
