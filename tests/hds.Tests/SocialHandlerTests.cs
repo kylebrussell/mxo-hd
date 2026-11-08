@@ -137,6 +137,32 @@ public class SocialHandlerTests
     }
 
     [Fact]
+    public void OtherViewGroupIdsMatchRetail()
+    {
+        var player = new PlayerCharacter();
+        player.FactionID.setValue(0x5e31u);
+        player.CrewID.setValue(0xb14bu);
+        byte[] update = player.GetUpdateAttributes(new List<hds.Attribute> {player.FactionID, player.CrewID});
+        // two-person, AfterWhoruNeo's side 09:41:13: mxoemu3's view (17 00) after joining the crew.
+        Assert.Equal("02" + "8080C0315E0000" + "80024BB10000", Convert.ToHexString(SocialPackets.OtherViewUpdate(update)));
+
+        // Same side 09:50:30: one attribute, still type 02 (the count byte would have been 01).
+        player.MissionTeamID.setValue(0u);
+        update = player.GetUpdateAttributes(new List<hds.Attribute> {player.MissionTeamID});
+        Assert.Equal("024000000000", Convert.ToHexString(SocialPackets.OtherViewUpdate(update)));
+    }
+
+    [Fact]
+    public void BankMovesNeedTheMoney()
+    {
+        Assert.True(FCHandler.CanMoveMoney(true, 100, 0, 100));    // deposit all you have
+        Assert.False(FCHandler.CanMoveMoney(true, 99, 5000, 100)); // the bank's money does not count
+        Assert.True(FCHandler.CanMoveMoney(false, 0, 100, 100));
+        Assert.False(FCHandler.CanMoveMoney(false, 5000, 99, 100));
+        Assert.False(FCHandler.CanMoveMoney(true, 100, 100, 0));
+    }
+
+    [Fact]
     public void OwnViewGroupIdsMatchRetail()
     {
         var player = new PlayerCharacter();

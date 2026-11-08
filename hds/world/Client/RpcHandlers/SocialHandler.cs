@@ -100,6 +100,11 @@ namespace hds
             byte[] block = client.playerInstance.GetSelfUpdateAttributes(changed, false);
             client.messageQueue.addObjectMessage(SocialPackets.SelfViewUpdate(block), false);
             client.FlushQueue();
+
+            // Players who can see me get the change on their view of me (crew/faction name tags).
+            byte[] others = SocialPackets.OtherViewUpdate(client.playerInstance.GetUpdateAttributes(changed));
+            Store.world.SendViewPacketToAllPlayers(others, client.playerData.getCharID(),
+                NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1), client.playerData.getEntityId());
         }
 
         private static void Notice(WorldClient client, string text)
