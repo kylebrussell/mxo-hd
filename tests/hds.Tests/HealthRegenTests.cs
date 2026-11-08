@@ -15,7 +15,7 @@ public class HealthRegenTests
     [Fact]
     public void NoRegenInCombatWhenDeadOrFull()
     {
-        Assert.Null(HealthRegen.Next(400, 500, true, false, 2.0));
+        Assert.Equal((ushort)402, HealthRegen.Next(400, 500, true, false, 2.0)); // a fight slows it: 2 instead of 10
         Assert.Null(HealthRegen.Next(400, 500, false, true, 2.0));
         Assert.Null(HealthRegen.Next(0, 500, false, false, 2.0));
         Assert.Null(HealthRegen.Next(500, 500, false, false, 2.0));

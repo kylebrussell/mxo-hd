@@ -66,6 +66,7 @@ namespace hds
             session.OnCombatTick -= HandleCombatTick;
             session.Stop(CombatSession.CombatEndReason.AttackerFled);
             defender?.clearCombatTarget();
+            defender?.SetInCombat(false);
             RemoveCombatHandlerEntity(session);
             isCombatRunning = false;
             currentSession = null;
@@ -93,50 +94,314 @@ namespace hds
             Output.WriteDebugLog($"[COMBAT] Combat stance {(mode == CombatantModeReady ? "ready" : "idle")}");
         }
 
+        /// <summary>
+        /// RPC 42 &lt;TacticalValue u16&gt; &lt;TacticalTotalValue i16&gt; &lt;TacticType u16&gt; (client.dll's printer): one of the four
+        /// tactic buttons, in or out of a fight; the value is the tactic. TacticType 1 got the same answer. Retail answered with the
+        /// tactics' modifier records (<see cref="CombatTactics"/>), and in a fight also with RPC 47 kind 6, which shows the
+        /// next move with the new tactic. Pressing the current tactic gets no answer.
+        /// </summary>
         public void ProcessChangeTactic(ref byte[] packet)
         {
-            PacketReader reader = new PacketReader(packet);
-            uint state = reader.ReadUint8();
-
-            // Map packet state to CombatTactic enum
-            // Based on research: 0=None, 1=Speed, 2=Power, 3=Grab/Block
-            CombatTactic newTactic = (CombatTactic)Math.Min(state, 3);
-
-            Output.WriteDebugLog($"[COMBAT] Tactic change requested: state={state} -> {newTactic}");
-
-            if (currentSession != null && currentSession.IsActive)
+            CombatTactic? requested = packet.Length > 0 ? CombatTactics.FromRpc(packet[0]) : null;
+            if (requested == null)
             {
-                // Try to change tactic (costs IS)
-                bool success = currentSession.SetAttackerTactic(newTactic);
+                Output.WriteDebugLog("[COMBAT] Unknown tactic request");
+                return;
+            }
 
-                if (success)
+            CombatTactic tactic = requested.Value;
+            CombatTacticType type = CombatTactics.TypeFromRpc(packet.Length > 5 ? packet[4] | packet[5] << 8 : 0);
+            CombatSession session = currentSession;
+            bool fighting = session != null && session.IsActive;
+            if (tactic == client.playerData.combatTactic)
+            {
+                // Only the Energized/Precise choice may have changed: no records for that (the records don't name it)
+                client.playerData.combatTacticType = type;
+                Output.WriteDebugLog($"[COMBAT] Tactic {tactic} ({type}) is already on");
+                return;
+            }
+
+            ServerPackets packets = new ServerPackets();
+            if (fighting)
+            {
+                UInt16 currentIS = AbilityHandler.CurrentInnerStrength(client);
+                UInt16? remaining = CombatTactics.PayForChange(currentIS, CombatCalculator.TACTIC_CHANGE_IS_COST);
+                if (remaining == null)
                 {
-                    Output.WriteDebugLog($"[COMBAT] Tactic changed to {newTactic}");
-
-                    // Send IS update to client
-                    ServerPackets packets = new ServerPackets();
-                    byte[] isBytes = client.playerInstance.InnerStrengthAvailable.getValue();
-                    UInt16 currentIS = isBytes != null && isBytes.Length >= 2
-                        ? NumericalUtils.ByteArrayToUint16(isBytes, 1)
-                        : (UInt16)0;
-                    packets.sendISCurrent(client, currentIS);
-
-                    // Send tactic confirmation (using the system chat for now)
-                    string tacticName = newTactic == CombatTactic.None ? "Balanced" : newTactic.ToString();
-                    packets.sendSystemChatMessage(client,
-                        $"Combat tactic: {tacticName}", "SYSTEM");
+                    Output.WriteDebugLog($"[COMBAT] Tactic {tactic} refused: Inner Strength {currentIS}");
+                    packets.sendSystemChatMessage(client, "Not enough Inner Strength to change tactics!", "SYSTEM");
+                    return;
                 }
-                else
+                if (remaining.Value != currentIS)
                 {
-                    Output.WriteDebugLog("[COMBAT] Tactic change failed - insufficient IS");
-                    ServerPackets packets = new ServerPackets();
-                    packets.sendSystemChatMessage(client,
-                        "Not enough Inner Strength to change tactics!", "SYSTEM");
+                    client.playerInstance.InnerStrengthAvailable.setValue(remaining.Value);
+                    packets.sendISCurrent(client, remaining.Value);
                 }
             }
-            else
+
+            CombatTactics.Select(client, tactic);
+            client.playerData.combatTacticType = type;
+            Output.WriteDebugLog($"[COMBAT] Tactic changed to {tactic} ({type})");
+            if (fighting && session.Type == CombatSession.CombatType.Melee && session.CurrentMove != null)
             {
-                Output.WriteDebugLog("[COMBAT] Tactic change ignored - not in combat");
+                SendNextMove(session, CombatInterlock.KindNextMoveChanged);
+            }
+            client.FlushQueue();
+        }
+
+        private readonly Random roundRng = new Random();
+
+        private CombatInterlock.Move NewMove(byte seq, CombatTactic tactic)
+        {
+            lock (roundRng)
+            {
+                return new CombatInterlock.Move
+                {
+                    Seq = seq,
+                    Tactic = tactic,
+                    Value = (UInt16)roundRng.Next(1, 100),
+                    R1 = (UInt16)roundRng.Next(5, 100),
+                    R2 = (UInt16)roundRng.Next(5, 100),
+                    R3 = (UInt16)roundRng.Next(5, 100),
+                    R4 = (UInt16)roundRng.Next(5, 100),
+                };
+            }
+        }
+
+        /// <summary>RPC 47 with the current move and a new next move, which becomes the current one.</summary>
+        private void SendNextMove(CombatSession session, byte kind)
+        {
+            CombatInterlock.Move decided = session.CurrentMove;
+            CombatInterlock.Move next = NewMove((byte)(decided.Seq + 1), session.AttackerTactic);
+            if (session.QueuedAbility != null)
+            {
+                next.Ability = session.QueuedAbility.getAbilityID();
+            }
+            session.Attacker.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(kind, decided, next));
+            session.CurrentMove = next;
+        }
+
+        /// <summary>
+        /// Queues an instant ability used on the close-combat target as the player's next move. It lands when the round
+        /// resolves (<see cref="ResolveCloseCombatRound"/>). A later ability before that round replaces it, as a
+        /// new choice of move. Returns false when the target isn't the current close-combat target.
+        /// </summary>
+        public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId)
+        {
+            CombatSession session = currentSession;
+            if (session == null || !session.IsActive || session.Type != CombatSession.CombatType.Melee ||
+                session.DefenderMob == null || session.CurrentMove == null || session.GetDefenderViewId() != targetViewId)
+            {
+                return false;
+            }
+
+            session.QueuedAbility = ability;
+            session.QueuedAbilityTarget = targetViewId;
+            SendNextMove(session, CombatInterlock.KindNextMoveChanged);
+            client.FlushQueue();
+            Output.WriteDebugLog($"[COMBAT] {ability.getAbilityName()} is the next move");
+            return true;
+        }
+
+        /// <summary>
+        /// One close-combat round, by retail's combat_resolution.determineResultForStandardCombat: both fighters roll with
+        /// their tactics, the round's records go out, then the hits land. A queued ability (special move) lands instead of
+        /// the player's hit when their roll wins, and then the NPC doesn't hit that round (handleSpecialMove, result 0x100);
+        /// when the roll loses, the round is a plain exchange and the ability is lost.
+        /// </summary>
+        private void ResolveCloseCombatRound(CombatSession session)
+        {
+            WorldClient player = session.Attacker;
+            Mob mob = session.DefenderMob;
+            double now = TimeUtils.GetSimTimeSeconds();
+
+            AbilityItem ability = session.QueuedAbility;
+            UInt16 abilityTarget = session.QueuedAbilityTarget;
+            session.QueuedAbility = null;
+
+            byte[] levelBytes = player.playerInstance.Level.getValue();
+            UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            UInt16 mobLevel = mob.getLevel();
+
+            CombatTactic playerTactic = session.AttackerTactic;
+            CombatTacticType playerType = player.playerData.combatTacticType;
+            bool stunned = mob.IsStunned(now);
+            bool playerHit, npcHit, condition;
+            UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
+            UInt16 damageToNpc = 0, damageToPlayer = 0;
+            Int16 absorbedByNpc = 0, absorbedByPlayer = 0;
+            CombatTactic npcTactic;
+            lock (roundRng)
+            {
+                npcTactic = CombatInterlock.NpcTactic(roundRng);
+                playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType);
+                npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense) && !stunned;
+                condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
+                if (playerHit && ability == null)
+                {
+                    damageToNpc = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType);
+                    damageToNpc = (UInt16)Math.Round(damageToNpc * mob.IncomingDamageMultiplier());
+                }
+                if (npcHit)
+                {
+                    damageToPlayer = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer);
+                }
+            }
+            session.DefenderTactic = npcTactic;
+
+            // A special move whose roll wins stops the NPC's hit; one whose roll loses is lost
+            bool abilityLands = ability != null && playerHit;
+            if (abilityLands)
+            {
+                npcHit = false;
+                damageToPlayer = 0;
+            }
+            if (ability != null)
+            {
+                playerHit = false;
+            }
+            bool targetDies = damageToNpc > 0 && damageToNpc >= mob.getHealthC();
+
+            // Records of the round the moves belong to
+            CombatInterlock.Move decided = session.CurrentMove;
+            decided.R1 = playerAttack;
+            decided.R2 = playerDefense;
+            SendNextMove(session, CombatInterlock.KindNewRound);
+
+            byte npcSeq = (byte)((session.NpcMove?.Seq ?? 0) + 2);
+            session.NpcMove = NewMove(npcSeq, npcTactic);
+            session.NpcMove.R1 = npcAttack;
+            session.NpcMove.R2 = npcDefense;
+
+            UInt32 result = CombatInterlock.ResultFor(playerHit, npcHit, abilityLands, targetDies);
+            player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, playerHit || abilityLands, decided, session.NpcMove,
+                session.TargetViewSpawnId, result, damageToPlayer, absorbedByPlayer, damageToNpc, absorbedByNpc, CombatStartTime()));
+            session.RoundRecord++;
+
+            Output.WriteDebugLog($"[COMBAT] Round {session.RoundRecord}: {playerTactic} ({playerAttack}/{playerDefense}) vs {npcTactic} ({npcAttack}/{npcDefense}), player " +
+                                 (abilityLands ? ability.getAbilityName() + " lands" : ability != null ? ability.getAbilityName() + " fails" :
+                                     playerHit ? "hits for " + damageToNpc : "misses") +
+                                 ", NPC " + (stunned ? "stunned" : npcHit ? "hits for " + damageToPlayer : "misses"));
+
+            if (abilityLands)
+            {
+                player.FlushQueue();
+                AbilityTargets.Land(player, ability, abilityTarget);
+                if (!session.IsActive)
+                {
+                    return; // the ability killed the NPC; ApplyAbilityToTarget ended the fight
+                }
+            }
+            else if (playerHit)
+            {
+                if (session.ApplyDamageToDefender(damageToNpc, 0))
+                {
+                    Output.WriteDebugLog($"[COMBAT] {mob.getName()} died!");
+                    session.Stop(CombatSession.CombatEndReason.DefenderDied);
+                    return;
+                }
+                if (condition && damageToNpc > 0)
+                {
+                    UInt32 bit = CombatInterlock.ConditionBit(playerTactic);
+                    if (bit != 0)
+                    {
+                        Output.WriteDebugLog($"[COMBAT] {mob.getName()} suffers condition {bit:x2} from {playerTactic}");
+                        mob.ApplyCondition(bit, CombatInterlock.ConditionSeconds);
+                    }
+                }
+            }
+
+            if (npcHit && mob.HitCombatTarget(damageToPlayer, 0, player))
+            {
+                player.FlushQueue();
+                Output.WriteDebugLog("[COMBAT] Player died in combat!");
+                session.Stop(CombatSession.CombatEndReason.AttackerDied);
+                HandlePlayerDeath(player);
+                return;
+            }
+            player.FlushQueue();
+        }
+
+        /// <summary>Retail's CombatEffectAbility records go on when a fight starts and off when it ends.</summary>
+        private void SendCombatEffectOn(CombatSession session)
+        {
+            ClientData data = client.playerData;
+            lock (data.activeBuffs)
+            {
+                if (data.nextBuffRecordId > UInt16.MaxValue - 2)
+                {
+                    data.nextBuffRecordId = AbilityBuffs.FirstRecordId;
+                }
+                session.CombatEffectRecordId = data.nextBuffRecordId;
+                data.nextBuffRecordId += 2;
+            }
+            foreach (byte[] record in CombatInterlock.BuildCombatEffectRecords(session.CombatEffectRecordId, false))
+            {
+                client.messageQueue.addRpcMessage(record);
+            }
+        }
+
+        private void SendCombatEffectOff(CombatSession session)
+        {
+            if (session.CombatEffectRecordId == 0)
+            {
+                return;
+            }
+            foreach (byte[] record in CombatInterlock.BuildCombatEffectRecords(session.CombatEffectRecordId, true))
+            {
+                session.Attacker.messageQueue.addRpcMessage(record);
+            }
+        }
+
+        /// <summary>
+        /// An NPC with a gun opens fire on a player who hasn't attacked it (<see cref="MobAggro"/>). Retail sent no combat
+        /// handler object and no 40/46 for this: the NPC's shot on its view, then for the player the in-combat own-view
+        /// flags, the CombatEffect records and the 81 68 line (entilsar lastday2, 21:48:40-41). The session is a gunfight
+        /// in which only the NPC fires, until the client's own 41 replaces it with one in which both do.
+        /// </summary>
+        public void StartNpcGunfight(Mob mob, ClientView view)
+        {
+            if (isCombatRunning || (currentSession != null && currentSession.IsActive))
+            {
+                return;
+            }
+
+            UInt32 target = (UInt32)(view.ViewID | (view.spawnId << 16));
+            currentSession = new CombatSession(client, mob, target, CombatSession.CombatType.Ranged) { PlayerFiring = false };
+            CombatSession session = currentSession;
+            mob.setCombatTarget(client);
+            session.OnCombatTick += HandleCombatTick;
+            session.OnCombatEnd += HandleCombatEnd;
+            client.playerData.combatGeneration++;
+            rangedOutOfRangeTicks = 0;
+            isCombatRunning = true;
+
+            FaceThePlayer(session);
+            mob.SetInCombat(true);
+            new ServerPackets().SendEnterCombatMode(client);
+            SendCombatEffectOn(session);
+
+            bool died = NpcReturnFire(session);
+            client.FlushQueue();
+            session.Start(RangedWeapons.FireIntervalMs(mob.getWeapon()));
+            if (died)
+            {
+                session.Stop(CombatSession.CombatEndReason.AttackerDied);
+                HandlePlayerDeath(client);
+            }
+        }
+
+        /// <summary>Turns the NPC towards the player, without moving it. Sends nothing when it already faces them.</summary>
+        private static void FaceThePlayer(CombatSession session)
+        {
+            Mob mob = session.DefenderMob;
+            double px = 0, py = 0, pz = 0;
+            NumericalUtils.LtVector3dToDoubles(session.Attacker.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+            byte yaw = MobAggro.YawTowards(mob.getXPos(), mob.getZPos(), px, pz);
+            if (yaw != (byte)mob.getRotation())
+            {
+                mob.setRotation(yaw);
+                mob.updateAnimation((byte)Mob.Animations.STAND);
             }
         }
 
@@ -222,6 +487,13 @@ namespace hds
 
             StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
 
+            // Byte 4 of the request is ForcedInterlock (client.dll's printer for RPC 40); retail answered it with 4e 01,
+            // ForcedCombat (4e 00 is what a shot gets).
+            if (packet.Length > 4 && packet[4] != 0)
+            {
+                client.messageQueue.addRpcMessage(new byte[] { 0x4e, 0x01 });
+            }
+
             // Retail echoed the request with its flag byte cleared: client 40 2f 00 22 00 01 6b -> server
             // 40 2f 00 22 00 00 6b. Without it the client never confirmed the fight on its side.
             client.messageQueue.addRpcMessage(BuildCloseCombatEcho(packet));
@@ -277,13 +549,21 @@ namespace hds
             client.playerData.combatGeneration++;
             client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(targetViewWithSpawnId, 0x01));
 
+            // The opening move, then each round's records (ResolveCloseCombatRound)
+            currentSession.CurrentMove = NewMove(1, currentSession.AttackerTactic);
+            currentSession.CurrentMove.First = true;
+            client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindStart, currentSession.CurrentMove, null));
+            currentSession.CurrentMove = NewMove(2, currentSession.AttackerTactic);
+            SendCombatEffectOn(currentSession);
+            targetMob.SetInCombat(true);
+
             // Send the combat state data (still using hardcoded blob until we understand it better)
             SendCombatStateBlob(client, theView.ViewID);
 
             client.FlushQueue();
 
             // Start combat session
-            currentSession.Start(3000); // 3 second ticks
+            currentSession.Start(CombatInterlock.RoundMs);
             isCombatRunning = true;
         }
 
@@ -355,8 +635,12 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}, Tactic: {session.AttackerTactic}");
 
-            // Drain IS for combat round
-            DrainCombatIS(session.Attacker);
+            if (session.Type == CombatSession.CombatType.Melee && session.DefenderMob != null)
+            {
+                ApplyRoundInnerStrength(session.Attacker);
+                ResolveCloseCombatRound(session);
+                return;
+            }
 
             // No per-round update to the combat handler view: retail sends its state once, at combat start
             // (see docs/COMBAT-SYSTEM-ROADMAP.md). The old hard-coded update here didn't match the object's
@@ -365,21 +649,22 @@ namespace hds
             // Apply damage to defender if we have a valid target
             if (session.DefenderMob != null)
             {
-                // Get player level (stored as byte array, typically single byte)
-                byte[] levelBytes = session.Attacker.playerInstance.Level.getValue();
-                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-                UInt16 mobLevel = session.DefenderMob.getLevel();
-
                 bool defenderDied;
-                if (session.Type == CombatSession.CombatType.Melee)
+                if (!session.PlayerFiring)
                 {
-                    UInt16 damage = CombatCalculator.CalculateMeleeDamageWithTactics(
-                        playerLevel, mobLevel,
-                        session.AttackerTactic, session.DefenderTactic);
-                    Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}, {session.AttackerTactic}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
-                    // Health-only hit update, as retail sent for plain attacks; the FX.cs hit ids
-                    // aren't valid effect ids (see CombatCalculator.MeleeHitFxIds).
-                    defenderDied = session.ApplyDamageToDefender(damage, 0);
+                    // Only the NPC fires. The fight ends when the player stays out of its gun's reach.
+                    if (!PlayerInNpcGunRange(session))
+                    {
+                        rangedOutOfRangeTicks++;
+                        Output.WriteDebugLog($"[COMBAT] Player out of the NPC's range ({rangedOutOfRangeTicks})");
+                        if (rangedOutOfRangeTicks >= MaxOutOfRangeTicks)
+                        {
+                            session.Stop(CombatSession.CombatEndReason.AttackerFled);
+                        }
+                        return;
+                    }
+                    rangedOutOfRangeTicks = 0;
+                    defenderDied = false;
                 }
                 else
                 {
@@ -421,7 +706,7 @@ namespace hds
                 }
                 else
                 {
-                    playerDied = session.DefenderMob.updateCombat(session.AttackerTactic, session.Attacker);
+                    playerDied = session.DefenderMob.updateCombat(session.Attacker);
                 }
                 session.Attacker.FlushQueue();
                 if (playerDied)
@@ -444,18 +729,18 @@ namespace hds
         }
 
         /// <summary>
-        /// Drains Inner Strength for combat round.
+        /// Inner Strength for a close-combat round: retail's combat.GetInnerStrengthUsed, which only gives Block +10.
         /// </summary>
-        private void DrainCombatIS(WorldClient player)
+        private void ApplyRoundInnerStrength(WorldClient player)
         {
             byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
             if (isBytes == null || isBytes.Length < 2) return;
 
             UInt16 currentIS = NumericalUtils.ByteArrayToUint16(isBytes, 1);
-            if (currentIS > 0)
+            int change = CombatCalculator.RoundInnerStrengthChange(player.playerData.combatTactic);
+            UInt16 newIS = (UInt16)Math.Clamp(currentIS + change, 0, Math.Max(currentIS, AbilityHandler.MaxInnerStrength(player)));
+            if (newIS != currentIS)
             {
-                int cost = CombatCalculator.COMBAT_ROUND_IS_COST;
-                UInt16 newIS = (UInt16)Math.Max(0, currentIS - cost);
                 player.playerInstance.InnerStrengthAvailable.setValue(newIS);
 
                 // Send IS update to client
@@ -491,6 +776,8 @@ namespace hds
                 Output.WriteDebugLog($"[COMBAT] Sending death for mob view {mobViewId}");
                 packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
             }
+            session.DefenderMob?.SetInCombat(false); // after the death, so a dead NPC gets no update
+            SendCombatEffectOff(session);
 
             if (session.Type == CombatSession.CombatType.Ranged)
             {
@@ -632,6 +919,8 @@ namespace hds
 
             client.playerData.combatGeneration++;
             client.playerInstance.CombatantMode.setValue(CombatantModeReady);
+            SendCombatEffectOn(currentSession);
+            targetMob.SetInCombat(true);
             rangedNoiseLevel = 0;
             rangedOutOfRangeTicks = 0;
 
@@ -652,7 +941,7 @@ namespace hds
         {
             CombatSession session = currentSession;
             return session != null && session.IsActive && session.Type == CombatSession.CombatType.Ranged &&
-                   session.TargetViewSpawnId == targetViewSpawnId;
+                   session.PlayerFiring && session.TargetViewSpawnId == targetViewSpawnId;
         }
 
         /// <summary>NoiseLevel (own-view attribute 9): retail sent 0x32 on the first shot and more on later ones.</summary>
@@ -699,15 +988,15 @@ namespace hds
                 float distance = CombatCalculator.CalculateDistanceMetres(player.playerInstance.Position.getValue(),
                     target.getXPos(), target.getYPos(), target.getZPos());
                 damage = CombatCalculator.CalculateRangedDamageWithTactics(playerLevel, target.getLevel(), distance,
-                    session.AttackerTactic, session.DefenderTactic);
-                damage = (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(weapon)));
+                    session.AttackerTactic);
+                damage = damage == 0 ? damage : (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(weapon))); // 0 on Block
                 died = session.ApplyDamageToDefender(damage, 0);
             }
             Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
 
             string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
             player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
-                true, weapon, target.getName(), playerName));
+                true, weapon, target.getName(), playerName, session.AttackerTactic));
             return died;
         }
 
@@ -728,6 +1017,15 @@ namespace hds
             float metres = CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
                 target.getXPos(), target.getYPos(), target.getZPos());
             return metres <= RangedWeapons.RangeMetres(PlayerGun(session.Attacker));
+        }
+
+        /// <summary>True when the player is within the reach of the NPC's gun.</summary>
+        private static bool PlayerInNpcGunRange(CombatSession session)
+        {
+            Mob mob = session.DefenderMob;
+            float metres = CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
+                mob.getXPos(), mob.getYPos(), mob.getZPos());
+            return metres <= RangedWeapons.RangeMetres(mob.getWeapon());
         }
 
         /// <summary>The gun the player fires: their Free Fire pick (RPC 3f), else the equipped item.</summary>
@@ -768,6 +1066,11 @@ namespace hds
         private static void NpcClosesIn(CombatSession session)
         {
             Mob mob = session.DefenderMob;
+            if (mob.IsStunned(TimeUtils.GetSimTimeSeconds()))
+            {
+                Output.WriteDebugLog($"[COMBAT] {mob.getName()} is stunned and stays put");
+                return;
+            }
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(session.Attacker.playerInstance.Position.getValue(), ref px, ref py, ref pz);
             MobAggro.StopPoint(px, pz, mob.getXPos(), mob.getZPos(), MobAggro.MeleeDistanceUnits, out double x, out double z);
@@ -788,6 +1091,12 @@ namespace hds
         {
             WorldClient player = session.Attacker;
             Mob mob = session.DefenderMob;
+            if (mob.IsStunned(TimeUtils.GetSimTimeSeconds()))
+            {
+                Output.WriteDebugLog($"[COMBAT] {mob.getName()} is stunned and holds its fire");
+                return false;
+            }
+            FaceThePlayer(session);
             byte attackClass = RangedWeapons.AttackClass(mob.getWeapon());
 
             float metres = CombatCalculator.CalculateDistanceMetres(player.playerInstance.Position.getValue(),
@@ -817,7 +1126,7 @@ namespace hds
             {
                 byte[] levelBytes = player.playerInstance.Level.getValue();
                 UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-                damage = CombatCalculator.CalculateMobDamageWithTactics(mob.getLevel(), playerLevel, session.AttackerTactic);
+                damage = CombatCalculator.CalculateMobDamageWithTactics(mob.getLevel(), playerLevel, session.DefenderTactic);
                 damage = (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(mob.getWeapon())));
                 died = mob.HitCombatTarget(damage, 0, player);
             }
@@ -825,7 +1134,7 @@ namespace hds
 
             string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
             player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
-                false, mob.getWeapon(), playerName, mob.getName()));
+                false, mob.getWeapon(), playerName, mob.getName(), session.DefenderTactic));
             return died;
         }
 

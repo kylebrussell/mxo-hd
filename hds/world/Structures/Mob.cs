@@ -61,6 +61,85 @@ namespace hds
         {
             return now < stunnedUntil;
         }
+
+        // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
+        private UInt32 conditionFlags = 0;
+        private readonly System.Collections.Generic.Dictionary<UInt32, int> conditionTokens =
+            new System.Collections.Generic.Dictionary<UInt32, int>();
+
+        /// <summary>
+        /// NPC view update of ConditionStateFlags (attribute 43): <c>04 80 80 80 80 80 80 02 &lt;flags u32&gt;</c>, e.g. retail's
+        /// <c>... 02 00 00 10 00</c> when a fight starts and <c>... 02 08 00 10 00</c> while the NPC is Staggered.
+        /// </summary>
+        public static byte[] BuildConditionUpdate(UInt32 flags)
+        {
+            var pak = new PacketContent();
+            pak.AddHexBytes("04808080808080" + "02");
+            pak.AddUint32(flags, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        private void SendConditionFlags()
+        {
+            if (is_dead)
+            {
+                return;
+            }
+            var pak = new PacketContent();
+            pak.AddByteArray(BuildConditionUpdate(conditionFlags));
+            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this);
+        }
+
+        /// <summary>Marks the NPC as in a fight (or out of it, which also ends its conditions) on everyone's screen.</summary>
+        public void SetInCombat(bool inCombat)
+        {
+            lock (conditionTokens)
+            {
+                conditionFlags = inCombat ? conditionFlags | CombatInterlock.InCombatFlag : 0;
+                if (!inCombat)
+                {
+                    conditionTokens.Clear();
+                }
+            }
+            SendConditionFlags();
+        }
+
+        /// <summary>Gives the NPC a tactic condition for some seconds. Landing it again restarts the time.</summary>
+        public void ApplyCondition(UInt32 bit, double seconds)
+        {
+            if (bit == 0)
+            {
+                return;
+            }
+            int token;
+            lock (conditionTokens)
+            {
+                conditionFlags |= bit;
+                conditionTokens.TryGetValue(bit, out token);
+                conditionTokens[bit] = ++token;
+            }
+            SendConditionFlags();
+            int mine = token;
+            DelayedActions.After(seconds, () =>
+            {
+                lock (conditionTokens)
+                {
+                    if (!conditionTokens.TryGetValue(bit, out int current) || current != mine)
+                    {
+                        return;
+                    }
+                    conditionTokens.Remove(bit);
+                    conditionFlags &= ~bit;
+                }
+                SendConditionFlags();
+            });
+        }
+
+        /// <summary>Staggered lowers DamageResistance by 5 (retail: 80 bc 201 stat 144 -5).</summary>
+        public float IncomingDamageMultiplier()
+        {
+            return (conditionFlags & CombatInterlock.ConditionBit(CombatTactic.Power)) != 0 ? 1.05f : 1f;
+        }
         private UInt16 mobHitCounter = 0;
 
         public enum statusList
@@ -581,8 +660,7 @@ namespace hds
         /// Called on combat tick to make this mob attack its target.
         /// Returns true if the player died from this attack.
         /// </summary>
-        /// <param name="playerTactic">Player's current combat tactic for defensive modifiers</param>
-        public bool updateCombat(CombatTactic playerTactic = CombatTactic.None, WorldClient target = null)
+        public bool updateCombat(WorldClient target = null)
         {
             // The player of the fight being ticked. combatTarget is only whoever engaged this NPC last: with two
             // players on one NPC, hitting it damaged one player while the other's fight reported the death.
@@ -611,11 +689,11 @@ namespace hds
             byte[] levelBytes = victim.playerInstance.Level.getValue();
             UInt16 playerLevel = (levelBytes != null && levelBytes.Length > 0) ? levelBytes[0] : (UInt16)1;
 
-            // Calculate damage using mob's level vs player's level, with player's tactic modifier
-            UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(level, playerLevel, playerTactic);
+            // Calculate damage using mob's level vs player's level
+            UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(level, playerLevel);
             uint fxId = CombatCalculator.GetRandomMeleeHitFx();
 
-            Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}, {playerTactic}) for {damage} damage");
+            Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}) for {damage} damage");
 
             return HitCombatTarget(damage, fxId, victim);
         }
