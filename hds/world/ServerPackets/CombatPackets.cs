@@ -205,15 +205,7 @@ namespace hds
             // DelayedActions keeps the action until it runs. The plain Timer this used, referenced by nothing, could be
             // garbage-collected before it fired; the reset then never went out and the client stayed in combat
             // (no Emergency Repairs: "cannot be used during combat").
-            int generation = client.playerData.combatGeneration;
-            DelayedActions.After(LeaveCombatDelayMs / 1000.0, () =>
-            {
-                if (client.playerData.combatGeneration == generation)
-                {
-                    SendLeaveCombatMode(client);
-                    client.FlushQueue();
-                }
-            });
+            ScheduleLeaveCombatMode(client);
         }
 
         /// <summary>
@@ -256,6 +248,73 @@ namespace hds
             pak.AddUint32(targetViewSpawnId, 1);
             pak.AddByte(flag);
             return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>Retail fired a gun about every 5 s (tutorial capture: shots at :12, :17, :22, :26, :31).</summary>
+        public const int RangedShotIntervalMs = 5000;
+
+        /// <summary>
+        /// Own view: the player fires at a target. Part 1 is an action record (flag 0x20) with position and time
+        /// (flag 0x08): <c>28 &lt;action counter&gt; 01 0c 38 81 00 &lt;target view u16&gt; &lt;spawn u16&gt;
+        /// &lt;x y z f32&gt; &lt;sim ms u32&gt;</c>. Part 2 sets NoiseLevel (attribute 9); on the first shot it also
+        /// sets ConditionStateFlags 0x00100000 (in combat) and CombatantMode 0x21 (weapon drawn).
+        /// Retail, tutorial capture (crashover2k ..._uriah.log.txt, 13:30:17):
+        /// <c>02 00 03 28 02 01 0c 38 81 00 06 00 f2 00 &lt;pos&gt; 33 be e7 1e 80 04 4b</c>; first shot in the luizoe
+        /// old-sniffer Unknown log, line 11790: <c>... 80 84 32 80 80 80 80 03 00 00 10 00 21</c>.
+        /// The bytes <c>01 0c 38</c> and <c>81 00</c> are copied, not understood: shots also came with <c>00 10</c>
+        /// in place of <c>81 00</c> (maybe a miss).
+        /// </summary>
+        public static byte[] BuildRangedShot(byte actionCounter, UInt32 targetViewSpawnId, float x, float y, float z,
+            UInt32 simMs, byte noiseLevel, bool firstShot)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByte(0x03);
+            pak.AddByte(0x28);
+            pak.AddByte(actionCounter);
+            pak.AddHexBytes("010c388100");
+            pak.AddUint32(targetViewSpawnId, 1);
+            pak.AddFloatLtVector3f(x, y, z);
+            pak.AddUint32(simMs, 1);
+            if (firstShot)
+            {
+                pak.AddHexBytes("8084");
+                pak.AddByte(noiseLevel);
+                pak.AddHexBytes("80808080" + "03" + "00001000");
+                pak.AddByte(CombatHandler.CombatantModeReady);
+            }
+            else
+            {
+                pak.AddHexBytes("8004");
+                pak.AddByte(noiseLevel);
+            }
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>RPC 4e 00, sent by retail with every shot the player fired (meaning unknown).</summary>
+        public static byte[] BuildRangedShotRpc()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x4e);
+            pak.AddByte(0x00);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Clears the combat stance and flags <see cref="LeaveCombatDelayMs"/> after a fight, unless a new fight
+        /// started meanwhile (DelayedActions: a plain Timer could be collected before it fired).
+        /// </summary>
+        public void ScheduleLeaveCombatMode(WorldClient client)
+        {
+            int generation = client.playerData.combatGeneration;
+            DelayedActions.After(LeaveCombatDelayMs / 1000.0, () =>
+            {
+                if (client.playerData.combatGeneration == generation)
+                {
+                    SendLeaveCombatMode(client);
+                    client.FlushQueue();
+                }
+            });
         }
 
         /// <summary>

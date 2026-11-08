@@ -73,6 +73,37 @@ public class CombatPacketTests
             Hex(ServerPackets.BuildSelfPositionHandoff(0x66, 1f, 2f, 3f, 0x12345678)));
     }
 
+    private static float F32(string hex) => BitConverter.ToSingle(StringUtils.hexStringToBytes(hex), 0);
+
+    [Fact]
+    public void FirstGunshotMatchesRetail()
+    {
+        // Retail first shot, luizoe old-sniffer Unknown log line 11790 (research/packet-dumps/community-intake/
+        // 20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected): action 28, NoiseLevel 0x32,
+        // ConditionStateFlags 0x00100000, CombatantMode 0x21.
+        string retail = "020003" + "2802010c388100" + "0400a300" + "0010d645" + "0060c744" + "785d3ac6" + "2af96411" +
+                        "8084" + "32" + "80808080" + "03" + "00001000" + "21";
+        Assert.Equal(retail, Hex(ServerPackets.BuildRangedShot(0x02, 0x00a30004,
+            F32("0010d645"), F32("0060c744"), F32("785d3ac6"), 0x1164f92a, 0x32, true)));
+    }
+
+    [Fact]
+    public void FollowUpGunshotMatchesRetail()
+    {
+        // Retail, tutorial capture 13:30:17 (crashover2k ..._uriah.log.txt line 13898): NoiseLevel 0x4b only.
+        string retail = "020003" + "2802010c388100" + "0600f200" + "a810d645" + "0060c744" + "166a37c6" + "33bee71e" +
+                        "8004" + "4b";
+        Assert.Equal(retail, Hex(ServerPackets.BuildRangedShot(0x02, 0x00f20006,
+            F32("a810d645"), F32("0060c744"), F32("166a37c6"), 0x1ee7be33, 0x4b, false)));
+    }
+
+    [Fact]
+    public void GunshotRpcMatchesRetail()
+    {
+        // Retail sent 02 4e 00 (length 2, RPC 4e 00) with each shot.
+        Assert.Equal("4e00", Hex(ServerPackets.BuildRangedShotRpc()));
+    }
+
     [Fact]
     public void CombatStartTimeIsSimMilliseconds()
     {

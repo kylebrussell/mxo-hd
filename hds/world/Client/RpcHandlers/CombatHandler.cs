@@ -176,6 +176,14 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Close combat requested against target: {targetViewWithSpawnId}");
 
+            // A 41 (fire) comes with a 40 for the same target; retail didn't answer that 40, and starting close
+            // combat here would end the ranged fight the 41 just started.
+            if (IsRangedFightWith(targetViewWithSpawnId))
+            {
+                Output.WriteDebugLog("[COMBAT] Close combat request ignored: firing at this target");
+                return;
+            }
+
             // TODO: Look up the target Mob from the view ID
             // For now, create session without mob reference
             Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
@@ -350,6 +358,8 @@ namespace hds
                 }
                 else
                 {
+                    FireRangedShot(session, false);
+
                     // For ranged combat, calculate distance and apply falloff
                     float distance = CombatCalculator.CalculateDistance(
                         session.Attacker.playerInstance.Position.getValue(),
@@ -447,14 +457,23 @@ namespace hds
                 packets.SendNpcDies(mobViewId, session.Attacker, session.DefenderMob);
             }
 
-            byte[] combatCentre = null;
-            if (session.CombatHandlerObject is AttributeClass3664 combatObject)
+            if (session.Type == CombatSession.CombatType.Ranged)
             {
-                combatCentre = combatObject.Position.getValue();
+                // No combat view to tear down. The client stands down by itself (3d 00, answered in
+                // ProcessCombatStance); the stance and combat flag reset follows as after close combat.
+                packets.ScheduleLeaveCombatMode(session.Attacker);
             }
-            packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId, session.TargetViewSpawnId,
-                combatCentre, session.RoundNumber);
-            RemoveCombatHandlerEntity(session);
+            else
+            {
+                byte[] combatCentre = null;
+                if (session.CombatHandlerObject is AttributeClass3664 combatObject)
+                {
+                    combatCentre = combatObject.Position.getValue();
+                }
+                packets.SendCombatEnd(session.Attacker, session.CombatHandlerViewId, session.TargetViewSpawnId,
+                    combatCentre, session.RoundNumber);
+                RemoveCombatHandlerEntity(session);
+            }
 
             // If defender died, trigger the experience/loot sequence
             if (defenderDied)
@@ -501,7 +520,11 @@ namespace hds
         }
 
         /// <summary>
-        /// Handle ranged combat (guns) request from client.
+        /// RPC 41 &lt;target view u16&gt; &lt;spawn u16&gt;: fire at a target with the hotbar's Free Fire weapon. The client
+        /// sends it together with 3d 01 and a 40 for the same target. Retail answered with a shot at once and kept
+        /// firing about every 5 s without further requests until the target died (tutorial capture, crashover2k
+        /// ..._uriah.log.txt, 13:30:12-13:30:32). Unlike close combat there is no combat handler object, no 40 echo
+        /// and no RPC 46.
         /// </summary>
         public void ProcessRangeCombatRequest(ref byte[] packet)
         {
@@ -513,76 +536,68 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
 
-            // Find the target mob
-            Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
-
-            if (targetMob == null)
+            if (IsRangedFightWith(targetViewWithSpawnId))
             {
-                Output.WriteDebugLog("[COMBAT] Range combat aborted - target mob not found");
+                Output.WriteDebugLog("[COMBAT] Already firing at this target");
+                return;
+            }
+
+            Mob targetMob = FindMobByViewSpawnId(targetViewWithSpawnId);
+            if (targetMob == null || targetMob.getIsDead())
+            {
+                Output.WriteDebugLog("[COMBAT] Range combat aborted - target mob not found or dead");
                 return;
             }
 
             StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
 
-            // Create combat session with Ranged type
             currentSession = new CombatSession(
                 client,
                 targetMob,
                 targetViewWithSpawnId,
                 CombatSession.CombatType.Ranged
             );
+            targetMob.setCombatTarget(client);
 
-            // Set this player as the mob's combat target so mob can attack back
-            if (targetMob != null)
-            {
-                targetMob.setCombatTarget(client);
-            }
-
-            // Subscribe to combat events
             currentSession.OnCombatTick += HandleCombatTick;
             currentSession.OnCombatEnd += HandleCombatEnd;
 
-            // Send combat mode packet to player
-            ServerPackets packets = new ServerPackets();
-            packets.SendEnterCombatMode(client);
-
-            // Spawn the ILCombatHandler game object (same as melee)
-            var ilCombatHandler = new GameObjectDefinitions().Object55;
-            ilCombatHandler.DisableAllAttributes();
-            ilCombatHandler.StartTime.enable();
-            ilCombatHandler.Position.enable();
-
-            ilCombatHandler.StartTime.setValue(CombatStartTime());
-            ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
-            currentSession.CombatHandlerObject = ilCombatHandler;
-
-            UInt64 currentEntityId = WorldServer.entityIdCounter;
-            WorldServer.entityIdCounter++;
-            WorldServer.gameServerEntities.Add(ilCombatHandler);
-
-            packets.SendSpawnGameObject(client, ilCombatHandler, currentEntityId);
-
-            ClientView theView = client.viewMan.GetViewForEntityAndGo(currentEntityId,
-                NumericalUtils.ByteArrayToUint16(ilCombatHandler.GetGoid(), 1));
-
-            // Store view IDs in session
-            currentSession.CombatHandlerViewId = theView.ViewID;
-            currentSession.CombatHandlerEntityId = currentEntityId;
-            ilCombatViewId = theView.ViewID; // Legacy field
-
-            // Send combat initialization packet
-            packets.SendCombatInitialize(client, theView.ViewID, targetViewWithSpawnId);
             client.playerData.combatGeneration++;
-            client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(targetViewWithSpawnId, 0x01));
+            client.playerInstance.CombatantMode.setValue(CombatantModeReady);
+            rangedNoiseLevel = 0;
 
-            // Send the combat state data
-            SendCombatStateBlob(client, theView.ViewID);
-
+            // First shot now, then one per tick.
+            FireRangedShot(currentSession, true);
             client.FlushQueue();
 
-            // Start combat session - ranged combat uses faster tick rate (2 seconds vs 3 for melee)
-            currentSession.Start(2000);
+            currentSession.Start(ServerPackets.RangedShotIntervalMs);
             isCombatRunning = true;
+        }
+
+        /// <summary>True while this player is firing at the given target (view u16 + spawn u16).</summary>
+        private bool IsRangedFightWith(UInt32 targetViewSpawnId)
+        {
+            CombatSession session = currentSession;
+            return session != null && session.IsActive && session.Type == CombatSession.CombatType.Ranged &&
+                   session.TargetViewSpawnId == targetViewSpawnId;
+        }
+
+        /// <summary>NoiseLevel (own-view attribute 9): retail sent 0x32 on the first shot and more on later ones.</summary>
+        private byte rangedNoiseLevel;
+
+        /// <summary>Sends one gunshot of the player at the session's target: the own-view shot and RPC 4e 00.</summary>
+        private void FireRangedShot(CombatSession session, bool firstShot)
+        {
+            WorldClient player = session.Attacker;
+            rangedNoiseLevel = (byte)Math.Min(0x64, rangedNoiseLevel == 0 ? 0x32 : rangedNoiseLevel + 0x0c);
+
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            player.playerData.emoteCounter++;
+            player.messageQueue.addObjectMessage(ServerPackets.BuildRangedShot(player.playerData.emoteCounter,
+                session.TargetViewSpawnId, (float)x, (float)y, (float)z, CombatStartTime(), rangedNoiseLevel,
+                firstShot), false);
+            player.messageQueue.addRpcMessage(ServerPackets.BuildRangedShotRpc());
         }
 
         /// <summary>
