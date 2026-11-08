@@ -184,6 +184,15 @@ public class PlayerProgressionTests
         Assert.Equal("810f2e000000010800806400000000", Hex(ServerPackets.BuildAbilityCodeBuyAck(awakened, 100)));
     }
 
+    [Theory]
+    [InlineData(1, false, "811801000000" + "0000")] // retail, one item
+    [InlineData(4, false, "811800000000" + "0000")] // retail, several
+    [InlineData(1, true, "811801010000" + "0000")]
+    public void UploadAnswerFollowsTheItemsMoved(int items, bool abilityCode, string expected)
+    {
+        Assert.Equal(expected, Hex(HardlineBooths.BuildItemsUploaded(items, abilityCode)));
+    }
+
     [Fact]
     public void KnownAbilityEntrySharesTheCodeStorageLayout()
     {

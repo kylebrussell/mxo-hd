@@ -16,8 +16,9 @@ namespace hds
         /// emptied bag slot, 69 00 per grown entry, 5e per new entry). The caller sends the booth's 81 18 answer after
         /// this and flushes. Returns how many items moved.
         /// </summary>
-        public static int UploadCode(WorldClient client)
+        public static int UploadCode(WorldClient client, out bool abilityCodeUploaded)
         {
+            abilityCodeUploaded = false;
             UInt32 charId = client.playerData.getCharID();
             IWorldDBHandler db = Store.dbManager.WorldDbHandler;
 
@@ -45,6 +46,8 @@ namespace hds
 
             string name = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
             client.messageQueue.addRpcMessage(CodeStorage.BuildUploadMessage(name));
+
+            abilityCodeUploaded = abilityCode.Count > 0;
 
             // Bought abilities join the known-abilities list after the storage entries this upload adds.
             UInt16 abilitySlot = (UInt16)(nextSlot + plan.Added.Count);
@@ -93,7 +96,7 @@ namespace hds
         /// </summary>
         public static void ProcessUploadRequest(WorldClient client)
         {
-            UploadCode(client);
+            UploadCode(client, out _);
             client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
             client.FlushQueue();
         }

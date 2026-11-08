@@ -56,6 +56,16 @@ namespace hds
             return new byte[] { 0x81, 0x18, 0x00, 0x00, 0x0d, 0x00, 0x00, 0x98 };
         }
 
+        /// <summary>
+        /// 81 18 after an upload that moved items: SingleItemUploaded u8, AbilityCodeUploaded u8, Status u32 (field names
+        /// from the client's RPC printer). Retail sent 01 for one item and 00 for several. The ability flag is a guess
+        /// from its name: no capture uploads an ability.
+        /// </summary>
+        public static byte[] BuildItemsUploaded(int items, bool abilityCode)
+        {
+            return new byte[] { 0x81, 0x18, (byte)(items == 1 ? 1 : 0), (byte)(abilityCode ? 1 : 0), 0, 0, 0, 0 };
+        }
+
         /// <summary>Entity id of a booth view, the same metrId + mxoStaticId scheme doors and subways use.</summary>
         public static UInt64 EntityId(StaticWorldObject booth)
         {

@@ -5,6 +5,12 @@ namespace hds
 {
     public partial class ServerPackets
     {
+        /// <summary>
+        /// LTRS_ABILITYLEVELUPINPROGRESS, 0x98000000 | 0x0c in the client's status table. Guess: the client has no closer
+        /// status for a refused upgrade and normally blocks these itself, so no capture shows one.
+        /// </summary>
+        public const UInt32 StatusAbilityUpgradeRefused = 0x9800000c;
+
         /// <summary>Reason on the 80 e7 / 80 e4 cash messages of an ability upgrade.</summary>
         public const UInt32 InfoReasonAbilityUpgrade = 0x11;
 
@@ -105,13 +111,13 @@ namespace hds
         }
 
         /// <summary>80 b8: ability u16, new level u16, four zeros. Retail: <c>80 b8 02 00 02 00 00 00 00 00</c>.</summary>
-        public static byte[] BuildAbilityUpgraded(UInt16 ability, UInt16 level)
+        public static byte[] BuildAbilityUpgraded(UInt16 ability, UInt16 level, UInt32 status = 0)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_UPGRADE_ABILITY, 0);
             pak.AddUint16(ability, 1);
             pak.AddUint16(level, 1);
-            pak.AddUint32(0, 1);
+            pak.AddUint32(status, 1);
             return pak.ReturnFinalPacket();
         }
 

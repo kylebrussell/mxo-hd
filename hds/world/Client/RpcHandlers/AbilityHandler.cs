@@ -42,6 +42,8 @@ namespace hds
             {
                 Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " to " + newLevel + " refused at character level " + characterLevel);
                 packets.sendSystemChatMessage(client, "Your character level is too low for that ability level.", "MODAL");
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
+                client.FlushQueue();
                 return;
             }
 
@@ -51,6 +53,8 @@ namespace hds
             {
                 Output.WriteDebugLog("[ABILITY] Upgrade of " + request.Ability + " refused: costs " + cost + ", has " + cash);
                 packets.sendSystemChatMessage(client, "You do not have enough information for that upgrade.", "MODAL");
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)owned.Value, ServerPackets.StatusAbilityUpgradeRefused));
+                client.FlushQueue();
                 return;
             }
 
