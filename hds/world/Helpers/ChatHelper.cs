@@ -176,6 +176,14 @@ namespace hds
                     Store.currentClient.FlushQueue();
                 }
 
+                if (command.Equals("?addexp") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: experience with no kill, through the normal path (levels, database).
+                    PlayerRewards.GrantExperience(Store.currentClient, UInt32.Parse(commands[1]));
+                    Store.currentClient.FlushQueue();
+                }
+
                 if (command.Equals("?die"))
                 {
                     // Dev command: run the player death path without needing a mob strong enough to win.

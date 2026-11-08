@@ -1219,7 +1219,8 @@ namespace hds.databases{
         {
 	        OpenConnection();
             queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = "SELECT COALESCE(MAX(slot), -1) + 1 FROM char_abilities WHERE char_id = '" + charId + "'";
+            queryExecuter.CommandText = "SELECT COALESCE(MAX(slot), -1) + 1 FROM char_abilities WHERE char_id = '" + charId +
+                                        "' AND slot < " + CharacterAttributes.FirstSlot;
             UInt16 slot = Convert.ToUInt16(queryExecuter.ExecuteScalar());
 	        CloseConnection();
             return slot;
@@ -1281,12 +1282,52 @@ namespace hds.databases{
 		    return level;
 	    }
 
-	    public ushort UpgradeAbilityLevel(Int32 abilityGoID, uint level)
+	    public int? GetAbilityLevelAtSlot(UInt32 charId, UInt16 slot, Int32 abilityGoId)
 	    {
-		    UInt32 charID = Store.currentClient.playerData.getCharID();
-		    UInt16 currentLevel = GetCurrentAbilityLevel(abilityGoID, charID);
-		    ExecuteNonResultQuery("UPDATE char_abilities SET level = " + currentLevel + level + " WHERE char_id=" + charID + " AND ability_id=" + abilityGoID + " LIMIT 1");
-		    return (ushort) (currentLevel + level);
+		    OpenConnection();
+		    queryExecuter = conn.CreateCommand();
+		    queryExecuter.CommandText = "SELECT level FROM char_abilities WHERE char_id = '" + charId + "' AND slot = '" + slot +
+		                                "' AND ability_id = '" + abilityGoId + "' LIMIT 1";
+		    object level = queryExecuter.ExecuteScalar();
+		    CloseConnection();
+		    return level == null ? (int?)null : Convert.ToInt32(level);
+	    }
+
+	    public void SetAbilityLevel(UInt32 charId, UInt16 slot, int level)
+	    {
+		    ExecuteNonResultQuery("UPDATE char_abilities SET level = '" + level + "' WHERE char_id = '" + charId + "' AND slot = '" + slot + "'");
+	    }
+
+	    public void SaveLevel(UInt32 charId, int level, UInt16 health, UInt16 maxHealth, UInt16 innerStrength, UInt16 maxInnerStrength)
+	    {
+		    ExecuteNonResultQuery("UPDATE characters SET level = '" + level + "', healthC = '" + health + "', healthM = '" + maxHealth +
+		                          "', innerStrC = '" + innerStrength + "', innerStrM = '" + maxInnerStrength + "' WHERE charId = '" + charId + "' LIMIT 1");
+	    }
+
+	    public Dictionary<byte, UInt16> GetCharacterAttributes(UInt32 charId)
+	    {
+		    OpenConnection();
+		    queryExecuter = conn.CreateCommand();
+		    queryExecuter.CommandText = "SELECT slot, level FROM char_abilities WHERE char_id = '" + charId + "' AND slot >= " + CharacterAttributes.FirstSlot;
+		    dr = queryExecuter.ExecuteReader();
+
+		    Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
+		    while (dr.Read())
+		    {
+			    attributes[(byte)(Convert.ToInt32(dr.GetValue(0)) - CharacterAttributes.FirstSlot)] = Convert.ToUInt16(dr.GetValue(1));
+		    }
+		    dr.Close();
+		    CloseConnection();
+		    return attributes;
+	    }
+
+	    public void SetCharacterAttribute(UInt32 charId, byte attribute, UInt16 value)
+	    {
+		    UInt16 slot = CharacterAttributes.SlotOf(attribute);
+		    ExecuteNonResultQuery("DELETE FROM char_abilities WHERE char_id = '" + charId + "' AND slot = '" + slot + "'; " +
+		                          "INSERT INTO char_abilities SET char_id = '" + charId + "', slot = '" + slot +
+		                          "', ability_id = '" + CharacterAttributes.RowValueOf(attribute) + "', level = '" + value +
+		                          "', is_loaded = 0, ability_name = 'Attribute " + attribute + "', added = NOW()");
 	    }
 
         public void SaveExperience(WorldClient client, long exp)

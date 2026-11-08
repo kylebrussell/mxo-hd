@@ -104,20 +104,23 @@ namespace hds
             string cashStr = "80df" + StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray((UInt32)cash, 1)) + "00000000";
             */
 
-            // There are for testing - need to change this later to load from ClientObject / DB 
-            UInt16 focus = 24;
-            UInt16 belief = 25;
-            UInt16 vitality = 26;
-            UInt16 perception = 27;
-            UInt16 reason = 28;
+            UInt32 charId = Store.currentClient.playerData.getCharID();
+            Dictionary<byte, UInt16> attributes = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
+            foreach (byte attribute in CharacterAttributes.All)
+            {
+                UInt16 value = attributes.TryGetValue(attribute, out UInt16 stored)
+                    ? stored
+                    : CharacterAttributes.LegacyValue(attribute);
+                packets.sendAttribute(Store.currentClient, value, attribute);
+            }
 
-            
-            packets.sendAttribute(Store.currentClient, focus, 0x4e);
-            packets.sendAttribute(Store.currentClient, perception, 0x4f);
-            packets.sendAttribute(Store.currentClient, reason, 0x51);
-            packets.sendAttribute(Store.currentClient, belief, 0x52);
-            packets.sendAttribute(Store.currentClient, vitality, 0x54);
-            
+            // Retail loaded Awakened's hidden Self Defense at its level with the attributes (80 b2 11 00 05 00 08 02).
+            UInt16 awakened = Store.dbManager.WorldDbHandler.GetCurrentAbilityLevel(
+                DataLoader.getInstance().getAbilityByID(AbilityProgression.AwakenedAbility).getGOID(), charId);
+            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
+                AbilityProgression.SelfDefenseAbility, awakened, AbilityProgression.HiddenSlot));
+
+
             /*
             string focusRPC = "80ad4e" + StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArray(focus, 0)) + "000802";
             string beliefRPC = "80ad52" + StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArray(belief, 0)) + "000802";
@@ -221,12 +224,37 @@ namespace hds
 
         public void IncrementPlayerExp(UInt32 expToIncrement)
         {
-            long newExperienceValue = Store.currentClient.playerData.getExperience() + expToIncrement;
-            Store.currentClient.playerData.setExperience(newExperienceValue);
-            Store.dbManager.WorldDbHandler.SaveExperience(Store.currentClient, newExperienceValue);
+            PlayerRewards.GrantExperience(Store.currentClient, expToIncrement);
+        }
 
-            ServerPackets packets = new ServerPackets();
-            packets.SendEXPGain(Store.currentClient, expToIncrement);
+        /// <summary>
+        /// Client 80 b5 from the attribute level-up panel: the points to add per attribute; 80 b6 answers with the new
+        /// value. The client works out how many points are left and only offers those, as in retail.
+        /// </summary>
+        public void ProcessRaiseAttributes(ref byte[] rpcData)
+        {
+            WorldClient client = Store.currentClient;
+            UInt32 charId = client.playerData.getCharID();
+
+            foreach (CharacterAttributes.Raise raise in CharacterAttributes.ParseRaises(rpcData))
+            {
+                if (Array.IndexOf(CharacterAttributes.All, raise.Attribute) < 0)
+                {
+                    Output.WriteDebugLog("[ATTRIBUTE] Ignored unknown attribute " + raise.Attribute);
+                    continue;
+                }
+
+                Dictionary<byte, UInt16> stored = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
+                UInt16 current = stored.TryGetValue(raise.Attribute, out UInt16 value)
+                    ? value
+                    : CharacterAttributes.LegacyValue(raise.Attribute);
+                byte raised = (byte)Math.Min(255, current + raise.Points);
+
+                Store.dbManager.WorldDbHandler.SetCharacterAttribute(charId, raise.Attribute, raised);
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaised(raise.Attribute, raised));
+                Output.WriteDebugLog("[ATTRIBUTE] " + raise.Attribute + " raised to " + raised);
+            }
+            client.FlushQueue();
         }
 
         public void ProcessSetBackgroundRequest(ref byte[] packetData)
@@ -323,62 +351,39 @@ namespace hds
         
         public void ProcessLoadAbility(ref byte[] packet)
         {
-            // read the values from the packet
-            PacketReader reader = new PacketReader(packet);
-            UInt32 staticObjectID = reader.ReadUInt32(1);
-            UInt16 unloadFlag = reader.ReadUInt16(1);
-            UInt16 loadFlag = reader.ReadUInt16(1);
-            UInt16 countAbilities = reader.ReadUInt16(1);
-
-            int pointer = 11; // Start at index 11
-            List<UInt16> abilitySlots = new List<UInt16>();
-
-            for (int i = 1; i <= countAbilities; i++)
+            if (!AbilityProgression.TryParseLoadout(packet, out bool unload, out List<AbilityProgression.LoadoutEntry> entries))
             {
-                // This must be looped 
-                byte[] slotByteID = new byte[2];
-                ArrayUtils.copyTo(packet, pointer, slotByteID, 0, 2);
-                pointer = pointer + 2;
+                Output.WriteDebugLog("[ABILITY] Malformed loadout request ignored");
+                return;
+            }
 
-                byte[] abilityByteID = new byte[2];
-                ArrayUtils.copyTo(packet, pointer, abilityByteID, 0, 2);
-                pointer = pointer + 4;
-
-                byte[] abilityByteLevel = new byte[2];
-                ArrayUtils.copyTo(packet, pointer, abilityByteLevel, 0, 2);
-                pointer = pointer + 3;
-
-
-                UInt16 slotID = NumericalUtils.ByteArrayToUint16(slotByteID, 1);
-                UInt16 AbilityID = NumericalUtils.ByteArrayToUint16(abilityByteID, 1);
-                UInt16 AbilityLevel = NumericalUtils.ByteArrayToUint16(abilityByteLevel, 1);
-
-                PacketContent pak = new PacketContent();
-                if (unloadFlag > 0)
+            List<UInt16> abilitySlots = new List<UInt16>();
+            foreach (AbilityProgression.LoadoutEntry entry in entries)
+            {
+                UInt16? grant = AbilityProgression.GrantOf(entry.Ability);
+                if (unload)
                 {
-                    pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_ABILITY_UNLOAD, 0);
-                    pak.AddByteArray(abilityByteID);
+                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(entry.Ability));
+                    if (grant.HasValue)
+                    {
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant.Value));
+                    }
                 }
                 else
                 {
-                    pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_ABILITY_LOAD, 0);
-                    pak.AddByteArray(abilityByteID);
-                    pak.AddByteArray(abilityByteLevel);
-                    pak.AddByteArray(slotByteID);
+                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, entry.Level, entry.Slot));
+                    if (grant.HasValue)
+                    {
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant.Value,
+                            AbilityProgression.GrantLevel(entry.Ability, entry.Level), AbilityProgression.HiddenSlot));
+                    }
                 }
-                abilitySlots.Add(slotID);
-                Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+                abilitySlots.Add(entry.Slot);
             }
 
-
-            if (unloadFlag > 0)
-            {
-                Store.dbManager.WorldDbHandler.UpdateAbilityLoadOut(abilitySlots, 0);
-            }
-            else
-            {
-                Store.dbManager.WorldDbHandler.UpdateAbilityLoadOut(abilitySlots, 1);
-            }
+            Store.dbManager.WorldDbHandler.UpdateAbilityLoadOut(abilitySlots, unload ? 0u : 1u);
+            Store.currentClient.FlushQueue();
+            Output.WriteDebugLog("[ABILITY] " + (unload ? "Unloaded " : "Loaded ") + entries.Count + " abilities");
         }
     }
 }

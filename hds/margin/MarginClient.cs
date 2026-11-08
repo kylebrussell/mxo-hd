@@ -443,6 +443,7 @@ namespace hds{
             
             // Add the Basic Abilitys...
             addStartAbilitys(newCharID);
+            Store.dbManager.MarginDbHandler.SetStartingStats(newCharID);
 
             // we have all created - lets load the charData 
             loadCharacter(packet, client, newCharID);

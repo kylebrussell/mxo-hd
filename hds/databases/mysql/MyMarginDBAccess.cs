@@ -88,7 +88,8 @@ namespace hds.databases{
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
 		        List<CharAbility> charAbilities =
-			        dbContext.CharAbilities.Where(ca => ca.CharId == charId).OrderBy(ca => ca.Slot).ToList();
+			        dbContext.CharAbilities.Where(ca => ca.CharId == charId && ca.Slot < CharacterAttributes.FirstSlot)
+				        .OrderBy(ca => ca.Slot).ToList();
 
 		        List<MarginAbilityItem> abilities = new List<MarginAbilityItem>();
 		        foreach (var charAbility in charAbilities)
@@ -195,6 +196,25 @@ namespace hds.databases{
             queryExecuter.CommandText = theQuery;
             queryExecuter.ExecuteNonQuery();
             conn.Close();
+        }
+
+        /// <summary>A new character's starting health, inner strength and attributes (retail level 1 values).</summary>
+        public void SetStartingStats(UInt32 charID)
+        {
+            UInt16 health = PlayerProgression.MaxHealthAtLevel(1);
+            UInt16 innerStrength = PlayerProgression.MaxInnerStrengthAtLevel(1);
+            string theQuery = "UPDATE characters SET healthC = '" + health + "', healthM = '" + health + "', innerStrC = '" + innerStrength +
+                              "', innerStrM = '" + innerStrength + "' WHERE charId = '" + charID + "'";
+            conn.Open();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = theQuery;
+            queryExecuter.ExecuteNonQuery();
+            conn.Close();
+
+            foreach (byte attribute in CharacterAttributes.All)
+            {
+                addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.StartingValue, 0);
+            }
         }
 
         public void addAbility(Int32 abilityID, UInt16 slotID, UInt32 charID, UInt16 level, UInt16 is_loaded)
