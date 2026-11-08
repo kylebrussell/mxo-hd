@@ -229,7 +229,7 @@ namespace hds
 
         /// <summary>
         /// Client 80 b5 from the attribute level-up panel: the points to add per attribute; 80 b6 answers with the new
-        /// value. The client works out how many points are left and only offers those, as in retail.
+        /// value, or with LTRS_INADEQUATEATTRIBUTEPOINTS when the raise does not fit.
         /// </summary>
         public void ProcessRaiseAttributes(ref byte[] rpcData)
         {
@@ -245,13 +245,18 @@ namespace hds
                 }
 
                 Dictionary<byte, UInt16> stored = Store.dbManager.WorldDbHandler.GetCharacterAttributes(charId);
-                UInt16 current = stored.TryGetValue(raise.Attribute, out UInt16 value)
-                    ? value
-                    : CharacterAttributes.LegacyValue(raise.Attribute);
-                byte raised = (byte)Math.Min(255, current + raise.Points);
+                int level = client.playerInstance.Level.getValue()[0];
+                if (!CharacterAttributes.CanRaise(stored, raise.Attribute, raise.Points, level))
+                {
+                    Output.WriteDebugLog("[ATTRIBUTE] Raise of " + raise.Attribute + " by " + raise.Points + " refused at level " + level);
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaiseRefused());
+                    continue;
+                }
 
+                UInt16 raised = (UInt16)(CharacterAttributes.ValueOf(stored, raise.Attribute) + raise.Points);
                 Store.dbManager.WorldDbHandler.SetCharacterAttribute(charId, raise.Attribute, raised);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaised(raise.Attribute, raised));
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAttributeRaised(raise.Attribute,
+                    CharacterAttributes.NewLevelOf(raise.Attribute, raised)));
                 Output.WriteDebugLog("[ATTRIBUTE] " + raise.Attribute + " raised to " + raised);
             }
             client.FlushQueue();

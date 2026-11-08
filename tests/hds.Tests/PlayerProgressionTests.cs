@@ -31,9 +31,35 @@ public class PlayerProgressionTests
     [Fact]
     public void BigGainsSkipLevelsAndLevelStopsAtFifty()
     {
-        Assert.Equal(8, PlayerProgression.LevelForExperience(1, 224466));
+        Assert.Equal(6, PlayerProgression.LevelForExperience(1, 224466));
         Assert.Equal(50, PlayerProgression.LevelForExperience(1, 800000000));
         Assert.Equal(50, PlayerProgression.LevelForExperience(50, 800000000));
+    }
+
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(2, 500)]
+    [InlineData(3, 5000)]
+    [InlineData(4, 21000)]
+    [InlineData(5, 60000)]
+    [InlineData(50, 296082500)]
+    public void ExperienceTableIsTheClients(int level, long experience)
+    {
+        Assert.Equal(experience, PlayerProgression.ExperienceForLevel(level));
+    }
+
+    [Fact]
+    public void ClientShowsLevelFourAtFortyThousand()
+    {
+        Assert.Equal(4, PlayerProgression.LevelForExperience(1, 40000));
+    }
+
+    [Fact]
+    public void LevelFiftyCharactersStayLevelFifty()
+    {
+        // TheNeo's saved total, a level 50 character's, is above the table's last step.
+        Assert.Equal(50, PlayerProgression.LevelForExperience(1, 314711958));
+        Assert.Equal(49, PlayerProgression.LevelForExperience(1, 296082499));
     }
 
     [Fact]
@@ -215,20 +241,50 @@ public class PlayerProgressionTests
     [Fact]
     public void SpentPointsListUsesRetailLayout()
     {
-        // Warboy, level 50: 03 4e000000 1600 52000000 1900 54000000 0200.
+        // Trinity, level 17: 03 51000000 0400 52000000 0b00 54000000 0100, shown Reason 12, Belief 16, Vitality 9.
         byte[] list = CharacterAttributes.BuildSpentPoints(new Dictionary<byte, ushort>
         {
-            { CharacterAttributes.Focus, 30 }, { CharacterAttributes.Perception, 8 }, { CharacterAttributes.Reason, 8 },
-            { CharacterAttributes.Belief, 33 }, { CharacterAttributes.Vitality, 10 }
+            { CharacterAttributes.Focus, 8 }, { CharacterAttributes.Perception, 11 }, { CharacterAttributes.Reason, 12 },
+            { CharacterAttributes.Belief, 16 }, { CharacterAttributes.Vitality, 9 }
         });
-        Assert.Equal("034e000000160052000000190054000000" + "0200", Hex(list));
+        Assert.Equal("03510000000400520000000b00540000000100", Hex(list));
     }
 
     [Fact]
     public void FreshCharacterHasSpentNothing()
     {
         Assert.Equal("00", Hex(CharacterAttributes.BuildSpentPoints(CharacterAttributes.All.ToDictionary(
-            a => a, a => CharacterAttributes.StartingValue))));
+            a => a, a => CharacterAttributes.BaseValue(a)))));
+        Assert.Equal(40, CharacterAttributes.All.Sum(a => CharacterAttributes.BaseValue(a)));
+    }
+
+    [Theory]
+    [InlineData(CharacterAttributes.Belief, 6, 9)]      // retail: first point in an attribute shown as 5 answers 9
+    [InlineData(CharacterAttributes.Perception, 12, 9)] // retail: first point in an attribute shown as 11 answers 9
+    [InlineData(CharacterAttributes.Focus, 10, 10)]     // retail: 8 + 2 answers 0a
+    public void RaiseAnswersWithoutTheShift(byte attribute, ushort shown, byte newLevel)
+    {
+        Assert.Equal(newLevel, CharacterAttributes.NewLevelOf(attribute, shown));
+    }
+
+    [Fact]
+    public void RaisesAreLimitedToLevelMinusOneAndTheCap()
+    {
+        Dictionary<byte, ushort> fresh = CharacterAttributes.All.ToDictionary(a => a, a => CharacterAttributes.BaseValue(a));
+        Assert.False(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Focus, 1, 1));
+        Assert.True(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Focus, 1, 2));
+        Assert.False(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Focus, 2, 2));
+        Assert.False(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Focus, 0, 50));
+
+        fresh[CharacterAttributes.Focus] = CharacterAttributes.Cap;
+        Assert.False(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Focus, 1, 50));
+        Assert.True(CharacterAttributes.CanRaise(fresh, CharacterAttributes.Reason, 1, 50));
+    }
+
+    [Fact]
+    public void RefusedRaiseCarriesTheClientsStatus()
+    {
+        Assert.Equal("80b608000e0000980000", Hex(ServerPackets.BuildAttributeRaiseRefused()));
     }
 
     [Fact]

@@ -5,27 +5,31 @@ using hds.shared;
 namespace hds
 {
     /// <summary>
-    /// Character progression rules, taken from the client's own rule scripts (resource/Python/Monolith.ltp,
-    /// rshooks.level_exp_reqs and GoUpALevel) and checked against retail captures (luizoe Recursion and Unknown,
-    /// crashover2k uriah create-and-tutorial, the Vector ability-upgrade logs).
+    /// Character progression rules, taken from client.dll and the client's rule scripts (resource/Python/Monolith.ltp,
+    /// rshooks.GoUpALevel) and checked against retail captures (luizoe Recursion and Unknown, crashover2k uriah
+    /// create-and-tutorial, the Vector ability-upgrade logs).
     /// </summary>
     public static class PlayerProgression
     {
         public const int MaxLevel = 50;
 
         /// <summary>
-        /// rshooks.level_exp_reqs: total experience that ends level (index + 1). Retail agrees that these are totals:
-        /// Recursion was level 2 until the total went 4,318 -> 9,818 (limit 4,500), level 3 at 11,665 -> 22,665
-        /// (16,000) and level 4 at 30,274 -> 63,274 (39,000).
+        /// The total experience of a level, as the client computes it to show the level at login (client.dll 0x625d8590,
+        /// 0x625d8610). The base adds 100 x k^2 per level up to 10 and 1000 x k after that; the result is
+        /// base x ((XPConstantMultiplier x (level - 1) - 1) x XPKnob + 1), with the client's defaults 5 and 1.
+        /// Retail agrees: Recursion reached level 3 between 4,318 and 9,818 (5,000), level 4 between 11,665 and 22,665
+        /// (21,000) and level 5 between 30,274 and 63,274 (60,000). rshooks.level_exp_reqs (4,500, 16,000, 39,000...) is
+        /// not this table: the client still showed level 4 at 40,000.
         /// </summary>
-        private static readonly long[] ExperienceEndingLevel =
+        public static long ExperienceForLevel(int level)
         {
-            500, 4500, 16000, 39000, 77500, 135500, 217000, 326000, 466500, 642500,
-            797500, 967500, 1152500, 1352500, 1567500, 1797500, 2042500, 2302500, 2577500, 2867500,
-            3172500, 3492500, 3827500, 4177500, 4542500, 4922500, 5317500, 5727500, 6152500, 6592500,
-            7047500, 7517500, 8002500, 8502500, 9017500, 9547500, 10092500, 10652500, 11227500, 11817500,
-            12422500, 13042500, 13677500, 14327500, 14992500, 15672500, 16367500, 17077500, 17802500
-        };
+            long total = 0;
+            for (int k = 1; k < level; k++)
+            {
+                total += k < 10 ? 100L * k * k : 1000L * k;
+            }
+            return total * 5 * Math.Max(0, level - 1);
+        }
 
         /// <summary>FX_CHARACTER_LEVEL_UP, the EffectID retail set on the own view at a level-up.</summary>
         public const UInt32 LevelUpEffect = 0x280005b9;
@@ -34,7 +38,7 @@ namespace hds
         public static int LevelForExperience(int currentLevel, long experience)
         {
             int level = Math.Max(1, currentLevel);
-            while (level < MaxLevel && experience >= ExperienceEndingLevel[level - 1])
+            while (level < MaxLevel && experience >= ExperienceForLevel(level + 1))
             {
                 level++;
             }
@@ -267,8 +271,62 @@ namespace hds
         /// <summary>First char_abilities slot that is not an ability. Retail ability slots stay well below it.</summary>
         public const int FirstSlot = 0x0208;
 
-        /// <summary>A new character's value. Retail fresh characters had 40 points, 8 each before the archetype's shift.</summary>
+        /// <summary>Ability/StartingValue of all five attributes in gameobjects.pkb.</summary>
         public const UInt16 StartingValue = 8;
+
+        /// <summary>Ability/AbilityLevelCap of all five attributes in gameobjects.pkb.</summary>
+        public const UInt16 Cap = 30;
+
+        /// <summary>
+        /// A new character's shown value: the starting value with the archetype's shift. Retail shifted one attribute up 3
+        /// and one down 3. These are the shifts of the character block the margin sends everyone (Trinity's): the real
+        /// client offers level - 1 points with exactly these values, and fewer with 8 in all five. Which field of the block
+        /// carries the archetype is not known, so all characters share this one.
+        /// </summary>
+        public static UInt16 BaseValue(byte attribute)
+        {
+            switch (attribute)
+            {
+                case Perception: return 11;
+                case Belief: return 5;
+                default: return StartingValue;
+            }
+        }
+
+        public static UInt16 SpentPoints(byte attribute, UInt16 value)
+        {
+            UInt16 baseValue = BaseValue(attribute);
+            return value > baseValue ? (UInt16)(value - baseValue) : (UInt16)0;
+        }
+
+        /// <summary>
+        /// The NewLevel of 80 b6 is the starting value plus points spent, without the shift: retail answered 9 to the first
+        /// point in an attribute shown as 5 or 11, and the client adds the shift back (it showed 3 when told 6 for Belief).
+        /// </summary>
+        public static byte NewLevelOf(byte attribute, UInt16 value)
+        {
+            return (byte)(StartingValue + SpentPoints(attribute, value));
+        }
+
+        /// <summary>The attribute's shown value, from its saved row or the old fixed value.</summary>
+        public static UInt16 ValueOf(Dictionary<byte, UInt16> stored, byte attribute)
+        {
+            return stored.TryGetValue(attribute, out UInt16 value) ? value : LegacyValue(attribute);
+        }
+
+        /// <summary>
+        /// Whether a raise fits: the client offers level - 1 points in total (client.dll 0x625c5320) and an attribute stops
+        /// at its cap. The client checks this too; this keeps a forged request from buying attributes.
+        /// </summary>
+        public static bool CanRaise(Dictionary<byte, UInt16> stored, byte attribute, int points, int characterLevel)
+        {
+            int spent = 0;
+            foreach (byte each in All)
+            {
+                spent += SpentPoints(each, ValueOf(stored, each));
+            }
+            return points > 0 && spent + points <= characterLevel - 1 && ValueOf(stored, attribute) + points <= Cap;
+        }
 
         public static UInt16 SlotOf(byte attribute)
         {
@@ -317,11 +375,11 @@ namespace hds
             List<byte> list = new List<byte> { 0 };
             foreach (byte attribute in All)
             {
-                if (values.TryGetValue(attribute, out UInt16 value) && value > StartingValue)
+                if (values.TryGetValue(attribute, out UInt16 value) && SpentPoints(attribute, value) > 0)
                 {
                     list[0]++;
                     list.AddRange(new byte[] { attribute, 0, 0, 0 });
-                    UInt16 spent = (UInt16)(value - StartingValue);
+                    UInt16 spent = SpentPoints(attribute, value);
                     list.Add((byte)spent);
                     list.Add((byte)(spent >> 8));
                 }

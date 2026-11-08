@@ -218,7 +218,7 @@ namespace hds.databases{
         {
             foreach (byte attribute in CharacterAttributes.All)
             {
-                addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.StartingValue, 0);
+                addAbility(CharacterAttributes.RowValueOf(attribute), CharacterAttributes.SlotOf(attribute), charID, CharacterAttributes.BaseValue(attribute), 0);
             }
         }
 

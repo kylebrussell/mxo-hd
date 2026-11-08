@@ -121,9 +121,23 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>LTRS_INADEQUATEATTRIBUTEPOINTS, 0x98000000 | 0x0e in the client's status table.</summary>
+        public const UInt32 StatusInadequateAttributePoints = 0x9800000e;
+
+        /// <summary>80 b6 with the refusal status and no attributes. Guess: no capture shows a refused raise.</summary>
+        public static byte[] BuildAttributeRaiseRefused()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_UPGRADE_ATTRIBUTE, 0);
+            pak.AddUint16(8, 1);
+            pak.AddUint32(StatusInadequateAttributePoints, 1);
+            pak.AddUint16(0, 1);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>
-        /// 80 b6 answers an attribute raise with the new value: 08 00, four zeros, count u16, then 00, attribute u32,
-        /// value u8. Retail: <c>80 b6 08 00 00 00 00 00 01 00 00 51 00 00 00 09</c>.
+        /// 80 b6 answers an attribute raise (client printer: Attributes[AttributeID, NewLevel], Status): offset 08 00,
+        /// status u32, count u16, then 00, attribute u32, new level u8. Retail: <c>80 b6 08 00 00 00 00 00 01 00 00 51 00 00 00 09</c>.
         /// </summary>
         public static byte[] BuildAttributeRaised(byte attribute, byte value)
         {
