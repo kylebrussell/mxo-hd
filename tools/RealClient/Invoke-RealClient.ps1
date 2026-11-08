@@ -57,6 +57,8 @@ param(
     [string[]]$Walk,
     [int[]]$DoubleClick,
     [switch]$Once,
+    # Seconds to wait after an input instead of the safe defaults, for callers that poll for the result.
+    [double]$Settle = -1,
     [int[]]$Click,
     [int[]]$LauncherClick,
     [int[]]$RightClick,
@@ -423,7 +425,7 @@ if ($Teleport -and $ok) {
 if ($TypeText -and $ok) { Type-Client $TypeText; $summary.typed = $true; Start-Sleep 1 }
 
 foreach ($line in @($Chat)) {
-    if ($ok -and $line) { Send-Chat $line; Start-Sleep 2 }
+    if ($ok -and $line) { Send-Chat $line; Start-Sleep -Milliseconds $(if ($Settle -ge 0) { [int](1000 * $Settle) } else { 2000 }) }
 }
 
 if ($Walk -and $ok) {
@@ -441,6 +443,10 @@ if ($Walk -and $ok) {
     Start-Sleep 2
 }
 
+function Wait-Input([double]$default) {
+    Start-Sleep -Milliseconds ([int](1000 * $(if ($Settle -ge 0) { $Settle } else { $default })))
+}
+
 if ($DoubleClick -and $ok) {
     if ($DoubleClick.Count -ne 2) { throw '-DoubleClick takes x,y' }
     # Like a player: rest the cursor on the target, click once to target it, then double-click to use
@@ -448,11 +454,11 @@ if ($DoubleClick -and $ok) {
     $h = Get-ClientWindow
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # moves the cursor + targets
     if (-not $Once) {
-    Start-Sleep 2
+    Start-Sleep -Milliseconds $(if ($Settle -ge 0) { 1200 } else { 2000 })
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # uses the targeted object
     }
     $summary.doubleClicked = $true
-    Start-Sleep 4
+    Wait-Input 4
 }
 
 if ($LauncherClick -and $ok) {
@@ -466,21 +472,21 @@ if ($RightClick -and $ok) {
     if ($RightClick.Count -ne 2) { throw '-RightClick takes x,y' }
     [MxoInput]::PostGameRightClick((Get-ClientWindow), $RightClick[0], $RightClick[1])
     $summary.rightClicked = $true
-    Start-Sleep 2
+    Wait-Input 2
 }
 
 if ($Drag -and $ok) {
     if ($Drag.Count -ne 4) { throw '-Drag takes x1,y1,x2,y2' }
     [MxoInput]::PostGameDrag((Get-ClientWindow), $Drag[0], $Drag[1], $Drag[2], $Drag[3])
     $summary.dragged = $true
-    Start-Sleep 2
+    Wait-Input 2
 }
 
 if ($Click -and $ok) {
     if ($Click.Count -ne 2) { throw '-Click takes x,y' }
     [MxoInput]::PostGameClick((Get-ClientWindow), $Click[0], $Click[1])
     $summary.clicked = $true
-    Start-Sleep 3
+    Wait-Input 3
 }
 
 function Capture-Screen {
