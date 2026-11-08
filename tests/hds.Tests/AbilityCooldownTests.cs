@@ -3,6 +3,8 @@ using hds.shared;
 
 namespace hds.Tests;
 
+// Shares the static DelayedActions timer queue: running due actions in one class would fire the other's.
+[Collection("DelayedActions")]
 public class AbilityCooldownTests
 {
     private static string Hex(byte[] bytes) => StringUtils.bytesToString_NS(bytes).ToLowerInvariant();

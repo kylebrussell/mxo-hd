@@ -25,16 +25,74 @@ namespace hds
 
         public void processItemAdd(UInt32 itemID, UInt16 type)
         {
-            
-            // ToDo: Get free slot, add item to Inventory
-            // This method is called from looting and vendor buy (so vendor buy must care about money decrease)
-            UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-            Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemID);
+            // Called from looting and vendor buy (vendor buy takes care of the money).
+            AddItem(Store.currentClient, itemID, type);
+        }
 
+        /// <summary>
+        /// Puts one item into the inventory. A stackable item (Code Bits, code fragments, pills) joins a stack of the
+        /// same item that has room (inventory.count + 1, <c>69 01 &lt;slot&gt; &lt;(count-1)*4&gt;</c>); anything else, or
+        /// a full stack, takes the first free bag slot (<c>5e</c>). Returns the slot.
+        /// </summary>
+        public static UInt16 AddItem(WorldClient client, UInt32 itemID, UInt16 type)
+        {
+            UInt32 charId = client.playerData.getCharID();
             ServerPackets pak = new ServerPackets();
-            ushort amount = 0; // ToDo : make this dynamic lol
-            pak.sendInventoryItemAdd(freeSlot, itemID, amount, type, Store.currentClient);
 
+            if (ItemStacks.IsStackable(itemID))
+            {
+                foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(charId))
+                {
+                    if (item.Slot < 97 && item.Goid == itemID && item.Count < ItemStacks.MaxStack)
+                    {
+                        int count = item.Count + 1;
+                        Store.dbManager.WorldDbHandler.SetInventoryCount(item.Slot, charId, count);
+                        client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(item.Slot, count));
+                        Output.WriteDebugLog("[INVENTORY] Item " + itemID + " stacked in slot " + item.Slot + " (" + count + ")");
+                        return item.Slot;
+                    }
+                }
+            }
+
+            UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            if (freeSlot == 0)
+            {
+                pak.sendSystemChatMessage(client, "Your inventory is full.", "BROADCAST");
+                Output.WriteDebugLog("[INVENTORY] No free bag slot for item " + itemID);
+                return 0;
+            }
+            Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemID);
+            pak.sendInventoryItemAdd(freeSlot, itemID, 0, type, client);
+            return freeSlot;
+        }
+
+        /// <summary>
+        /// Takes one item out of a slot: a stack shrinks by one (<c>69 01</c>, as retail did for a used cookie), the
+        /// last item leaves the slot (<c>5f &lt;slot&gt; 01</c>).
+        /// </summary>
+        public static void RemoveOne(WorldClient client, UInt16 slot)
+        {
+            UInt32 charId = client.playerData.getCharID();
+            int count = 1;
+            foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(charId))
+            {
+                if (item.Slot == slot)
+                {
+                    count = item.Count;
+                    break;
+                }
+            }
+
+            if (count > 1)
+            {
+                Store.dbManager.WorldDbHandler.SetInventoryCount(slot, charId, count - 1);
+                client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(slot, count - 1));
+            }
+            else
+            {
+                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+                new ServerPackets().sendInventoryItemDelete(slot, client);
+            }
         }
 
         public void processItemDelete(ref byte[] packet)
@@ -73,6 +131,82 @@ namespace hds
             pak.sendInventoryItemDelete(slot, Store.currentClient);
         }
 
+
+        /// <summary>
+        /// Uses the consumable in a bag slot, asked for with the item's ability in a 80 b9 request. Retail order
+        /// (Antibiotic 5.0, PacketsZombiesPortingEtc lines 77036-77221): cast bar <c>80 ac</c> right away; when
+        /// the cast ends, the item's and the group's timers (<c>80 bd 01 .. 00</c>) and the slot removal
+        /// <c>5f &lt;slot&gt; 01</c>. Heal pills heal by the ability's value at that moment.
+        /// Returns false when the slot holds no consumable for that ability (a normal ability use then).
+        /// </summary>
+        public bool UseItem(UInt16 slot, UInt16 abilityId)
+        {
+            WorldClient client = Store.currentClient;
+            ClientData data = client.playerData;
+            ServerPackets pak = new ServerPackets();
+            UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+
+            if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
+                consumable.AbilityId != abilityId)
+            {
+                return false;
+            }
+
+            if (!ConsumableItems.IsUsable(consumable))
+            {
+                pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
+                return true;
+            }
+
+            double now = TimeUtils.GetSimTimeSeconds();
+            if (data.isDead || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+                (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
+            {
+                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " ignored: dead or its timer is running");
+                return true;
+            }
+
+            AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
+            float castTime = ability != null ? ability.getCastingTime() : 0;
+            UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
+
+            // Block a second use while this one is still casting.
+            lock (data.cooldownEndsAt)
+            {
+                data.cooldownEndsAt[(UInt16)goid] = now + castTime + consumable.Seconds;
+            }
+
+            if (castTime > 0)
+            {
+                pak.SendCastAbilityBar(abilityId, castTime);
+                client.FlushQueue();
+            }
+
+            DelayedActions.AfterFor(client, castTime, () =>
+            {
+                // The item may have been moved or listed during the cast: then nothing is used up and nothing happens
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
+                {
+                    lock (data.cooldownEndsAt)
+                    {
+                        data.cooldownEndsAt.Remove((UInt16)goid);
+                    }
+                    Output.WriteDebugLog("[INVENTORY] Item " + goid + " left slot " + slot + " during the cast; not used");
+                    return;
+                }
+
+                AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
+                    TimeUtils.GetSimTimeSeconds());
+                RemoveOne(client, slot);
+                client.FlushQueue();
+                if (consumable.Effect == ConsumableItems.Effect.Heal)
+                {
+                    AbilityHandler.HealSelf(client, amount);
+                }
+                Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
+            });
+            return true;
+        }
 
         public void processUnmountItem(ref byte[] rpcData)
         {

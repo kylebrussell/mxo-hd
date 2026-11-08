@@ -1,0 +1,389 @@
+using System;
+using System.Collections.Generic;
+using hds.shared;
+
+namespace hds
+{
+    /// <summary>
+    /// Buff abilities, as retail applied them (research/packet-dumps). When the cast ends the server sent one
+    /// <c>80 bc</c> modifier record per stat the buff changes:
+    /// <code>80 bc &lt;kind u16&gt; &lt;record id u16&gt; 00 &lt;ability u32&gt; &lt;stat u16&gt; &lt;value i32&gt; &lt;00 on / 01 off&gt; &lt;seconds f32&gt;</code>
+    /// e.g. Overclock (abilities_useoverclocked): <c>80 bc 15 00 42 01 00 47 01 00 00 ac 00 2b 00 00 00 00 00 00 a0 41</c>
+    /// (kind 0x15, record 0x142, ability 327, stat 172 +43, on, 20 s). The client shows the ability's icon in
+    /// the buff bar with the countdown. When the time was up the server sent the same records with the off
+    /// byte set (Consistent Technique, entilsar lastday2: on at 21:58:20, off at 21:58:41, 20 s).
+    /// "Exclusive" buffs (Evade Combat, Hyper-Sprint, the Hyper- defences, the Kung Fu / class buffs) have no
+    /// time; they were switched on with <c>80 bd 05 &lt;ability u16&gt; 00 00 00 00 00 01</c> and stayed on
+    /// until another buff of the same family replaced them (Corpsman -&gt; Team Healer and Hyper-Deflect -&gt;
+    /// Hyper-Block were turned off with <c>... 00</c> and their records sent off in the same packet).
+    /// Movement buffs also set the own-view MovementScale (the extra speed: Hyper-Speed 0.45, Hyper-Sprint 0.15)
+    /// and DissemblingType, cleared to 0 when they end (Hyper-Speed, entilsar lastday2, 600 s later).
+    /// </summary>
+    public static class AbilityBuffs
+    {
+        /// <summary>Record kinds seen in retail buffs.</summary>
+        public const UInt16 KindStat = 0x15, KindState = 0x19, KindLinked = 0x1d;
+
+        /// <summary>
+        /// Record ids are the client's handle for a modifier. The login sequence uses 0x02-0x11 for the loaded
+        /// abilities' passive modifiers, so buffs count up from here.
+        /// </summary>
+        public const UInt16 FirstRecordId = 0x100;
+
+        public struct Modifier
+        {
+            public UInt16 Kind;
+            /// <summary>The record's ability field; 0 means the buff's own ability (Evade's second record names 624).</summary>
+            public UInt32 Source;
+            public UInt16 Stat;
+            public Int32 Value;
+
+            public Modifier(UInt16 kind, UInt16 stat, Int32 value, UInt32 source = 0)
+            {
+                Kind = kind;
+                Stat = stat;
+                Value = value;
+                Source = source;
+            }
+        }
+
+        public class Buff
+        {
+            /// <summary>Countdown the client shows; 0 = no time limit (exclusive buffs).</summary>
+            public float Seconds;
+            public bool Exclusive;
+            /// <summary>Buffs of the same non-zero family replace each other.</summary>
+            public int Family;
+            public Modifier[] Modifiers;
+            /// <summary>Own-view MovementScale while the buff is on (0 = leave it alone).</summary>
+            public float MovementScale;
+            public UInt16 DissemblingType;
+            public UInt32 EffectId;
+            /// <summary>
+            /// Evade Combat: using it again while it is on switches it off, and its cooldown starts when it ends
+            /// instead of when it is used.
+            /// </summary>
+            public bool Toggle;
+            /// <summary>Own-view EvadeShieldHealth ff while on, 00 when it ends (Evade Combat).</summary>
+            public bool EvadeShield;
+        }
+
+        public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
+
+        private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
+
+        /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
+        public static readonly Dictionary<UInt16, Buff> Retail = new Dictionary<UInt16, Buff>
+        {
+            // Consistent Technique, entilsar lastday2 21:58:20, off 21 s later
+            { 6, new Buff { Seconds = 20, Modifiers = new[] { Stat(180, 235) } } },
+            // Hyper-Dodge, RajkoPacketsNearTheEnd ChillinginMara
+            { 10, new Buff { Exclusive = true, Family = FamilyHyperDefence, Modifiers = new[] { Stat(1010, 51) } } },
+            // Hyper-Speed, entilsar lastday2 (off 600 s later with MovementScale 0); own view sent by SendHyperSpeed
+            { 12, new Buff { Seconds = 600, MovementScale = 0.45f, DissemblingType = 0x1000, EffectId = 0x28000656,
+                Modifiers = new[] { Stat(877, 12), Stat(878, 12), new Modifier(KindLinked, 115, 45) } } },
+            // Healer, crashover2k proxy_024: four -25/-18 records, 10 s
+            { 55, new Buff { Seconds = 10, Modifiers = new[] { Stat(522, -25), Stat(524, -18), Stat(1032, -18), Stat(342, -25) } } },
+            // Resist Combat, crashover2k proxy_024: 600 s countdown
+            { 72, new Buff { Seconds = 600, Modifiers = new[] { Stat(520, 20) } } },
+            // Martial Arts
+            { 135, new Buff { Seconds = 20, Modifiers = new[] { Stat(159, 40) } } },
+            // Hyper-Sprint, luizoe old sniffer Unknown: MovementScale 0.15, EffectID 0x12463119, DissemblingType 04 00
+            { 184, new Buff { Exclusive = true, MovementScale = 0.15f, DissemblingType = 0x0400, EffectId = 0x12463119,
+                Modifiers = new[] { new Modifier(KindLinked, 0, 25), Stat(877, 15), Stat(878, 15), new Modifier(KindLinked, 115, 15) } } },
+            // Evade Combat, evadecombat.txt: 80 bc 19 .. d9 00 00 00 70 02 .. and 80 bc 1d .. 70 02 00 00 00 00 ..
+            // Evade Combat, evadecombat.txt; switched off by using it again (entilsar lastday2 21:57:08-09: the
+            // client's second 80 b9 d9 00, then the records off, 80 bd 01 d9 00 04 .. f0 41 01 (30 s) and 80 bd 05 off)
+            { 217, new Buff { Exclusive = true, Toggle = true, EvadeShield = true,
+                Modifiers = new[] { new Modifier(KindState, 624, 0), new Modifier(KindLinked, 0, 0, 624) } } },
+            // Serene Calm, medanon niobe3dualduality: 40 s
+            { 272, new Buff { Seconds = 40, Modifiers = new[] { Stat(1009, 57), Stat(1011, 49), Stat(183, 54), Stat(1010, 51) } } },
+            // Upgrade Attacks
+            { 314, new Buff { Seconds = 20, Modifiers = new[] { Stat(342, 108) } } },
+            // Overclock (Avoidance), abilities_useoverclocked
+            { 327, new Buff { Seconds = 20, Modifiers = new[] { Stat(172, 43) } } },
+            // Combat Hacking, abilities_usecombathacking: 32 s
+            { 344, new Buff { Seconds = 32, Modifiers = new[] { Stat(1010, 22), Stat(117, 24), Stat(1009, 22) } } },
+            // Kung Fu Grand Master, RajkoPacketsNearTheEnd
+            { 1064, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 8), Stat(106, 137), Stat(522, 13), Stat(159, 6) } } },
+            // Aikido Master, medanon niobe3dualduality
+            { 1067, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(1009, 7), Stat(106, 148), Stat(522, 4), Stat(159, 2) } } },
+            // Howitzer
+            { 1087, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(342, 13), Stat(172, 8), Stat(564, 7), Stat(177, 17) } } },
+            // Team Healer, crashover2k proxy_024 (replaced Corpsman in the same packet)
+            { 1089, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(174, 3), Stat(127, 7), Stat(564, 7), Stat(520, 10) } } },
+            // Corpsman, crashover2k proxy_024
+            { 1092, new Buff { Exclusive = true, Family = FamilyClassBuff, Modifiers = new[] { Stat(564, 7), Stat(127, 10), Stat(174, 6) } } },
+            // Hyper-Block
+            { 1099, new Buff { Exclusive = true, Family = FamilyHyperDefence, Modifiers = new[] { Stat(1009, 52) } } },
+            // Hyper-Deflect, entilsar lastday2 (replaced by Hyper-Block)
+            { 1100, new Buff { Exclusive = true, Family = FamilyHyperDefence, Modifiers = new[] { Stat(183, 77) } } },
+        };
+
+        /// <summary>A buff the player has on: the record ids sent for it, and a token for its expiry.</summary>
+        public class Active
+        {
+            public UInt16 AbilityId;
+            public UInt16[] RecordIds;
+            public int Generation;
+        }
+
+        public static byte[] BuildModifier(UInt16 kind, UInt16 recordId, UInt32 ability, UInt16 stat, Int32 value,
+            bool off, float seconds)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80bc");
+            pak.AddUint16(kind, 1);
+            pak.AddUint16(recordId, 1);
+            pak.AddByte(0x00);
+            pak.AddUint32(ability, 1);
+            pak.AddUint16(stat, 1);
+            pak.AddUint32(unchecked((UInt32)value), 1);
+            pak.AddByte(off ? (byte)0x01 : (byte)0x00);
+            pak.AddFloat(seconds, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary><c>80 bd 05 &lt;ability u16&gt; 00 00 00 00 00 &lt;01 on / 00 off&gt;</c> (AbilityCooldowns.BuildTimer's layout, type 0, 0 s)</summary>
+        public static byte[] BuildExclusive(UInt16 abilityId, bool on)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80bd05");
+            pak.AddUint16(abilityId, 1);
+            pak.AddHexBytes("0000000000");
+            pak.AddByte(on ? (byte)0x01 : (byte)0x00);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>The records for a buff, on or off, with the given record ids.</summary>
+        public static List<byte[]> BuildRecords(UInt16 abilityId, Buff buff, UInt16[] recordIds, bool off)
+        {
+            List<byte[]> records = new List<byte[]>();
+            for (int i = 0; i < buff.Modifiers.Length; i++)
+            {
+                Modifier m = buff.Modifiers[i];
+                records.Add(BuildModifier(m.Kind, recordIds[i], m.Source != 0 ? m.Source : abilityId, m.Stat, m.Value,
+                    off, buff.Seconds));
+            }
+            return records;
+        }
+
+        /// <summary>
+        /// Own-view MovementScale and DissemblingType (attributes 10 and 36), as retail sent when Hyper-Speed
+        /// ended (entilsar lastday2, 21:56:07): <c>02 00 02 80 88 00 00 00 00 80 80 80 02 00 00</c>.
+        /// </summary>
+        public static byte[] BuildMovementUpdate(float movementScale, UInt16 dissemblingType)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByte(0x02);
+            pak.AddByte(0x80);              // group 0
+            pak.AddByte(0x88);              // group 1: MovementScale (index 10)
+            pak.AddFloat(movementScale, 1);
+            pak.AddHexBytes("808080");      // groups 2-4
+            pak.AddByte(0x02);              // group 5: DissemblingType (index 36)
+            pak.AddUint16(dissemblingType, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Own view for Hyper-Sprint and other movement buffs: MovementScale, Inner Strength, EffectID and
+        /// counter, DissemblingType (retail Hyper-Sprint: 02 00 02 80 88 9a 99 19 3e 80 90 &lt;IS&gt; b0 19 31 46 12
+        /// &lt;ctr&gt; 02 00 04).
+        /// </summary>
+        public static byte[] BuildMovementBuffUpdate(Buff buff, UInt16 innerStrength, byte counter)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddByte(0x02);
+            pak.AddByte(0x80);
+            pak.AddByte(0x88);
+            pak.AddFloat(buff.MovementScale, 1);
+            pak.AddByte(0x80);
+            pak.AddByte(0x90);
+            pak.AddUint16(innerStrength, 1);
+            pak.AddByte(0xb0);
+            pak.AddUint32(buff.EffectId, 1);
+            pak.AddByte(counter);
+            pak.AddByte(0x02);
+            pak.AddUint16(buff.DissemblingType, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        public static bool IsBuff(UInt16 abilityId)
+        {
+            return Retail.ContainsKey(abilityId);
+        }
+
+        public static bool IsActive(WorldClient client, UInt16 abilityId)
+        {
+            lock (client.playerData.activeBuffs)
+            {
+                return client.playerData.activeBuffs.ContainsKey(abilityId);
+            }
+        }
+
+        /// <summary>A toggle buff (Evade Combat) that is on: using it again switches it off.</summary>
+        public static bool IsToggledOn(WorldClient client, UInt16 abilityId)
+        {
+            return Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle && IsActive(client, abilityId);
+        }
+
+        /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
+        public static bool CooldownStartsOnUse(UInt16 abilityId)
+        {
+            return !(Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle);
+        }
+
+        /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
+        public static byte[] BuildEvadeShieldUpdate(byte health)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddHexBytes("02808080800" + "4");
+            pak.AddByte(health);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Puts the buff on (replacing the same buff, and buffs of its family) and queues its records; a timed
+        /// buff comes off by itself when its time is up. Returns false for abilities that are not buffs.
+        /// The caller flushes the queue.
+        /// </summary>
+        public static bool Apply(WorldClient client, UInt16 abilityId)
+        {
+            if (!Retail.TryGetValue(abilityId, out Buff buff))
+            {
+                return false;
+            }
+
+            ClientData data = client.playerData;
+            List<UInt16> replaced = new List<UInt16>();
+            lock (data.activeBuffs)
+            {
+                foreach (UInt16 other in data.activeBuffs.Keys)
+                {
+                    if (other == abilityId ||
+                        (buff.Family != 0 && Retail.TryGetValue(other, out Buff o) && o.Family == buff.Family))
+                    {
+                        replaced.Add(other);
+                    }
+                }
+            }
+            foreach (UInt16 other in replaced)
+            {
+                // A movement buff put straight back on keeps its speed: don't send the speed reset in between.
+                Remove(client, other, false, other == abilityId);
+            }
+
+            Active active;
+            lock (data.activeBuffs)
+            {
+                UInt16[] ids = new UInt16[buff.Modifiers.Length];
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    ids[i] = data.nextBuffRecordId++;
+                    if (data.nextBuffRecordId == 0)
+                    {
+                        data.nextBuffRecordId = FirstRecordId;
+                    }
+                }
+                active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration };
+                data.activeBuffs[abilityId] = active;
+            }
+
+            if (buff.Exclusive)
+            {
+                client.messageQueue.addRpcMessage(BuildExclusive(abilityId, true));
+            }
+            if (buff.EvadeShield)
+            {
+                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0xff), false);
+            }
+            foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, false))
+            {
+                client.messageQueue.addRpcMessage(record);
+            }
+            Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
+
+            if (buff.Seconds > 0)
+            {
+                int generation = active.Generation;
+                DelayedActions.After(buff.Seconds, () =>
+                {
+                    if (Remove(client, abilityId, true, false, generation))
+                    {
+                        client.FlushQueue();
+                    }
+                });
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Takes the buff off: queues its records with the off byte, the exclusive switch-off, and for movement
+        /// buffs the speed reset. With a generation, only that application of the buff is removed (an expiry
+        /// that a later use replaced does nothing). Returns whether the buff was on.
+        /// </summary>
+        public static bool Remove(WorldClient client, UInt16 abilityId, bool log = true, bool keepMovement = false,
+            int generation = -1)
+        {
+            if (!Retail.TryGetValue(abilityId, out Buff buff))
+            {
+                return false;
+            }
+
+            ClientData data = client.playerData;
+            Active active;
+            lock (data.activeBuffs)
+            {
+                if (!data.activeBuffs.TryGetValue(abilityId, out active) ||
+                    (generation >= 0 && active.Generation != generation))
+                {
+                    return false;
+                }
+                data.activeBuffs.Remove(abilityId);
+            }
+
+            foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
+            {
+                client.messageQueue.addRpcMessage(record);
+            }
+            if (buff.Exclusive)
+            {
+                client.messageQueue.addRpcMessage(BuildExclusive(abilityId, false));
+            }
+            if (buff.MovementScale > 0 && !keepMovement)
+            {
+                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, 0), false);
+            }
+            if (buff.EvadeShield)
+            {
+                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0x00), false);
+            }
+            if (buff.Toggle)
+            {
+                AbilityCooldowns.Start(client, abilityId, TimeUtils.GetSimTimeSeconds());
+            }
+            if (log)
+            {
+                Output.WriteDebugLog("[BUFF] " + abilityId + " off");
+            }
+            return true;
+        }
+
+        /// <summary>Takes every buff off (death). The caller flushes the queue.</summary>
+        public static void RemoveAll(WorldClient client)
+        {
+            List<UInt16> ids;
+            lock (client.playerData.activeBuffs)
+            {
+                ids = new List<UInt16>(client.playerData.activeBuffs.Keys);
+            }
+            foreach (UInt16 id in ids)
+            {
+                Remove(client, id);
+            }
+        }
+    }
+}

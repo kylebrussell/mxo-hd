@@ -15,7 +15,10 @@ namespace hds
             PacketContent pak = new PacketContent();
             
             pak.AddUint16(1, 1);
-            pak.AddByteArray(Store.world.objMan.GenerateCreationPacket(viewData, 0x0000, client.playerData.assignSpawnIdCounter()).getBytes());
+            // Remember the spawn id this view really got: combat messages the server starts (aggro) carry it
+            byte spawnId = client.playerData.assignSpawnIdCounter();
+            mobView.spawnId = spawnId;
+            pak.AddByteArray(Store.world.objMan.GenerateCreationPacket(viewData, 0x0000, spawnId).getBytes());
             pak.AddUint16(mobView.ViewID, 1);
             pak.AddByte(0x00);
 

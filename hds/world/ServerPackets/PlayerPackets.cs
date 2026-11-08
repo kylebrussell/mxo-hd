@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using hds.databases;
@@ -196,6 +197,19 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// 80 fd 00 00 00 00 01 00: answer to "Exit to Loading Area" at a hardline (client 80 fc 01). The client
+        /// confirms with 80 fe 01 and the server then loads the Loading Area (crashover2k
+        /// proxy_second_pc_001_exit_to_loadingarea, packets 13-16).
+        /// </summary>
+        public static byte[] BuildJackoutToLoadingArea()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_JACKOUT_FINISH, 0);
+            pak.AddHexBytes("000000000100");
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>80 e5: the player's absolute experience, sent while loading the world.</summary>
         public void sendEXPCurrent(WorldClient client, UInt32 exp)
         {
@@ -309,27 +323,24 @@ namespace hds
         {
             ArrayList friends =  Store.dbManager.WorldDbHandler.FetchFriendList(Store.currentClient.playerData.getCharID());
 
-            if (friends.Count > 0)
+            // mxopackets1_entilsar_enti_lastday2 21:43:23: the list (3b = online, 3c = offline) and 80 de for
+            // each online friend. Online is taken from the live client list; the DB flag goes stale after a crash.
+            List<string> online = new List<string>();
+            foreach (Hashtable friend in friends)
             {
-                foreach (Hashtable friend in friends)
+                string handle = "SOE+MXO+" + Store.worldConfig.serverName + "+" + friend["handle"];
+                bool isOnline = SocialHandler.FindOnlineByHandle(friend["handle"].ToString()) != null;
+                client.messageQueue.addRpcMessage(SocialPackets.FriendListStatus(
+                    isOnline ? SocialPackets.FriendOnlineListed : SocialPackets.FriendListed, handle));
+                if (isOnline)
                 {
-                    PacketContent pak = new PacketContent();
-                    pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_FRIENDLIST_STATUS_ADD, 0);
-                    pak.AddHexBytes("0800");
-                    if ((Int16)friend["online"] ==1)
-                    {
-                        pak.AddByte(0x3b);
-                    }
-                    else
-                    {
-                        pak.AddByte(0x3c);
-                    }
-
-                    pak.AddHexBytes("0000");
-                    pak.AddByte(0x8e); // Another unknown flag ...mxosource made it wrong lol
-                    pak.AddSizedTerminatedString("SOE+MXO+" + Store.worldConfig.serverName+"+"+ friend["handle"]);
-                    client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+                    online.Add(handle);
                 }
+            }
+
+            foreach (string handle in online)
+            {
+                client.messageQueue.addRpcMessage(SocialPackets.FriendOnline(handle));
             }
         }
 

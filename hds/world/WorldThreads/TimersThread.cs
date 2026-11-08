@@ -57,6 +57,7 @@ namespace hds
 
                     CheckToSaveClientData(thisclient);
                     RegenerateInnerStrength(thisclient);
+                    HealthRegen.Tick(thisclient, 2.0); // this loop runs every 2 s
                     CheckForFinalJackout(thisclient);
                     CheckForStaticViews(thisclient);
                 }
@@ -83,9 +84,14 @@ namespace hds
 
         private static void CheckForFinalJackout(WorldClient thisclient)
         {
+            // Retail answered the jack-out request (80 fc 02) with 80 fd 00 00 00 00 00 00 30 s later in all 32
+            // captured jack-outs (e.g. crashover2k proxy_027_just_login_and_spawn_on_rogers_way_ctrl_And_jackout);
+            // the client then sends 80 fe 00. The old check subtracted the other way round, so the unsigned
+            // difference wrapped and the finish went out after about a second, then again on every tick.
             if (thisclient.playerData.isJackoutInProgress &&
-                (thisclient.playerData.jackoutStartTime - TimeUtils.getUnixTimeUint32()) > 5)
+                TeleportHandler.JackoutFinished(thisclient.playerData.jackoutStartTime, TimeUtils.getUnixTimeUint32()))
             {
+                thisclient.playerData.isJackoutInProgress = false;
                 ServerPackets packets = new ServerPackets();
                 packets.sendExitGame(thisclient);
             }

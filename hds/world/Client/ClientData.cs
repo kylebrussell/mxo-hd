@@ -66,11 +66,19 @@ namespace hds
 		// Sim time (s) at which each ability's or cooldown group's cooldown ends; see AbilityCooldowns
 		public readonly Dictionary<UInt16, double> cooldownEndsAt = new Dictionary<UInt16, double>();
 
+		// Buffs the player has on, by ability id, and the next buff record id; see AbilityBuffs
+		public readonly Dictionary<UInt16, AbilityBuffs.Active> activeBuffs = new Dictionary<UInt16, AbilityBuffs.Active>();
+		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
+		public int buffGeneration = 0;
+
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
 		public int combatGeneration = 0;
 
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
+
+		// Sim time (s) an NPC last attacked this player on its own (MobAggro)
+		public double lastAggroAt = -1000;
 		public bool respawnPending = false;
 
 		// Running mission: which objective is next, the NPCs it spawned, and the inventory slot of its item
@@ -78,12 +86,16 @@ namespace hds
 		public int missionItemSlot = -1;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
 		public UInt32 pendingLootItem = 0;
+		// Items a killed NPC dropped (NpcLoot), given on Take All
+		public readonly System.Collections.Generic.List<UInt32> pendingLootDrops = new System.Collections.Generic.List<UInt32>();
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
 
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
+        /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>
+        public UInt32 freeFireWeaponGoid;
 	    public UInt32 lastSaveTime;
 
 	    public ClientData ()

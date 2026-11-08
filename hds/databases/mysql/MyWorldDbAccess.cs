@@ -163,20 +163,10 @@ namespace hds.databases{
 
         public bool IsFactionnameAvailable(string factionname)
         {
-	        bool isFactionNameAvailable = true;
-	        OpenConnection();
-	        string query = "SELECT id FROM factions WHERE name = '" + factionname.Trim() + "' LIMIT 1";
-	        queryExecuter = conn.CreateCommand();
-	        queryExecuter.CommandText = query;
-	        dr = queryExecuter.ExecuteReader();
-
-	        while (dr.Read())
-	        {
-		        // if we have just one entry - we have found a faction
-		        isFactionNameAvailable = false;
-	        }
-	        CloseConnection();
-	        return isFactionNameAvailable;
+	        // Parameterized: faction names may contain quotes (retail had "'Dark Mavericks'").
+	        object found = ScalarQuery("SELECT id FROM factions WHERE name = @name AND deleted_at IS NULL LIMIT 1",
+		        P("@name", factionname.Trim()));
+	        return found == null || found == DBNull.Value;
         }
 
         public bool IsHandleCaptainOfACrew(string handle)
@@ -483,6 +473,38 @@ namespace hds.databases{
 	        dr.Close();
 	        CloseConnection();
 	        return ids;
+        }
+
+        /// <summary>Hardlines of a district the character has uploaded (char_hardlines).</summary>
+        public List<UInt16> GetUploadedHardlines(UInt32 charId, UInt16 district)
+        {
+	        List<UInt16> ids = new List<UInt16>();
+	        OpenConnection();
+	        queryExecuter = conn.CreateCommand();
+	        queryExecuter.CommandText = "SELECT hl_id FROM char_hardlines WHERE char_id = '" + charId +
+	                                    "' AND district_id = '" + district + "' ORDER BY hl_id";
+	        dr = queryExecuter.ExecuteReader();
+	        while (dr.Read())
+	        {
+		        ids.Add(Convert.ToUInt16(dr.GetValue(0)));
+	        }
+
+	        dr.Close();
+	        CloseConnection();
+	        return ids;
+        }
+
+        /// <summary>Records an uploaded hardline; false if the character already had it.</summary>
+        public bool AddUploadedHardline(UInt32 charId, UInt16 district, UInt16 hardline)
+        {
+	        if (GetUploadedHardlines(charId, district).Contains(hardline))
+	        {
+		        return false;
+	        }
+
+	        ExecuteNonResultQuery("INSERT INTO char_hardlines (char_id, hl_id, district_id, added) VALUES ('" + charId +
+	                              "', '" + hardline + "', '" + district + "', NOW())");
+	        return true;
         }
 
         public void updateLocationByHL(UInt16 district, UInt16 hardline)
@@ -940,6 +962,120 @@ namespace hds.databases{
 	        ExecuteNonResultQuery("DELETE FROM crew_members WHERE crew_id = " + crewId);
         }
 
+        private object ScalarQuery(string sql, params KeyValuePair<string, object>[] parameters)
+        {
+	        OpenConnection();
+	        try
+	        {
+		        using (IDbCommand cmd = conn.CreateCommand())
+		        {
+			        cmd.CommandText = sql;
+			        AddParameters(cmd, parameters);
+			        return cmd.ExecuteScalar();
+		        }
+	        }
+	        finally
+	        {
+		        CloseConnection();
+	        }
+        }
+
+        private void NonQuery(string sql, params KeyValuePair<string, object>[] parameters)
+        {
+	        OpenConnection();
+	        try
+	        {
+		        using (IDbCommand cmd = conn.CreateCommand())
+		        {
+			        cmd.CommandText = sql;
+			        AddParameters(cmd, parameters);
+			        cmd.ExecuteNonQuery();
+		        }
+	        }
+	        finally
+	        {
+		        CloseConnection();
+	        }
+        }
+
+        private static void AddParameters(IDbCommand cmd, KeyValuePair<string, object>[] parameters)
+        {
+	        foreach (KeyValuePair<string, object> parameter in parameters)
+	        {
+		        IDbDataParameter p = cmd.CreateParameter();
+		        p.ParameterName = parameter.Key;
+		        p.Value = parameter.Value;
+		        cmd.Parameters.Add(p);
+	        }
+        }
+
+        private static KeyValuePair<string, object> P(string name, object value) =>
+	        new KeyValuePair<string, object>(name, value);
+
+        /// <summary>A crew that was not disbanded already uses this name.</summary>
+        public bool CrewNameExists(string crewName)
+        {
+	        // Old rows carry a zero date instead of NULL for "not deleted".
+	        object found = ScalarQuery("SELECT id FROM crews WHERE crew_name = @name AND (deleted_at IS NULL OR deleted_at < '1971-01-01') LIMIT 1",
+		        P("@name", crewName.Trim()));
+	        return found != null && found != DBNull.Value;
+        }
+
+        /// <summary>Creates a crew with the captain as its first member and returns its id.</summary>
+        public UInt32 CreateCrew(string crewName, string captainHandle, ushort org)
+        {
+	        object id = ScalarQuery(
+		        "INSERT INTO crews (crew_name, master_player_handle, money, org, faction_id, faction_rank, created_at, deleted_at) " +
+		        "VALUES (@name, @captain, 0, @org, 0, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
+		        P("@name", crewName.Trim()), P("@captain", captainHandle), P("@org", (int) org));
+	        return Convert.ToUInt32(id);
+        }
+
+        public void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle)
+        {
+	        NonQuery("UPDATE crew_members SET is_captain = (char_id = @char) WHERE crew_id = @crew",
+		        P("@char", charId), P("@crew", crewId));
+	        NonQuery("UPDATE crews SET master_player_handle = @handle WHERE id = @crew",
+		        P("@handle", handle), P("@crew", crewId));
+        }
+
+        /// <summary>Marks the crew deleted and clears crew and faction of its members.</summary>
+        public void DisbandCrew(UInt32 crewId)
+        {
+	        NonQuery("UPDATE crews SET deleted_at = NOW(), faction_id = 0 WHERE id = @crew", P("@crew", crewId));
+	        NonQuery("UPDATE characters SET crewId = 0, factionId = 0 WHERE crewId = @crew", P("@crew", crewId));
+	        NonQuery("DELETE FROM crew_members WHERE crew_id = @crew", P("@crew", crewId));
+        }
+
+        public void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId)
+        {
+	        NonQuery("UPDATE characters SET factionId = @faction WHERE crewId = @crew",
+		        P("@faction", factionId), P("@crew", crewId));
+        }
+
+        /// <summary>Marks the faction deleted and takes every crew and character out of it.</summary>
+        public void DisbandFaction(UInt32 factionId)
+        {
+	        NonQuery("UPDATE factions SET deleted_at = NOW() WHERE id = @faction", P("@faction", factionId));
+	        NonQuery("UPDATE crews SET faction_id = 0 WHERE faction_id = @faction", P("@faction", factionId));
+	        NonQuery("UPDATE characters SET factionId = 0 WHERE factionId = @faction", P("@faction", factionId));
+        }
+
+        public UInt32 CreateFaction(string factionName, string masterHandle)
+        {
+	        object id = ScalarQuery(
+		        "INSERT INTO factions (name, master_player_handle, money, created_at, deleted_at) VALUES (@name, @master, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
+		        P("@name", factionName.Trim()), P("@master", masterHandle));
+	        return Convert.ToUInt32(id);
+        }
+
+        public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
+        {
+	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",
+		        P("@char", charId), P("@friend", friendId));
+	        return found != null && found != DBNull.Value;
+        }
+
         public void AddCrew(string crewName, string masterHandle)
         {
 	        crewName = crewName.Replace("'", @"\'");
@@ -951,19 +1087,36 @@ namespace hds.databases{
 	        OpenConnection();
             UInt32 charID = Store.currentClient.playerData.getCharID();
 
-            // We want the next free slot which is not in the "wearing" range (which starts with 97)
-            string sqlQuery = "SELECT inv.slot +1 as freeSlot FROM inventory inv WHERE NOT EXISTS (SELECT * FROM inventory inv2 WHERE inv2.slot = inv.slot + 1 AND charID = '" + charID.ToString() + "') AND charID = '" + charID.ToString() + "' AND slot<97 LIMIT 1";
+            // The lowest free bag slot, 1-96 (worn items start at 97). The old query returned the slot after the first
+            // used slot whose successor was free: 97 (a worn slot) when 96 was used, 0 for an empty bag.
+            string sqlQuery = "SELECT slot FROM inventory WHERE charId = '" + charID.ToString() + "' AND slot BETWEEN 1 AND " + LastBagSlot;
             queryExecuter = conn.CreateCommand();
             queryExecuter.CommandText = sqlQuery;
             dr = queryExecuter.ExecuteReader();
 
-            UInt16 freeSlot = 0;
+            var used = new System.Collections.Generic.HashSet<int>();
             while (dr.Read()){
-                freeSlot = (UInt16)dr.GetInt16(0);
+                used.Add(Convert.ToInt32(dr.GetValue(0)));
             }
             dr.Close();
 	        CloseConnection();
-            return freeSlot;
+            return LowestFreeBagSlot(used);
+        }
+
+        /// <summary>Last bag slot; 97 and up are worn items.</summary>
+        public const int LastBagSlot = 96;
+
+        /// <summary>The lowest bag slot (1-96) not in <paramref name="used"/>, or 0 when the bag is full.</summary>
+        public static UInt16 LowestFreeBagSlot(System.Collections.Generic.ICollection<int> used)
+        {
+            for (int slot = 1; slot <= LastBagSlot; slot++)
+            {
+                if (!used.Contains(slot))
+                {
+                    return (UInt16)slot;
+                }
+            }
+            return 0;
         }
 
         public void AddItemToInventory (UInt16 slotId, UInt32 itemGoID)
@@ -1002,6 +1155,94 @@ namespace hds.databases{
             return GoID;
         }
 
+
+        /// <summary>Every inventory row of a character as (slot, goid).</summary>
+        public List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT slot, goid, count FROM inventory WHERE charId = '" + charId + "' ORDER BY slot";
+            dr = queryExecuter.ExecuteReader();
+
+            List<Crafting.InventoryItem> items = new List<Crafting.InventoryItem>();
+            while (dr.Read())
+            {
+                items.Add(new Crafting.InventoryItem(Convert.ToUInt16(dr.GetValue(0)),
+                    Convert.ToUInt32(Convert.ToInt64(dr.GetValue(1))), ItemStacks.CountFromDb(Convert.ToInt32(dr.GetValue(2)))));
+            }
+            dr.Close();
+	        CloseConnection();
+            return items;
+        }
+
+        /// <summary>Sets how many items the stack in a slot holds (inventory.count).</summary>
+        public void SetInventoryCount(UInt16 slotId, UInt32 charId, int count)
+        {
+	        ExecuteNonResultQuery("UPDATE inventory SET count = '" + count + "' WHERE charId = '" + charId +
+	                              "' AND slot = '" + slotId + "' LIMIT 1");
+        }
+
+        /// <summary>Adds a stack of <paramref name="count"/> items to a slot.</summary>
+        public void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count)
+        {
+	        UInt32 charID = Store.currentClient.playerData.getCharID();
+            ExecuteNonResultQuery("INSERT INTO inventory SET charId = '" + charID + "' , goid = '" + itemGoID +
+                                  "', slot = '" + slotId + "', count = '" + count + "', created = NOW() ");
+        }
+
+        /// <summary>
+        /// Code storage rows: char_abilities rows whose ability_id is CodeStorage.BaseValue(goid) and whose level
+        /// holds count - 1, so the margin's known-abilities list (ability_id + level) sends them as retail did.
+        /// </summary>
+        public List<CodeStorage.Entry> GetCodeStorage(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT slot, ability_id, level FROM char_abilities WHERE char_id = '" + charId +
+                                        "' AND (ability_id & 0xFC000000) = 0x84000000 ORDER BY slot";
+            dr = queryExecuter.ExecuteReader();
+
+            List<CodeStorage.Entry> entries = new List<CodeStorage.Entry>();
+            while (dr.Read())
+            {
+                UInt32 value = unchecked((UInt32)Convert.ToInt64(dr.GetValue(1)));
+                entries.Add(new CodeStorage.Entry(Convert.ToUInt16(dr.GetValue(0)), CodeStorage.GoidOf(value),
+                    Convert.ToInt32(dr.GetValue(2)) + 1));
+            }
+            dr.Close();
+	        CloseConnection();
+            return entries;
+        }
+
+        /// <summary>The slot after the highest ability or code storage slot of a character.</summary>
+        public UInt16 GetNextAbilitySlot(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT COALESCE(MAX(slot), -1) + 1 FROM char_abilities WHERE char_id = '" + charId + "'";
+            UInt16 slot = Convert.ToUInt16(queryExecuter.ExecuteScalar());
+	        CloseConnection();
+            return slot;
+        }
+
+        public void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry)
+        {
+	        ExecuteNonResultQuery("INSERT INTO char_abilities SET char_id = '" + charId + "', slot = '" + entry.Slot +
+	                              "', ability_id = '" + CodeStorage.BaseValue(entry.Goid) + "', level = '" + (entry.Count - 1) +
+	                              "', is_loaded = 0, ability_name = 'Code storage " + entry.Goid + "', added = NOW()");
+        }
+
+        public void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count)
+        {
+	        ExecuteNonResultQuery("UPDATE char_abilities SET level = '" + (count - 1) + "' WHERE char_id = '" + charId +
+	                              "' AND slot = '" + slot + "' AND (ability_id & 0xFC000000) = 0x84000000 LIMIT 1");
+        }
+
+        public void RemoveCodeStorage(UInt32 charId, UInt16 slot)
+        {
+	        ExecuteNonResultQuery("DELETE FROM char_abilities WHERE char_id = '" + charId + "' AND slot = '" + slot +
+	                              "' AND (ability_id & 0xFC000000) = 0x84000000 LIMIT 1");
+        }
 
 	    public void SaveInfo(WorldClient client, long cash)
 	    {

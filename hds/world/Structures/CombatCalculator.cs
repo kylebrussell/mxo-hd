@@ -185,6 +185,19 @@ namespace hds
             }
         }
 
+        /// <summary>World units per metre (?gotopos and retail positions use 100 units per metre).</summary>
+        public const float WorldUnitsPerMetre = 100f;
+
+        /// <summary>
+        /// Distance in metres, which is what the ranged damage falloff expects. <see cref="CalculateDistance"/> returns
+        /// world units: a typical 6 m gunfight (retail captures: median 626 units) fell into the "beyond 50 m" band and
+        /// did 60% damage.
+        /// </summary>
+        public static float CalculateDistanceMetres(byte[] playerPositionBytes, double mobX, double mobY, double mobZ)
+        {
+            return CalculateDistance(playerPositionBytes, mobX, mobY, mobZ) / WorldUnitsPerMetre;
+        }
+
         /// <summary>
         /// Calculates distance between player and mob positions.
         /// </summary>
@@ -216,6 +229,18 @@ namespace hds
         public static uint GetRandomMeleeHitFx()
         {
             return MeleeHitFxIds[random.Next(MeleeHitFxIds.Length)];
+        }
+
+        /// <summary>
+        /// Rolls one gunshot: hit when the attack roll beats the defense roll, as in retail's 81 68 combat log
+        /// (tutorial fight: attack rolls 19-95, defense rolls 7-65, 7 of 10 shots hit). The ranges are a guess
+        /// shaped like those numbers; retail's formula (skills, tactics, range) is unknown.
+        /// </summary>
+        public static bool RollRangedHit(Random rng, out UInt16 attackRoll, out UInt16 defenseRoll)
+        {
+            attackRoll = (UInt16)rng.Next(15, 100);
+            defenseRoll = (UInt16)rng.Next(5, 70);
+            return attackRoll > defenseRoll;
         }
 
         /// <summary>

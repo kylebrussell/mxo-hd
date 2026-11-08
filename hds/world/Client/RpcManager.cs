@@ -46,6 +46,10 @@ namespace hds{
 		            CombatManager.GetHandler(Store.currentClient).ProcessCombatStance(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_FREE_FIRE_CHOICE:
+		            CombatManager.GetHandler(Store.currentClient).ProcessFreeFireChoice(ref rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
 		            Output.WriteRpcLog("RANGE COMBAT REQUEST");
@@ -78,7 +82,7 @@ namespace hds{
 		            new PlayerHandler().ProcessTargetChange(ref rpcData, Store.currentClient);
 		            break;
 			    case (int) RPCRequestHeader.CLIENT_MISSION_INVITE_PLAYER:
-				    new MissionHandler().processInvitePlayerToMissionTeam(ref rpcData);
+				    new SocialHandler().ProcessMissionTeamInvite(ref rpcData);
 				    break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_REQUEST:
 		            new MissionHandler().processMissionList(ref rpcData);
@@ -93,17 +97,21 @@ namespace hds{
 		            new MissionHandler().processAbortMission(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_LEAVE_GROUP:
-			        new FCHandler().ProcessLeaveGroup(ref rpcData);
+			        new SocialHandler().ProcessLeaveGroup(ref rpcData);
 		            break;
 
 		        // Team
 		        case (int) RPCRequestHeader.CLIENT_HANDLE_MISSION_INVITE:
-		            new TeamHandler().processInviteAnswer(ref rpcData);
+		            new SocialHandler().ProcessInviteAnswer(ref rpcData);
 		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_TEAM_LOOT_MODE:
+			        new SocialHandler().ProcessLootMode(ref rpcData);
+			        break;
 
 		        // Faction and Crews
 		        case (int) RPCRequestHeader.CLIENT_FACTION_CREW_INVITE_PLAYER:
-		            new FCHandler().processInvitePlayerToCrew(ref rpcData);
+		            new SocialHandler().ProcessGroupInvite(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_FACTION_INVITE:
 			        new FCHandler().ProcessInvitePlayerToNewFaction(ref rpcData);
@@ -115,7 +123,7 @@ namespace hds{
 			        new FCHandler().ProcessDepositMoney(ref rpcData);
 			        break;
 		        case (int) RPCRequestHeader.CLIENT_FACTION_DISBAND_FACTION:
-					new FCHandler().ProcessDisbandFaction(ref rpcData);
+					new SocialHandler().ProcessDisbandGroup(ref rpcData);
 					break;
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
@@ -194,7 +202,16 @@ namespace hds{
 			        break;
 		        // MarketPlace
 		        case (int) RPCRequestHeader.CLIENT_MP_OPEN:
-		            new TestUnitHandler().processMarketTest(ref rpcData);
+		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_OPEN_WINDOW:
+		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_BUY:
+		            new MarketPlaceHandler().ProcessBuyItem(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_PLACE_ITEM:
+		            new MarketPlaceHandler().ProcessPlaceItem(ref rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_MP_LIST_ITEMS:

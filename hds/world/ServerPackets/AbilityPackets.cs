@@ -143,8 +143,10 @@ namespace hds
 
         /// <summary>
         /// Own-view Hyper-Speed, as retail sent it: RippleMagnitude 5, NoiseLevel 30, MovementScale 0.45
-        /// (<c>66 66 e6 3e</c>), InnerStrengthAvailable, EffectID 0x28000656, EffectCounter, then group 5.
-        /// This used to send MovementScale 1.925 (<c>66 66 f6 3f</c>) and Inner Strength 50 every time.
+        /// (<c>66 66 e6 3e</c>), InnerStrengthAvailable, EffectID 0x28000656, EffectCounter, then DissemblingType
+        /// <c>00 10</c> (entilsar lastday2 21:46:07: ... b0 56 06 00 28 03 02 00 10).
+        /// This used to send MovementScale 1.925 (<c>66 66 f6 3f</c>) and Inner Strength 50 every time, and
+        /// ended with an extra <c>00 00</c> that closed the object section early.
         /// </summary>
         public static byte[] BuildHyperSpeedUpdate(UInt16 innerStrength, byte counter)
         {
@@ -154,7 +156,7 @@ namespace hds
             pak.AddUint16(innerStrength, 1);
             pak.AddHexBytes("b056060028");
             pak.AddByte(counter);
-            pak.AddHexBytes("0200000000");
+            pak.AddHexBytes("020010");
             return pak.ReturnFinalPacket();
         }
 

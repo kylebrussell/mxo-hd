@@ -12,6 +12,7 @@ namespace hds
         CLIENT_COMBAT_STANCE = 0x3d, // 01 = draw weapon / ready, 00 = stand down
         CLIENT_CLOSE_COMBAT = 0x40,
         CLIENT_RANGE_COMBAT = 0x41,
+        CLIENT_FREE_FIRE_CHOICE = 0x3f, // 3f <inventory slot u16> <kind u32>: hotbar Free Fire weapon (kind 0x10 = item)
         CLIENT_LEAVE_COMBAT = 0x44,
         CLIENT_DUEL_REQUEST = 0x50,
         CLIENT_JUMP_START = 0xc2,
@@ -37,6 +38,7 @@ namespace hds
         CLIENT_RESPAWN_REQUEST = 0x14c,          // 81 4c (no body): the dead player asks to respawn
 
         CLIENT_HANDLE_MISSION_INVITE = 0x6f,
+        CLIENT_TEAM_LOOT_MODE = 0x90, // 80 90 <mode 1..4>; retail echoed it to the team
 
         // Ability Handlers
         CLIENT_ABILITY_LOADER = 0xae,
@@ -61,6 +63,9 @@ namespace hds
         // MarketPlace
         CLIENT_MP_LIST_ITEMS = 0x124,
         CLIENT_MP_OPEN = 0x121,
+        CLIENT_MP_OPEN_WINDOW = 0x129, // 81 29 00 00 00 00 01: retail's marketplace open
+        CLIENT_MP_BUY = 0x126,          // 81 26 <listing id> <slot>
+        CLIENT_MP_PLACE_ITEM = 0x12b,   // 81 2b <category> <price> <container> <slot> 00 00 00 00
 
         //Commands
 

@@ -15,7 +15,10 @@ Steps run in this order, each only when its switch or parameter is given:
   -Teleport     "?gotopos x y z" (the server multiplies by 100).
   -Chat         Type a chat line and press Enter.
   -Walk         Hold movement keys in turn, KEY:seconds each, e.g. -Walk W:2,A:0.5,Space:0.2.
-  -DoubleClick  Double-click a point on the 1024x768 game screen.
+  -DoubleClick  Double-click a point on the 1024x768 game screen. Twice, 2 s apart (target, then use); with -Once
+                only once (a bag item or a list entry, where each double-click is a use).
+  -TypeText     Type text into the focused field (no Enter), e.g. a marketplace price.
+  -Drag         Drag x1,y1,x2,y2 with the left button held (marketplace selling list).
   -Click        Click a point on the game screen once (UI buttons), after any double-click.
   -Screenshot   Save a screenshot of the primary screen.
 Exit code 0 when every requested step succeeded, 1 otherwise. A one-line JSON summary is printed last.
@@ -50,11 +53,14 @@ param(
     [int]$WorldTimeoutSeconds = 180,
     [double[]]$Teleport,
     [string[]]$Chat,
+    [string]$TypeText,
     [string[]]$Walk,
     [int[]]$DoubleClick,
+    [switch]$Once,
     [int[]]$Click,
     [int[]]$LauncherClick,
     [int[]]$RightClick,
+    [int[]]$Drag,
     [switch]$CheckVendorWindow,
     [string]$Screenshot
 )
@@ -200,6 +206,24 @@ public static class MxoInput
         IntPtr lp = MakeLParam(p.X, p.Y);
         PostMessage(target, WM_LBUTTONDOWN, (IntPtr)1, lp); Thread.Sleep(50);
         PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, lp); Thread.Sleep(150);
+    }
+
+    // Drag with the left button held (marketplace / inventory), moving the real cursor in steps.
+    public static void PostGameDrag(IntPtr top, int x1, int y1, int x2, int y2)
+    {
+        Physical();
+        const uint WM_MOUSEMOVE = 0x200;
+        POINT p; IntPtr target = ChildAt(top, x1, y1, out p);
+        POINT screen = p; ClientToScreen(target, ref screen); SetCursorPos(screen.X, screen.Y); Thread.Sleep(80);
+        PostMessage(target, WM_LBUTTONDOWN, (IntPtr)1, MakeLParam(p.X, p.Y)); Thread.Sleep(150);
+        for (int i = 1; i <= 10; i++)
+        {
+            int x = p.X + (x2 - x1) * i / 10, y = p.Y + (y2 - y1) * i / 10;
+            POINT s2 = new POINT { X = x, Y = y }; ClientToScreen(target, ref s2); SetCursorPos(s2.X, s2.Y);
+            PostMessage(target, WM_MOUSEMOVE, (IntPtr)1, MakeLParam(x, y)); Thread.Sleep(40);
+        }
+        Thread.Sleep(150);
+        PostMessage(target, WM_LBUTTONUP, IntPtr.Zero, MakeLParam(p.X + x2 - x1, p.Y + y2 - y1)); Thread.Sleep(150);
     }
 
     // A single in-game right-click (radial menus), cursor moved there first.
@@ -396,6 +420,8 @@ if ($Teleport -and $ok) {
     Start-Sleep 15
 }
 
+if ($TypeText -and $ok) { Type-Client $TypeText; $summary.typed = $true; Start-Sleep 1 }
+
 foreach ($line in @($Chat)) {
     if ($ok -and $line) { Send-Chat $line; Start-Sleep 2 }
 }
@@ -421,8 +447,10 @@ if ($DoubleClick -and $ok) {
     # it. A double-click on an untargeted object only targets it.
     $h = Get-ClientWindow
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # moves the cursor + targets
+    if (-not $Once) {
     Start-Sleep 2
     [MxoInput]::PostDoubleClick($h, $DoubleClick[0], $DoubleClick[1])   # uses the targeted object
+    }
     $summary.doubleClicked = $true
     Start-Sleep 4
 }
@@ -438,6 +466,13 @@ if ($RightClick -and $ok) {
     if ($RightClick.Count -ne 2) { throw '-RightClick takes x,y' }
     [MxoInput]::PostGameRightClick((Get-ClientWindow), $RightClick[0], $RightClick[1])
     $summary.rightClicked = $true
+    Start-Sleep 2
+}
+
+if ($Drag -and $ok) {
+    if ($Drag.Count -ne 4) { throw '-Drag takes x1,y1,x2,y2' }
+    [MxoInput]::PostGameDrag((Get-ClientWindow), $Drag[0], $Drag[1], $Drag[2], $Drag[3])
+    $summary.dragged = $true
     Start-Sleep 2
 }
 

@@ -33,12 +33,22 @@ namespace hds
         // Shared groups seen in retail
         public const UInt16 VirusDamage1 = 682, VirusEnhancedDamage = 683, LogicCannon = 684;
         public const UInt16 Heal1 = 685, Heal2 = 686, MeleeMove1 = 687, MeleeMove2 = 688;
+        /// <summary>aaHealPill: 10 s (abilities_mobiuscode; Mobius Code starts it too).</summary>
+        public const UInt16 HealPill = 711;
+        /// <summary>aaAntibioticPill: 8 s, started with the item's own timer when Antibiotic 5.0 was used.</summary>
+        public const UInt16 AntibioticPill = 740;
 
         /// <summary>Ability id (abilityIDs.csv) to its retail cooldown.</summary>
         public static readonly Dictionary<UInt16, Cooldown> Retail = new Dictionary<UInt16, Cooldown>
         {
             { 6, new Cooldown(60) },            // Consistent Technique
             { 55, new Cooldown(43) },           // Patcher
+            // Lower Logic Blasts / Logic Bomb 1 were not captured; the client tooltip gives Logic Blast 1.0
+            // "Re-use Timer: 4secs", so they follow Logic Blast 3.0 / Logic Bomb 2 below.
+            { 57, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 1.0
+            { 58, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 2.0
+            { 59, new Cooldown(4, VirusDamage1, 4) },  // Logic Blast 3 (old id)
+            { 60, new Cooldown(2, VirusDamage1, 2) },  // Logic Bomb 1
             { 72, new Cooldown(13) },           // Resist Combat
             { 77, new Cooldown(4, Heal2, 4) },  // Repair RSI 1.0
             { 97, new Cooldown(58) },           // UI Lag 1.0
@@ -80,7 +90,7 @@ namespace hds
             { 861, new Cooldown(60) },          // Balance
             { 868, new Cooldown(15) },          // Purity
             { 870, new Cooldown(10, MeleeMove2, 5) }, // Spinning Flower
-            { 967, new Cooldown(600) },         // Mobius Code
+            { 967, new Cooldown(600, HealPill, 10) }, // Mobius Code: 80 bd 01 c7 03 04 .. 600 s + 80 bd 01 c7 02 00 .. 10 s
             { 992, new Cooldown(600) },         // Corrupt Code 2
             { 1063, new Cooldown(30) },         // Kung Fu Master buff
             { 1064, new Cooldown(30) },         // Kung Fu Grand Master buff
@@ -104,6 +114,49 @@ namespace hds
             pak.AddFloat(seconds, 1);
             pak.AddByte(start ? (byte)0x01 : (byte)0x00);
             return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Starts the timers of a used item: one keyed by the item's own goid and one for the item group, both
+        /// type 00 and the same length, as retail did when Antibiotic 5.0 (goid 39410) was used
+        /// (PacketsZombiesPortingEtc line 77221): <c>80 bd 01 f2 99 00 00 00 00 41 01</c> and
+        /// <c>80 bd 01 e4 02 00 00 00 00 41 01</c>. The end records follow when the time is up.
+        /// </summary>
+        public static void StartItem(WorldClient client, UInt16 itemGoid, UInt16 group, float seconds, double now)
+        {
+            ClientData data = client.playerData;
+            UInt16[] ids = group != 0 ? new[] { itemGoid, group } : new[] { itemGoid };
+            lock (data.cooldownEndsAt)
+            {
+                foreach (UInt16 id in ids)
+                {
+                    data.cooldownEndsAt[id] = now + seconds;
+                }
+            }
+
+            foreach (UInt16 id in ids)
+            {
+                client.messageQueue.addRpcMessage(BuildTimer(id, GroupTimer, seconds, true));
+            }
+            client.FlushQueue();
+
+            DelayedActions.After(seconds, () =>
+            {
+                foreach (UInt16 id in ids)
+                {
+                    client.messageQueue.addRpcMessage(BuildTimer(id, GroupTimer, seconds, false));
+                }
+                client.FlushQueue();
+            });
+        }
+
+        /// <summary>True while a timer started with <see cref="StartItem"/> (item or group) is running.</summary>
+        public static bool IsTimerRunning(ClientData data, UInt16 id, double now)
+        {
+            lock (data.cooldownEndsAt)
+            {
+                return data.cooldownEndsAt.TryGetValue(id, out double end) && now < end;
+            }
         }
 
         /// <summary>True while the ability, or the group it shares a timer with, is cooling down.</summary>

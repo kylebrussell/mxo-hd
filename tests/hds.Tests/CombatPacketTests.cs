@@ -73,6 +73,77 @@ public class CombatPacketTests
             Hex(ServerPackets.BuildSelfPositionHandoff(0x66, 1f, 2f, 3f, 0x12345678)));
     }
 
+    private static float F32(string hex) => BitConverter.ToSingle(StringUtils.hexStringToBytes(hex), 0);
+
+    [Fact]
+    public void FirstGunshotMatchesRetail()
+    {
+        // Retail first shot, luizoe old-sniffer Unknown log line 11790 (research/packet-dumps/community-intake/
+        // 20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected): action 28, NoiseLevel 0x32,
+        // ConditionStateFlags 0x00100000, CombatantMode 0x21.
+        string retail = "020003" + "2802010c388100" + "0400a300" + "0010d645" + "0060c744" + "785d3ac6" + "2af96411" +
+                        "8084" + "32" + "80808080" + "03" + "00001000" + "21";
+        Assert.Equal(retail, Hex(ServerPackets.BuildRangedShot(0x02, 0x00a30004,
+            F32("0010d645"), F32("0060c744"), F32("785d3ac6"), 0x1164f92a, 0x32, true)));
+    }
+
+    [Fact]
+    public void FollowUpGunshotMatchesRetail()
+    {
+        // Retail, tutorial capture 13:30:17 (crashover2k ..._uriah.log.txt line 13898): NoiseLevel 0x4b only.
+        string retail = "020003" + "2802010c388100" + "0600f200" + "a810d645" + "0060c744" + "166a37c6" + "33bee71e" +
+                        "8004" + "4b";
+        Assert.Equal(retail, Hex(ServerPackets.BuildRangedShot(0x02, 0x00f20006,
+            F32("a810d645"), F32("0060c744"), F32("166a37c6"), 0x1ee7be33, 0x4b, false)));
+    }
+
+    [Fact]
+    public void MissedGunshotCarriesTheMissMarker()
+    {
+        // A miss has 00 10 where a hit has 81 00 (retail miss: luizoe Unknown log line 12029,
+        // "28 03 01 0c 38 00 10 04 00 a3 00 ..."); otherwise the same record as the follow-up shot.
+        string expected = "020003" + "2802010c380010" + "0600f200" + "a810d645" + "0060c744" + "166a37c6" + "33bee71e" +
+                          "8004" + "4b";
+        Assert.Equal(expected, Hex(ServerPackets.BuildRangedShot(0x02, 0x00f20006,
+            F32("a810d645"), F32("0060c744"), F32("166a37c6"), 0x1ee7be33, 0x4b, false, false)));
+    }
+
+    private static string HexText(string s) => Hex(System.Text.Encoding.ASCII.GetBytes(s));
+
+    [Fact]
+    public void CombatLogHitMatchesRetail()
+    {
+        // Tutorial capture (crashover2k ..._uriah.log.txt line 13974): mxoemu hits Alex for 19 with the Redpill Special.
+        string retail = "8168" + "2400" + "1d00" + "03000000" + "1300" + "f9ff" + "4700" + "2d00" + "00000000" + "01" +
+                        "050a0000" + "0000" + "0500" + HexText("Alex") + "00" + "0700" + HexText("mxoemu") + "00";
+        Assert.Equal(retail, Hex(ServerPackets.BuildCombatLog(true, 0x13, -7, 0x47, 0x2d, true, 0x0a05, "Alex", "mxoemu")));
+    }
+
+    [Fact]
+    public void CombatLogMissMatchesRetail()
+    {
+        // Same capture, line 13781: mxoemu's first shot misses Alex (attack roll 19 against 65).
+        string retail = "8168" + "2400" + "1d00" + "04000000" + "0000" + "0000" + "1300" + "4100" + "00000000" + "01" +
+                        "050a0000" + "0000" + "0500" + HexText("Alex") + "00" + "0700" + HexText("mxoemu") + "00";
+        Assert.Equal(retail, Hex(ServerPackets.BuildCombatLog(false, 0, 0, 0x13, 0x41, true, 0x0a05, "Alex", "mxoemu")));
+    }
+
+    [Fact]
+    public void CombatLogNpcHitMatchesRetail()
+    {
+        // Same capture, line 13852: Alex hits mxoemu for 4. The defender's name comes first; the second offset moves.
+        string retail = "8168" + "2600" + "1d00" + "03000000" + "0400" + "0000" + "5f00" + "1d00" + "00000000" + "00" +
+                        "050a0000" + "0000" + "0700" + HexText("mxoemu") + "00" + "0500" + HexText("Alex") + "00";
+        Assert.Equal(retail, Hex(ServerPackets.BuildCombatLog(true, 4, 0, 0x5f, 0x1d, false, 0x0a05, "mxoemu", "Alex")));
+    }
+
+    [Fact]
+    public void GunshotRpcMatchesRetail()
+    {
+        // Retail sent 02 4e 00 (length 2, RPC 4e 00) with each shot.
+        Assert.Equal("4e00", Hex(ServerPackets.BuildRangedShotRpc()));
+    }
+
     [Fact]
     public void CombatStartTimeIsSimMilliseconds()
     {

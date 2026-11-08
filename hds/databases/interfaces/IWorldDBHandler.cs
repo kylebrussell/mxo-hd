@@ -39,6 +39,8 @@ namespace hds.databases.interfaces{
         void updateLocationByHL(UInt16 district, UInt16 hardline);
         List<UInt16> GetHardlineIdsForDistrict(UInt16 district);
         UInt16 GetNearestHardline(UInt16 district, double x, double z);
+        List<UInt16> GetUploadedHardlines(UInt32 charId, UInt16 district);
+        bool AddUploadedHardline(UInt32 charId, UInt16 district, UInt16 hardline);
         void updateSourceHlForObjectTracking(UInt16 sourceDistrict, UInt16 sourceHl, UInt32 lastObjectId);
         void SetPlayerValues();
         void SetRsiValues();
@@ -58,6 +60,14 @@ namespace hds.databases.interfaces{
         void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId);
         void setBackground(string backgroundText);
         UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId);
+        List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
+        void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);
+        void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count);
+        List<CodeStorage.Entry> GetCodeStorage(UInt32 charId);
+        UInt16 GetNextAbilitySlot(UInt32 charId);
+        void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry);
+        void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count);
+        void RemoveCodeStorage(UInt32 charId, UInt16 slot);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);
         bool IsSlotinUseByItem(UInt16 slotId);
 
@@ -68,5 +78,15 @@ namespace hds.databases.interfaces{
         UInt32 GetCrewIdByInviterHandle(string playerHandle);
 
         string GetFactionNameById(UInt32 factionId);
+
+        // Social groups (parameterized; names may contain quotes)
+        bool CrewNameExists(string crewName);
+        UInt32 CreateCrew(string crewName, string captainHandle, ushort org);
+        void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
+        void DisbandCrew(UInt32 crewId);
+        void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
+        void DisbandFaction(UInt32 factionId);
+        UInt32 CreateFaction(string factionName, string masterHandle);
+        bool IsOnFriendList(UInt32 charId, UInt32 friendId);
     }
 }

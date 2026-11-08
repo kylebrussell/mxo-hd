@@ -33,4 +33,21 @@ public class CombatCalculatorTests
     {
         Assert.Equal(expected, CombatCalculator.CalculateAbilityISCost(baseCost, tactic));
     }
+
+    [Fact]
+    public void RangedShotHitsExactlyWhenTheAttackRollBeatsTheDefenseRoll()
+    {
+        var rng = new Random(1234);
+        int hits = 0;
+        for (int i = 0; i < 2000; i++)
+        {
+            bool hit = CombatCalculator.RollRangedHit(rng, out ushort attack, out ushort defense);
+            Assert.InRange(attack, (ushort)15, (ushort)99);
+            Assert.InRange(defense, (ushort)5, (ushort)69);
+            Assert.Equal(attack > defense, hit);
+            if (hit) hits++;
+        }
+        // Retail's tutorial fight hit 7 of 10 shots; keep misses possible but rarer than hits.
+        Assert.InRange(hits, 1200, 1800);
+    }
 }

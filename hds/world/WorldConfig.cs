@@ -15,7 +15,11 @@ namespace hds
         public bool IsPvpServer = false;
         public UInt16 PvpMaxSafeLevel = 16;
         public UInt16 FixedBinkIDOverride = 0;
-        
+        // Retail showed a character only the hardlines it had uploaded (6d lists of 1 to 52 per district). Off by
+        // default: char_hardlines starts empty, so turning it on leaves existing characters with no hardlines
+        // until they upload some.
+        public bool HardlineUploadRequired = false;
+
         public Hashtable events = new Hashtable();
 
         public WorldConfig(string filename)
@@ -29,6 +33,11 @@ namespace hds
             IsPvpServer = Boolean.Parse(xDoc.GetElementsByTagName("IsPvPServer")[0].InnerText);
             PvpMaxSafeLevel = UInt16.Parse(xDoc.GetElementsByTagName("PvPMaxSafeLevel")[0].InnerText);
             FixedBinkIDOverride = UInt16.Parse(xDoc.GetElementsByTagName("FixedBinkIDOverride")[0].InnerText);
+            XmlNodeList uploadRequired = xDoc.GetElementsByTagName("HardlineUploadRequired");
+            if (uploadRequired.Count > 0)
+            {
+                HardlineUploadRequired = Boolean.Parse(uploadRequired[0].InnerText.Trim());
+            }
 
             XmlNodeList eventList = xDoc.GetElementsByTagName("WorldEvents");
             foreach (XmlNode eventNode in eventList[0].ChildNodes)

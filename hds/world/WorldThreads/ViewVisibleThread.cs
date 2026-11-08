@@ -59,6 +59,7 @@ namespace hds
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
+                MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
               }
@@ -430,6 +431,7 @@ namespace hds
                         continue;
                     }
 
+                    HashSet<ulong> nearbyBooths = new HashSet<ulong>();
                     foreach (List<StaticWorldObject> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
                     {
                         foreach (StaticWorldObject staticWorldObject in cell)
@@ -444,6 +446,20 @@ namespace hds
                             // WE get all staticObjects in range but we dont just want them all
                             switch (typeId)
                             {
+                                case HardlineBooths.PhoneBoothType:
+                                    UInt64 boothEntity = HardlineBooths.EntityId(staticWorldObject);
+                                    nearbyBooths.Add(boothEntity);
+                                    ClientView boothView = thisclient.viewMan.GetViewForEntityAndGo(boothEntity, typeId);
+                                    if (!boothView.viewCreated)
+                                    {
+                                        boothView.staticObject = staticWorldObject;
+                                        // SendSpawnGameObject takes the current spawn counter for the creation
+                                        boothView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                                        new ServerPackets().SendSpawnGameObject(thisclient,
+                                            HardlineBooths.BuildBoothObject(staticWorldObject), boothEntity);
+                                    }
+                                    break;
+
                                 case 8400:
                                     if (signpostStaticIds != null &&
                                         signpostStaticIds.Contains(staticWorldObject.staticId) == false)
@@ -471,6 +487,16 @@ namespace hds
 
                                     break;
                             }
+                        }
+                    }
+
+                    // Booths that are out of range (or in another district) leave the client's view
+                    foreach (ClientView view in thisclient.viewMan.Snapshot())
+                    {
+                        if (view.viewCreated && HardlineBooths.IsBooth(view.GoID) && !nearbyBooths.Contains(view.entityId))
+                        {
+                            new ServerPackets().sendDeleteViewPacket(thisclient, view.ViewID);
+                            thisclient.viewMan.removeViewByViewId(view.ViewID);
                         }
                     }
                 }
@@ -549,8 +575,7 @@ namespace hds
 #endif
 
                             ServerPackets mobPak = new ServerPackets();
-                            mobPak.SpawnMobView(thisclient, thismob, mobView);
-                            mobView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                            mobPak.SpawnMobView(thisclient, thismob, mobView); // sets mobView.spawnId
                             mobView.viewCreated = true;
                             thismob.isUpdateable = true;
                             thismob.DoMobUpdate(thismob);
@@ -772,6 +797,7 @@ namespace hds
 
                 string handle = StringUtils.charBytesToString_NZ(deadClient.playerInstance.CharacterName.getValue());
                 new BuddylistHandler().ProcessAnnounceFriendsOffline(deadClient.playerData.getCharID(), handle);
+                SocialHandler.PlayerLeftWorld(deadClient);
                 // Views are now deleted to other players
                 // ToDo: Cleanup Missions (kill all running missions the player have)
                 // ToDo: Cleanup Teams (if your mission team has more than one player, you need to announce an update for the mission team to your mates)

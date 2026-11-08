@@ -17,6 +17,8 @@ namespace hds
             ENVIROMENT = 0x00, // Bench too
         }
 
+        private const UInt32 SubwayCarType = 6568; // ViewVisibleThread.SubwayTypeId
+
         private enum objectTypesDynamic : int
         {
             SUBWAY = 0x02,
@@ -49,12 +51,6 @@ namespace hds
             UInt16 typeId = NumericalUtils.ByteArrayToUint16(staticWorldObject.type, 1);
             Output.WriteDebugLog("[DOOR] Use of static " + staticWorldObject.mxoStaticId + " type " + typeId +
                                  " (" + item.getName() + ")");
-
-            if (typeId == 592)
-            {
-                new TeleportHandler().processHardlineExitRequest();
-                return;
-            }
 
             FieldInfo objectField = typeof(GameObjectDefinitions).GetField("Object" + typeId);
             Type doorClass = objectField?.FieldType;
@@ -136,9 +132,17 @@ namespace hds
             // create a new System message but fill it in the switch block
             ServerPackets pak = new ServerPackets();
 
+            // Hardline booths: 03 jack out, 04 upload, 05 exit to the Loading Area (retail 80 c8 <booth> 04 00)
+            if (objectValues != null && objectValues.type != null &&
+                HardlineBooths.IsBooth(NumericalUtils.ByteArrayToUint16(objectValues.type, 1)))
+            {
+                TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, objectValues);
+                return;
+            }
+
             switch (objectTypeID)
             {
-                // Case 03 is not only a staticWorldObject ... 
+                // Case 03 is not only a staticWorldObject ...
                 case (int) objectTypesStatic.DOOR:
 
                     Output.writeToLogForConsole("[OI HELPER] INTERACT WITH DOOR | Object ID :" + id + " Sector ID : " +
@@ -162,9 +166,9 @@ namespace hds
                     break;
 
                 case (int) objectTypesStatic.HARDLINE_UPLOAD:
-                    Output.writeToLogForConsole("[OBJECT HELPER] Upload Hardline will be used for combat tests");
+                    // Retail moved the bag's Code Bits and fragments into code storage here
                     Store.currentClient.playerData.lastClickedObjectId = numericObjectId;
-                    new TestUnitHandler().processTestCombat(ref packet);
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
                     break;
 
                 case (int) objectTypesStatic.HARDLINE_LAEXIT:
@@ -242,6 +246,15 @@ namespace hds
             // create a new System message but fill it in the switch block
             ServerPackets pak = new ServerPackets();
 
+            // A hardline booth view (80 c7 <view> <spawn> 03|04|05 00 in retail)
+            UInt16 interactedViewId = (UInt16)(packet[0] | (packet[1] << 8));
+            ClientView interactedView = Store.currentClient.viewMan.getViewById(interactedViewId);
+            if (interactedView != null && HardlineBooths.IsBooth(interactedView.GoID) && interactedView.staticObject != null)
+            {
+                TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, interactedView.staticObject);
+                return;
+            }
+
 #if DEBUG
             pak.sendSystemChatMessage(Store.currentClient,
                 "Object Type ID IS " + objectTypeID.ToString() + " Dynamic Object RPC : " +
@@ -251,6 +264,15 @@ namespace hds
             switch (objectTypeID)
             {
                 case (int) objectTypesDynamic.SUBWAY:
+                    // 02 is retail's generic "use" (on NPCs it opened vendors: 81 9c + 81 0d), so only a subway
+                    // car view gets the subway answer. 81 3a / 81 3e never appear in the retail captures.
+                    if (interactedView == null || interactedView.GoID != SubwayCarType)
+                    {
+                        Output.WriteDebugLog("[OI HELPER] Use (02) of dynamic view " + interactedViewId +
+                                             (interactedView != null ? " type " + interactedView.GoID : "") + " not handled");
+                        break;
+                    }
+
                     double x = 0;
                     double y = 0;
                     double z = 0;
@@ -278,6 +300,9 @@ namespace hds
                     MissionRuntime.OnTalk(Store.currentClient, talkMob);
                     break;
 
+                case 0x04: // hardline upload, retail 80 c7 <view> <spawn> 04 00: Code Bits and fragments go into code storage
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
+                    break;
 
                 default:
                     pak.sendSystemChatMessage(Store.currentClient,

@@ -48,6 +48,19 @@ namespace hds
 
         // Combat tracking - which player is this mob fighting
         private WorldClient combatTarget = null;
+
+        // Sim time (s) until which the NPC is stunned and doesn't attack; see AbilityTargets
+        private double stunnedUntil = 0;
+
+        public void Stun(double until)
+        {
+            stunnedUntil = Math.Max(stunnedUntil, until);
+        }
+
+        public bool IsStunned(double now)
+        {
+            return now < stunnedUntil;
+        }
         private UInt16 mobHitCounter = 0;
 
         public enum statusList
@@ -355,6 +368,14 @@ namespace hds
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
             themob.CurrentState.setValue(StringUtils.hexStringToBytes("06080000"));
 
+            if (RangedWeapons.IsGun(getWeapon()))
+            {
+                // Retail NPCs with guns carried them in EquippedItemID (NPC view attribute 33), e.g.
+                // 80 80 80 80 a0 b4 02 00 00 = AutomaticRifle1 on "Chopper Jumper" (luizoe Unknown log line 32719).
+                themob.EquippedItemID.enable();
+                themob.EquippedItemID.setValue(getWeapon());
+            }
+
             return themob;
         }
 
@@ -561,23 +582,33 @@ namespace hds
         /// Returns true if the player died from this attack.
         /// </summary>
         /// <param name="playerTactic">Player's current combat tactic for defensive modifiers</param>
-        public bool updateCombat(CombatTactic playerTactic = CombatTactic.None)
+        public bool updateCombat(CombatTactic playerTactic = CombatTactic.None, WorldClient target = null)
         {
-            if (combatTarget == null || is_dead)
+            // The player of the fight being ticked. combatTarget is only whoever engaged this NPC last: with two
+            // players on one NPC, hitting it damaged one player while the other's fight reported the death.
+            WorldClient victim = target ?? combatTarget;
+            if (victim == null || is_dead)
             {
                 return false;
             }
 
+            // A stunned NPC skips its attack (Stun 1 / Stun 2.0)
+            if (IsStunned(TimeUtils.GetSimTimeSeconds()))
+            {
+                Output.WriteDebugLog($"[COMBAT] {name} is stunned and doesn't attack");
+                return false;
+            }
+
             // Get player's current health
-            byte[] healthBytes = combatTarget.playerInstance.Health.getValue();
+            byte[] healthBytes = victim.playerInstance.Health.getValue();
             UInt16 playerHealth = NumericalUtils.ByteArrayToUint16(healthBytes, 1);
 
             // Get player's max health for reference
-            byte[] maxHealthBytes = combatTarget.playerInstance.MaxHealth.getValue();
+            byte[] maxHealthBytes = victim.playerInstance.MaxHealth.getValue();
             UInt16 playerMaxHealth = NumericalUtils.ByteArrayToUint16(maxHealthBytes, 1);
 
             // Get player level
-            byte[] levelBytes = combatTarget.playerInstance.Level.getValue();
+            byte[] levelBytes = victim.playerInstance.Level.getValue();
             UInt16 playerLevel = (levelBytes != null && levelBytes.Length > 0) ? levelBytes[0] : (UInt16)1;
 
             // Calculate damage using mob's level vs player's level, with player's tactic modifier
@@ -586,25 +617,34 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}, {playerTactic}) for {damage} damage");
 
-            // Apply damage to player
-            UInt16 newHealth;
-            if (playerHealth <= damage)
+            return HitCombatTarget(damage, fxId, victim);
+        }
+
+        /// <summary>Action counter of this NPC's gunshots (the 2a record's counter).</summary>
+        public byte rangedActionCounter;
+
+        /// <summary>
+        /// Takes damage off the combat target's health and sends the player their new health. Returns true when the
+        /// player died.
+        /// </summary>
+        public bool HitCombatTarget(UInt16 damage, uint fxId = 0, WorldClient target = null)
+        {
+            WorldClient victim = target ?? combatTarget;
+            if (victim == null)
             {
-                newHealth = 0;
+                return false;
             }
-            else
-            {
-                newHealth = (UInt16)(playerHealth - damage);
-            }
+            UInt16 playerHealth = NumericalUtils.ByteArrayToUint16(victim.playerInstance.Health.getValue(), 1);
+            UInt16 newHealth = playerHealth <= damage ? (UInt16)0 : (UInt16)(playerHealth - damage);
 
             // Update player's health attribute
-            combatTarget.playerInstance.Health.setValue(newHealth);
+            victim.playerInstance.Health.setValue(newHealth);
 
             // Increment hit counter for animation sequencing
             mobHitCounter++;
 
             // Send health update packet to the player (view ID 2 is self-view)
-            SendPlayerDamagePacket(combatTarget, newHealth, fxId, mobHitCounter);
+            SendPlayerDamagePacket(victim, newHealth, fxId, mobHitCounter);
 
             Output.WriteDebugLog($"[COMBAT] Player health: {playerHealth} -> {newHealth}");
 
