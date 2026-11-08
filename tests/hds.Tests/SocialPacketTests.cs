@@ -138,6 +138,18 @@ public class SocialPacketTests
     }
 
     [Fact]
+    public void FactionSummaryMatchesRetailApartFromNameFieldFiller()
+    {
+        // two-person, mxoemu3's side 09:41:13: "The Duality", master Medanon (0x1ccbe), money 0x0346bbff.
+        // Retail left stale bytes after the name's terminator; only the 43-byte field's size matters.
+        byte[] retail = Hex("7c 03 00 05 00 31 5e 00 00 01 00 00 01 0f 00 34 00 01 54 68 65 20 44 75 61 6c 69 74 79 00 00 00 00 03 00 6a 00 00 00 00 00 34 00 17 00 44 72 53 6d 69 74 68 27 73 20 4d 69 73 73 69 02 be cc 01 00 ff bb 46 03");
+        byte[] built = ServerPackets.BuildFactionInfoPacket(Mxoemu3, 0x5e31, 1, "The Duality", 0x0001ccbe, 0x0346bbff);
+        Assert.Equal(retail.Length, built.Length);
+        Assert.Equal(H(retail.AsSpan(0, 30).ToArray()), H(built.AsSpan(0, 30).ToArray()));
+        Assert.Equal(H(retail.AsSpan(retail.Length - 8).ToArray()), H(built.AsSpan(built.Length - 8).ToArray()));
+    }
+
+    [Fact]
     public void LootModeEchoesMode()
     {
         Assert.Equal(H("80 90 02"), H(SocialPackets.LootMode(2)));
