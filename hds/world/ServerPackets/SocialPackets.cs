@@ -320,6 +320,18 @@ namespace hds
             return result;
         }
 
+        /// <summary>The same change as other players see it on their view of me: 02 &lt;group masks&gt; &lt;values&gt;, with
+        /// the other-view attribute order. Takes GameObject.GetUpdateAttributes output, whose leading attribute count
+        /// is replaced by the update type 02. Retail (two-person, AfterWhoruNeo's side): mxoemu3's view
+        /// <c>17 00 02 80 80 c0 &lt;FactionID&gt; 80 02 &lt;CrewID&gt;</c> on joining the crew and <c>17 00 02 40 00 00 00 00</c>
+        /// (MissionTeamID 0) when the team was disbanded.</summary>
+        public static byte[] OtherViewUpdate(byte[] countedAttributeBlock)
+        {
+            byte[] result = (byte[]) countedAttributeBlock.Clone();
+            result[0] = 0x02;
+            return result;
+        }
+
         /// <summary>Exactly <paramref name="size"/> bytes: the text, then zeros (cut so a terminator always fits).</summary>
         public static byte[] FixedString(string value, int size)
         {
