@@ -5,17 +5,46 @@ namespace hds.Tests;
 public class CombatCalculatorTests
 {
     [Theory]
-    [InlineData(CombatTactic.Speed, CombatTactic.Power, 1.25f)]
-    [InlineData(CombatTactic.Power, CombatTactic.Grab, 1.25f)]
-    [InlineData(CombatTactic.Grab, CombatTactic.Speed, 1.25f)]
-    [InlineData(CombatTactic.Speed, CombatTactic.Grab, 0.75f)]
-    [InlineData(CombatTactic.None, CombatTactic.Power, 1.0f)]
-    public void GetTacticDamageModifierAppliesCounterSystem(
-        CombatTactic attacker,
-        CombatTactic defender,
-        float expected)
+    [InlineData(CombatTactic.Speed, 1.0f)]
+    [InlineData(CombatTactic.Power, 1.2f)]
+    [InlineData(CombatTactic.Grab, 0.85f)]
+    [InlineData(CombatTactic.Block, 0f)]
+    public void TacticDamageComesFromRetailStats(CombatTactic tactic, float dealt)
     {
-        Assert.Equal(expected, CombatCalculator.GetTacticDamageModifier(attacker, defender));
+        Assert.Equal(dealt, CombatCalculator.TacticDamageMultiplier(tactic), 3);
+    }
+
+    [Fact]
+    public void DamageReductionFollowsRetailLevelAndArmorRule()
+    {
+        // combat_calculations.GetDamageReductionValue: (5 - 50) x 0.2 = -9, capped at -0.9
+        Assert.Equal(-0.9, CombatCalculator.DamageReduction(50, 5), 3);
+        Assert.Equal(0.9, CombatCalculator.DamageReduction(5, 50), 3);
+        // Same level, no armor: armor part = 0.66 / (4 + 20) x 20 - 0.33
+        Assert.Equal(0.22, CombatCalculator.DamageReduction(1, 1), 3);
+    }
+
+    [Fact]
+    public void CloseCombatDamageScalesWithLevelAndPower()
+    {
+        var rng = new Random(5);
+        double Average(CombatTactic tactic, int attacker, int defender)
+        {
+            int sum = 0;
+            for (int i = 0; i < 400; i++) sum += CombatCalculator.CloseCombatDamage(rng, attacker, defender, tactic, out _);
+            return sum / 400.0;
+        }
+        Assert.True(Average(CombatTactic.Power, 50, 5) > Average(CombatTactic.Speed, 50, 5));
+        Assert.True(Average(CombatTactic.Speed, 50, 5) > Average(CombatTactic.Speed, 5, 50));
+        // Level 1 against level 1: 16 raw like retail's tutorial fight, less the 22% absorbed
+        Assert.InRange(Average(CombatTactic.Speed, 1, 1), 9.0, 16.0);
+    }
+
+    [Fact]
+    public void BlockRegainsInnerStrengthAndOtherTacticsPay()
+    {
+        Assert.Equal(10, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Block));
+        Assert.Equal(-CombatCalculator.COMBAT_ROUND_IS_COST, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Power));
     }
 
     [Fact]
@@ -23,15 +52,6 @@ public class CombatCalculatorTests
     {
         Assert.Equal((ushort)1, CombatCalculator.CalculateISRegen(0));
         Assert.Equal((ushort)5, CombatCalculator.CalculateISRegen(100));
-    }
-
-    [Theory]
-    [InlineData(100, CombatTactic.Speed, 90)]
-    [InlineData(100, CombatTactic.Power, 110)]
-    [InlineData(100, CombatTactic.Grab, 100)]
-    public void CalculateAbilityISCostAppliesTacticModifier(ushort baseCost, CombatTactic tactic, ushort expected)
-    {
-        Assert.Equal(expected, CombatCalculator.CalculateAbilityISCost(baseCost, tactic));
     }
 
     [Fact]

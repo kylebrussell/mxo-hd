@@ -295,14 +295,17 @@ namespace hds
         /// RPC 81 68: one combat-log line. Layout after the header (offsets from its first byte):
         /// <c>&lt;offset of attacker name u16&gt; &lt;offset of defender name u16 = 0x1d&gt; &lt;result u32: 3 hit, 4 miss&gt;
         /// &lt;damage u16&gt; &lt;modifier i16&gt; &lt;attack roll u16&gt; &lt;defense roll u16&gt; 00000000 &lt;attacker is you u8&gt;
-        /// &lt;weapon goid u32&gt; 0000 &lt;defender name&gt; &lt;attacker name&gt;</c>, names as u16 length (with the 0) + text + 0.
+        /// &lt;weapon goid u32&gt; &lt;attacker's tactic u16&gt; &lt;defender name&gt; &lt;attacker name&gt;</c>, names as u16 length (with the 0) + text + 0.
+        /// The client's log names the attack after the tactic ("Speed Redpill Special"): retail lines sent after a
+        /// <c>42 01</c> have 1 there (<c>05 0a 00 00 01 00</c>), after <c>42 00</c> 0.
         /// In the retail tutorial fight (crashover2k ..._uriah.log.txt 13:30:13-13:30:33) every hit had attack roll &gt;
         /// defense roll and every miss the reverse; damage matched the health lost. The player's hits had modifier -7
         /// (meaning unknown), the NPC's 0. Example, the player hits "Alex" for 19:
         /// <c>81 68 24 00 1d 00 03 00 00 00 13 00 f9 ff 47 00 2d 00 00 00 00 00 01 05 0a 00 00 00 00 05 00 Alex 00 07 00 mxoemu 00</c>.
         /// </summary>
         public static byte[] BuildCombatLog(bool hit, UInt16 damage, Int16 modifier, UInt16 attackRoll, UInt16 defenseRoll,
-            bool attackerIsYou, UInt32 weaponGoid, string defenderName, string attackerName)
+            bool attackerIsYou, UInt32 weaponGoid, string defenderName, string attackerName,
+            CombatTactic attackerTactic = CombatTactic.Speed)
         {
             const UInt16 defenderNameOffset = 0x1d;
             PacketContent pak = new PacketContent();
@@ -317,7 +320,7 @@ namespace hds
             pak.AddUint32(0, 1);
             pak.AddByte(attackerIsYou ? (byte)1 : (byte)0);
             pak.AddUint32(weaponGoid, 1);
-            pak.AddUint16(0, 1);
+            pak.AddUint16((UInt16)attackerTactic, 1);
             pak.AddSizedTerminatedString(defenderName);
             pak.AddSizedTerminatedString(attackerName);
             return pak.ReturnFinalPacket();

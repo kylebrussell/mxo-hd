@@ -115,8 +115,14 @@ namespace hds
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
                 UInt16 targetView = currentTargetViewId;
-                DelayedActions.AfterFor(client, ability.getCastingTime(),
-                    () => AbilityTargets.Land(client, ability, targetView));
+                // An instant ability on the current close-combat target is the player's next move in the fight, as in
+                // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
+                if (ability.getCastingTime() > 0 ||
+                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView))
+                {
+                    DelayedActions.AfterFor(client, ability.getCastingTime(),
+                        () => AbilityTargets.Land(client, ability, targetView));
+                }
             }
         }
 

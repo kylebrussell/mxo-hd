@@ -71,6 +71,11 @@ namespace hds
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
 
+		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
+		public CombatTactic combatTactic = CombatTactic.Speed;
+		public CombatTacticType combatTacticType = CombatTacticType.Normal;
+		public UInt16[] tacticRecordIds = null;
+
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
 		public int combatGeneration = 0;
 
