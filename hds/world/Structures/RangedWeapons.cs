@@ -61,6 +61,23 @@ namespace hds
             });
         }
 
+        /// <summary>
+        /// Time between shots. Measured in the retail captures from consecutive shot counters of one shooter
+        /// (one-second timestamps): 0x37 median 4 s (quartiles 4/4/5, 471 intervals), 0x38 median 5 s (4/5/7, 138;
+        /// the tutorial's Redpill Special fired every 4.5-5 s), 0x39 median 4 s (3/4/4, 106), 0x3b median 3 s
+        /// (3/3/4, 212).
+        /// </summary>
+        public static int FireIntervalMs(byte attackClass)
+        {
+            switch (attackClass)
+            {
+                case ClassRifle: return 4300;
+                case ClassSubmachinegun: return 3700;
+                case ClassDual: return 3200;
+                default: return 5000;
+            }
+        }
+
         public static bool IsGun(UInt32 goid)
         {
             return AttackClass(goid) != 0;

@@ -63,4 +63,23 @@ public class RangedWeaponTests
             RangedWeapons.ClassRifle));
         Assert.StartsWith("020003" + "2802010c37" + "8100", shot);
     }
+
+    [Fact]
+    public void DistanceForFalloffIsInMetres()
+    {
+        // 600 world units apart = 6 m, a typical retail gunfight distance (median 626 units in the captures).
+        byte[] player = NumericalUtils.doublesToLtVector3d(1000, 0, 2000);
+        Assert.Equal(6f, CombatCalculator.CalculateDistanceMetres(player, 1600, 0, 2000), 3);
+        Assert.Equal(600f, CombatCalculator.CalculateDistance(player, 1600, 0, 2000), 3);
+    }
+
+    [Theory]
+    [InlineData(RangedWeapons.ClassPistol, 5000)]
+    [InlineData(RangedWeapons.ClassRifle, 4300)]
+    [InlineData(RangedWeapons.ClassSubmachinegun, 3700)]
+    [InlineData(RangedWeapons.ClassDual, 3200)]
+    public void FireIntervalsFollowRetailMeasurements(byte attackClass, int expectedMs)
+    {
+        Assert.Equal(expectedMs, RangedWeapons.FireIntervalMs(attackClass));
+    }
 }

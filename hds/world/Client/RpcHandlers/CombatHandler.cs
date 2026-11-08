@@ -556,7 +556,7 @@ namespace hds
             bool killed = ResolveRangedShot(currentSession, true);
             client.FlushQueue();
 
-            currentSession.Start(ServerPackets.RangedShotIntervalMs);
+            currentSession.Start(RangedWeapons.FireIntervalMs(PlayerGunClass(client)));
             if (killed)
             {
                 currentSession.Stop(CombatSession.CombatEndReason.DefenderDied);
@@ -590,17 +590,8 @@ namespace hds
             UInt16 attackRoll, defenseRoll;
             bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
 
-            UInt32 weapon = player.playerData.freeFireWeaponGoid;
-            byte[] equipped = player.playerInstance.EquippedItemID.getValue();
-            if (weapon == 0 && equipped != null && equipped.Length >= 4)
-            {
-                weapon = NumericalUtils.ByteArrayToUint32(equipped, 1);
-            }
-            byte attackClass = RangedWeapons.AttackClass(weapon);
-            if (attackClass == 0)
-            {
-                attackClass = RangedWeapons.ClassPistol;
-            }
+            UInt32 weapon = PlayerGun(player);
+            byte attackClass = PlayerGunClass(player);
 
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
@@ -621,7 +612,7 @@ namespace hds
             {
                 byte[] levelBytes = player.playerInstance.Level.getValue();
                 UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-                float distance = CombatCalculator.CalculateDistance(player.playerInstance.Position.getValue(),
+                float distance = CombatCalculator.CalculateDistanceMetres(player.playerInstance.Position.getValue(),
                     target.getXPos(), target.getYPos(), target.getZPos());
                 damage = CombatCalculator.CalculateRangedDamageWithTactics(playerLevel, target.getLevel(), distance,
                     session.AttackerTactic, session.DefenderTactic);
@@ -633,6 +624,25 @@ namespace hds
             player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
                 true, weapon, target.getName(), playerName));
             return died;
+        }
+
+        /// <summary>The gun the player fires: their Free Fire pick (RPC 3f), else the equipped item.</summary>
+        private static UInt32 PlayerGun(WorldClient player)
+        {
+            UInt32 weapon = player.playerData.freeFireWeaponGoid;
+            byte[] equipped = player.playerInstance.EquippedItemID.getValue();
+            if (weapon == 0 && equipped != null && equipped.Length >= 4)
+            {
+                weapon = NumericalUtils.ByteArrayToUint32(equipped, 1);
+            }
+            return weapon;
+        }
+
+        /// <summary>Attack class of the player's gun; a pistol when it isn't known.</summary>
+        private static byte PlayerGunClass(WorldClient player)
+        {
+            byte attackClass = RangedWeapons.AttackClass(PlayerGun(player));
+            return attackClass == 0 ? RangedWeapons.ClassPistol : attackClass;
         }
 
         /// <summary>
