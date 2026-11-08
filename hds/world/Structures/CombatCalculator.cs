@@ -185,6 +185,19 @@ namespace hds
             }
         }
 
+        /// <summary>World units per metre (?gotopos and retail positions use 100 units per metre).</summary>
+        public const float WorldUnitsPerMetre = 100f;
+
+        /// <summary>
+        /// Distance in metres, which is what the ranged damage falloff expects. <see cref="CalculateDistance"/> returns
+        /// world units: a typical 6 m gunfight (retail captures: median 626 units) fell into the "beyond 50 m" band and
+        /// did 60% damage.
+        /// </summary>
+        public static float CalculateDistanceMetres(byte[] playerPositionBytes, double mobX, double mobY, double mobZ)
+        {
+            return CalculateDistance(playerPositionBytes, mobX, mobY, mobZ) / WorldUnitsPerMetre;
+        }
+
         /// <summary>
         /// Calculates distance between player and mob positions.
         /// </summary>

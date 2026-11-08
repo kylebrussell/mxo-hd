@@ -391,6 +391,12 @@ namespace hds
                         theMob.setRotation(rotation);
                         theMob.setIsDead(bool.Parse(data[11]));
                         theMob.setIsLootable(bool.Parse(data[12]));
+                        // mob_parsed.csv column 21: the NPC's EquippedItemID from retail spawns (693 = AutomaticRifle2,
+                        // 2503 = DualSubmachinegun2, ...; see docs/PACKET-RESEARCH.md, Object599 / NPC_BASE)
+                        if (data.Length > 20 && uint.TryParse(data[20], out uint weaponGoid))
+                        {
+                            theMob.setWeapon(weaponGoid);
+                        }
                         // Init the Mob Update
                         if (!error)
                         {
