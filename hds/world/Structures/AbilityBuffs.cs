@@ -59,6 +59,13 @@ namespace hds
             public float MovementScale;
             public UInt16 DissemblingType;
             public UInt32 EffectId;
+            /// <summary>
+            /// Evade Combat: using it again while it is on switches it off, and its cooldown starts when it ends
+            /// instead of when it is used.
+            /// </summary>
+            public bool Toggle;
+            /// <summary>Own-view EvadeShieldHealth ff while on, 00 when it ends (Evade Combat).</summary>
+            public bool EvadeShield;
         }
 
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
@@ -85,7 +92,9 @@ namespace hds
             { 184, new Buff { Exclusive = true, MovementScale = 0.15f, DissemblingType = 0x0400, EffectId = 0x12463119,
                 Modifiers = new[] { new Modifier(KindLinked, 0, 25), Stat(877, 15), Stat(878, 15), new Modifier(KindLinked, 115, 15) } } },
             // Evade Combat, evadecombat.txt: 80 bc 19 .. d9 00 00 00 70 02 .. and 80 bc 1d .. 70 02 00 00 00 00 ..
-            { 217, new Buff { Exclusive = true,
+            // Evade Combat, evadecombat.txt; switched off by using it again (entilsar lastday2 21:57:08-09: the
+            // client's second 80 b9 d9 00, then the records off, 80 bd 01 d9 00 04 .. f0 41 01 (30 s) and 80 bd 05 off)
+            { 217, new Buff { Exclusive = true, Toggle = true, EvadeShield = true,
                 Modifiers = new[] { new Modifier(KindState, 624, 0), new Modifier(KindLinked, 0, 0, 624) } } },
             // Serene Calm, medanon niobe3dualduality: 40 s
             { 272, new Buff { Seconds = 40, Modifiers = new[] { Stat(1009, 57), Stat(1011, 49), Stat(183, 54), Stat(1010, 51) } } },
@@ -206,6 +215,36 @@ namespace hds
             return Retail.ContainsKey(abilityId);
         }
 
+        public static bool IsActive(WorldClient client, UInt16 abilityId)
+        {
+            lock (client.playerData.activeBuffs)
+            {
+                return client.playerData.activeBuffs.ContainsKey(abilityId);
+            }
+        }
+
+        /// <summary>A toggle buff (Evade Combat) that is on: using it again switches it off.</summary>
+        public static bool IsToggledOn(WorldClient client, UInt16 abilityId)
+        {
+            return Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle && IsActive(client, abilityId);
+        }
+
+        /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
+        public static bool CooldownStartsOnUse(UInt16 abilityId)
+        {
+            return !(Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle);
+        }
+
+        /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
+        public static byte[] BuildEvadeShieldUpdate(byte health)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(2, 1);
+            pak.AddHexBytes("02808080800" + "4");
+            pak.AddByte(health);
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>
         /// Puts the buff on (replacing the same buff, and buffs of its family) and queues its records; a timed
         /// buff comes off by itself when its time is up. Returns false for abilities that are not buffs.
@@ -256,6 +295,10 @@ namespace hds
             if (buff.Exclusive)
             {
                 client.messageQueue.addRpcMessage(BuildExclusive(abilityId, true));
+            }
+            if (buff.EvadeShield)
+            {
+                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0xff), false);
             }
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, false))
             {
@@ -313,6 +356,14 @@ namespace hds
             if (buff.MovementScale > 0 && !keepMovement)
             {
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, 0), false);
+            }
+            if (buff.EvadeShield)
+            {
+                client.messageQueue.addObjectMessage(BuildEvadeShieldUpdate(0x00), false);
+            }
+            if (buff.Toggle)
+            {
+                AbilityCooldowns.Start(client, abilityId, TimeUtils.GetSimTimeSeconds());
             }
             if (log)
             {

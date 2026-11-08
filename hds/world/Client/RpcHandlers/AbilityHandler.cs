@@ -61,6 +61,14 @@ namespace hds
                 return;
             }
 
+            // Evade Combat used while it is on switches it off (its cooldown starts then); no cost, no cast.
+            if (AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                AbilityBuffs.Remove(Store.currentClient, AbilityID);
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
@@ -74,7 +82,10 @@ namespace hds
                 {
                     HealSelf(client, HealAmount(client));
                 }
-                AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
+                if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
+                {
+                    AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
+                }
                 if (AbilityBuffs.Apply(client, ability.getAbilityID()))
                 {
                     client.FlushQueue();

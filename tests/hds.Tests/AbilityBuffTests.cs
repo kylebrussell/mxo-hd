@@ -74,10 +74,12 @@ public class AbilityBuffTests
     private static WorldClient NewClient()
     {
         WorldClient client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
-        // Only the queue and player data; flushing such a client fails (and the timer catches it), so the
-        // tests read what was queued.
+        // Only the queue and player data, and a last flush far in the future so FlushQueue always defers:
+        // the tests read what was queued.
         client.playerData = new ClientData();
         client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, long.MaxValue);
         return client;
     }
 
@@ -148,5 +150,35 @@ public class AbilityBuffTests
         WorldClient client = NewClient();
         Assert.False(AbilityBuffs.Apply(client, 198)); // Cheap Shot
         Assert.Empty(Rpcs(client));
+    }
+
+    [Fact]
+    public void EvadeShieldOwnView()
+    {
+        // evadecombat.txt: EvadeShieldHealth ff (own-view attribute 30) when Evade Combat goes on
+        Assert.Equal("020002808080800" + "4ff", Hex(AbilityBuffs.BuildEvadeShieldUpdate(0xff)));
+    }
+
+    [Fact]
+    public void EvadeTogglesOffAndStartsItsCooldownThen()
+    {
+        WorldClient client = NewClient();
+        Assert.True(AbilityBuffs.CooldownStartsOnUse(198));
+        Assert.False(AbilityBuffs.CooldownStartsOnUse(217));
+        Assert.False(AbilityBuffs.IsToggledOn(client, 217));
+
+        AbilityBuffs.Apply(client, 217);
+        List<string> on = Rpcs(client);
+        Assert.Equal("80bd05d900000000000001", on[0]);
+        Assert.True(AbilityBuffs.IsToggledOn(client, 217));
+
+        AbilityBuffs.Remove(client, 217);
+        List<string> off = Rpcs(client);
+        Assert.Contains("80bd05d900000000000000", off);
+        // entilsar lastday2 21:57:09: 80 bd 01 d9 00 04 00 00 f0 41 01 (30 s)
+        Assert.Contains("80bd01d900040000f04101", off);
+        Assert.True(AbilityCooldowns.IsCoolingDown(client.playerData, 217, TimeUtils.GetSimTimeSeconds()));
+        DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds() + 31);
+        Rpcs(client);
     }
 }
