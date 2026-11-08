@@ -1003,6 +1003,25 @@ namespace hds.databases{
         }
 
 
+        /// <summary>Every inventory row of a character as (slot, goid).</summary>
+        public List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT slot, goid FROM inventory WHERE charId = '" + charId + "' ORDER BY slot";
+            dr = queryExecuter.ExecuteReader();
+
+            List<Crafting.InventoryItem> items = new List<Crafting.InventoryItem>();
+            while (dr.Read())
+            {
+                items.Add(new Crafting.InventoryItem(Convert.ToUInt16(dr.GetValue(0)),
+                    Convert.ToUInt32(Convert.ToInt64(dr.GetValue(1)))));
+            }
+            dr.Close();
+	        CloseConnection();
+            return items;
+        }
+
 	    public void SaveInfo(WorldClient client, long cash)
 	    {
 		    ExecuteNonResultQuery("UPDATE characters SET cash =" + cash + " WHERE charId= " +

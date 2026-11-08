@@ -166,6 +166,13 @@ namespace hds
                     CombatHandler.HandlePlayerDeath(Store.currentClient);
                 }
 
+                if (command.Equals("?compile") && commands.Length == 2)
+                {
+                    // Dev command: compile an item from its cookbook recipe with what is in the inventory.
+                    string result = new CraftingHandler().Compile(UInt32.Parse(commands[1]));
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, result, "BROADCAST");
+                }
+
                 if (command.Equals("?rsi") && commands.Length == 3)
                 {
                     //parse the rsi part and value
