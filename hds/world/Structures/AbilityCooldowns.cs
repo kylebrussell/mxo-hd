@@ -108,6 +108,23 @@ namespace hds
         public const byte DeniedTimerRunning = 0x1f;
 
         /// <summary>
+        /// 80 ba code for a use while another cast runs. A guess at the meaning: retail answered quick repeats of an
+        /// ability with it (06 for ability 0x1ae in the Rajko "Zombies" log, 0x366 in Warboy's m2 log), and it is the commonest code.
+        /// </summary>
+        public const byte DeniedBusy = 0x06;
+
+        /// <summary>True while a cast started with <see cref="StartCast"/> runs: the cooldown only starts when it ends.</summary>
+        public static bool IsCasting(ClientData data, double now)
+        {
+            return now < data.castEndsAt;
+        }
+
+        public static void StartCast(ClientData data, double now, float castSeconds)
+        {
+            data.castEndsAt = now + castSeconds;
+        }
+
+        /// <summary>
         /// <c>80 ba &lt;ability u16&gt; 00 00 6b &lt;code&gt;</c> and eleven zero bytes: retail's answer to a use it refused,
         /// instead of the 80 ac cast echo (e.g. <c>80 ba 49 01 00 00 6b 1f 00 ...</c> while 80 bd held ability 0x149).
         /// </summary>

@@ -126,6 +126,20 @@ namespace hds
                 return;
             }
 
+            // Without this a second use during the cast lands too: the cooldown only starts when the cast ends
+            if (AbilityCooldowns.IsCasting(data, now))
+            {
+                Output.WriteDebugLog("[ABILITY] A cast is running; denied");
+                Store.currentClient.messageQueue.addRpcMessage(
+                    AbilityCooldowns.BuildDenied(AbilityID, AbilityCooldowns.DeniedBusy));
+                Store.currentClient.FlushQueue();
+                return;
+            }
+            if (currentAbility.getCastingTime() > 0)
+            {
+                AbilityCooldowns.StartCast(data, now, currentAbility.getCastingTime());
+            }
+
             // Evade Combat used while it is on switches it off (its cooldown starts then); no cost, no cast.
             if (AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
             {
