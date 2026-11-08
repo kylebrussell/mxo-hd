@@ -92,7 +92,7 @@ namespace hds
         /// <summary>
         /// The inventory slots that pay for a recipe, one entry per ingredient item (a slot appears twice when two
         /// items come from its stack), or null when an ingredient is missing. Only bag slots (below 97, the worn
-        /// items) are used, lowest slots first.
+        /// items) and code storage entries (slot | StorageSlotFlag) are used, lowest slots first.
         /// </summary>
         public static List<UInt16> MatchIngredients(Recipe recipe, IEnumerable<InventoryItem> inventory)
         {
@@ -150,12 +150,26 @@ namespace hds
             return missing;
         }
 
+        /// <summary>Slots from 97 up hold worn items; the bag is below.</summary>
+        public const UInt16 FirstWornSlot = 97;
+
+        /// <summary>
+        /// Marks a code storage entry passed to <see cref="MatchIngredients"/> as an InventoryItem: its slot is
+        /// StorageSlotFlag | storage slot, so it sorts after every bag slot and bag items are used first.
+        /// </summary>
+        public const UInt16 StorageSlotFlag = 0x8000;
+
+        public static bool IsBagSlot(UInt16 slot)
+        {
+            return slot < FirstWornSlot;
+        }
+
         private static List<InventoryItem> BagItems(IEnumerable<InventoryItem> inventory)
         {
             List<InventoryItem> bag = new List<InventoryItem>();
             foreach (InventoryItem item in inventory)
             {
-                if (item.Slot < 97)
+                if (IsBagSlot(item.Slot) || (item.Slot & StorageSlotFlag) != 0)
                 {
                     bag.Add(item);
                 }

@@ -63,6 +63,11 @@ namespace hds.databases.interfaces{
         List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
         void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count);
+        List<CodeStorage.Entry> GetCodeStorage(UInt32 charId);
+        UInt16 GetNextAbilitySlot(UInt32 charId);
+        void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry);
+        void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count);
+        void RemoveCodeStorage(UInt32 charId, UInt16 slot);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);
         bool IsSlotinUseByItem(UInt16 slotId);
 

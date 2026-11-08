@@ -76,19 +76,55 @@ Python 2.5 rule scripts, including `crafting_server.pyc`, `recipes.pyc` and `abi
 
 The multiplier and the per-item `Complexity` are not in the client files, so the server does not charge yet.
 
+## Code storage (uploading at a hardline)
+
+Retail kept code storage in the known-abilities list, margin character data opcode 0x07. Each entry is
+`<slot u16> <value u32>`:
+
+- an ability is `0x80000000 | abilityId << 7 | level` (this is what `char_abilities.ability_id + level` already gives);
+- stored code is `0x84000000 | goid << 7 | (count - 1)`.
+
+Trinity's last-day login (`crashover2k_trinitys_proxy_second_pc_011`) mixes both kinds in one list. For example,
+`24 00 85 53 0e 84` is slot 0x24 holding six Code Bit 4 (7335), and `00 cd 04 84` is one ClassFrag 2458.
+
+Uploading is hardline booth action 04: the client sends `80 c7 <view> <spawn> 04 00`, or `80 c8 <booth> 04 00` for a
+static booth. When there was code in the bag, retail answered in this order:
+
+1. `2e 07 ...`: a system message from the client's string table (`64 00 00 2e 00`), with the character's name as
+   its argument. It was byte-identical in both captures.
+2. `5f <bag slot> 01` for every bag slot that was uploaded.
+3. `69 00 <slot u16> <value u32> 00 00` for every kind already in storage. In `abilitychangecoder`, Code Bit 4 in
+   slot 0x1e4 went from `8e 53 0e 84` at line 61114 to `8f 53 0e 84` at line 62075, one higher after a single
+   looted Code Bit 4 was uploaded.
+4. `5e <slot u16> 00 00 00 00 <value u32> 00` for a new kind (`luizoe_recursion2` 1936). This is the bag-add frame
+   with goid 0, the packed value in place of `00 00 <amount> <type>`, and 00 in place of 01.
+5. `81 18 ...`.
+
+An upload with nothing to store got only `81 18` (`81 18 00 00 0d 00 00 98`, the answer PR #29 sends).
+
+Count bits hold count − 1, a reading the captures favour but don't prove. New kinds arrived with counts 0, 2 and
+0x13, and never as an empty entry. Seven bits allow 128 per kind.
+
+**On this server:**
+
+- `CodeStorageHandler.UploadCode` moves every Code Bit and code fragment from the bag into storage, sends the
+  records above, and stores them as `char_abilities` rows (`ability_id` = `CodeStorage.BaseValue(goid)`, `level` =
+  count − 1, `is_loaded` = 0). The margin's known-abilities list therefore sends them at login as retail did.
+- New kinds take the slot after the character's highest ability slot. When a kind is full, the rest stays in the bag
+  (`69 01`).
+- Compiling uses bag items first and storage entries second (`69 00` with the lower count). This is a guess: no
+  capture shows where the Code Writer takes its ingredients from.
+- Retail evidence against uploading fragments: in `abilitychangecoder` 62075, a ClassFrag 2436 looted just before
+  the upload stayed in the bag, while `luizoe_recursion2` uploaded ClassFrags (2438, 2450). The server uploads
+  fragments.
+
 ## Retail evidence
 
 - No capture in `research/packet-dumps` shows a compile, a decompile, or the Code Writer window being used.
 - **Write Code (970)** (`actions_combat_marketplace_abilitychangecoder`, line 65987): the client sends `80 b9 ca 03 0d 00 ee 00 ... 28 05 01 00 00 00 00`. The `05 01` in the tail is bag slot 5 with the item flag, which is presumably the Code Compiler Tool.
   - The server answers `80 bd 05 ca 03 ... 01` plus an `80 bc` record, then the same pair with the flags flipped about 0.3 s later.
   - Nothing else follows.
-- **Upload at a hardline** (client `80 c7 <hardline> 04 00`): the server answers with:
-  - a `2e` system message;
-  - `5f <slot> 01` for each code bit or fragment;
-  - one `69 00 <u16> <u32> 00 00` per stored kind (code storage);
-  - `81 18 ...`.
-
-  Not implemented.
+- **Upload at a hardline**: see "Code storage" above.
 - **Recycle (`5d`)** pays information only (`80 e7` / `80 e4` reason 0x0f, then `5f`), never code bits. The server already does this.
 - **Client strings:** `viewcrafting.cpp`, `viewcompile.cpp`, `Crafting_RecipeDDList`, `CS_Button_Compile`, `CompileCost`, `RecipeListMD5`, `LTOBJSRV_ADDEDUNKNOWNRECIPE`, `LTPS_SPNORECIPEID`, `decompileItem`.
 
@@ -105,6 +141,6 @@ The multiplier and the per-item `Complexity` are not in the client files, so the
   3. read `UnknownRPC.txt`.
 - How known recipes reach the client (`RecipeListMD5`), and how decompiling teaches them.
 - The values behind the compile info cost and success roll (`CompileCompileCostMultiplier`, `Complexity`).
-- Code storage (uploading at hardlines: the `69 00` fields are not decoded), and taking ingredients from storage.
+- Downloading from code storage back into the bag, and what retail sends when a storage entry runs out.
 - Per-character known recipes (a database table) and decompiling, which teaches them.
 - Retail's real stack limit, and whether recycling a stack pays for every item (it pays for one now).
