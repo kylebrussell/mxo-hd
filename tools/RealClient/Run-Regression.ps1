@@ -1,0 +1,384 @@
+<#
+.SYNOPSIS
+Plays the gameplay checklist in the real 7.6005 client against this checkout's server and reports pass/fail
+from the server's logs, with a screenshot per step, so a PR can be checked in minutes.
+
+.DESCRIPTION
+Each section logs in fresh, plays one system, checks DebugLog.txt / the database, and undoes its test data.
+Sections: Aggro Regen Abilities Guns Items Booth Death Market Trade Social (default: all).
+
+Takes the client lock (C:\Users\russe\Developer\mxo-client.lock), so it waits for another session using the client.
+It won't start while a "Windows Security" prompt is open: answering that prompt is the user's call, and with
+MXO_BIND_ADDRESS=127.0.0.1 the server doesn't trigger one. Build first (dotnet build "hds/Hardline Dreams MxO server.csproj").
+
+The UI coordinates were measured at 1024x768 from the login spots used here; a section that fails may just have
+lost its target, so read its screenshots in -OutDir (a failed check prints the name of the step). The game picks
+targets from the real cursor: anything covering the game, such as a Windows notification, makes clicks there fail.
+
+.EXAMPLE
+./tools/RealClient/Run-Regression.ps1 -Sections Guns,Market
+#>
+[CmdletBinding()]
+param(
+    [string[]]$Sections = @('Aggro', 'Regen', 'Abilities', 'Guns', 'Items', 'Booth', 'Death', 'Market', 'Trade', 'Social'),
+    [string]$OutDir = (Join-Path $env:TEMP 'mxo-regression'),
+    [int]$WaitLockMinutes = 45,
+    [string]$DbContainer = 'mxo-hd-mysql'
+)
+
+$ErrorActionPreference = 'Continue'
+$root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$tool = Join-Path $PSScriptRoot 'Invoke-RealClient.ps1'
+$lock = 'C:\Users\russe\Developer\mxo-client.lock'
+$Field = @(24500, 500, -1900)            # TheNeo beside the Blackwoods in the Slums
+$Booth = @(67566.8, -105, -10164.6)      # TheNeo beside the Achan hardline booth (rotation 0: booth on the right)
+$TheNeo = 2
+New-Item -ItemType Directory -Force $OutDir | Out-Null
+Set-Location $root
+
+$script:results = New-Object System.Collections.ArrayList
+$script:section = ''
+$script:server = $null
+$script:logStart = 0
+
+function Check([string]$name, [bool]$ok, [string]$detail = '') {
+    [void]$script:results.Add([pscustomobject]@{ Section = $script:section; Check = $name; Ok = $ok; Detail = $detail })
+    "  {0} {1}{2}" -f $(if ($ok) { 'PASS' } else { 'FAIL' }), $name, $(if ($detail) { " ($detail)" } else { '' }) | Write-Host
+}
+
+function Sql([string]$sql) {
+    docker exec $DbContainer sh -c "mysql -N -u`"`$MYSQL_USER`" -p`"`$MYSQL_PASSWORD`" `"`$MYSQL_DATABASE`" -e `"$sql`"" 2>$null
+}
+
+function Log-Lines {
+    if (-not (Test-Path DebugLog.txt)) { return @() }
+    @(Get-Content DebugLog.txt | Select-Object -Skip $script:logStart)
+}
+
+function Mark-Log { $script:logStart = if (Test-Path DebugLog.txt) { @(Get-Content DebugLog.txt).Count } else { 0 } }
+
+function Log-Has([string]$pattern) { [bool](Log-Lines | Select-String -Pattern $pattern) }
+
+function Log-Count([string]$pattern) { @(Log-Lines | Select-String -Pattern $pattern).Count }
+
+function Wait-Log([string]$pattern, [int]$seconds = 30, [int]$count = 1) {
+    $t0 = Get-Date
+    while (((Get-Date) - $t0).TotalSeconds -lt $seconds) {
+        if ((Log-Count $pattern) -ge $count) { return $true }
+        Start-Sleep 1
+    }
+    (Log-Count $pattern) -ge $count
+}
+
+function Shot([int]$cp, [string]$name) {
+    & $tool -ClientPid $cp -Screenshot (Join-Path $OutDir "$($script:section)-$name.png") 2>&1 | Out-Null
+}
+
+# Runs the client tool for one client and ignores its summary line; Check the result from the logs.
+function Act([int]$cp, [hashtable]$a) { $a.ClientPid = $cp; & $tool @a 2>&1 | Out-Null }
+
+function Stop-Everything {
+    Get-Process matrix -ErrorAction SilentlyContinue | Stop-Process -Force
+    if ($script:server) {
+        Get-CimInstance Win32_Process -Filter "ParentProcessId=$($script:server.Id)" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Stop-Process -Id $script:server.Id -Force -ErrorAction SilentlyContinue
+        $script:server = $null
+    }
+}
+
+function Start-World([switch]$AggroEveryone) {
+    Stop-Everything
+    Start-Sleep 2
+    $env:MXO_PACKET_LOG = '1'; $env:MXO_DEV_ANY_PASSWORD = '1'; $env:MXO_DEBUG_LOG = '1'; $env:MXO_RPC_LOG = '1'
+    $env:MXO_CLIENT_VIEW_LOG = '1'; $env:MXO_MOB_WANDER = '0'; $env:MXO_BIND_ADDRESS = '127.0.0.1'; $env:MXO_DEV_COMMANDS = '1'
+    $env:MXO_AGGRO_LEVEL_GAP = $(if ($AggroEveryone) { '100' } else { $null })
+    $script:server = Start-Process dotnet -ArgumentList @('run', '--project', '"hds/Hardline Dreams MxO server.csproj"', '--no-build') `
+        -WorkingDirectory $root -PassThru -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $OutDir 'server.out') -RedirectStandardError (Join-Path $OutDir 'server.err')
+    Start-Sleep 20
+}
+
+# Logs TheNeo in on a fresh client and returns its process id (0 when it didn't reach the world).
+function Login([double[]]$pos = $Field, [int]$rotation = 126, [string]$handle = 'TheNeo', [string]$user = 'loluser', [int]$row = 2, [switch]$Second) {
+    $a = @{ Handle = $handle; SetPosition = $pos; SetRotation = $rotation; Login = $true; Username = $user; CharacterRow = $row; WaitWorld = $true; WorldTimeoutSeconds = 60 }
+    if ($Second) { $a.NewInstance = $true } else { $a.Relaunch = $true }
+    Mark-Log                                 # before the login: an NPC can attack while the tool is still waiting
+    $r = & $tool @a 2>&1 | Select-Object -Last 1
+    try { $j = $r | ConvertFrom-Json } catch { $j = $null }
+    if ($j -and -not $j.inWorld -and -not $Second) {
+        # Logins occasionally stall on "Negotiating with Servers..." (cause unknown); a relaunch has cleared it
+        Write-Host "  login stalled, retrying once"
+        $r = & $tool @a 2>&1 | Select-Object -Last 1
+        try { $j = $r | ConvertFrom-Json } catch { $j = $null }
+    }
+    if (-not $j -or -not $j.inWorld) {
+        Check "login $handle" $false "$r"
+        if ($j -and $j.clientPid) { Shot ([int]$j.clientPid) 'login-failed' }
+        return 0
+    }
+    [int]$j.clientPid
+}
+
+# ---- sections -------------------------------------------------------------------------------------
+
+function Test-Aggro {
+    Start-World -AggroEveryone
+    $cp = Login; if (-not $cp) { return }
+    Check 'an NPC attacks on its own' (Wait-Log '\[AGGRO\] .* attacks' 20)
+    Shot $cp 'attacked'
+    Act $cp @{ DoubleClick = @(435, 300) }
+    Check 'the attacker dies' (Wait-Log 'Sending death for mob' 120)
+    Check 'the loot window opens' (Wait-Log 'Loot window sent' 10)
+    Shot $cp 'corpse'
+    Act $cp @{ Click = @(348, 358) }
+    Check 'Take All gives the loot' (Wait-Log '\[LOOT\] Player received' 10)
+    Shot $cp 'looted'
+}
+
+function Test-Regen {
+    Start-World
+    $cp = Login; if (-not $cp) { return }
+    Check 'no aggro on a level 50' (-not (Wait-Log '\[AGGRO\]' 8))
+    Act $cp @{ DoubleClick = @(500, 640) }
+    Check 'player attack kills the NPC' (Wait-Log 'Sending death for mob' 120)
+    $damage = Log-Count 'Player health:'
+    $packets = @(Get-Content PacketLog.txt).Count
+    Act $cp @{ Walk = @('S:1.5') }
+    Start-Sleep 12
+    $after = @(Get-Content PacketLog.txt | Select-Object -Skip $packets)
+    Check 'movement after the fight' ([bool]($after | Select-String '^02 03 02 00 01 '))
+    Check 'health regenerates after the fight' (($damage -eq 0) -or [bool]($after | Select-String '02 00 02 80 80 80 40 '))
+    Shot $cp 'after'
+}
+
+function Test-Abilities {
+    Start-World
+    $cp = Login; if (-not $cp) { return }
+    Act $cp @{ Walk = @('O:0.05') }
+    # Drag the Actions window to the top left, clear of any notification: its contents move by -660,-235
+    Act $cp @{ Drag = @(860, 245, 200, 10) }
+    Act $cp @{ DoubleClick = @(193, 374); Once = $true }
+    Check 'Hyper-Speed buff on' (Wait-Log '\[BUFF\] 12 on' 10)
+    Act $cp @{ DoubleClick = @(198, 278); Once = $true }
+    Check 'Evade Combat on' (Wait-Log '\[BUFF\] 217 on' 10)
+    Act $cp @{ DoubleClick = @(198, 278); Once = $true }
+    Check 'Evade Combat off' (Wait-Log '\[BUFF\] 217 off' 10)
+    1..3 | ForEach-Object { Act $cp @{ Click = @(298, 365) } }
+    Shot $cp 'list'
+    Act $cp @{ DoubleClick = @(185, 341); Once = $true }
+    Check 'Overclock buff on' (Wait-Log '\[BUFF\] 327 on' 10)
+    Act $cp @{ DoubleClick = @(480, 560) }
+    Check 'fight starts' (Wait-Log 'Close combat requested' 10)
+    Act $cp @{ DoubleClick = @(200, 309) }   # two uses 2 s apart: the second is on its 4 s cooldown
+    Check 'Logic Blast lands' (Wait-Log '\[ABILITY\] \d+ lands on view' 10)
+    Check 'Logic Blast cooldown holds the second use' ((Log-Count 'LogicBlast\dAbility') -eq 1 -or (Log-Has 'Still cooling down'))
+    Shot $cp 'blast'
+}
+
+function Test-Guns {
+    Start-World
+    $cp = Login; if (-not $cp) { return }
+    try {
+        Act $cp @{ Chat = @('?additem 2565') }   # logs "Free Fire weapon" only when the client has none chosen yet
+        Act $cp @{ Walk = @('D:0.8') }
+        Act $cp @{ Walk = @('S:2.5') }
+        Shot $cp 'near'
+        Act $cp @{ Click = @(610, 225) }
+        Act $cp @{ Click = @(710, 18) }
+        Check 'Free Fire fires' (Wait-Log 'Shot at .*: (hit|miss)' 10)
+        Check 'a melee NPC closes in on the shooter' (Wait-Log 'closes in on the shooter' 15)
+        Shot $cp 'firing'
+        Check 'the NPC dies to gunfire' (Wait-Log 'Combat ended: DefenderDied' 120)
+        Act $cp @{ Walk = @('S:3') }
+        Mark-Log
+        Act $cp @{ Click = @(511, 185) }
+        Act $cp @{ Click = @(710, 18) }
+        Check 'a target out of range is refused' (Wait-Log 'Range combat refused' 10)
+        Shot $cp 'outofrange'
+    }
+    finally {
+        Stop-Everything
+        Sql "delete from inventory where charId=$TheNeo and goid=2565 and slot<>22"
+    }
+}
+
+function Test-Items {
+    Start-World
+    Sql "delete from inventory where charId=$TheNeo and goid in (2399,7336,7458); insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2399,30,3,0,NOW()),($TheNeo,7336,40,5,0,NOW())"
+    try {
+        $cp = Login; if (-not $cp) { return }
+        Act $cp @{ Walk = @('I:0.05') }
+        # Drag the bag to the top left, clear of any notification; page 2's slot 30 is then at 143,379
+        Act $cp @{ Drag = @(860, 245, 100, 10) }
+        Act $cp @{ Click = @(83, 230) }
+        Shot $cp 'bag'
+        Act $cp @{ DoubleClick = @(143, 379); Once = $true }
+        Check 'a pill is used' (Wait-Log 'Used item 2399' 10)
+        Start-Sleep 1
+        Check 'the pill stack drops to 2' ((Sql "select count from inventory where charId=$TheNeo and goid=2399") -eq '2')
+        Shot $cp 'pill'
+        Act $cp @{ Chat = @('?compile 7458') }
+        Check 'compile makes the item' (Wait-Log 'Compiled 7458' 10)
+        Check 'compile uses two Code Bits' ((Sql "select count from inventory where charId=$TheNeo and goid=7336") -eq '3')
+        Shot $cp 'compiled'
+    }
+    finally {
+        Stop-Everything
+        Sql "delete from inventory where charId=$TheNeo and goid in (2399,7336,7458)"
+    }
+}
+
+function Test-Booth {
+    Start-World
+    Sql "delete from inventory where charId=$TheNeo and goid=7336; insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,7336,40,2,0,NOW())"
+    try {
+        $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
+        Shot $cp 'booth'
+        Act $cp @{ DoubleClick = @(740, 480); Once = $true }
+        Check 'Upload registers the hardline' (Wait-Log 'Booth \d+ action 4' 10)
+        Check 'Upload moves Code Bits to code storage' (Wait-Log '\[CODE STORAGE\] Uploaded' 5)
+        Act $cp @{ RightClick = @(740, 480) }
+        Shot $cp 'menu'
+        Act $cp @{ Click = @(648, 462) }
+        Check 'Loading Area asks first' (Wait-Log 'Booth \d+ action 5' 10)
+        Act $cp @{ Click = @(550, 433) }     # No
+        Act $cp @{ RightClick = @(740, 480) }
+        Act $cp @{ Click = @(738, 530) }
+        Check 'Exit asks first' (Wait-Log 'Booth \d+ action 3' 10)
+        Act $cp @{ Click = @(472, 433) }     # Yes
+        Check 'jack out at the booth' (Wait-Log 'Jack out at a hardline' 10)
+        Start-Sleep 5
+        Check 'the client leaves' (-not (Get-Process -Id $cp -ErrorAction SilentlyContinue))
+    }
+    finally {
+        Stop-Everything
+        Sql "delete from inventory where charId=$TheNeo and goid=7336; delete from char_abilities where char_id=$TheNeo and ability_name like 'Code storage%'"
+    }
+}
+
+function Test-Death {
+    Start-World
+    $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
+    Act $cp @{ Chat = @('?die') }
+    Check 'death waits for the respawn request' (Wait-Log 'waiting for the respawn request' 10)
+    Shot $cp 'dead'
+    Act $cp @{ Chat = @('/reconstruct') }
+    Check 'Reconstruct goes to the Loading Area' (Wait-Log '\[LA\] Spawn ready in the Loading Area' 40)
+    Shot $cp 'la'
+    Act $cp @{ Click = @(105, 17) }
+    Act $cp @{ Click = @(143, 235) }
+    Shot $cp 'hardlines'
+    Act $cp @{ Click = @(747, 572) }
+    Check 'jack in from the Loading Area' (Wait-Log '\[LA\] Leaving the Loading Area' 15)
+    Start-Sleep 20
+    Shot $cp 'jackedin'
+}
+
+function Test-Market {
+    Start-World
+    Sql "delete from inventory where charId=$TheNeo and goid=2565 and slot<>22; insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2565,23,0,0,NOW())"
+    $before = Sql "select count(*) from marketplace"
+    try {
+        $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
+        Act $cp @{ RightClick = @(740, 480) }
+        Act $cp @{ Click = @(738, 430) }
+        Shot $cp 'open'
+        Act $cp @{ Click = @(800, 313) }     # Items
+        Act $cp @{ Click = @(800, 405) }     # Weapons
+        Act $cp @{ Click = @(800, 405) }     # Handguns
+        Check 'search answers' (Wait-Log '\[MARKET\] Search ' 10)
+        Act $cp @{ Click = @(567, 184) }     # Selling
+        Act $cp @{ Click = @(325, 217) }     # Possessions filter
+        Act $cp @{ Click = @(193, 303) }     # Weapons
+        Act $cp @{ Drag = @(220, 252, 600, 380) }
+        Act $cp @{ Click = @(510, 338) }
+        Act $cp @{ TypeText = '1000' }
+        Shot $cp 'price'
+        Act $cp @{ Click = @(453, 419) }
+        Check 'listing an item' (Wait-Log '\[MARKET\] \d+ listed goid 2565' 10)
+        Shot $cp 'listed'
+        Act $cp @{ Click = @(799, 266) }
+        Check 'De-list returns it' (Wait-Log '\[MARKET\] \d+ delisted listing' 10)
+        Shot $cp 'delisted'
+    }
+    finally {
+        Stop-Everything
+        Sql "delete from inventory where charId=$TheNeo and goid=2565 and slot<>22; delete from marketplace where charID=$TheNeo"
+    }
+}
+
+# ?tradebot: a partner played by the server. A real two-player trade needs a second client.
+function Test-Trade {
+    Start-World
+    Sql "delete from inventory where charId=$TheNeo and goid in (7332) or (charId=$TheNeo and goid=2565 and slot<>22); insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2565,23,0,0,NOW())"
+    $cash = Sql "select cash from characters where charId=$TheNeo"
+    try {
+        $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
+        Act $cp @{ Chat = @('?tradebot') }
+        Check 'the trade opens' (Wait-Log '\[TRADE\] Session open' 10)
+        Act $cp @{ Drag = @(860, 245, 100, 10) }   # the bag opens with the trade; move it clear
+        Act $cp @{ Click = @(83, 230) }
+        Shot $cp 'open'
+        Act $cp @{ Drag = @(180, 307, 510, 240) }
+        Check 'an item is offered' (Wait-Log '\[TRADE\] Action 0 .*slot 23' 10)
+        Shot $cp 'offered'
+        Act $cp @{ Click = @(606, 372) }
+        Check 'accepting completes the trade' (Wait-Log '\[TRADE\] Complete' 10)
+        Start-Sleep 2
+        Check 'the item left and the bot''s item arrived' ((Sql "select count(*) from inventory where charId=$TheNeo and ((goid=2565 and slot=23) or goid=7332)") -eq '1')
+        Check 'information rose by 100' ([long](Sql "select cash from characters where charId=$TheNeo") -eq ([long]$cash + 100))
+        Shot $cp 'complete'
+        Act $cp @{ Chat = @('?tradebot') }
+        Act $cp @{ Click = @(451, 401) }
+        Check 'Cancel ends the trade' (Wait-Log '\[TRADE\] Cancelled' 10)
+    }
+    finally {
+        Stop-Everything
+        Sql "delete from inventory where charId=$TheNeo and (goid=7332 or (goid=2565 and slot<>22)); update characters set cash=$cash where charId=$TheNeo"
+    }
+}
+
+function Test-Social {
+    Start-World
+    $cp = Login; if (-not $cp) { return }
+    Act $cp @{ Chat = @('/invite NoSuchHandle') }
+    $packets = @(Get-Content PacketLog.txt)
+    Check 'a bad invite gets the error record' ([bool]($packets | Select-Object -Last 200 | Select-String '80 8d'))
+    Act $cp @{ Chat = @('/friend NoSuchHandle') }
+    Check 'a friend add of a missing handle is handled' (-not (Log-Has 'Exception'))
+    Shot $cp 'social'
+}
+
+# ---- run -------------------------------------------------------------------------------------------
+
+$deadline = (Get-Date).AddMinutes($WaitLockMinutes)
+$got = $false
+while (-not $got -and (Get-Date) -lt $deadline) {
+    if ((Test-Path $lock) -and ((Get-Date) - (Get-Item $lock).LastWriteTime).TotalMinutes -gt 40) { Remove-Item $lock -Force }
+    if (Get-Process -Name PickerHost -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -eq 'Windows Security' }) { Start-Sleep 30; continue }
+    try { New-Item -ItemType File -Path $lock -Value "regression $(Get-Date -Format o)" -ErrorAction Stop | Out-Null; $got = $true } catch { Start-Sleep 20 }
+}
+if (-not $got) { Write-Host "Client lock not free after $WaitLockMinutes minutes"; exit 2 }
+
+try {
+    foreach ($name in $Sections) {
+        $script:section = $name
+        Write-Host "== $name"
+        (Get-Item $lock).LastWriteTime = Get-Date
+        try { & "Test-$name" } catch { Check 'section ran' $false "$_" }
+        if (Log-Has 'Exception') { Check 'no server exception' $false ((Log-Lines | Select-String 'Exception' | Select-Object -First 1).Line) }
+    }
+}
+finally {
+    Stop-Everything
+    Remove-Item $lock -Force -ErrorAction SilentlyContinue
+}
+
+$failed = @($script:results | Where-Object { -not $_.Ok })
+$report = Join-Path $OutDir 'report.md'
+"# Client regression $(Get-Date -Format s)`n" | Set-Content $report
+"Commit: $(git rev-parse --short HEAD)`n" | Add-Content $report
+"| Section | Check | Result | Detail |`n|---|---|---|---|" | Add-Content $report
+$script:results | ForEach-Object { "| $($_.Section) | $($_.Check) | $(if ($_.Ok) { 'pass' } else { '**FAIL**' }) | $($_.Detail) |" } | Add-Content $report
+Write-Host "`n$($script:results.Count - $failed.Count)/$($script:results.Count) passed. Report: $report; screenshots in $OutDir"
+exit $(if ($failed.Count) { 1 } else { 0 })
