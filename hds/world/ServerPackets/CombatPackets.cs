@@ -202,17 +202,18 @@ namespace hds
             client.messageQueue.addObjectMessage(BuildSelfPositionHandoff(yaw, (float)x, (float)y, (float)z, simMs), false);
             client.FlushQueue();
 
+            // DelayedActions keeps the action until it runs. The plain Timer this used, referenced by nothing, could be
+            // garbage-collected before it fired; the reset then never went out and the client stayed in combat
+            // (no Emergency Repairs: "cannot be used during combat").
             int generation = client.playerData.combatGeneration;
-            System.Threading.Timer timer = null;
-            timer = new System.Threading.Timer(_ =>
+            DelayedActions.After(LeaveCombatDelayMs / 1000.0, () =>
             {
-                timer?.Dispose();
                 if (client.playerData.combatGeneration == generation)
                 {
                     SendLeaveCombatMode(client);
                     client.FlushQueue();
                 }
-            }, null, LeaveCombatDelayMs, System.Threading.Timeout.Infinite);
+            });
         }
 
         /// <summary>

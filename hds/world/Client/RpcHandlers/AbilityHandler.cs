@@ -11,7 +11,6 @@ namespace hds
     {
         public AbilityItem currentAbility;
         public UInt16 currentTargetViewId;
-        public Timer damageTimer;
         public Timer hyperjumpTimer;
         private List<JumpStep> Steps = new List<JumpStep>();
 
@@ -56,7 +55,27 @@ namespace hds
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
 
+            if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
+            {
+                Output.WriteDebugLog("[ABILITY] Still cooling down; ignored");
+                return;
+            }
+
             ProcessAbilityScript(this.currentAbility);
+
+            // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
+            // cooldown starts.
+            WorldClient client = Store.currentClient;
+            AbilityItem ability = currentAbility;
+            bool selfTarget = currentTargetViewId <= 2;
+            DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
+            {
+                if (selfTarget && IsSelfHeal(ability))
+                {
+                    HealSelf(client, HealAmount(client));
+                }
+                AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
+            });
 
             // Attack abilities on the current close-combat target hit it.
             if (currentTargetViewId > 2 && !currentAbility.getIsBuff())
@@ -68,6 +87,43 @@ namespace hds
         }
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
+
+        /// <summary>Restore Health / Repair RSI and Emergency Repairs heal the caster.</summary>
+        public static bool IsSelfHeal(AbilityItem ability)
+        {
+            string name = ability.getAbilityName() ?? "";
+            return name.StartsWith("RestoreHealth") || name.StartsWith("EmergencyRepairs");
+        }
+
+        /// <summary>
+        /// How much a heal restores. The data files have no amounts for these abilities, so it is a quarter of
+        /// the caster's maximum health (a placeholder until a retail capture shows real numbers).
+        /// </summary>
+        public const double HealFraction = 0.25;
+
+        public static UInt16 HealAmount(WorldClient client)
+        {
+            UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+            return (UInt16)Math.Max(1, Math.Round(max * HealFraction));
+        }
+
+        /// <summary>Raises the player's health (never above the maximum) and sends the own-view health update.</summary>
+        public static UInt16 HealSelf(WorldClient client, UInt16 amount)
+        {
+            UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+            UInt16 current = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
+            if (client.playerData.isDead)
+            {
+                return current;
+            }
+
+            UInt16 healed = (UInt16)Math.Min(max, current + amount);
+            client.playerInstance.Health.setValue(healed);
+            client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
+            client.FlushQueue();
+            Output.WriteDebugLog("[ABILITY] Healed " + current + " -> " + healed);
+            return healed;
+        }
 
         /// <summary>
         /// Damage of an attack ability. The data's ValueFrom/ValueTo are used when set; most combat abilities
@@ -194,7 +250,9 @@ namespace hds
                 // And Time a "Damage" or "Buff" Animation
                 int castingTime = (int) currentAbility.getCastingTime() * 1000;
                 currentTargetViewId = Store.currentClient.playerData.currentSelectedTargetViewId;
-                damageTimer = new Timer(abilityAnimateTheTarget, this, castingTime, 0);
+                // On the shared timer with the caster as current client: a plain Timer ran this with no current
+                // client, threw, and took the whole server down at the end of every cast.
+                DelayedActions.AfterFor(Store.currentClient, castingTime / 1000.0, () => abilityAnimateTheTarget(null));
             }
         }
 

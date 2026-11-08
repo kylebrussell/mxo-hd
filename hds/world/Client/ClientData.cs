@@ -63,6 +63,9 @@ namespace hds
 		public UInt16 lastAbilityId = 0;
 		public double lastAbilityTime = -1;
 
+		// Sim time (s) at which each ability's or cooldown group's cooldown ends; see AbilityCooldowns
+		public readonly Dictionary<UInt16, double> cooldownEndsAt = new Dictionary<UInt16, double>();
+
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
 		public int combatGeneration = 0;
 
