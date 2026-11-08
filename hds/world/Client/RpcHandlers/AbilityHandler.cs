@@ -11,7 +11,6 @@ namespace hds
     {
         public AbilityItem currentAbility;
         public UInt16 currentTargetViewId;
-        public Timer damageTimer;
         public Timer hyperjumpTimer;
         private List<JumpStep> Steps = new List<JumpStep>();
 
@@ -69,7 +68,7 @@ namespace hds
             WorldClient client = Store.currentClient;
             AbilityItem ability = currentAbility;
             bool selfTarget = currentTargetViewId <= 2;
-            DelayedActions.After(ability.getCastingTime(), () =>
+            DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
             {
                 if (selfTarget && IsSelfHeal(ability))
                 {
@@ -251,7 +250,9 @@ namespace hds
                 // And Time a "Damage" or "Buff" Animation
                 int castingTime = (int) currentAbility.getCastingTime() * 1000;
                 currentTargetViewId = Store.currentClient.playerData.currentSelectedTargetViewId;
-                damageTimer = new Timer(abilityAnimateTheTarget, this, castingTime, 0);
+                // On the shared timer with the caster as current client: a plain Timer ran this with no current
+                // client, threw, and took the whole server down at the end of every cast.
+                DelayedActions.AfterFor(Store.currentClient, castingTime / 1000.0, () => abilityAnimateTheTarget(null));
             }
         }
 

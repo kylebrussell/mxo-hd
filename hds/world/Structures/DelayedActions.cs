@@ -44,6 +44,27 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Like <see cref="After"/>, with Store.currentClient set to the client while the action runs. Store.currentClient
+        /// is per thread, so code written for the client's own packet thread finds it null on the timer thread.
+        /// </summary>
+        public static void AfterFor(WorldClient client, double seconds, Action action)
+        {
+            After(seconds, () =>
+            {
+                WorldClient previous = Store.currentClient;
+                Store.currentClient = client;
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    Store.currentClient = previous;
+                }
+            });
+        }
+
         public static void RunDue(double now)
         {
             List<Pending> due;
