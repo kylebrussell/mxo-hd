@@ -6,6 +6,12 @@ namespace hds
 		private byte[] buffer;
 		private int offset;
 		private RpcManager rpcManager;
+		private readonly RpcReceiveWindow receiveWindow = new RpcReceiveWindow();
+
+		/// <summary>The client restarted its communication (a world reload): its RPC numbering starts over.</summary>
+		public void ResetReceiveWindow(){
+			receiveWindow.Reset();
+		}
 		
 		
 		public Protocol04Manager (){
@@ -30,15 +36,16 @@ namespace hds
 
         private void parseRpcBlock(){
 
-            // Read current Client RPC Counter
-            BufferHandler.readBytes(ref buffer, ref offset, 2);
+            // The block's first RPC's sequence number; the rest count up from it
+            byte[] counter = BufferHandler.readBytes(ref buffer, ref offset, 2);
+            UInt16 sequence = (UInt16)((counter[0] << 8) | counter[1]);
             int rpcInside = (int)BufferHandler.readByte(ref buffer, ref offset);
             for (int i = 0; i < rpcInside; i++){
-                parseRpc();
+                parseRpc((UInt16)(sequence + i));
             }
         }
 
-        private void parseRpc(){
+        private void parseRpc(UInt16 sequence){
             int length = BufferHandler.readByte(ref buffer, ref offset);
             if (length >= 0x80){ //2 bytes as size
                 length = (length - 0x80) << 8;
@@ -56,6 +63,10 @@ namespace hds
 	        #if DEBUG
             Output.WriteLine("RPC (Header " + header + " | Content:" + StringUtils.bytesToString(rpcValues));
 			#endif
+            if (receiveWindow.IsResend(sequence, header, rpcValues)){
+                Output.WriteDebugLog("[RPC] Resend of " + sequence + " (header " + header.ToString("x") + ") ignored");
+                return;
+            }
             rpcManager.HandleRpc(header, ref rpcValues);
 
 
