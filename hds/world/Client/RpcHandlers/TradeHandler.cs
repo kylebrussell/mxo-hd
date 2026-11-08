@@ -20,14 +20,27 @@ namespace hds
         private static readonly object TradeLock = new object();
         private static readonly Dictionary<WorldClient, TradeSession> Sessions = new Dictionary<WorldClient, TradeSession>();
 
+        /// <summary>The dev command's server-side partner (no client behind it); only real players get records.</summary>
+        public const string BotName = "TradeBot";
+        private const UInt32 BotInfo = 100;
+        private const UInt32 BotItem = NpcLoot.CodeBit1;
+
         private static void Send(WorldClient client, byte[] record)
         {
+            if (client == null)
+            {
+                return;
+            }
             client.messageQueue.addRpcMessage(record);
             client.FlushQueue();
         }
 
         private static string NameOf(WorldClient client)
         {
+            if (client == null)
+            {
+                return BotName;
+            }
             return StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
         }
 
@@ -73,6 +86,28 @@ namespace hds
             }
             // The client leaves the quantity at 0 for a whole stack
             return new TradeItem { Slot = slot, Goid = goid, Purity = purity, Quantity = quantity == 0 ? count : quantity };
+        }
+
+        /// <summary>
+        /// Dev command ?tradebot: opens a trade with a partner played by the server, offering a Code Bit and some
+        /// information, and accepting as soon as the player does. Exercises the client's whole trade window with one client.
+        /// </summary>
+        public static void StartBotTrade(WorldClient client)
+        {
+            lock (TradeLock)
+            {
+                if (Sessions.ContainsKey(client))
+                {
+                    new ServerPackets().sendSystemChatMessage(client, "You are already trading.", "SYSTEM");
+                    return;
+                }
+                TradeSession session = new TradeSession(client, null);
+                session.TargetOffer.Info = BotInfo;
+                session.TargetOffer.Items[0] = new TradeItem { Slot = 0, Goid = BotItem, Purity = 0, Quantity = 1 };
+                Sessions[client] = session;
+                Send(client, TradePackets.BuildOffered(BotName, BotInfo, BotItem, TradePackets.Descriptor(0, 1), 1));
+                Output.WriteDebugLog("[TRADE] Session open: " + NameOf(client) + " with " + BotName);
+            }
         }
 
         /// <summary>Client 81 82: drop an item or information on a player.</summary>
@@ -176,6 +211,11 @@ namespace hds
                         offer.Accepted = true;
                         Send(client, TradePackets.BuildStatus(TradePackets.StatusYouAccepted));
                         Send(partner, TradePackets.BuildStatus(TradePackets.StatusTheyAccepted));
+                        if (partner == null && !session.TargetOffer.Accepted)
+                        {
+                            session.TargetOffer.Accepted = true;
+                            Send(client, TradePackets.BuildStatus(TradePackets.StatusTheyAccepted));
+                        }
                         if (session.BothAccepted)
                         {
                             Complete(session);
@@ -272,12 +312,19 @@ namespace hds
         private static void End(TradeSession session)
         {
             Sessions.Remove(session.Requester);
-            Sessions.Remove(session.Target);
+            if (session.Target != null)
+            {
+                Sessions.Remove(session.Target);
+            }
         }
 
         /// <summary>Why this side can't hand over its offer now, or null. The bag may have changed since the offer.</summary>
         private static string CheckOffer(WorldClient giver, TradeOffer offer)
         {
+            if (giver == null)
+            {
+                return null;
+            }
             if (offer.Info > giver.playerData.getInfo())
             {
                 return NameOf(giver) + " does not have enough information.";
@@ -297,6 +344,10 @@ namespace hds
         /// <summary>Bag slots the receiver has free once its own offered whole stacks are gone.</summary>
         private static List<UInt16> FreeSlotsFor(WorldClient receiver, TradeOffer ownOffer)
         {
+            if (receiver == null)
+            {
+                return TradeRules.FreeBagSlots(new HashSet<int>());
+            }
             HashSet<int> occupied = new HashSet<int>();
             foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(receiver.playerData.getCharID()))
             {
@@ -312,6 +363,10 @@ namespace hds
 
         private static void TakeFrom(WorldClient giver, TradeItem item)
         {
+            if (giver == null)
+            {
+                return;
+            }
             UInt32 charId = giver.playerData.getCharID();
             int count = ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, item.Slot));
             if (item.Quantity >= count)
@@ -328,6 +383,10 @@ namespace hds
 
         private static void GiveTo(WorldClient receiver, TradeItem item, Queue<UInt16> freeSlots)
         {
+            if (receiver == null)
+            {
+                return;
+            }
             UInt32 charId = receiver.playerData.getCharID();
             if (ItemStacks.IsStackable(item.Goid))
             {
@@ -369,7 +428,7 @@ namespace hds
             {
                 // The client has no message for these in the status record itself: say why, then close both windows
                 Output.WriteDebugLog("[TRADE] Aborted: " + failure);
-                foreach (WorldClient side in new[] { a, b })
+                foreach (WorldClient side in new[] { a, b }.Where(c => c != null))
                 {
                     new ServerPackets().sendSystemChatMessage(side, "Trade cancelled: " + failure, "SYSTEM");
                     Send(side, TradePackets.BuildStatus(TradePackets.StatusAborted));
@@ -396,7 +455,7 @@ namespace hds
 
         private static void ApplyInfo(WorldClient client, long change)
         {
-            if (change == 0)
+            if (client == null || change == 0)
             {
                 return;
             }
@@ -418,8 +477,11 @@ namespace hds
                 End(session);
                 Output.WriteDebugLog("[TRADE] Aborted: " + NameOf(client) + " left");
                 WorldClient partner = session.PartnerOf(client);
-                new ServerPackets().sendSystemChatMessage(partner, "Trade cancelled: your partner is gone.", "SYSTEM");
-                Send(partner, TradePackets.BuildStatus(TradePackets.StatusAborted));
+                if (partner != null)
+                {
+                    new ServerPackets().sendSystemChatMessage(partner, "Trade cancelled: your partner is gone.", "SYSTEM");
+                    Send(partner, TradePackets.BuildStatus(TradePackets.StatusAborted));
+                }
             }
         }
     }
