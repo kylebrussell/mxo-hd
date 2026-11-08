@@ -344,40 +344,21 @@ namespace hds
                 UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
                 UInt16 mobLevel = session.DefenderMob.getLevel();
 
-                // Calculate damage based on combat type with tactic modifiers
-                UInt16 damage;
-                uint fxId;
+                bool defenderDied;
                 if (session.Type == CombatSession.CombatType.Melee)
                 {
-                    damage = CombatCalculator.CalculateMeleeDamageWithTactics(
+                    UInt16 damage = CombatCalculator.CalculateMeleeDamageWithTactics(
                         playerLevel, mobLevel,
                         session.AttackerTactic, session.DefenderTactic);
+                    Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}, {session.AttackerTactic}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
                     // Health-only hit update, as retail sent for plain attacks; the FX.cs hit ids
                     // aren't valid effect ids (see CombatCalculator.MeleeHitFxIds).
-                    fxId = 0;
+                    defenderDied = session.ApplyDamageToDefender(damage, 0);
                 }
                 else
                 {
-                    FireRangedShot(session, false);
-
-                    // For ranged combat, calculate distance and apply falloff
-                    float distance = CombatCalculator.CalculateDistance(
-                        session.Attacker.playerInstance.Position.getValue(),
-                        session.DefenderMob.getXPos(),
-                        session.DefenderMob.getYPos(),
-                        session.DefenderMob.getZPos()
-                    );
-                    damage = CombatCalculator.CalculateRangedDamageWithTactics(
-                        playerLevel, mobLevel, distance,
-                        session.AttackerTactic, session.DefenderTactic);
-                    fxId = 0; // health-only, as for melee
-                    Output.WriteDebugLog($"[COMBAT] Range combat: distance={distance:F1}m");
+                    defenderDied = ResolveRangedShot(session, false);
                 }
-
-                Output.WriteDebugLog($"[COMBAT] Player (Lv{playerLevel}, {session.AttackerTactic}) hits {session.DefenderMob.getName()} (Lv{mobLevel}) for {damage} damage");
-
-                // Apply damage to mob - this broadcasts to all nearby clients
-                bool defenderDied = session.ApplyDamageToDefender(damage, fxId);
 
                 if (defenderDied)
                 {
@@ -567,11 +548,15 @@ namespace hds
             rangedNoiseLevel = 0;
 
             // First shot now, then one per tick.
-            FireRangedShot(currentSession, true);
+            isCombatRunning = true;
+            bool killed = ResolveRangedShot(currentSession, true);
             client.FlushQueue();
 
             currentSession.Start(ServerPackets.RangedShotIntervalMs);
-            isCombatRunning = true;
+            if (killed)
+            {
+                currentSession.Stop(CombatSession.CombatEndReason.DefenderDied);
+            }
         }
 
         /// <summary>True while this player is firing at the given target (view u16 + spawn u16).</summary>
@@ -585,20 +570,82 @@ namespace hds
         /// <summary>NoiseLevel (own-view attribute 9): retail sent 0x32 on the first shot and more on later ones.</summary>
         private byte rangedNoiseLevel;
 
-        /// <summary>Sends one gunshot of the player at the session's target: the own-view shot and RPC 4e 00.</summary>
-        private void FireRangedShot(CombatSession session, bool firstShot)
+        private readonly Random rangedRng = new Random();
+
+        /// <summary>
+        /// One gunshot of the player at the session's target, in retail's order: the own-view shot (hit or miss)
+        /// with RPC 4e 00, the NPC's health on a hit, then the 81 68 combat-log line. Returns true when the shot
+        /// killed the target.
+        /// </summary>
+        private bool ResolveRangedShot(CombatSession session, bool firstShot)
         {
             WorldClient player = session.Attacker;
+            Mob target = session.DefenderMob;
             rangedNoiseLevel = (byte)Math.Min(0x64, rangedNoiseLevel == 0 ? 0x32 : rangedNoiseLevel + 0x0c);
+
+            UInt16 attackRoll, defenseRoll;
+            bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
 
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
             player.playerData.emoteCounter++;
             player.messageQueue.addObjectMessage(ServerPackets.BuildRangedShot(player.playerData.emoteCounter,
                 session.TargetViewSpawnId, (float)x, (float)y, (float)z, CombatStartTime(), rangedNoiseLevel,
-                firstShot), false);
+                firstShot, hit), false);
             player.messageQueue.addRpcMessage(ServerPackets.BuildRangedShotRpc());
+
+            if (target == null)
+            {
+                return false;
+            }
+
+            UInt16 damage = 0;
+            bool died = false;
+            if (hit)
+            {
+                byte[] levelBytes = player.playerInstance.Level.getValue();
+                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+                float distance = CombatCalculator.CalculateDistance(player.playerInstance.Position.getValue(),
+                    target.getXPos(), target.getYPos(), target.getZPos());
+                damage = CombatCalculator.CalculateRangedDamageWithTactics(playerLevel, target.getLevel(), distance,
+                    session.AttackerTactic, session.DefenderTactic);
+                died = session.ApplyDamageToDefender(damage, 0);
+            }
+            Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
+
+            string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
+            UInt32 weapon = player.playerData.freeFireWeaponGoid;
+            byte[] equipped = player.playerInstance.EquippedItemID.getValue();
+            if (weapon == 0 && equipped != null && equipped.Length >= 4)
+            {
+                weapon = NumericalUtils.ByteArrayToUint32(equipped, 1);
+            }
+            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
+                true, weapon, target.getName(), playerName));
+            return died;
         }
+
+        /// <summary>
+        /// RPC 3f &lt;inventory slot u16&gt; &lt;kind u32&gt;: the client's Free Fire weapon choice. Kind 0x10 is an inventory
+        /// item; <c>3f 6b 00 00 00 00 00</c> (slot 0x6b, kind 0) is none, i.e. fists. Retail's client sent it when a
+        /// gun arrived (tutorial capture, after loot: <c>3f 04 00 10 00 00 00</c>), when the picked gun moved, at
+        /// world entry and from the hotbar dropdown. The server only remembers the gun for the combat log.
+        /// </summary>
+        public void ProcessFreeFireChoice(ref byte[] packet)
+        {
+            if (packet.Length < 6)
+            {
+                return;
+            }
+            UInt16 slot = (UInt16)(packet[0] | (packet[1] << 8));
+            UInt32 kind = (UInt32)(packet[2] | (packet[3] << 8) | (packet[4] << 16) | (packet[5] << 24));
+            UInt32 goid = kind == FreeFireKindItem ? Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) : 0;
+            client.playerData.freeFireWeaponGoid = goid;
+            Output.WriteDebugLog($"[COMBAT] Free Fire weapon: slot {slot}, kind {kind}, goid {goid}");
+        }
+
+        /// <summary>Kind value of a Free Fire choice that names an inventory item.</summary>
+        public const UInt32 FreeFireKindItem = 0x10;
 
         /// <summary>
         /// Handles player death - sets death state and triggers respawn flow.

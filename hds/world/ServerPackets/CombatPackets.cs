@@ -261,18 +261,19 @@ namespace hds
         /// Retail, tutorial capture (crashover2k ..._uriah.log.txt, 13:30:17):
         /// <c>02 00 03 28 02 01 0c 38 81 00 06 00 f2 00 &lt;pos&gt; 33 be e7 1e 80 04 4b</c>; first shot in the luizoe
         /// old-sniffer Unknown log, line 11790: <c>... 80 84 32 80 80 80 80 03 00 00 10 00 21</c>.
-        /// The bytes <c>01 0c 38</c> and <c>81 00</c> are copied, not understood: shots also came with <c>00 10</c>
-        /// in place of <c>81 00</c> (maybe a miss).
+        /// The bytes <c>01 0c 38</c> are copied, not understood. <c>81 00</c> is a hit and <c>00 10</c> a miss: in the
+        /// tutorial fight all ten shots (five each way) match the hit/miss result of their 81 68 combat-log line.
         /// </summary>
         public static byte[] BuildRangedShot(byte actionCounter, UInt32 targetViewSpawnId, float x, float y, float z,
-            UInt32 simMs, byte noiseLevel, bool firstShot)
+            UInt32 simMs, byte noiseLevel, bool firstShot, bool hit = true)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
             pak.AddByte(0x03);
             pak.AddByte(0x28);
             pak.AddByte(actionCounter);
-            pak.AddHexBytes("010c388100");
+            pak.AddHexBytes("010c38");
+            pak.AddHexBytes(hit ? "8100" : "0010");
             pak.AddUint32(targetViewSpawnId, 1);
             pak.AddFloatLtVector3f(x, y, z);
             pak.AddUint32(simMs, 1);
@@ -288,6 +289,38 @@ namespace hds
                 pak.AddHexBytes("8004");
                 pak.AddByte(noiseLevel);
             }
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// RPC 81 68: one combat-log line. Layout after the header (offsets from its first byte):
+        /// <c>&lt;offset of attacker name u16&gt; &lt;offset of defender name u16 = 0x1d&gt; &lt;result u32: 3 hit, 4 miss&gt;
+        /// &lt;damage u16&gt; &lt;modifier i16&gt; &lt;attack roll u16&gt; &lt;defense roll u16&gt; 00000000 &lt;attacker is you u8&gt;
+        /// &lt;weapon goid u32&gt; 0000 &lt;defender name&gt; &lt;attacker name&gt;</c>, names as u16 length (with the 0) + text + 0.
+        /// In the retail tutorial fight (crashover2k ..._uriah.log.txt 13:30:13-13:30:33) every hit had attack roll &gt;
+        /// defense roll and every miss the reverse; damage matched the health lost. The player's hits had modifier -7
+        /// (meaning unknown), the NPC's 0. Example, the player hits "Alex" for 19:
+        /// <c>81 68 24 00 1d 00 03 00 00 00 13 00 f9 ff 47 00 2d 00 00 00 00 00 01 05 0a 00 00 00 00 05 00 Alex 00 07 00 mxoemu 00</c>.
+        /// </summary>
+        public static byte[] BuildCombatLog(bool hit, UInt16 damage, Int16 modifier, UInt16 attackRoll, UInt16 defenseRoll,
+            bool attackerIsYou, UInt32 weaponGoid, string defenderName, string attackerName)
+        {
+            const UInt16 defenderNameOffset = 0x1d;
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8168");
+            pak.AddUint16((UInt16)(defenderNameOffset + defenderName.Length + 1 + 2), 1);
+            pak.AddUint16(defenderNameOffset, 1);
+            pak.AddUint32(hit ? 3u : 4u, 1);
+            pak.AddUint16(damage, 1);
+            pak.AddInt16(modifier, 1);
+            pak.AddUint16(attackRoll, 1);
+            pak.AddUint16(defenseRoll, 1);
+            pak.AddUint32(0, 1);
+            pak.AddByte(attackerIsYou ? (byte)1 : (byte)0);
+            pak.AddUint32(weaponGoid, 1);
+            pak.AddUint16(0, 1);
+            pak.AddSizedTerminatedString(defenderName);
+            pak.AddSizedTerminatedString(attackerName);
             return pak.ReturnFinalPacket();
         }
 

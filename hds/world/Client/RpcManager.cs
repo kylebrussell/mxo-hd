@@ -46,6 +46,10 @@ namespace hds{
 		            CombatManager.GetHandler(Store.currentClient).ProcessCombatStance(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_FREE_FIRE_CHOICE:
+		            CombatManager.GetHandler(Store.currentClient).ProcessFreeFireChoice(ref rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
 		            Output.WriteRpcLog("RANGE COMBAT REQUEST");
