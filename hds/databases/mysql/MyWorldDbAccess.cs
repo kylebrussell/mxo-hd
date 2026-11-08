@@ -163,20 +163,10 @@ namespace hds.databases{
 
         public bool IsFactionnameAvailable(string factionname)
         {
-	        bool isFactionNameAvailable = true;
-	        OpenConnection();
-	        string query = "SELECT id FROM factions WHERE name = '" + factionname.Trim() + "' LIMIT 1";
-	        queryExecuter = conn.CreateCommand();
-	        queryExecuter.CommandText = query;
-	        dr = queryExecuter.ExecuteReader();
-
-	        while (dr.Read())
-	        {
-		        // if we have just one entry - we have found a faction
-		        isFactionNameAvailable = false;
-	        }
-	        CloseConnection();
-	        return isFactionNameAvailable;
+	        // Parameterized: faction names may contain quotes (retail had "'Dark Mavericks'").
+	        object found = ScalarQuery("SELECT id FROM factions WHERE name = @name AND deleted_at IS NULL LIMIT 1",
+		        P("@name", factionname.Trim()));
+	        return found == null || found == DBNull.Value;
         }
 
         public bool IsHandleCaptainOfACrew(string handle)
@@ -938,6 +928,120 @@ namespace hds.databases{
 	        
 	        // Delete the Player Crew ID
 	        ExecuteNonResultQuery("DELETE FROM crew_members WHERE crew_id = " + crewId);
+        }
+
+        private object ScalarQuery(string sql, params KeyValuePair<string, object>[] parameters)
+        {
+	        OpenConnection();
+	        try
+	        {
+		        using (IDbCommand cmd = conn.CreateCommand())
+		        {
+			        cmd.CommandText = sql;
+			        AddParameters(cmd, parameters);
+			        return cmd.ExecuteScalar();
+		        }
+	        }
+	        finally
+	        {
+		        CloseConnection();
+	        }
+        }
+
+        private void NonQuery(string sql, params KeyValuePair<string, object>[] parameters)
+        {
+	        OpenConnection();
+	        try
+	        {
+		        using (IDbCommand cmd = conn.CreateCommand())
+		        {
+			        cmd.CommandText = sql;
+			        AddParameters(cmd, parameters);
+			        cmd.ExecuteNonQuery();
+		        }
+	        }
+	        finally
+	        {
+		        CloseConnection();
+	        }
+        }
+
+        private static void AddParameters(IDbCommand cmd, KeyValuePair<string, object>[] parameters)
+        {
+	        foreach (KeyValuePair<string, object> parameter in parameters)
+	        {
+		        IDbDataParameter p = cmd.CreateParameter();
+		        p.ParameterName = parameter.Key;
+		        p.Value = parameter.Value;
+		        cmd.Parameters.Add(p);
+	        }
+        }
+
+        private static KeyValuePair<string, object> P(string name, object value) =>
+	        new KeyValuePair<string, object>(name, value);
+
+        /// <summary>A crew that was not disbanded already uses this name.</summary>
+        public bool CrewNameExists(string crewName)
+        {
+	        // Old rows carry a zero date instead of NULL for "not deleted".
+	        object found = ScalarQuery("SELECT id FROM crews WHERE crew_name = @name AND (deleted_at IS NULL OR deleted_at < '1971-01-01') LIMIT 1",
+		        P("@name", crewName.Trim()));
+	        return found != null && found != DBNull.Value;
+        }
+
+        /// <summary>Creates a crew with the captain as its first member and returns its id.</summary>
+        public UInt32 CreateCrew(string crewName, string captainHandle, ushort org)
+        {
+	        object id = ScalarQuery(
+		        "INSERT INTO crews (crew_name, master_player_handle, money, org, faction_id, faction_rank, created_at, deleted_at) " +
+		        "VALUES (@name, @captain, 0, @org, 0, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
+		        P("@name", crewName.Trim()), P("@captain", captainHandle), P("@org", (int) org));
+	        return Convert.ToUInt32(id);
+        }
+
+        public void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle)
+        {
+	        NonQuery("UPDATE crew_members SET is_captain = (char_id = @char) WHERE crew_id = @crew",
+		        P("@char", charId), P("@crew", crewId));
+	        NonQuery("UPDATE crews SET master_player_handle = @handle WHERE id = @crew",
+		        P("@handle", handle), P("@crew", crewId));
+        }
+
+        /// <summary>Marks the crew deleted and clears crew and faction of its members.</summary>
+        public void DisbandCrew(UInt32 crewId)
+        {
+	        NonQuery("UPDATE crews SET deleted_at = NOW(), faction_id = 0 WHERE id = @crew", P("@crew", crewId));
+	        NonQuery("UPDATE characters SET crewId = 0, factionId = 0 WHERE crewId = @crew", P("@crew", crewId));
+	        NonQuery("DELETE FROM crew_members WHERE crew_id = @crew", P("@crew", crewId));
+        }
+
+        public void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId)
+        {
+	        NonQuery("UPDATE characters SET factionId = @faction WHERE crewId = @crew",
+		        P("@faction", factionId), P("@crew", crewId));
+        }
+
+        /// <summary>Marks the faction deleted and takes every crew and character out of it.</summary>
+        public void DisbandFaction(UInt32 factionId)
+        {
+	        NonQuery("UPDATE factions SET deleted_at = NOW() WHERE id = @faction", P("@faction", factionId));
+	        NonQuery("UPDATE crews SET faction_id = 0 WHERE faction_id = @faction", P("@faction", factionId));
+	        NonQuery("UPDATE characters SET factionId = 0 WHERE factionId = @faction", P("@faction", factionId));
+        }
+
+        public UInt32 CreateFaction(string factionName, string masterHandle)
+        {
+	        object id = ScalarQuery(
+		        "INSERT INTO factions (name, master_player_handle, money, created_at, deleted_at) VALUES (@name, @master, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
+		        P("@name", factionName.Trim()), P("@master", masterHandle));
+	        return Convert.ToUInt32(id);
+        }
+
+        public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
+        {
+	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",
+		        P("@char", charId), P("@friend", friendId));
+	        return found != null && found != DBNull.Value;
         }
 
         public void AddCrew(string crewName, string masterHandle)

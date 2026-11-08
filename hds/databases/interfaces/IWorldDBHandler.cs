@@ -68,5 +68,15 @@ namespace hds.databases.interfaces{
         UInt32 GetCrewIdByInviterHandle(string playerHandle);
 
         string GetFactionNameById(UInt32 factionId);
+
+        // Social groups (parameterized; names may contain quotes)
+        bool CrewNameExists(string crewName);
+        UInt32 CreateCrew(string crewName, string captainHandle, ushort org);
+        void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
+        void DisbandCrew(UInt32 crewId);
+        void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
+        void DisbandFaction(UInt32 factionId);
+        UInt32 CreateFaction(string factionName, string masterHandle);
+        bool IsOnFriendList(UInt32 charId, UInt32 friendId);
     }
 }

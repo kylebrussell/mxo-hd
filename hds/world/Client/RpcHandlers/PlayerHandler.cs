@@ -174,11 +174,11 @@ namespace hds
             // Test icon + bonus EDIT DOESNT WORK IN THIS STATE
             Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500450000f70300000702ecffffff0000000000"));
             
+            // Retail sent one 80 86 at login: the crew for a crew member (AfterWhoruNeo) or the empty form for
+            // a player without one (mxoemu3). This used to send the crew and then the empty form, with a fixed
+            // char id, which emptied the crew window again.
             UInt32 crewId = NumericalUtils.ByteArrayToUint32(Store.currentClient.playerInstance.CrewID.getValue(), 1);
-            Crew crewData = Store.dbManager.WorldDbHandler.GetCrewData(crewId);
-            List<CrewMember> members = Store.dbManager.WorldDbHandler.GetCrewMembersForCrewId(crewId);
-            pak.SendCrewInfo(Store.currentClient, crewData, members);
-            pak.sendCrewAndFactionEnableWindow(Store.currentClient);
+            SocialHandler.SendCrewInfo(Store.currentClient, crewId);
         }
 
         public void processInitUDPSession(ref byte[] packetData)

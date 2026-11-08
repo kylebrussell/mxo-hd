@@ -14,30 +14,31 @@ namespace hds
         public void processChat(ref byte[] packetData)
         {
 
-            PacketReader reader = new PacketReader(packetData);
-            UInt16 typeId = reader.ReadUInt16(1);
-
-            chatCommands = new ChatCommandsHelper();
-            int offset = 0;
-
-            //10 00 08 00 00 00 00 06 00 3f 53 61 76 65 00 
-
-            int length = (int)packetData[7];
-            offset = 9; //Move to length +2
-            if (length > 0)
+            //10 00 08 00 00 00 00 06 00 3f 53 61 76 65 00
+            // The text length is a u16 (it used to be read as one byte, which broke lines over 255 characters).
+            SocialRequests.ChatLine line;
+            if (!SocialRequests.TryParseChat(packetData, out line) || string.IsNullOrEmpty(line.Text))
             {
-                byte[] textB = new byte[length - 1];
-                ArrayUtils.copy(packetData, offset, textB, 0, length - 1);
-                string text = StringUtils.charBytesToString(textB);                
+                return;
+            }
+
+            UInt16 typeId = line.Channel;
+            chatCommands = new ChatCommandsHelper();
+            {
+                string text = line.Text;
 
                 if (text[0] == '?')
                 {
                     //Maybe a parameter			
                     chatCommands.parseCommand(text); // Parse for commands
                 }
+                else if (SocialHandler.TrySendGroupChat(Store.currentClient, line.Channel, text))
+                {
+                    // Crew, faction or team channel.
+                }
                 else
                 {
-                    // Not a Param - lets distribute the Message throw our Area 
+                    // Not a Param - lets distribute the Message throw our Area
                     ServerPackets pak = new ServerPackets();
                     pak.SendChatMessage(Store.currentClient, text, Store.currentClient.playerData.getCharID(), StringUtils.charBytesToString_NZ(Store.currentClient.playerInstance.CharacterName.getValue()), typeId);
                     // ToDo: Send the ChatMessage to the Scope of Players

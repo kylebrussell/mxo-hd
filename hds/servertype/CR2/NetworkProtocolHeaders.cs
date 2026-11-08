@@ -37,6 +37,7 @@ namespace hds
         CLIENT_RESPAWN_REQUEST = 0x14c,          // 81 4c (no body): the dead player asks to respawn
 
         CLIENT_HANDLE_MISSION_INVITE = 0x6f,
+        CLIENT_TEAM_LOOT_MODE = 0x90, // 80 90 <mode 1..4>; retail echoed it to the team
 
         // Ability Handlers
         CLIENT_ABILITY_LOADER = 0xae,

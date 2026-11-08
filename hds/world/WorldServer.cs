@@ -27,7 +27,6 @@ namespace hds
         // Collection to store the spawned npcs 
         public static ArrayList mobs = ArrayList.Synchronized(new ArrayList());
         public static ArrayList subways = ArrayList.Synchronized(new ArrayList());
-        public static ArrayList missionTeams = ArrayList.Synchronized(new ArrayList());
         public static UInt64 entityIdCounter = 1;
         public static ArrayList gameServerEntities = ArrayList.Synchronized(new ArrayList()); // should hold all GameObject Entities where a view can be created (static, dynamic etc.)
         private byte[] buffer;
