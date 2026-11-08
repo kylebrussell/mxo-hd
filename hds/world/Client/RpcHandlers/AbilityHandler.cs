@@ -55,6 +55,13 @@ namespace hds
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
 
+            // Double-clicking a consumable sends its ability with the item's bag slot.
+            UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
+            if (itemSlot.HasValue && new InventoryHandler().UseItem(itemSlot.Value, AbilityID))
+            {
+                return;
+            }
+
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
                 Output.WriteDebugLog("[ABILITY] Still cooling down; ignored");
