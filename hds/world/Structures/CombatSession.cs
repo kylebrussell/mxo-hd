@@ -79,15 +79,30 @@ namespace hds
         public CombatType Type { get; private set; }
 
         /// <summary>
-        /// Current combat tactic for the attacker (player).
+        /// The player's tactic. It belongs to the player, not the fight: the client keeps its button pressed between
+        /// fights and retail answered RPC 42 out of combat as well.
         /// </summary>
-        public CombatTactic AttackerTactic { get; private set; }
+        public CombatTactic AttackerTactic => Attacker.playerData.combatTactic;
 
-        /// <summary>
-        /// Current combat tactic for the defender (mob or player).
-        /// Mobs default to None (no tactic).
-        /// </summary>
-        public CombatTactic DefenderTactic { get; private set; }
+        /// <summary>The NPC's tactic this round; see <see cref="CombatInterlock.NpcTactic"/>.</summary>
+        public CombatTactic DefenderTactic { get; set; } = CombatTactic.Speed;
+
+        /// <summary>False while an NPC with a gun fires at a player who hasn't fired back; see CombatHandler.StartNpcGunfight.</summary>
+        public bool PlayerFiring { get; set; } = true;
+
+        /// <summary>The player's move the next round decides, and the NPC's (RPCs 45/47).</summary>
+        public CombatInterlock.Move CurrentMove { get; set; }
+        public CombatInterlock.Move NpcMove { get; set; }
+
+        /// <summary>Counter of RPC 45 records.</summary>
+        public UInt16 RoundRecord { get; set; }
+
+        /// <summary>The ability the current move carries and the view it targets; see CombatHandler.QueueRoundAbility.</summary>
+        public AbilityItem QueuedAbility { get; set; }
+        public UInt16 QueuedAbilityTarget { get; set; }
+
+        /// <summary>First record id of the CombatEffectAbility records, 0 if they weren't sent.</summary>
+        public UInt16 CombatEffectRecordId { get; set; }
 
         /// <summary>
         /// Timer for combat update ticks.
@@ -137,8 +152,6 @@ namespace hds
             RoundNumber = 0;
             HitCounter = 0;
             IsActive = false;
-            AttackerTactic = CombatTactic.None;
-            DefenderTactic = CombatTactic.None; // Mobs don't use tactics
         }
 
         /// <summary>
@@ -156,51 +169,13 @@ namespace hds
             RoundNumber = 0;
             HitCounter = 0;
             IsActive = false;
-            AttackerTactic = CombatTactic.None;
-            DefenderTactic = CombatTactic.None;
-        }
-
-        /// <summary>
-        /// Changes the attacker's combat tactic.
-        /// Returns false if the player doesn't have enough IS.
-        /// </summary>
-        /// <param name="newTactic">New tactic to use</param>
-        /// <returns>True if tactic was changed, false if insufficient IS</returns>
-        public bool SetAttackerTactic(CombatTactic newTactic)
-        {
-            if (newTactic == AttackerTactic)
-                return true; // No change needed
-
-            // Check if player has enough IS
-            byte[] isBytes = Attacker.playerInstance.InnerStrengthAvailable.getValue();
-            UInt16 currentIS = isBytes != null && isBytes.Length >= 2
-                ? NumericalUtils.ByteArrayToUint16(isBytes, 1)
-                : (UInt16)0;
-
-            if (currentIS < CombatCalculator.TACTIC_CHANGE_IS_COST)
-                return false; // Not enough IS
-
-            // Deduct IS cost
-            UInt16 newIS = (UInt16)(currentIS - CombatCalculator.TACTIC_CHANGE_IS_COST);
-            Attacker.playerInstance.InnerStrengthAvailable.setValue(newIS);
-
-            AttackerTactic = newTactic;
-            return true;
-        }
-
-        /// <summary>
-        /// Sets the defender's tactic (for PvP).
-        /// </summary>
-        public void SetDefenderTactic(CombatTactic newTactic)
-        {
-            DefenderTactic = newTactic;
         }
 
         /// <summary>
         /// Starts the combat session and begins the update timer.
         /// </summary>
-        /// <param name="tickIntervalMs">Milliseconds between combat ticks (default 3000)</param>
-        public void Start(int tickIntervalMs = 3000)
+        /// <param name="tickIntervalMs">Milliseconds between combat ticks</param>
+        public void Start(int tickIntervalMs = CombatInterlock.RoundMs)
         {
             if (IsActive) return;
 

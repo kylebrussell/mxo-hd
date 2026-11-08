@@ -196,6 +196,14 @@ namespace hds{
 		            new VendorHandler().processSellItem(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_TRADE_REQUEST:
+		            new TradeHandler().ProcessRequest(ref rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_TRADE_ACTION:
+		            new TradeHandler().ProcessAction(ref rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_ADD_FRIEND:
 			        new BuddylistHandler().ProcessAddFriend(ref rpcData);
 			        break;

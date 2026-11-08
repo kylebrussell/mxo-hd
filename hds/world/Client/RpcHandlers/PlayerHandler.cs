@@ -184,8 +184,8 @@ namespace hds
 
             }
             
-            // Test icon + bonus EDIT DOESNT WORK IN THIS STATE
-            Store.currentClient.messageQueue.addRpcMessage(StringUtils.hexStringToBytes("80bc1500450000f70300000702ecffffff0000000000"));
+            // Retail's login carried the Speed tactic's records (this used to send only one of them, as a test)
+            CombatTactics.SendCurrent(Store.currentClient);
             
             // Retail sent one 80 86 at login: the crew for a crew member (AfterWhoruNeo) or the empty form for
             // a player without one (mxoemu3). This used to send the crew and then the empty form, with a fixed
