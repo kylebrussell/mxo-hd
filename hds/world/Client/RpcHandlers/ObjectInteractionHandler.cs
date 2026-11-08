@@ -162,9 +162,9 @@ namespace hds
                     break;
 
                 case (int) objectTypesStatic.HARDLINE_UPLOAD:
-                    Output.writeToLogForConsole("[OBJECT HELPER] Upload Hardline will be used for combat tests");
+                    // Retail moved the bag's Code Bits and fragments into code storage here
                     Store.currentClient.playerData.lastClickedObjectId = numericObjectId;
-                    new TestUnitHandler().processTestCombat(ref packet);
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
                     break;
 
                 case (int) objectTypesStatic.HARDLINE_LAEXIT:
@@ -278,6 +278,9 @@ namespace hds
                     MissionRuntime.OnTalk(Store.currentClient, talkMob);
                     break;
 
+                case 0x04: // hardline upload, retail 80 c7 <view> <spawn> 04 00: Code Bits and fragments go into code storage
+                    CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
+                    break;
 
                 default:
                     pak.sendSystemChatMessage(Store.currentClient,

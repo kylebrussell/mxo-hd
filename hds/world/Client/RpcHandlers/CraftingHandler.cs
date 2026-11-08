@@ -21,7 +21,9 @@ namespace hds
                 return "There is no recipe for item " + resultGoid + ".";
             }
 
+            // Bag items first, then code storage (a guess: no capture shows where the Code Writer takes ingredients from).
             List<Crafting.InventoryItem> inventory = Store.dbManager.WorldDbHandler.GetInventoryItems(charId);
+            inventory.AddRange(CodeStorageHandler.AsIngredients(Store.dbManager.WorldDbHandler.GetCodeStorage(charId)));
             List<UInt16> slots = Crafting.MatchIngredients(recipe, inventory);
             if (slots == null)
             {
@@ -33,10 +35,18 @@ namespace hds
                 return "Missing to compile " + ItemName(resultGoid) + ": " + string.Join(", ", names);
             }
 
-            // One item per ingredient: a stack shrinks (69 01), a single item leaves its slot (5f).
+            // One item per ingredient: a stack shrinks (69 01), a single item leaves its slot (5f), a storage entry
+            // shrinks (69 00).
             foreach (UInt16 slot in slots)
             {
-                InventoryHandler.RemoveOne(client, slot);
+                if ((slot & Crafting.StorageSlotFlag) != 0)
+                {
+                    CodeStorageHandler.TakeOne(client, (UInt16)(slot & ~Crafting.StorageSlotFlag));
+                }
+                else
+                {
+                    InventoryHandler.RemoveOne(client, slot);
+                }
             }
 
             // Ingredients are gone, so their slots count as free again; a fragment joins a stack of its kind.
