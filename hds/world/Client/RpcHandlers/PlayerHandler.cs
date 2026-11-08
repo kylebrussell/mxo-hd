@@ -53,6 +53,16 @@ namespace hds
             // left tutorial characters at "Negotiating with Servers..." for good.
             uint districtId = Store.currentClient.playerData.getDistrictId();
 
+            // In the Loading Area the client sends the same 05 but retail never spawned a character there: after
+            // 81 09 + 06 la.metr it only got settings and the hardline status (6d), and showed the hardline
+            // picker (crashover2k exit_to_loadingarea, died_in_pvp). A self-spawn puts the client in world mode,
+            // standing on the LA rooftop with no picker.
+            if (Store.currentClient.playerData.DistrictIsLA())
+            {
+                Output.WriteDebugLog("[LA] Spawn ready in the Loading Area: no self-spawn, waiting for a hardline pick");
+                return;
+            }
+
             // The weapon in the weapon slot is the one in hand (EquippedItemID); nothing set it before, so a
             // player who logged out holding a weapon came back empty-handed.
             UInt32 weapon = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(InventoryHandler.WeaponSlot);
