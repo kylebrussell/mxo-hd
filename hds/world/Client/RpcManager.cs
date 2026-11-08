@@ -128,7 +128,9 @@ namespace hds{
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);
-		            // ToDo: Research and implement^^
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ATTRIBUTE:
+			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);

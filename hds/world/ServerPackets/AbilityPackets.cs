@@ -6,16 +6,6 @@ namespace hds
 {
     public partial class ServerPackets
     {
-        public void SendUpgradeAbilityLevel(UInt16 ability, UInt16 currentLevel)
-        {
-            PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_PLAYER_UPGRADE_ABILITY, 0);
-            pak.AddUint16(ability, 1);
-            pak.AddUint16(currentLevel, 1);
-            pak.AddUint32(0, 1); // Needs more Research - found only 4 bytes zeros 
-            Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-        }
-
         // Place Methods here for Skills
         public void SendCastAbilityBar(UInt16 abilityID, float timeProcessing)
         {

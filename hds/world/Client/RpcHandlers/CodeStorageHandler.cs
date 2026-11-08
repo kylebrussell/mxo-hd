@@ -16,15 +16,29 @@ namespace hds
         /// emptied bag slot, 69 00 per grown entry, 5e per new entry). The caller sends the booth's 81 18 answer after
         /// this and flushes. Returns how many items moved.
         /// </summary>
-        public static int UploadCode(WorldClient client)
+        public static int UploadCode(WorldClient client, out bool abilityCodeUploaded)
         {
+            abilityCodeUploaded = false;
             UInt32 charId = client.playerData.getCharID();
             IWorldDBHandler db = Store.dbManager.WorldDbHandler;
 
             List<Crafting.InventoryItem> bag = db.GetInventoryItems(charId);
             List<CodeStorage.Entry> stored = db.GetCodeStorage(charId);
-            CodeStorage.UploadPlan plan = CodeStorage.PlanUpload(bag, stored, db.GetNextAbilitySlot(charId));
-            if (plan.ItemsMoved == 0)
+            UInt16 nextSlot = db.GetNextAbilitySlot(charId);
+            CodeStorage.UploadPlan plan = CodeStorage.PlanUpload(bag, stored, nextSlot);
+
+            List<Crafting.InventoryItem> abilityCode = new List<Crafting.InventoryItem>();
+            HashSet<UInt32> uploading = new HashSet<UInt32>();
+            foreach (Crafting.InventoryItem item in bag)
+            {
+                if (Crafting.IsBagSlot(item.Slot) && AbilityProgression.IsAbilityCode(item.Goid) &&
+                    !db.HasAbility(charId, unchecked((Int32)item.Goid)) && uploading.Add(item.Goid))
+                {
+                    abilityCode.Add(item);
+                }
+            }
+
+            if (plan.ItemsMoved == 0 && abilityCode.Count == 0)
             {
                 Output.WriteDebugLog("[CODE STORAGE] Nothing to upload");
                 return 0;
@@ -32,6 +46,20 @@ namespace hds
 
             string name = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
             client.messageQueue.addRpcMessage(CodeStorage.BuildUploadMessage(name));
+
+            abilityCodeUploaded = abilityCode.Count > 0;
+
+            // Bought abilities join the known-abilities list after the storage entries this upload adds.
+            UInt16 abilitySlot = (UInt16)(nextSlot + plan.Added.Count);
+            foreach (Crafting.InventoryItem item in abilityCode)
+            {
+                db.RemoveItemAtInventorySlot(item.Slot, charId);
+                db.AddAbility(charId, abilitySlot, unchecked((Int32)item.Goid), 1);
+                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(item.Slot));
+                client.messageQueue.addRpcMessage(ServerPackets.BuildKnownAbilityAdd(abilitySlot, AbilityProgression.AbilityCodeValue(item.Goid)));
+                Output.WriteDebugLog("[CODE STORAGE] Uploaded ability code " + item.Goid + " to slot " + abilitySlot);
+                abilitySlot++;
+            }
 
             foreach (UInt16 slot in plan.ClearedBagSlots)
             {
@@ -59,7 +87,7 @@ namespace hds
 
             Output.WriteDebugLog("[CODE STORAGE] Uploaded " + plan.ItemsMoved + " items: " + plan.ClearedBagSlots.Count +
                                  " bag slots emptied, " + plan.Updated.Count + " entries grew, " + plan.Added.Count + " new");
-            return plan.ItemsMoved;
+            return plan.ItemsMoved + abilityCode.Count;
         }
 
         /// <summary>
@@ -68,7 +96,7 @@ namespace hds
         /// </summary>
         public static void ProcessUploadRequest(WorldClient client)
         {
-            UploadCode(client);
+            UploadCode(client, out _);
             client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
             client.FlushQueue();
         }
