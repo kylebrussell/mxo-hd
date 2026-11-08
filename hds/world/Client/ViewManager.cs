@@ -58,6 +58,20 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Forgets every view. Call when the client reloads its world (81 07 → reset): it drops all views then,
+        /// and views still marked created here kept NPCs, players and objects from being spawned again after a
+        /// hardline teleport within the same district. View ids keep counting up, so a late packet for an old
+        /// view can't land on a new one.
+        /// </summary>
+        public void Clear()
+        {
+            lock (views)
+            {
+                views.Clear();
+            }
+        }
+
         public int Count
         {
             get

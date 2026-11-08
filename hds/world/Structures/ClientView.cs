@@ -13,6 +13,7 @@ namespace hds
         public bool viewCreated = false;  // To define if the view Packet was successful created
         public bool viewNeedsToBeDeleted = false; // set it to true if views needs to be "cleaned" up
         public GameObject gameObject;
+        public StaticWorldObject staticObject; // set for views of static objects, e.g. hardline booths
 
         public ClientView(UInt32 GoID, UInt16 ViewID, UInt64 entityId)
         {

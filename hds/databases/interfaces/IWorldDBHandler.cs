@@ -39,6 +39,8 @@ namespace hds.databases.interfaces{
         void updateLocationByHL(UInt16 district, UInt16 hardline);
         List<UInt16> GetHardlineIdsForDistrict(UInt16 district);
         UInt16 GetNearestHardline(UInt16 district, double x, double z);
+        List<UInt16> GetUploadedHardlines(UInt32 charId, UInt16 district);
+        bool AddUploadedHardline(UInt32 charId, UInt16 district, UInt16 hardline);
         void updateSourceHlForObjectTracking(UInt16 sourceDistrict, UInt16 sourceHl, UInt32 lastObjectId);
         void SetPlayerValues();
         void SetRsiValues();

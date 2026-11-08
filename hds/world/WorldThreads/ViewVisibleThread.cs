@@ -430,6 +430,7 @@ namespace hds
                         continue;
                     }
 
+                    HashSet<ulong> nearbyBooths = new HashSet<ulong>();
                     foreach (List<StaticWorldObject> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
                     {
                         foreach (StaticWorldObject staticWorldObject in cell)
@@ -444,6 +445,20 @@ namespace hds
                             // WE get all staticObjects in range but we dont just want them all
                             switch (typeId)
                             {
+                                case HardlineBooths.PhoneBoothType:
+                                    UInt64 boothEntity = HardlineBooths.EntityId(staticWorldObject);
+                                    nearbyBooths.Add(boothEntity);
+                                    ClientView boothView = thisclient.viewMan.GetViewForEntityAndGo(boothEntity, typeId);
+                                    if (!boothView.viewCreated)
+                                    {
+                                        boothView.staticObject = staticWorldObject;
+                                        // SendSpawnGameObject takes the current spawn counter for the creation
+                                        boothView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                                        new ServerPackets().SendSpawnGameObject(thisclient,
+                                            HardlineBooths.BuildBoothObject(staticWorldObject), boothEntity);
+                                    }
+                                    break;
+
                                 case 8400:
                                     if (signpostStaticIds != null &&
                                         signpostStaticIds.Contains(staticWorldObject.staticId) == false)
@@ -471,6 +486,16 @@ namespace hds
 
                                     break;
                             }
+                        }
+                    }
+
+                    // Booths that are out of range (or in another district) leave the client's view
+                    foreach (ClientView view in thisclient.viewMan.Snapshot())
+                    {
+                        if (view.viewCreated && HardlineBooths.IsBooth(view.GoID) && !nearbyBooths.Contains(view.entityId))
+                        {
+                            new ServerPackets().sendDeleteViewPacket(thisclient, view.ViewID);
+                            thisclient.viewMan.removeViewByViewId(view.ViewID);
                         }
                     }
                 }

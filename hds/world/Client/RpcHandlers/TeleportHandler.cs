@@ -7,8 +7,10 @@ namespace hds
     class TeleportHandler
     {
         /// <summary>
-        /// 6c &lt;district u32&gt; &lt;u32&gt;: the client asks which hardlines of a district are synced, for the
-        /// hardline map. Every hardline counts as synced until per-character sync is stored.
+        /// 6c &lt;district u32&gt; &lt;u32&gt;: the client asks which hardlines of a district it can use, for the
+        /// hardline map. Retail answered with the hardlines the character had uploaded (lists of 1 to 52 for
+        /// Richland across the captures; a fresh tutorial character had 1). With HardlineUploadRequired off (the
+        /// default) every hardline of the district is listed.
         /// </summary>
         public void processHardlineStatusRequest(ref byte[] packet)
         {
@@ -18,7 +20,9 @@ namespace hds
             }
 
             UInt16 district = (UInt16)(packet[0] | (packet[1] << 8));
-            List<UInt16> hardlines = Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
+            List<UInt16> hardlines = Store.worldConfig.HardlineUploadRequired
+                ? Store.dbManager.WorldDbHandler.GetUploadedHardlines(Store.currentClient.playerData.getCharID(), district)
+                : Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
             Output.WriteDebugLog("[HARDLINE] Status for district " + district + ": " + hardlines.Count + " hardlines");
             new ServerPackets().SendHardlineStatus(Store.currentClient, district, hardlines);
         }
@@ -33,11 +37,20 @@ namespace hds
             Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
 
+        /// <summary>
+        /// 81 8e &lt;source hardline u32&gt; &lt;source district u32&gt; &lt;target hardline u32&gt; &lt;target district u32&gt;.
+        /// Retail answered with 81 07; after the client's 81 08 reset it loaded the target district (06) and
+        /// spawned the player at the hardline, across districts too (actions_combat: Richland → Downtown →
+        /// International).
+        /// </summary>
         public void processHardlineTeleport(ref byte[] packet)
         {
-            // we dont care where the journey goes
-            // just want to see IF the journey will do :)
-            // for this just ack and send 0x42 packet
+            if (packet.Length < 16)
+            {
+                Output.WriteDebugLog("[HARDLINE] Teleport request too short");
+                return;
+            }
+
             byte[] sourceHardline = new byte[2];
             sourceHardline[0] = packet[0];
             sourceHardline[1] = packet[1];
@@ -84,6 +97,15 @@ namespace hds
             ServerPackets packets = new ServerPackets();
             switch (packet[0])
             {
+                case 0x00:
+                    // Jack out at a hardline (after the 80 fb ... 00 prompt): retail sent 80 fd 00 00 00 00 00 00
+                    // 0-1 s later in all 13 captured hardline jack-outs, no 30 s wait; the client then quits
+                    // with 80 fe 00.
+                    Output.WriteDebugLog("[HARDLINE] Jack out at a hardline");
+                    packets.sendExitGame(Store.currentClient);
+                    Store.currentClient.FlushQueue();
+                    break;
+
                 case 0x01:
                     // "Exit to Loading Area": retail answered 80 fd ... 01 00, the client confirmed with 80 fe 01
                     // and only then was the Loading Area loaded (see processGameFinish).
@@ -112,6 +134,44 @@ namespace hds
         {
             ServerPackets packets = new ServerPackets();
             packets.sendJackoutEffect(Store.currentClient);
+        }
+
+        /// <summary>
+        /// The player used a hardline booth (80 c7 on its view, or 80 c8 on the static object): 03 jack out,
+        /// 04 upload, 05 exit to the Loading Area. See HardlineBooths for the retail exchanges.
+        /// </summary>
+        public static void ProcessBoothAction(WorldClient client, byte action, StaticWorldObject booth)
+        {
+            UInt16 district = (UInt16)client.playerData.getDistrictId();
+            UInt16 hardline = Store.dbManager.WorldDbHandler.GetNearestHardline(district, booth.pos_x, booth.pos_z);
+            Output.WriteDebugLog("[HARDLINE] Booth " + booth.mxoStaticId + " action " + action + " -> hardline " + hardline +
+                                 " in district " + district);
+
+            switch (action)
+            {
+                case HardlineBooths.ActionJackOut:
+                    client.messageQueue.addRpcMessage(HardlineBooths.BuildExitPrompt(hardline, false));
+                    break;
+
+                case HardlineBooths.ActionExitToLoadingArea:
+                    client.messageQueue.addRpcMessage(HardlineBooths.BuildExitPrompt(hardline, true));
+                    break;
+
+                case HardlineBooths.ActionUpload:
+                    if (hardline != 0 &&
+                        Store.dbManager.WorldDbHandler.AddUploadedHardline(client.playerData.getCharID(), district, hardline))
+                    {
+                        Output.WriteDebugLog("[HARDLINE] Uploaded hardline " + hardline + " in district " + district);
+                    }
+                    client.messageQueue.addRpcMessage(HardlineBooths.BuildUploadDone());
+                    break;
+
+                default:
+                    Output.WriteDebugLog("[HARDLINE] Unknown booth action " + action);
+                    return;
+            }
+
+            client.FlushQueue();
         }
 
         /// <summary>
