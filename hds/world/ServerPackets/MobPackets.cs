@@ -58,8 +58,34 @@ namespace hds
         public void SendNpcDies(UInt16 viewId, WorldClient client, Mob theMob)
         {
             PacketContent death = new PacketContent();
-            death.AddByteArray(BuildNpcDeathUpdate());
+            death.AddByteArray(BuildNpcDeathUpdate(theMob.NextAnimationSeq(), (byte)theMob.getRotation(),
+                (float)theMob.getXPos(), (float)theMob.getYPos(), (float)theMob.getZPos()));
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(death, theMob);
+        }
+
+        /// <summary>Dead stance in the movement part (retail NPCs: 0x000d, or 0x0005 on a finishing move).</summary>
+        public const UInt16 NpcStanceDead = 0x000d;
+
+        /// <summary>
+        /// The death with retail's movement part (parts 01, 02 and 04; crashover2k kills of "Bob"):
+        /// <c>07 01 | 1d &lt;stance u16&gt; &lt;seq&gt; &lt;animA u16&gt; &lt;animB u16&gt; &lt;u16&gt; &lt;yaw&gt; &lt;x y z f32&gt; | part 04</c>.
+        /// Flags 1d = stance (0x01), animation block (0x10), yaw (0x04), position (0x08), in that order. The
+        /// animation pair 0x0001/0x002b and the u16 0x0025 are what Bob's dying NPCs got.
+        /// </summary>
+        public static byte[] BuildNpcDeathUpdate(byte seq, byte yaw, float x, float y, float z)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("0701");
+            pak.AddByte(0x1d);
+            pak.AddUint16(NpcStanceDead, 1);
+            pak.AddByte(seq);
+            pak.AddUint16(0x0001, 1);
+            pak.AddUint16(0x002b, 1);
+            pak.AddUint16(0x0025, 1);
+            pak.AddByte(yaw);
+            pak.AddFloatLtVector3f(x, y, z);
+            pak.AddHexBytes("c202008080e0010000808003fd07000000000000");
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>

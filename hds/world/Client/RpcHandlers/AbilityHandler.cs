@@ -44,7 +44,44 @@ namespace hds
 
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
                                  currentTargetViewId);
+
+            // The client sends a double-clicked ability twice in a row; count it once.
+            ClientData data = Store.currentClient.playerData;
+            double now = TimeUtils.GetSimTimeSeconds();
+            if (data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
+            {
+                Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
+                return;
+            }
+            data.lastAbilityId = AbilityID;
+            data.lastAbilityTime = now;
+
             ProcessAbilityScript(this.currentAbility);
+
+            // Attack abilities on the current close-combat target hit it.
+            if (currentTargetViewId > 2 && !currentAbility.getIsBuff())
+            {
+                UInt16 damage = AbilityDamage(currentAbility, new Random());
+                CombatManager.GetHandler(Store.currentClient)
+                    .ApplyAbilityToTarget(currentTargetViewId, damage, currentAbility.getActivationFX());
+            }
+        }
+
+        public const double DuplicateAbilityWindowSeconds = 0.5;
+
+        /// <summary>
+        /// Damage of an attack ability. The data's ValueFrom/ValueTo are used when set; most combat abilities
+        /// (Cheap Shot, Head Butt, ...) have none, so they hit for about twice a normal round (~30).
+        /// </summary>
+        public static UInt16 AbilityDamage(AbilityItem ability, Random random)
+        {
+            int from = ability.getValueFrom();
+            int to = ability.getValueTo();
+            if (from > 0 && to >= from)
+            {
+                return (UInt16)random.Next(from, to + 1);
+            }
+            return (UInt16)random.Next(50, 81);
         }
 
         /// <summary>

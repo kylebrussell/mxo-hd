@@ -59,6 +59,10 @@ namespace hds
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
 
+		// Last ability used, to drop the duplicate the client sends for a double-click
+		public UInt16 lastAbilityId = 0;
+		public double lastAbilityTime = -1;
+
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
 		public int combatGeneration = 0;
 
