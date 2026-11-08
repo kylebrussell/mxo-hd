@@ -18,7 +18,7 @@ dotnet tools/HeadlessClient/bin/Debug/net8.0/HeadlessClient.dll --parallel 6
 
 | Option | Meaning |
 |---|---|
-| `--parallel N` | Servers at once (default 6). Each takes about 400 MB and a few seconds' load. |
+| `--parallel N` | Servers at once (default 6). The limit is MySQL, not the machine: see below. |
 | `--filter text` | Only scenarios with this in their name. |
 | `--repeat N` | Run each scenario N times, to shake out races. |
 | `--logs dir` | Where a failed scenario's server output goes. |
@@ -26,6 +26,8 @@ dotnet tools/HeadlessClient/bin/Debug/net8.0/HeadlessClient.dll --parallel 6
 | `--drop-leftovers` | Drop `mxotest_run_*` databases first, after a run that was killed. Don't use it while another run is going. |
 
 Each scenario gets its own server process, working directory, ports and throwaway database. A run that is killed outright can leave servers behind (they listen only on 127.0.0.1) and a database.
+
+The container allows 151 connections, shared with whatever else uses it. The whole suite runs fine at `--parallel 12`; 16 servers all running `many-logins-at-once` hit `Too many connections`. A server opens one connection per thread doing database work, so that is a test-capacity limit, not a leak.
 
 ## Side-by-side servers
 

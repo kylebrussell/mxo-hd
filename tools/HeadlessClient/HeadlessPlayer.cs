@@ -193,7 +193,8 @@ public sealed class HeadlessPlayer : IDisposable
         List<string> tail = log.Skip(Math.Max(0, log.Count - 12)).Select(r => r.Hex.Length > 80 ? r.Hex[..80] + "..." : r.Hex).ToList();
         string views = string.Join(", ", World.CreationSnapshot().Select(c => $"{c.ViewId}={c.Goid}/{c.Name}"));
         return $"Received {log.Count} RPCs, {World.ViewSnapshot().Count} view lists, creations [{views}]. " +
-               $"Problems: {string.Join("; ", World.Problems)}. Last records: {string.Join(" | ", tail)}";
+               $"Problems: {string.Join("; ", World.Problems)}. Last records: {string.Join(" | ", tail)}. " +
+               $"Last view list: {(World.ViewSnapshot().LastOrDefault() is byte[] last ? WireFormat.ToHex(last) : "none")}";
     }
 
     public void Dispose()
