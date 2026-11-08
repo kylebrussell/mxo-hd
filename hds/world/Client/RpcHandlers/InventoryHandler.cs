@@ -74,6 +74,73 @@ namespace hds
         }
 
 
+        /// <summary>
+        /// Uses the consumable in a bag slot, asked for with the item's ability in a 80 b9 request. Retail order
+        /// (Antibiotic 5.0, PacketsZombiesPortingEtc lines 77036-77221): cast bar <c>80 ac</c> right away; when
+        /// the cast ends, the item's and the group's timers (<c>80 bd 01 .. 00</c>) and the slot removal
+        /// <c>5f &lt;slot&gt; 01</c>. Heal pills heal by the ability's value at that moment.
+        /// Returns false when the slot holds no consumable for that ability (a normal ability use then).
+        /// </summary>
+        public bool UseItem(UInt16 slot, UInt16 abilityId)
+        {
+            WorldClient client = Store.currentClient;
+            ClientData data = client.playerData;
+            ServerPackets pak = new ServerPackets();
+            UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+
+            if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
+                consumable.AbilityId != abilityId)
+            {
+                return false;
+            }
+
+            if (!ConsumableItems.IsUsable(consumable))
+            {
+                pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
+                return true;
+            }
+
+            double now = TimeUtils.GetSimTimeSeconds();
+            if (data.isDead || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+                (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
+            {
+                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " ignored: dead or its timer is running");
+                return true;
+            }
+
+            AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
+            float castTime = ability != null ? ability.getCastingTime() : 0;
+            UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
+
+            // Block a second use while this one is still casting.
+            lock (data.cooldownEndsAt)
+            {
+                data.cooldownEndsAt[(UInt16)goid] = now + castTime + consumable.Seconds;
+            }
+
+            if (castTime > 0)
+            {
+                pak.SendCastAbilityBar(abilityId, castTime);
+                client.FlushQueue();
+            }
+
+            UInt32 charId = data.getCharID();
+            DelayedActions.AfterFor(client, castTime, () =>
+            {
+                AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
+                    TimeUtils.GetSimTimeSeconds());
+                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+                new ServerPackets().sendInventoryItemDelete(slot, client);
+                client.FlushQueue();
+                if (consumable.Effect == ConsumableItems.Effect.Heal)
+                {
+                    AbilityHandler.HealSelf(client, amount);
+                }
+                Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " + abilityId + ")");
+            });
+            return true;
+        }
+
         public void processUnmountItem(ref byte[] rpcData)
         {
             byte sourceSlot = rpcData[0];
