@@ -193,6 +193,36 @@ namespace hds
                     Store.currentClient.FlushQueue();
                 }
 
+                if (command.Equals("?weaken"))
+                {
+                    // Dev command: lower the health of nearby NPCs, so a test fight runs real rounds without taking minutes
+                    if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    {
+                        ushort health = commands.Length > 1 ? UInt16.Parse(commands[1]) : (ushort)100;
+                        double px = 0, py = 0, pz = 0;
+                        NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+                        int weakened = 0;
+                        lock (WorldServer.mobs.SyncRoot)
+                        {
+                            foreach (Mob mob in WorldServer.mobs)
+                            {
+                                double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
+                                if (!mob.getIsDead() && dx * dx + dz * dz < 5000 * 5000 && mob.getHealthC() > health)
+                                {
+                                    mob.setHealthC(health);
+                                    weakened++;
+                                }
+                            }
+                        }
+                        Output.WriteDebugLog("[DEV] Weakened " + weakened + " NPCs to " + health + " health");
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?weaken is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?tradebot"))
                 {
                     // Dev command: trade with a partner played by the server, to test the trade window with one client
