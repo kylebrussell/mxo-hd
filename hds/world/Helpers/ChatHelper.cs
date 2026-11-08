@@ -160,6 +160,15 @@ namespace hds
                     pak.sendSystemChatMessage(Store.currentClient, "Teleported!", "BROADCAST");
                 }
 
+                if (command.Equals("?tactic") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    Enum.TryParse(commands[1], true, out CombatTactic devTactic))
+                {
+                    // Dev command: what the client's RPC 42 does, for testing without its tactic buttons
+                    byte[] request = { (byte)devTactic, 0, 0, 0, 0, 0 };
+                    CombatManager.GetHandler(Store.currentClient).ProcessChangeTactic(ref request);
+                }
+
                 if (command.Equals("?additem") && commands.Length == 2 &&
                     Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1")
                 {
@@ -174,6 +183,20 @@ namespace hds
                     // weapon if none is chosen yet, as when the retail tutorial's looted Redpill Special arrived.
                     new InventoryHandler().processItemAdd(UInt32.Parse(commands[1]), 0x10);
                     Store.currentClient.FlushQueue();
+                }
+
+                if (command.Equals("?tradebot"))
+                {
+                    // Dev command: trade with a partner played by the server, to test the trade window with one client
+                    if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    {
+                        TradeHandler.StartBotTrade(Store.currentClient);
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?tradebot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                    }
                 }
 
                 if (command.Equals("?die"))

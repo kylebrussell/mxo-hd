@@ -6,7 +6,8 @@ namespace hds
     /// <summary>
     /// Health comes back out of combat. Retail sent the own-view Health about once a second while it rose; for
     /// 500-health characters the step was usually +5 (the most common rise in research/packet-dumps), with
-    /// bigger steps for characters with more health, so 1% of the maximum per second.
+    /// bigger steps for characters with more health, so 1% of the maximum per second. In a fight retail's own view kept
+    /// rising, more slowly (see <see cref="CombatCalculator.FIGHT_REGEN_FACTOR"/>).
     /// </summary>
     public static class HealthRegen
     {
@@ -15,12 +16,13 @@ namespace hds
         /// <summary>Health after <paramref name="seconds"/> of regeneration, or null when nothing changes.</summary>
         public static UInt16? Next(UInt16 current, UInt16 max, bool inCombat, bool dead, double seconds)
         {
-            if (inCombat || dead || max == 0 || current >= max || current == 0)
+            if (dead || max == 0 || current >= max || current == 0)
             {
                 return null;
             }
 
-            int step = Math.Max(1, (int)Math.Round(max * FractionPerSecond * seconds));
+            double fraction = inCombat ? FractionPerSecond * CombatCalculator.FIGHT_REGEN_FACTOR : FractionPerSecond;
+            int step = Math.Max(1, (int)Math.Round(max * fraction * seconds));
             return (UInt16)Math.Min(max, current + step);
         }
 

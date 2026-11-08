@@ -115,8 +115,14 @@ namespace hds
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
                 UInt16 targetView = currentTargetViewId;
-                DelayedActions.AfterFor(client, ability.getCastingTime(),
-                    () => AbilityTargets.Land(client, ability, targetView));
+                // An instant ability on the current close-combat target is the player's next move in the fight, as in
+                // retail (RPC 47 kind 6 at once, the 45 of the next round names it); it lands with that round.
+                if (ability.getCastingTime() > 0 ||
+                    !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView))
+                {
+                    DelayedActions.AfterFor(client, ability.getCastingTime(),
+                        () => AbilityTargets.Land(client, ability, targetView));
+                }
             }
         }
 
@@ -200,7 +206,19 @@ namespace hds
         }
 
         /// <summary>
-        /// Regenerates Inner Strength towards the maximum; returns the new value, or null when it was full.
+        /// Whole points to grant this tick. In a fight the rate is <see cref="CombatCalculator.FIGHT_REGEN_FACTOR"/> of normal
+        /// (1.6 a tick), so the fraction is carried over to the next tick.
+        /// </summary>
+        public static int RegenAmount(bool inFight, ref double carry)
+        {
+            double total = carry + (inFight ? InnerStrengthRegenPerTick * CombatCalculator.FIGHT_REGEN_FACTOR : InnerStrengthRegenPerTick);
+            int whole = (int)(total + 1e-9);
+            carry = total - whole;
+            return whole;
+        }
+
+        /// <summary>
+        /// Regenerates Inner Strength towards the maximum; returns the new value, or null when nothing changed.
         /// </summary>
         public static UInt16? RegenerateInnerStrength(WorldClient client)
         {
@@ -208,9 +226,15 @@ namespace hds
             UInt16 max = MaxInnerStrength(client);
             if (max == 0 || current >= max)
             {
+                client.playerData.innerStrengthRegenCarry = 0;
                 return null;
             }
-            UInt16 next = (UInt16)Math.Min(max, current + InnerStrengthRegenPerTick);
+            int amount = RegenAmount(CombatManager.GetHandler(client).isCombatRunning, ref client.playerData.innerStrengthRegenCarry);
+            if (amount == 0)
+            {
+                return null;
+            }
+            UInt16 next = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.InnerStrengthAvailable.setValue(next);
             return next;
         }

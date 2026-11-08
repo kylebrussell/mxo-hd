@@ -53,6 +53,10 @@ namespace hds
             // Stun 1 / Stun 2.0: the effect id is the ability's ActivationFX (abilityIDs.csv); no retail NPC capture
             // shows a landed stun. The 4 s is how long retail's stun effect (StunAbility, 102) stayed on a player.
             { 315, new Effect { HitFx = 0x28000904, StunSeconds = 4 } },
+            // Cheap Shot (luizoe old sniffer 19:45-19:53): the NPC lost 21-25 and once 67 within the next rounds, with
+            // effect 0x280008cd when one was shown; Head Butt (17:11:35): 21, no effect id seen.
+            { 198, new Effect { MinDamage = 21, MaxDamage = 67, HitFx = 0x280008cd } },
+            { 197, new Effect { MinDamage = 21, MaxDamage = 45 } },
             { 333, new Effect { HitFx = 0x28000908, StunSeconds = 4 } },
         };
 
@@ -100,6 +104,12 @@ namespace hds
             }
 
             CombatHandler handler = CombatManager.GetHandler(client);
+            // Stun first: the fight may start here, and its rounds must already see the stun
+            if (effect != null && effect.StunSeconds > 0)
+            {
+                mob.Stun(TimeUtils.GetSimTimeSeconds() + effect.StunSeconds);
+                Output.WriteDebugLog("[ABILITY] " + mob.getName() + " stunned for " + effect.StunSeconds + " s");
+            }
             if (!handler.ApplyAbilityToTarget(targetViewId, damage, fx))
             {
                 StartFight(client, view);
@@ -110,11 +120,6 @@ namespace hds
             }
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
 
-            if (effect != null && effect.StunSeconds > 0)
-            {
-                mob.Stun(TimeUtils.GetSimTimeSeconds() + effect.StunSeconds);
-                Output.WriteDebugLog("[ABILITY] " + mob.getName() + " stunned for " + effect.StunSeconds + " s");
-            }
             if (effect != null && effect.Ticks > 0)
             {
                 ScheduleTick(client, mob, targetViewId, effect, 1);

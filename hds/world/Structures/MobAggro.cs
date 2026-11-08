@@ -44,6 +44,21 @@ namespace hds
             return distanceUnits <= RangeUnits && playerLevel - mob.getLevel() <= LevelGap;
         }
 
+        /// <summary>
+        /// An NPC with a gun opens fire from where it stands when the player is within the gun's reach (Tool/Range);
+        /// the others run up for close combat. Retail: Corrupted fired at entilsar without any request from the client
+        /// (entilsar lastday2, 21:48:40-41).
+        /// </summary>
+        public static bool OpensFire(UInt32 weaponGoid, double distanceUnits)
+        {
+            return RangedWeapons.IsGun(weaponGoid) && OpensFire(RangedWeapons.RangeMetres(weaponGoid), distanceUnits);
+        }
+
+        public static bool OpensFire(float gunRangeMetres, double distanceUnits)
+        {
+            return distanceUnits <= gunRangeMetres * CombatCalculator.WorldUnitsPerMetre;
+        }
+
         /// <summary>Yaw byte (256 steps a turn) for looking from one point to another on the ground plane.</summary>
         public static byte YawTowards(double fromX, double fromZ, double toX, double toZ)
         {
@@ -157,6 +172,16 @@ namespace hds
 
         private static void Attack(WorldClient client, Mob mob, ClientView view, double px, double pz)
         {
+            double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
+            if (OpensFire(mob.getWeapon(), Math.Sqrt(dx * dx + dz * dz)))
+            {
+                Output.WriteDebugLog("[AGGRO] " + mob.getName() + " opens fire on " + client.playerData.getCharID() +
+                                     " (view " + view.ViewID + ")");
+                CombatManager.GetHandler(client).StartNpcGunfight(mob, view);
+                client.FlushQueue();
+                return;
+            }
+
             // The NPC closes in and faces the player
             StopPoint(px, pz, mob.getXPos(), mob.getZPos(), MeleeDistanceUnits, out double x, out double z);
             mob.setXPos(x);

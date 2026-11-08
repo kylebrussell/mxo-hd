@@ -78,6 +78,7 @@ namespace hds{
                 Store.currentClient.playerData.setRPCCounter(0);
                 // The client dropped all its views with the old world, and any fight with them.
                 CombatManager.GetHandler(Store.currentClient).AbandonCombat();
+                TradeHandler.Abort(Store.currentClient);
                 Store.currentClient.viewMan.Clear();
                 lock (Store.currentClient.playerData.openDoors)
                 {
