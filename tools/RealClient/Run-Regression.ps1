@@ -238,17 +238,18 @@ function Test-Booth {
     Sql "delete from inventory where charId=$TheNeo and goid=7336; insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,7336,40,2,0,NOW())"
     try {
         $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
+        Act $cp @{ Walk = @('D:0.3') }           # booth mid-screen, clear of any notification in the corner
         Shot $cp 'booth'
-        Act $cp @{ DoubleClick = @(740, 480); Once = $true }
+        Act $cp @{ DoubleClick = @(590, 430); Once = $true }
         Check 'Upload registers the hardline' (Wait-Log 'Booth \d+ action 4' 10)
         Check 'Upload moves Code Bits to code storage' (Wait-Log '\[CODE STORAGE\] Uploaded' 5)
-        Act $cp @{ RightClick = @(740, 480) }
+        Act $cp @{ RightClick = @(590, 430) }
         Shot $cp 'menu'
-        Act $cp @{ Click = @(648, 462) }
+        Act $cp @{ Click = @(498, 412) }
         Check 'Loading Area asks first' (Wait-Log 'Booth \d+ action 5' 10)
         Act $cp @{ Click = @(550, 433) }     # No
-        Act $cp @{ RightClick = @(740, 480) }
-        Act $cp @{ Click = @(738, 530) }
+        Act $cp @{ RightClick = @(590, 430) }
+        Act $cp @{ Click = @(588, 480) }
         Check 'Exit asks first' (Wait-Log 'Booth \d+ action 3' 10)
         Act $cp @{ Click = @(472, 433) }     # Yes
         Check 'jack out at the booth' (Wait-Log 'Jack out at a hardline' 10)
@@ -285,13 +286,14 @@ function Test-Market {
     $before = Sql "select count(*) from marketplace"
     try {
         $cp = Login -pos $Booth -rotation 0; if (-not $cp) { return }
-        Act $cp @{ RightClick = @(740, 480) }
-        Act $cp @{ Click = @(738, 430) }
+        Act $cp @{ Walk = @('D:0.3') }           # booth mid-screen, clear of any notification in the corner
+        Act $cp @{ RightClick = @(590, 430) }
+        Act $cp @{ Click = @(588, 380) }
         Shot $cp 'open'
-        Act $cp @{ Click = @(800, 313) }     # Items
-        Act $cp @{ Click = @(800, 405) }     # Weapons
-        Act $cp @{ Click = @(800, 405) }     # Handguns
+        # The first row's GO, down the category tree until a search goes out
+        foreach ($i in 1..4) { if (-not (Log-Has '\[MARKET\] Search ')) { Act $cp @{ Click = @(800, 267) } } }
         Check 'search answers' (Wait-Log '\[MARKET\] Search ' 10)
+        Shot $cp 'search'
         Act $cp @{ Click = @(567, 184) }     # Selling
         Act $cp @{ Click = @(325, 217) }     # Possessions filter
         Act $cp @{ Click = @(193, 303) }     # Weapons
