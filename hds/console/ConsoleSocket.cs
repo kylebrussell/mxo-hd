@@ -16,7 +16,7 @@ namespace hds{
         public ConsoleSocket (){
 			this.mainThreadWorking = true;
 			 
-      		this.tcpListener = new TcpListener(IPAddress.Any, consoleport);
+      		this.tcpListener = new TcpListener(NetworkBind.Address, consoleport);
 			Output.WriteLine("[Console] Server console operating on port " + consoleport);
       		this.listenThread = new Thread(new ThreadStart(ListenForClients));
 		}

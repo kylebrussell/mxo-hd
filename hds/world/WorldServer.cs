@@ -138,7 +138,7 @@ namespace hds
             }
 
             serverport = 10000;
-            udplistener = new IPEndPoint(IPAddress.Any, serverport);
+            udplistener = new IPEndPoint(NetworkBind.Address, serverport);
             buffer = new byte[4096];
             socket.Bind(udplistener);
     
