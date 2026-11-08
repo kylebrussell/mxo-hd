@@ -41,7 +41,7 @@ namespace hds
             SendWaypointForCurrentObjective(client);
         }
 
-        /// <summary>Removes the mission's NPCs; the visibility thread deletes their views.</summary>
+        /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
         public static void End(WorldClient client)
         {
             ClientData data = client.playerData;
@@ -63,6 +63,8 @@ namespace hds
                 {
                     WorldServer.gameServerEntities.Remove(mob);
                 }
+
+                Store.world?.DeleteMobViews(mob);
             }
 
             data.activeMission = null;

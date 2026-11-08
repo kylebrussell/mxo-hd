@@ -173,6 +173,21 @@ namespace hds
             is_spawned = spawned;
         }
 
+        /// <summary>Back to life at the spawn point with full health, for a respawn after death.</summary>
+        public void ResetForRespawn()
+        {
+            healthC = healthM;
+            is_dead = false;
+            is_lootable = false;
+            combatTarget = null;
+            mobHitCounter = 0;
+            hitCounter = 0;
+            xPos = xBase;
+            yPos = yBase;
+            zPos = zBase;
+            currentState = (int)statusList.STANDING;
+        }
+
         public ulong getEntityId()
         {
             return entityID;

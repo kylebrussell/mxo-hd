@@ -61,6 +61,7 @@ namespace hds
             death.AddByteArray(BuildNpcDeathUpdate(theMob.NextAnimationSeq(), (byte)theMob.getRotation(),
                 (float)theMob.getXPos(), (float)theMob.getYPos(), (float)theMob.getZPos()));
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(death, theMob);
+            MobLifecycle.Died(theMob);
         }
 
         /// <summary>Dead stance in the movement part (retail NPCs: 0x000d, or 0x0005 on a finishing move).</summary>
