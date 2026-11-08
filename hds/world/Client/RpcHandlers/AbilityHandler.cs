@@ -61,10 +61,18 @@ namespace hds
                 return;
             }
 
+            // Evade Combat used while it is on switches it off (its cooldown starts then); no cost, no cast.
+            if (AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                AbilityBuffs.Remove(Store.currentClient, AbilityID);
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
-            // cooldown starts.
+            // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
             AbilityItem ability = currentAbility;
             bool selfTarget = currentTargetViewId <= 2;
@@ -74,11 +82,18 @@ namespace hds
                 {
                     HealSelf(client, HealAmount(client));
                 }
-                AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
+                if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
+                {
+                    AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
+                }
+                if (AbilityBuffs.Apply(client, ability.getAbilityID()))
+                {
+                    client.FlushQueue();
+                }
             });
 
-            // Attack abilities on the current close-combat target hit it.
-            if (currentTargetViewId > 2 && !currentAbility.getIsBuff())
+            // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
+            if (currentTargetViewId > 2 && !currentAbility.getIsBuff() && !AbilityBuffs.IsBuff(AbilityID))
             {
                 UInt16 damage = AbilityDamage(currentAbility, new Random());
                 CombatManager.GetHandler(Store.currentClient)
@@ -140,11 +155,8 @@ namespace hds
             return (UInt16)random.Next(50, 81);
         }
 
-        /// <summary>
-        /// Inner Strength an ability costs. The data files have no per-ability costs; retail costs seen in
-        /// captures ran from 11 to 40 (Hyper-Speed 40, Logic Blast 3.0 11), so this is a placeholder.
-        /// </summary>
-        public const UInt16 DefaultAbilityCost = 20;
+        /// <summary>Inner Strength cost of abilities without a retail measurement; see AbilityCosts.</summary>
+        public const UInt16 DefaultAbilityCost = AbilityCosts.Default;
 
         /// <summary>Inner Strength regained per timer tick (2 s); retail regenerated about 4 a second.</summary>
         public const UInt16 InnerStrengthRegenPerTick = 8;
@@ -186,9 +198,10 @@ namespace hds
 
         public void ProcessAbilityScript(AbilityItem abilityItem)
         {
-            // The cost is paid when the ability is used. This used to set Inner Strength to 50 after every
-            // ability (and Hyper-Speed and the cast animation sent their own fixed values, 50 and 237).
-            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, DefaultAbilityCost);
+            // The cost is paid when the ability is used: the retail cost (AbilityCosts), 20 when unknown. This used
+            // to set Inner Strength to 50 after every ability (and Hyper-Speed and the cast animation sent their
+            // own fixed values, 50 and 237), then cost a flat 20.
+            UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Cost(abilityItem.getAbilityID()));
 
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();
@@ -200,9 +213,18 @@ namespace hds
 
             processCharacterAnimationSelf(abilityItem.getAbilityID());
 
-            if (currentAbility.getAbilityID() == 12 || currentAbility.getAbilityID() == 184)
+            if (currentAbility.getAbilityID() == 12)
             {
                 pak.SendHyperSpeed(innerStrength);
+            }
+            else if (AbilityBuffs.Retail.TryGetValue(currentAbility.getAbilityID(), out AbilityBuffs.Buff buff) &&
+                     buff.MovementScale > 0)
+            {
+                // Hyper-Sprint: its own speed (0.15) and effect; it used to get Hyper-Speed's.
+                byte counter = (byte)Store.currentClient.playerData.assignSpawnIdCounter();
+                Store.currentClient.messageQueue.addObjectMessage(
+                    AbilityBuffs.BuildMovementBuffUpdate(buff, innerStrength, counter), false);
+                Store.currentClient.FlushQueue();
             }
             else
             {

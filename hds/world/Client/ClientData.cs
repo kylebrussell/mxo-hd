@@ -66,6 +66,11 @@ namespace hds
 		// Sim time (s) at which each ability's or cooldown group's cooldown ends; see AbilityCooldowns
 		public readonly Dictionary<UInt16, double> cooldownEndsAt = new Dictionary<UInt16, double>();
 
+		// Buffs the player has on, by ability id, and the next buff record id; see AbilityBuffs
+		public readonly Dictionary<UInt16, AbilityBuffs.Active> activeBuffs = new Dictionary<UInt16, AbilityBuffs.Active>();
+		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
+		public int buffGeneration = 0;
+
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one
 		public int combatGeneration = 0;
 
