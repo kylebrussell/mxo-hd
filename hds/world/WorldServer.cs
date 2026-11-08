@@ -453,6 +453,32 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Deletes an NPC's view from every client that has it. For NPCs taken out of the mob list (mission NPCs
+        /// when the mission ends): the visibility thread only deletes views of NPCs it still finds in that list.
+        /// </summary>
+        public void DeleteMobViews(Mob mob)
+        {
+            lock (Clients)
+            {
+                foreach (string clientKey in Clients.Keys)
+                {
+                    WorldClient client = Clients[clientKey] as WorldClient;
+                    ClientView mobView = client?.viewMan.FindViewForEntity(mob.getEntityId());
+                    if (mobView == null)
+                    {
+                        continue;
+                    }
+
+                    client.viewMan.removeViewByViewId(mobView.ViewID);
+                    if (mobView.viewCreated)
+                    {
+                        new ServerPackets().sendDeleteViewPacket(client, mobView.ViewID);
+                    }
+                }
+            }
+        }
+
         public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob)
         {
             lock (Clients)
@@ -460,8 +486,10 @@ namespace hds
                 foreach (string clientKey in Clients.Keys)
                 {
                     WorldClient client = Clients[clientKey] as WorldClient;
-                    ClientView mobView = client.viewMan.GetViewForEntityAndGo(mob.getEntityId(), NumericalUtils.ByteArrayToUint16(mob.getGoId(), 1));
-                    if (mobView.viewCreated == true && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
+                    // Look up only: GetViewForEntityAndGo would hand every client without the NPC a view id it never
+                    // spawns, and the client's view ids would then run one behind the server's.
+                    ClientView mobView = client.viewMan.FindViewForEntity(mob.getEntityId());
+                    if (mobView != null && mobView.viewCreated && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                     {
                         ServerPackets pak = new ServerPackets();
                         pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket());

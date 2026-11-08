@@ -510,7 +510,8 @@ namespace hds
                 {
                     foreach (Mob thismob in cell)
                     {
-                        if (thismob == null)
+                        // Unspawned NPCs (corpse gone, waiting to respawn) aren't nearby, so their views get deleted below
+                        if (thismob == null || !thismob.getIsSpawned())
                         {
                             continue;
                         }
@@ -524,6 +525,14 @@ namespace hds
                         }
 
                         nearbyMobEntities.Add(thismob.getEntityId());
+
+                        // A corpse stays for players who saw the NPC die; newcomers don't get it (it would spawn
+                        // standing with 0 health). No view lookup here: GetViewForEntityAndGo hands out a view id,
+                        // and one the client never sees spawned puts every later view id one off.
+                        if (thismob.getIsDead())
+                        {
+                            continue;
+                        }
 
                         // Spawn Mob if its in Visibility Range
                         ClientView mobView = thisclient.viewMan.GetViewForEntityAndGo(thismob.getEntityId(),
