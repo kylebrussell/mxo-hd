@@ -48,6 +48,19 @@ namespace hds
 
         // Combat tracking - which player is this mob fighting
         private WorldClient combatTarget = null;
+
+        // Sim time (s) until which the NPC is stunned and doesn't attack; see AbilityTargets
+        private double stunnedUntil = 0;
+
+        public void Stun(double until)
+        {
+            stunnedUntil = Math.Max(stunnedUntil, until);
+        }
+
+        public bool IsStunned(double now)
+        {
+            return now < stunnedUntil;
+        }
         private UInt16 mobHitCounter = 0;
 
         public enum statusList
@@ -565,6 +578,13 @@ namespace hds
         {
             if (combatTarget == null || is_dead)
             {
+                return false;
+            }
+
+            // A stunned NPC skips its attack (Stun 1 / Stun 2.0)
+            if (IsStunned(TimeUtils.GetSimTimeSeconds()))
+            {
+                Output.WriteDebugLog($"[COMBAT] {name} is stunned and doesn't attack");
                 return false;
             }
 

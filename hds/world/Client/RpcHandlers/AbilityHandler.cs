@@ -102,9 +102,12 @@ namespace hds
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             if (currentTargetViewId > 2 && !currentAbility.getIsBuff() && !AbilityBuffs.IsBuff(AbilityID))
             {
-                UInt16 damage = AbilityDamage(currentAbility, new Random());
-                CombatManager.GetHandler(Store.currentClient)
-                    .ApplyAbilityToTarget(currentTargetViewId, damage, currentAbility.getActivationFX());
+                // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
+                // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
+                // and only on the close-combat target.
+                UInt16 targetView = currentTargetViewId;
+                DelayedActions.AfterFor(client, ability.getCastingTime(),
+                    () => AbilityTargets.Land(client, ability, targetView));
             }
         }
 
