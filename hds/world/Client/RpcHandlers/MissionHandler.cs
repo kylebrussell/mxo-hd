@@ -29,7 +29,7 @@ namespace hds
             }
 
             Mission mission = list[data.selectedMissionIndex];
-            new TeamHandler().checkAndCreateMissionTeam(Store.currentClient);
+            SocialHandler.EnsureTeam(Store.currentClient);
 
             data.missionInstanceCounter++;
             data.activeMission = mission;
@@ -54,7 +54,7 @@ namespace hds
         public void processMissionList(ref byte[] packet)
         {
             
-            new TeamHandler().checkAndCreateMissionTeam(Store.currentClient);
+            SocialHandler.EnsureTeam(Store.currentClient);
             PacketReader reader = new PacketReader(packet);
 
             // Retail: the first u16 is a per-session request number the server copies back into every
@@ -67,16 +67,6 @@ namespace hds
             Store.currentClient.playerData.selectedMissionIndex = -1;
             pak.sendMissionList(txn, orgID, Store.currentClient.playerData.currentMissionList, Store.currentClient);
             Output.WriteDebugLog("[MISSION] Listed " + Store.currentClient.playerData.currentMissionList.Count + " missions");
-        }
-
-        public void processInvitePlayerToMissionTeam(ref byte[] packet)
-        {
-            // Read the Data
-            PacketReader reader = new PacketReader(packet);
-            UInt32 unknownUint = reader.ReadUInt32(1); // Maybe its just an offset of uint8 - we dont care and know lol
-            reader.IncrementOffsetByValue(1);
-            String handleToInvite = reader.ReadSizedZeroTerminatedString();
-            // ToDo: implement the right response for the player who get the invite
         }
 
         public void processLoadMissionInfo(ref byte[] packet)
