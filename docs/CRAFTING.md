@@ -35,12 +35,46 @@ The recipes form a chain:
 `CraftingHandler.Compile(resultGoid)`:
 
 1. looks up the recipe;
-2. takes one bag slot (below 97) per ingredient, lowest slots first;
-3. removes them with `5f <slot> 01`;
-4. puts the result into the first free slot with `5e`.
+2. takes one item per ingredient from the bag (below slot 97), lowest slots first; a stack gives several;
+3. takes each one out: a stack shrinks (`69 01`), the last item leaves its slot (`5f <slot> 01`);
+4. adds the result: a fragment joins a stack of its kind, anything else takes the first free slot (`5e`).
 
-Those are the same inventory messages retail used for sells and loot. If an ingredient is missing, the reply lists what is missing.
-The dev chat command `?compile <goid>` runs it.
+If an ingredient is missing, the reply lists what is missing. The dev chat command `?compile <goid>` runs it.
+
+A Compile request is expected as `80 b9` with CompileActivateAbility (969), since retail's Write Code (970,
+WriteCodeActivateAbility) came as `80 b9`. This is a guess: `CraftingHandler.HandleCompileRequest` logs the body
+and compiles the first known recipe goid found in it.
+
+## Known recipes (margin opcode 0x0a)
+
+The margin's character data block 0x0a is the known-recipe list: u32 `4`, then recipe result goids. All 425 goids
+in the list the margin always sent are cookbook results (tools, weapons, clothing). The server now adds the 47
+recipes made only of Code Bits (the fragments) and the five health pills (`Crafting.BuildKnownRecipesBlock`).
+There is no per-character list yet.
+
+## Stacks
+
+Retail keeps a stack's size as (count - 1) * 4 (`ItemStacks`):
+
+- **Item add:** the third descriptor byte of `5e <slot u16> <goid u32> 00 00 <amount> <type> 01`, e.g. a marketplace stack of 20 Code Bit 8: `5e 44 00 ab 1c 00 00 00 00 4c 00 01`. Listing prices confirm it: 20 sold for 20,000, 9 (`20`) for 9,000, 4 (`0c`) for 4,000.
+- **Stack update:** `69 01 <slot u32> <(count - 1) * 4 u32>`. Icy Snowballs bought one at a time sent `5e` with amount 00, then `69 01 36 00 00 00` with 04, 08, 0c, and so on. A used Oracle cookie sent `69 01` instead of `5f`.
+
+The database's `inventory.count` holds the stack size (0, as in every older row, means one). The margin sends the
+amount byte at login. Code Bits, code fragments and consumables stack, up to 64 (the largest the byte holds;
+retail's real limit is unknown).
+
+## Retail rules in the client's scripts
+
+The client's `resource/Python/Monolith.ltp` is a zip archive with `LTPb` in place of `PK`. It holds the
+Python 2.5 rule scripts, including `crafting_server.pyc`, `recipes.pyc` and `ability/hacker/crafting.pyc`.
+`CompileTest` in `crafting_server.pyc`:
+
+- **Info cost:** `VendorPrice` × `constants.Crafting.CompileCompileCostMultiplier`, with 1000 for items without a price. It is reduced by CraftingCostDiscountAbility and the signal boost.
+- **Not enough info:** "not enough info to compile"; nothing is spent.
+- **Success:** if 4 × (CompileSkillAbility level + 10% of the category crafting ability) + gauss(50, 0..100) beats 4 × the item's `Complexity` + 50.
+- **Info is spent** on success and failure alike.
+
+The multiplier and the per-item `Complexity` are not in the client files, so the server does not charge yet.
 
 ## Retail evidence
 
@@ -70,5 +104,7 @@ The dev chat command `?compile <goid>` runs it.
   2. click Compile;
   3. read `UnknownRPC.txt`.
 - How known recipes reach the client (`RecipeListMD5`), and how decompiling teaches them.
-- The info cost of a compile (`CompileCost`, `CompileCompileCostMultiplier`).
-- Code storage (uploading at hardlines, and taking ingredients from storage instead of the bag).
+- The values behind the compile info cost and success roll (`CompileCompileCostMultiplier`, `Complexity`).
+- Code storage (uploading at hardlines: the `69 00` fields are not decoded), and taking ingredients from storage.
+- Per-character known recipes (a database table) and decompiling, which teaches them.
+- Retail's real stack limit, and whether recycling a stack pays for every item (it pays for one now).

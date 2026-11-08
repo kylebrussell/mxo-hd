@@ -59,6 +59,8 @@ namespace hds.databases.interfaces{
         void setBackground(string backgroundText);
         UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId);
         List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
+        void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);
+        void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);
         bool IsSlotinUseByItem(UInt16 slotId);
 

@@ -1112,18 +1112,33 @@ namespace hds.databases{
         {
 	        OpenConnection();
             queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = "SELECT slot, goid FROM inventory WHERE charId = '" + charId + "' ORDER BY slot";
+            queryExecuter.CommandText = "SELECT slot, goid, count FROM inventory WHERE charId = '" + charId + "' ORDER BY slot";
             dr = queryExecuter.ExecuteReader();
 
             List<Crafting.InventoryItem> items = new List<Crafting.InventoryItem>();
             while (dr.Read())
             {
                 items.Add(new Crafting.InventoryItem(Convert.ToUInt16(dr.GetValue(0)),
-                    Convert.ToUInt32(Convert.ToInt64(dr.GetValue(1)))));
+                    Convert.ToUInt32(Convert.ToInt64(dr.GetValue(1))), ItemStacks.CountFromDb(Convert.ToInt32(dr.GetValue(2)))));
             }
             dr.Close();
 	        CloseConnection();
             return items;
+        }
+
+        /// <summary>Sets how many items the stack in a slot holds (inventory.count).</summary>
+        public void SetInventoryCount(UInt16 slotId, UInt32 charId, int count)
+        {
+	        ExecuteNonResultQuery("UPDATE inventory SET count = '" + count + "' WHERE charId = '" + charId +
+	                              "' AND slot = '" + slotId + "' LIMIT 1");
+        }
+
+        /// <summary>Adds a stack of <paramref name="count"/> items to a slot.</summary>
+        public void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count)
+        {
+	        UInt32 charID = Store.currentClient.playerData.getCharID();
+            ExecuteNonResultQuery("INSERT INTO inventory SET charId = '" + charID + "' , goid = '" + itemGoID +
+                                  "', slot = '" + slotId + "', count = '" + count + "', created = NOW() ");
         }
 
 	    public void SaveInfo(WorldClient client, long cash)

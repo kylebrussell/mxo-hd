@@ -27,11 +27,14 @@ namespace hds
         {
             public UInt16 Slot;
             public UInt32 Goid;
+            /// <summary>Items in the slot (a stack); at least 1.</summary>
+            public int Count;
 
-            public InventoryItem(UInt16 slot, UInt32 goid)
+            public InventoryItem(UInt16 slot, UInt32 goid, int count = 1)
             {
                 Slot = slot;
                 Goid = goid;
+                Count = Math.Max(1, count);
             }
         }
 
@@ -87,31 +90,37 @@ namespace hds
         }
 
         /// <summary>
-        /// The inventory slots that pay for a recipe, one slot per ingredient (a stack counts as one item),
-        /// or null when an ingredient is missing. Only bag slots (below 97, the worn items) are used.
+        /// The inventory slots that pay for a recipe, one entry per ingredient item (a slot appears twice when two
+        /// items come from its stack), or null when an ingredient is missing. Only bag slots (below 97, the worn
+        /// items) are used, lowest slots first.
         /// </summary>
         public static List<UInt16> MatchIngredients(Recipe recipe, IEnumerable<InventoryItem> inventory)
         {
-            List<InventoryItem> available = new List<InventoryItem>();
-            foreach (InventoryItem item in inventory)
+            List<InventoryItem> available = BagItems(inventory);
+            int[] left = new int[available.Count];
+            for (int i = 0; i < available.Count; i++)
             {
-                if (item.Slot < 97)
-                {
-                    available.Add(item);
-                }
+                left[i] = available[i].Count;
             }
-            available.Sort((a, b) => a.Slot.CompareTo(b.Slot));
 
             List<UInt16> used = new List<UInt16>();
             foreach (UInt32 ingredient in recipe.Ingredients)
             {
-                int index = available.FindIndex(item => item.Goid == ingredient);
+                int index = -1;
+                for (int i = 0; i < available.Count; i++)
+                {
+                    if (available[i].Goid == ingredient && left[i] > 0)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
                 if (index < 0)
                 {
                     return null;
                 }
+                left[index]--;
                 used.Add(available[index].Slot);
-                available.RemoveAt(index);
             }
             return used;
         }
@@ -119,24 +128,104 @@ namespace hds
         /// <summary>The goids a recipe still lacks (each missing one listed once per missing copy).</summary>
         public static List<UInt32> MissingIngredients(Recipe recipe, IEnumerable<InventoryItem> inventory)
         {
-            List<UInt32> available = new List<UInt32>();
-            foreach (InventoryItem item in inventory)
+            Dictionary<UInt32, int> have = new Dictionary<UInt32, int>();
+            foreach (InventoryItem item in BagItems(inventory))
             {
-                if (item.Slot < 97)
-                {
-                    available.Add(item.Goid);
-                }
+                have.TryGetValue(item.Goid, out int n);
+                have[item.Goid] = n + item.Count;
             }
 
             List<UInt32> missing = new List<UInt32>();
             foreach (UInt32 ingredient in recipe.Ingredients)
             {
-                if (!available.Remove(ingredient))
+                if (have.TryGetValue(ingredient, out int n) && n > 0)
+                {
+                    have[ingredient] = n - 1;
+                }
+                else
                 {
                     missing.Add(ingredient);
                 }
             }
             return missing;
+        }
+
+        private static List<InventoryItem> BagItems(IEnumerable<InventoryItem> inventory)
+        {
+            List<InventoryItem> bag = new List<InventoryItem>();
+            foreach (InventoryItem item in inventory)
+            {
+                if (item.Slot < 97)
+                {
+                    bag.Add(item);
+                }
+            }
+            bag.Sort((a, b) => a.Slot.CompareTo(b.Slot));
+            return bag;
+        }
+
+        /// <summary>
+        /// The margin's known-recipe block (character data opcode 0x0a): u32 4, then the result goid (u32) of
+        /// every recipe the character knows; the Code Writer lists these. All 425 goids of the list the margin
+        /// sent until now are cookbook results (tools, weapons, clothing, ...). This keeps that list and adds the
+        /// recipes that turn Code Bits into code fragments and the health pill recipes, so Code Bits looted from
+        /// NPCs can be compiled.
+        /// </summary>
+        public static byte[] BuildKnownRecipesBlock(byte[] baseBlock)
+        {
+            List<UInt32> goids = new List<UInt32>();
+            HashSet<UInt32> seen = new HashSet<UInt32>();
+            for (int i = 4; i + 4 <= baseBlock.Length; i += 4)
+            {
+                UInt32 goid = BitConverter.ToUInt32(baseBlock, i);
+                if (seen.Add(goid))
+                {
+                    goids.Add(goid);
+                }
+            }
+
+            foreach (UInt32 goid in ExtraKnownRecipes())
+            {
+                if (seen.Add(goid))
+                {
+                    goids.Add(goid);
+                }
+            }
+
+            byte[] block = new byte[4 + goids.Count * 4];
+            Array.Copy(baseBlock, 0, block, 0, Math.Min(4, baseBlock.Length));
+            for (int i = 0; i < goids.Count; i++)
+            {
+                BitConverter.GetBytes(goids[i]).CopyTo(block, 4 + i * 4);
+            }
+            return block;
+        }
+
+        /// <summary>Recipes made only of Code Bits (the code fragments), plus the health pills.</summary>
+        public static List<UInt32> ExtraKnownRecipes()
+        {
+            List<UInt32> extra = new List<UInt32>();
+            foreach (Recipe recipe in Recipes.Values)
+            {
+                bool fromBits = recipe.Ingredients.Length > 0;
+                foreach (UInt32 ingredient in recipe.Ingredients)
+                {
+                    fromBits &= ingredient >= 7332 && ingredient <= 7339;
+                }
+                if (fromBits)
+                {
+                    extra.Add(recipe.ResultGoid);
+                }
+            }
+            extra.Sort();
+            foreach (UInt32 pill in new UInt32[] { 2399, 6897, 6924, 6925, 7913 })
+            {
+                if (Recipes.ContainsKey(pill))
+                {
+                    extra.Add(pill);
+                }
+            }
+            return extra;
         }
     }
 }

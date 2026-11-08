@@ -25,16 +25,68 @@ namespace hds
 
         public void processItemAdd(UInt32 itemID, UInt16 type)
         {
-            
-            // ToDo: Get free slot, add item to Inventory
-            // This method is called from looting and vendor buy (so vendor buy must care about money decrease)
+            // Called from looting and vendor buy (vendor buy takes care of the money).
+            AddItem(Store.currentClient, itemID, type);
+        }
+
+        /// <summary>
+        /// Puts one item into the inventory. A stackable item (Code Bits, code fragments, pills) joins a stack of the
+        /// same item that has room (inventory.count + 1, <c>69 01 &lt;slot&gt; &lt;(count-1)*4&gt;</c>); anything else, or
+        /// a full stack, takes the first free bag slot (<c>5e</c>). Returns the slot.
+        /// </summary>
+        public static UInt16 AddItem(WorldClient client, UInt32 itemID, UInt16 type)
+        {
+            UInt32 charId = client.playerData.getCharID();
+            ServerPackets pak = new ServerPackets();
+
+            if (ItemStacks.IsStackable(itemID))
+            {
+                foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(charId))
+                {
+                    if (item.Slot < 97 && item.Goid == itemID && item.Count < ItemStacks.MaxStack)
+                    {
+                        int count = item.Count + 1;
+                        Store.dbManager.WorldDbHandler.SetInventoryCount(item.Slot, charId, count);
+                        client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(item.Slot, count));
+                        Output.WriteDebugLog("[INVENTORY] Item " + itemID + " stacked in slot " + item.Slot + " (" + count + ")");
+                        return item.Slot;
+                    }
+                }
+            }
+
             UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
             Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemID);
+            pak.sendInventoryItemAdd(freeSlot, itemID, 0, type, client);
+            return freeSlot;
+        }
 
-            ServerPackets pak = new ServerPackets();
-            ushort amount = 0; // ToDo : make this dynamic lol
-            pak.sendInventoryItemAdd(freeSlot, itemID, amount, type, Store.currentClient);
+        /// <summary>
+        /// Takes one item out of a slot: a stack shrinks by one (<c>69 01</c>, as retail did for a used cookie), the
+        /// last item leaves the slot (<c>5f &lt;slot&gt; 01</c>).
+        /// </summary>
+        public static void RemoveOne(WorldClient client, UInt16 slot)
+        {
+            UInt32 charId = client.playerData.getCharID();
+            int count = 1;
+            foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(charId))
+            {
+                if (item.Slot == slot)
+                {
+                    count = item.Count;
+                    break;
+                }
+            }
 
+            if (count > 1)
+            {
+                Store.dbManager.WorldDbHandler.SetInventoryCount(slot, charId, count - 1);
+                client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(slot, count - 1));
+            }
+            else
+            {
+                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+                new ServerPackets().sendInventoryItemDelete(slot, client);
+            }
         }
 
         public void processItemDelete(ref byte[] packet)
@@ -124,13 +176,11 @@ namespace hds
                 client.FlushQueue();
             }
 
-            UInt32 charId = data.getCharID();
             DelayedActions.AfterFor(client, castTime, () =>
             {
                 AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds,
                     TimeUtils.GetSimTimeSeconds());
-                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-                new ServerPackets().sendInventoryItemDelete(slot, client);
+                RemoveOne(client, slot);
                 client.FlushQueue();
                 if (consumable.Effect == ConsumableItems.Effect.Heal)
                 {
