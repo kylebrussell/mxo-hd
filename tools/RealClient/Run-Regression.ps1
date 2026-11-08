@@ -77,6 +77,17 @@ function Shot([int]$cp, [string]$name) {
 # Runs the client tool for one client and ignores its summary line; Check the result from the logs.
 function Act([int]$cp, [hashtable]$a) { $a.ClientPid = $cp; & $tool @a 2>&1 | Out-Null }
 
+# Clicks a button and, when a log line proves it worked, retries a dropped click: the game reads the real cursor once
+# per frame, so a click posted just after moving it can miss the hover.
+function Click-Until([int]$cp, [int[]]$at, [string]$what, [string]$pattern) {
+    if (-not $pattern) { Act $cp @{ Click = $at }; return }
+    foreach ($try in 1..3) {
+        Act $cp @{ Click = $at }
+        if (Wait-Log $pattern 3) { return }
+        Write-Host "  no answer to $what, clicking again"
+    }
+}
+
 function Stop-Everything {
     Get-Process matrix -ErrorAction SilentlyContinue | Stop-Process -Force
     if ($script:server) {
@@ -289,23 +300,25 @@ function Test-Market {
         Act $cp @{ Walk = @('D:0.3') }           # booth mid-screen, clear of any notification in the corner
         Act $cp @{ RightClick = @(590, 430) }
         Act $cp @{ Click = @(588, 380) }
+        Act $cp @{ Drag = @(500, 141, 500, 10) }     # the window up, clear of any notification: contents move by -131
         Shot $cp 'open'
-        # The first row's GO, down the category tree until a search goes out
-        foreach ($i in 1..4) { if (-not (Log-Has '\[MARKET\] Search ')) { Act $cp @{ Click = @(800, 267) } } }
-        Check 'search answers' (Wait-Log '\[MARKET\] Search ' 10)
+        Click-Until $cp @(800, 182) 'Weapons' $null  # Items
+        Click-Until $cp @(800, 274) 'Handguns' $null # Weapons
+        Click-Until $cp @(800, 274) 'search' '\[MARKET\] Search '   # Handguns
+        Check 'search answers' (Log-Has '\[MARKET\] Search ')
         Shot $cp 'search'
-        Act $cp @{ Click = @(567, 184) }     # Selling
-        Act $cp @{ Click = @(325, 217) }     # Possessions filter
-        Act $cp @{ Click = @(193, 303) }     # Weapons
-        Act $cp @{ Drag = @(220, 252, 600, 380) }
-        Act $cp @{ Click = @(510, 338) }
+        Act $cp @{ Click = @(567, 53) }      # Selling
+        Act $cp @{ Click = @(325, 86) }      # Possessions filter
+        Act $cp @{ Click = @(193, 172) }     # Weapons
+        Act $cp @{ Drag = @(220, 121, 600, 249) }
+        Act $cp @{ Click = @(510, 207) }
         Act $cp @{ TypeText = '1000' }
         Shot $cp 'price'
-        Act $cp @{ Click = @(453, 419) }
+        Act $cp @{ Click = @(453, 288) }
         Check 'listing an item' (Wait-Log '\[MARKET\] \d+ listed goid 2565' 10)
         Shot $cp 'listed'
-        Act $cp @{ Click = @(799, 266) }
-        Check 'De-list returns it' (Wait-Log '\[MARKET\] \d+ delisted listing' 10)
+        Click-Until $cp @(799, 135) 'De-list' '\[MARKET\] \d+ delisted listing'
+        Check 'De-list returns it' (Log-Has '\[MARKET\] \d+ delisted listing')
         Shot $cp 'delisted'
     }
     finally {
