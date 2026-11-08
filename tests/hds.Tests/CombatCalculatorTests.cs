@@ -41,10 +41,31 @@ public class CombatCalculatorTests
     }
 
     [Fact]
-    public void BlockRegainsInnerStrengthAndOtherTacticsPay()
+    public void BlockRegainsInnerStrengthAndOtherTacticsCostNothing()
     {
+        // combat.GetInnerStrengthUsed: Block regains 10, the other tactics cost nothing
         Assert.Equal(10, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Block));
-        Assert.Equal(-CombatCalculator.COMBAT_ROUND_IS_COST, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Power));
+        Assert.Equal(0, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Speed));
+        Assert.Equal(0, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Power));
+        Assert.Equal(0, CombatCalculator.RoundInnerStrengthChange(CombatTactic.Grab));
+    }
+
+    [Fact]
+    public void TacticChangesCostNothing()
+    {
+        Assert.Equal(0, CombatCalculator.TACTIC_CHANGE_IS_COST);
+    }
+
+    [Fact]
+    public void InnerStrengthRegenIsFullOutOfAFightAndAFifthInOne()
+    {
+        double carry = 0;
+        Assert.Equal(8, AbilityHandler.RegenAmount(false, ref carry));
+        Assert.Equal(0, carry);
+
+        int total = 0;
+        for (int tick = 0; tick < 5; tick++) total += AbilityHandler.RegenAmount(true, ref carry);
+        Assert.Equal(8, total); // 1.6 a tick, with the fraction carried over
     }
 
     [Fact]

@@ -74,6 +74,9 @@ namespace hds
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;
 		public CombatTacticType combatTacticType = CombatTacticType.Normal;
+
+		// The part of a point of Inner Strength regenerated but not yet granted; see AbilityHandler.RegenAmount
+		public double innerStrengthRegenCarry = 0;
 		public UInt16[] tacticRecordIds = null;
 
 		// Bumped when a fight starts, so a delayed out-of-combat reset from the last fight doesn't end a new one

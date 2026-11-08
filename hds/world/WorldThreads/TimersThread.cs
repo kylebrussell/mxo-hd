@@ -75,13 +75,6 @@ namespace hds
                 return;
             }
 
-            // A fight pays Inner Strength per round instead (CombatHandler.DrainCombatIS); regenerating 8 every 2 s
-            // would hide the drain. Retail regenerated 80% slower in a fight (see CombatInterlock.BuildCombatEffectRecords).
-            if (CombatManager.GetHandler(thisclient).isCombatRunning)
-            {
-                return;
-            }
-
             UInt16? innerStrength = AbilityHandler.RegenerateInnerStrength(thisclient);
             if (innerStrength.HasValue)
             {

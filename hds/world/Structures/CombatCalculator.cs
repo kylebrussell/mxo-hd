@@ -234,17 +234,16 @@ namespace hds
         #region Tactic System
 
         /// <summary>
-        /// Inner Strength a tactic change costs in a fight. This server's rule, not retail's: combat.GetInnerStrengthUsed in
-        /// the client's Monolith.ltp has no such cost and captures show none (see docs/COMBAT-SYSTEM-ROADMAP.md). Set to 0
-        /// for retail's behaviour.
+        /// Inner Strength a tactic change costs in a fight: none in retail. combat.GetInnerStrengthUsed in the client's
+        /// Monolith.ltp has no such cost and captures show none (see docs/COMBAT-SYSTEM-ROADMAP.md).
         /// </summary>
-        public const int TACTIC_CHANGE_IS_COST = 10;
+        public const int TACTIC_CHANGE_IS_COST = 0;
 
         /// <summary>
-        /// Inner Strength a combat round costs. This server's rule, not retail's: retail's only effects on it in a fight were
-        /// 80% less regeneration (CombatEffectAbility) and the Block gain. Set to 0 for retail's behaviour.
+        /// Inner Strength a combat round costs: none in retail, whose only effects on it in a fight were slower
+        /// regeneration (CombatEffectAbility) and the Block gain.
         /// </summary>
-        public const int COMBAT_ROUND_IS_COST = 2;
+        public const int COMBAT_ROUND_IS_COST = 0;
 
         /// <summary>combat.GetInnerStrengthUsed: a round on Block regains 10 (with the GainISFromBlocks console variable).</summary>
         public const int BLOCK_ROUND_IS_GAIN = 10;
@@ -254,6 +253,13 @@ namespace hds
         {
             return tactic == CombatTactic.Block ? BLOCK_ROUND_IS_GAIN : -COMBAT_ROUND_IS_COST;
         }
+
+        /// <summary>
+        /// Regeneration in a fight as a share of the normal rate. Retail's CombatEffectAbility records put -80 on the Inner
+        /// Strength and health regen rate stats. Reading that as -80% is inferred: the scripts don't state it, and in 20
+        /// captures in-fight Inner Strength regen ran at a median 0.42 of the out-of-fight rate, 0.25-0.33 in the lowest logs.
+        /// </summary>
+        public const double FIGHT_REGEN_FACTOR = 0.2;
 
         /// <summary>Damage dealt with this tactic (DamagePercentAbility): Speed 100%, Power 120%, Grab 85%, Block none.</summary>
         public static float TacticDamageMultiplier(CombatTactic tactic)

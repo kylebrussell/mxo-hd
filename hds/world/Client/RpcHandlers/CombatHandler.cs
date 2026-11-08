@@ -132,8 +132,11 @@ namespace hds
                     packets.sendSystemChatMessage(client, "Not enough Inner Strength to change tactics!", "SYSTEM");
                     return;
                 }
-                client.playerInstance.InnerStrengthAvailable.setValue(remaining.Value);
-                packets.sendISCurrent(client, remaining.Value);
+                if (remaining.Value != currentIS)
+                {
+                    client.playerInstance.InnerStrengthAvailable.setValue(remaining.Value);
+                    packets.sendISCurrent(client, remaining.Value);
+                }
             }
 
             CombatTactics.Select(client, tactic);
@@ -632,14 +635,9 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}, Tactic: {session.AttackerTactic}");
 
-            // Drain IS for combat round (not while only an NPC fires at the player)
-            if (session.PlayerFiring)
-            {
-                DrainCombatIS(session.Attacker);
-            }
-
             if (session.Type == CombatSession.CombatType.Melee && session.DefenderMob != null)
             {
+                ApplyRoundInnerStrength(session.Attacker);
                 ResolveCloseCombatRound(session);
                 return;
             }
@@ -731,9 +729,9 @@ namespace hds
         }
 
         /// <summary>
-        /// Inner Strength for a combat round: the drain (this server's rule) or, on Block, retail's gain.
+        /// Inner Strength for a close-combat round: retail's combat.GetInnerStrengthUsed, which only gives Block +10.
         /// </summary>
-        private void DrainCombatIS(WorldClient player)
+        private void ApplyRoundInnerStrength(WorldClient player)
         {
             byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
             if (isBytes == null || isBytes.Length < 2) return;

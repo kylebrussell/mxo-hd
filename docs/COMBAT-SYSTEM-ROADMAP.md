@@ -14,7 +14,7 @@ The combat system is functional with bidirectional combat and tactical options:
 - **Distance-based damage** for ranged combat with falloff
 - **Loot system** works - shows money reward on mob kill
 - **Tactics and rounds** follow retail's rules, taken from the combat scripts in the client (see "Close combat by retail's own rules" below)
-- **Inner Strength** drains during combat and tactic changes (this server's rule, not retail's), and Block regains it
+- **Inner Strength** costs nothing in a fight, as in retail; Block regains it and regen is slower
 
 ### Real-client check (2026-11-07, 7.6005 client)
 
@@ -82,7 +82,7 @@ Close combat by retail's own rules (2026-11-08):
 - **Energized and Precise:** RPC 42's TacticType 1 and 2 (client.dll's IExx and IPxx button events). Energized gives +15% damage and -15% attack roll, Precise the reverse (`combat_calculations`).
 - **Combat log:** the u16 after the weapon in `81 68` is the attacker's tactic. That's where "Speed Redpill Special" comes from. 81 68 is gunfire only; melee uses RPC 45.
 - **Conditions:** Speed causes Daze (0x02), Grab Off Balance (0x04), Power Staggered (0x08) on the NPC's ConditionStateFlags for 10 s. Staggered adds 5% damage taken. **Guess:** the 25% chance per landed hit; captures show the conditions but not their odds. Retail's vulnerability scripts exist, but RPC 4f was all zeros in all 109 captures, so they appear to have been switched off. **Not done:** the conditions on the player's own view.
-- **Inner Strength:** retail doesn't charge for tactic changes or rounds. `combat.GetInnerStrengthUsed` returns 0 except Block's +10 per round, and captures show IS regenerating through tactic changes; a fight only slows regen by 80% (CombatEffectAbility records, now sent). This server still charges 10 per change and 2 per round because that was asked for, and it pauses regen in a fight so the drain shows. To get retail's behaviour, set `TACTIC_CHANGE_IS_COST` and `COMBAT_ROUND_IS_COST` to 0 and remove the regen pause in `TimersThread`.
+- **Inner Strength follows retail:** tactic changes and rounds cost nothing, and a round on Block regains 10 (`combat.GetInnerStrengthUsed`; captures show IS regenerating through tactic changes). The first version's 10 per change and 2 per round were invented and are now 0. Regen goes on in a fight at a fifth of the normal rate, for Inner Strength and health. The CombatEffectAbility records, sent at the start and end of a fight, put -80 on both regen rate stats. **Inferred:** that -80 means 80% slower; the scripts don't state it. In 20 captures in-fight IS regen ran at a median 0.42 of the out-of-fight rate, and at 0.25-0.33 in the logs with the lowest ratios.
 - **NPCs with guns open fire:** when an aggroing NPC has a gun and the player is within its range, it stays where it stands, faces the player and fires (`CombatHandler.StartNpcGunfight`, retail: entilsar lastday2 21:48:40-41: own-view in-combat flags, CombatEffect records and 81 68, no combat handler object, no 40/46). The player's own 41 replaces the session with a two-way gunfight; the fight ends after three shots' time with the player out of the NPC's reach. A stunned NPC holds its fire and doesn't close in.
 - **Not done:** the client's tactic buttons. The window that holds them (id 0xe, `viewinterlock.cpp`, layout resource 0x2000005) never appeared in our fights, so RPC 42 was only tested through the dev command `?tactic speed|power|grab|block`, which runs the same handler. What makes the client open that window is unknown; `client.dll` opens it from 0x6219f1b0, called from 0x625c049b. Also not done: more than one NPC attacking at once, withdraw rolls (`determineResultOfWithdrawalRequest`, `CombatWithdrawIS`), the fight animation entries of the combat view, finishing moves, and retail's gun damage and roll formula (`GetFreeAttackDamage`; guns keep the earlier estimate, with only the tactic's Damage% added).
 - **Checked in the 7.6005 client so far:** melee fights to the death with the new rounds and rolls: no client error, a green ring under the player, damage numbers float over both fighters, and the server log shows the NPC dying and the loot window going out. **Not yet checked in the client** (it was unavailable when this was written): `?tactic` and the IS bar, queued abilities and Stun, gun NPCs opening fire, the "Power" prefix in the combat log.
@@ -111,7 +111,7 @@ After about 60 s, `-Click 348,358` presses Take All.
 - **Ranged combat** fully functional with distance-based damage falloff
 - **Bullet hit FX** from multiple angles for visual variety
 - **Combat Tactics** (Speed/Power/Grab/Block) change rolls and damage by retail's numbers
-- **Inner Strength drain** during combat (2 IS/round) and tactic changes (10 IS)
+- **Inner Strength** regains 10 a round on Block and regenerates at a fifth of the rate in a fight
 
 ### Key Files
 
@@ -315,7 +315,7 @@ After about 60 s, `-Click 348,358` presses Take All.
 - [x] **5.1 Implement tactics (CT) system**
   - File: `CombatTactics.cs`, `CombatInterlock.cs`
   - The first version's rock-paper-scissors damage was invented and is gone; the numbers are now retail's (table under "Close combat by retail's own rules")
-  - `ProcessChangeTactic()` answers with retail's `80 bc` records and RPC 47; a change in a fight costs 10 IS
+  - `ProcessChangeTactic()` answers with retail's `80 bc` records and RPC 47
 
 - [ ] **5.2 Combat animations sync**
   - Coordinate attack animations between combatants
@@ -324,10 +324,9 @@ After about 60 s, `-Click 348,358` presses Take All.
   - TODO: Needs original animation timing research
 
 - [x] **5.3 Inner Strength (IS) integration**
-  - Combat drains IS per round (2 IS per round via `DrainCombatIS()`); a round on Block regains 10 (retail's `GainISFromBlocks`)
-  - Tactic changes cost IS (10 IS per change in a fight)
-  - IS sent to client via `sendISCurrent()`; regen pauses during a fight
-  - Retail had neither cost; see "Inner Strength" under "Close combat by retail's own rules"
+  - A round on Block regains 10 (`ApplyRoundInnerStrength()`, retail's `GainISFromBlocks`); other rounds and tactic changes cost nothing
+  - IS sent to client via `sendISCurrent()`; regen in a fight runs at a fifth of the rate
+  - See "Inner Strength follows retail" under "Close combat by retail's own rules"
 
 - [x] **5.4 Ability integration**
   - An instant ability on the close-combat target is the next move and lands with the round if the roll wins (`CombatHandler.QueueRoundAbility`, `ResolveCloseCombatRound`)
@@ -339,7 +338,7 @@ After about 60 s, `-Click 348,358` presses Take All.
 - `CombatInterlock.BuildRoundState()`, `BuildRoundResult()` - RPCs 47 and 45
 - `CombatTactics.Select()` - Tactic records
 - `CombatHandler.ResolveCloseCombatRound()`, `QueueRoundAbility()`, `StartNpcGunfight()`
-- `CombatHandler.DrainCombatIS()` - IS per combat round
+- `CombatHandler.ApplyRoundInnerStrength()` - IS per combat round
 
 ---
 
@@ -370,8 +369,7 @@ Use these scenarios to verify combat works:
 - [ ] Multiple players can fight same mob
 - [x] Range combat works
 - [ ] Tactic changes affect combat (code and unit tests; not yet seen in the client)
-- [ ] IS drains during combat (visual confirmation)
-- [ ] Tactic change costs IS
+- [ ] Block regains IS each round (visual confirmation)
 
 ---
 

@@ -206,7 +206,19 @@ namespace hds
         }
 
         /// <summary>
-        /// Regenerates Inner Strength towards the maximum; returns the new value, or null when it was full.
+        /// Whole points to grant this tick. In a fight the rate is <see cref="CombatCalculator.FIGHT_REGEN_FACTOR"/> of normal
+        /// (1.6 a tick), so the fraction is carried over to the next tick.
+        /// </summary>
+        public static int RegenAmount(bool inFight, ref double carry)
+        {
+            double total = carry + (inFight ? InnerStrengthRegenPerTick * CombatCalculator.FIGHT_REGEN_FACTOR : InnerStrengthRegenPerTick);
+            int whole = (int)(total + 1e-9);
+            carry = total - whole;
+            return whole;
+        }
+
+        /// <summary>
+        /// Regenerates Inner Strength towards the maximum; returns the new value, or null when nothing changed.
         /// </summary>
         public static UInt16? RegenerateInnerStrength(WorldClient client)
         {
@@ -214,9 +226,15 @@ namespace hds
             UInt16 max = MaxInnerStrength(client);
             if (max == 0 || current >= max)
             {
+                client.playerData.innerStrengthRegenCarry = 0;
                 return null;
             }
-            UInt16 next = (UInt16)Math.Min(max, current + InnerStrengthRegenPerTick);
+            int amount = RegenAmount(CombatManager.GetHandler(client).isCombatRunning, ref client.playerData.innerStrengthRegenCarry);
+            if (amount == 0)
+            {
+                return null;
+            }
+            UInt16 next = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.InnerStrengthAvailable.setValue(next);
             return next;
         }
