@@ -4,6 +4,18 @@ No retail capture of a trade exists and none is expected, so this comes from `cl
 
 `docs/generated/client-rpc-classes.txt` lists all 514 RPC classes found the same way (opcode, constructor, printer, field names): use it for other gaps.
 
+## Checked in the real client
+
+`?tradebot` (needs `MXO_DEV_COMMANDS=1`) opens a trade with a partner played by the server, which offers a Code Bit 1 and 100 information and accepts as soon as the player does. With it, on one 7.6005 client:
+
+- `81 84` opens the Secure Trade window: "TradeBot offers: Code Bit 1", "Information: 100", and the chat lines "The other player adds an item to the trade", "...adds 100 info...", "TradeBot offers a trade".
+- Dragging a bag item onto "Your items" sends `81 85` action 0; `81 86` shows it there and locks the bag slot.
+- Information: clicking the `$i` icon opens "Choose Amount"; OK puts the amount on the cursor, and clicking the trade window drops it (`81 85` action 0, InfoTrade 1).
+- The Accept box sends action 4. `81 87` COMPLETE closes the window; the bag and information are updated, and the database matches.
+- Clear sends action 2 and Cancel sends action 3; `81 87` CANCELLED closes the window.
+
+**Not checked:** a trade between two real players, so `81 82` (dropping an item on a player), resolving its TargetID to a player's view, `81 83`, and the partner's side of `81 84`/`81 86`/`81 87`. A second client is blocked by Windows Defender on this machine. Also not exercised: reset accept (action 5, the bot accepts and the trade completes at once), the refusal statuses, and aborts when a partner leaves.
+
 ## How it was recovered
 Every RPC class has a vtable (+8 = debug printer naming fields, reading [this+0x10]+offset) and a ctor that writes
 the opcode as a word (0x8381 = bytes 81 83), the fixed size, and field defaults. Field names, offsets and sizes come from those.
