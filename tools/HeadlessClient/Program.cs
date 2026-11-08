@@ -74,10 +74,10 @@ foreach (Scenario scenario in selected)
             try
             {
                 await scenario.Run(context).WaitAsync(TimeSpan.FromMinutes(6));
-                string problems = string.Join("; ", context.ClientProblems());
+                string problems = string.Join("; ", context.ClientProblems().Concat(context.ServerProblems()));
                 if (problems.Length > 0)
                 {
-                    throw new ScenarioFailure("Passed its checks, but a real client would have hit: " + problems);
+                    throw new ScenarioFailure("Passed its checks, but: " + problems);
                 }
             }
             catch (Exception ex)

@@ -12,14 +12,22 @@ namespace hds.databases{
 	
     public class MyWorldDbAccess: IWorldDBHandler{
 
-		private IDbConnection conn;
-		private IDbCommand queryExecuter;
-		private IDataReader dr;
+		// One per thread, as Store.currentClient is. These used to be one connection, command and reader shared by every
+		// player and timer thread: under load a query failed with "Connection must be Open" (and the player stuck at
+		// login, found by tools/HeadlessClient), or a reader could be replaced mid-read by another player's query.
+		[ThreadStatic] private static IDbConnection threadConnection;
+		[ThreadStatic] private static IDbCommand threadCommand;
+		[ThreadStatic] private static IDataReader threadReader;
+		private readonly string connectionString;
+
+		private IDbConnection conn => threadConnection ??= new MySqlConnection(connectionString);
+		private IDbCommand queryExecuter { get => threadCommand; set => threadCommand = value; }
+		private IDataReader dr { get => threadReader; set => threadReader = value; }
 
 		public MyWorldDbAccess(){
             var config = Store.config;
 			/* Params: Host, port, database, user, password */
-            conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" +
+            connectionString = ("Server=" + config.dbParams.Host + ";" +
                 "Port=" + config.dbParams.Port + ";" +
                 "Database=" + config.dbParams.DatabaseName + ";" +
                 "User ID=" + config.dbParams.Username + ";" +

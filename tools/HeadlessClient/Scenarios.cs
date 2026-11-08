@@ -19,6 +19,7 @@ public static class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("login", Login),
+        new Scenario("many-logins-at-once", ManyLoginsAtOnce),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
@@ -69,6 +70,23 @@ public static class Scenarios
         (HeadlessPlayer alice, _, ViewCreation bob, ViewCreation aliceSeen) = await TwoNearby(context, new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
         Check.That(bob.ViewId > 3, "Server view ids start at 4");
         Check.Equal(alice.CharId, BitConverter.ToUInt32(aliceSeen.Attributes["CharacterID"]), "CharacterID in the other player's spawn");
+    }
+
+    /// <summary>
+    /// Everyone logging in at the same moment: nobody gets stuck, or spawns with another player's name or id. The server's
+    /// world queries used to share one connection and reader.
+    /// </summary>
+    private static async Task ManyLoginsAtOnce(ScenarioContext context)
+    {
+        await Task.WhenAll(Enumerable.Range(1, 12).Select(async i =>
+        {
+            string handle = "Player" + i;
+            HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed(handle) { X = 17020 + i * 100 });
+            await player.EnterWorldAsync();
+            ViewCreation self = player.World.CreationSnapshot().Single(c => c.ViewId == 2);
+            Check.Equal(handle, self.Name, "Name in the self spawn");
+            Check.Equal(player.CharId, BitConverter.ToUInt32(self.Attributes["CharacterID"]), handle + "'s id in the self spawn");
+        }));
     }
 
     /// <summary>

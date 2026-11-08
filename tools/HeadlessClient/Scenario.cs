@@ -84,7 +84,10 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
         await Database.ExecuteAsync(sql);
 
         HeadlessPlayer player = await HeadlessPlayer.LoginAsync(Server.Address, username, seed.Handle);
-        players.Add(player);
+        lock (players)
+        {
+            players.Add(player);
+        }
         return player;
     }
 
@@ -103,6 +106,12 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
 
     /// <summary>The problems a real client would have run into: corrupt packets, RPC counter gaps, unreadable records.</summary>
     public IEnumerable<string> ClientProblems() => players.SelectMany(p => p.World.Problems.Select(problem => p.Handle + ": " + problem));
+
+    /// <summary>What the server's own output says went wrong: handlers that threw, a visibility pass that failed.</summary>
+    public IEnumerable<string> ServerProblems() =>
+        new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception" }
+            .SelectMany(Server.OutputLines)
+            .Select(line => line.Length > 300 ? line[..300] : line);
 
     public async ValueTask DisposeAsync()
     {
