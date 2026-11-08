@@ -37,6 +37,8 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [x] Send updated cash to the client after a vendor transaction.
 - [x] Implement a basic vendor sell path or document the packet format still needed.
 - [x] Add tests around pricing and cash updates where possible.
+- [x] Marketplace: open (81 29), category search (81 24), list an item (81 2b) and buy (81 26) from the retail marketplace captures (PR #26). Not captured: cancelling a listing and collecting proceeds (sellers are paid at once).
+- [ ] Secure trade between players needs a retail capture. None of `research/packet-dumps` contains a trade session, so the request/offer/accept RPC numbers are unknown. Lead: the client's `LTOBJSRV_TRADESESSION*` strings (complete, cancelled, you/they accepted, reset, not enough info, not enough backpack space, item not found) and `LTRS_SECURETRADE*` (partner too far, non-tradeable item, equipped item offered, in progress) in client.dll. Ask preservation contacts for a log of two players trading an item and info.
 
 ## 6. Packet Research
 - [x] Inventory public MxO preservation packet/protocol resources.
