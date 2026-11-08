@@ -71,6 +71,9 @@ namespace hds
 
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
+
+		// Sim time (s) an NPC last attacked this player on its own (MobAggro)
+		public double lastAggroAt = -1000;
 		public bool respawnPending = false;
 
 		// Running mission: which objective is next, the NPCs it spawned, and the inventory slot of its item
@@ -78,6 +81,8 @@ namespace hds
 		public int missionItemSlot = -1;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
 		public UInt32 pendingLootItem = 0;
+		// Items a killed NPC dropped (NpcLoot), given on Take All
+		public readonly System.Collections.Generic.List<UInt32> pendingLootDrops = new System.Collections.Generic.List<UInt32>();
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();

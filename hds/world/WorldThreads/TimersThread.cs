@@ -57,6 +57,7 @@ namespace hds
 
                     CheckToSaveClientData(thisclient);
                     RegenerateInnerStrength(thisclient);
+                    HealthRegen.Tick(thisclient, 2.0); // this loop runs every 2 s
                     CheckForFinalJackout(thisclient);
                     CheckForStaticViews(thisclient);
                 }

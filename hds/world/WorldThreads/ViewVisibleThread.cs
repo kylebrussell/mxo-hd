@@ -59,6 +59,7 @@ namespace hds
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
+                MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
               }
@@ -549,8 +550,7 @@ namespace hds
 #endif
 
                             ServerPackets mobPak = new ServerPackets();
-                            mobPak.SpawnMobView(thisclient, thismob, mobView);
-                            mobView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                            mobPak.SpawnMobView(thisclient, thismob, mobView); // sets mobView.spawnId
                             mobView.viewCreated = true;
                             thismob.isUpdateable = true;
                             thismob.DoMobUpdate(thismob);
