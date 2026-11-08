@@ -13,8 +13,8 @@ The combat system is functional with bidirectional combat and tactical options:
 - **Range combat** is fully implemented (Phase 4 complete)
 - **Distance-based damage** for ranged combat with falloff
 - **Loot system** works - shows money reward on mob kill
-- **Tactics system** implements rock-paper-scissors combat (Phase 5 partial)
-- **Inner Strength** drains during combat and tactic changes
+- **Tactics and rounds** follow retail's rules, taken from the combat scripts in the client (see "Close combat by retail's own rules" below)
+- **Inner Strength** costs nothing in a fight, as in retail; Block regains it and regen is slower
 
 ### Real-client check (2026-11-07, 7.6005 client)
 
@@ -62,7 +62,38 @@ Guns from the NPC side and weapon stats (2026-11-08, code only, not checked in t
 - **Attack class byte:** client.dll switches on the five categories in that order, and retail captures show 0x37 (rifles), 0x38 (handguns), 0x39 (SMGs), so dual handguns are 0x3a and dual SMGs 0x3b.
 - **NoiseLevel:** a shot sets the gun's NoiseGenerated (Redpill Special: 50 = retail's 0x32), and each further shot closes half the gap to 100; retail sent exactly 50, 75, 87, 93, 96.
 - **Now used by the server:** fire interval = ReuseTimer; no shot while the target is beyond Tool/Range (the fight ends after three shots' time out of range, our choice); NPCs only shoot within their gun's range. Damage gets +15% per BaseDamage tier above 1, which is a guess: BaseDamage is a small tier (1 to 8 and more) that rises with the level requirement. The ranged damage falloff now gets metres (it used to get world units, so a 6 m shot counted as beyond 50 m).
-- **Not done:** NPCs starting a gunfight on their own (MobAggro walks every NPC into close combat), other players seeing NPC and player shots, line of sight, and any ammo or reload (none in the data).
+- **Not done:** other players seeing NPC and player shots, line of sight, and any ammo or reload (none in the data). NPCs starting a gunfight on their own came later (below).
+
+Close combat by retail's own rules (2026-11-08):
+- **The client carries the server's combat scripts.** `resource/Python/Monolith.ltp` (zip entries with an `LTPb` signature, Python 2.3 bytecode) holds `combat_calculations`, `combat`, `interlock/combat_resolution`, `interlock/combat_free_attacks` and more. `interlock/combat_resolution.determineResultForStandardCombat` is the round logic the server now follows. `client.dll` has the RPC field names (0x42: TacticalValue, TacticalTotalValue, TacticType; 0x40: TargetID, ForcedInterlock, WeaponToUseSlot; 0x4e: ForcedCombat) and `combatlib.getTacticRoll` at 0x6258da00.
+- **Tactics** are `42 <value u16> <total i16> <type u16>`: 0 Speed, 1 Power, 2 Grab, 3 Block. The old enum (None/Speed/Power/Grab) and its rock-paper-scissors damage were invented. Retail answers, in and out of fights, with `80 bc` records (kind 0x15): the old tactic's six off, the new tactic's six on with new record ids. In a fight RPC 47 kind 6 follows. Pressing the current tactic gets no answer. `CombatTactics` has the table.
+
+| Tactic | Ability | Tactic% (attack roll) | Defense% (defense roll) | Damage% | EvadeInterlock | ForceCombat |
+|---|---|---|---|---|---|---|
+| Speed | 1015 | +15 | -10 | 0 | 0 | -20 |
+| Power | 1017 | -10 | 0 | +20 | -20 | 0 |
+| Grab | 1016 | +5 | +30 | -15 | -65 | +100 |
+| Block | 1013 | -100 | +50 | -100 | +60 | -400 |
+
+- **Rounds** resolve about every 4.5 s (median of 1346 retail RPC 45s; the server used 3 s). `CombatInterlock` builds RPC 47 (a fighter's move decided and the next one; kind 3 new round, 6 next move changed, 4 opening) and RPC 45 (the outcome). Layouts are in its comments and unit-tested byte for byte against the tutorial fight. Fights with these records run without a client error and show a green ring under the player; this wasn't compared with the old build, so the records may not be what causes the ring.
+- **Rolls:** each fighter rolls attack against the other's defense (`combat_resolution.getCTandDTotals`). A roll is normal around (base + range) / 2 with deviation (base + range) / 6, clamped to 1..base + range; the range is 100 for attack, 69 for defense. **Guess:** base = level x the tactic's percent, because this server doesn't model the Combat Tactics and Defense Tactics stats or Consistency. A fighter on Block doesn't hit.
+- **Damage** is `combat_calculations.GetCloseCombatDamage` and `combat_resolution.calcDamageForLoser`: bonus, Gaussian (1/3 to 4/3), tactic Damage%, x 4, less the absorbed share from `GetDamageReductionValue` (0.2 per level above the attacker plus armor, capped at +-0.9), at least 1. RPC 45 and 81 68 carry the absorbed amount, negative when the defender is lower level (retail: 21 done, -5 absorbed). **Guess:** bonus = 4 + level / 10, because the DamageBonus stat isn't modelled; it matches retail's level 1 value of 16 before absorption.
+- **Special moves:** an instant ability used on the close-combat target becomes the next move (RPC 47 kind 6 at once) and lands with the next round if the player's roll wins; the NPC doesn't hit that round and RPC 45 says 0x100 (`handleSpecialMove`). If the roll loses, the round is a plain exchange and the ability is lost. Abilities with a cast time still land when the cast ends. Cheap Shot and Head Butt have damage ranges in `AbilityTargets` inferred from a few retail health drops (a guess), and Cheap Shot has retail's effect id.
+- **Energized and Precise:** RPC 42's TacticType 1 and 2 (client.dll's IExx and IPxx button events). Energized gives +15% damage and -15% attack roll, Precise the reverse (`combat_calculations`).
+- **Combat log:** the u16 after the weapon in `81 68` is the attacker's tactic. That's where "Speed Redpill Special" comes from. 81 68 is gunfire only; melee uses RPC 45.
+- **Conditions:** Speed causes Daze (0x02), Grab Off Balance (0x04), Power Staggered (0x08) on the NPC's ConditionStateFlags for 10 s. Staggered adds 5% damage taken. **Guess:** the 25% chance per landed hit; captures show the conditions but not their odds. Retail's vulnerability scripts exist, but RPC 4f was all zeros in all 109 captures, so they appear to have been switched off. **Not done:** the conditions on the player's own view.
+- **Inner Strength follows retail:** tactic changes and rounds cost nothing, and a round on Block regains 10 (`combat.GetInnerStrengthUsed`; captures show IS regenerating through tactic changes). The first version's 10 per change and 2 per round were invented and are now 0. Regen goes on in a fight at a fifth of the normal rate, for Inner Strength and health. The CombatEffectAbility records, sent at the start and end of a fight, put -80 on both regen rate stats. **Inferred:** that -80 means 80% slower; the scripts don't state it. In 20 captures in-fight IS regen ran at a median 0.42 of the out-of-fight rate, and at 0.25-0.33 in the logs with the lowest ratios.
+- **NPCs with guns open fire:** when an aggroing NPC has a gun and the player is within its range, it stays where it stands, faces the player and fires (`CombatHandler.StartNpcGunfight`, retail: entilsar lastday2 21:48:40-41: own-view in-combat flags, CombatEffect records and 81 68, no combat handler object, no 40/46). The player's own 41 replaces the session with a two-way gunfight; the fight ends after three shots' time with the player out of the NPC's reach. A stunned NPC holds its fire and doesn't close in.
+- **Where the tactic controls are:** Speed, Power, Grab, Block and Withdraw are entries under "Awakened" in the client's Actions window (O). A double-click sends RPC 42. The client then shows the tactic's icon at the top of the screen. `?tactic speed|power|grab|block` (with `MXO_DEV_COMMANDS=1`) runs the same handler from chat. `client.dll` also has an interlock window with its own tactic buttons (id 0xe, `viewinterlock.cpp`), which never appeared in our fights; what opens it is unknown (the code path is 0x6219f1b0, called from 0x625c049b). Not done: more than one NPC attacking at once, withdraw rolls (`determineResultOfWithdrawalRequest`, `CombatWithdrawIS`), the fight animation entries of the combat view, finishing moves, and retail's gun damage and roll formula (`GetFreeAttackDamage`; guns keep the earlier estimate, with only the tactic's Damage% added).
+- **Checked in the 7.6005 client (one client, 2026-11-08):**
+  - **Tactics:** double-clicking them in the Actions window sends RPC 42, in and out of fights. The records go out as retail's and the on-screen icon follows (fist for Power, open hand for Block). Rolls and damage in the log change with the tactic.
+  - **Conditions:** the client shows "STAGGERED" on the NPC, and Daze or Off Balance flags go out without a client error.
+  - **Inner Strength:** no drop on a tactic change or a round. It regenerated about 1.6 per 2 s tick in a fight, and rose from 191 to the 200 cap on Block rounds.
+  - **Abilities:** Cheap Shot and Head Butt become the next move and land with the round. An ability on a target other than the fight's switches the fight to that target.
+  - **Stun:** Stun 1.0 landed and the next round logged "NPC stunned". Stun 2.0 was used, but the NPC died before it landed. The stun's on-screen effect wasn't checked.
+  - **Gun NPCs:** Crow Bars Braggart and A.S.P. Major opened fire with no client input. The client's log said "A.S.P. Major successfully hit TheNeo with a Speed Dual Stitchers for 8 damage". The fight ended three shots after the player left its range. Firing back with the Free Fire button made it two-way ("TheNeo failed to hit A.S.P. Major with a Power Redpill Special").
+  - **Not checked:** Energized and Precise (no control for them was found), Grab and Block in the log's weapon line, RPC 45's effect on screen beyond the absence of errors, and whether the green ring and camera come from these records.
+- **Testing notes:** Debug builds load `data/mob_just_some_and_winter.csv`, not `mob_parsed.csv`. Only its rows with a weapon in column 21 have guns: Crow Bars Braggart at -35071,95,-18733 and A.S.P. Major at -67797,-505,-56877 work, with `MXO_AGGRO_LEVEL_GAP=100` for level 50 TheNeo. The large white figure and snow at the Blackwoods spot are its `WinterFrost` NPC. `?gotopos` during a fight moves the server's position but not the client's view; relog with `-SetPosition` instead. Double-clicking an NPC requests close combat even with a gun picked; select it with one click and press the Free Fire button.
 
 NPC respawn (2026-11-07): a killed NPC's corpse stays for 30 s, long enough to loot it. Then the NPC is unspawned, and 90 s after the death it comes back at its spawn point with full health, as a new view. `MXO_MOB_CORPSE_SECONDS` and `MXO_MOB_RESPAWN_SECONDS` change both times. Mission NPCs don't respawn; their views are deleted when the mission ends. Players who arrive after a death don't get the corpse, which used to spawn standing with 0 health.
 
@@ -87,8 +118,8 @@ After about 60 s, `-Click 348,358` presses Take All.
 - Combat ends properly: player death, mob death, or player flees
 - **Ranged combat** fully functional with distance-based damage falloff
 - **Bullet hit FX** from multiple angles for visual variety
-- **Combat Tactics** (Speed/Power/Grab) affect damage with counter system
-- **Inner Strength drain** during combat (2 IS/round) and tactic changes (10 IS)
+- **Combat Tactics** (Speed/Power/Grab/Block) change rolls and damage by retail's numbers
+- **Inner Strength** regains 10 a round on Block and regenerates at a fifth of the rate in a fight
 
 ### Key Files
 
@@ -290,15 +321,9 @@ After about 60 s, `-Click 348,358` presses Take All.
 ### Tasks
 
 - [x] **5.1 Implement tactics (CT) system**
-  - File: `CombatCalculator.cs` - Added `CombatTactic` enum and modifiers
-  - Rock-paper-scissors system: Speed > Power > Grab > Speed
-  - Tactics affect damage dealt/received:
-    - Speed: 85% damage, 110% damage taken, 10% IS cost reduction
-    - Power: 120% damage, 105% damage taken, 10% IS cost increase
-    - Grab: 95% damage, 80% damage taken (defensive)
-  - Counter bonuses: ±25% damage when tactic beats opponent
-  - `ProcessChangeTactic()` now changes tactic with IS cost (10 IS)
-  - `CombatSession.SetAttackerTactic()` tracks current tactic
+  - File: `CombatTactics.cs`, `CombatInterlock.cs`
+  - The first version's rock-paper-scissors damage was invented and is gone; the numbers are now retail's (table under "Close combat by retail's own rules")
+  - `ProcessChangeTactic()` answers with retail's `80 bc` records and RPC 47
 
 - [ ] **5.2 Combat animations sync**
   - Coordinate attack animations between combatants
@@ -307,28 +332,21 @@ After about 60 s, `-Click 348,358` presses Take All.
   - TODO: Needs original animation timing research
 
 - [x] **5.3 Inner Strength (IS) integration**
-  - Combat drains IS per round (2 IS per tick via `DrainCombatIS()`)
-  - Tactic changes cost IS (10 IS per change)
-  - IS sent to client via `sendISCurrent()`
-  - `CombatCalculator.CalculateAbilityISCost()` applies tactic modifiers
-  - `CombatCalculator.CalculateISRegen()` for out-of-combat regen (5% max IS)
+  - A round on Block regains 10 (`ApplyRoundInnerStrength()`, retail's `GainISFromBlocks`); other rounds and tactic changes cost nothing
+  - IS sent to client via `sendISCurrent()`; regen in a fight runs at a fifth of the rate
+  - See "Inner Strength follows retail" under "Close combat by retail's own rules"
 
-- [ ] **5.4 Ability integration**
-  - Combat abilities (stun, buffs, debuffs)
-  - Wire to existing AbilityHandler
-  - Use FX effects from FX.cs
-  - TODO: Wire abilities to combat tick
+- [x] **5.4 Ability integration**
+  - An instant ability on the close-combat target is the next move and lands with the round if the roll wins (`CombatHandler.QueueRoundAbility`, `ResolveCloseCombatRound`)
+  - Abilities with a cast time land when the cast ends (`AbilityTargets.Land`), and a stunned NPC neither attacks nor closes in
 
 ### New Methods Added
-- `CombatCalculator.GetTacticDamageModifier()` - Counter system bonuses
-- `CombatCalculator.GetTacticBaseDamageModifier()` - Base tactic effects
-- `CombatCalculator.GetTacticDefenseModifier()` - Defensive modifiers
-- `CombatCalculator.CalculateMeleeDamageWithTactics()` - Tactic-aware melee
-- `CombatCalculator.CalculateRangedDamageWithTactics()` - Tactic-aware ranged
-- `CombatCalculator.CalculateMobDamageWithTactics()` - Mob damage with player defense
-- `CombatSession.SetAttackerTactic()` - Change tactic with IS cost
-- `CombatHandler.DrainCombatIS()` - Drain IS per combat round
-- `Mob.updateCombat(CombatTactic)` - Now accepts player's tactic for defense
+- `CombatCalculator.CloseCombatDamage()`, `DamageReduction()` - Retail's close-combat damage
+- `CombatInterlock.RollHit()`, `TacticRoll()` - Retail's rolls
+- `CombatInterlock.BuildRoundState()`, `BuildRoundResult()` - RPCs 47 and 45
+- `CombatTactics.Select()` - Tactic records
+- `CombatHandler.ResolveCloseCombatRound()`, `QueueRoundAbility()`, `StartNpcGunfight()`
+- `CombatHandler.ApplyRoundInnerStrength()` - IS per combat round
 
 ---
 
@@ -337,9 +355,9 @@ After about 60 s, `-Click 348,358` presses Take All.
 These items require investigation or external resources:
 
 - [ ] **Original packet captures** - Do any exist from live servers?
-- [ ] **Combat formula documentation** - Any community research on original mechanics?
 - [ ] **Animation timing data** - How long do combat animations take?
-- [x] **Tactic effects** - Implemented as rock-paper-scissors with Speed/Power/Grab
+- [x] **Tactic effects** - Retail's numbers, from the client's combat scripts and `80 bc` records
+- [x] **Combat formula documentation** - The client's `resource/Python/Monolith.ltp` has the server's combat scripts
 
 ---
 
@@ -359,8 +377,7 @@ Use these scenarios to verify combat works:
 - [ ] Multiple players can fight same mob
 - [x] Range combat works
 - [x] Tactic changes affect combat
-- [ ] IS drains during combat (visual confirmation)
-- [ ] Tactic change costs IS
+- [x] Block regains IS each round (server log and own-view packets)
 
 ---
 

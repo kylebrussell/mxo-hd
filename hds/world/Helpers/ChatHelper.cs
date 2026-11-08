@@ -160,6 +160,15 @@ namespace hds
                     pak.sendSystemChatMessage(Store.currentClient, "Teleported!", "BROADCAST");
                 }
 
+                if (command.Equals("?tactic") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    Enum.TryParse(commands[1], true, out CombatTactic devTactic))
+                {
+                    // Dev command: what the client's RPC 42 does, for testing without its tactic buttons
+                    byte[] request = { (byte)devTactic, 0, 0, 0, 0, 0 };
+                    CombatManager.GetHandler(Store.currentClient).ProcessChangeTactic(ref request);
+                }
+
                 if (command.Equals("?additem") && commands.Length == 2 &&
                     Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1")
                 {

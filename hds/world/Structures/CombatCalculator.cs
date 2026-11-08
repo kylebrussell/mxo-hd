@@ -3,24 +3,6 @@ using System;
 namespace hds
 {
     /// <summary>
-    /// Combat tactics follow a rock-paper-scissors system:
-    /// - Speed beats Power (faster attacks land first)
-    /// - Power beats Grab (raw damage breaks through)
-    /// - Grab beats Speed (catches quick attacks)
-    /// </summary>
-    public enum CombatTactic
-    {
-        /// <summary>No tactic selected - balanced combat</summary>
-        None = 0,
-        /// <summary>Speed tactic - faster attacks, higher evasion, lower damage</summary>
-        Speed = 1,
-        /// <summary>Power tactic - higher damage, slower attacks</summary>
-        Power = 2,
-        /// <summary>Grab/Block tactic - defensive, reduces incoming damage</summary>
-        Grab = 3
-    }
-
-    /// <summary>
     /// Calculates combat damage and selects visual effects.
     ///
     /// See docs/COMBAT-SYSTEM-ROADMAP.md for combat system documentation.
@@ -28,12 +10,6 @@ namespace hds
     public static class CombatCalculator
     {
         private static readonly Random random = Random.Shared;
-
-        /// <summary>
-        /// Base damage for unarmed melee attacks.
-        /// TODO: Should be derived from player stats/abilities.
-        /// </summary>
-        private const int BASE_MELEE_DAMAGE = 15;
 
         /// <summary>
         /// Base damage for ranged attacks.
@@ -97,35 +73,6 @@ namespace hds
             (uint)FXList.FX_WEAPON_SEMIAUTO_PISTOL1_MUZZLE_FLASH,
             (uint)FXList.FX_WEAPON_SEMIAUTO_PISTOL3_MUZZLE_FLASH,
         };
-
-        /// <summary>
-        /// Calculates melee damage from attacker to defender.
-        /// Formula: baseDamage * (attackerLevel / defenderLevel) * random(0.8, 1.2)
-        /// </summary>
-        /// <param name="attackerLevel">Level of the attacker</param>
-        /// <param name="defenderLevel">Level of the defender</param>
-        /// <returns>Calculated damage value</returns>
-        public static UInt16 CalculateMeleeDamage(UInt16 attackerLevel, UInt16 defenderLevel)
-        {
-            // Prevent division by zero
-            if (defenderLevel == 0) defenderLevel = 1;
-            if (attackerLevel == 0) attackerLevel = 1;
-
-            // Level ratio affects damage - attacking higher level mobs is harder
-            float levelRatio = (float)attackerLevel / (float)defenderLevel;
-
-            // Clamp level ratio to reasonable bounds (0.5 to 2.0)
-            levelRatio = Math.Max(0.5f, Math.Min(2.0f, levelRatio));
-
-            // Random variance for damage variety
-            float variance = MIN_VARIANCE + (float)random.NextDouble() * (MAX_VARIANCE - MIN_VARIANCE);
-
-            // Calculate final damage
-            float damage = BASE_MELEE_DAMAGE * levelRatio * variance;
-
-            // Ensure minimum 1 damage
-            return (UInt16)Math.Max(1, (int)damage);
-        }
 
         /// <summary>
         /// Calculates ranged damage from attacker to defender.
@@ -287,157 +234,105 @@ namespace hds
         #region Tactic System
 
         /// <summary>
-        /// IS (Inner Strength) cost for changing combat tactics.
+        /// Inner Strength a tactic change costs in a fight: none in retail. combat.GetInnerStrengthUsed in the client's
+        /// Monolith.ltp has no such cost and captures show none (see docs/COMBAT-SYSTEM-ROADMAP.md).
         /// </summary>
-        public const int TACTIC_CHANGE_IS_COST = 10;
+        public const int TACTIC_CHANGE_IS_COST = 0;
 
         /// <summary>
-        /// IS cost per combat round while in combat.
+        /// Inner Strength a combat round costs: none in retail, whose only effects on it in a fight were slower
+        /// regeneration (CombatEffectAbility) and the Block gain.
         /// </summary>
-        public const int COMBAT_ROUND_IS_COST = 2;
+        public const int COMBAT_ROUND_IS_COST = 0;
 
-        /// <summary>
-        /// Gets the damage modifier for the attacker's tactic.
-        /// </summary>
-        /// <param name="attackerTactic">Attacker's current tactic</param>
-        /// <param name="defenderTactic">Defender's current tactic</param>
-        /// <returns>Damage multiplier (1.0 = normal, >1 = bonus, <1 = penalty)</returns>
-        public static float GetTacticDamageModifier(CombatTactic attackerTactic, CombatTactic defenderTactic)
+        /// <summary>combat.GetInnerStrengthUsed: a round on Block regains 10 (with the GainISFromBlocks console variable).</summary>
+        public const int BLOCK_ROUND_IS_GAIN = 10;
+
+        /// <summary>Inner Strength change of a round on this tactic.</summary>
+        public static int RoundInnerStrengthChange(CombatTactic tactic)
         {
-            // No tactic = no modifier
-            if (attackerTactic == CombatTactic.None)
-                return 1.0f;
-
-            // Same tactic = neutral
-            if (attackerTactic == defenderTactic)
-                return 1.0f;
-
-            // Rock-paper-scissors: Speed > Power > Grab > Speed
-            switch (attackerTactic)
-            {
-                case CombatTactic.Speed:
-                    if (defenderTactic == CombatTactic.Power)
-                        return 1.25f; // Speed beats Power - land hits faster
-                    if (defenderTactic == CombatTactic.Grab)
-                        return 0.75f; // Grab catches Speed
-                    break;
-
-                case CombatTactic.Power:
-                    if (defenderTactic == CombatTactic.Grab)
-                        return 1.25f; // Power breaks through Grab
-                    if (defenderTactic == CombatTactic.Speed)
-                        return 0.75f; // Speed evades Power
-                    break;
-
-                case CombatTactic.Grab:
-                    if (defenderTactic == CombatTactic.Speed)
-                        return 1.25f; // Grab catches Speed
-                    if (defenderTactic == CombatTactic.Power)
-                        return 0.75f; // Power breaks Grab
-                    break;
-            }
-
-            return 1.0f;
+            return tactic == CombatTactic.Block ? BLOCK_ROUND_IS_GAIN : -COMBAT_ROUND_IS_COST;
         }
 
         /// <summary>
-        /// Gets the base damage modifier for a tactic (independent of opponent).
-        /// Speed: Less damage but more attacks
-        /// Power: More damage per hit
-        /// Grab: Balanced damage
+        /// Regeneration in a fight as a share of the normal rate. Retail's CombatEffectAbility records put -80 on the Inner
+        /// Strength and health regen rate stats. Reading that as -80% is inferred: the scripts don't state it, and in 20
+        /// captures in-fight Inner Strength regen ran at a median 0.42 of the out-of-fight rate, 0.25-0.33 in the lowest logs.
         /// </summary>
-        public static float GetTacticBaseDamageModifier(CombatTactic tactic)
+        public const double FIGHT_REGEN_FACTOR = 0.2;
+
+        /// <summary>Damage dealt with this tactic (DamagePercentAbility): Speed 100%, Power 120%, Grab 85%, Block none.</summary>
+        public static float TacticDamageMultiplier(CombatTactic tactic)
         {
-            switch (tactic)
-            {
-                case CombatTactic.Speed:
-                    return 0.85f; // Less damage per hit, but faster
-                case CombatTactic.Power:
-                    return 1.20f; // More damage per hit
-                case CombatTactic.Grab:
-                    return 0.95f; // Slightly less damage, defensive focus
-                default:
-                    return 1.0f;
-            }
+            return Math.Max(0f, 1f + CombatTactics.Get(tactic).DamagePercent / 100f);
+        }
+
+        private static UInt16 ApplyTactic(UInt16 baseDamage, CombatTactic attacker)
+        {
+            float multiplier = TacticDamageMultiplier(attacker);
+            return multiplier <= 0f ? (UInt16)0 : (UInt16)Math.Max(1, (int)(baseDamage * multiplier));
+        }
+
+        /// <summary>Ranged damage with the attacker's tactic; 0 on Block.</summary>
+        public static UInt16 CalculateRangedDamageWithTactics(UInt16 attackerLevel, UInt16 defenderLevel, float distance,
+            CombatTactic attackerTactic)
+        {
+            return ApplyTactic(CalculateRangedDamage(attackerLevel, defenderLevel, distance), attackerTactic);
+        }
+
+        /// <summary>A mob's damage to a player with the mob's tactic.</summary>
+        public static UInt16 CalculateMobDamageWithTactics(UInt16 mobLevel, UInt16 playerLevel, CombatTactic mobTactic = CombatTactic.Speed)
+        {
+            return ApplyTactic(CalculateMobDamage(mobLevel, playerLevel), mobTactic);
         }
 
         /// <summary>
-        /// Gets the defense modifier for a tactic (reduces incoming damage).
+        /// Retail's combat_calculations.GetDamageReductionValue (client Monolith.ltp), the share of the damage the defender
+        /// absorbs: 0.2 per level above the attacker plus armor between -0.33 and 0.33, capped at +-0.9. It can be negative,
+        /// which is why retail's records show negative absorbed damage (tutorial: 21 done, -5 absorbed).
         /// </summary>
-        public static float GetTacticDefenseModifier(CombatTactic tactic)
+        public static double DamageReduction(int attackerLevel, int defenderLevel, int toughness = 0)
         {
-            switch (tactic)
-            {
-                case CombatTactic.Speed:
-                    return 1.10f; // Take 10% more damage (offense focus)
-                case CombatTactic.Power:
-                    return 1.05f; // Take 5% more damage
-                case CombatTactic.Grab:
-                    return 0.80f; // Take 20% less damage (defensive)
-                default:
-                    return 1.0f;
-            }
+            double levelPart = (defenderLevel - attackerLevel) * 0.2;
+            double totalRange = defenderLevel * 4.0 + 20.0;
+            double armor = Math.Min(0.33, 0.66 / totalRange * (toughness + 20.0) - 0.33);
+            return Math.Clamp(levelPart + armor, -0.9, 0.9);
         }
 
         /// <summary>
-        /// Calculates melee damage with tactic modifiers applied.
+        /// Retail's discovery.getGaussianRandomClamped, as combat_calculations calls it: normal around the average, within
+        /// the given limits.
         /// </summary>
-        public static UInt16 CalculateMeleeDamageWithTactics(
-            UInt16 attackerLevel,
-            UInt16 defenderLevel,
-            CombatTactic attackerTactic,
-            CombatTactic defenderTactic)
+        public static int GaussianClamped(Random rng, double average, double deviation, double min, double max)
         {
-            // Get base damage
-            UInt16 baseDamage = CalculateMeleeDamage(attackerLevel, defenderLevel);
-
-            // Apply tactic modifiers
-            float tacticMod = GetTacticDamageModifier(attackerTactic, defenderTactic);
-            float baseTacticMod = GetTacticBaseDamageModifier(attackerTactic);
-            float defenseMod = GetTacticDefenseModifier(defenderTactic);
-
-            float finalDamage = baseDamage * tacticMod * baseTacticMod * defenseMod;
-
-            return (UInt16)Math.Max(1, (int)finalDamage);
+            double u1 = 1.0 - rng.NextDouble(), u2 = rng.NextDouble();
+            double normal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+            return (int)Math.Clamp(average + normal * deviation, min, max);
         }
 
         /// <summary>
-        /// Calculates ranged damage with tactic modifiers applied.
+        /// The damage part of retail's GetCloseCombatDamage. The characters' DamageBonus stat isn't modelled by this server,
+        /// so it is a guess by level; retail's tutorial fight (level 1, 16 before absorption) fits the level 1 value.
         /// </summary>
-        public static UInt16 CalculateRangedDamageWithTactics(
-            UInt16 attackerLevel,
-            UInt16 defenderLevel,
-            float distance,
-            CombatTactic attackerTactic,
-            CombatTactic defenderTactic)
+        public static int CloseCombatDamageBonus(int level)
         {
-            // Get base damage
-            UInt16 baseDamage = CalculateRangedDamage(attackerLevel, defenderLevel, distance);
-
-            // Apply tactic modifiers
-            float tacticMod = GetTacticDamageModifier(attackerTactic, defenderTactic);
-            float baseTacticMod = GetTacticBaseDamageModifier(attackerTactic);
-            float defenseMod = GetTacticDefenseModifier(defenderTactic);
-
-            float finalDamage = baseDamage * tacticMod * baseTacticMod * defenseMod;
-
-            return (UInt16)Math.Max(1, (int)finalDamage);
+            return 4 + level / 10;
         }
 
         /// <summary>
-        /// Calculates mob damage to player with player's defensive tactic applied.
+        /// Retail's close-combat damage (combat_resolution.calcDamageForLoser): (bonus, Gaussian 1/3 to 4/3) x tactic x 4, then the
+        /// absorbed share comes off, at least 1 damage left. <paramref name="absorbed"/> goes in the round record.
         /// </summary>
-        public static UInt16 CalculateMobDamageWithTactics(
-            UInt16 mobLevel,
-            UInt16 playerLevel,
-            CombatTactic playerTactic)
+        public static UInt16 CloseCombatDamage(Random rng, int attackerLevel, int defenderLevel, CombatTactic tactic, out Int16 absorbed,
+            CombatTacticType type = CombatTacticType.Normal)
         {
-            UInt16 baseDamage = CalculateMobDamage(mobLevel, playerLevel);
-
-            // Apply player's defensive tactic
-            float defenseMod = GetTacticDefenseModifier(playerTactic);
-
-            return (UInt16)Math.Max(1, (int)(baseDamage * defenseMod));
+            int damage = (int)(CloseCombatDamageBonus(attackerLevel) * CombatTactics.TypeDamageMultiplier(type));
+            damage = GaussianClamped(rng, damage, damage / 10.0, damage / 3.0, 4.0 * damage / 3.0);
+            damage = (int)(damage * TacticDamageMultiplier(tactic));
+            damage = (int)(damage * 4.0);
+            absorbed = (Int16)(damage * DamageReduction(attackerLevel, defenderLevel));
+            damage -= absorbed;
+            return (UInt16)Math.Max(1, damage);
         }
 
         #endregion
@@ -453,30 +348,6 @@ namespace hds
         {
             // Regenerate 5% of max IS per tick, minimum 1
             return (UInt16)Math.Max(1, maxIS / 20);
-        }
-
-        /// <summary>
-        /// Calculates IS cost for using an ability in combat.
-        /// </summary>
-        /// <param name="baseCost">Base IS cost of the ability</param>
-        /// <param name="tactic">Current combat tactic</param>
-        /// <returns>Modified IS cost</returns>
-        public static UInt16 CalculateAbilityISCost(UInt16 baseCost, CombatTactic tactic)
-        {
-            // Speed tactic reduces IS costs (quicker abilities)
-            // Power tactic increases IS costs (more powerful)
-            float modifier = 1.0f;
-            switch (tactic)
-            {
-                case CombatTactic.Speed:
-                    modifier = 0.9f;
-                    break;
-                case CombatTactic.Power:
-                    modifier = 1.1f;
-                    break;
-            }
-
-            return (UInt16)Math.Max(1, (int)(baseCost * modifier));
         }
 
         #endregion
