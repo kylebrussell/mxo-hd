@@ -299,6 +299,8 @@ namespace hds
             client.playerData.setExperience(exp);
             Store.dbManager.WorldDbHandler.SaveExperience(client, exp);
             new ServerPackets().SendEXPGain(client, amount, gainType);
+            client.messageQueue.addRpcMessage(ServerPackets.BuildEXPTotal((UInt32)exp, gainType));
+            PlayerProgression.ApplyLevelUps(client);
         }
 
         public static void GrantInfo(WorldClient client, UInt32 amount, UInt32 reason)

@@ -43,6 +43,7 @@ namespace hds
         // Ability Handlers
         CLIENT_ABILITY_LOADER = 0xae,
         CLIENT_UPGRADE_ABILITY_LEVEL = 0xb7,
+        CLIENT_UPGRADE_ATTRIBUTE = 0xb5,
         CLIENT_DISABLE_BUFF = 0xB6,
 
         CLIENT_LOOT_ALL = 0x117,
@@ -121,6 +122,7 @@ namespace hds
         // Player
         SERVER_PLAYER_ATTRIBUTE = 0x80b2, 
         SERVER_PLAYER_UPGRADE_ABILITY = 0x80b8,
+        SERVER_PLAYER_UPGRADE_ATTRIBUTE = 0x80b6,
         SERVER_MANAGE_BONUS = 0xbc,
         
         // Coder Stuff

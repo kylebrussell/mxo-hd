@@ -164,8 +164,10 @@ namespace hds
                         Output.WriteDebugLog("[HARDLINE] Uploaded hardline " + hardline + " in district " + district);
                     }
                     // Upload also moves the bag's Code Bits and fragments into code storage; its records go before the 81 18
-                    CodeStorageHandler.UploadCode(client);
-                    client.messageQueue.addRpcMessage(HardlineBooths.BuildUploadDone());
+                    int uploaded = CodeStorageHandler.UploadCode(client, out bool abilityCodeUploaded);
+                    client.messageQueue.addRpcMessage(uploaded == 0
+                        ? HardlineBooths.BuildUploadDone()
+                        : HardlineBooths.BuildItemsUploaded(uploaded, abilityCodeUploaded));
                     break;
 
                 default:

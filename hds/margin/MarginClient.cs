@@ -443,6 +443,7 @@ namespace hds{
             
             // Add the Basic Abilitys...
             addStartAbilitys(newCharID);
+            Store.dbManager.MarginDbHandler.SetStartingStats(newCharID);
 
             // we have all created - lets load the charData 
             loadCharacter(packet, client, newCharID);
@@ -554,7 +555,9 @@ namespace hds{
                 pak.AddByte(0x00);
             }
 
-            pak.AddHexBytes("0301310000b402320000b403380000b403510000000400520000000b00540000000100"); // The Last Part
+            pak.AddHexBytes("0301310000b402320000b403380000b4");
+            pak.AddByteArray(CharacterAttributes.BuildSpentPoints(LoadAttributes(charID, marginCharacter)));
+            // TheLast Part
 
 	        #if DEBUG
             if (isNewCreatedChar)
@@ -567,6 +570,21 @@ namespace hds{
             
         }
 
+        /// <summary>
+        /// The character's attribute rows. A level 1 character from before attributes were saved has nothing invested,
+        /// so it gets the starting rows now. Higher characters without rows keep the old fixed values and list.
+        /// </summary>
+        private Dictionary<byte, UInt16> LoadAttributes(int charID, Character character)
+        {
+            Dictionary<byte, UInt16> attributes = Store.dbManager.MarginDbHandler.LoadCharacterAttributes(charID);
+            if (attributes.Count == 0 && character.Level <= 1)
+            {
+                Store.dbManager.MarginDbHandler.SetStartingAttributes((UInt32)charID);
+                attributes = Store.dbManager.MarginDbHandler.LoadCharacterAttributes(charID);
+            }
+            return attributes;
+        }
+
         public byte[] loadInventory(int charID)
         {
             List<MarginInventoryItem> Inventory = new List<MarginInventoryItem>();
@@ -576,8 +594,15 @@ namespace hds{
             foreach (MarginInventoryItem item in Inventory)
             {
                 din.append(NumericalUtils.uint16ToByteArrayShort(item.getSlot())); // slot
+                if (AbilityProgression.IsAbilityCode(item.getItemID()))
+                {
+                    // A bought ability that is not uploaded yet: item 46 with the ability as its descriptor, as in the 5e.
+                    din.append(NumericalUtils.uint32ToByteArray(AbilityProgression.AbilityCodeItem, 1));
+                    din.append(NumericalUtils.uint32ToByteArray(AbilityProgression.AbilityCodeValue(item.getItemID()), 1));
+                    continue;
+                }
                 din.append(NumericalUtils.uint32ToByteArray(item.getItemID(),1));
-                
+
                 din.append(0x00);
                 din.append(0x00);
                 // Stack size as (count - 1) * 4, the same amount byte as the 5e item add (see ItemStacks).

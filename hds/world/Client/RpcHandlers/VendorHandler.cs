@@ -40,14 +40,36 @@ namespace hds{
 
             // Retail order: 5e (add item, sent by processItemAdd) -> 80 e7 (-price) -> 80 e4 (new cash)
             // -> 81 0f (buy complete), all with reason 8.
-            InventoryHandler inventory = new InventoryHandler();
-            inventory.processItemAdd(itemGoID,0x10);
+            bool abilityCode = AbilityProgression.IsAbilityCode(itemGoID);
+            if (abilityCode)
+            {
+                UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+                if (freeSlot == 0)
+                {
+                    packets.sendSystemChatMessage(Store.currentClient, "Your inventory is full.", "BROADCAST");
+                    return;
+                }
+                Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemGoID);
+                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(freeSlot, itemGoID));
+            }
+            else
+            {
+                InventoryHandler inventory = new InventoryHandler();
+                inventory.processItemAdd(itemGoID,0x10);
+            }
 
             Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
             Store.currentClient.playerData.setInfo(newCash);
             packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorBuy);
             packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorBuy);
-            packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
+            if (abilityCode)
+            {
+                Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeBuyAck(itemGoID, price));
+            }
+            else
+            {
+                packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
+            }
         }
 
         public void processSellItem(ref byte[] packet){

@@ -301,8 +301,18 @@ namespace hds
             Store.currentClient.playerData.setRsiValues(current);
             byte[] rsiData = PacketsUtils.getRSIBytes(current);
             pak.sendAppeareanceUpdate(Store.currentClient, rsiData);
+            AnnounceAppearance(rsiData);
         }
 
+        /// <summary>Other players see a clothing change on their view of this player (RSIDescription).</summary>
+        private static void AnnounceAppearance(byte[] rsiData)
+        {
+            byte[] rsi = new byte[ServerPackets.RsiDescriptionSize];
+            Array.Copy(rsiData, rsi, Math.Min(rsiData.Length, rsi.Length));
+            WorldClient client = Store.currentClient;
+            client.playerInstance.RSIDescription.setValue(rsi);
+            PlayerProgression.AnnounceToOthers(client, new List<Attribute> { client.playerInstance.RSIDescription });
+        }
 
         /// <summary>The weapon slot on the paper doll; clothing uses 0x61 (hat) to 0x68 (shoes).</summary>
         public const byte WeaponSlot = 0x69;
@@ -347,6 +357,7 @@ namespace hds
             Store.currentClient.playerInstance.EquippedItemID.setValue(goid);
             Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildEquippedItemUpdate(goid), false);
             Store.currentClient.FlushQueue();
+            PlayerProgression.AnnounceToOthers(Store.currentClient, new List<Attribute> { Store.currentClient.playerInstance.EquippedItemID });
         }
 
         public void processMountItem(ref byte[] rpcData)
@@ -462,6 +473,7 @@ namespace hds
                 pak.sendInventoryItemMove(toRealSlotId, newSlotId, Store.currentClient);
             }
             pak.sendAppeareanceUpdate(Store.currentClient, rsiData);
+            AnnounceAppearance(rsiData);
             Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot,toRealSlotId, Store.currentClient.playerData.getCharID());
             pak.sendInventoryItemMove(sourceSlot, toRealSlotId, Store.currentClient);
 
