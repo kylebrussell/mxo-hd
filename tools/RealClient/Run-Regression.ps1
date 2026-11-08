@@ -194,7 +194,8 @@ function Test-Abilities {
     Check 'fight starts' (Wait-Log 'Close combat requested' 10)
     Act $cp @{ DoubleClick = @(200, 309) }   # two uses 2 s apart: the second is on its 4 s cooldown
     Check 'Logic Blast lands' (Wait-Log '\[ABILITY\] \d+ lands on view' 10)
-    Check 'Logic Blast cooldown holds the second use' ((Log-Count 'LogicBlast\dAbility') -eq 1 -or (Log-Has 'Still cooling down'))
+    Start-Sleep 3
+    Check 'a second use during the cast or cooldown does not land' ((Log-Count '\[ABILITY\] \d+ lands on view') -eq 1) ((Log-Lines | Select-String 'denied|lands on view' | ForEach-Object Line) -join '; ')
     Shot $cp 'blast'
 }
 
@@ -227,22 +228,22 @@ function Test-Guns {
 }
 
 # Social, Items, Trade, Market and Booth share this login. Their test items go in before it: the bag loads at login.
-$script:booth = 0
+$script:boothClient = 0
 $script:bagMoved = $false
 $script:cash = $null
 
 function Use-BoothSession {
-    if ($script:booth -and (Get-Process -Id $script:booth -ErrorAction SilentlyContinue)) { Mark-Log; return $script:booth }
+    if ($script:boothClient -and (Get-Process -Id $script:boothClient -ErrorAction SilentlyContinue)) { Mark-Log; return $script:boothClient }
     Start-World
     Clear-BoothData
     $script:cash = Sql "select cash from characters where charId=$TheNeo"
     Sql "insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2399,30,3,0,NOW()),($TheNeo,7336,40,5,0,NOW()),($TheNeo,2565,23,0,0,NOW()),($TheNeo,2565,24,0,0,NOW())"
     $script:bagMoved = $false
-    $script:booth = Login -pos $Booth -rotation 0
+    $script:boothClient = Login -pos $Booth -rotation 0
     # Booth mid-screen, clear of any notification in the corner
-    if ($script:booth) { Act $script:booth @{ Walk = @('D:0.3') } }
+    if ($script:boothClient) { Act $script:boothClient @{ Walk = @('D:0.3') } }
     Mark-Log
-    $script:booth
+    $script:boothClient
 }
 
 function Clear-BoothData {
@@ -250,11 +251,11 @@ function Clear-BoothData {
     if ($script:cash) { Sql "update characters set cash=$($script:cash) where charId=$TheNeo" }
 }
 
-# The bag dragged to the top left, clear of any notification, on page 2: slot 22 is at 143,307, slot 23 at 180,307, slot 30 at 143,379.
+# The bag dragged to the far left, clear of any notification and of the trade window, on page 2: slot 23 is at 135,307, slot 30 at 98,379.
 function Show-BagPage2([int]$cp) {
     if (-not $script:bagMoved) {
-        Act $cp @{ Drag = @(860, 245, 100, 10) }
-        Act $cp @{ Click = @(83, 230) }
+        Act $cp @{ Drag = @(860, 245, 55, 10) }
+        Act $cp @{ Click = @(38, 230) }
         $script:bagMoved = $true
     }
 }
@@ -275,7 +276,7 @@ function Test-Items {
     Act $cp @{ Walk = @('I:0.05') }
     Show-BagPage2 $cp
     Shot $cp 'bag'
-    Act $cp @{ DoubleClick = @(143, 379); Once = $true }
+    Act $cp @{ DoubleClick = @(98, 379); Once = $true }
     Check 'a pill is used' (Wait-Log 'Used item 2399' 10)
     Start-Sleep 1
     Check 'the pill stack drops to 2' ((Sql "select count from inventory where charId=$TheNeo and goid=2399") -eq '2')
@@ -294,7 +295,7 @@ function Test-Trade {
     Check 'the trade opens' (Wait-Log '\[TRADE\] Session open' 10)
     Show-BagPage2 $cp                        # the bag opens with the trade
     Shot $cp 'open'
-    Act $cp @{ Drag = @(180, 307, 510, 240) }
+    Act $cp @{ Drag = @(135, 307, 510, 240) }
     Check 'an item is offered' (Wait-Log '\[TRADE\] Action 0 .*slot 23' 10)
     Shot $cp 'offered'
     Act $cp @{ Click = @(606, 372) }
@@ -311,7 +312,7 @@ function Test-Trade {
 
 function Test-Market {
     $cp = Use-BoothSession; if (-not $cp) { return }
-    if ($script:bagMoved) { Act $cp @{ Click = @(202, 11) }; $script:bagMoved = $false }   # the bag would cover the window
+    if ($script:bagMoved) { Act $cp @{ Click = @(157, 11) }; $script:bagMoved = $false }   # the bag would cover the window
     Act $cp @{ RightClick = @(590, 430) }
     Act $cp @{ Click = @(588, 380) }
     Start-Sleep 1
@@ -356,7 +357,7 @@ function Test-Booth {
     Check 'jack out at the booth' (Wait-Log 'Jack out at a hardline' 10)
     Start-Sleep 5
     Check 'the client leaves' (-not (Get-Process -Id $cp -ErrorAction SilentlyContinue))
-    $script:booth = 0
+    $script:boothClient = 0
 }
 
 function Test-Death {
