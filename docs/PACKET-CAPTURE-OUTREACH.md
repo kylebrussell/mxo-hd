@@ -2,6 +2,21 @@
 
 Use these templates when asking MxO preservation contacts for packet logs. Link them back to `docs/PACKET-CAPTURE-REQUEST.md` for the full technical checklist, and use `docs/PACKET-RESOURCE-LEADS.md` to decide which public thread, Discord route, source archive, or tester group to approach first.
 
+## Secure Trade Request
+
+Subject: Looking for an MxO packet log of two players trading
+
+Hi, Hardline Dreams now has combat, loot, crafting, marketplace and vendors working against the real 7.6005 client. The one big system we can't build from the logs we have is secure trade between two players: none of the public packet logs contains a trade session.
+
+If you have an old log (sniffer output or a proxy log, any format) from a session where two players traded, even once, that's what we need. Most useful would be:
+
+- one player requesting the trade and the other accepting
+- each side adding an item and some information
+- both sides accepting, ideally also one cancelled trade
+- both players' logs from the same trade, if you happen to have them
+
+A rough note of what happened and when is plenty. Please remove account passwords and session keys, and don't send client binaries.
+
 ## Short Forum Or Discord Request
 
 Subject: Looking for MxO packet logs for preservation research
