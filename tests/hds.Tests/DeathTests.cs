@@ -34,4 +34,23 @@ public class DeathTests
     {
         Assert.Equal("80fd" + "000000000101", Hex(ServerPackets.BuildRespawnToLoadingArea()));
     }
+
+    [Fact]
+    public void HardlineExitToLoadingAreaIsTheNonDeathVariant()
+    {
+        // crashover2k proxy_second_pc_001_exit_to_loadingarea: client 80 fc 01, server 80 fd 00 00 00 00 01 00,
+        // client 80 fe 01, then 81 07 and the Loading Area.
+        Assert.Equal("80fd" + "000000000100", Hex(ServerPackets.BuildJackoutToLoadingArea()));
+    }
+
+    [Theory]
+    [InlineData(1000u, 1000u, false)]
+    [InlineData(1000u, 1001u, false)]   // the old check (start - now > 5) wrapped here and finished at once
+    [InlineData(1000u, 1029u, false)]
+    [InlineData(1000u, 1030u, true)]    // retail: 80 fd 00 00 00 00 00 00 30 s after 80 fc 02
+    [InlineData(1000u, 999u, false)]
+    public void JackoutFinishesAfterThirtySeconds(uint start, uint now, bool finished)
+    {
+        Assert.Equal(finished, TeleportHandler.JackoutFinished(start, now));
+    }
 }

@@ -196,6 +196,19 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// 80 fd 00 00 00 00 01 00: answer to "Exit to Loading Area" at a hardline (client 80 fc 01). The client
+        /// confirms with 80 fe 01 and the server then loads the Loading Area (crashover2k
+        /// proxy_second_pc_001_exit_to_loadingarea, packets 13-16).
+        /// </summary>
+        public static byte[] BuildJackoutToLoadingArea()
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_JACKOUT_FINISH, 0);
+            pak.AddHexBytes("000000000100");
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>80 e5: the player's absolute experience, sent while loading the world.</summary>
         public void sendEXPCurrent(WorldClient client, UInt32 exp)
         {
