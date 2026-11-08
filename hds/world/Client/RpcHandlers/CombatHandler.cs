@@ -857,6 +857,7 @@ namespace hds
         public static void HandlePlayerDeath(WorldClient player)
         {
             Output.WriteDebugLog("[COMBAT] Processing player death");
+            TradeHandler.Abort(player);
 
             player.playerInstance.IsDead.setValue(true);
             player.playerInstance.Health.setValue((UInt16)0);

@@ -55,6 +55,8 @@ namespace hds
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_VENDOR_BUY = 0x10e,
         CLIENT_VENDOR_SELL = 0x111,
+        CLIENT_TRADE_REQUEST = 0x182,
+        CLIENT_TRADE_ACTION = 0x185,
         
         // BuddyList
         CLIENT_ADD_FRIEND = 0xd6,
