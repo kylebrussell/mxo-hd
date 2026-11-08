@@ -194,7 +194,16 @@ namespace hds{
 			        break;
 		        // MarketPlace
 		        case (int) RPCRequestHeader.CLIENT_MP_OPEN:
-		            new TestUnitHandler().processMarketTest(ref rpcData);
+		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_OPEN_WINDOW:
+		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_BUY:
+		            new MarketPlaceHandler().ProcessBuyItem(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MP_PLACE_ITEM:
+		            new MarketPlaceHandler().ProcessPlaceItem(ref rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_MP_LIST_ITEMS:

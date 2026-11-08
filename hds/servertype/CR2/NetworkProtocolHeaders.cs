@@ -61,6 +61,9 @@ namespace hds
         // MarketPlace
         CLIENT_MP_LIST_ITEMS = 0x124,
         CLIENT_MP_OPEN = 0x121,
+        CLIENT_MP_OPEN_WINDOW = 0x129, // 81 29 00 00 00 00 01: retail's marketplace open
+        CLIENT_MP_BUY = 0x126,          // 81 26 <listing id> <slot>
+        CLIENT_MP_PLACE_ITEM = 0x12b,   // 81 2b <category> <price> <container> <slot> 00 00 00 00
 
         //Commands
 
