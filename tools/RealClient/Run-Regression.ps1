@@ -81,9 +81,9 @@ function Act([int]$cp, [hashtable]$a) { $a.ClientPid = $cp; $a.Settle = 1; & $to
 
 # Clicks a button and, when a log line proves it worked, retries a dropped click: the game reads the real cursor once
 # per frame, so a click posted just after moving it can miss the hover.
-function Click-Until([int]$cp, [int[]]$at, [string]$what, [string]$pattern) {
+function Click-Until([int]$cp, [int[]]$at, [string]$what, [string]$pattern, [int]$tries = 3) {
     if (-not $pattern) { Act $cp @{ Click = $at }; return }
-    foreach ($try in 1..3) {
+    foreach ($try in 1..$tries) {
         Act $cp @{ Click = $at }
         if (Wait-Log $pattern 3) { return }
         Write-Host "  no answer to $what, clicking again"
@@ -147,8 +147,8 @@ function Test-Aggro {
     Check 'the loot window opens' (Wait-Log 'Loot window sent' 10)
     Start-Sleep 3                            # the corpse window appears a moment after its record
     Shot $cp 'corpse'
-    Act $cp @{ Click = @(348, 358) }
-    Check 'Take All gives the loot' (Wait-Log '\[LOOT\] Player received' 10)
+    Click-Until $cp @(348, 358) 'Take All' '\[LOOT\] Player received' 6
+    Check 'Take All gives the loot' (Log-Has '\[LOOT\] Player received')
     Shot $cp 'looted'
 }
 
@@ -237,7 +237,7 @@ function Use-BoothSession {
     Start-World
     Clear-BoothData
     $script:cash = Sql "select cash from characters where charId=$TheNeo"
-    Sql "insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2399,30,3,0,NOW()),($TheNeo,7336,40,5,0,NOW()),($TheNeo,2565,23,0,0,NOW()),($TheNeo,2565,24,0,0,NOW())"
+    Sql "insert into inventory (charId,goid,slot,count,purity,created) values ($TheNeo,2399,30,3,0,NOW()),($TheNeo,7336,40,5,0,NOW()),($TheNeo,2565,23,0,0,NOW()),($TheNeo,2565,28,0,0,NOW())"
     $script:bagMoved = $false
     $script:boothClient = Login -pos $Booth -rotation 0
     # Booth mid-screen, clear of any notification in the corner
@@ -251,11 +251,12 @@ function Clear-BoothData {
     if ($script:cash) { Sql "update characters set cash=$($script:cash) where charId=$TheNeo" }
 }
 
-# The bag dragged to the far left, clear of any notification and of the trade window, on page 2: slot 23 is at 135,307, slot 30 at 98,379.
+# The bag dragged to the top left, clear of any notification, on page 2. The game stops it at the screen's edge, and a
+# trade window covers its right column: slot 23 is at 180,307, slot 28 at 71,379 (clear of the trade window), slot 30 at 143,379.
 function Show-BagPage2([int]$cp) {
     if (-not $script:bagMoved) {
-        Act $cp @{ Drag = @(860, 245, 55, 10) }
-        Act $cp @{ Click = @(38, 230) }
+        Act $cp @{ Drag = @(860, 245, 100, 10) }
+        Act $cp @{ Click = @(83, 230) }
         $script:bagMoved = $true
     }
 }
@@ -276,7 +277,7 @@ function Test-Items {
     Act $cp @{ Walk = @('I:0.05') }
     Show-BagPage2 $cp
     Shot $cp 'bag'
-    Act $cp @{ DoubleClick = @(98, 379); Once = $true }
+    Act $cp @{ DoubleClick = @(143, 379); Once = $true }
     Check 'a pill is used' (Wait-Log 'Used item 2399' 10)
     Start-Sleep 1
     Check 'the pill stack drops to 2' ((Sql "select count from inventory where charId=$TheNeo and goid=2399") -eq '2')
@@ -295,13 +296,13 @@ function Test-Trade {
     Check 'the trade opens' (Wait-Log '\[TRADE\] Session open' 10)
     Show-BagPage2 $cp                        # the bag opens with the trade
     Shot $cp 'open'
-    Act $cp @{ Drag = @(135, 307, 510, 240) }
-    Check 'an item is offered' (Wait-Log '\[TRADE\] Action 0 .*slot 23' 10)
+    Act $cp @{ Drag = @(71, 379, 510, 240) }
+    Check 'an item is offered' (Wait-Log '\[TRADE\] Action 0 .*slot 28' 10)
     Shot $cp 'offered'
     Act $cp @{ Click = @(606, 372) }
     Check 'accepting completes the trade' (Wait-Log '\[TRADE\] Complete' 10)
     Start-Sleep 2
-    Check 'the item left and the bot''s item arrived' ((Sql "select count(*) from inventory where charId=$TheNeo and ((goid=2565 and slot=23) or goid=7332)") -eq '1')
+    Check 'the item left and the bot''s item arrived' ((Sql "select count(*) from inventory where charId=$TheNeo and ((goid=2565 and slot=28) or goid=7332)") -eq '1')
     Check 'information rose by 100' ([long](Sql "select cash from characters where charId=$TheNeo") -eq ($before + 100))
     Shot $cp 'complete'
     Act $cp @{ Chat = @('?tradebot') }
@@ -312,7 +313,7 @@ function Test-Trade {
 
 function Test-Market {
     $cp = Use-BoothSession; if (-not $cp) { return }
-    if ($script:bagMoved) { Act $cp @{ Click = @(157, 11) }; $script:bagMoved = $false }   # the bag would cover the window
+    if ($script:bagMoved) { Act $cp @{ Click = @(202, 11) }; $script:bagMoved = $false }   # the bag would cover the window
     Act $cp @{ RightClick = @(590, 430) }
     Act $cp @{ Click = @(588, 380) }
     Start-Sleep 1
