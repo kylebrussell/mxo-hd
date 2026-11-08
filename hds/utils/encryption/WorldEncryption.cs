@@ -12,13 +12,17 @@ namespace hds
         public byte[] TF_Key = { 0x6C, 0xAB, 0x8E, 0xCC, 0xE7, 0x3C, 0x22, 0x47, 0xDB, 0xEB, 0xDE, 0x1A, 0xA8, 0xE7, 0x5F, 0xB8 };
         public byte[] IV = { 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30 };
         
-        private byte[] innerBuffer;		        
         private Crc32 crc32;
         private MxoTwofish tf;
 
+        // A client's packets are decrypted on the socket callback and its queue is encrypted on the flush thread, at the
+        // same time. This used to keep the working buffer in a field and share the cipher's IV unguarded: a decrypt could
+        // replace the buffer mid-encrypt, sending an all-zero 2065-byte packet whose RPCs were then lost, which the client
+        // only notices as a gap in the RPC counter (found by tools/HeadlessClient).
+        private readonly object cipherLock = new object();
+
         public WorldEncryption()
         {
-            innerBuffer = new byte [2048];
             InitCrypto();
         }
 
@@ -48,17 +52,18 @@ namespace hds
             packetWithCrc.AddByteArray(crc32.checksumB(packet.ReturnFinalPacket(),1));
             packetWithCrc.AddByteArray(packet.ReturnFinalPacket());
             packetWithCrc.AddByteArray(paddingBytes);
-            string hexPackCrcedPlain = StringUtils.bytesToString(packetWithCrc.ReturnFinalPacket());
-            string paddingBytesHex = StringUtils.bytesToString(paddingBytes);
-            
-            innerBuffer = new byte[packetWithCrc.ReturnFinalPacket().Length];
-            tf.Encrypt(packetWithCrc.ReturnFinalPacket(),innerBuffer);
+
+            byte[] encrypted = new byte[packetWithCrc.ReturnFinalPacket().Length];
             PacketContent encryptedPacket = new PacketContent();
-            encryptedPacket.AddByte(0x01);
-            encryptedPacket.AddByteArray(IV);
-            encryptedPacket.AddByteArray(innerBuffer);
-            innerBuffer = new byte [2048];
-            string hexPackEncrypt = StringUtils.bytesToString(encryptedPacket.ReturnFinalPacket());
+            lock (cipherLock)
+            {
+                // The IV sent has to be the one the data is encrypted with
+                tf.SetIV(IV);
+                tf.Encrypt(packetWithCrc.ReturnFinalPacket(), encrypted);
+                encryptedPacket.AddByte(0x01);
+                encryptedPacket.AddByteArray(IV);
+            }
+            encryptedPacket.AddByteArray(encrypted);
             return encryptedPacket.ReturnFinalPacket();
         }
 
@@ -68,19 +73,18 @@ namespace hds
 
             PacketReader readerEncrypted = new PacketReader(encryptedData);
             readerEncrypted.IncrementOffsetByValue(1); // skip 0x01
-            IV = readerEncrypted.ReadBytes(16);
-            tf.SetIV(IV);
+            byte[] packetIv = readerEncrypted.ReadBytes(16);
 
             // Read the whole Data
-            innerBuffer = new byte[encryptedData.Length - 17];
+            byte[] decryptedPacket = new byte[encryptedData.Length - 17];
             byte[] decryptBuffer = readerEncrypted.ReadBytes(encryptedData.Length - 17);
-            tf.Decrypt(decryptBuffer,innerBuffer);
+            lock (cipherLock)
+            {
+                IV = packetIv;
+                tf.SetIV(packetIv);
+                tf.Decrypt(decryptBuffer, decryptedPacket);
+            }
 
-            // just copy to clean
-            byte[] decryptedPacket = innerBuffer;
-            innerBuffer = new byte[2048];
-
-            string decryptedPacketHex = StringUtils.bytesToString(decryptedPacket);
             PacketReader reader = new PacketReader(decryptedPacket);
             UInt32 crc32fromPacket = reader.ReadUInt32(1);
             UInt16 decryptionLen = (ushort) ((reader.ReadUInt16(1)) - 4 + 10);

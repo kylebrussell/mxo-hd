@@ -29,8 +29,8 @@ namespace hds
             mainThreadWorking = true;
             clientList = new List<MarginClient>();
             threadList = new List<Thread>();
-            tcpListener = new TcpListener(NetworkBind.Address, 10000);
-            Output.WriteLine("Margin server set and ready at port 10000");
+            tcpListener = new TcpListener(NetworkBind.Address, NetworkBind.MarginPort);
+            Output.WriteLine("Margin server set and ready at port " + NetworkBind.MarginPort);
             listenThread = new Thread(new ThreadStart(ListenForClients));
         }
 

@@ -69,6 +69,11 @@ namespace hds
 			attributesCreation[indexCreation].setValue(content);
 		}
 		
+		/// <summary>The creation attributes in order, for reading a creation record back (the headless test client).</summary>
+		public IReadOnlyList<Attribute> GetCreationAttributeList(){
+			return attributesCreation;
+		}
+
 		public byte[] GetCreationAttributes(){
 			DynamicArray din = new DynamicArray();
 			bool lastGroupEmpty = true;

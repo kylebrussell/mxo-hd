@@ -255,6 +255,25 @@ namespace hds
             is_dead = dead;
         }
 
+        private readonly object deathLock = new object();
+
+        /// <summary>
+        /// Marks the NPC dead for whoever got there first; false when it already was. Each player's fight runs on its own
+        /// timer, so two players can land the last blow together, and only one of them may send the death and get the reward.
+        /// </summary>
+        public bool TryClaimDeath()
+        {
+            lock (deathLock)
+            {
+                if (is_dead)
+                {
+                    return false;
+                }
+                is_dead = true;
+                return true;
+            }
+        }
+
         public void setIsLootable(bool lootable)
         {
             is_lootable = lootable;

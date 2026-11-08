@@ -1023,14 +1023,24 @@ namespace hds
 
         // SingleTon Pattern - as we only want to load the Data once at startup and manage 
 
+        private static readonly object InstanceLock = new object();
+
+        /// <summary>
+        /// Locked because the world threads start before Main gets here: the visibility thread asking for the instance
+        /// while the first was still loading made a second one, and every NPC existed twice, one on top of the other
+        /// (found by tools/HeadlessClient). Callers wait until the data has loaded.
+        /// </summary>
         public static DataLoader getInstance()
         {
-            if (Instance == null)
+            lock (InstanceLock)
             {
-                Instance = new DataLoader();
-            }
+                if (Instance == null)
+                {
+                    Instance = new DataLoader();
+                }
 
-            return Instance;
+                return Instance;
+            }
         }
     }
 }

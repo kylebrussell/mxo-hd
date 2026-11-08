@@ -10,9 +10,9 @@ namespace hds.auth
             return new AuthClientSession(this);
         }
 
-        public AuthServer() : base(NetworkBind.Address, 11000)
+        public AuthServer() : base(NetworkBind.Address, NetworkBind.AuthPort)
         {
-            Output.WriteLine("Auth server set and ready at port 11000");
+            Output.WriteLine("Auth server set and ready at port " + NetworkBind.AuthPort);
             if (AuthHandler.DevAcceptAnyPassword)
             {
                 Output.WriteLine("WARNING: MXO_DEV_ANY_PASSWORD is set - any password is accepted for existing accounts. Local testing only.");

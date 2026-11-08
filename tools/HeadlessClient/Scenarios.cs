@@ -1,0 +1,586 @@
+using System.Text;
+using hds;
+
+namespace HeadlessClient;
+
+/// <summary>
+/// The scripted gameplay. Client records here are written from the layouts in docs/SECURE-TRADE.md, the retail captures
+/// and the handlers' comments, not built with the server's classes. A pass shows the server does what we believe the
+/// protocol is; it can't show the real client accepts it.
+/// </summary>
+public static class Scenarios
+{
+    private static readonly IReadOnlyDictionary<string, string> StillNpcs = new Dictionary<string, string>
+    {
+        ["MXO_MOB_WANDER"] = "0",
+        ["MXO_AGGRO"] = "0",
+    };
+
+    public static readonly IReadOnlyList<Scenario> All = new[]
+    {
+        new Scenario("login", Login),
+        new Scenario("secure-trade", SecureTrade),
+        new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
+        new Scenario("team-invite-and-chat", TeamInviteAndChat),
+        new Scenario("crew-invite-and-chat", CrewInviteAndChat),
+        new Scenario("marketplace-purchase", MarketplacePurchase),
+        new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
+        new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),
+        new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
+        new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
+        new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
+    };
+
+    // Where data/mob*.csv puts NPCs in the Slums, in both the Debug and Release lists
+    private const double NpcX = 24499, NpcY = 495, NpcZ = -1498;
+
+    private static string Le(uint value) => WireFormat.ToHex(BitConverter.GetBytes(value));
+
+    private static string Le(ushort value) => WireFormat.ToHex(BitConverter.GetBytes(value));
+
+    /// <summary>The usual string layout: u16 size with the NUL, the text, a NUL.</summary>
+    private static byte[] Sized(string text)
+    {
+        byte[] bytes = Encoding.ASCII.GetBytes(text);
+        return BitConverter.GetBytes((ushort)(bytes.Length + 1)).Concat(bytes).Append((byte)0).ToArray();
+    }
+
+    /// <summary>A u16-offset string at the offset stored at <paramref name="pointerOffset"/>.</summary>
+    private static string StringAtOffset(byte[] record, int pointerOffset)
+    {
+        int offset = BitConverter.ToUInt16(record, pointerOffset);
+        int size = BitConverter.ToUInt16(record, offset);
+        return Encoding.ASCII.GetString(record, offset + 2, size - 1);
+    }
+
+    /// <summary>Logs in, enters the world, and waits until each of the two can see the other.</summary>
+    private static async Task<(HeadlessPlayer A, HeadlessPlayer B, ViewCreation BSeenByA, ViewCreation ASeenByB)> TwoNearby(
+        ScenarioContext context, CharacterSeed a, CharacterSeed b)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(a, b);
+        ViewCreation bSeenByA = await players[0].WaitForViewNamedAsync(b.Handle);
+        ViewCreation aSeenByB = await players[1].WaitForViewNamedAsync(a.Handle);
+        return (players[0], players[1], bSeenByA, aSeenByB);
+    }
+
+    /// <summary>Both accounts get through auth, margin and the world session, and each sees the other spawn.</summary>
+    private static async Task Login(ScenarioContext context)
+    {
+        (HeadlessPlayer alice, _, ViewCreation bob, ViewCreation aliceSeen) = await TwoNearby(context, new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
+        Check.That(bob.ViewId > 3, "Server view ids start at 4");
+        Check.Equal(alice.CharId, BitConverter.ToUInt32(aliceSeen.Attributes["CharacterID"]), "CharacterID in the other player's spawn");
+    }
+
+    /// <summary>
+    /// `81 82` to a player's view, offers on both sides, accepts cleared by a change, and the swap. TargetID on the wire
+    /// is `&lt;view u16&gt; &lt;spawn id u8&gt; 00`: the client builds it from the object's comm handle (client.dll 0x622ced10) and
+    /// `81 51` carries the same shape in retail (crashover2k capture, `81 51 0f 00 51 00`). No retail or real-client
+    /// `81 82` exists, so its shape is inferred from sharing that code path.
+    /// </summary>
+    private static async Task SecureTrade(ScenarioContext context)
+    {
+        (HeadlessPlayer alice, HeadlessPlayer bob, ViewCreation bobView, _) = await TwoNearby(context,
+            new CharacterSeed("Alice") { Items = new[] { (3, NpcLoot.CodeBit1, 1) } },
+            new CharacterSeed("Bob") { X = 17120, Info = 500 });
+
+        alice.SendRpc($"81 82 {Le(bobView.ViewId)} {bobView.SpawnId:x2} 00  00 {Le(0u)} 03 00");
+
+        RpcRecord result = await alice.WaitForRpcAsync("81 83 ?? ?? 00 00 00 00  00 00 00 00 00 03");
+        Check.Equal("Bob", StringAtOffset(result.Bytes, 2), "RequestResult TargetName");
+        RpcRecord offered = await bob.WaitForRpcAsync("81 84");
+        Check.Equal("Alice", StringAtOffset(offered.Bytes, 2), "TradeOffered PartnerName");
+        Check.Equal(NpcLoot.CodeBit1, BitConverter.ToUInt32(offered.Bytes, 9), "TradeOffered ClassData");
+        Check.Equal((byte)1, offered.Bytes[0x11], "TradeOffered ItemQuantity");
+
+        // Bob offers information: 81 86 with YourItem=1 to him and 0 to Alice
+        bob.SendRpc($"81 85 00 01 {Le(200u)} 6b 00");
+        await bob.WaitForRpcAsync($"81 86 01 01 01 {Le(200u)} 6b");
+        await alice.WaitForRpcAsync($"81 86 01 00 01 {Le(200u)} 6b");
+
+        // Alice accepts; Bob's further change clears that, so his accept alone can't finish it
+        alice.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
+        await alice.WaitForRpcAsync("81 87 1c 00 00 8e");
+        await bob.WaitForRpcAsync("81 87 1d 00 00 8e");
+
+        bob.SendRpc($"81 85 00 01 {Le(50u)} 6b 00");
+        await alice.WaitForRpcAsync($"81 86 01 00 01 {Le(50u)} 6b");
+        await bob.WaitForRpcAsync($"81 86 01 01 01 {Le(50u)} 6b");
+
+        bob.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
+        await bob.WaitForRpcAsync("81 87 1c 00 00 8e");
+        await alice.WaitForRpcAsync("81 87 1d 00 00 8e");
+        await Task.Delay(300);
+        Check.Equal(0, alice.Received("81 87 19 00 00 8e").Count + bob.Received("81 87 19 00 00 8e").Count, "COMPLETE records before Alice re-accepts");
+
+        // Reset accept and accept again, then the swap
+        bob.SendRpc($"81 85 05 00 {Le(0u)} 6b 00");
+        await bob.WaitForRpcAsync("81 87 1e 00 00 8e");
+        await alice.WaitForRpcAsync("81 87 1f 00 00 8e");
+        bob.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
+        alice.SendRpc($"81 85 04 00 {Le(0u)} 6b 00");
+
+        // Status, items given, items received, signed info change
+        await alice.WaitForRpcAsync($"81 87 19 00 00 8e {Le(1u)} {Le(0u)} fa 00 00 00 00 00 00 00");
+        await bob.WaitForRpcAsync($"81 87 19 00 00 8e {Le(0u)} {Le(1u)} 06 ff ff ff ff ff ff ff");
+
+        Check.That(alice.Received("5f 03 00 01").Count == 1, "Alice's client told the item left slot 3");
+        RpcRecord added = bob.Received("5e").Single(r => BitConverter.ToUInt32(r.Bytes, 3) == NpcLoot.CodeBit1);
+        Check.That(alice.Received($"80 e4 {Le(1250u)}").Count == 1, "Alice's information update");
+        Check.That(bob.Received($"80 e4 {Le(250u)}").Count == 1, "Bob's information update");
+
+        ushort bobSlot = BitConverter.ToUInt16(added.Bytes, 1);
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={alice.CharId} AND goid={NpcLoot.CodeBit1}"), "Alice's Code Bits in the database");
+        Check.Equal((long)NpcLoot.CodeBit1, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={bob.CharId} AND slot={bobSlot}"), "Item in Bob's slot in the database");
+        Check.Equal(1250L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={alice.CharId}"), "Alice's information in the database");
+        Check.Equal(250L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={bob.CharId}"), "Bob's information in the database");
+    }
+
+    private static async Task TradeCancelAndRefusals(ScenarioContext context)
+    {
+        (HeadlessPlayer alice, HeadlessPlayer bob, ViewCreation bobView, ViewCreation aliceView) = await TwoNearby(context,
+            new CharacterSeed("Alice") { Items = new[] { (3, NpcLoot.CodeBit1, 1) } },
+            new CharacterSeed("Bob") { X = 17120 });
+
+        // A view that isn't a player: INVALIDPARTNER
+        alice.SendRpc($"81 82 {Le((ushort)0x7777)} 01 00  00 {Le(0u)} 03 00");
+        await alice.WaitForRpcAsync("81 83 ?? ?? 05 00 00 18");
+
+        // More information than there is: INVALIDITEMOFFERED
+        alice.SendRpc($"81 82 {Le(bobView.ViewId)} {bobView.SpawnId:x2} 00  01 {Le(5000u)} 6b 00");
+        await alice.WaitForRpcAsync("81 83 ?? ?? 03 00 00 18");
+
+        // A slot with nothing in it: INVALIDITEMOFFERED
+        alice.SendRpc($"81 82 {Le(bobView.ViewId)} {bobView.SpawnId:x2} 00  00 {Le(0u)} 09 00");
+        await alice.WaitForRpcAsync("81 83 ?? ?? 03 00 00 18");
+        Check.Equal(0, bob.Received("81 84").Count, "Offers Bob got from refused requests");
+
+        // A real offer, then Bob declines (action 3): the window closes on both sides and nothing moves
+        alice.SendRpc($"81 82 {Le(bobView.ViewId)} {bobView.SpawnId:x2} 00  00 {Le(0u)} 03 00");
+        await alice.WaitForRpcAsync("81 83 ?? ?? 00 00 00 00");
+        await bob.WaitForRpcAsync("81 84");
+
+        // While that one is open, Bob can't start another: INPROGRESS
+        bob.SendRpc($"81 82 {Le(aliceView.ViewId)} {aliceView.SpawnId:x2} 00  01 {Le(5u)} 6b 00");
+        await bob.WaitForRpcAsync("81 83 ?? ?? 08 00 00 18");
+
+        bob.SendRpc($"81 85 03 00 {Le(0u)} 6b 00");
+        await alice.WaitForRpcAsync("81 87 1b 00 00 8e");
+        await bob.WaitForRpcAsync("81 87 1b 00 00 8e");
+        Check.Equal((long)NpcLoot.CodeBit1, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={alice.CharId} AND slot=3"), "Alice's item after the cancel");
+
+        // Partner leaves mid-trade: ABORTED to the one left behind
+        alice.SendRpc($"81 82 {Le(bobView.ViewId)} {bobView.SpawnId:x2} 00  00 {Le(0u)} 03 00");
+        await bob.WaitForRpcAsync("81 84");
+        bob.Dispose();
+        await alice.WaitForRpcAsync("81 87 23 00 00 0e", TimeSpan.FromSeconds(60));
+    }
+
+    private static byte[] GroupInvite(byte groupType, string invitee, string name)
+    {
+        byte[] sizedInvitee = Sized(invitee);
+        List<byte> record = new() { 0x6e, groupType, 0x06, 0x00 };
+        record.AddRange(BitConverter.GetBytes((ushort)(6 + sizedInvitee.Length)));
+        record.AddRange(sizedInvitee);
+        record.AddRange(Sized(name));
+        return record.ToArray();
+    }
+
+    private static byte[] InviteAnswer(byte groupType, uint result, string inviter)
+    {
+        List<byte> record = new() { 0x6f, groupType, 0x08, 0x00 };
+        record.AddRange(BitConverter.GetBytes(result));
+        record.AddRange(Sized(inviter));
+        return record.ToArray();
+    }
+
+    private const byte Team = 3, Crew = 2;
+    private const byte ChatCrew = 0x12, ChatTeam = 0x15;
+
+    private static async Task TeamInviteAndChat(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
+        HeadlessPlayer alice = players[0], bob = players[1];
+
+        // Team chat before there is a team is refused with a notice
+        alice.SendChat("anyone?", ChatTeam);
+        await alice.WaitForTextAsync("not on a mission team");
+
+        // Decline first: the inviter hears it, and no team exists for Bob
+        alice.SendRpc(GroupInvite(Team, "Bob", ""));
+        await bob.WaitForRpcAsync("80 8f 0c 00");
+        await alice.WaitForRpcAsync("80 8d");
+        bob.SendRpc(InviteAnswer(Team, 0x0d00002e, "Alice"));
+        await alice.WaitForRpcAsync($"6f 03 08 00 {Le(0x0d00002eu)}");
+
+        // Accept: Bob gets the team, Alice gets him as a member
+        alice.SendRpc(GroupInvite(Team, "Bob", ""));
+        await bob.WaitForRpcAsync("80 8f 0c 00");
+        bob.SendRpc(InviteAnswer(Team, 0, "Alice"));
+        await bob.WaitForRpcAsync("80 8e");
+        await alice.WaitForRpcAsync($"70 03 {Le(bob.CharId)} 09 00");
+
+        // Team chat reaches the other member with the sender's id and is not echoed
+        alice.SendChat("team hello", ChatTeam);
+        RpcRecord heard = await bob.WaitForTextAsync("team hello");
+        Check.Equal((byte)0x2e, heard.Bytes[0], "Chat record");
+        Check.Equal(ChatTeam, heard.Bytes[1], "Chat channel");
+        Check.Equal(alice.CharId, BitConverter.ToUInt32(heard.Bytes, 3), "Chat sender id");
+        bob.SendChat("team reply", ChatTeam);
+        await alice.WaitForTextAsync("team reply");
+        await Task.Delay(200);
+        Check.Equal(0, alice.World.RpcSnapshot().Count(r => Contains(r.Bytes, "team hello")), "Echoes of Alice's own team chat");
+
+        // Bob leaves: both hear it, and chat stops working for him
+        bob.SendRpc("71 03");
+        await alice.WaitForRpcAsync($"72 03 {Le(bob.CharId)}");
+        await bob.WaitForRpcAsync($"72 03 {Le(bob.CharId)}");
+        bob.SendChat("still there?", ChatTeam);
+        await bob.WaitForTextAsync("not on a mission team");
+    }
+
+    private static async Task CrewInviteAndChat(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
+        HeadlessPlayer alice = players[0], bob = players[1];
+
+        alice.SendChat("crew?", ChatCrew);
+        await alice.WaitForTextAsync("not in a crew");
+
+        alice.SendRpc(GroupInvite(Crew, "Bob", "Headless"));
+        RpcRecord invite = await bob.WaitForRpcAsync("80 88 07 00");
+        Check.That(Contains(invite.Bytes, "Alice") && Contains(invite.Bytes, "Headless"), "Crew invite names the inviter and the crew: " + invite.Hex);
+
+        bob.SendRpc(InviteAnswer(Crew, 0, "Alice"));
+        await bob.WaitForRpcAsync("80 86");
+        await alice.WaitForRpcAsync("80 86");
+
+        long crewId = await context.Database.LongAsync("SELECT id FROM crews WHERE crew_name='Headless'");
+        Check.Equal(crewId, await context.Database.LongAsync($"SELECT crewId FROM characters WHERE charId={bob.CharId}"), "Bob's crew in the database");
+        Check.Equal(crewId, await context.Database.LongAsync($"SELECT crewId FROM characters WHERE charId={alice.CharId}"), "Alice's crew in the database");
+        Check.Equal(2L, await context.Database.LongAsync($"SELECT COUNT(*) FROM crew_members WHERE crew_id={crewId}"), "Crew members in the database");
+
+        alice.SendChat("crew hello", ChatCrew);
+        RpcRecord heard = await bob.WaitForTextAsync("crew hello");
+        Check.Equal(ChatCrew, heard.Bytes[1], "Chat channel");
+        bob.SendChat("crew reply", ChatCrew);
+        await alice.WaitForTextAsync("crew reply");
+
+        // Area chat and a whisper, while we're here
+        alice.SendChat("area hello", ChatTypes.Area);
+        RpcRecord area = await bob.WaitForTextAsync("area hello");
+        Check.Equal(ChatTypes.Area, area.Bytes[1], "Chat channel");
+
+        byte[] handle = Sized("Bob");
+        List<byte> whisper = new() { 0x29, 0x07, 0x00 };
+        whisper.AddRange(BitConverter.GetBytes((ushort)(7 + handle.Length)));
+        whisper.Add(0x00);
+        whisper.Add(0x01);
+        whisper.AddRange(handle);
+        whisper.AddRange(Sized("psst"));
+        alice.SendRpc(whisper.ToArray());
+        RpcRecord whispered = await bob.WaitForTextAsync("psst");
+        Check.Equal((byte)0x11, whispered.Bytes[1], "Whisper channel");
+
+        // Bob leaves: Alice hears it, and the database agrees
+        bob.SendRpc("71 02");
+        await alice.WaitForRpcAsync($"72 02 {Le(bob.CharId)}");
+        await WaitForDatabaseAsync(context, $"SELECT crewId FROM characters WHERE charId={bob.CharId}", "0", "Bob's crew after leaving");
+    }
+
+    private static bool Contains(byte[] data, string text) => BytePattern.IndexOf(data, Encoding.ASCII.GetBytes(text), 0) >= 0;
+
+    private static async Task WaitForDatabaseAsync(ScenarioContext context, string sql, string expected, string what)
+    {
+        DateTime deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        string actual;
+        do
+        {
+            actual = await context.Database.ScalarAsync(sql);
+            if (actual == expected)
+            {
+                return;
+            }
+            await Task.Delay(100);
+        } while (DateTime.UtcNow < deadline);
+        throw new ScenarioFailure($"{what}: expected {expected}, got {actual}");
+    }
+
+    private const string MarketCategory = "49 54 4f 74"; // "ITOt", as in the retail listing
+
+    private static string ListItem(uint price, byte slot) => $"81 2b {MarketCategory} {Le(price)} 01 {Le((ushort)slot)} 00 00 00 00";
+
+    private static async Task MarketplacePurchase(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(
+            new CharacterSeed("Seller") { Items = new[] { (5, NpcLoot.CodeBit1, 1) } },
+            new CharacterSeed("Buyer") { X = 17120 },
+            new CharacterSeed("Poor") { X = 17220, Info = 10 });
+        HeadlessPlayer seller = players[0], buyer = players[1], poor = players[2];
+
+        seller.SendRpc(ListItem(300, 5));
+        await seller.WaitForRpcAsync("5f 05 00 01");
+        RpcRecord listed = await seller.WaitForRpcAsync("81 2c");
+        uint listing = BitConverter.ToUInt32(listed.Bytes, 2);
+        Check.Equal(NpcLoot.CodeBit1, BitConverter.ToUInt32(listed.Bytes, 6), "Listed goid");
+        Check.Equal(300u, BitConverter.ToUInt32(listed.Bytes, 14), "Listed price");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={seller.CharId} AND slot=5"), "Seller's slot once listed");
+
+        // It shows up in a search
+        buyer.SendRpc($"81 24 {MarketCategory} {Le(0u)} 00 00 00 00 19 00 {Le(999999999u)} {Le(0u)} 01 00 00");
+        RpcRecord search = await buyer.WaitForRpcAsync("81 25 09 00");
+        Check.That(BytePattern.Parse(Le(listing)).Occurs(search.Bytes), "Search reply holds the listing: " + search.Hex);
+
+        // Too poor: nothing changes
+        poor.SendRpc($"81 26 {Le(listing)} 07");
+        await poor.WaitForTextAsync("do not have enough information");
+
+        buyer.SendRpc($"81 26 {Le(listing)} 07");
+        await buyer.WaitForRpcAsync($"5e 07 00 {Le(NpcLoot.CodeBit1)}");
+        await buyer.WaitForRpcAsync($"80 e4 {Le(700u)}");
+        await buyer.WaitForRpcAsync($"81 27 {Le(listing)} 07 {Le(NpcLoot.CodeBit1)}");
+
+        // Seller is paid, live and in the database
+        await seller.WaitForRpcAsync($"80 e4 {Le(1300u)}");
+        await seller.WaitForTextAsync("sold for 300");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT is_sold FROM marketplace WHERE id={listing}"), "Listing sold");
+        Check.Equal((long)NpcLoot.CodeBit1, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={buyer.CharId} AND slot=7"), "Buyer's item");
+        Check.Equal(700L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={buyer.CharId}"), "Buyer's information");
+        Check.Equal(1300L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={poor.CharId}"), "Poor buyer's information");
+
+        // Too late
+        poor.SendRpc($"81 26 {Le(listing)} 07");
+        await poor.WaitForTextAsync("already been sold");
+    }
+
+    /// <summary>
+    /// The real marketplace window is used from the Loading Area, and a seller there isn't "on world". They should still
+    /// be paid live: their in-memory information is what the next save writes, so a credit only in the database is lost.
+    /// Gets there the way the client does (exit_to_loadingarea capture): 80 fc 01, 80 fd, 80 fe 01, 81 07, 81 08, reset,
+    /// then the world load and 05.
+    /// </summary>
+    private static async Task MarketplaceSellerInLoadingArea(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(
+            new CharacterSeed("Seller") { Items = new[] { (5, NpcLoot.CodeBit1, 1) } },
+            new CharacterSeed("Buyer") { X = 17120 });
+        HeadlessPlayer seller = players[0], buyer = players[1];
+
+        seller.SendRpc("80 fc 01");
+        await seller.WaitForRpcAsync("80 fd");
+        seller.SendRpc("80 fe 01");
+        await seller.WaitForRpcAsync("81 07");
+        seller.SendRpc("81 08");
+        await seller.WaitForRpcAsync("81 09");
+        seller.SendRpc("05");
+        await Task.Delay(500);
+
+        seller.SendRpc(ListItem(300, 5));
+        RpcRecord listed = await seller.WaitForRpcAsync("81 2c");
+        uint listing = BitConverter.ToUInt32(listed.Bytes, 2);
+
+        buyer.SendRpc($"81 26 {Le(listing)} 07");
+        await buyer.WaitForRpcAsync($"81 27 {Le(listing)}");
+        await seller.WaitForRpcAsync($"80 e4 {Le(1300u)}");
+        Check.Equal(1300L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information");
+    }
+
+    /// <summary>
+    /// The same NPC in each player's views. Nothing in a creation record names the entity, and the Release data has
+    /// identical NPCs on one spot, so same-name NPCs are paired by the order they spawned, which is the server's list order.
+    /// </summary>
+    private static async Task<(ViewCreation SeenByA, ViewCreation SeenByB)> SharedNpc(HeadlessPlayer a, HeadlessPlayer b)
+    {
+        ViewCreation? seenByA = null, seenByB = null;
+        await a.WaitUntilAsync(() =>
+        {
+            List<ViewCreation> viewsA = a.ViewsOfGoid(MobGoid), viewsB = b.ViewsOfGoid(MobGoid);
+            seenByA = viewsA.FirstOrDefault();
+            if (seenByA == null)
+            {
+                return false;
+            }
+            string? name = seenByA.Name;
+            seenByB = viewsB.FirstOrDefault(v => v.Name == name);
+            return seenByB != null;
+        }, "an NPC both players can see", TimeSpan.FromSeconds(20));
+        return (seenByA!, seenByB!);
+    }
+
+    /// <summary>Rows in the NPC data the server loads (Debug and Release builds load different files) with this name, within view of NpcX, NpcZ.</summary>
+    private static int NpcRowsNear(ScenarioContext context, string name)
+    {
+#if DEBUG
+        string[] files = { "mob_just_some_and_winter.csv" };
+#else
+        string[] files = { "mob.csv", "mob_parsed.csv" };
+#endif
+        const double ViewRange = 5000;
+        return files
+            .SelectMany(file => File.ReadLines(Path.Combine(context.RepositoryRoot, "data", file)).Skip(1))
+            .Select(line => line.Split(';'))
+            .Count(row => row.Length > 9 && row[0] == "1" && row[2] == name &&
+                          Math.Abs(double.Parse(row[7], System.Globalization.CultureInfo.InvariantCulture) - NpcX) <= ViewRange &&
+                          Math.Abs(double.Parse(row[9], System.Globalization.CultureInfo.InvariantCulture) - NpcZ) <= ViewRange);
+    }
+
+    private const ushort MobGoid = 599;
+
+    private static CharacterSeed NearNpc(string handle, double offset = 0) => new(handle)
+    {
+        X = NpcX + 200 + offset, Y = NpcY, Z = NpcZ, Level = 50,
+    };
+
+    /// <summary>The values after this update in a view list, in the order they arrived: `&lt;view&gt; &lt;bytes&gt; &lt;u16&gt;`.</summary>
+    private static List<ushort> ViewUpdateValues(HeadlessPlayer player, ushort viewId, string bytes)
+    {
+        byte[] needle = WireFormat.FromHex($"{viewId & 0xff:x2}{viewId >> 8:x2}{bytes}");
+        List<ushort> values = new();
+        foreach (byte[] section in player.World.ViewSnapshot())
+        {
+            for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
+            {
+                if (at + needle.Length + 2 <= section.Length)
+                {
+                    values.Add(BitConverter.ToUInt16(section, at + needle.Length));
+                }
+            }
+        }
+        return values;
+    }
+
+    private const string NpcHealthUpdate = "04 80 80 80 40";
+    private const string NpcDeathUpdate = "07 01 1d 0d 00";
+
+    private static int CountViewUpdate(HeadlessPlayer player, ushort viewId, string bytes)
+    {
+        byte[] needle = WireFormat.FromHex($"{viewId & 0xff:x2}{viewId >> 8:x2}{bytes}");
+        int count = 0;
+        foreach (byte[] section in player.World.ViewSnapshot())
+        {
+            for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// One melee and one gun on the same NPC: both see its health fall in the same steps and see it die once, and
+    /// neither goes on fighting the corpse.
+    /// </summary>
+    private static async Task TwoPlayersFightOneNpc(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(NearNpc("Melee"), NearNpc("Gunner", 100));
+        HeadlessPlayer melee = players[0], gunner = players[1];
+        (ViewCreation mobForMelee, ViewCreation mobForGunner) = await SharedNpc(melee, gunner);
+
+        // Each NPC exists once per row of its data file. Two data loaders racing at startup used to double them all.
+        await Task.Delay(1500); // a visibility pass or two, so all of them have spawned
+        Check.Equal(NpcRowsNear(context, mobForMelee.Name!), melee.ViewsOfGoid(MobGoid).Count(v => v.Name == mobForMelee.Name), "Views of " + mobForMelee.Name);
+
+        melee.SendRpc("3d 01");
+        melee.SendRpc($"40 {Le(mobForMelee.ViewId)} {Le((ushort)mobForMelee.SpawnId)} 00 00 00 00 00 00 00");
+        gunner.SendRpc("3d 01");
+        gunner.SendRpc($"41 {Le(mobForGunner.ViewId)} {Le((ushort)mobForGunner.SpawnId)}");
+
+        // The fight takes rounds of a few seconds: expect both to see the health go down
+        await melee.WaitUntilAsync(() => ViewUpdateValues(melee, mobForMelee.ViewId, NpcHealthUpdate).Count >= 2, "NPC health updates", TimeSpan.FromSeconds(30));
+        await gunner.WaitUntilAsync(() => ViewUpdateValues(gunner, mobForGunner.ViewId, NpcHealthUpdate).Count >= 2, "NPC health updates", TimeSpan.FromSeconds(30));
+
+        // It dies, for both
+        TimeSpan toDie = TimeSpan.FromSeconds(180);
+        await melee.WaitForViewUpdateAsync(mobForMelee.ViewId, NpcDeathUpdate, toDie);
+        await gunner.WaitForViewUpdateAsync(mobForGunner.ViewId, NpcDeathUpdate, toDie);
+
+        List<ushort> meleeHealth = ViewUpdateValues(melee, mobForMelee.ViewId, NpcHealthUpdate);
+        List<ushort> gunnerHealth = ViewUpdateValues(gunner, mobForGunner.ViewId, NpcHealthUpdate);
+        Check.That(meleeHealth.SequenceEqual(meleeHealth.OrderByDescending(h => h)), "Health only falls: " + string.Join(",", meleeHealth));
+        Check.That(meleeHealth.Take(Math.Min(meleeHealth.Count, gunnerHealth.Count)).SequenceEqual(gunnerHealth.Take(Math.Min(meleeHealth.Count, gunnerHealth.Count))),
+            $"Both saw the same health: {string.Join(",", meleeHealth)} vs {string.Join(",", gunnerHealth)}");
+
+        // Whoever is still in a round when it dies finds out: no second death or reward over the next rounds
+        long meleeExp = await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={melee.CharId}");
+        long gunnerExp = await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={gunner.CharId}");
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        Check.Equal(1, CountViewUpdate(melee, mobForMelee.ViewId, NpcDeathUpdate), "NPC deaths seen by the melee player");
+        Check.Equal(1, CountViewUpdate(gunner, mobForGunner.ViewId, NpcDeathUpdate), "NPC deaths seen by the gunner");
+        Check.Equal(meleeExp, await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={melee.CharId}"), "Melee player's experience after the NPC died");
+        Check.Equal(gunnerExp, await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={gunner.CharId}"), "Gunner's experience after the NPC died");
+        Check.That(meleeExp + gunnerExp > 0, "Someone got experience for the kill");
+    }
+
+    /// <summary>What the other player's client gets when a player levels up, equips, and changes clothes.</summary>
+    private static async Task OtherViewLevelUpAndEquipment(ScenarioContext context)
+    {
+        (HeadlessPlayer actor, HeadlessPlayer watcher, _, ViewCreation actorView) = await TwoNearby(context,
+            new CharacterSeed("Actor") { Level = 1 },
+            new CharacterSeed("Watcher") { X = 17120 });
+
+        // Level 2: other-view attributes MaxHealth, Level, Health, then the effect
+        actor.SendChat("?addexp 500");
+        await watcher.WaitForViewUpdateAsync(actorView.ViewId, "02 80 86 ?? ?? 02 90");
+
+        // Weapon in hand: EquippedItemID, and back out again
+        const uint Revolver = 2565;
+        actor.SendChat("?additem " + Revolver);
+        RpcRecord gun = await actor.WaitForRpcAsync(r => r.Opcode == 0x5e && BitConverter.ToUInt32(r.Bytes, 3) == Revolver, "the gun in the bag");
+        byte gunSlot = gun.Bytes[1];
+        actor.SendRpc($"63 {gunSlot:x2} 69");
+        await watcher.WaitForViewUpdateAsync(actorView.ViewId, $"02 80 80 80 02 {Le(Revolver)}");
+        actor.SendRpc($"64 69 {gunSlot:x2}");
+        await watcher.WaitForViewUpdateAsync(actorView.ViewId, $"02 80 80 80 02 {Le(0u)}");
+
+        // Clothes: RSIDescription
+        const uint Shirt = 48095;
+        actor.SendChat("?additem " + Shirt);
+        RpcRecord shirt = await actor.WaitForRpcAsync(r => r.Opcode == 0x5e && BitConverter.ToUInt32(r.Bytes, 3) == Shirt, "the shirt in the bag");
+        int before = CountViewUpdate(watcher, actorView.ViewId, "02 08");
+        actor.SendRpc($"63 {shirt.Bytes[1]:x2} 63");
+        await watcher.WaitUntilAsync(() => CountViewUpdate(watcher, actorView.ViewId, "02 08") > before, "the new clothes", HeadlessPlayer.DefaultTimeout);
+    }
+
+    /// <summary>
+    /// A bystander sees another player's shots. Retail form, for a player's view (RajkoPacketsNearTheEnd
+    /// PacketsMaraCThenTimeDOut): `7a 00 02 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;`, with the target as the
+    /// bystander's own view and spawn id.
+    /// </summary>
+    private static async Task OtherViewGunfire(ScenarioContext context)
+    {
+        (HeadlessPlayer shooter, HeadlessPlayer watcher, _, ViewCreation shooterView) = await TwoNearby(context, NearNpc("Shooter"), NearNpc("Watcher", 100));
+        (ViewCreation mobForShooter, ViewCreation mobForWatcher) = await SharedNpc(shooter, watcher);
+
+        shooter.SendRpc("3d 01");
+        shooter.SendRpc($"41 {Le(mobForShooter.ViewId)} {Le((ushort)mobForShooter.SpawnId)}");
+
+        string shot = $"02 2a ?? 01 0c ?? ?? ?? {Le(mobForWatcher.ViewId)} {Le((ushort)mobForWatcher.SpawnId)} 00";
+        await watcher.WaitForViewUpdateAsync(shooterView.ViewId, shot, TimeSpan.FromSeconds(15));
+    }
+
+    /// <summary>
+    /// The client resends an RPC list whose ack is late, with the same counter and bytes. A chat line must be heard once
+    /// and experience granted once, however many copies arrive.
+    /// </summary>
+    private static async Task ResentRpcHandledOnce(ScenarioContext context)
+    {
+        (HeadlessPlayer alice, HeadlessPlayer bob, _, _) = await TwoNearby(context, new CharacterSeed("Alice") { Level = 1 }, new CharacterSeed("Bob") { X = 17120 });
+
+        alice.SendChat("just the once");
+        alice.World.ResendLastRpcs();
+        alice.World.ResendLastRpcs();
+        await bob.WaitForTextAsync("just the once");
+
+        alice.SendChat("?addexp 7");
+        alice.World.ResendLastRpcs();
+        await WaitForDatabaseAsync(context, $"SELECT exp FROM characters WHERE charId={alice.CharId}", "7", "Alice's experience");
+
+        // And the next list still gets through
+        alice.SendChat("and another");
+        await bob.WaitForTextAsync("and another");
+
+        await Task.Delay(500);
+        Check.Equal(1, bob.World.RpcSnapshot().Count(r => Contains(r.Bytes, "just the once")), "Copies of the chat line");
+        Check.Equal("7", await context.Database.ScalarAsync($"SELECT exp FROM characters WHERE charId={alice.CharId}"), "Alice's experience once it settled");
+    }
+}

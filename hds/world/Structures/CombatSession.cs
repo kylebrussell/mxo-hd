@@ -131,6 +131,8 @@ namespace hds
         {
             AttackerDied,
             DefenderDied,
+            /// <summary>Someone else killed the target during this fight: it just ends, with no death to send and no reward.</summary>
+            DefenderKilledByOther,
             AttackerFled,
             DefenderFled,
             Timeout,

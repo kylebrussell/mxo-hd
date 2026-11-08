@@ -24,12 +24,16 @@ namespace hds{
             Packets.sendSystemChatMessage(client, text, "SYSTEM");
         }
 
+        /// <summary>
+        /// The connected client of this character, in the world or not: the Loading Area, where the marketplace is used,
+        /// doesn't count as on-world. A seller there was treated as offline and credited only in the database, and their
+        /// next save wrote their old information back over it.
+        /// </summary>
         private static WorldClient FindOnline(UInt32 charId)
         {
             lock (WorldServer.Clients)
             {
                 return WorldServer.Clients.Values.FirstOrDefault(c => c != null && c.playerData != null &&
-                                                                      c.playerData.getOnWorld() &&
                                                                       c.playerData.getCharID() == charId);
             }
         }
