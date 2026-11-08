@@ -477,11 +477,31 @@ namespace hds
                 session.Attacker.playerData.pendingLootMoney = lootMoney;
                 session.Attacker.playerData.hasLootPending = true;
 
-                // Loot window: the money, plus a mission's LOOT item when this mob carries one
+                // Loot window: the money, a mission's LOOT item when this mob carries one, and the mob's drops
                 session.Attacker.playerData.pendingLootItem = missionItem;
-                UInt32[] lootItems = missionItem != 0 ? new[] { missionItem } : new UInt32[0];
-                packets.SendLootWindow(lootMoney, session.Attacker, lootItems);
-                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info");
+                List<UInt32> drops = session.DefenderMob.missionInstance == 0
+                    ? NpcLoot.Roll(mobLevel, rand)
+                    : new List<UInt32>();
+                lock (session.Attacker.playerData.pendingLootDrops)
+                {
+                    session.Attacker.playerData.pendingLootDrops.Clear();
+                    session.Attacker.playerData.pendingLootDrops.AddRange(drops);
+                }
+
+                List<UInt32> lootItems = new List<UInt32>();
+                List<byte> lootFlags = new List<byte>();
+                if (missionItem != 0)
+                {
+                    lootItems.Add(missionItem);
+                    lootFlags.Add(0x08);
+                }
+                foreach (UInt32 drop in drops)
+                {
+                    lootItems.Add(drop);
+                    lootFlags.Add(0x00);
+                }
+                session.Attacker.messageQueue.addRpcMessage(NpcLoot.BuildLootWindow(lootMoney, lootItems, lootFlags));
+                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {lootItems.Count} items");
             }
 
             session.Attacker.FlushQueue();

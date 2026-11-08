@@ -258,6 +258,14 @@ namespace hds
             ServerPackets packet = new ServerPackets();
             packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
 
+            List<UInt32> drops;
+            lock (Store.currentClient.playerData.pendingLootDrops)
+            {
+                drops = new List<UInt32>(Store.currentClient.playerData.pendingLootDrops);
+                Store.currentClient.playerData.pendingLootDrops.Clear();
+            }
+            NpcLoot.GiveItems(Store.currentClient, drops);
+
             UInt32 missionItem = Store.currentClient.playerData.pendingLootItem;
             if (missionItem != 0)
             {
