@@ -600,6 +600,7 @@ namespace hds
             // Retail death: own view IsDead/Health/ConditionStateFlags, then the death system message. The client
             // shows its own death UI and asks to respawn with 81 4c (TeleportHandler.ProcessRespawnRequest).
             player.messageQueue.addObjectMessage(ServerPackets.BuildSelfDeathUpdate(), false);
+            AbilityBuffs.RemoveAll(player);
             player.messageQueue.addRpcMessage(ServerPackets.BuildDeathMessage());
             player.FlushQueue();
 
