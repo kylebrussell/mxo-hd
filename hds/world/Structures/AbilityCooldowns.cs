@@ -33,8 +33,10 @@ namespace hds
         // Shared groups seen in retail
         public const UInt16 VirusDamage1 = 682, VirusEnhancedDamage = 683, LogicCannon = 684;
         public const UInt16 Heal1 = 685, Heal2 = 686, MeleeMove1 = 687, MeleeMove2 = 688;
-        /// <summary>aaHealPill: 10 s, the only retail sightings came with Mobius Code (abilities_mobiuscode).</summary>
+        /// <summary>aaHealPill: 10 s (abilities_mobiuscode; Mobius Code starts it too).</summary>
         public const UInt16 HealPill = 711;
+        /// <summary>aaAntibioticPill: 8 s, started with the item's own timer when Antibiotic 5.0 was used.</summary>
+        public const UInt16 AntibioticPill = 740;
 
         /// <summary>Ability id (abilityIDs.csv) to its retail cooldown.</summary>
         public static readonly Dictionary<UInt16, Cooldown> Retail = new Dictionary<UInt16, Cooldown>
@@ -83,18 +85,6 @@ namespace hds
             { 868, new Cooldown(15) },          // Purity
             { 870, new Cooldown(10, MeleeMove2, 5) }, // Spinning Flower
             { 967, new Cooldown(600, HealPill, 10) }, // Mobius Code: 80 bd 01 c7 03 04 .. 600 s + 80 bd 01 c7 02 00 .. 10 s
-            // Pills: the shared aaHealPill timer is retail (10 s); each pill's own 10 s timer is a guess.
-            { 187, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth (Health Boost 1.0)
-            { 188, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth2
-            { 189, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth3
-            { 190, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish1 (Health Pill 1.0)
-            { 191, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish2
-            { 192, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish3
-            { 193, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish4
-            { 511, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish5
-            { 659, new Cooldown(10, HealPill, 10) }, // PillConditionSweep1
-            { 672, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth1
-            { 673, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth4
             { 992, new Cooldown(600) },         // Corrupt Code 2
             { 1063, new Cooldown(30) },         // Kung Fu Master buff
             { 1064, new Cooldown(30) },         // Kung Fu Grand Master buff
@@ -118,6 +108,49 @@ namespace hds
             pak.AddFloat(seconds, 1);
             pak.AddByte(start ? (byte)0x01 : (byte)0x00);
             return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Starts the timers of a used item: one keyed by the item's own goid and one for the item group, both
+        /// type 00 and the same length, as retail did when Antibiotic 5.0 (goid 39410) was used
+        /// (PacketsZombiesPortingEtc line 77221): <c>80 bd 01 f2 99 00 00 00 00 41 01</c> and
+        /// <c>80 bd 01 e4 02 00 00 00 00 41 01</c>. The end records follow when the time is up.
+        /// </summary>
+        public static void StartItem(WorldClient client, UInt16 itemGoid, UInt16 group, float seconds, double now)
+        {
+            ClientData data = client.playerData;
+            UInt16[] ids = group != 0 ? new[] { itemGoid, group } : new[] { itemGoid };
+            lock (data.cooldownEndsAt)
+            {
+                foreach (UInt16 id in ids)
+                {
+                    data.cooldownEndsAt[id] = now + seconds;
+                }
+            }
+
+            foreach (UInt16 id in ids)
+            {
+                client.messageQueue.addRpcMessage(BuildTimer(id, GroupTimer, seconds, true));
+            }
+            client.FlushQueue();
+
+            DelayedActions.After(seconds, () =>
+            {
+                foreach (UInt16 id in ids)
+                {
+                    client.messageQueue.addRpcMessage(BuildTimer(id, GroupTimer, seconds, false));
+                }
+                client.FlushQueue();
+            });
+        }
+
+        /// <summary>True while a timer started with <see cref="StartItem"/> (item or group) is running.</summary>
+        public static bool IsTimerRunning(ClientData data, UInt16 id, double now)
+        {
+            lock (data.cooldownEndsAt)
+            {
+                return data.cooldownEndsAt.TryGetValue(id, out double end) && now < end;
+            }
         }
 
         /// <summary>True while the ability, or the group it shares a timer with, is cooling down.</summary>
