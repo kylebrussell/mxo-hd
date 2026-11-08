@@ -367,8 +367,12 @@ namespace hds
                     return;
                 }
 
-                // Phase 3: Mob attacks the player back (with player's defensive tactic applied)
-                bool playerDied = session.DefenderMob.updateCombat(session.AttackerTactic);
+                // Phase 3: Mob attacks the player back (with player's defensive tactic applied). An NPC with a gun
+                // shoots back in a gunfight; others keep the close-combat counterattack.
+                bool playerDied = session.Type == CombatSession.CombatType.Ranged &&
+                                  RangedWeapons.IsGun(session.DefenderMob.getWeapon())
+                    ? NpcReturnFire(session)
+                    : session.DefenderMob.updateCombat(session.AttackerTactic);
                 session.Attacker.FlushQueue();
                 if (playerDied)
                 {
@@ -586,12 +590,24 @@ namespace hds
             UInt16 attackRoll, defenseRoll;
             bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
 
+            UInt32 weapon = player.playerData.freeFireWeaponGoid;
+            byte[] equipped = player.playerInstance.EquippedItemID.getValue();
+            if (weapon == 0 && equipped != null && equipped.Length >= 4)
+            {
+                weapon = NumericalUtils.ByteArrayToUint32(equipped, 1);
+            }
+            byte attackClass = RangedWeapons.AttackClass(weapon);
+            if (attackClass == 0)
+            {
+                attackClass = RangedWeapons.ClassPistol;
+            }
+
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
             player.playerData.emoteCounter++;
             player.messageQueue.addObjectMessage(ServerPackets.BuildRangedShot(player.playerData.emoteCounter,
                 session.TargetViewSpawnId, (float)x, (float)y, (float)z, CombatStartTime(), rangedNoiseLevel,
-                firstShot, hit), false);
+                firstShot, hit, attackClass), false);
             player.messageQueue.addRpcMessage(ServerPackets.BuildRangedShotRpc());
 
             if (target == null)
@@ -614,14 +630,50 @@ namespace hds
             Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
 
             string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
-            UInt32 weapon = player.playerData.freeFireWeaponGoid;
-            byte[] equipped = player.playerInstance.EquippedItemID.getValue();
-            if (weapon == 0 && equipped != null && equipped.Length >= 4)
-            {
-                weapon = NumericalUtils.ByteArrayToUint32(equipped, 1);
-            }
             player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
                 true, weapon, target.getName(), playerName));
+            return died;
+        }
+
+        /// <summary>
+        /// An NPC with a gun fires back at the player, as retail NPCs did in a gunfight (tutorial capture: Alex shot
+        /// mxoemu every ~5 s with hits and misses; luizoe Unknown log line 32719: "Chopper Jumper" with a rifle):
+        /// the NPC's shot on its view (<see cref="ServerPackets.BuildNpcRangedShot"/>), the player's health on a
+        /// hit, then the 81 68 log line with the NPC as attacker. Returns true when the player died.
+        /// </summary>
+        private bool NpcReturnFire(CombatSession session)
+        {
+            WorldClient player = session.Attacker;
+            Mob mob = session.DefenderMob;
+            byte attackClass = RangedWeapons.AttackClass(mob.getWeapon());
+
+            UInt16 attackRoll, defenseRoll;
+            bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
+
+            mob.rangedActionCounter++;
+            ClientView mobView = player.viewMan.FindViewForEntity(mob.getEntityId());
+            if (mobView != null && mobView.viewCreated)
+            {
+                UInt32 playerAsTarget = (UInt32)(2 | (player.playerData.selfSpawnIdCounter << 16));
+                new ServerPackets().SendNpcUpdateData(mobView.ViewID, player, ServerPackets.BuildNpcRangedShot(
+                    mob.rangedActionCounter, attackClass, hit, playerAsTarget,
+                    (float)mob.getXPos(), (float)mob.getYPos(), (float)mob.getZPos()));
+            }
+
+            UInt16 damage = 0;
+            bool died = false;
+            if (hit)
+            {
+                byte[] levelBytes = player.playerInstance.Level.getValue();
+                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+                damage = CombatCalculator.CalculateMobDamageWithTactics(mob.getLevel(), playerLevel, session.AttackerTactic);
+                died = mob.HitCombatTarget(damage);
+            }
+            Output.WriteDebugLog($"[COMBAT] {mob.getName()} fires back: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
+
+            string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
+            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
+                false, mob.getWeapon(), playerName, mob.getName()));
             return died;
         }
 

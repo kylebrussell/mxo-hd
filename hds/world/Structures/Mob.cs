@@ -355,6 +355,14 @@ namespace hds
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
             themob.CurrentState.setValue(StringUtils.hexStringToBytes("06080000"));
 
+            if (RangedWeapons.IsGun(getWeapon()))
+            {
+                // Retail NPCs with guns carried them in EquippedItemID (NPC view attribute 33), e.g.
+                // 80 80 80 80 a0 b4 02 00 00 = AutomaticRifle1 on "Chopper Jumper" (luizoe Unknown log line 32719).
+                themob.EquippedItemID.enable();
+                themob.EquippedItemID.setValue(getWeapon());
+            }
+
             return themob;
         }
 
@@ -586,16 +594,24 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] {name} (Lv{level}) hits player (Lv{playerLevel}, {playerTactic}) for {damage} damage");
 
-            // Apply damage to player
-            UInt16 newHealth;
-            if (playerHealth <= damage)
+            return HitCombatTarget(damage, fxId);
+        }
+
+        /// <summary>Action counter of this NPC's gunshots (the 2a record's counter).</summary>
+        public byte rangedActionCounter;
+
+        /// <summary>
+        /// Takes damage off the combat target's health and sends the player their new health. Returns true when the
+        /// player died.
+        /// </summary>
+        public bool HitCombatTarget(UInt16 damage, uint fxId = 0)
+        {
+            if (combatTarget == null)
             {
-                newHealth = 0;
+                return false;
             }
-            else
-            {
-                newHealth = (UInt16)(playerHealth - damage);
-            }
+            UInt16 playerHealth = NumericalUtils.ByteArrayToUint16(combatTarget.playerInstance.Health.getValue(), 1);
+            UInt16 newHealth = playerHealth <= damage ? (UInt16)0 : (UInt16)(playerHealth - damage);
 
             // Update player's health attribute
             combatTarget.playerInstance.Health.setValue(newHealth);

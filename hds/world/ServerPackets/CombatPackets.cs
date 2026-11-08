@@ -261,18 +261,20 @@ namespace hds
         /// Retail, tutorial capture (crashover2k ..._uriah.log.txt, 13:30:17):
         /// <c>02 00 03 28 02 01 0c 38 81 00 06 00 f2 00 &lt;pos&gt; 33 be e7 1e 80 04 4b</c>; first shot in the luizoe
         /// old-sniffer Unknown log, line 11790: <c>... 80 84 32 80 80 80 80 03 00 00 10 00 21</c>.
-        /// The bytes <c>01 0c 38</c> are copied, not understood. <c>81 00</c> is a hit and <c>00 10</c> a miss: in the
+        /// The bytes <c>01 0c</c> are copied, not understood; the next byte is the weapon's attack class
+        /// (<see cref="RangedWeapons"/>: 0x38 pistols such as the Redpill Special, 0x37 rifles, 0x39 SMGs). <c>81 00</c> is a hit and <c>00 10</c> a miss: in the
         /// tutorial fight all ten shots (five each way) match the hit/miss result of their 81 68 combat-log line.
         /// </summary>
         public static byte[] BuildRangedShot(byte actionCounter, UInt32 targetViewSpawnId, float x, float y, float z,
-            UInt32 simMs, byte noiseLevel, bool firstShot, bool hit = true)
+            UInt32 simMs, byte noiseLevel, bool firstShot, bool hit = true, byte attackClass = RangedWeapons.ClassPistol)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
             pak.AddByte(0x03);
             pak.AddByte(0x28);
             pak.AddByte(actionCounter);
-            pak.AddHexBytes("010c38");
+            pak.AddHexBytes("010c");
+            pak.AddByte(attackClass);
             pak.AddHexBytes(hit ? "8100" : "0010");
             pak.AddUint32(targetViewSpawnId, 1);
             pak.AddFloatLtVector3f(x, y, z);
@@ -321,6 +323,29 @@ namespace hds
             pak.AddUint16(0, 1);
             pak.AddSizedTerminatedString(defenderName);
             pak.AddSizedTerminatedString(attackerName);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// NPC view part 02: the NPC fires at a player. <c>02 2a &lt;counter&gt; 01 0c &lt;class&gt; &lt;81 00 hit | 00 10 miss&gt;
+        /// &lt;target view u16&gt; &lt;spawn u16&gt; 00 &lt;x y z f32&gt;</c>; flags 2a = action (0x20), a one-byte field (0x02,
+        /// always 00 in these captures) and position (0x08). The target is the player as the receiving client sees
+        /// them: own view 2 and their self-spawn id. Retail, tutorial capture (crashover2k ..._uriah.log.txt line
+        /// 14258): <c>06 00 02 2a 04 01 0c 38 81 00 02 00 ea 00 00 a0 60 e7 45 00 60 c7 44 76 b4 36 c6</c>; an NPC with
+        /// a rifle used class 0x37 (luizoe old-sniffer Unknown log line 32719).
+        /// </summary>
+        public static byte[] BuildNpcRangedShot(byte counter, byte attackClass, bool hit, UInt32 targetViewSpawnId,
+            float x, float y, float z)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("022a");
+            pak.AddByte(counter);
+            pak.AddHexBytes("010c");
+            pak.AddByte(attackClass);
+            pak.AddHexBytes(hit ? "8100" : "0010");
+            pak.AddUint32(targetViewSpawnId, 1);
+            pak.AddByte(0x00);
+            pak.AddFloatLtVector3f(x, y, z);
             return pak.ReturnFinalPacket();
         }
 
