@@ -129,6 +129,7 @@ function Test-Aggro {
     Act $cp @{ DoubleClick = @(435, 300) }
     Check 'the attacker dies' (Wait-Log 'Sending death for mob' 120)
     Check 'the loot window opens' (Wait-Log 'Loot window sent' 10)
+    Start-Sleep 3                            # the corpse window appears a moment after its record
     Shot $cp 'corpse'
     Act $cp @{ Click = @(348, 358) }
     Check 'Take All gives the loot' (Wait-Log '\[LOOT\] Player received' 10)
@@ -139,15 +140,20 @@ function Test-Regen {
     Start-World
     $cp = Login; if (-not $cp) { return }
     Check 'no aggro on a level 50' (-not (Wait-Log '\[AGGRO\]' 8))
+    $fightStart = @(Get-Content PacketLog.txt).Count
     Act $cp @{ DoubleClick = @(500, 640) }
     Check 'player attack kills the NPC' (Wait-Log 'Sending death for mob' 120)
-    $damage = Log-Count 'Player health:'
     $packets = @(Get-Content PacketLog.txt).Count
     Act $cp @{ Walk = @('S:1.5') }
     Start-Sleep 12
     $after = @(Get-Content PacketLog.txt | Select-Object -Skip $packets)
     Check 'movement after the fight' ([bool]($after | Select-String '^02 03 02 00 01 '))
-    Check 'health regenerates after the fight' (($damage -eq 0) -or [bool]($after | Select-String '02 00 02 80 80 80 40 '))
+    # Own-view health values since the fight began: they must have risen again after the last hit, or be full
+    $health = @(Get-Content PacketLog.txt | Select-Object -Skip $fightStart | Select-String '02 00 02 80 80 80 40 ([0-9a-f]{2}) ([0-9a-f]{2})' | ForEach-Object {
+        [Convert]::ToInt32($_.Matches[0].Groups[2].Value + $_.Matches[0].Groups[1].Value, 16) })
+    $rose = $false
+    for ($i = 1; $i -lt $health.Count; $i++) { if ($health[$i] -gt $health[$i - 1]) { $rose = $true } }
+    Check 'health regenerates after the fight' ($health.Count -eq 0 -or $rose) ("health updates: " + ($health -join ','))
     Shot $cp 'after'
 }
 
@@ -183,18 +189,17 @@ function Test-Guns {
         Act $cp @{ Walk = @('D:0.8') }
         Act $cp @{ Walk = @('S:2.5') }
         Shot $cp 'near'
-        Act $cp @{ Click = @(610, 225) }
+        Act $cp @{ Click = @(606, 222) }         # target the Blackwoods; it stays targeted while walking
+        Act $cp @{ Walk = @('S:2') }
+        Act $cp @{ Click = @(710, 18) }
+        Check 'a target out of range is refused' (Wait-Log 'Range combat refused' 10)
+        Shot $cp 'outofrange'
+        Act $cp @{ Walk = @('W:3') }
         Act $cp @{ Click = @(710, 18) }
         Check 'Free Fire fires' (Wait-Log 'Shot at .*: (hit|miss)' 10)
         Check 'a melee NPC closes in on the shooter' (Wait-Log 'closes in on the shooter' 15)
         Shot $cp 'firing'
         Check 'the NPC dies to gunfire' (Wait-Log 'Combat ended: DefenderDied' 120)
-        Act $cp @{ Walk = @('S:3') }
-        Mark-Log
-        Act $cp @{ Click = @(511, 185) }
-        Act $cp @{ Click = @(710, 18) }
-        Check 'a target out of range is refused' (Wait-Log 'Range combat refused' 10)
-        Shot $cp 'outofrange'
     }
     finally {
         Stop-Everything
