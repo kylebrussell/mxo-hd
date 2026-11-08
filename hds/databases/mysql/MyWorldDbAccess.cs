@@ -1190,6 +1190,60 @@ namespace hds.databases{
                                   "', slot = '" + slotId + "', count = '" + count + "', created = NOW() ");
         }
 
+        /// <summary>
+        /// Code storage rows: char_abilities rows whose ability_id is CodeStorage.BaseValue(goid) and whose level
+        /// holds count - 1, so the margin's known-abilities list (ability_id + level) sends them as retail did.
+        /// </summary>
+        public List<CodeStorage.Entry> GetCodeStorage(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT slot, ability_id, level FROM char_abilities WHERE char_id = '" + charId +
+                                        "' AND (ability_id & 0xFC000000) = 0x84000000 ORDER BY slot";
+            dr = queryExecuter.ExecuteReader();
+
+            List<CodeStorage.Entry> entries = new List<CodeStorage.Entry>();
+            while (dr.Read())
+            {
+                UInt32 value = unchecked((UInt32)Convert.ToInt64(dr.GetValue(1)));
+                entries.Add(new CodeStorage.Entry(Convert.ToUInt16(dr.GetValue(0)), CodeStorage.GoidOf(value),
+                    Convert.ToInt32(dr.GetValue(2)) + 1));
+            }
+            dr.Close();
+	        CloseConnection();
+            return entries;
+        }
+
+        /// <summary>The slot after the highest ability or code storage slot of a character.</summary>
+        public UInt16 GetNextAbilitySlot(UInt32 charId)
+        {
+	        OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT COALESCE(MAX(slot), -1) + 1 FROM char_abilities WHERE char_id = '" + charId + "'";
+            UInt16 slot = Convert.ToUInt16(queryExecuter.ExecuteScalar());
+	        CloseConnection();
+            return slot;
+        }
+
+        public void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry)
+        {
+	        ExecuteNonResultQuery("INSERT INTO char_abilities SET char_id = '" + charId + "', slot = '" + entry.Slot +
+	                              "', ability_id = '" + CodeStorage.BaseValue(entry.Goid) + "', level = '" + (entry.Count - 1) +
+	                              "', is_loaded = 0, ability_name = 'Code storage " + entry.Goid + "', added = NOW()");
+        }
+
+        public void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count)
+        {
+	        ExecuteNonResultQuery("UPDATE char_abilities SET level = '" + (count - 1) + "' WHERE char_id = '" + charId +
+	                              "' AND slot = '" + slot + "' AND (ability_id & 0xFC000000) = 0x84000000 LIMIT 1");
+        }
+
+        public void RemoveCodeStorage(UInt32 charId, UInt16 slot)
+        {
+	        ExecuteNonResultQuery("DELETE FROM char_abilities WHERE char_id = '" + charId + "' AND slot = '" + slot +
+	                              "' AND (ability_id & 0xFC000000) = 0x84000000 LIMIT 1");
+        }
+
 	    public void SaveInfo(WorldClient client, long cash)
 	    {
 		    ExecuteNonResultQuery("UPDATE characters SET cash =" + cash + " WHERE charId= " +
