@@ -12,6 +12,7 @@ namespace hds
         CLIENT_COMBAT_STANCE = 0x3d, // 01 = draw weapon / ready, 00 = stand down
         CLIENT_CLOSE_COMBAT = 0x40,
         CLIENT_RANGE_COMBAT = 0x41,
+        CLIENT_FREE_FIRE_CHOICE = 0x3f, // 3f <inventory slot u16> <kind u32>: hotbar Free Fire weapon (kind 0x10 = item)
         CLIENT_LEAVE_COMBAT = 0x44,
         CLIENT_DUEL_REQUEST = 0x50,
         CLIENT_JUMP_START = 0xc2,

@@ -94,6 +94,8 @@ namespace hds
 
         public bool waitForRPCShutDown;
         internal ushort selfSpawnIdCounter;
+        /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>
+        public UInt32 freeFireWeaponGoid;
 	    public UInt32 lastSaveTime;
 
 	    public ClientData ()

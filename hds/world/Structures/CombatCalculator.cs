@@ -219,6 +219,18 @@ namespace hds
         }
 
         /// <summary>
+        /// Rolls one gunshot: hit when the attack roll beats the defense roll, as in retail's 81 68 combat log
+        /// (tutorial fight: attack rolls 19-95, defense rolls 7-65, 7 of 10 shots hit). The ranges are a guess
+        /// shaped like those numbers; retail's formula (skills, tactics, range) is unknown.
+        /// </summary>
+        public static bool RollRangedHit(Random rng, out UInt16 attackRoll, out UInt16 defenseRoll)
+        {
+            attackRoll = (UInt16)rng.Next(15, 100);
+            defenseRoll = (UInt16)rng.Next(5, 70);
+            return attackRoll > defenseRoll;
+        }
+
+        /// <summary>
         /// Gets a random ranged hit FX ID for visual variety.
         /// </summary>
         public static uint GetRandomRangedHitFx()
