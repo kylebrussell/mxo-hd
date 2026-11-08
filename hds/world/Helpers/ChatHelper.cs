@@ -160,6 +160,15 @@ namespace hds
                     pak.sendSystemChatMessage(Store.currentClient, "Teleported!", "BROADCAST");
                 }
 
+                if (command.Equals("?additem") && commands.Length == 2)
+                {
+                    // Dev command: put an item (by goid) into the first free bag slot with the same item-add
+                    // RPC (5e) that looting and buying use. A gun added this way becomes the client's Free Fire
+                    // weapon if none is chosen yet, as when the retail tutorial's looted Redpill Special arrived.
+                    new InventoryHandler().processItemAdd(UInt32.Parse(commands[1]), 0x10);
+                    Store.currentClient.FlushQueue();
+                }
+
                 if (command.Equals("?die"))
                 {
                     // Dev command: run the player death path without needing a mob strong enough to win.
