@@ -250,9 +250,6 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
-        /// <summary>Retail fired a gun about every 5 s (tutorial capture: shots at :12, :17, :22, :26, :31).</summary>
-        public const int RangedShotIntervalMs = 5000;
-
         /// <summary>
         /// Own view: the player fires at a target. Part 1 is an action record (flag 0x20) with position and time
         /// (flag 0x08): <c>28 &lt;action counter&gt; 01 0c 38 81 00 &lt;target view u16&gt; &lt;spawn u16&gt;

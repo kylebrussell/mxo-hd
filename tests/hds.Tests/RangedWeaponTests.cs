@@ -19,8 +19,8 @@ public class RangedWeaponTests
     [InlineData("e50submachinegun1001", RangedWeapons.ClassSubmachinegun)] // 0x39
     [InlineData("Submachinegun3", RangedWeapons.ClassSubmachinegun)]
     [InlineData("SleepSubgun", RangedWeapons.ClassSubmachinegun)]
-    [InlineData("DualPistol6", RangedWeapons.ClassDual)]
-    [InlineData("DualSubmachinegun2", RangedWeapons.ClassDual)]
+    [InlineData("DualPistol6", RangedWeapons.ClassDualPistol)]
+    [InlineData("DualSubmachinegun2", RangedWeapons.ClassDualSubmachinegun)]
     [InlineData("Mclothing_Shirt_A5_C8", 0)]
     [InlineData("", 0)]
     public void WeaponNamesMapToRetailAttackClasses(string name, byte expected)
@@ -74,12 +74,80 @@ public class RangedWeaponTests
     }
 
     [Theory]
-    [InlineData(RangedWeapons.ClassPistol, 5000)]
-    [InlineData(RangedWeapons.ClassRifle, 4300)]
-    [InlineData(RangedWeapons.ClassSubmachinegun, 3700)]
-    [InlineData(RangedWeapons.ClassDual, 3200)]
-    public void FireIntervalsFollowRetailMeasurements(byte attackClass, int expectedMs)
+    [InlineData("IWRf", RangedWeapons.ClassRifle)]
+    [InlineData("IWHg", RangedWeapons.ClassPistol)]
+    [InlineData("IWSm", RangedWeapons.ClassSubmachinegun)]
+    [InlineData("IWDH", RangedWeapons.ClassDualPistol)]
+    [InlineData("IWDS", RangedWeapons.ClassDualSubmachinegun)]
+    [InlineData("ICTh", 0)]
+    public void CategoriesMapToAttackClasses(string category, byte expected)
     {
-        Assert.Equal(expectedMs, RangedWeapons.FireIntervalMs(attackClass));
+        Assert.Equal(expected, RangedWeapons.AttackClassForCategory(category));
+    }
+
+    [Fact]
+    public void WeaponDataFromTheClientParses()
+    {
+        // data/weapons.csv, decoded from the client's gameobjects.gob.
+        string path = DataLoader.DataPath("weapons.csv");
+        var stats = RangedWeapons.ParseStats(File.ReadAllLines(path));
+        Assert.True(stats.Count > 600);
+
+        var redpill = stats[2565];
+        Assert.Equal("Revolver0", redpill.Name);
+        Assert.Equal(RangedWeapons.ClassPistol, redpill.AttackClass);
+        Assert.Equal(16f, redpill.RangeMetres);
+        Assert.Equal(4.5f, redpill.ReuseSeconds);
+        Assert.Equal(50, redpill.Noise);  // retail's first shot with it set NoiseLevel 0x32
+        Assert.Equal(1, redpill.BaseDamage);
+
+        var rifle = stats[692];           // AutomaticRifle1, Chopper Jumper's gun: class 0x37 in retail
+        Assert.Equal(RangedWeapons.ClassRifle, rifle.AttackClass);
+        Assert.Equal(22f, rifle.RangeMetres);
+        Assert.Equal(3.5f, rifle.ReuseSeconds);
+
+        Assert.Equal(RangedWeapons.ClassDualSubmachinegun, stats[2503].AttackClass); // DualSubmachinegun2
+        Assert.Equal(2.5f, stats[2503].ReuseSeconds);
+    }
+
+    [Fact]
+    public void ParseStatsSkipsCommentsHeaderAndNonGuns()
+    {
+        var stats = RangedWeapons.ParseStats(new[]
+        {
+            "# comment",
+            "goid,name,category,baseDamage,rangeMetres,reuseSeconds,reqCharLevel,reqAbility,reqAbilityLevel,noise",
+            "6892,Submachinegun3,IWSm,7,20,3.0,20,,,65",
+            "1,NotAGun,ICTh,0,0,0,0,,,0",
+        });
+        Assert.Single(stats);
+        Assert.Equal(3.0f, stats[6892].ReuseSeconds);
+        Assert.Equal(RangedWeapons.ClassSubmachinegun, stats[6892].AttackClass);
+    }
+
+    [Fact]
+    public void NoiseLevelFollowsRetailSequence()
+    {
+        // Retail tutorial fight with the Redpill Special (noise 50): 0x32, 0x4b, 0x57, 0x5d, 0x60.
+        byte noise = 0;
+        var seen = new List<byte>();
+        for (int i = 0; i < 5; i++)
+        {
+            noise = RangedWeapons.NextNoiseLevel(noise, 50);
+            seen.Add(noise);
+        }
+        Assert.Equal(new byte[] { 0x32, 0x4b, 0x57, 0x5d, 0x60 }, seen);
+    }
+
+    [Theory]
+    [InlineData(RangedWeapons.ClassPistol, 4.5f, 16f)]
+    [InlineData(RangedWeapons.ClassRifle, 3.5f, 22f)]
+    [InlineData(RangedWeapons.ClassSubmachinegun, 3.0f, 20f)]
+    [InlineData(RangedWeapons.ClassDualPistol, 4.0f, 16f)]
+    [InlineData(RangedWeapons.ClassDualSubmachinegun, 2.5f, 20f)]
+    public void ClassDefaultsMatchTheClientData(byte attackClass, float reuse, float range)
+    {
+        Assert.Equal(reuse, RangedWeapons.DefaultReuseSeconds(attackClass));
+        Assert.Equal(range, RangedWeapons.DefaultRangeMetres(attackClass));
     }
 }
