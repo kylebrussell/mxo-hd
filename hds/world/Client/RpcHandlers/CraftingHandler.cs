@@ -15,7 +15,6 @@ namespace hds
         {
             WorldClient client = Store.currentClient;
             UInt32 charId = client.playerData.getCharID();
-            ServerPackets pak = new ServerPackets();
 
             if (!Crafting.Recipes.TryGetValue(resultGoid, out Crafting.Recipe recipe))
             {
@@ -34,21 +33,81 @@ namespace hds
                 return "Missing to compile " + ItemName(resultGoid) + ": " + string.Join(", ", names);
             }
 
+            // One item per ingredient: a stack shrinks (69 01), a single item leaves its slot (5f).
             foreach (UInt16 slot in slots)
             {
-                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-                pak.sendInventoryItemDelete(slot, client);
+                InventoryHandler.RemoveOne(client, slot);
             }
 
-            // Ingredients are gone, so their slots count as free again.
-            UInt16 freeSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-            Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, resultGoid);
-            pak.sendInventoryItemAdd(freeSlot, resultGoid, 0, 0, client);
+            // Ingredients are gone, so their slots count as free again; a fragment joins a stack of its kind.
+            UInt16 resultSlot = InventoryHandler.AddItem(client, resultGoid, 0);
             client.FlushQueue();
 
-            Output.WriteDebugLog("[CRAFTING] Compiled " + resultGoid + " into slot " + freeSlot + " from slots " +
+            Output.WriteDebugLog("[CRAFTING] Compiled " + resultGoid + " into slot " + resultSlot + " from slots " +
                                  string.Join(",", slots));
             return "Compiled " + ItemName(resultGoid) + ".";
+        }
+
+        /// <summary>CompileActivateAbility: the stance held while compiling (abilityIDs.csv).</summary>
+        public const UInt16 CompileActivateAbility = 969;
+
+        /// <summary>
+        /// A guess at the Code Writer's Compile request, which no capture shows. Write Code (970,
+        /// WriteCodeActivateAbility) reached retail as a normal 80 b9 ability request, so Compile is expected as
+        /// 80 b9 with CompileActivateAbility (969). The whole body is logged so a real-client test shows it; if any
+        /// u32 in it is the result goid of a recipe the character knows, that recipe is compiled.
+        /// </summary>
+        public bool HandleCompileRequest(byte[] body)
+        {
+            WorldClient client = Store.currentClient;
+            Output.WriteDebugLog("[CRAFTING] Compile request body: " + BitConverter.ToString(body).Replace("-", " "));
+
+            UInt32? goid = FindKnownRecipe(body, KnownRecipes);
+            if (!goid.HasValue)
+            {
+                Output.WriteDebugLog("[CRAFTING] No known recipe goid in the compile request");
+                return false;
+            }
+
+            string result = Compile(goid.Value);
+            new ServerPackets().sendSystemChatMessage(client, result, "BROADCAST");
+            client.FlushQueue();
+            return true;
+        }
+
+        /// <summary>The first u32 (at any byte offset) of a request body that is a known recipe's result goid.</summary>
+        public static UInt32? FindKnownRecipe(byte[] body, ICollection<UInt32> known)
+        {
+            for (int i = 0; i + 4 <= body.Length; i++)
+            {
+                UInt32 value = BitConverter.ToUInt32(body, i);
+                if (value != 0 && known.Contains(value))
+                {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        private static HashSet<UInt32> knownRecipes;
+
+        /// <summary>The recipes every character knows: the margin's known-recipe list (opcode 0x0a).</summary>
+        public static HashSet<UInt32> KnownRecipes
+        {
+            get
+            {
+                if (knownRecipes == null)
+                {
+                    byte[] block = Crafting.BuildKnownRecipesBlock(MarginClient.KnownRecipesBaseBlock);
+                    HashSet<UInt32> set = new HashSet<UInt32>();
+                    for (int i = 4; i + 4 <= block.Length; i += 4)
+                    {
+                        set.Add(BitConverter.ToUInt32(block, i));
+                    }
+                    knownRecipes = set;
+                }
+                return knownRecipes;
+            }
         }
 
         private static string ItemName(UInt32 goid)

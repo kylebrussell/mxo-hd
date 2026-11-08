@@ -62,6 +62,12 @@ namespace hds
                 return;
             }
 
+            // The Code Writer's Compile (a guess: no capture shows it).
+            if (AbilityID == CraftingHandler.CompileActivateAbility && new CraftingHandler().HandleCompileRequest(packet))
+            {
+                return;
+            }
+
             if (AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
                 Output.WriteDebugLog("[ABILITY] Still cooling down; ignored");
