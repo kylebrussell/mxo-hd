@@ -1,0 +1,164 @@
+using System;
+using System.Collections.Generic;
+using hds.shared;
+
+namespace hds
+{
+    /// <summary>
+    /// Ability cooldowns. Retail started one with <c>80 bd 01 &lt;ability u16&gt; &lt;type&gt; &lt;seconds f32&gt; 01</c>
+    /// and ended it with the same record and 00 (Repair RSI 1.0 on self: <c>80 bd 01 4d 00 04 00 00 80 40 01</c>).
+    /// Type 04 is the ability's own timer. Type 00 is a shared group timer (aaMeleeMove1, aaVirusDamage1, ...),
+    /// sent in the same packet, which greys out every ability of the group. The durations below are the most
+    /// common ones in the retail captures under research/packet-dumps.
+    /// </summary>
+    public static class AbilityCooldowns
+    {
+        public const byte OwnTimer = 0x04;
+        public const byte GroupTimer = 0x00;
+
+        public struct Cooldown
+        {
+            public float Seconds;
+            public UInt16 Group;
+            public float GroupSeconds;
+
+            public Cooldown(float seconds, UInt16 group = 0, float groupSeconds = 0)
+            {
+                Seconds = seconds;
+                Group = group;
+                GroupSeconds = groupSeconds;
+            }
+        }
+
+        // Shared groups seen in retail
+        public const UInt16 VirusDamage1 = 682, VirusEnhancedDamage = 683, LogicCannon = 684;
+        public const UInt16 Heal1 = 685, Heal2 = 686, MeleeMove1 = 687, MeleeMove2 = 688;
+
+        /// <summary>Ability id (abilityIDs.csv) to its retail cooldown.</summary>
+        public static readonly Dictionary<UInt16, Cooldown> Retail = new Dictionary<UInt16, Cooldown>
+        {
+            { 6, new Cooldown(60) },            // Consistent Technique
+            { 55, new Cooldown(43) },           // Patcher
+            { 72, new Cooldown(13) },           // Resist Combat
+            { 77, new Cooldown(4, Heal2, 4) },  // Repair RSI 1.0
+            { 97, new Cooldown(58) },           // UI Lag 1.0
+            { 135, new Cooldown(90, MeleeMove1, 5) }, // Martial Arts
+            { 184, new Cooldown(5) },           // Hyper-Sprint
+            { 197, new Cooldown(30) },          // Head Butt
+            { 198, new Cooldown(20) },          // Cheap Shot
+            { 217, new Cooldown(30) },          // Evade Combat
+            { 260, new Cooldown(10, MeleeMove2, 5) }, // Misdirect Punch
+            { 261, new Cooldown(10, MeleeMove1, 5) }, // Machinegun Fist Combo
+            { 262, new Cooldown(10, MeleeMove1, 5) }, // Piston Kicks
+            { 267, new Cooldown(10, MeleeMove1, 5) }, // Sky High Sidekick
+            { 271, new Cooldown(28) },          // Iron Body
+            { 272, new Cooldown(180) },         // Serene Calm
+            { 314, new Cooldown(90) },          // Upgrade Attacks
+            { 327, new Cooldown(90) },          // Overclock
+            { 329, new Cooldown(4, VirusDamage1, 4) },        // Logic Blast 3.0
+            { 330, new Cooldown(4, VirusEnhancedDamage, 4) }, // Logic Barrage 4.0
+            { 331, new Cooldown(15, LogicCannon, 15) },       // Logic Cannon
+            { 333, new Cooldown(30) },          // Stun 2.0
+            { 336, new Cooldown(2, VirusDamage1, 2) },        // Logic Bomb 2
+            { 337, new Cooldown(2, VirusEnhancedDamage, 2) }, // Logic Bomb 3
+            { 344, new Cooldown(298) },         // Combat Hacking
+            { 345, new Cooldown(180) },         // Range Booster
+            { 357, new Cooldown(2, VirusDamage1, 2) },        // Logic Bomb 4
+            { 359, new Cooldown(4, VirusEnhancedDamage, 4) }, // Code Nuke
+            { 360, new Cooldown(58) },          // Insidious Code
+            { 371, new Cooldown(4, Heal1, 4) }, // Group Repairs 3
+            { 372, new Cooldown(4, Heal2, 4) }, // Group Repairs 4
+            { 378, new Cooldown(10) },          // Deflect Virus 1
+            { 383, new Cooldown(300) },         // Force Enhancer
+            { 396, new Cooldown(15) },          // Crash
+            { 404, new Cooldown(30) },          // Despoiler
+            { 428, new Cooldown(10, MeleeMove2, 5) }, // Suicidal Butterfly
+            { 429, new Cooldown(10, MeleeMove2, 5) }, // Extreme Falling Kick
+            { 430, new Cooldown(10, MeleeMove1, 5) }, // Wooden Dummy Drill
+            { 466, new Cooldown(12) },          // Plague Zone 2
+            { 485, new Cooldown(15) },          // Combat Aura 2
+            { 861, new Cooldown(60) },          // Balance
+            { 868, new Cooldown(15) },          // Purity
+            { 870, new Cooldown(10, MeleeMove2, 5) }, // Spinning Flower
+            { 967, new Cooldown(600) },         // Mobius Code
+            { 992, new Cooldown(600) },         // Corrupt Code 2
+            { 1063, new Cooldown(30) },         // Kung Fu Master buff
+            { 1064, new Cooldown(30) },         // Kung Fu Grand Master buff
+            { 1067, new Cooldown(30) },         // Aikido Master buff
+            { 1084, new Cooldown(30) },         // Ballista buff
+            { 1087, new Cooldown(30) },         // Howitzer buff
+            { 1088, new Cooldown(90) },         // Destroyer debuff
+            { 1089, new Cooldown(30) },         // Team Healer buff
+            { 1092, new Cooldown(30) },         // Corpsman buff
+            { 1102, new Cooldown(30) },         // Determinate
+            { 1237, new Cooldown(90) },         // Zombie Virus 3 Bite
+        };
+
+        /// <summary><c>80 bd 01 &lt;id u16&gt; &lt;type&gt; &lt;seconds f32&gt; &lt;01 start / 00 end&gt;</c></summary>
+        public static byte[] BuildTimer(UInt16 id, byte type, float seconds, bool start)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80bd01");
+            pak.AddUint16(id, 1);
+            pak.AddByte(type);
+            pak.AddFloat(seconds, 1);
+            pak.AddByte(start ? (byte)0x01 : (byte)0x00);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>True while the ability, or the group it shares a timer with, is cooling down.</summary>
+        public static bool IsCoolingDown(ClientData data, UInt16 abilityId, double now)
+        {
+            lock (data.cooldownEndsAt)
+            {
+                if (data.cooldownEndsAt.TryGetValue(abilityId, out double end) && now < end)
+                {
+                    return true;
+                }
+
+                return Retail.TryGetValue(abilityId, out Cooldown cd) && cd.Group != 0 &&
+                       data.cooldownEndsAt.TryGetValue(cd.Group, out double groupEnd) && now < groupEnd;
+            }
+        }
+
+        /// <summary>
+        /// Starts the ability's retail cooldown (and its group's): records when it ends, sends the start records,
+        /// and sends the end records when the time is up. Abilities without a known cooldown have none.
+        /// </summary>
+        public static void Start(WorldClient client, UInt16 abilityId, double now)
+        {
+            if (!Retail.TryGetValue(abilityId, out Cooldown cd))
+            {
+                return;
+            }
+
+            ClientData data = client.playerData;
+            lock (data.cooldownEndsAt)
+            {
+                data.cooldownEndsAt[abilityId] = now + cd.Seconds;
+                if (cd.Group != 0)
+                {
+                    data.cooldownEndsAt[cd.Group] = now + cd.GroupSeconds;
+                }
+            }
+
+            client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, true));
+            if (cd.Group != 0)
+            {
+                client.messageQueue.addRpcMessage(BuildTimer(cd.Group, GroupTimer, cd.GroupSeconds, true));
+                DelayedActions.After(cd.GroupSeconds, () =>
+                {
+                    client.messageQueue.addRpcMessage(BuildTimer(cd.Group, GroupTimer, cd.GroupSeconds, false));
+                    client.FlushQueue();
+                });
+            }
+            client.FlushQueue();
+
+            DelayedActions.After(cd.Seconds, () =>
+            {
+                client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, false));
+                client.FlushQueue();
+            });
+        }
+    }
+}
