@@ -33,6 +33,8 @@ namespace hds
         // Shared groups seen in retail
         public const UInt16 VirusDamage1 = 682, VirusEnhancedDamage = 683, LogicCannon = 684;
         public const UInt16 Heal1 = 685, Heal2 = 686, MeleeMove1 = 687, MeleeMove2 = 688;
+        /// <summary>aaHealPill: 10 s, the only retail sightings came with Mobius Code (abilities_mobiuscode).</summary>
+        public const UInt16 HealPill = 711;
 
         /// <summary>Ability id (abilityIDs.csv) to its retail cooldown.</summary>
         public static readonly Dictionary<UInt16, Cooldown> Retail = new Dictionary<UInt16, Cooldown>
@@ -80,7 +82,19 @@ namespace hds
             { 861, new Cooldown(60) },          // Balance
             { 868, new Cooldown(15) },          // Purity
             { 870, new Cooldown(10, MeleeMove2, 5) }, // Spinning Flower
-            { 967, new Cooldown(600) },         // Mobius Code
+            { 967, new Cooldown(600, HealPill, 10) }, // Mobius Code: 80 bd 01 c7 03 04 .. 600 s + 80 bd 01 c7 02 00 .. 10 s
+            // Pills: the shared aaHealPill timer is retail (10 s); each pill's own 10 s timer is a guess.
+            { 187, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth (Health Boost 1.0)
+            { 188, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth2
+            { 189, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth3
+            { 190, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish1 (Health Pill 1.0)
+            { 191, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish2
+            { 192, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish3
+            { 193, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish4
+            { 511, new Cooldown(10, HealPill, 10) }, // PillHealthReplenish5
+            { 659, new Cooldown(10, HealPill, 10) }, // PillConditionSweep1
+            { 672, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth1
+            { 673, new Cooldown(10, HealPill, 10) }, // PillBolsterHealth4
             { 992, new Cooldown(600) },         // Corrupt Code 2
             { 1063, new Cooldown(30) },         // Kung Fu Master buff
             { 1064, new Cooldown(30) },         // Kung Fu Grand Master buff

@@ -74,6 +74,51 @@ namespace hds
         }
 
 
+        /// <summary>
+        /// Uses the consumable (pill) in an inventory slot: takes it out of the inventory, heals by the pill
+        /// ability's value and starts its cooldown with the shared aaHealPill timer.
+        /// </summary>
+        public void UseItem(UInt16 slot)
+        {
+            WorldClient client = Store.currentClient;
+            ClientData data = client.playerData;
+            ServerPackets pak = new ServerPackets();
+            UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
+
+            if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable))
+            {
+                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " in slot " + slot + " ignored: not a known consumable");
+                return;
+            }
+
+            if (consumable.Effect != ConsumableItems.Effect.Heal)
+            {
+                pak.sendSystemChatMessage(client, "This item can't be used yet.", "MODAL");
+                return;
+            }
+
+            double now = TimeUtils.GetSimTimeSeconds();
+            if (data.isDead || AbilityCooldowns.IsCoolingDown(data, consumable.AbilityId, now))
+            {
+                Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " ignored: dead or cooling down");
+                return;
+            }
+
+            AbilityItem ability = DataLoader.getInstance().getAbilityByID(consumable.AbilityId);
+            UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
+
+            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, data.getCharID());
+            pak.sendInventoryItemDelete(slot, client);
+            if (ability != null && ability.getActivationFX() > 0)
+            {
+                pak.SendCastAbilityOnEntityId(2, ability.getActivationFX(), 150);
+            }
+            AbilityCooldowns.Start(client, consumable.AbilityId, now);
+            UInt16 healed = AbilityHandler.HealSelf(client, amount);
+            Output.WriteDebugLog("[INVENTORY] Used item " + goid + " from slot " + slot + " (ability " +
+                                 consumable.AbilityId + "): health now " + healed);
+        }
+
         public void processUnmountItem(ref byte[] rpcData)
         {
             byte sourceSlot = rpcData[0];
