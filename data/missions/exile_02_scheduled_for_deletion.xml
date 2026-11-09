@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scheduled For Deletion, Flood's second story mission for the Merovingian. Text: the Prima guide (2005), with its
+     role names ("Client 1", "Client 2", "Exile") replaced by names. Placement is generated: see docs/MISSIONS.md. The
+     guide lists Exile as female but phase 3 says "He will take over"; the NPC follows the list and the line is kept
+     as printed. Exile 2 is never mentioned and has no NPC. "Merovingian Exile" in phase 2 is the plain word, not the
+     role. -->
+<mission id="2102" title="Scheduled For Deletion" description="Protect a pair of Exiles from Machine programs." plot="1" order="12"
+         org="3" contact="Flood" exp="38500" info="52500">
+  <npc id="1" handle="Ugolino" type="FRIENDLY" at="1" rsi="c6020058" weapon="2564" />
+  <npc id="2" handle="Ginevra" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
+  <npc id="3" handle="Mathilde" type="FRIENDLY" at="3" rsi="a5060090" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>I'm glad you're back. I have a rather ... messy assignment for you. I certainly hope that you aren't afraid to get your hands dirty.
+
+The Machines have deleted over a dozen of our clients in the last week. Because of this we need you to bodyguard two of the Merovingian's Exiles and move them to a new location before the Machines can trace them.</briefing>
+    <enter><say>We have a bit of problem ... A group of Machines just descended on Ugolino a few moments ago. You'll need to defeat the Machines that are on site before we can transport Ugolino.</say></enter>
+    <objective goal="1" text="Lead Ugolino out of the building" type="Escort" npc="1" to="exit" />
+    <objective goal="2" text="Kill the Machine programs" type="DefeatAll" />
+    <objective goal="3" text="Do not let Ugolino die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Don't stop now. Ginevra is waiting at the next location. I don't anticipate any hostiles, but then again ... I didn't think we'd run into trouble last time.</briefing>
+    <enter><say>Pick up the next Merovingian Exile and keep an eye out for hostile programs. Be sure that both Exiles make it to the base.</say></enter>
+    <objective goal="1" text="Lead Ginevra and Ugolino out of the building" type="Escort" npc="1,2" to="exit" />
+    <objective goal="2" text="Do not let Ugolino or Ginevra die" type="Protect" npc="1,2" />
+  </phase>
+  <phase site="GenericApt" enemy="Machines" enemies="3">
+    <briefing>Be on the lookout for Zion or Machine attackers while you escort them to Mathilde's place.</briefing>
+    <enter><say>Leave both of them with Mathilde. He will take over from here.</say></enter>
+    <objective goal="1" text="Lead Ugolino and Ginevra to Mathilde at the Merovingian base" type="Escort" npc="1,2" to="npc:3" />
+    <objective goal="2" text="Do not let Ugolino or Ginevra die" type="Protect" npc="1,2" />
+  </phase>
+</mission>

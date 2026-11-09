@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Potential, Tyndall's sixth story mission. Text: the Prima guide (2005), with its role names ("Giver", "Hacker",
+     "Potential", "Captain") replaced by names. Placement is generated: see docs/MISSIONS.md. The guide lists Greeter,
+     Soldier and Spy NPCs that no line or goal mentions, so they are left out. The simulacra of "Kill simulacra" are the
+     phase's generated Machine hostiles (DefeatAll), not a placed NPC. The first phase is "at the Zion base", but the
+     guide gives its area type as Normal, so the site is Normal. -->
+<mission id="1207" title="The Potential" description="Recruit your first potential Redpill." plot="1" order="6"
+         org="0" contact="Tyndall" exp="33000" info="52500">
+  <npc id="1" handle="Vega" type="FRIENDLY" at="1" rsi="560A0058" weapon="2564" />
+  <npc id="2" handle="Kepler" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
+  <npc id="3" handle="Daniel Mercer" type="FRIENDLY" at="2" rsi="2D0D0098" weapon="0" />
+  <npc id="4" handle="Halley" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>You've impressed me, {player}! Because of this, you have been given your first recruitment assignment. I know that you will live up to Commander Lock's expectations.
+
+Meet with Vega at the Zion base.</briefing>
+    <enter><say>Once you've spoken with Vega, she will have additional instructions for you.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Vega" type="Talk" npc="1" />
+    <!-- The red and blue pills have no item of their own: both are Medicine (6808). -->
+    <objective goal="2" text="Get the red pill from Vega" type="Get" npc="1" item="6808" after="1" />
+    <objective goal="3" text="Talk to Kepler" type="Talk" npc="2" after="1" />
+    <objective goal="4" text="Take the blue pill from the desk" type="Search" object="1" item="6808" after="3" />
+    <objective goal="5" text="Kill simulacra (optional)" type="DefeatAll" optional="1" />
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="5">
+    <briefing>I'm sending you the address of Daniel Mercer. Go to his apartment and speak with him about the Matrix. If he is ready to see the real world you will be presenting the red and blue pill before him. If all goes well and he takes the red pill you will be escorting Daniel Mercer to an REP, or Redpill Extraction Point. Good luck!</briefing>
+    <enter><say>This is Daniel Mercer's apartment complex. I've indicated the front door to his apartment with the waypoint on your HUD. Go there now!</say></enter>
+    <objective goal="1" text="Talk to Daniel Mercer" type="Talk" npc="3" />
+    <objective goal="2" text="Give the red pill to Daniel Mercer" type="Give" npc="3" item="6808" after="1" />
+    <objective goal="3" text="Lead Daniel Mercer out of the building" type="Escort" npc="3" to="exit" after="2" />
+    <objective goal="4" text="Kill the attackers" type="DefeatAll" />
+    <objective goal="5" text="Do not let Daniel Mercer die" type="Protect" npc="3" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Merovingian" enemies="3">
+    <briefing>Watch your back on your way to the REP. I'm detecting a lot of activity in the area so be sure that Daniel Mercer arrives there safely.</briefing>
+    <enter><say>Inside this apartment complex is one of our many Redpill Extraction Points. Halley and his crew are waiting for you and Daniel Mercer. Do not delay!</say></enter>
+    <objective goal="1" text="Lead Daniel Mercer to Halley at the REP" type="Escort" npc="3" to="npc:4" />
+    <objective goal="2" text="Do not let Daniel Mercer die" type="Protect" npc="3" />
+  </phase>
+</mission>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The End of the Beginning, Flood's first story mission for the Merovingian. Text: the Prima guide (2005), with its
+     role names ("Contact") replaced by names. Placement is generated: see docs/MISSIONS.md. Its "Contact" is the same
+     Exile as in Useful Idiot and has the same name there. The Follower is never mentioned and has no NPC. The dead
+     Exiles are filing cabinets, desks or dressers here (Furniture objects 1 to 4), since searching corpses isn't
+     supported. The guide's "(optional)" is dropped from goal text and set as optional="1". -->
+<mission id="2101" title="The End of the Beginning" description="Eliminate Machine opposition and steal vital info." plot="1" order="11"
+         org="3" contact="Flood" exp="44000" info="42000">
+  <npc id="1" handle="Clotilde" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <!-- The dead Exiles are Furniture: object 1 holds the Data that goes in the safe, objects 2 to 4 the three optional
+         pieces. Two DefeatAll goals, as the guide lists both a kill-all and the optional guards. -->
+    <briefing>I am glad to see that you have decided to take up employment under the powerful Merovingian. With your aid, we will exact punishment against the Machines and Zion operatives.
+
+As you may know, Machines operatives made an assault on one of our bases not long ago. Go to the base and kill all programs. Also recover all electronic data that you find as we simply cannot afford to lose this vital information.</briefing>
+    <enter><say>There are three pieces of information in total. Collect the data and clear the place of programs.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Furniture" />
+    <object id="4" kind="Furniture" />
+    <objective goal="1" text="Kill all of the Machine programs" type="DefeatAll" />
+    <objective goal="2" text="Recover the data from the dead Exiles" type="Search" object="1" item="6787" />
+    <objective goal="3" text="Get datacd" type="Search" object="2" item="6831" optional="1" />
+    <objective goal="4" text="Get mapdisk" type="Search" object="3" item="6783" optional="1" />
+    <objective goal="5" text="Get recording" type="Search" object="4" item="6784" optional="1" />
+    <objective goal="6" text="Kill Machine guards" type="DefeatAll" optional="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <!-- The three data files are the one Data item from phase 1. -->
+    <briefing>I am sending you the address of a rather important Exile whose job is to watch over items, like the ones you've obtained. Meet with her and she will have further instructions.</briefing>
+    <enter><say>The contact's name is Clotilde, and try not to keep her waiting! From what I hear, she's not exactly what you would call the patient type ...</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Clotilde" type="Talk" npc="1" />
+    <objective goal="2" text="Put the three data files into the safe" type="Put" object="1" item="6787" after="1" />
+    <objective goal="3" text="Kill the Zion attackers" type="DefeatAll" />
+  </phase>
+</mission>

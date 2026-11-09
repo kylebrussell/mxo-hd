@@ -26,6 +26,7 @@ namespace hds
         CLIENT_MISSION_INFO = 0x98,
         CLIENT_MISSION_ACCEPT = 0x9b,
         CLIENT_MISSION_ABORT = 0xa6,
+        CLIENT_ELEVATOR_FLOOR = 0x140,  // 81 40 <button u16>: the floor picked on an elevator panel, from the bottom
         CLIENT_VIEW_TOGGLED = 0x104,    // 81 04 <view u16> <token u32>: a panel the tutorial showed was used
         CLIENT_SHORTCUT_ADDED = 0x18d,  // 81 8d <type u32> <inventory slot u32> <class data u32> <instance data u32>
         CLIENT_MODAL_ANSWER = 0x190,    // 81 90 <message u32> <left chosen u8>

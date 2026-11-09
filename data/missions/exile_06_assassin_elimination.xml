@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Assassin Elimination, Flood's sixth story mission for the Merovingian. Text: the Prima guide (2005), with its
+     role names ("Informant", "Assassin") replaced by names. Placement is generated: see docs/MISSIONS.md. Phase 1's
+     goal is printed "Kill Assassin becomes Kill Assassin's Guards": the target isn't there, so the goal is the
+     guards, a DefeatAll. Phase 2's "Speak to the Informant" becomes "Speak to Halloran". The Informant is a Machine
+     program (printed as The Machines, Bluepill, Bum) and has a program model. -->
+<mission id="2106" title="Assassin Elimination" description="Eliminate a Zion assassin." plot="1" order="16"
+         org="3" contact="Flood" exp="44000" info="52500">
+  <npc id="1" handle="Halloran" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564" />
+  <npc id="2" handle="Alhena" type="HOSTILE" at="3" rsi="560A0058" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <!-- The guide: Kill Assassin becomes Kill Assassin's Guards. -->
+    <briefing>There is a Zion assassin known as Alhena who has been the source of much grief for us. Before they can make another assassination attempt, we would rather have Alhena killed. Go to this location and kill Alhena.</briefing>
+    <enter><say>That's strange ... I don't see Alhena's signal here. Proceed with caution.</say></enter>
+    <objective goal="1" text="Kill Alhena's Guards" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="2">
+    <briefing>I want you to speak with Halloran, he is the program that gave us the tip off on Alhena's location which turned out to be incorrect. Meet up with Halloran and see if he can shed some new light on this situation.</briefing>
+    <objective goal="1" text="Speak to Halloran" type="Talk" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>You should have the new location now.</briefing>
+    <enter><say>This has to be the location of the Zion assassin.</say></enter>
+    <objective goal="1" text="Kill Alhena" type="Defeat" npc="2" />
+  </phase>
+</mission>

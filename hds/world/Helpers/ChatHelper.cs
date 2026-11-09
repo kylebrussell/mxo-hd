@@ -149,6 +149,35 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?missionfloor") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: the elevator ride a player gets from the current mission site's elevator, without finding its door
+                    MissionSite site = Store.currentClient.playerData.missionProgress?.site;
+                    if (site?.elevatorDoor != null)
+                    {
+                        MissionStaging.OnElevator(Store.currentClient, site.elevatorDoor.pos_x, site.elevatorDoor.pos_z);
+                    }
+                }
+
+                if (command.Equals("?modal") && commands.Length == 4 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?modal <message hex> <string id hex> <image hex>, with Yes/No buttons
+                    Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildModalMessage(Convert.ToUInt32(commands[3], 16),
+                        Convert.ToUInt32(commands[2], 16), Convert.ToUInt32(commands[1], 16), MissionStaging.StringYes, MissionStaging.StringNo));
+                    Store.currentClient.FlushQueue();
+                }
+
+                if (command.Equals("?elevator") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: the region value the next elevator panel sends (retail's isn't derived yet)
+                    Store.currentClient.playerData.elevatorRegionOverride =
+                        commands[1] == "off" ? (UInt16?)null : Convert.ToUInt16(commands[1], 16);
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        "Elevator region: " + commands[1], "BROADCAST");
+                }
+
                 if (command.Equals("?gotopos") && commands.Length == 4)
                 {
                     // parse the coord parameters parameters as int

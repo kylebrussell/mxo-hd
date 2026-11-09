@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Network Tampering, Tyndall's fourth story mission. Text: the Prima guide (2005), with its role names ("Follower",
+     "Contact") replaced by names. Placement is generated: see docs/MISSIONS.md. The guide lists Zion Military as the enemy
+     in both phases; Machines are used here, since the mission is about a Machine network. -->
+<mission id="1205" title="Network Tampering" description="Escort a Zion Hacker to crack into a Machine network." plot="1" order="4"
+         org="0" contact="Tyndall" exp="22000" info="42000">
+  <npc id="1" handle="Mizar" type="FRIENDLY" at="1" rsi="89090058" level="3" maxHP="250" weapon="2564" />
+  <npc id="2" handle="Checksum" type="FRIENDLY" at="2" rsi="58010058" level="4" maxHP="300" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Checksum needs help cracking some data that he's uncovered deep within a Matrix Network. The only operative that can hack into this data is Mizar and her communication link with the hovercraft seems to be down right now.
+
+Find Mizar and escort her to Checksum so we can take advantage of this weak point before it is fixed.</briefing>
+    <enter><say>Mizar isn't expecting you because of the broken communication link.</say></enter>
+    <objective goal="1" text="Talk to Mizar" type="Talk" npc="1" />
+    <objective goal="2" text="Lead Mizar out of the area" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Do not let Mizar die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal">
+    <briefing>That's an excellent start, {player}. Ensure that Mizar reaches Checksum safely. You have her coordinates -- go there now.</briefing>
+    <enter><say>I think Checksum is still trying to hack through the Machine Network. He'll be glad to see you and Mizar.</say></enter>
+    <objective goal="1" text="Lead Mizar to Checksum" type="Escort" npc="1" to="npc:2" />
+  </phase>
+</mission>

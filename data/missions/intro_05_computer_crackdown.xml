@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Computer Crackdown, Tyndall's fifth story mission. Text: the Prima guide (2005), with its role name ("Contact")
+     replaced by a name. Placement is generated: see docs/MISSIONS.md. The guide lists an Exile NPC that no line or goal
+     mentions, so it is left out. "our Hacker" in the first briefing is plain text in the guide, not a role placeholder,
+     and is kept. The data disk is the Data_CD item (6831). -->
+<mission id="1206" title="Computer Crackdown" description="Steal an informational dossier on an Exile for Zion." plot="1" order="5"
+         org="0" contact="Tyndall" exp="44000" info="42000">
+  <npc id="1" handle="Alcor" type="FRIENDLY" at="2" rsi="d1040058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The work that our Hacker completed inside the Machine Network has uncovered some interesting data. It appears that the Machines have known about the Exiles' strikes against our recruitment efforts ever since the truce was put in place. One piece of information leads us to a database that holds files on both active programs that are in the Matrix, and those that were in the Matrix, such as Exiles.
+
+If you can access the computer at this location, it should lead us to those who are planning the attacks on our recruitment efforts.</briefing>
+    <enter><say>Tyndall has tracked the computer to this location. We don't have its exact position, but we know it's in this building.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find the room with the computer" type="Use" object="1" />
+    <objective goal="2" text="Search the computer" type="Search" object="1" after="1" />
+    <objective goal="3" text="Get the data disk from the computer" type="Search" object="1" item="6831" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>Once the disk is with Alcor, we'll wrap this one up.</briefing>
+    <enter><say>I'm only seeing Alcor's signal, so this should be a quick in-and-out run.</say></enter>
+    <objective goal="1" text="Give the data disk to Alcor" type="Give" npc="1" item="6831" />
+  </phase>
+</mission>

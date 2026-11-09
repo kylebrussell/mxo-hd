@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Just Another Pretty Face, Tyndall's mission 3 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Girl is named Maia. The antidote is the Antidote item (6803); the operator says it was
+     downloaded to the player, and nothing in the mission hands it over first (a Give goal completes without it). -->
+<mission id="2303" title="Just Another Pretty Face" description="Rescue a comatose hostage from Exiles." plot="1" order="13"
+         org="1" contact="Tyndall" exp="22000" info="31500">
+  <npc id="1" handle="Maia" type="FRIENDLY" at="1" rsi="560A0058" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Thank you for contacting me. I have an important assignment for you. Before the Truce, an Exile boss grabbed one of our top operatives, Maia, and infected her with a virus. This virus allowed the Exile to use Maia as a personal slave. We need you to rescue Maia and get her back to a hardline.
+
+To make certain the message isn't lost on the Exile kidnappers, we want you to eliminate all of the Exiles that you find there.</briefing>
+    <enter><say>The Redpill Operative, Maia, is going to need a detox program flushed through her system in order for her to clear the effects of the 'brainwashing' program. Just give her the antidote that I've downloaded to you and she should come to her senses.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll" />
+    <objective goal="2" text="Give the antidote to Maia" type="Give" npc="1" item="6803" />
+    <objective goal="3" text="Escort Maia to a hardline" type="Escort" npc="1" to="hardline" after="2" />
+    <objective goal="4" text="Do not let Maia die" type="Protect" npc="1" />
+  </phase>
+</mission>

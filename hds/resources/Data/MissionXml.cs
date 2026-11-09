@@ -21,15 +21,17 @@ namespace hds
             Mission mission = new Mission
             {
                 id = Int(node, "id", 0),
-                title = title,
-                description = Attr(node, "description") ?? "",
+                title = Plain(title),
+                description = Plain(Attr(node, "description") ?? ""),
                 plot = Int(node, "plot", 0) != 0,
                 order = Int(node, "order", 0),
                 district = (ushort)Int(node, "district", 1),
                 districtName = Attr(node, "districtName") ?? "slums",
                 exp = Int(node, "exp", 0),
                 info = Int(node, "info", 0),
-                finishLine = node.SelectSingleNode("finish")?.InnerText
+                finishLine = Plain(node.SelectSingleNode("finish")?.InnerText),
+                org = (byte)Int(node, "org", 0),
+                contact = Attr(node, "contact") ?? "Tyndall"
             };
 
             foreach (XmlNode npcNode in Elements(node, "npc"))
@@ -61,7 +63,8 @@ namespace hds
                 rsiHex = Attr(node, "rsi") ?? "",
                 level = (ushort)Int(node, "level", 1),
                 maxHealth = (ushort)Int(node, "maxHP", 500),
-                weapon = (UInt32)Int(node, "weapon", 0)
+                weapon = (UInt32)Int(node, "weapon", 0),
+                at = Int(node, "at", 0)
             };
             foreach (XmlNode line in Elements(node, "say"))
             {
@@ -73,11 +76,29 @@ namespace hds
 
         private static MissionPhase ParsePhase(XmlNode node)
         {
-            MissionPhase phase = new MissionPhase();
+            MissionPhase phase = new MissionPhase
+            {
+                site = Attr(node, "site"),
+                enemy = Attr(node, "enemy"),
+                enemies = Int(node, "enemies", 0)
+            };
+
+            foreach (XmlNode group in Elements(node, "enter"))
+            {
+                foreach (XmlNode line in Elements(group, "say"))
+                {
+                    phase.enterLines.Add(ParseLine(line, MissionSpeaker.Operator, 0));
+                }
+            }
+
+            foreach (XmlNode child in Elements(node, "object"))
+            {
+                phase.objects.Add(new MissionObjectDef { id = (ushort)Int(child, "id", 0), kind = Attr(child, "kind") ?? "Furniture" });
+            }
             XmlNode briefing = node.SelectSingleNode("briefing");
             if (briefing != null)
             {
-                phase.briefing = briefing.InnerText;
+                phase.briefing = Plain(briefing.InnerText);
                 phase.briefingHeaderHex = Attr(briefing, "header");
                 phase.areaA = Vector(Attr(briefing, "a"));
                 phase.areaB = Vector(Attr(briefing, "b"));
@@ -133,12 +154,16 @@ namespace hds
             MissionObjective objective = new MissionObjective
             {
                 goal = Int(node, "goal", 0),
-                description = Attr(node, "text") ?? "",
+                description = Plain(Attr(node, "text") ?? ""),
                 type = (MissionGoalType)Enum.Parse(typeof(MissionGoalType), Attr(node, "type") ?? "Talk", true),
-                npcId = (ushort)Int(node, "npc", 0),
+                npcIds = Ids(Attr(node, "npc")),
                 item = (UInt32)Int(node, "item", 0),
-                afterGoal = Int(node, "after", -1)
+                afterGoal = Int(node, "after", -1),
+                objectId = (ushort)Int(node, "object", 0),
+                escortTo = Attr(node, "to") ?? "exit",
+                optional = Int(node, "optional", 0) != 0
             };
+            objective.npcId = objective.npcIds.Count > 0 ? objective.npcIds[0] : (ushort)0;
             foreach (XmlNode group in Elements(node, "talk"))
             {
                 foreach (XmlNode line in Elements(group, "say"))
@@ -165,7 +190,7 @@ namespace hds
             {
                 speaker = defaultSpeaker,
                 npcId = defaultNpc,
-                text = node.InnerText,
+                text = Plain(node.InnerText),
                 afterGoal = Int(node, "after", -1),
                 display = (byte)Int(node, "display", 1)
             };
@@ -188,6 +213,31 @@ namespace hds
         }
 
         private static string Attr(XmlNode node, string name) => node.Attributes?[name]?.Value;
+
+        /// <summary>
+        /// The client draws curly quotes, ellipses and long dashes as "?" (the Prima guide's text has them), so they're sent
+        /// as their plain forms.
+        /// </summary>
+        public static string Plain(string text)
+        {
+            return text?.Replace("’", "'").Replace("‘", "'").Replace("“", "\"").Replace("”", "\"")
+                .Replace("…", "...").Replace("—", "--").Replace("–", "-");
+        }
+
+        /// <summary>"2" or "2,3".</summary>
+        private static List<ushort> Ids(string text)
+        {
+            List<ushort> ids = new List<ushort>();
+            foreach (string part in (text ?? "").Split(','))
+            {
+                if (ushort.TryParse(part.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ushort id) && id != 0)
+                {
+                    ids.Add(id);
+                }
+            }
+
+            return ids;
+        }
 
         private static int Int(XmlNode node, string name, int fallback)
         {

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Control, Agent Gray's mission 9 for the Machines. Text: the Prima guide (2005), with its role names replaced by
+     names. Placement is generated: see docs/MISSIONS.md. "Get the access codes" names no source: a Search of a computer
+     for the Access_Code (6782). "Shut down the mainframe" (Use) and "Get the data from the mainframe" (Search) share
+     one mainframe, in sequence. Phase 3's 1st/2nd/3rd Message blocks (rows of binary) have no matching phase element;
+     each is the done line of the matching computer search, one row per line. -->
+<mission id="2209" title="Control" description="Shut down a Merovingian Network." plot="1" order="19"
+         org="2" contact="Agent Gray" exp="66000" info="52500">
+  <npc id="1" handle="Bastion" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Rampart" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Bulwark" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I feel that the time has come for you to show us a better example of exactly what you are capable of. We want to test you once more before we hand you your largest task yet. If you are up to it, then by all means, proceed ...
+
+You will deactivate one of the Merovingian's networks so a separate group of our security forces can make their way inside a Merovingian base and extract data from a few computers. The sensitive data may give us the upper hand if a certain treaty should turn ... sour.</briefing>
+    <enter><say>You'll need to get the access codes to the network and then use the mainframe to shut down their firewall. Then you'll be able to grab any relevant data from the mainframe.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Mainframe" />
+    <!-- No source given for the access codes: a computer. -->
+    <objective goal="1" text="Get the access codes" type="Search" item="6782" object="1" />
+    <objective goal="2" text="Shut down the mainframe" type="Use" object="2" after="1" />
+    <objective goal="3" text="Get the data from the mainframe" type="Search" item="6787" object="2" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Further tasks from you are needed. We need you to assist the Security Force into a Merovingian base as the previous Security Captain had to be ... deleted for reasons that I care not to share with you. I've already given you the location where the Security Force is meeting ....
+
+Go there and take over for the captain.</briefing>
+    <enter><say>The guards are waiting for you inside. Their names are Bastion, Bulwark and Rampart.</say></enter>
+    <objective goal="1" text="Lead the security guards out of the building" type="Escort" npc="1,2,3" to="exit" />
+    <objective goal="2" text="Do not let any of the guards die" type="Protect" npc="1,2,3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Lead the guards to the Merovingian base. We will not be overly concerned if the security forces die; just try to make use of them.</briefing>
+    <enter><say>This is the Merovingian base. Be on the lookout for the Merovingian's men and other Exiles. Just search each computer you can find for data &amp; get your men out of there.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Search" item="6787" object="1">
+      <!-- The guide's "1st Message". -->
+      <done><say>0 1 0 1 0 1 1 1 0 0 0 1 1 1
+1 1 0 1 0 1 0 1 1 0 0 0 1 0
+1 0 1 0 1 0 1 1 0 1 0 1 0 1</say></done>
+    </objective>
+    <objective goal="2" text="Search the second computer" type="Search" item="6787" object="2">
+      <!-- The guide's "2nd Message". -->
+      <done><say>1 1 0 1 0 1 0 1 1 0 0 0 1 0
+0 1 0 1 0 1 1 1 0 0 0 1 1 1
+1 0 1 0 1 0 1 1 0 1 0 1 0 1</say></done>
+    </objective>
+    <objective goal="3" text="Search the third computer" type="Search" item="6787" object="3">
+      <!-- The guide's "3rd Message". -->
+      <done><say>1 0 1 0 1 0 1 1 0 1 0 1
+0 1 0 1 0 1 1 1 0 0 0 1
+1 0 1 0 1 0 1 1 0 1 0 1</say></done>
+    </objective>
+  </phase>
+</mission>

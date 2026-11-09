@@ -32,7 +32,11 @@ namespace hds
             pak.AddUint16((ushort) missions.Count,1); // len of missions "categorys" to list
             pak.AddUShort(0);
             pak.AddUShort((ushort)orgID);
-            pak.AddHexBytes("d0070000310000b4c00c0028"); // as in the retail (Neo) list header
+            // The contact: retail's Zion list carried Tyndall (2000, 0xb4000031, 0x28000cc0), its Machines list Agent Gray
+            var contact = MissionContacts.For(MissionContacts.ForOrg(orgID));
+            pak.AddUint32(contact.id, 1);
+            pak.AddUint32(contact.name, 1);
+            pak.AddUint32(contact.image, 1);
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
 
             
@@ -49,7 +53,7 @@ namespace hds
                 missionListPak.AddUint16(contactId, 1);
                 missionListPak.AddUint16(i, 1);
                 missionListPak.AddHexBytes("0f0001"); // curently unknown
-                missionListPak.AddUint32(0x07d0,1); // every retail capture has d0 07 00 00 here
+                missionListPak.AddUint32(contact.id, 1); // the contact: retail's Zion lists had d0 07 00 00 (2000) here
                 missionListPak.AddByte(0x00); // chained
                 missionListPak.AddByte((byte)(mission.plot ? 1 : 0)); // retail: 1 on story missions, 0 on the generic types
                 missionListPak.AddSizedTerminatedString(mission.title);
@@ -80,10 +84,23 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
             float firstLocationDistance = MissionDistance(mission.FirstWaypoint, px, pz);
             float maxLocationDistance = MissionDistance(mission.LastWaypoint, px, pz);
+            MissionSite preview = MissionStaging.Preview(client, mission);
+            if (preview != null)
+            {
+                // A generated mission: its first site is picked now, and kept if the player accepts
+                MissionWaypoint door = new MissionWaypoint { x = preview.elevatorDoor.pos_x, z = preview.elevatorDoor.pos_z };
+                firstLocationDistance = MissionDistance(door, px, pz);
+                maxLocationDistance = firstLocationDistance;
+            }
 
             pak.AddFloat(firstLocationDistance,1);
             pak.AddFloat(maxLocationDistance,1);
-            pak.AddHexBytes("000000000000000000d0070000310000b4c00c0028");
+            // The mission's contact, as in the list header (retail's Zion info carried Tyndall's d0070000 310000b4 c00c0028)
+            pak.AddHexBytes("000000000000000000");
+            var contact = MissionContacts.For(mission.contact);
+            pak.AddUint32(contact.id, 1);
+            pak.AddUint32(contact.name, 1);
+            pak.AddUint32(contact.image, 1);
             pak.AddHexBytes("42000001000002000D001300020002030200FFFFFDFF");
             pak.AddSizedTerminatedString(mission.description);
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
@@ -93,7 +110,7 @@ namespace hds
         public void sendMissionAccept(WorldClient client, UInt16 txn, UInt16 instance, Mission mission)
         {
             client.messageQueue.addObjectMessage(BuildMissionKeyUpdate(instance), false);
-            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title, mission.id));
+            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title, mission.id, mission.contact, mission.org));
             client.FlushQueue();
         }
 
@@ -182,10 +199,15 @@ namespace hds
         /// 809c: the accepted mission's name. Layout from the retail Assassination capture, with the offsets
         /// recomputed for the title length: title at 0x2b, then an empty string, then a u32 list.
         /// </summary>
-        public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title, int templateId)
+        public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title, int templateId,
+            string contactName = "Tyndall", byte org = 0)
         {
-            return BuildMissionSetName(txn, instance, title, 1, "02D0070000310000B4C00C0028", "010000", new[] { templateId });
+            var contact = MissionContacts.For(contactName);
+            string hex = "02" + Hex32(contact.id) + Hex32(contact.name) + Hex32(contact.image);
+            return BuildMissionSetName(txn, instance, title, (UInt16)(org == 0 ? 1 : org), hex, "010000", new[] { templateId });
         }
+
+        private static string Hex32(UInt32 value) => BitConverter.ToString(BitConverter.GetBytes(value)).Replace("-", "");
 
         /// <summary>
         /// The tutorial: no contact, and template 986, which is how the client finds its Mission986 script. Retail:
@@ -308,6 +330,25 @@ namespace hds
             clear.AddHexBytes("020002804000000000");
             client.messageQueue.addObjectMessage(clear.ReturnFinalPacket(), false);
             client.messageQueue.addRpcMessage(BuildMissionComplete(exp, info, kills, seconds));
+        }
+
+        /// <summary>
+        /// 80 a2 for a failed mission. Retail's statuses we have are 00 (complete) and 08 (aborted); 01 for a failure is a
+        /// guess, and the rest of the record is the abort's.
+        /// </summary>
+        public const byte MissionFailedStatus = 0x01;
+
+        public void SendMissionFailed(WorldClient client)
+        {
+            PacketContent clear = new PacketContent();
+            clear.AddHexBytes("020002804000000000");
+            client.messageQueue.addObjectMessage(clear.ReturnFinalPacket(), false);
+
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80a2");
+            pak.AddByte(MissionFailedStatus);
+            pak.AddHexBytes("00000000b4658db5000000000000000000000000000000");
+            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
 
         public void SendMissionAbort(WorldClient client)

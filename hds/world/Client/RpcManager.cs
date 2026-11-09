@@ -93,6 +93,9 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_MISSION_ACCEPT:
 		            new MissionHandler().ProcessMissionaccept(ref rpcData);
 		            break;
+		        case (int) RPCRequestHeader.CLIENT_ELEVATOR_FLOOR:
+		            Elevators.OnFloorChosen(Store.currentClient, (UInt16)(rpcData[0] | (rpcData[1] << 8)));
+		            break;
 		        case (int) RPCRequestHeader.CLIENT_VIEW_TOGGLED:
 		            TutorialMission.Of(Store.currentClient)?.OnViewToggled((UInt16)(rpcData[0] | (rpcData[1] << 8)));
 		            break;

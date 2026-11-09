@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Liberation of the Theses, Tyndall's mission 6 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     No named NPCs. "Get the two documents" is two Searches of filing cabinets with the same text,
+     one per cabinet the operator mentions, holding Documents (6794) and Document_Treaty (6859). The data is Data
+     (6787) from a computer. -->
+<mission id="2306" title="Liberation of the Theses" description="Recover sensitive data and send it back to Zion." plot="1" order="16"
+         org="1" contact="Tyndall" exp="44000" info="42000">
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>This assignment involves you doing a bit of scavenge work. You are to pick up a series of items that we need secured from two separate locations.
+
+The first location has two documents that we require. Make haste, Warrior.</briefing>
+    <enter><say>You could run into the local security forces, so be alert! Find the two filing cabinets that hold the documents and get out of there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <!-- One line, two filing cabinets: a Search of each, with the same text. -->
+    <objective goal="1" text="Get the two documents" type="Search" object="1" item="6794" />
+    <objective goal="2" text="Get the two documents" type="Search" object="2" item="6859" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>This last location involves the liberation of data from a computer found on site. I've targeted them for you already. Good luck.</briefing>
+    <enter><say>You shouldn't have to hack the computer to pull the data. Just keep an eye out for the local security.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the data" type="Search" object="1" item="6787" />
+    <objective goal="2" text="Upload the data at a hardline" type="Upload" item="6787" after="1" />
+  </phase>
+</mission>

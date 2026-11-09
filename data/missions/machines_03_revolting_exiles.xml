@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Revolting Exiles, Agent Gray's mission 3 for the Machines. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md. "Steal the secret plans" is a Search of Ambrose's
+     safe for the Plan item (6798). -->
+<mission id="2203" title="Revolting Exiles" description="Assassinate three Merovingian targets." plot="1" order="13"
+         org="2" contact="Agent Gray" exp="49500" info="52500">
+  <npc id="1" handle="Lucien" type="HOSTILE" at="1" rsi="c6020058" weapon="2564" />
+  <npc id="2" handle="Ottavia" type="HOSTILE" at="2" rsi="a8060090" weapon="2564" />
+  <npc id="3" handle="Ambrose" type="HOSTILE" at="3" rsi="c5020058" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>We have identified three Exiles who are leading this revolt against our ... authority. We would like you to go to a few locations and eliminate these targets. The last target also has a key to a safe. Bring back the documents that you find within it.</briefing>
+    <enter><say>This is the location of Lucien. Eliminate him.</say></enter>
+    <objective goal="1" text="Assassinate the first target: Lucien" type="Defeat" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I have sent you the address of the second target, Ottavia.</briefing>
+    <enter><say>Be on your guard. We have reason to believe that Ottavia has a strong defense system.</say></enter>
+    <objective goal="1" text="Assassinate the second target: Ottavia" type="Defeat" npc="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I have sent you the address of the final target.</briefing>
+    <enter><say>This is the last location. The target's name is Ambrose. We also need any documents that you find inside his safe. If the safe is locked; find the combination and steal the files.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Assassinate the third target: Ambrose" type="Defeat" npc="3" />
+    <objective goal="2" text="Steal the secret plans" type="Search" item="6798" object="1" />
+  </phase>
+</mission>

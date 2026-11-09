@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Back to the Pods, Agent Gray's mission 6 for the Machines. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md. The guide's Agent 2 is never mentioned in the
+     text, so has no NPC here. -->
+<mission id="2206" title="Back to the Pods" description="Escort a Zion Redpill that wants to be plugged back into the Matrix." plot="1" order="16"
+         org="2" contact="Agent Gray" exp="27500" info="42000">
+  <npc id="1" handle="Achernar" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Agent Voss" type="FRIENDLY" at="2" rsi="6e060040" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>One of the Zion Redpills has had a change of ... heart. He wants to be re-inserted into the Matrix. While we can legally do this, we would rather not get into a confrontation with Zion over the issue.
+
+Meet with Achernar and bring him to one of our Agents for reprocessing.</briefing>
+    <enter><say>The target is located in one of these rooms.  Do whatever you can to avoid combat with the guards!</say></enter>
+    <objective goal="1" text="Lead Achernar out of the area" type="Escort" npc="1" to="exit" />
+    <objective goal="2" text="Do not let Achernar die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Take Achernar to Agent Voss for reprocessing.</briefing>
+    <enter><say>Agent Voss is waiting for you.</say></enter>
+    <objective goal="1" text="Lead Achernar to Agent Voss to be re-processed" type="Escort" npc="1" to="npc:2" />
+    <objective goal="2" text="Do not let Achernar die" type="Protect" npc="1" />
+  </phase>
+</mission>

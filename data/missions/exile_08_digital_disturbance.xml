@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Digital Disturbance, Flood's eighth story mission for the Merovingian. Text: the Prima guide (2005), with its
+     role names ("Giver", "Taker") replaced by names. Placement is generated: see docs/MISSIONS.md. The bomb is a
+     Small_Bomb, recovered from and planted on the same Computer object. "I'll sending you" is kept as printed. -->
+<mission id="2108" title="Digital Disturbance" description="Recover a stolen computer virus and put a small bomb in its place." plot="1" order="18"
+         org="3" contact="Flood" exp="38500" info="52500">
+  <npc id="1" handle="Philippa" type="FRIENDLY" at="1" rsi="a5060090" weapon="2564" />
+  <npc id="2" handle="Cornelius" type="FRIENDLY" at="3" rsi="ca020058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="2">
+    <briefing>The Machines stole a computer virus of ours last night and it must be returned. We need the computer virus recovered and a bomb put in its place as a friendly reminder that taking what is ours will not be tolerated.
+
+Go to this location and pick up the bomb from Philippa. When you have the bomb, I will send you the targeted location for the bomb and where the virus will be recovered.</briefing>
+    <enter><say>Philippa is waiting for you.</say></enter>
+    <objective goal="1" text="Pick up the bomb from Philippa" type="Get" npc="1" item="6807" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I'm sending you to the Machine base now. Once you've reached the place, I'll be able to run a scan of the area and provide some more information.</briefing>
+    <enter><say>The area is swarming with Machines so be on the lookout. Oh, it might also be worth mentioning that I think they have a security system in place.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Recover the computer virus" type="Search" object="1" item="6786" />
+    <objective goal="2" text="Plant the bomb on the computer that has the computer virus" type="Put" object="1" item="6807" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="2">
+    <briefing>I'll sending you the drop-off point for the virus. Don't delay.</briefing>
+    <enter><say>Cornelius will take the computer virus for you.</say></enter>
+    <objective goal="1" text="Deliver the computer virus to Cornelius" type="Give" npc="2" item="6786" />
+  </phase>
+</mission>

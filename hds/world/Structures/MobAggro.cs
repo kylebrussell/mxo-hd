@@ -33,6 +33,11 @@ namespace hds
                 out double value) ? value : fallback;
         }
 
+        /// <summary>Building floors are 400 units apart: an NPC on the floor above or below can't see the player.</summary>
+        public const double FloorHeightUnits = 350;
+
+        public static bool SameFloor(double mobY, double playerY) => Math.Abs(mobY - playerY) <= FloorHeightUnits;
+
         /// <summary>Whether this NPC would attack a player of this level at this distance (in units).</summary>
         public static bool WouldAttack(Mob mob, double distanceUnits, int playerLevel)
         {
@@ -143,7 +148,7 @@ namespace hds
                     double dx = mob.getXPos() - px;
                     double dz = mob.getZPos() - pz;
                     double distance = Math.Sqrt(dx * dx + dz * dz);
-                    if (distance >= best || !WouldAttack(mob, distance, playerLevel))
+                    if (distance >= best || !SameFloor(mob.getYPos(), py) || !WouldAttack(mob, distance, playerLevel))
                     {
                         continue;
                     }

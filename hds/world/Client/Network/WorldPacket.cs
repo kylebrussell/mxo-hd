@@ -33,27 +33,35 @@ namespace hds
 
         }
 
+        // A local named bufferSize used to shadow the field here, so the field never grew and a packet took any number of
+        // messages: a teleport's burst of 66 RPCs went out as one 6,400-byte packet, and the client, which never took
+        // it, stopped processing RPCs for the rest of the session. A message's length prefix is up to 2 bytes; the packet
+        // carries its RPC count in one. An empty packet takes any message, however large.
         public bool addRPCContent(SequencedMessage rpcMessage)
         {
-            bool bufferSize = checkIfBufferIsFull(rpcMessage.content.Length);
-            if (bufferSize == false)
+            if (!IsEmpty && (RPCMessages.Count >= 255 || checkIfBufferIsFull(rpcMessage.content.Length + 2)))
             {
-                this.RPCMessages.Add(rpcMessage);
-                return true;
+                return false;
             }
-            return false;
+
+            this.RPCMessages.Add(rpcMessage);
+            bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + rpcMessage.content.Length + 2);
+            return true;
         }
 
         public bool addObjectContent(SequencedMessage objectMessage)
         {
-            bool bufferSize = checkIfBufferIsFull(objectMessage.content.Length);
-            if (bufferSize == false)
+            if (!IsEmpty && (ObjectMessages.Count >= 255 || checkIfBufferIsFull(objectMessage.content.Length + 2)))
             {
-                this.ObjectMessages.Add(objectMessage);
-                return true;
+                return false;
             }
-            return false;
+
+            this.ObjectMessages.Add(objectMessage);
+            bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + objectMessage.content.Length + 2);
+            return true;
         }
+
+        public bool IsEmpty => RPCMessages.Count == 0 && ObjectMessages.Count == 0;
 
         public bool checkIfBufferIsFull(int sizeOfPossibleAddedMessage)
         {

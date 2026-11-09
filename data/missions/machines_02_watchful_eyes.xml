@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Watchful Eyes, Agent Gray's mission 2 for the Machines. Text: the Prima guide (2005), with its role names replaced
+     by names. Placement is generated: see docs/MISSIONS.md. Herschel's org is "Machine Redpill": a bluepill-style
+     appearance. Put consumes the item it is given, so the one "Pick up the tracking devices" goal is two Get goals with
+     the same text: Tracer (6825) for the first computer and Device (6820) for the second. -->
+<mission id="2202" title="Watchful Eyes" description="Plant &quot;security hardware&quot; on a pair of computers at Zion command posts." plot="1" order="12"
+         org="2" contact="Agent Gray" exp="38500" info="52500">
+  <npc id="1" handle="Herschel" type="FRIENDLY" at="1" rsi="350A0058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="2">
+    <briefing>We require closer surveillance of our human allies. We wish for you to place listening devices in several of their bases. You will pick these devices up at our local base of operations and place them as instructed.
+
+You will be picking up the tracking devices from Herschel. Go see him now.</briefing>
+    <enter><say>Herschel is a Redpill, just like you. It's good to see that others have considered the same options that you have.</say></enter>
+    <objective goal="1" text="Pick up the tracking devices from Herschel" type="Get" npc="1" item="6825" />
+    <objective goal="2" text="Pick up the tracking devices from Herschel" type="Get" npc="1" item="6820" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Proceed to the first location.</briefing>
+    <enter><say>This is the first location. Place one of the tracking devices on the specified computer. Avoid the patrolling guards, if possible.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Plant the first tracking device on the computer" type="Put" item="6825" object="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>You may now go to the final location.</briefing>
+    <enter><say>Place the last tracking device on the computer found at this location and make your escape.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Plant the second tracking device on the computer" type="Put" item="6820" object="1" />
+  </phase>
+</mission>

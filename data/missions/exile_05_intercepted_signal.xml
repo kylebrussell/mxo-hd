@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Intercepted Signal, Flood's fifth story mission for the Merovingian. Text: the Prima guide (2005), with its role
+     names ("Target", "Vampire 1", "Vampire 2") replaced by names. Placement is generated: see docs/MISSIONS.md. The
+     guide prints all three NPCs as Zion Military. Target is tagged Bluepill, so he has a bluepill model and no
+     weapon; the two Vampires are tagged Exiles and are the Merovingian's people, so they have Merovingian models. -->
+<mission id="2105" title="Intercepted Signal" description="Convert a Zion Redpill candidate for the Merovingian." plot="1" order="15"
+         org="3" contact="Flood" exp="33000" info="42000">
+  <npc id="1" handle="Flamsteed" type="FRIENDLY" at="1" rsi="2D0D0098" weapon="0" />
+  <npc id="2" handle="Armand" type="FRIENDLY" at="2" rsi="c5020058" weapon="2564" />
+  <npc id="3" handle="Ysolde" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
+  <phase site="SlumApt" enemy="Zion" enemies="3">
+    <briefing>The Humans have been recruiting Redpills like crazy since the Truce started. The Frenchman thinks that we could probably sway a few of them to join us instead. Go on over to this address and see if you can convince Zion's latest Redpill candidate that he'd be better off with us; much like yourself.</briefing>
+    <enter><say>Flamsteed is in one of the offices. If you're careful, you may be able to get him out without confronting any Zion patrols.</say></enter>
+    <objective goal="1" text="Find Flamsteed and speak with him" type="Talk" npc="1" />
+    <objective goal="2" text="Lead Flamsteed out of the Zion base" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Do not let Flamsteed die" type="Protect" npc="1" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="3">
+    <briefing>We'll be using a Zion Redpill Extraction Point that isn't in use anymore. Take Flamsteed there and don't let him come to harm.</briefing>
+    <enter><say>The Redpill Extraction Point is in this building. Armand and Ysolde will be waiting for you and Flamsteed.</say></enter>
+    <objective goal="1" text="Lead Flamsteed to Armand at the REP" type="Escort" npc="1" to="npc:2" />
+    <objective goal="2" text="Do not let Flamsteed die" type="Protect" npc="1" />
+  </phase>
+</mission>

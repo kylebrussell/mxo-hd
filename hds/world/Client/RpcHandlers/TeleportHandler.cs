@@ -146,6 +146,7 @@ namespace hds
             UInt16 hardline = Store.dbManager.WorldDbHandler.GetNearestHardline(district, booth.pos_x, booth.pos_z);
             Output.WriteDebugLog("[HARDLINE] Booth " + booth.mxoStaticId + " action " + action + " -> hardline " + hardline +
                                  " in district " + district);
+            MissionRuntime.OnHardline(client, action == HardlineBooths.ActionUpload);
 
             switch (action)
             {

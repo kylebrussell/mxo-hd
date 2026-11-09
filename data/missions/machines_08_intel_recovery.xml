@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Intel Recovery, Agent Gray's mission 8 for the Machines. Text: the Prima guide (2005), with its role names replaced
+     by names. Placement is generated: see docs/MISSIONS.md. The guide names no NPCs, but a goal is to protect the Zion
+     operatives on site: Deneb and Shaula. "Recover the two disks" is one Search of a computer for a Data_CD (6831),
+     which is then uploaded. -->
+<mission id="2208" title="Intel Recovery" description="Eliminate an Exile threat and recover stolen data." plot="1" order="18"
+         org="2" contact="Agent Gray" exp="22000" info="31500">
+  <npc id="1" handle="Deneb" type="FRIENDLY" at="1" rsi="59010058" weapon="2568" />
+  <npc id="2" handle="Shaula" type="FRIENDLY" at="1" rsi="560A0058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Last night, the Exiles attacked one of our stations and killed our team there. Infiltrate the base, eliminate any remaining Exiles, and recover information that has been left exposed to Exile hands.</briefing>
+    <enter><say>Once you've taken care of the Exiles, you'll have to recover the two disks in the computer system. You might also see a team of Redpills on site -- don't attack them. We don't want to cause any trouble with the Truce.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll" />
+    <objective goal="2" text="Recover the two disks" type="Search" item="6831" object="1" />
+    <objective goal="3" text="Upload the disks at a hardline" type="Upload" item="6831" after="2" />
+    <objective goal="4" text="Don't let the Zion Operatives die" type="Protect" npc="1,2" />
+  </phase>
+</mission>

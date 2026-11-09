@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Second Thoughts, Tyndall's mission 2 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Contact is named Hevelius. -->
+<mission id="2302" title="Second Thoughts" description="Extract a Zion Operative and escort him to a hardline." plot="1" order="12"
+         org="1" contact="Tyndall" exp="22000" info="31500">
+  <npc id="1" handle="Hevelius" type="FRIENDLY" at="1" rsi="d1040058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>We have a scared Zion Operative that is proving to be a bit difficult. He called in the security forces to protect him, but he's had second thoughts and wants a pickup. Here's the address.
+
+Pay Hevelius a visit and see if you can pry him out of there.</briefing>
+    <enter><say>Hevelius is located in the back room of the area. If you're careful, you may be able to get him out without confronting any patrolling guards.</say></enter>
+    <objective goal="1" text="Talk to Hevelius" type="Talk" npc="1" />
+    <objective goal="2" text="Lead Hevelius to a hardline" type="Escort" npc="1" to="hardline" after="1" />
+    <objective goal="3" text="Do not let Hevelius die" type="Protect" npc="1" />
+  </phase>
+</mission>

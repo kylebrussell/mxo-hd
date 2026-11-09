@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Buffer Overflow, Tyndall's mission 9 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Captain and Follower are named; Follower's sex is unspecified and a female look is used.
+     "Lead the Captain and Follower" keeps "the Captain" as a title. Phase 1: the access codes (Access_Code 6782)
+     are a Search of a computer, shutting down the mainframe a Use, and its data (Data 6787) a Search of the same
+     mainframe, in that order. Phase 3's three computers hold Data_CD (6831), File (6800) and Dossier (6799), so no
+     item is handed out twice. -->
+<mission id="2309" title="Buffer Overflow" description="Shut down Network Mainframe to access vital data." plot="1" order="19"
+         org="1" contact="Tyndall" exp="66000" info="52500">
+  <npc id="1" handle="Pollux" type="FRIENDLY" at="2" rsi="60010058" weapon="2568" />
+  <npc id="2" handle="Nunki" type="FRIENDLY" at="2" rsi="560A0058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I am glad to hear from you. I have an interesting assignment that should provide a bit of excitement.
+
+You will be breaking into a nearby building that is crawling with programs, stealing access codes to a mainframe, shutting down the mainframe and then pulling data from the network. Once you've pulled that off, you will be updated with the rest of your assignment. I wish you well, Warrior!</briefing>
+    <enter><say>This is where you can find the mainframe. I'll be watching to make sure everything goes smoothly.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Mainframe" />
+    <!-- Where the access codes are isn't printed: a computer. -->
+    <objective goal="1" text="Get the access codes to the mainframe" type="Search" object="1" item="6782" />
+    <objective goal="2" text="Shut down the mainframe" type="Use" object="2" after="1" />
+    <objective goal="3" text="Get the data from the mainframe" type="Search" object="2" item="6787" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I've given you the location where the crew is waiting for you. Just make your way there and take over as leader for the strike.</briefing>
+    <enter><say>This is where you will find the Zion operatives. The captain's name is Pollux.</say></enter>
+    <objective goal="1" text="Lead the Captain and Nunki out of the area" type="Escort" npc="1,2" to="exit" />
+    <objective goal="2" text="Do not let either die" type="Protect" npc="1,2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Make your way to the Merovingian base. The address is being sent to you now.</briefing>
+    <enter><say>Search each computer you find. Once the primary mission objectives are completed, get your men out of the base.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Search" object="1" item="6831" />
+    <objective goal="2" text="Search the second computer" type="Search" object="2" item="6800" />
+    <objective goal="3" text="Search the third computer" type="Search" object="3" item="6799" />
+  </phase>
+</mission>

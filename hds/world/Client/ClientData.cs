@@ -93,6 +93,9 @@ namespace hds
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
 		public TutorialMission tutorial;
+		public MissionSite missionPreview; public Mission missionPreviewFor; // a generated mission's first site, picked for its info
+		public StaticWorldObject elevatorPanel; // the panel last used, for the floor the player picks next
+		public UInt16? elevatorRegionOverride; // ?elevator <n>: tries a region value on the next panel (dev)
 		public bool leavingTutorial; // jacks straight into Richland from the Loading Area, as retail did
 		// Ids of finished missions; null until the first mission list loads them
 		public System.Collections.Generic.HashSet<int> completedMissions;
