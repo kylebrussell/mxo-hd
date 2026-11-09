@@ -81,6 +81,27 @@ Text, NPCs, positions, goals and rewards are as retail sent them. **Which event 
 - Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
 - A mission doesn't survive a relog: the NPCs go, and its items are taken back.
 
+## The tutorial
+
+`TutorialMission.cs` runs retail's tutorial (mission 986) for any character that spawns in district 0. Its logic is retail's own: `TutorialScript.g.cs` is the client's decompiled `Mission986` script, converted to C# by `research/missions/gen_tutorial_script.py`, so its lines, voiced narration, timers and goal order are retail's. `TutorialMission.cs` is the engine that script expects, and it handles the goals the script leaves to server data: talking, the wardrobe, giving the key, fights, the hardline. `research/missions/tutorial-wire-spec.md` has the wire evidence.
+
+Things the client needed, found by trying them:
+
+- **Template 986 in `80 9c`.** Without it the client's tutorial mode is off: clicking the display, dragging Cheap Shot and the level-up panels send nothing.
+- **Room objects a second after the teleport,** as retail sent them. In the same packet, the client drops them and the wardrobe can't be used.
+- **The wardrobe and door unlock as retail did:** the wardrobe's state goes to 0x835 when Scarlett is talked to, and the door's MissionKey part goes to 0 and its state to 0x835 when goal 20 closes.
+- **Bob and Alex carry the mission's key.** Without it, the client won't offer Close Combat.
+
+What differs from retail:
+
+- **No fades.** Retail's fade to black and white transitions (`81 42`) leave this client's interface hidden for good, and a transition's token never comes back as `81 91`. So the effects aren't sent, and the teleport runs a second later. Cause unknown.
+- **No XP or info from the tutorial's fights,** and the player can't die there. Retail's only XP was the script's 501, and it gave an immortality ability we don't have.
+- **Bob's body is looted by double-clicking it,** as in retail. The corpse window our combat code opens at the kill doesn't always appear.
+- **The level-up goals close when the upgrade is made,** not on each panel click: the client sends the upgrade but not the clicks.
+- **Leaving** goes through the Loading Area, and the player picks a hardline, as retail did. The blue pill sends the player out of the game, which is what the script asks for; nobody captured it.
+
+`MXO_TUTORIAL_WARP=n` starts the tutorial at goal n, as retail's `TutorialWarpFactor` did. It's for testing.
+
 ## Sources
 
 `research/missions/` holds the findings: `README.md` lists each file and what it covers. The 4 GB of screenshot logs (`hdneo/mxo-missions`) aren't in the repo.

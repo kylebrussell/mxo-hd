@@ -93,6 +93,18 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_MISSION_ACCEPT:
 		            new MissionHandler().ProcessMissionaccept(ref rpcData);
 		            break;
+		        case (int) RPCRequestHeader.CLIENT_VIEW_TOGGLED:
+		            TutorialMission.Of(Store.currentClient)?.OnViewToggled((UInt16)(rpcData[0] | (rpcData[1] << 8)));
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_SHORTCUT_ADDED:
+		            TutorialMission.Of(Store.currentClient)?.OnShortcutAdded(BitConverter.ToUInt32(rpcData, 0), BitConverter.ToUInt32(rpcData, 8));
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MODAL_ANSWER:
+		            TutorialMission.Of(Store.currentClient)?.OnModalAnswer(BitConverter.ToUInt32(rpcData, 0), rpcData[4] != 0);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_MISSION_EVENT:
+		            TutorialMission.Of(Store.currentClient)?.OnClientEvent(BitConverter.ToUInt32(rpcData, 0));
+		            break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_ABORT:
 		            new MissionHandler().processAbortMission(ref rpcData);
 		            break;
@@ -128,9 +140,11 @@ namespace hds{
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);
+			        TutorialMission.Of(Store.currentClient)?.OnAbilityUpgraded();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ATTRIBUTE:
 			        new PlayerHandler().ProcessRaiseAttributes(ref rpcData);
+			        TutorialMission.Of(Store.currentClient)?.OnAttributeRaised();
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_ABILITY_HANDLER:
 		            new AbilityHandler().ProcessAbility(ref rpcData);

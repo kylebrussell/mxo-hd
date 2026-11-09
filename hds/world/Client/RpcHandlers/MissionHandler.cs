@@ -89,6 +89,13 @@ namespace hds
 
         public void processAbortMission(ref byte[] packet)
         {
+            TutorialMission tutorial = TutorialMission.Of(Store.currentClient);
+            if (tutorial != null)
+            {
+                tutorial.OnSkip();
+                return;
+            }
+
             MissionRuntime.End(Store.currentClient);
             ServerPackets pak = new ServerPackets();
             pak.SendMissionAbort(Store.currentClient);

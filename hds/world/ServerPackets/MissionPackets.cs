@@ -93,7 +93,7 @@ namespace hds
         public void sendMissionAccept(WorldClient client, UInt16 txn, UInt16 instance, Mission mission)
         {
             client.messageQueue.addObjectMessage(BuildMissionKeyUpdate(instance), false);
-            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title));
+            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title, mission.id));
             client.FlushQueue();
         }
 
@@ -182,6 +182,51 @@ namespace hds
         /// 809c: the accepted mission's name. Layout from the retail Assassination capture, with the offsets
         /// recomputed for the title length: title at 0x2b, then an empty string, then a u32 list.
         /// </summary>
+        public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title, int templateId)
+        {
+            return BuildMissionSetName(txn, instance, title, 1, "02D0070000310000B4C00C0028", "010000", new[] { templateId });
+        }
+
+        /// <summary>
+        /// The tutorial: no contact, and template 986, which is how the client finds its Mission986 script. Retail:
+        /// 80 9c 00000000 0000 2b00 0000 d701 02 00000000 00000000 00000000 14000026 700a0028 0000ff 3c00 3900 00
+        /// 0c00 "Tutorial v2" 010000 0100 da030000.
+        /// </summary>
+        public static byte[] BuildTutorialSetName(UInt16 instance)
+        {
+            return BuildMissionSetName(0, instance, "Tutorial v2", 0, "02000000000000000000000000", "0000FF", new[] { TutorialMission.MissionId });
+        }
+
+        /// <summary>Org u16 (1 Zion, 0 none); then the key byte and contact ids, and three flag bytes, as retail sent them.</summary>
+        private static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title, UInt16 org, string keyAndContactHex,
+            string flagsHex, int[] templates)
+        {
+            const int titleOffset = 0x2b;
+            int emptyOffset = titleOffset + 2 + title.Length + 1;
+            int listOffset = emptyOffset + 3;
+
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_SET_NAME, 0);
+            pak.AddUint32(0, 1);
+            pak.AddUint16(txn, 1);
+            pak.AddUint16(titleOffset, 1);
+            pak.AddUint16(org, 1);
+            pak.AddUint16(instance, 1);
+            pak.AddHexBytes(keyAndContactHex + "14000026700A0028" + flagsHex);
+            pak.AddUint16((UInt16)listOffset, 1);
+            pak.AddUint16((UInt16)emptyOffset, 1);
+            pak.AddByte(0x00);
+            pak.AddSizedTerminatedString(title);
+            pak.AddSizedTerminatedString("");
+            pak.AddUint16((UInt16)templates.Length, 1);
+            foreach (int template in templates)
+            {
+                pak.AddUint32((UInt32)template, 1);
+            }
+
+            return pak.ReturnFinalPacket();
+        }
+
         public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title)
         {
             const int titleOffset = 0x2b;
@@ -279,6 +324,99 @@ namespace hds
         }
 
 
+
+        /// <summary>81 45: the client plays a voiced line from its own audio. Id u32 (0x86xxxxxx).</summary>
+        public static byte[] BuildNarration(UInt32 id)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8145");
+            pak.AddUint32(id, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 02: shows or hides a panel of the client's interface. Retail: 81 02 0e 00 01 turned the target panel on.</summary>
+        public static byte[] BuildToggleView(UInt16 view, byte show)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8102");
+            pak.AddUint16(view, 1);
+            pak.AddByte(show);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 91 server to client: a scripted mission event. Retail: 81 91 01 00 00 00.</summary>
+        public static byte[] BuildMissionEvent(UInt32 eventId)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8191");
+            pak.AddUint32(eventId, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 42: FX id u32, token u32, user data u32. With a token, the client answers 81 91 &lt;token&gt; when the FX ends.</summary>
+        public static byte[] BuildLocalFx(UInt32 fx, UInt32 token)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8142");
+            pak.AddUint32(fx, 1);
+            pak.AddUint32(token, 1);
+            pak.AddUint32(0, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 8f: a two-button prompt, answered with 81 90 &lt;message&gt; &lt;left chosen&gt;. Retail's pill choice:
+        /// 81 8f 00000000 15000088 1c00 03000000 050000c2 010000c2 00000000 010000.</summary>
+        public static byte[] BuildModalMessage(UInt32 image, UInt32 stringId, UInt32 message, UInt32 left, UInt32 right)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("818F");
+            pak.AddUint32(image, 1);
+            pak.AddUint32(stringId, 1);
+            pak.AddUint16(0x1c, 1);
+            pak.AddUint32(message, 1);
+            pak.AddUint32(left, 1);
+            pak.AddUint32(right, 1);
+            pak.AddUint32(0, 1);
+            pak.AddSizedTerminatedString("");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 99: teleports to a mission element. x, y, z f64, then the quaternion's x, y, z, w f32.</summary>
+        public static byte[] BuildMissionTeleport(double[] element)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8199");
+            pak.AddDouble(element[0], 1);
+            pak.AddDouble(element[1], 1);
+            pak.AddDouble(element[2], 1);
+            pak.AddFloat((float)element[3], 1);
+            pak.AddFloat((float)element[4], 1);
+            pak.AddFloat((float)element[5], 1);
+            pak.AddFloat((float)element[6], 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>81 19 for a container: StringID u32 (its title), array offset 0x10, info 0, its MissionKey, count u16, then
+        /// (instance data, item) pairs. Retail's wardrobe: 81 19 87 02 00 76 10 00 00 00 00 00 05 d7 01 02 03 00 ...</summary>
+        public static byte[] BuildContainerLoot(UInt32 titleString, byte element, UInt16 instance, byte keyByte, (byte[] Data, UInt32 Item)[] items)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("8119");
+            pak.AddUint32(titleString, 1);
+            pak.AddUint16(0x10, 1);
+            pak.AddUint32(0, 1);
+            pak.AddByte(element);
+            pak.AddUint16(instance, 1);
+            pak.AddByte(keyByte);
+            pak.AddUint16((UInt16)items.Length, 1);
+            foreach ((byte[] data, UInt32 item) in items)
+            {
+                pak.AddByteArray(data);
+                pak.AddUint32(item, 1);
+            }
+
+            return pak.ReturnFinalPacket();
+        }
 
         public void sendMissionDownloadMap()
         {

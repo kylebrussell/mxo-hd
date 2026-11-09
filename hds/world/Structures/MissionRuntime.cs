@@ -171,6 +171,7 @@ namespace hds
         /// <summary>A mob the player fought died. Completes a Defeat objective for it.</summary>
         public static void OnMobDefeated(WorldClient client, Mob mob)
         {
+            TutorialMission.Of(client)?.OnMobDied(mob);
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null || mob == null)
             {

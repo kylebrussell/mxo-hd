@@ -92,6 +92,8 @@ namespace hds
 
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
+		public TutorialMission tutorial;
+		public bool leavingTutorial; // jacks straight into Richland from the Loading Area, as retail did
 		// Ids of finished missions; null until the first mission list loads them
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();

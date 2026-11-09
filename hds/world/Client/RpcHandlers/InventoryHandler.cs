@@ -372,6 +372,7 @@ namespace hds
             }
 
             UInt32 clothingItemId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(rpcData[0]);
+            TutorialMission.Of(Store.currentClient)?.OnItemEquipped(clothingItemId);
             DataLoader dataLoader = DataLoader.getInstance();
             ClothingItem item = dataLoader.getItemValues(clothingItemId);
 

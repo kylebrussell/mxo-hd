@@ -125,18 +125,17 @@ namespace hds{
 		}
 		
 		public static byte[] createTeleportPacket(int x, int y, int z){
-			
 			// Adjust coords between human view and mxo format
-			x = x*100;
-			y = y*100;
-			z = z*100;
-			// End adjust
-			
-			byte[] xHex = NumericalUtils.floatToByteArray(x+0.0f,1);
-			byte[] yHex = NumericalUtils.floatToByteArray(y+0.0f,1);
-			byte[] zHex = NumericalUtils.floatToByteArray(z+0.0f,1);
-			
-			
+			return createTeleportPacket(x*100.0f, y*100.0f, z*100.0f);
+		}
+
+		public static byte[] createTeleportPacket(float x, float y, float z){
+
+			byte[] xHex = NumericalUtils.floatToByteArray(x,1);
+			byte[] yHex = NumericalUtils.floatToByteArray(y,1);
+			byte[] zHex = NumericalUtils.floatToByteArray(z,1);
+
+
 			byte[] header = StringUtils.hexStringToBytes("0200011c11f7025c00030000");
 			byte[] tail = StringUtils.hexStringToBytes("0000");
 
