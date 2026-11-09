@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Retail capture: Welcome to the Matrix (luizoe, Recursion log, 2009-07-05). Text, NPCs, positions, goals and rewards as sent. Which event sets off each line, and the trigger radii, are our fit to where the player stood. -->
+<mission id="1201" title="Welcome to the Matrix" description="Your introduction assignment inside the Matrix." plot="1" order="1" exp="5500" info="21000">
+  <npc id="1" handle="Abalakin" type="FRIENDLY" x="58102.4" y="2495.0" z="31390.6" rsi="d8040058" level="3" maxHP="250" />
+  <npc id="2" handle="Rigel" type="FRIENDLY" x="59421.0" y="2495.0" z="31581.5" rsi="59010058" level="3" maxHP="250" weapon="692" />
+  <npc id="3" handle="Crow" type="FRIENDLY" x="58517.0" y="2495.0" z="32242.0" rsi="b50000b4" level="3" maxHP="250" weapon="692" />
+  <npc id="4" handle="Watchman" type="HOSTILE" x="58603.0" y="2495.0" z="32506.0" rsi="3b01004e" level="3" maxHP="125" weapon="700" attacksOnSight="0" />
+  <phase>
+    <briefing header="30000100950105000000010000003c00" a="59700.0,145.0,33600.0" b="59800.0,145.0,33100.0">Welcome to the Matrix, {player}! I am Tyndall and I will be your mission contact from Zion. I've been looking forward to working with you. 
+
+Your first objective is displayed on your HUD. The number on the waypoint tells you your current distance from the mission location. Go there now and talk to Abalakin.</briefing>
+    <waypoint x="59600.0" y="2545.0" z="31300.0" door="30015019" />
+    <objective goal="0" text="Talk to Abalakin" type="Talk" npc="1">
+      <done>
+        <say npc="1">Tyndall says you need a little advice now that you've been freed. 
+
+Most important: Stay alive. The Machines and who knows who else will be gunning for you. Don't ever assume that you're safe, especially once you leave Richland.</say>
+        <say>What Abalakin says is true. New redpills have limited access rights. If you see an Agent, run!</say>
+      </done>
+    </objective>
+    <objective goal="1" text="Talk to Rigel" type="Talk" npc="2">
+      <done>
+        <say npc="2">Once you've completed your objectives for a mission, don't stay in the mission area. If you loiter at the mission area for too long it's possible that Agents will track you and chase you down!</say>
+        <say>Once all of your objectives are complete, you and your team must exit the mission area. We don't want hostile Agents tracking you.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Crow" type="Talk" npc="3">
+      <done>
+        <say npc="3">Some Exiles in the Matrix have formed gangs. They roam the streets and alleyways of the city. That doesn't mean you can't fight them, just be careful.
+
+Hey, speaking of fighting... I want to see you in combat! Fight this simulacrum of mine. Show me what you've learned!</say>
+        <say>Why don't we play along with Crow? I've already added your new objective: Kill the simulacrum!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill the simulacrum" type="Defeat" npc="4" after="2">
+      <done>
+        <say>Damn! I see your combat training has paid off.</say>
+        <say npc="3">Nice work, recruit! There's one more thing I wanted to tell you before you go.
+
+Exile gangs have staked out territory in the Matrix, and might attack if you come close. Your targeting HUD colors their names based on their threat level. I won't go into all the details, but if you see purple, run!</say>
+      </done>
+    </objective>
+    <near x="59700.0" y="145.0" z="33600.0" radius="600">
+      <say>Inside this building you'll find one of the many Zion bases within the Matrix. Zion uses these bases to stock supplies, create tools and even locate potential redpills. 
+
+Find Abalakin. After speaking with Abalakin and Rigel, Crow will want to see you in combat.</say>
+    </near>
+    <complete>
+      <say>You just completed your first mission. I know it was easy, but things won't always be so simple. Trust me.
+
+Exit the building and we can wrap up your first assignment.</say>
+    </complete>
+  </phase>
+  <finish>I already see that it'll be a pleasure working with you, {player}.
+
+Contact me when you are ready for your next assignment, Warrior.</finish>
+</mission>

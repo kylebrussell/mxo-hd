@@ -1,4 +1,3 @@
-using System.Xml;
 using hds;
 using hds.shared;
 
@@ -7,29 +6,6 @@ namespace hds.Tests;
 public class MissionTests
 {
     private static string Hex(byte[] bytes) => StringUtils.bytesToString_NS(bytes).ToLowerInvariant();
-
-    [Fact]
-    public void LoadsTheCheckedInMissionFormat()
-    {
-        // data/missions/*.xml use <config><data ...><objectiveN .../>; nothing loaded them before.
-        XmlDocument doc = new XmlDocument();
-        doc.LoadXml(@"<config><data title=""Welcome in Matrix"" exp=""500"" info=""100"" description=""Just for test"">
-            <total objective=""2"" />
-            <objective2 description=""Defeat Andromeda."" command=""DEFEAT"" dial=""Kill him!"" />
-            <objective1 description=""Talk to Denise."" command=""TALK"" dial=""Hi"" />
-            <npc1 type=""FRIENDLY"" />
-          </data></config>");
-
-        Mission mission = DataLoader.ParseConfigMission(doc.SelectSingleNode("config/data"));
-
-        Assert.Equal("Welcome in Matrix", mission.title);
-        Assert.Equal("Just for test", mission.description);
-        Assert.Equal(500, mission.exp);
-        Assert.Equal(100, mission.info);
-        Assert.Collection(mission.phases[0].missionObjectives,
-            o => Assert.Equal("Talk to Denise.", o.description),
-            o => Assert.Equal("Defeat Andromeda.", o.description));
-    }
 
     [Fact]
     public void MissionNameReproducesTheRetailLayout()
@@ -63,38 +39,6 @@ public class MissionTests
     }
 
     [Fact]
-    public void LoadsMissionNpcsInWorldUnits()
-    {
-        XmlDocument doc = new XmlDocument();
-        doc.LoadXml(@"<config><data title=""T"">
-            <objective1 description=""Talk to Denise."" idNpc=""5"" command=""TALK"" dial=""Hi %"" />
-            <npc1 type=""FRIENDLY"" x=""296"" y=""5"" z=""-25"" idNpc=""5"" handle=""Denise"" rsi=""86010058"" level=""60"" />
-            <npc2 type=""HOSTILE"" x=""296"" y=""5"" z=""-22"" idNpc=""6"" handle=""Andromeda"" rsi=""13050008"" level=""5"" maxHP=""500"" />
-          </data></config>");
-
-        Mission mission = DataLoader.ParseConfigMission(doc.SelectSingleNode("config/data"));
-
-        Assert.Equal(5, mission.phases[0].missionObjectives[0].npcId);
-        Assert.Collection(mission.npcs,
-            n =>
-            {
-                Assert.Equal("Denise", n.handle);
-                Assert.True(n.friendly);
-                Assert.Equal(29600, n.x);
-                Assert.Equal(500, n.y);
-                Assert.Equal(-2500, n.z);
-                Assert.Equal(60, n.level);
-            },
-            n =>
-            {
-                Assert.Equal("Andromeda", n.handle);
-                Assert.False(n.friendly);
-                Assert.Equal(6, n.id);
-                Assert.Equal(500, n.maxHealth);
-            });
-    }
-
-    [Fact]
     public void ExperienceGainCarriesTheGainNotTheTotal()
     {
         // Retail after a 391-EXP kill: 80 e6 87 01 00 00 01 00 00 00
@@ -104,11 +48,10 @@ public class MissionTests
     [Fact]
     public void MissionCompleteMatchesRetail()
     {
-        // Retail first-mission completion: 80 a2 00 01000000 2d020000 08520000 b80b0000 00x7
-        // (we send 0 for the 557 field; info and EXP are what the client shows as payment)
-        byte[] message = ServerPackets.BuildMissionComplete(3000, 21000);
+        // Retail end of Welcome to the Matrix (luizoe Recursion, 19:50:35): 1 kill, 120 s, 21,000 info, 5,500 XP, intro state 1
+        byte[] message = ServerPackets.BuildMissionComplete(5500, 21000, 1, 120);
         Assert.Equal(26, message.Length);
-        Assert.Equal("80a2" + "00" + "01000000" + "00000000" + "08520000" + "b80b0000" + "00000000000000", Hex(message));
+        Assert.Equal("80a2" + "00" + "0100" + "0000" + "78000000" + "08520000" + "7c150000" + "00000000000001", Hex(message));
     }
 
     [Fact]
@@ -118,11 +61,36 @@ public class MissionTests
     }
 
     [Fact]
+    public void MissionItemCarriesTheKeyOfTheNpcItIsFor()
+    {
+        // Retail, The Internuncio, the statue for Gagarin (key 01 9a 02 02)
+        Assert.Equal("5e" + "0700" + "f2040000" + "019a0282" + "01",
+            Hex(ServerPackets.BuildMissionItemAdd(7, 1266, 1, 0x029a)));
+    }
+
+    [Fact]
     public void WaypointMatchesRetail()
     {
         // Retail: 80 9e 00 <27800 f64> <8945 f64> <-4600 f64> 01 00 00 00 22 01 80 07
         Assert.Equal("809e00" + "000000000026db40" + "000000008078c140" + "0000000000f8b1c0" + "0100000022018007",
             Hex(ServerPackets.BuildMissionWaypoint(27800, 8945, -4600)));
+    }
+
+    [Fact]
+    public void WaypointNamesItsDoor()
+    {
+        // Retail, Exile Extermination, second door: 80 9e 01 ... 01 00 00 00 53 00 60 53
+        Assert.Equal("809e01" + "0000000080b4e640" + "0000000000c2a040" + "0000000000880340".Substring(0, 0) + "0000000000881340".Substring(0,0) +
+                     "000000000088d340" + "0100000053006053",
+            Hex(ServerPackets.BuildMissionWaypoint(46500, 2145, 20000, 1, "53006053")));
+    }
+
+    [Fact]
+    public void OperatorLineFromTheClientsStringTable()
+    {
+        // Retail: 80 a1 70 0a 00 28 14 00 00 26 14 00 0c 00 00 26 17 00 01 01 01 00 00 01 00 00
+        Assert.Equal("80a1" + "700a0028" + "14000026" + "1400" + "0c000026" + "1700" + "01" + "01" + "010000" + "010000",
+            Hex(ServerPackets.BuildDialog(0x28000a70, 0x26000014, 0x2600000c, 1, 1, "", "")));
     }
 
     [Fact]

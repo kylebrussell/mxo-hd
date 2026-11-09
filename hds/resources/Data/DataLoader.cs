@@ -71,176 +71,39 @@ namespace hds
                 return;
             }
 
-            string[] xmlMissionFiles = Directory.GetFiles(missionsPath, "*.xml");
-
-            foreach (string file in xmlMissionFiles)
+            foreach (string file in Directory.GetFiles(missionsPath, "*.xml"))
             {
                 XmlDocument missionDocument = new XmlDocument();
                 missionDocument.Load(file);
-
-                // The checked-in mission files use <config><data title=… description=… exp=… info=…> with
-                // <objective1 description=… command=… dial=…/>, <objective2 …/>, … children. Only the
-                // <mission><phase> layout below was read before, so no mission ever loaded and every
-                // contact offered an empty list.
-                XmlNode dataNode = missionDocument.SelectSingleNode("config/data");
-                if (dataNode != null)
+                Mission mission = MissionXml.Parse(missionDocument.DocumentElement);
+                if (mission != null)
                 {
-                    Mission configMission = ParseConfigMission(dataNode);
-                    if (configMission != null)
-                    {
-                        missions.Add(configMission);
-                    }
-                    continue;
-                }
-
-                XmlNode missionNode = missionDocument.SelectSingleNode("mission");
-                if (missionNode != null && missionNode.HasChildNodes)
-                {
-                    Mission theMission = new Mission();
-                    theMission.title = missionNode.Attributes["title"].InnerText;
-                    theMission.description = missionNode.Attributes["description"].InnerText;
-                    theMission.exp = int.Parse(missionNode.Attributes["exp"].InnerText);
-                    theMission.info = int.Parse(missionNode.Attributes["info"].InnerText);
-                    theMission.repZion = int.Parse(missionNode.Attributes["repZion"].InnerText);
-                    theMission.repMachine = int.Parse(missionNode.Attributes["repMachine"].InnerText);
-                    theMission.repMero = int.Parse(missionNode.Attributes["repMero"].InnerText);
-
-                    foreach (XmlNode childNode in missionNode.ChildNodes)
-                    {
-                        if (childNode.Name.Equals("phase"))
-                        {
-                            MissionPhase phase = new MissionPhase();
-
-                            foreach (XmlNode phaseItem in childNode.ChildNodes)
-                            {
-                                switch (phaseItem.Name)
-                                {
-                                    case "dialog":
-                                        MissionDialog dialog = new MissionDialog();
-                                        dialog.text = phaseItem.Attributes["text"].InnerText;
-                                        dialog.type = phaseItem.Attributes["type"].InnerText;
-                                        var innerText = phaseItem.Attributes["trigger"].InnerText;
-                                        dialog.trigger = (MissionDialog.DIALOG_TRIGGER)Enum.Parse(typeof(MissionDialog.DIALOG_TRIGGER), innerText,
-                                            true);
-                                        phase.dialogs.Add(dialog);
-                                        break;
-                                    
-                                    case "objective":
-                                        MissionObjective objective = new MissionObjective();
-                                        objective.description = phaseItem.Attributes["description"].InnerText;
-                                        objective.command = phaseItem.Attributes["command"].InnerText;
-                                        if (phaseItem.Attributes["item"] != null)
-                                        {
-                                            objective.itemId =
-                                                StringUtils.hexStringToBytes(phaseItem.Attributes["item"].InnerText);
-                                        }
-
-                                        objective.dialog = phaseItem.Attributes["dialog"].InnerText;
-                                        phase.missionObjectives.Add(objective);
-                                        break;
-                                    case "npc":
-                                        Mob theMob = new Mob();
-                                        theMob.setName(phaseItem.Attributes["handle"].InnerText);
-                                        theMob.setLevel(ushort.Parse(phaseItem.Attributes["level"].InnerText));
-                                        theMob.setHealthM(UInt16.Parse(phaseItem.Attributes["maxHP"].InnerText));
-                                        theMob.setRsiHex(phaseItem.Attributes["rsi"].InnerText);
-                                        theMob.setXPos(float.Parse(phaseItem.Attributes["x"].InnerText));
-                                        theMob.setYPos(float.Parse(phaseItem.Attributes["y"].InnerText));
-                                        theMob.setZPos(float.Parse(phaseItem.Attributes["z"].InnerText));
-                                        phase.npcs.Add(theMob);
-                                        break;
-                                    
-                                    case "gameobject":
-                                        // ToDo: this is a little bit tricky
-                                        break;
-                                }
-                            }
-                            theMission.phases.Add(phase);
-                        }
-                    }
-                    missions.Add(theMission);
+                    missions.Add(mission);
                 }
             }
+
+            missions.Sort((x, y) => x.order.CompareTo(y.order));
+            Output.WriteLine("Loaded " + missions.Count + " missions");
         }
 
-        /// <summary>Reads a mission in the &lt;config&gt;&lt;data&gt; layout (title, description, exp, info, objectiveN).</summary>
-        public static Mission ParseConfigMission(XmlNode dataNode)
+        /// <summary>What a contact offers: the first unfinished story mission, or all of them to replay once they're done.
+        /// Only Zion's early missions exist so far, so every organisation is offered them.</summary>
+        public List<Mission> FindMissions(uint orgId, HashSet<int> completed)
         {
-            string Attr(XmlNode node, string name) => node.Attributes?[name]?.Value;
-
-            string title = Attr(dataNode, "title");
-            if (string.IsNullOrEmpty(title))
-            {
-                return null;
-            }
-
-            Mission mission = new Mission();
-            mission.title = title;
-            mission.description = Attr(dataNode, "description") ?? "";
-            if (int.TryParse(Attr(dataNode, "exp"), out int exp)) mission.exp = exp;
-            if (int.TryParse(Attr(dataNode, "info"), out int info)) mission.info = info;
-
-            MissionPhase phase = new MissionPhase();
-            var objectives = new List<KeyValuePair<int, XmlNode>>();
-            foreach (XmlNode child in dataNode.ChildNodes)
-            {
-                if (child.NodeType == XmlNodeType.Element && child.Name.StartsWith("objective") &&
-                    int.TryParse(child.Name.Substring("objective".Length), out int number))
-                {
-                    objectives.Add(new KeyValuePair<int, XmlNode>(number, child));
-                }
-            }
-
-            foreach (var entry in objectives.OrderBy(o => o.Key))
-            {
-                MissionObjective objective = new MissionObjective();
-                objective.description = Attr(entry.Value, "description") ?? "";
-                objective.command = Attr(entry.Value, "command") ?? "";
-                objective.dialog = Attr(entry.Value, "dial") ?? "";
-                string item = Attr(entry.Value, "item");
-                if (!string.IsNullOrEmpty(item))
-                {
-                    objective.itemId = StringUtils.hexStringToBytes(item);
-                }
-                if (ushort.TryParse(Attr(entry.Value, "idNpc"), out ushort objectiveNpc)) objective.npcId = objectiveNpc;
-                phase.missionObjectives.Add(objective);
-            }
-
-            // <npcN type="FRIENDLY|HOSTILE" x y z idNpc handle rsi level maxHP />; positions use the same units as
-            // ?gotopos (world units / 100).
-            foreach (XmlNode child in dataNode.ChildNodes)
-            {
-                if (child.NodeType != XmlNodeType.Element || !child.Name.StartsWith("npc") ||
-                    !int.TryParse(child.Name.Substring("npc".Length), out _))
-                {
-                    continue;
-                }
-
-                MissionNpc npc = new MissionNpc();
-                ushort.TryParse(Attr(child, "idNpc"), out npc.id);
-                npc.handle = Attr(child, "handle") ?? "NPC";
-                npc.friendly = string.Equals(Attr(child, "type"), "FRIENDLY", StringComparison.OrdinalIgnoreCase);
-                double.TryParse(Attr(child, "x"), NumberStyles.Float, CultureInfo.InvariantCulture, out double nx);
-                double.TryParse(Attr(child, "y"), NumberStyles.Float, CultureInfo.InvariantCulture, out double ny);
-                double.TryParse(Attr(child, "z"), NumberStyles.Float, CultureInfo.InvariantCulture, out double nz);
-                npc.x = nx * 100;
-                npc.y = ny * 100;
-                npc.z = nz * 100;
-                npc.rsiHex = Attr(child, "rsi") ?? "";
-                if (ushort.TryParse(Attr(child, "level"), out ushort level)) npc.level = level;
-                if (ushort.TryParse(Attr(child, "maxHP"), out ushort maxHp)) npc.maxHealth = maxHp;
-                mission.npcs.Add(npc);
-            }
-
-            mission.phases.Add(phase);
-            return mission;
+            return ContactOffer(missions, completed);
         }
 
-        public List<Mission> FindMissions(UInt16 contactId, uint orgId)
+        public static List<Mission> ContactOffer(List<Mission> missions, HashSet<int> completed)
         {
-            // ToDo: filter by contact and org
-            return missions;
-            
+            foreach (Mission mission in missions)
+            {
+                if (!completed.Contains(mission.id))
+                {
+                    return new List<Mission> { mission };
+                }
+            }
+
+            return new List<Mission>(missions);
         }
 
         private void loadNPCSignPosts(string path)

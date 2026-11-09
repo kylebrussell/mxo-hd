@@ -1090,6 +1090,43 @@ namespace hds.databases{
             ExecuteNonResultQuery("INSERT INTO crews SET crew_name= '" + crewName + "', created_at =NOW() ");
         }
 
+        // char_missions may be missing from a database made before missions were tracked.
+        private void EnsureMissionTable()
+        {
+            OpenConnection();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "CREATE TABLE IF NOT EXISTS char_missions (charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, " +
+                                        "completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId))";
+            queryExecuter.ExecuteNonQuery();
+        }
+
+        public HashSet<int> GetCompletedMissions(UInt32 charId)
+        {
+            EnsureMissionTable();
+            HashSet<int> completed = new HashSet<int>();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "SELECT missionId FROM char_missions WHERE charId = '" + charId + "'";
+            dr = queryExecuter.ExecuteReader();
+            while (dr.Read())
+            {
+                completed.Add(dr.GetInt32(0));
+            }
+
+            dr.Close();
+            CloseConnection();
+            return completed;
+        }
+
+        public void SaveMissionCompleted(UInt32 charId, int missionId)
+        {
+            EnsureMissionTable();
+            queryExecuter = conn.CreateCommand();
+            queryExecuter.CommandText = "INSERT INTO char_missions (charId, missionId) VALUES ('" + charId + "', '" + missionId + "') " +
+                                        "ON DUPLICATE KEY UPDATE completions = completions + 1";
+            queryExecuter.ExecuteNonQuery();
+            CloseConnection();
+        }
+
         public UInt16 GetFirstNewSlot()
         {
 	        OpenConnection();

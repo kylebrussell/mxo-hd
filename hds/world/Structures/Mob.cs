@@ -38,6 +38,9 @@ namespace hds
         public MobAggroKind aggroKind = MobAggroKind.Unfiltered;
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
+        public byte missionPhase = 0;
+        public bool missionGiver = false; // offers the client's Get interaction
+        public bool missionTaker = false; // offers the client's Give interaction
 
         // Per-object counter carried by animation blocks in movement updates (retail increments it per use)
         private byte animationSeq = 0;
@@ -446,7 +449,7 @@ namespace hds
                     // Retail talkable mission NPCs carry the mission's key: 00 <instance u16> 02 (Regulus: 00 48 00 02).
                     // Hostile mission NPCs don't get it: with it the client stayed locked in close combat after the kill.
                     themob.MissionKey.enable();
-                    themob.MissionKey.setValue(new byte[] { 0x00, (byte)missionInstance, (byte)(missionInstance >> 8), 0x02 });
+                    themob.MissionKey.setValue(new byte[] { missionPhase, (byte)missionInstance, (byte)(missionInstance >> 8), 0x02 });
                 }
 
                 // Retail talkable NPCs (Regulus, Armor in the first-mission capture) send DontAttack,
@@ -460,6 +463,17 @@ namespace hds
                 themob.TalkDefaultable.setValue(0x01);
                 themob.TalkActiveTracker.enable();
                 themob.TalkActiveTracker.setValue(0x01);
+                if (missionGiver)
+                {
+                    themob.GiverActiveTracker.enable();
+                    themob.GiverActiveTracker.setValue(0x01);
+                }
+
+                if (missionTaker)
+                {
+                    themob.TakerActiveTracker.enable();
+                    themob.TakerActiveTracker.setValue(0x01);
+                }
             }
             themob.StealthAwareness.setValue(0x11);
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};

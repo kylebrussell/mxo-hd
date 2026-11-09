@@ -50,7 +50,8 @@ namespace hds
                 missionListPak.AddUint16(i, 1);
                 missionListPak.AddHexBytes("0f0001"); // curently unknown
                 missionListPak.AddUint32(0x07d0,1); // every retail capture has d0 07 00 00 here
-                missionListPak.AddUint16(0,1); // Unknown
+                missionListPak.AddByte(0x00); // chained
+                missionListPak.AddByte((byte)(mission.plot ? 1 : 0)); // retail: 1 on story missions, 0 on the generic types
                 missionListPak.AddSizedTerminatedString(mission.title);
                 client.messageQueue.addRpcMessage(missionListPak.ReturnFinalPacket());
                 i++;
@@ -74,10 +75,12 @@ namespace hds
             pak.AddHexBytes("2f0001000000");
             pak.AddByte(difficulty);
 
-            // ToDo: calculate distance for the first and last location 
-            float firstLocationDistance = 120 * 100;
-            float maxLocationDistance = 230 * 100;
-            
+            // Retail: how far the player is from the mission's first and last locations.
+            double px = 0, py = 0, pz = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+            float firstLocationDistance = MissionDistance(mission.FirstWaypoint, px, pz);
+            float maxLocationDistance = MissionDistance(mission.LastWaypoint, px, pz);
+
             pak.AddFloat(firstLocationDistance,1);
             pak.AddFloat(maxLocationDistance,1);
             pak.AddHexBytes("000000000000000000d0070000310000b4c00c0028");
@@ -91,23 +94,33 @@ namespace hds
         {
             client.messageQueue.addObjectMessage(BuildMissionKeyUpdate(instance), false);
             client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title));
-            client.messageQueue.addRpcMessage(BuildMissionBriefing(mission.description));
-
             client.FlushQueue();
+        }
+
+        private static float MissionDistance(MissionWaypoint waypoint, double x, double z)
+        {
+            if (waypoint == null)
+            {
+                return 0;
+            }
+
+            double dx = waypoint.x - x, dz = waypoint.z - z;
+            return (float)Math.Sqrt(dx * dx + dz * dz);
         }
 
         /// <summary>
         /// 809e: mission waypoint. Retail: 80 9e 00 &lt;x y z f64&gt; 01 00 00 00 22 01 80 07
         /// (27800, 8945, -4600 in the capture). The trailing id is kept as retail sent it.
         /// </summary>
-        public static byte[] BuildMissionWaypoint(double x, double y, double z)
+        public static byte[] BuildMissionWaypoint(double x, double y, double z, byte index = 0, string doorHex = null)
         {
             PacketContent pak = new PacketContent();
-            pak.AddHexBytes("809E00");
+            pak.AddHexBytes("809E");
+            pak.AddByte(index);
             pak.AddDouble(x, 1);
             pak.AddDouble(y, 1);
             pak.AddDouble(z, 1);
-            pak.AddHexBytes("0100000022018007");
+            pak.AddHexBytes("01000000" + (string.IsNullOrEmpty(doorHex) ? "22018007" : doorHex));
             return pak.ReturnFinalPacket();
         }
 
@@ -118,18 +131,29 @@ namespace hds
         /// </summary>
         public static byte[] BuildNpcDialog(string speaker, string text)
         {
+            return BuildDialog(0x2800121f, 0, 0, 1, 0, speaker, text);
+        }
+
+        /// <summary>
+        /// The same message for any speaker: image u32, name string id u32, name offset u16, text string id u32, text offset
+        /// u16, display u8, client flag u8, sized name, sized text. Retail's operator: image 0x28000a70, name 0x26000014, no
+        /// name text. A text string id (with the client flag set) has the client show its own string table's line.
+        /// </summary>
+        public static byte[] BuildDialog(UInt32 image, UInt32 nameId, UInt32 stringId, byte display, byte clientFlag, string speaker, string text)
+        {
             speaker = speaker ?? "";
             const int speakerOffset = 0x14;
             int textOffset = speakerOffset + 2 + speaker.Length + 1;
 
             PacketContent pak = new PacketContent();
             pak.AddHexBytes("80A1");
-            pak.AddHexBytes("1F120028" + "00000000");
+            pak.AddUint32(image, 1);
+            pak.AddUint32(nameId, 1);
             pak.AddUint16(speakerOffset, 1);
-            pak.AddUint16(0, 1);
-            pak.AddUint16(0, 1);
+            pak.AddUint32(stringId, 1);
             pak.AddUint16((UInt16)textOffset, 1);
-            pak.AddUint16(1, 1);
+            pak.AddByte(display);
+            pak.AddByte(clientFlag);
             pak.AddSizedTerminatedString(speaker);
             pak.AddSizedTerminatedString(text ?? "");
             return pak.ReturnFinalPacket();
@@ -188,10 +212,25 @@ namespace hds
         /// </summary>
         public static byte[] BuildMissionBriefing(string text)
         {
+            return BuildMissionBriefing(text, null, new[] { 30600f, -255f, -7300f }, new[] { 28100f, -255f, -5500f });
+        }
+
+        public static byte[] BuildMissionBriefing(string text, string headerHex, float[] areaA, float[] areaB)
+        {
             PacketContent pak = new PacketContent();
             pak.AddHexBytes("80A3");
-            pak.AddHexBytes("300003007800" + "1A000000" + "03000000" + "3C00" +
-                            "0010EF4600007FC30020E4C5" + "0088DB4600007FC300E0ABC5" + "000000000000");
+            pak.AddHexBytes(string.IsNullOrEmpty(headerHex) ? "300003007800" + "1A000000" + "03000000" + "3C00" : headerHex);
+            foreach (float value in areaA)
+            {
+                pak.AddFloat(value, 1);
+            }
+
+            foreach (float value in areaB)
+            {
+                pak.AddFloat(value, 1);
+            }
+
+            pak.AddHexBytes("000000000000");
             pak.AddSizedTerminatedString(text ?? "");
             return pak.ReturnFinalPacket();
         }
@@ -199,29 +238,31 @@ namespace hds
         /// <summary>
         /// 80 a2: mission end, 24 bytes after the header. Retail's completed first mission (crashover2k
         /// create_char_devoted, 06:10:51): 80 a2 00 | 01000000 | 2d020000 | 08520000 | b80b0000 | 00x7 =
-        /// status 00 (complete), 1, 557 (not shown as payment; an id?), info 21,000, EXP 3,000. The client's
-        /// Mission summary shows "Payment: $i info, +EXP XP" from the last two. Status 08 is the abort.
+        /// status 00 (complete), enemy kills u16, team killed u16, seconds 557, info 21,000, EXP 3,000; then reputation i16,
+        /// two empty arrays and the intro state (01 on Zion's early missions). The client's Mission summary shows
+        /// "Payment: $i info, +EXP XP" from those. Status 08 is the abort.
         /// </summary>
-        public static byte[] BuildMissionComplete(UInt32 exp, UInt32 info)
+        public static byte[] BuildMissionComplete(UInt32 exp, UInt32 info, UInt16 kills = 1, UInt32 seconds = 0)
         {
             PacketContent pak = new PacketContent();
             pak.AddHexBytes("80A2");
             pak.AddByte(0x00);
-            pak.AddUint32(1, 1);
-            pak.AddUint32(0, 1);
+            pak.AddUint16(kills, 1);
+            pak.AddUint16(0, 1);
+            pak.AddUint32(seconds, 1);
             pak.AddUint32(info, 1);
             pak.AddUint32(exp, 1);
-            pak.AddHexBytes("00000000000000");
+            pak.AddHexBytes("00000000000001");
             return pak.ReturnFinalPacket();
         }
 
-        public void SendMissionComplete(WorldClient client, UInt32 exp, UInt32 info)
+        public void SendMissionComplete(WorldClient client, UInt32 exp, UInt32 info, UInt16 kills = 1, UInt32 seconds = 0)
         {
             // Retail cleared the own-view MissionKey when the mission ended (02 00 02 80 40 00 00 00 00).
             PacketContent clear = new PacketContent();
             clear.AddHexBytes("020002804000000000");
             client.messageQueue.addObjectMessage(clear.ReturnFinalPacket(), false);
-            client.messageQueue.addRpcMessage(BuildMissionComplete(exp, info));
+            client.messageQueue.addRpcMessage(BuildMissionComplete(exp, info, kills, seconds));
         }
 
         public void SendMissionAbort(WorldClient client)

@@ -1,0 +1,2396 @@
+{
+ "meta": {
+  "mission": 986,
+  "world": "resource/worlds/final_world/tutorial_v2/tutorial_v2.metr",
+  "coordinates": "slot 0 (80 a3 b=0). Slot 1 adds dx=-32000, dz=+64000 and static ids |= 0x100000. Delays are seconds after the previous goal closed unless stated.",
+  "note": "Timers and reminder values come from Mission986.py; see evidenceLines and SPEC.md for what was verified on the wire. evidenceLines.open/close are log line numbers in the four complete runs.",
+  "logs": {
+   "main": "community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_002_create_mxoemu_character2.log.txt",
+   "uriah": "community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k__create_char_mxoemu_and_make_complete_tutorial_enteringtheworld_uriah.log.txt",
+   "unknown": "community-intake/20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected/logs/mxopackets1_luizoe_old_sniffer_Unknown.log.txt",
+   "syntax": "community-intake/20260608T065306Z-hdneo-public-luizoe-remaining-trade-sanitized-selected/logs/mxopackets1_luizoe_margins_Syntax.log.txt"
+  },
+  "panels": {
+   "INVENT": "0x1",
+   "ACTIONS": "0x2",
+   "STATUS": "0x3",
+   "MISSION": "0x5",
+   "TEAM": "0x6",
+   "MAP": "0x7",
+   "CREW": "0x8",
+   "FACTION": "0x9",
+   "LEVEL_UP": "0xc",
+   "PDA": "0xb",
+   "TARGET": "0xe",
+   "TOOLBAR": "0xf",
+   "PLAYER_VIEW": "0x15",
+   "MINITEAM": "0x16",
+   "INTERLOCK_POWER": "0x18",
+   "INTERLOCK_SPEED": "0x19",
+   "INTERLOCK_BLOCK": "0x1a",
+   "INTERLOCK_GRAB": "0x1b",
+   "INTERLOCK_WITHDRAWL": "0x1c",
+   "FIRST_ABILITY": "0x1d",
+   "ADVANCE_LEVEL": "0x1e",
+   "APPLY_ADVANCE": "0x1f",
+   "OPEN_ATTRIBUTE": "0x20",
+   "UPGRADE_ATTRIBUTE": "0x21",
+   "CONFIRM_ATTRIBUTE": "0x22",
+   "BUFFHUD": "0x27"
+  }
+ },
+ "goals": [
+  {
+   "goal": 0,
+   "constant": "CAMERA_GOAL",
+   "text": "Move the camera around by holding down the right mouse button",
+   "goal_rpc_open": "80 a0 00 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 00 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 70 08 00 86",
+     "id": "0x86000870",
+     "constant": "CAMERA_DIALOG",
+     "wav": "resource/dialog/tutorial/25011.wav"
+    },
+    "events": [
+     "81 91 01 00 00 00 (sendMissionEvent 1)"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CAMERA",
+     "sid": "0x88000012",
+     "image": "0x28000ba4",
+     "delayS": 26,
+     "rpc": "80 a1 a4 0b 00 28 00 00 00 00 14 00 12 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 65,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 74 08 00 86",
+       "id": "0x86000874",
+       "constant": "CAMERA_REMINDER",
+       "wav": "resource/dialog/tutorial/25015.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CAMERA",
+      "sid": "0x88000012"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-object",
+    "wire": "C>S own-view update 03 02 00 01 <mask with 04> <yaw u8>...",
+    "rule": "OnMovementUpdated: yaw differs from the previous update (needs one earlier update; closes within about 1 s of the change, so [I] polled)"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 350,
+     "close": 823,
+     "seconds": 16
+    },
+    "uriah": {
+     "open": 466,
+     "close": 1084,
+     "seconds": 10
+    },
+    "unknown": {
+     "open": 471,
+     "close": 1103,
+     "seconds": 15
+    },
+    "syntax": {
+     "open": 315,
+     "close": 1440,
+     "seconds": 10
+    }
+   }
+  },
+  {
+   "goal": 1,
+   "constant": "MOVEMENT_GOAL",
+   "text": "Move around the room",
+   "goal_rpc_open": "80 a0 01 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 01 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 75 08 00 86",
+     "id": "0x86000875",
+     "constant": "MOVEMENT_DIALOG",
+     "wav": "resource/dialog/tutorial/25016.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_MOVEMENT",
+     "sid": "0x88000013",
+     "image": "0x28000ba5",
+     "delayS": 1,
+     "rpc": "80 a1 a5 0b 00 28 00 00 00 00 14 00 13 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 71,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 77 08 00 86",
+       "id": "0x86000877",
+       "constant": "MOVEMENT_REMINDER",
+       "wav": "resource/dialog/tutorial/25018.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_MOVEMENT",
+      "sid": "0x88000013"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-object",
+    "wire": "C>S own-view update with mask 08 (x y z f32)",
+    "rule": "OnMovementUpdated: position differs. In all captures it closes in the same packet as goal 0"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 823,
+     "close": 823,
+     "seconds": 0
+    },
+    "uriah": {
+     "open": 1084,
+     "close": 1084,
+     "seconds": 0
+    },
+    "unknown": {
+     "open": 1103,
+     "close": 1103,
+     "seconds": 0
+    },
+    "syntax": {
+     "open": 1440,
+     "close": 1440,
+     "seconds": 0
+    }
+   }
+  },
+  {
+   "goal": 2,
+   "constant": "TALKING_GOAL",
+   "text": "Talk to Ammit with double-left click",
+   "goal_rpc_open": "80 a0 02 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 02 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 0e 00 01",
+      "view": "0xe",
+      "name": "TARGET",
+      "show": 1
+     }
+    ],
+    "narration": {
+     "rpc": "81 45 79 08 00 86",
+     "id": "0x86000879",
+     "constant": "TALKING_DIALOG",
+     "wav": "resource/dialog/tutorial/25020.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_TALK",
+     "sid": "0x88000014",
+     "image": "0x900006a1",
+     "delayS": 0,
+     "rpc": "80 a1 a1 06 00 90 00 00 00 00 14 00 14 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 63,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 7a 08 00 86",
+       "id": "0x8600087A",
+       "constant": "TALKING_REMINDER",
+       "wav": "resource/dialog/tutorial/25021.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_TALK",
+      "sid": "0x88000014"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <Ammit view u16> <Ammit spawn u16> 09 00",
+    "rule": "Talk to Ammit. Mission data, not in the script. Cached if done early (uriah 743)"
+   },
+   "onCompleteExtra": [
+    "NPC update on Ammit's view (not decoded, main 1843)",
+    "2e NPC chat line + 80 a1 img 0x2800121f text 'Listen to what the Captain has to say. And be honest.'"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 823,
+     "close": 1843,
+     "seconds": 19
+    },
+    "uriah": {
+     "close": 1084,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "unknown": {
+     "open": 1103,
+     "close": 1143,
+     "seconds": 0
+    },
+    "syntax": {
+     "close": 1440,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    }
+   }
+  },
+  {
+   "goal": 3,
+   "constant": "CHOICE_GOAL",
+   "text": "Choose wisely",
+   "goal_rpc_open": "80 a0 03 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 03 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 7b 08 00 86",
+     "id": "0x8600087B",
+     "constant": "CHOICE_DIALOG",
+     "wav": "resource/dialog/tutorial/25022.wav"
+    },
+    "other": [
+     "+28 s: 81 8f 00 00 00 00 15 00 00 88 1c 00 03 00 00 00 05 00 00 c2 01 00 00 c2 00 00 00 00 01 00 00 (modal msg=3)",
+     "+28+71 s then every 60 s, if unanswered: narration CHOICE_REMINDER + broadcast ID_TUTORIAL_NEW_PILL image 0x900006a1 [script]"
+    ]
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 90 03 00 00 00 00",
+    "rule": "Red pill: Message=3, LeftChosen=0. Left (blue) was never captured: script sends BLUEPILL_CONFIRM + modal msg=7000"
+   },
+   "onCompleteExtra": [
+    "81 91 00 00 00 00 (event 0)",
+    "81 45 narration REDPILL_DIALOG, sent BEFORE 80 a0 03 flags=1"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 1843,
+     "close": 2230,
+     "seconds": 38
+    },
+    "uriah": {
+     "open": 1084,
+     "close": 1465,
+     "seconds": 38
+    },
+    "unknown": {
+     "open": 1143,
+     "close": 2914,
+     "seconds": 30
+    },
+    "syntax": {
+     "open": 1440,
+     "close": 4193,
+     "seconds": 29
+    }
+   }
+  },
+  {
+   "goal": 4,
+   "constant": "REDPILL_GOAL",
+   "text": "New Recruit Orientation",
+   "goal_rpc_open": "80 a0 04 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 04 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "other": [
+     "+7 s: 81 42 92 07 00 28 00 00 00 00 00 00 00 00 (fade to black, token 0)",
+     "+17 s: 81 99 teleport 'Interrogation' (7600, 3920, -16150) quat (0,-0.3987,0,0.9171)",
+     "+22 s: Ammit view deleted (main 2721, about 5 s after teleport; interest, not script)",
+     "+41 s: 81 45 CRAPPYPANTS_DIALOG 0x860007d0"
+    ]
+   },
+   "completedBy": {
+    "kind": "timer",
+    "wire": null,
+    "rule": "Script timer: 66 s after goal 3 (7+10+24+25); observed 66-67 s"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 2230,
+     "close": 2833,
+     "seconds": 66
+    },
+    "uriah": {
+     "open": 1465,
+     "close": 2266,
+     "seconds": 67
+    },
+    "unknown": {
+     "open": 2914,
+     "close": 4041,
+     "seconds": 67
+    },
+    "syntax": {
+     "open": 4193,
+     "close": 7381,
+     "seconds": 66
+    }
+   }
+  },
+  {
+   "goal": 5,
+   "constant": "CALIBRATE_GOAL",
+   "text": "Click on your display to calibrate",
+   "goal_rpc_open": "80 a0 05 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 05 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 65 09 00 86",
+     "id": "0x86000965",
+     "constant": "CALIBRATE_DIALOG",
+     "wav": "resource/dialog/tutorial/10872.wav"
+    },
+    "panels": [
+     {
+      "rpc": "81 02 15 00 01",
+      "view": "0x15",
+      "name": "PLAYER_VIEW",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_HEALTH",
+     "sid": "0x88000036",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 36 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 63,
+      "repeatS": 60,
+      "narration": null,
+      "symbol": "ID_TUTORIAL_NEW_HEALTH",
+      "sid": "0x88000036"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 15 00 00 00 00 00 (PLAYER_VIEW)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 2833,
+     "close": 2884,
+     "seconds": 6
+    },
+    "uriah": {
+     "open": 2266,
+     "close": 2302,
+     "seconds": 3
+    },
+    "unknown": {
+     "open": 4041,
+     "close": 4073,
+     "seconds": 2
+    },
+    "syntax": {
+     "open": 7381,
+     "close": 7421,
+     "seconds": 2
+    }
+   }
+  },
+  {
+   "goal": 6,
+   "constant": "TALK2_GOAL",
+   "text": "Talk to Scarlett",
+   "goal_rpc_open": "80 a0 06 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 06 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 14 07 00 86",
+     "id": "0x86000714",
+     "constant": "CALIBRATE_SUCCESS",
+     "wav": "resource/dialog/tutorial/10800.wav"
+    },
+    "other": [
+     "+5 s: 81 42 1d 00 00 22 8a 13 00 00 00 00 00 00 (white in, token 5002)",
+     "On C>S 81 91 8a 13 00 00: 81 99 'Gallery' (5100, 420, -16700) quat (0,-0.7071,0,0.7071), then 81 42 1e 00 00 22 + 8 zero bytes (white out)",
+     "Then Scarlett and the Wardrobe spawn (interest, about 1 s later)",
+     "+5 s after teleport: 81 45 TALK2_DIALOG 0x86000715"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_TALK2",
+     "sid": "0x88000016",
+     "image": "0x280011a0",
+     "delayS": 10,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 16 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 58,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 16 07 00 86",
+       "id": "0x86000716",
+       "constant": "TALK2_REMINDER",
+       "wav": "resource/dialog/tutorial/10802.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_TALK2",
+      "sid": "0x88000016"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <Scarlett view> <Scarlett spawn> 09 00",
+    "rule": "Talk to Scarlett. Mission data"
+   },
+   "onCompleteExtra": [
+    "Wardrobe view: 01 20 35 08 00 00 (state 0x835, usable)",
+    "Scarlett NPC update",
+    "2e + 80 a1 img 0x2800121f: \"Hello there. I've hidden a key, but apparently too well. Can you help me?\""
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 2884,
+     "close": 7920,
+     "seconds": 200
+    },
+    "uriah": {
+     "open": 2302,
+     "close": 2706,
+     "seconds": 13
+    },
+    "unknown": {
+     "open": 4073,
+     "close": 4524,
+     "seconds": 12
+    },
+    "syntax": {
+     "open": 7421,
+     "close": 8323,
+     "seconds": 11
+    }
+   }
+  },
+  {
+   "goal": 7,
+   "constant": "CONTAINER_GOAL",
+   "text": "Search the wardrobes for a key. Optional, press V to highlight interactive objects.",
+   "goal_rpc_open": "80 a0 07 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 07 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 1a 07 00 86",
+     "id": "0x8600071A",
+     "constant": "CONTAINER_DIALOG",
+     "wav": "resource/dialog/tutorial/10806.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_SEARCH",
+     "sid": "0x88000019",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 19 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 63,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 1b 07 00 86",
+       "id": "0x8600071B",
+       "constant": "CONTAINER_REMINDER",
+       "wav": "resource/dialog/tutorial/10807.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_SEARCH",
+      "sid": "0x88000019"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <Wardrobe view> <Wardrobe spawn> 03 00",
+    "rule": "Open the wardrobe. Mission data"
+   },
+   "onCompleteExtra": [
+    "Wardrobe view: 01 20 34 08 00 00 (state 0x834, open), sent before 80 a0 07 flags=1"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 7920,
+     "close": 8468,
+     "seconds": 18
+    },
+    "uriah": {
+     "open": 2706,
+     "close": 3227,
+     "seconds": 8
+    },
+    "unknown": {
+     "open": 4524,
+     "close": 4945,
+     "seconds": 7
+    },
+    "syntax": {
+     "open": 8323,
+     "close": 8851,
+     "seconds": 5
+    }
+   }
+  },
+  {
+   "goal": 8,
+   "constant": "LOOT_GOAL",
+   "text": "Take all of the loot",
+   "goal_rpc_open": "80 a0 08 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 08 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 1c 07 00 86",
+     "id": "0x8600071C",
+     "constant": "LOOT_DIALOG",
+     "wav": "resource/dialog/tutorial/10808.wav"
+    },
+    "other": [
+     "81 19 87 02 00 76 10 00 00 00 00 00 05 <instance u16> <keyByte> 03 00 01 <instance u16> <0x80|keyByte> 38 02 00 00 00 00 00 14 89 03 00 00 00 00 00 14 ea 04 00 00 (loot list: Door_Key, F shoes, M shoes), after 80 a0 08 flags=0"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LOOT",
+     "sid": "0x8800001a",
+     "image": "0x280011a0",
+     "delayS": 0,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 1a 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 62,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 1d 07 00 86",
+       "id": "0x8600071D",
+       "constant": "LOOT_REMINDER",
+       "wav": "resource/dialog/tutorial/10809.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LOOT_CONDITIONAL_TAKEALL",
+      "sid": "0x8800001b"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 1f (Take All, empty body)",
+    "rule": "Closes in the Take All reply packet. Closing the window (81 1a) does not complete it (main 8522)"
+   },
+   "onCompleteExtra": [
+    "5e 02 00 ea 04 00 00 00 00 00 14 01 + 81 89 <charid u32> ea 04 00 00",
+    "5e 03 00 89 03 00 00 00 00 00 14 01 + 81 89 <charid> 89 03 00 00",
+    "5e 04 00 38 02 00 00 01 <instance> <0x80|key> 01 + 81 89 <charid> 38 02 00 00",
+    "81 20 0c 00 00 00 00 00 00 00 00 00 03 00 <3 items in list order, reversed>",
+    "after 81 1a from client: 81 1a + wardrobe 01 20 35 08 00 00"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 8468,
+     "close": 8825,
+     "seconds": 21
+    },
+    "uriah": {
+     "open": 3227,
+     "close": 3289,
+     "seconds": 2
+    },
+    "unknown": {
+     "open": 4945,
+     "close": 4972,
+     "seconds": 2
+    },
+    "syntax": {
+     "open": 8851,
+     "close": 8878,
+     "seconds": 2
+    }
+   }
+  },
+  {
+   "goal": 9,
+   "constant": "INVENTORY_GOAL",
+   "text": "Use the Character menu to check out your Inventory",
+   "goal_rpc_open": "80 a0 09 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 09 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 01 00 01",
+      "view": "0x1",
+      "name": "INVENT",
+      "show": 1
+     }
+    ],
+    "narration": {
+     "rpc": "81 45 1f 07 00 86",
+     "id": "0x8600071F",
+     "constant": "INVENTORY_DIALOG",
+     "wav": "resource/dialog/tutorial/10811.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_INVENTORY",
+     "sid": "0x8800001c",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 1c 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 58,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 21 07 00 86",
+       "id": "0x86000721",
+       "constant": "INVENTORY_REMINDER",
+       "wav": "resource/dialog/tutorial/10813.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_INVENTORY",
+      "sid": "0x8800001c"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 01 00 00 00 00 00 (INVENT)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 8825,
+     "close": 9118,
+     "seconds": 15
+    },
+    "uriah": {
+     "open": 3289,
+     "close": 3333,
+     "seconds": 3
+    },
+    "unknown": {
+     "open": 4972,
+     "close": 5001,
+     "seconds": 1
+    },
+    "syntax": {
+     "open": 8878,
+     "close": 10335,
+     "seconds": 59
+    }
+   }
+  },
+  {
+   "goal": 10,
+   "constant": "EQUIP_GOAL",
+   "text": "Drag on your new shoes",
+   "goal_rpc_open": "80 a0 0a 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0a 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 22 07 00 86",
+     "id": "0x86000722",
+     "constant": "EQUIP_DIALOG",
+     "wav": "resource/dialog/tutorial/10814.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_INVENTORY_WEAR",
+     "sid": "0x8800001d",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 1d 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 23 07 00 86",
+       "id": "0x86000723",
+       "constant": "EQUIP_REMINDER",
+       "wav": "resource/dialog/tutorial/10815.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_INVENTORY_WEAR",
+      "sid": "0x8800001d"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "63 02 6b",
+    "rule": "OnInventoryItemsSwapped: src item is 1258 or 905 and dest is ShoesSlot, goal 9 already complete. Client sends dest 0x6b, server answers slot 0x68"
+   },
+   "onCompleteExtra": [
+    "65 02 00 68 00 00 (swap ack: slot 2 <-> 0x68), BEFORE the goal",
+    "own-view/RSI updates (not decoded)"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 9118,
+     "close": 10744,
+     "seconds": 78
+    },
+    "uriah": {
+     "open": 3333,
+     "close": 3560,
+     "seconds": 8
+    },
+    "unknown": {
+     "open": 5001,
+     "close": 5025,
+     "seconds": 1
+    },
+    "syntax": {
+     "open": 10335,
+     "close": 10368,
+     "seconds": 4
+    }
+   }
+  },
+  {
+   "goal": 11,
+   "constant": "GIVE_GOAL",
+   "text": "Right-click Scarlett and Give her the key",
+   "goal_rpc_open": "80 a0 0b 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0b 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 24 07 00 86",
+     "id": "0x86000724",
+     "constant": "GIVE_DIALOG",
+     "wav": "resource/dialog/tutorial/10816.wav"
+    },
+    "other": [
+     "0-1 s after: 2e + 80 a1 img 0x2800121f, Scarlett: 'Where {i}is{/i} that key?'"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_GIVE",
+     "sid": "0x8800001e",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 1e 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 26 07 00 86",
+       "id": "0x86000726",
+       "constant": "GIVE_REMINDER",
+       "wav": "resource/dialog/tutorial/10818.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_GIVE",
+      "sid": "0x8800001e"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <Scarlett view> <Scarlett spawn> 0e 00",
+    "rule": "Give key. Mission data"
+   },
+   "onCompleteExtra": [
+    "5f 04 00 01 (remove key slot)",
+    "81 22 38 02 00 00 01 <instance> <0x80|key> 00 00 00 00",
+    "after goal 12 opens: 2e + 80 a1 Scarlett 'Thanks! You may pass.'"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 10744,
+     "close": 11853,
+     "seconds": 100
+    },
+    "uriah": {
+     "open": 3560,
+     "close": 4055,
+     "seconds": 13
+    },
+    "unknown": {
+     "open": 5025,
+     "close": 5477,
+     "seconds": 9
+    },
+    "syntax": {
+     "open": 10368,
+     "close": 10699,
+     "seconds": 3
+    }
+   }
+  },
+  {
+   "goal": 12,
+   "constant": "DAMAGE_GOAL",
+   "text": "Learn about the combat UI",
+   "goal_rpc_open": "80 a0 0c 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0c 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 27 07 00 86",
+     "id": "0x86000727",
+     "constant": "GIVE_SUCCESS",
+     "wav": "resource/dialog/tutorial/10819.wav"
+    },
+    "other": [
+     "+7 s (6-7 observed): 81 42 1d 00 00 22 8b 13 00 00 00 00 00 00 (token 5003)",
+     "On C>S 81 91 8b 13 00 00: 81 99 'Dojo Ante' (5800, -1180, -13700) identity quat + white out",
+     "Door (goid 6994) spawns about 1 s after",
+     "+5 s after teleport: 81 45 DAMAGE_DIALOG 0x86000966"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_DAMAGE",
+     "sid": "0x88000038",
+     "image": "0x280011a0",
+     "delayS": 10,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 38 00 00 88 17 00 01 00 01 00 00 01 00 00"
+    }
+   },
+   "completedBy": {
+    "kind": "timer",
+    "wire": null,
+    "rule": "40 s after the DAMAGE broadcast (script); observed 58-59 s after goal 11"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 11853,
+     "close": 12168,
+     "seconds": 58
+    },
+    "uriah": {
+     "open": 4055,
+     "close": 6835,
+     "seconds": 58
+    },
+    "unknown": {
+     "open": 5477,
+     "close": 7486,
+     "seconds": 59
+    },
+    "syntax": {
+     "open": 10699,
+     "close": 13563,
+     "seconds": 58
+    }
+   }
+  },
+  {
+   "goal": 13,
+   "constant": "ACTIONS_GOAL",
+   "text": "Click on the Character menu and select Actions to open your Action panel",
+   "goal_rpc_open": "80 a0 0d 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0d 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 02 00 01",
+      "view": "0x2",
+      "name": "ACTIONS",
+      "show": 1
+     }
+    ],
+    "narration": {
+     "rpc": "81 45 29 07 00 86",
+     "id": "0x86000729",
+     "constant": "ACTIONS_DIALOG",
+     "wav": "resource/dialog/tutorial/10821.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_ACTIONS",
+     "sid": "0x8800001f",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 1f 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 62,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2a 07 00 86",
+       "id": "0x8600072A",
+       "constant": "ACTIONS_REMINDER",
+       "wav": "resource/dialog/tutorial/10822.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_ACTIONS",
+      "sid": "0x8800001f"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 02 00 00 00 00 00 (ACTIONS)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 12168,
+     "close": 12293,
+     "seconds": 36
+    },
+    "uriah": {
+     "open": 6835,
+     "close": 7079,
+     "seconds": 5
+    },
+    "unknown": {
+     "open": 7486,
+     "close": 7780,
+     "seconds": 5
+    },
+    "syntax": {
+     "open": 13563,
+     "close": 13586,
+     "seconds": 3
+    }
+   }
+  },
+  {
+   "goal": 14,
+   "constant": "HOTBAR_GOAL",
+   "text": "Learn about the Hotbar",
+   "goal_rpc_open": "80 a0 0e 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0e 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 0f 00 01",
+      "view": "0xf",
+      "name": "TOOLBAR",
+      "show": 1
+     },
+     {
+      "rpc": "81 02 27 00 01",
+      "view": "0x27",
+      "name": "BUFFHUD",
+      "show": 1
+     }
+    ],
+    "narration": {
+     "rpc": "81 45 2b 07 00 86",
+     "id": "0x8600072B",
+     "constant": "HOTBAR_DIALOG",
+     "wav": "resource/dialog/tutorial/10823.wav"
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 0f 00 00 00 00 00 (TOOLBAR)",
+    "rule": "OnToggledViewActivated. Client answers at once (0-1 s), with 3f, 3e and 81 04 27 00"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 12293,
+     "close": 12313,
+     "seconds": 0
+    },
+    "uriah": {
+     "open": 7079,
+     "close": 7119,
+     "seconds": 1
+    },
+    "unknown": {
+     "open": 7780,
+     "close": 7794,
+     "seconds": 0
+    },
+    "syntax": {
+     "open": 13586,
+     "close": 13611,
+     "seconds": 0
+    }
+   }
+  },
+  {
+   "goal": 15,
+   "constant": "CHEAPSHOT_GOAL",
+   "text": "Drag your Cheap Shot onto your hotbar",
+   "goal_rpc_open": "80 a0 0f 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 0f 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_HOTBAR_ABILITIES",
+     "sid": "0x88000035",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 35 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 62,
+      "repeatS": 60,
+      "narration": null,
+      "symbol": "ID_TUTORIAL_NEW_HOTBAR_ABILITIES",
+      "sid": "0x88000035"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 8d 00 00 00 00 00 00 00 00 c6 00 00 00 00 00 00 00",
+    "rule": "OnShortcutAdded: ShortcutType=0, ClassData=198 (CheapShotAbility), goal 14 already complete"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 12313,
+     "close": 12403,
+     "seconds": 18
+    },
+    "uriah": {
+     "open": 7119,
+     "close": 7160,
+     "seconds": 6
+    },
+    "unknown": {
+     "open": 7794,
+     "close": 7833,
+     "seconds": 8
+    },
+    "syntax": {
+     "open": 13611,
+     "close": 13721,
+     "seconds": 13
+    }
+   }
+  },
+  {
+   "goal": 16,
+   "constant": "SPEED_GOAL",
+   "text": "Calibrate your blue Speed tactic",
+   "goal_rpc_open": "80 a0 10 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 10 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 19 00 01",
+      "view": "0x19",
+      "name": "INTERLOCK_SPEED",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_SPEED",
+     "sid": "0x88000039",
+     "image": "0x280012f7",
+     "delayS": 5,
+     "rpc": "80 a1 f7 12 00 28 00 00 00 00 14 00 39 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 87 09 00 86",
+       "id": "0x86000987",
+       "constant": "SPEED_REMINDER",
+       "wav": "resource/dialog/tutorial/10886.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_SPEED",
+      "sid": "0x88000039"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 19 00 00 00 00 00 (INTERLOCK_SPEED)",
+    "rule": "OnToggledViewActivated. Client also sends 42 00 ..."
+   },
+   "onCompleteExtra": [
+    "47 tactic update"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12403,
+     "close": 12470,
+     "seconds": 11
+    },
+    "uriah": {
+     "open": 7160,
+     "close": 7253,
+     "seconds": 5
+    },
+    "unknown": {
+     "open": 7833,
+     "close": 7887,
+     "seconds": 6
+    },
+    "syntax": {
+     "close": 13721,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    }
+   }
+  },
+  {
+   "goal": 17,
+   "constant": "POWER_GOAL",
+   "text": "Calibrate your red Power tactic",
+   "goal_rpc_open": "80 a0 11 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 11 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 69 09 00 86",
+     "id": "0x86000969",
+     "constant": "SPEED_SUCCESS",
+     "wav": "resource/dialog/tutorial/10876.wav"
+    },
+    "panels": [
+     {
+      "rpc": "81 02 18 00 01",
+      "view": "0x18",
+      "name": "INTERLOCK_POWER",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_POWER",
+     "sid": "0x8800003a",
+     "image": "0x28001305",
+     "delayS": 5,
+     "rpc": "80 a1 05 13 00 28 00 00 00 00 14 00 3a 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 88 09 00 86",
+       "id": "0x86000988",
+       "constant": "POWER_REMINDER",
+       "wav": "resource/dialog/tutorial/10887.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_POWER",
+      "sid": "0x8800003a"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 18 00 00 00 00 00 (INTERLOCK_POWER)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [
+    "47 tactic update"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12470,
+     "close": 12535,
+     "seconds": 8
+    },
+    "uriah": {
+     "open": 7253,
+     "close": 7306,
+     "seconds": 1
+    },
+    "unknown": {
+     "open": 7887,
+     "close": 7924,
+     "seconds": 0
+    },
+    "syntax": {
+     "open": 13721,
+     "close": 13761,
+     "seconds": 4
+    }
+   }
+  },
+  {
+   "goal": 18,
+   "constant": "GRAB_GOAL",
+   "text": "Calibrate your green Grab tactic",
+   "goal_rpc_open": "80 a0 12 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 12 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 6a 09 00 86",
+     "id": "0x8600096A",
+     "constant": "POWER_SUCCESS",
+     "wav": "resource/dialog/tutorial/10877.wav"
+    },
+    "panels": [
+     {
+      "rpc": "81 02 1b 00 01",
+      "view": "0x1b",
+      "name": "INTERLOCK_GRAB",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_GRAB",
+     "sid": "0x8800003b",
+     "image": "0x280012ff",
+     "delayS": 5,
+     "rpc": "80 a1 ff 12 00 28 00 00 00 00 14 00 3b 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 89 09 00 86",
+       "id": "0x86000989",
+       "constant": "GRAB_REMINDER",
+       "wav": "resource/dialog/tutorial/10888.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_GRAB",
+      "sid": "0x8800003b"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 1b 00 00 00 00 00 (INTERLOCK_GRAB)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [
+    "47 tactic update"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12535,
+     "close": 12610,
+     "seconds": 6
+    },
+    "uriah": {
+     "open": 7306,
+     "close": 7422,
+     "seconds": 1
+    },
+    "unknown": {
+     "open": 7924,
+     "close": 7940,
+     "seconds": 1
+    },
+    "syntax": {
+     "open": 13761,
+     "close": 13849,
+     "seconds": 8
+    }
+   }
+  },
+  {
+   "goal": 19,
+   "constant": "BLOCK_GOAL",
+   "text": "Calibrate your yellow Block tactic",
+   "goal_rpc_open": "80 a0 13 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 13 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 67 09 00 86",
+     "id": "0x86000967",
+     "constant": "GRAB_SUCCESS",
+     "wav": "resource/dialog/tutorial/10874.wav"
+    },
+    "panels": [
+     {
+      "rpc": "81 02 1a 00 01",
+      "view": "0x1a",
+      "name": "INTERLOCK_BLOCK",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_BLOCK",
+     "sid": "0x88000037",
+     "image": "0x280012fe",
+     "delayS": 5,
+     "rpc": "80 a1 fe 12 00 28 00 00 00 00 14 00 37 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 86 09 00 86",
+       "id": "0x86000986",
+       "constant": "BLOCK_REMINDER",
+       "wav": "resource/dialog/tutorial/10885.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_BLOCK",
+      "sid": "0x88000037"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 1a 00 00 00 00 00 (INTERLOCK_BLOCK)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [
+    "47 tactic update"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12610,
+     "close": 12695,
+     "seconds": 7
+    },
+    "uriah": {
+     "open": 7422,
+     "close": 7453,
+     "seconds": 1
+    },
+    "unknown": {
+     "open": 7940,
+     "close": 7969,
+     "seconds": 1
+    },
+    "syntax": {
+     "open": 13849,
+     "close": 13890,
+     "seconds": 1
+    }
+   }
+  },
+  {
+   "goal": 20,
+   "constant": "WITHDRAWL_GOAL",
+   "text": "Select Withdraw with mouse click",
+   "goal_rpc_open": "80 a0 14 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 14 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 6b 09 00 86",
+     "id": "0x8600096B",
+     "constant": "BLOCK_SUCCESS",
+     "wav": "resource/dialog/tutorial/10878.wav"
+    },
+    "panels": [
+     {
+      "rpc": "81 02 1c 00 01",
+      "view": "0x1c",
+      "name": "INTERLOCK_WITHDRAWL",
+      "show": 1
+     }
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_WITHDRAW",
+     "sid": "0x8800003c",
+     "image": "0x280012fd",
+     "delayS": 5,
+     "rpc": "80 a1 fd 12 00 28 00 00 00 00 14 00 3c 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 61,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 8a 09 00 86",
+       "id": "0x8600098A",
+       "constant": "WITHDRAWL_REMINDER",
+       "wav": "resource/dialog/tutorial/10889.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT_WITHDRAW",
+      "sid": "0x8800003c"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 1c 00 00 00 00 00 (INTERLOCK_WITHDRAWL)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [
+    "47 tactic update"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12695,
+     "close": 12773,
+     "seconds": 7
+    },
+    "uriah": {
+     "open": 7453,
+     "close": 7511,
+     "seconds": 4
+    },
+    "unknown": {
+     "open": 7969,
+     "close": 8007,
+     "seconds": 0
+    },
+    "syntax": {
+     "open": 13890,
+     "close": 13978,
+     "seconds": 12
+    }
+   }
+  },
+  {
+   "goal": 21,
+   "constant": "ENTERDOJO_GOAL",
+   "text": "Open the doors and enter the dojo.",
+   "goal_rpc_open": "80 a0 15 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 15 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 2f 07 00 86",
+     "id": "0x8600072F",
+     "constant": "ENTERDOJO_DIALOG",
+     "wav": "resource/dialog/tutorial/10827.wav"
+    },
+    "events": [
+     "81 91 02 00 00 00 (sendMissionEvent 2, sent BEFORE 80 a0 15 flags=0)"
+    ],
+    "other": [
+     "Client answers with five 81 8d type=7 tactic shortcuts (all 4 complete runs)",
+     "No broadcast or reminder: the script never schedules ENTERDOJO+1000, and none was captured"
+    ]
+   },
+   "completedBy": {
+    "kind": "server-zone",
+    "wire": "80 c7 <Door view> <Door spawn> 03 00, then walking through",
+    "rule": "INFERRED: player enters the dojo zone. Closed 2-5 s after the door use, with player z (slot 0) -12573, -12450, -12428, -12383. Door plane z=-12600; annotator (main 17416) says the zone changed to 5"
+   },
+   "onCompleteExtra": [
+    "Door view on use: 01 80 02 34 08 00 00 (0x834 open); 20 s later 0x838; 1 s later 0x835"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 12773,
+     "close": 13476,
+     "seconds": 41
+    },
+    "uriah": {
+     "open": 7511,
+     "close": 7641,
+     "seconds": 6
+    },
+    "unknown": {
+     "open": 8007,
+     "close": 8176,
+     "seconds": 9
+    },
+    "syntax": {
+     "open": 13978,
+     "close": 14199,
+     "seconds": 8
+    }
+   }
+  },
+  {
+   "goal": 22,
+   "constant": "COMBAT_GOAL",
+   "text": "Use your new combat skills",
+   "goal_rpc_open": "80 a0 16 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 16 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 fd 07 00 86",
+     "id": "0x860007FD",
+     "constant": "COMBAT_DIALOG",
+     "wav": "resource/dialog/tutorial/10119.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT",
+     "sid": "0x88000021",
+     "image": "0x280011a0",
+     "delayS": 39,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 21 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 74,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 33 07 00 86",
+       "id": "0x86000733",
+       "constant": "COMBAT_REMINDER",
+       "wav": "resource/dialog/tutorial/10831.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_CLOSECOMBAT",
+      "sid": "0x88000021"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "40 <Bob view u16> <Bob spawn u16> 01 6b",
+    "rule": "Start close combat with Bob (Target, ForcedInterlock=1, weapon slot 0x6b). Mission data. Closes while the combat setup packets go out"
+   },
+   "onCompleteExtra": [
+    "No narration on close (main 17912)"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 13476,
+     "close": 17912,
+     "seconds": 192
+    },
+    "uriah": {
+     "open": 7641,
+     "close": 10670,
+     "seconds": 41
+    },
+    "unknown": {
+     "open": 8176,
+     "close": 8925,
+     "seconds": 13
+    },
+    "syntax": {
+     "open": 14199,
+     "close": 15450,
+     "seconds": 30
+    }
+   }
+  },
+  {
+   "goal": 23,
+   "constant": "ABILITIES_USE_GOAL",
+   "text": "Defeat the Guard. Notice: your camera will pivot around your fight.",
+   "goal_rpc_open": "80 a0 17 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 17 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {},
+   "completedBy": {
+    "kind": "server-event",
+    "wire": null,
+    "rule": "Bob dies: 81 9d death notice, 46 end of combat, then 80 a0 17 flags=1. The script's ABILITIES_USE+1000 path is never scheduled, so this is mission data"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 17912,
+     "close": 24010,
+     "seconds": 206
+    },
+    "uriah": {
+     "open": 10670,
+     "close": 11878,
+     "seconds": 54
+    },
+    "unknown": {
+     "open": 8925,
+     "close": 10060,
+     "seconds": 36
+    },
+    "syntax": {
+     "open": 15450,
+     "close": 16008,
+     "seconds": 23
+    }
+   }
+  },
+  {
+   "goal": 24,
+   "constant": "COMBAT_LOOT_GOAL",
+   "text": "Loot the corpse",
+   "goal_rpc_open": "80 a0 18 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 18 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 37 07 00 86",
+     "id": "0x86000737",
+     "constant": "COMBAT_LOOT_DIALOG",
+     "wav": "resource/dialog/tutorial/10835.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LOOT2",
+     "sid": "0x88000023",
+     "image": "0x280011a0",
+     "delayS": 2,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 23 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 62,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 61 07 00 86",
+       "id": "0x86000761",
+       "constant": "COMBAT_LOOT_REMINDER",
+       "wav": "resource/dialog/tutorial/10871.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LOOT2_CONDITIONAL_TAKEALL",
+      "sid": "0x88000024"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <Bob view> <Bob spawn> 05 00, then 81 1f",
+    "rule": "Loot and Take All on the corpse"
+   },
+   "onCompleteExtra": [
+    "Corpse view on open: 05 00 80 80 80 80 80 40 34 08 00 00 (CurrentState 0x834)",
+    "81 19 00 00 00 00 10 00 00 00 00 00 02 <instance> <key> 02 00 cb <instance> <0x80|key> 89 1a 00 00 00 00 00 14 05 0a 00 00 (Letter, Revolver0; main has 00 00 00 10 for the gun)",
+    "5e 04 00 05 0a 00 00 <data> 01 + 81 89; 5e 05 00 89 1a 00 00 cb <instance> <0x80|key> 01 + 81 89; 81 20 0c 00 ... 02 00 <items>",
+    "3f <new slot> 00 10 00 00 00 from the client (auto-arms the gun)"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 18859,
+     "close": 19379,
+     "seconds": 34
+    },
+    "uriah": {
+     "open": 11878,
+     "close": 12230,
+     "seconds": 12
+    },
+    "unknown": {
+     "open": 10060,
+     "close": 10412,
+     "seconds": 6
+    },
+    "syntax": {
+     "open": 16008,
+     "close": 16765,
+     "seconds": 9
+    }
+   }
+  },
+  {
+   "goal": 25,
+   "constant": "RESPAWN_GOAL",
+   "text": "Practice combat.",
+   "goal_rpc_open": "80 a0 19 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 19 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 6d 09 00 86",
+     "id": "0x8600096D",
+     "constant": "RESPAWN_DIALOG",
+     "wav": "resource/dialog/tutorial/10880.wav"
+    },
+    "other": [
+     "81 8f 00 00 00 00 34 00 00 88 1c 00 19 00 00 00 46 00 00 88 43 00 00 88 00 00 00 00 01 00 00 (modal msg=25, left 'Again!', right 'Move on.'), between the narration and 80 a0 19 flags=0"
+    ]
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 90 19 00 00 00 00",
+    "rule": "Right choice ('Move on.'). Left: 81 90 19 00 00 00 01 respawns Bob, see 'respawn loop'"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 19379,
+     "close": 24227,
+     "seconds": 132
+    },
+    "uriah": {
+     "open": 12230,
+     "close": 12310,
+     "seconds": 3
+    },
+    "unknown": {
+     "open": 10412,
+     "close": 10535,
+     "seconds": 3
+    },
+    "syntax": {
+     "open": 16765,
+     "close": 16957,
+     "seconds": 3
+    }
+   }
+  },
+  {
+   "goal": 26,
+   "constant": "CONNING_GOAL",
+   "text": "Learn about conning and sizing up your enemies",
+   "goal_rpc_open": "80 a0 1a 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1a 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 3b 07 00 86",
+     "id": "0x8600073B",
+     "constant": "COMBAT_LOOT_SUCCESS",
+     "wav": "resource/dialog/tutorial/10839.wav"
+    },
+    "other": [
+     "+7 s: 81 42 1d 00 00 22 8c 13 00 00 00 00 00 00 (token 5004)",
+     "On C>S 81 91 8c 13 00 00: 81 99 'Firearm Training' (6700, 1520, -12300) identity quat + white out",
+     "Alex spawns about 1 s after",
+     "+5 s after teleport: 81 45 CONNING_DIALOG 0x8600096e"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_CONNING",
+     "sid": "0x8800003d",
+     "image": "0x280011a0",
+     "delayS": 10,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 3d 00 00 88 17 00 01 00 01 00 00 01 00 00"
+    }
+   },
+   "completedBy": {
+    "kind": "timer",
+    "wire": null,
+    "rule": "12 s after the CONNING broadcast (script); observed 29-30 s after goal 25"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 24227,
+     "close": 24852,
+     "seconds": 30
+    },
+    "uriah": {
+     "open": 12310,
+     "close": 13616,
+     "seconds": 29
+    },
+    "unknown": {
+     "open": 10535,
+     "close": 11600,
+     "seconds": 30
+    },
+    "syntax": {
+     "open": 16957,
+     "close": 19762,
+     "seconds": 30
+    }
+   }
+  },
+  {
+   "goal": 27,
+   "constant": "FIREARM_COMBAT_GOAL",
+   "text": "Click on a target, and click on the gun icon in the Free Fire dropdown on the hotbar to fire continuously.",
+   "goal_rpc_open": "80 a0 1b 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1b 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 3f 07 00 86",
+     "id": "0x8600073F",
+     "constant": "CONNING_SUCCESS",
+     "wav": "resource/dialog/tutorial/10843.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_FIRE",
+     "sid": "0x88000026",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 26 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 59,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 3f 07 00 86",
+       "id": "0x8600073F",
+       "constant": "FIREARM_COMBAT_REMINDER",
+       "wav": "resource/dialog/tutorial/10843.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_FIRE",
+      "sid": "0x88000026"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "server-event",
+    "wire": null,
+    "rule": "Alex dies: 81 9d then 80 a0 1b flags=1. Mission data"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 24852,
+     "close": 27635,
+     "seconds": 93
+    },
+    "uriah": {
+     "open": 13616,
+     "close": 14411,
+     "seconds": 22
+    },
+    "unknown": {
+     "open": 11600,
+     "close": 12680,
+     "seconds": 24
+    },
+    "syntax": {
+     "open": 19762,
+     "close": 22551,
+     "seconds": 35
+    }
+   }
+  },
+  {
+   "goal": 28,
+   "constant": "UPLOAD_GOAL",
+   "text": "Double click on the Hardline to Upload your codes and mission items. All other items must stay in the Matrix.",
+   "goal_rpc_open": "80 a0 1c 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1c 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 40 07 00 86",
+     "id": "0x86000740",
+     "constant": "FIREARM_COMBAT_SUCCESS",
+     "wav": "resource/dialog/tutorial/10844.wav"
+    },
+    "other": [
+     "+7 s (6 observed): 81 42 1d 00 00 22 8d 13 00 00 00 00 00 00 (token 5005)",
+     "On C>S 81 91 8d 13 00 00: 81 99 'Exit' (6950, 220, -11100) identity quat + white out",
+     "+5 s after teleport: 81 45 UPLOAD_DIALOG 0x86000964"
+    ],
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_UPLOAD",
+     "sid": "0x88000029",
+     "image": "0x280011a0",
+     "delayS": 10,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 29 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 71,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 44 07 00 86",
+       "id": "0x86000744",
+       "constant": "UPLOAD_REMINDER",
+       "wav": "resource/dialog/tutorial/10848.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_UPLOAD",
+      "sid": "0x88000029"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <booth view> <booth spawn> 06 00, or 80 c8 4d 00 <slot<<4> 00 06 00",
+    "rule": "Hardline upload. Slot-0 runs used the spawned booth, main used the static id"
+   },
+   "onCompleteExtra": [
+    "own view: level 2 (HP 200, IS 103), see ProgressionPackets",
+    "2e string 0x2e000064 'Character data for %s has been written'",
+    "5f for each Letter slot",
+    "81 18 01 00 00 00 00 00"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 27635,
+     "close": 28884,
+     "seconds": 103
+    },
+    "uriah": {
+     "open": 14411,
+     "close": 15326,
+     "seconds": 26
+    },
+    "unknown": {
+     "open": 12680,
+     "close": 14030,
+     "seconds": 19
+    },
+    "syntax": {
+     "open": 22551,
+     "close": 24247,
+     "seconds": 16
+    }
+   }
+  },
+  {
+   "goal": 29,
+   "constant": "LEVELUP_GOAL",
+   "text": "Review your status panel. Leveling up gives you more Memory Capacity for Abilities and allows you to improve your Attributes.",
+   "goal_rpc_open": "80 a0 1d 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1d 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "panels": [
+     {
+      "rpc": "81 02 03 00 01",
+      "view": "0x3",
+      "name": "STATUS",
+      "show": 1
+     }
+    ],
+    "other": [
+     "80 e6 f5 01 00 00 03 00 00 00",
+     "80 e5 f5 01 00 00 03 00 00 00 (grantExperience 501), between the toggle and the narration",
+     "after 80 a0 1d flags=0: 2e 17 ... 89 00 00 60 ... (ID_LEVEL_UP_FEEDBACK)"
+    ],
+    "narration": {
+     "rpc": "81 45 46 07 00 86",
+     "id": "0x86000746",
+     "constant": "LEVELUP_DIALOG",
+     "wav": "resource/dialog/tutorial/10850.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_STATUS",
+     "sid": "0x8800002a",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 2a 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 69,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 47 07 00 86",
+       "id": "0x86000747",
+       "constant": "LEVELUP_REMINDER",
+       "wav": "resource/dialog/tutorial/10851.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_STATUS",
+      "sid": "0x8800002a"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 03 00 00 00 00 00 (STATUS)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 28884,
+     "close": 29112,
+     "seconds": 53
+    },
+    "uriah": {
+     "open": 15326,
+     "close": 15441,
+     "seconds": 12
+    },
+    "unknown": {
+     "open": 14030,
+     "close": 14321,
+     "seconds": 18
+    },
+    "syntax": {
+     "open": 24247,
+     "note": "never closed"
+    }
+   }
+  },
+  {
+   "goal": 30,
+   "constant": "OPENLEVEL_GOAL",
+   "text": "Open up the level up panel. Raise your upgradeable Abilities to maximum level.",
+   "goal_rpc_open": "80 a0 1e 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1e 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 48 07 00 86",
+     "id": "0x86000748",
+     "constant": "LEVELUP2_DIALOG",
+     "wav": "resource/dialog/tutorial/10852.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP",
+     "sid": "0x8800003e",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 3e 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 27 0c 00 86",
+       "id": "0x86000C27",
+       "constant": "LEVELUP2_REMINDER",
+       "wav": "resource/dialog/tutorial/10891.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP",
+      "sid": "0x8800003e"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 0c 00 00 00 00 00 (LEVEL_UP)",
+    "rule": "OnToggledViewActivated (value 0x0c observed)"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 29112,
+     "close": 29180,
+     "seconds": 7
+    },
+    "uriah": {
+     "open": 15441,
+     "close": 15522,
+     "seconds": 8
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 31,
+   "constant": "SELECTAWAKENED_GOAL",
+   "text": "Select Awakened",
+   "goal_rpc_open": "80 a0 1f 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 1f 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 25 0c 00 86",
+     "id": "0x86000C25",
+     "constant": "LEVELUP_ABILITY_DIALOG",
+     "wav": "resource/dialog/tutorial/10882.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY",
+     "sid": "0x8800003f",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 3f 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 28 0c 00 86",
+       "id": "0x86000C28",
+       "constant": "LEVELUP_ABILITY_REMINDER",
+       "wav": "resource/dialog/tutorial/10892.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY",
+      "sid": "0x8800003f"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 1d 00 00 00 00 00 (FIRST_ABILITY)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 29180,
+     "close": 29272,
+     "seconds": 11
+    },
+    "uriah": {
+     "open": 15499,
+     "close": 15548,
+     "seconds": 1
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 32,
+   "constant": "ADVANCEAWAKENED_GOAL",
+   "text": "Increase Awakened to Level Two. Spend Information to improving your upgradeable Abilities.",
+   "goal_rpc_open": "80 a0 20 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 20 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 26 0c 00 86",
+     "id": "0x86000C26",
+     "constant": "LEVELUP_ABILITY2_DIALOG",
+     "wav": "resource/dialog/tutorial/10883.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY2",
+     "sid": "0x88000040",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 40 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2c 0c 00 86",
+       "id": "0x86000C2C",
+       "constant": "LEVELUP_ABILITY2_REMINDER",
+       "wav": "resource/dialog/tutorial/10896.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY2",
+      "sid": "0x88000040"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 1e 00 00 00 00 00 (ADVANCE_LEVEL)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 29272,
+     "close": 29349,
+     "seconds": 13
+    },
+    "uriah": {
+     "open": 15548,
+     "close": 15581,
+     "seconds": 3
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 33,
+   "constant": "APPLY_LEVELUP_GOAL",
+   "text": "Select the Confirm button to confirm your investment in Awakened.",
+   "goal_rpc_open": "80 a0 21 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 21 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 29 0c 00 86",
+     "id": "0x86000C29",
+     "constant": "LEVELUP_ABILITY3_DIALOG",
+     "wav": "resource/dialog/tutorial/10893.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY3",
+     "sid": "0x88000041",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 41 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2a 0c 00 86",
+       "id": "0x86000C2A",
+       "constant": "LEVELUP_ABILITY3_REMINDER",
+       "wav": "resource/dialog/tutorial/10894.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ABILITY3",
+      "sid": "0x88000041"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 b7 02 00 00 00 01 + 81 04 1f 00 00 00 00 00 (APPLY_ADVANCE)",
+    "rule": "OnToggledViewActivated; 80 b7 is the real upgrade (ability 2 Awakened, one level)"
+   },
+   "onCompleteExtra": [
+    "2e 0x2e000064",
+    "80 e7 e0 fc ff ff ff ff ff ff 11 00 00 00 (info -800)",
+    "80 e4 c8 00 00 00 11 00 00 00 (info 200)",
+    "80 b3 11 00; 80 b2 11 00 02 00 08 02; 80 b8 02 00 02 00 00 00 00 00"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 29349,
+     "close": 29389,
+     "seconds": 4
+    },
+    "uriah": {
+     "open": 15581,
+     "close": 15640,
+     "seconds": 9
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 34,
+   "constant": "OPEN_ATTRIBUTE_GOAL",
+   "text": "Open the attribute level up panel. This is where you improve your character's Attributes.",
+   "goal_rpc_open": "80 a0 22 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 22 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 2b 0c 00 86",
+     "id": "0x86000C2B",
+     "constant": "LEVELUP_ATTRIBUTE_DIALOG",
+     "wav": "resource/dialog/tutorial/10895.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE",
+     "sid": "0x8800004c",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 4c 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2c 0c 00 86",
+       "id": "0x86000C2C",
+       "constant": "LEVELUP_ATTRIBUTE_REMINDER",
+       "wav": "resource/dialog/tutorial/10896.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE",
+      "sid": "0x8800004c"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 20 00 00 00 00 00 (OPEN_ATTRIBUTE)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 29389,
+     "close": 29540,
+     "seconds": 10
+    },
+    "uriah": {
+     "open": 15640,
+     "close": 15747,
+     "seconds": 2
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 35,
+   "constant": "UPGRADE_ATTRIBUTE_GOAL",
+   "text": "Increase an attribute to level two",
+   "goal_rpc_open": "80 a0 23 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 23 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 2d 0c 00 86",
+     "id": "0x86000C2D",
+     "constant": "LEVELUP_ATTRIBUTE2_DIALOG",
+     "wav": "resource/dialog/tutorial/10897.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE2",
+     "sid": "0x8800004d",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 4d 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2c 0c 00 86",
+       "id": "0x86000C2C",
+       "constant": "LEVELUP_ATTRIBUTE2_REMINDER",
+       "wav": "resource/dialog/tutorial/10896.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE2",
+      "sid": "0x8800004d"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "81 04 21 00 00 00 00 00 (UPGRADE_ATTRIBUTE)",
+    "rule": "OnToggledViewActivated"
+   },
+   "onCompleteExtra": [],
+   "evidenceLines": {
+    "main": {
+     "open": 29540,
+     "close": 29634,
+     "seconds": 18
+    },
+    "uriah": {
+     "open": 15747,
+     "close": 15800,
+     "seconds": 4
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 36,
+   "constant": "CONFIRM_ATTRIBUTE_GOAL",
+   "text": "Confirm your attribute investment",
+   "goal_rpc_open": "80 a0 24 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 24 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 2e 0c 00 86",
+     "id": "0x86000C2E",
+     "constant": "LEVELUP_ATTRIBUTE3_DIALOG",
+     "wav": "resource/dialog/tutorial/10898.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE3",
+     "sid": "0x88000053",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 53 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 64,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 2c 0c 00 86",
+       "id": "0x86000C2C",
+       "constant": "LEVELUP_ATTRIBUTE3_REMINDER",
+       "wav": "resource/dialog/tutorial/10896.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_LEVELUP_ATTRIBUTE3",
+      "sid": "0x88000053"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 b5 04 00 01 00 00 52 00 00 00 01 + 81 04 22 00 00 00 00 00 (CONFIRM_ATTRIBUTE)",
+    "rule": "OnToggledViewActivated; 80 b5 is the real attribute raise (0x52 in main, 0x4e in syntax)"
+   },
+   "onCompleteExtra": [
+    "2e 0x2e000064",
+    "80 b6 08 00 00 00 00 00 01 00 00 52 00 00 00 09 (attribute 0x52 now 9)"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 29634,
+     "close": 29660,
+     "seconds": 1
+    },
+    "uriah": {
+     "open": 15800,
+     "close": 15833,
+     "seconds": 10
+    },
+    "unknown": {
+     "close": 14321,
+     "note": "closed without 80 a0 flags=0 (completion was cached)"
+    },
+    "syntax": {}
+   }
+  },
+  {
+   "goal": 37,
+   "constant": "EXIT_GOAL",
+   "text": "Exit the tutorial",
+   "goal_rpc_open": "80 a0 25 06 00 00 <u16 len incl NUL> <text> 00",
+   "goal_rpc_done": "80 a0 25 06 00 01 <u16 len incl NUL> <text> 00",
+   "onOpen": {
+    "narration": {
+     "rpc": "81 45 25 08 00 86",
+     "id": "0x86000825",
+     "constant": "EXIT_DIALOG",
+     "wav": "resource/dialog/tutorial/10159.wav"
+    },
+    "broadcast": {
+     "symbol": "ID_TUTORIAL_NEW_HARDLINE",
+     "sid": "0x8800002b",
+     "image": "0x280011a0",
+     "delayS": 5,
+     "rpc": "80 a1 a0 11 00 28 00 00 00 00 14 00 2b 00 00 88 17 00 01 00 01 00 00 01 00 00",
+     "reminder": {
+      "firstAfterBroadcastS": 63,
+      "repeatS": 60,
+      "narration": {
+       "rpc": "81 45 4a 07 00 86",
+       "id": "0x8600074A",
+       "constant": "EXIT_REMINDER",
+       "wav": "resource/dialog/tutorial/10854.wav"
+      },
+      "symbol": "ID_TUTORIAL_NEW_HARDLINE",
+      "sid": "0x8800002b"
+     }
+    }
+   },
+   "completedBy": {
+    "kind": "client-rpc",
+    "wire": "80 c7 <booth view> <booth spawn> 05 00",
+    "rule": "Jack out at TutorialExitPoint_PhoneBooth. Mission data"
+   },
+   "onCompleteExtra": [
+    "80 b3 11 00; 80 b3 bb 01; 80 b3 cc 01 + 80 bc buff removals; 81 01 (empty), BEFORE 80 a0 25 flags=1",
+    "81 45 EXIT_SUCCESS 0x8600074b",
+    "Then the exit handshake, section 3.3"
+   ],
+   "evidenceLines": {
+    "main": {
+     "open": 29660,
+     "close": 29873,
+     "seconds": 25
+    },
+    "uriah": {
+     "open": 15833,
+     "close": 16001,
+     "seconds": 12
+    },
+    "unknown": {
+     "open": 14321,
+     "close": 14426,
+     "seconds": 13
+    },
+    "syntax": {}
+   }
+  }
+ ]
+}

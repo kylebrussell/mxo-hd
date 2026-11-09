@@ -32,23 +32,13 @@ namespace hds
             SocialHandler.EnsureTeam(Store.currentClient);
 
             data.missionInstanceCounter++;
-            data.activeMission = mission;
             ServerPackets pak = new ServerPackets();
             pak.sendMissionAccept(Store.currentClient, txn, data.missionInstanceCounter, mission);
 
-            // Retail sends every objective at once, numbered from 0, state 0 (open).
-            List<MissionObjective> objectives = mission.phases.Count > 0
-                ? mission.phases[0].missionObjectives
-                : new List<MissionObjective>();
-            for (int i = 0; i < objectives.Count; i++)
-            {
-                pak.SendSetMissionObjective((ushort)i, 0, objectives[i].description, Store.currentClient);
-            }
-
-            // Spawns the mission's NPCs and points the waypoint at the first objective's NPC.
+            // Spawns the mission's NPCs, then the first phase's briefing, waypoints and objectives (retail's order).
             MissionRuntime.Start(Store.currentClient, mission);
             Store.currentClient.FlushQueue();
-            Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "' with " + objectives.Count + " objectives");
+            Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");
         }
 
         public void processMissionList(ref byte[] packet)
@@ -63,7 +53,13 @@ namespace hds
             uint orgID = reader.ReadUint8();
 
             ServerPackets pak = new ServerPackets();
-            Store.currentClient.playerData.currentMissionList = DataLoader.getInstance().FindMissions(txn, orgID);
+            ClientData data = Store.currentClient.playerData;
+            if (data.completedMissions == null)
+            {
+                data.completedMissions = Store.dbManager.WorldDbHandler.GetCompletedMissions(data.getCharID());
+            }
+
+            data.currentMissionList = DataLoader.getInstance().FindMissions(orgID, data.completedMissions);
             Store.currentClient.playerData.selectedMissionIndex = -1;
             pak.sendMissionList(txn, orgID, Store.currentClient.playerData.currentMissionList, Store.currentClient);
             Output.WriteDebugLog("[MISSION] Listed " + Store.currentClient.playerData.currentMissionList.Count + " missions");
