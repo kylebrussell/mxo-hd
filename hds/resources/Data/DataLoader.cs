@@ -37,12 +37,16 @@ namespace hds
             LoadMissions();
             loadNewRSIIDs(DataPath("newrsiIDs.csv"));
             loadGODB(DataPath("gameobjects.csv"));
-#if !DEBUG
-            loadMobs(DataPath("mob.csv"));
-            loadMobs(DataPath("mob_parsed.csv"));
-#else
-            loadMobs(DataPath("mob_just_some_and_winter.csv"));
-#endif
+            // The whole world unless MXO_MOBS=test (this used to depend on the build: Debug got only the test list)
+            if (MobSpawnFilter.UseTestList(Environment.GetEnvironmentVariable("MXO_MOBS")))
+            {
+                loadMobs(DataPath("mob_just_some_and_winter.csv"));
+            }
+            else
+            {
+                loadMobs(DataPath("mob.csv"), true);
+                loadMobs(DataPath("mob_parsed.csv"), true);
+            }
 
 
             loadAbilityDB(DataPath("abilityIDs.csv"));
@@ -338,15 +342,24 @@ namespace hds
             return newrsiItemTemp;
         }
 
-        public void loadMobs(string path)
+        public void loadMobs(string path, bool skipRepeats = false)
         {
             // This is just an example of loading CSV    
             //return dataTable;
             Output.Write("Loading Hostile Mobs ..");
             ArrayList goDB = loadCSV(path, ';');
             int linecount = 1;
+            int repeats = 0;
             foreach (string[] data in goDB)
             {
+                if (skipRepeats && linecount > 1 &&
+                    mobsSeen.IsRepeat(Convert.ToUInt16(data[0]), data[2], double.Parse(data[7]), double.Parse(data[9])))
+                {
+                    repeats++;
+                    linecount++;
+                    continue;
+                }
+
                 //Output.WriteLine("Show Colums for Line : " + linecount.ToString() + " GOID:  " + data[1].ToString() + " Name " + data[0].ToString());
                 if (linecount > 1)
                 {
@@ -397,6 +410,12 @@ namespace hds
                         {
                             theMob.setWeapon(weaponGoid);
                         }
+                        if (skipRepeats)
+                        {
+                            // The full world, not the test list: who attacks on sight
+                            theMob.aggroKind = MobBehaviour.Classify(data[2], data.Length > 21 ? data[21] : "");
+                        }
+
                         // Init the Mob Update
                         if (!error)
                         {
@@ -409,7 +428,11 @@ namespace hds
 
                 linecount++;
             }
+
+            Output.WriteDebugLog("[MOBS] " + Path.GetFileName(path) + ": " + repeats + " repeat rows skipped, " + WorldServer.mobs.Count + " NPCs now");
         }
+
+        private readonly MobSpawnFilter.Seen mobsSeen = new MobSpawnFilter.Seen();
 
         private bool isNumberEven(int value)
         {

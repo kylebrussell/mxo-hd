@@ -103,7 +103,7 @@ function Start-World([switch]$AggroEveryone) {
     Stop-Everything
     Start-Sleep 2
     $env:MXO_PACKET_LOG = '1'; $env:MXO_DEV_ANY_PASSWORD = '1'; $env:MXO_DEBUG_LOG = '1'; $env:MXO_RPC_LOG = '1'
-    $env:MXO_CLIENT_VIEW_LOG = '1'; $env:MXO_MOB_WANDER = '0'; $env:MXO_BIND_ADDRESS = '127.0.0.1'; $env:MXO_DEV_COMMANDS = '1'
+    $env:MXO_CLIENT_VIEW_LOG = '1'; $env:MXO_MOB_WANDER = '0'; $env:MXO_MOBS = 'test'; $env:MXO_BIND_ADDRESS = '127.0.0.1'; $env:MXO_DEV_COMMANDS = '1'
     $env:MXO_AGGRO_LEVEL_GAP = $(if ($AggroEveryone) { '100' } else { $null })
     $out = Join-Path $OutDir 'server.out'
     $script:server = Start-Process (Join-Path $root 'hds\bin\Debug\net8.0\hds.exe') -WorkingDirectory $root -PassThru -WindowStyle Hidden `

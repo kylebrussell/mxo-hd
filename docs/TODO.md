@@ -40,6 +40,14 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [x] Marketplace: open (81 29), category search (81 24), list an item (81 2b) and buy (81 26) from the retail marketplace captures (PR #26). Not captured: cancelling a listing and collecting proceeds (sellers are paid at once).
 - [ ] Secure trade between players needs a retail capture. None of `research/packet-dumps` contains a trade session, so the request/offer/accept RPC numbers are unknown. Lead: the client's `LTOBJSRV_TRADESESSION*` strings (complete, cancelled, you/they accepted, reset, not enough info, not enough backpack space, item not found) and `LTRS_SECURETRADE*` (partner too far, non-tradeable item, equipped item offered, in progress) in client.dll. Ask preservation contacts for a log of two players trading an item and info.
 
+## World population
+
+- [x] Load the whole NPC list in every build (it used to be Release only; `MXO_MOBS=test` selects the small test list, which the client regression and headless scenarios use).
+- [x] Skip rows that are one NPC seen again: same name in the same district within 5 m (`MobSpawnFilter`). 13,141 rows become 5,560 NPCs. The 5 m is a judgement from looking at the client.
+- [x] Attack on sight only where the retail logs show it (`MobBehaviour`): zombies, Corrupted, listed gangs, and Agents against level 50+. Everything else is passive until attacked.
+- [ ] Some rows may belong to mission or instance interiors rather than the open world: not separated yet. Corrupted and Special Agent logged starts at exactly 4 m look like ambush spawns.
+- [ ] Only slums, downtown and IT have static world data loaded; the other districts in the list are untested.
+
 ## 6. Packet Research
 - [x] Inventory public MxO preservation packet/protocol resources.
 - [x] Import useful text packet dumps into `research/packet-dumps`.

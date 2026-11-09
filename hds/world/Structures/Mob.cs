@@ -35,6 +35,7 @@ namespace hds
 
         // Friendly NPCs are spawned as non-enemies (no combat offered); mission NPCs remember their mission id
         public bool isFriendly = false;
+        public MobAggroKind aggroKind = MobAggroKind.Unfiltered;
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
 

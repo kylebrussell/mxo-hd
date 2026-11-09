@@ -41,7 +41,8 @@ namespace hds
                 return false;
             }
 
-            return distanceUnits <= RangeUnits && playerLevel - mob.getLevel() <= LevelGap;
+            return distanceUnits <= RangeUnits && playerLevel - mob.getLevel() <= LevelGap &&
+                   MobBehaviour.WillingAtLevels(mob.aggroKind, mob.getLevel(), playerLevel);
         }
 
         /// <summary>

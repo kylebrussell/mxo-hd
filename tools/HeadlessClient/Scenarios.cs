@@ -13,6 +13,7 @@ public static class Scenarios
     private static readonly IReadOnlyDictionary<string, string> StillNpcs = new Dictionary<string, string>
     {
         ["MXO_MOB_WANDER"] = "0",
+        ["MXO_MOBS"] = "test", // the small list, so a run is fast and NPC positions are known
         ["MXO_AGGRO"] = "0",
     };
 
@@ -425,14 +426,10 @@ public static class Scenarios
         return (seenByA!, seenByB!);
     }
 
-    /// <summary>Rows in the NPC data the server loads (Debug and Release builds load different files) with this name, within view of NpcX, NpcZ.</summary>
+    /// <summary>Rows in the NPC data the server loads (the test list: see MXO_MOBS above) with this name, within view of NpcX, NpcZ.</summary>
     private static int NpcRowsNear(ScenarioContext context, string name)
     {
-#if DEBUG
         string[] files = { "mob_just_some_and_winter.csv" };
-#else
-        string[] files = { "mob.csv", "mob_parsed.csv" };
-#endif
         const double ViewRange = 5000;
         return files
             .SelectMany(file => File.ReadLines(Path.Combine(context.RepositoryRoot, "data", file)).Skip(1))
