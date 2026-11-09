@@ -59,6 +59,11 @@ namespace hds
             // standing on the LA rooftop with no picker.
             if (Store.currentClient.playerData.DistrictIsLA())
             {
+                if (TutorialMission.JackIntoRichland(Store.currentClient))
+                {
+                    return;
+                }
+
                 Output.WriteDebugLog("[LA] Spawn ready in the Loading Area: no self-spawn, waiting for a hardline pick");
                 return;
             }
@@ -74,6 +79,11 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            if (districtId == (uint)MxOLocations.TUTORIAL)
+            {
+                TutorialMission.Begin(Store.currentClient);
+            }
+
             Output.WriteLine("[SPAWN] Queued self-spawn for charId " + Store.currentClient.playerData.getCharID() +
                              " (" + rsiObject.Length + " bytes, districtId " + districtId + ")");
 
@@ -276,6 +286,11 @@ namespace hds
 
         public void ProcessLootAccepted()
         {
+            if (TutorialMission.Of(Store.currentClient)?.OnTakeAll() == true)
+            {
+                return;
+            }
+
             ClientView F = Store.currentClient.viewMan.getViewById(Store.currentClient.playerData.currentSelectedTargetViewId);
 
             // Use pending loot amount from combat kill, or default to 0 if none

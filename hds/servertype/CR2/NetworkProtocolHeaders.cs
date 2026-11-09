@@ -26,6 +26,10 @@ namespace hds
         CLIENT_MISSION_INFO = 0x98,
         CLIENT_MISSION_ACCEPT = 0x9b,
         CLIENT_MISSION_ABORT = 0xa6,
+        CLIENT_VIEW_TOGGLED = 0x104,    // 81 04 <view u16> <token u32>: a panel the tutorial showed was used
+        CLIENT_SHORTCUT_ADDED = 0x18d,  // 81 8d <type u32> <inventory slot u32> <class data u32> <instance data u32>
+        CLIENT_MODAL_ANSWER = 0x190,    // 81 90 <message u32> <left chosen u8>
+        CLIENT_MISSION_EVENT = 0x191,   // 81 91 <event u32>: an FX token coming back
         CLIENT_LEAVE_GROUP = 0x71,
         CLIENT_ABILITY_HANDLER = 0xB9,
         CLIENT_CHANGE_CT = 0x42,

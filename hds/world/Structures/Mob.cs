@@ -41,6 +41,7 @@ namespace hds
         public byte missionPhase = 0;
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
+        public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
 
         // Per-object counter carried by animation blocks in movement updates (retail increments it per use)
         private byte animationSeq = 0;
@@ -475,6 +476,12 @@ namespace hds
                     themob.TakerActiveTracker.setValue(0x01);
                 }
             }
+            if (!isFriendly && hostileMissionKey)
+            {
+                themob.MissionKey.enable();
+                themob.MissionKey.setValue(new byte[] { missionPhase, (byte)missionInstance, (byte)(missionInstance >> 8), 0x02 });
+            }
+
             themob.StealthAwareness.setValue(0x11);
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);

@@ -359,7 +359,8 @@ function Test-Booth {
     Act $cp @{ RightClick = @(590, 430) }
     Act $cp @{ Click = @(588, 480) }
     Check 'Exit asks first' (Wait-Log 'Booth \d+ action 3' 10)
-    Act $cp @{ Click = @(472, 433) }     # Yes
+    # The prompt can show a moment after the server's 80 fb, so a single early click missed it in full runs
+    Click-Until $cp @(472, 433) 'the jack-out prompt' 'Jack out at a hardline' 4
     Check 'jack out at the booth' (Wait-Log 'Jack out at a hardline' 10)
     Start-Sleep 5
     Check 'the client leaves' (-not (Get-Process -Id $cp -ErrorAction SilentlyContinue))

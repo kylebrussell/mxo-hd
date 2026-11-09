@@ -28,6 +28,27 @@ namespace hds
             GIVE = 0x0e  // right-click Give on a mission NPC
         }
 
+        private static Mob InteractedTutorialMob(ClientView view)
+        {
+            if (view == null)
+            {
+                return null;
+            }
+
+            lock (WorldServer.mobs.SyncRoot)
+            {
+                foreach (Mob mob in WorldServer.mobs)
+                {
+                    if (mob.getEntityId() == view.entityId)
+                    {
+                        return mob;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private static Mob InteractedMissionMob(ClientView view)
         {
             return view == null ? null : MissionRuntime.FindMissionMob(Store.currentClient.playerData, view.entityId);
@@ -138,6 +159,12 @@ namespace hds
 
             // create a new System message but fill it in the switch block
             ServerPackets pak = new ServerPackets();
+
+            // The tutorial's wardrobe and hardline aren't in our static object data
+            if (TutorialMission.Of(Store.currentClient)?.OnStaticUse(numericObjectId, (byte)objectTypeID) == true)
+            {
+                return;
+            }
 
             // Hardline booths: 03 jack out, 04 upload, 05 exit to the Loading Area (retail 80 c8 <booth> 04 00)
             if (objectValues != null && objectValues.type != null &&
@@ -256,6 +283,11 @@ namespace hds
             // A hardline booth view (80 c7 <view> <spawn> 03|04|05 00 in retail)
             UInt16 interactedViewId = (UInt16)(packet[0] | (packet[1] << 8));
             ClientView interactedView = Store.currentClient.viewMan.getViewById(interactedViewId);
+            if (interactedView != null && TutorialMission.Of(Store.currentClient)?.OnViewUse(interactedView.entityId, (byte)objectTypeID) == true)
+            {
+                return;
+            }
+
             if (interactedView != null && HardlineBooths.IsBooth(interactedView.GoID) && interactedView.staticObject != null)
             {
                 TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, interactedView.staticObject);
@@ -290,6 +322,9 @@ namespace hds
                     pak.SendSubwaymapWindow(Store.currentClient);
 
                     break;
+                case (int) objectTypesDynamic.LOOT when TutorialMission.Of(Store.currentClient)?.OnLootCorpse(InteractedTutorialMob(interactedView)) == true:
+                    break;
+
                 case (int) objectTypesDynamic.LOOT:
                     UInt32[] theTestArrayLoots = new UInt32[2];
                     theTestArrayLoots[0] =
@@ -301,6 +336,7 @@ namespace hds
                     Mob talkMob = InteractedMissionMob(interactedView);
                     Output.WriteDebugLog("[MISSION] Talk to view " + interactedViewId + (talkMob != null ? " (" + talkMob.getName() + ")" : ""));
                     MissionRuntime.OnTalk(Store.currentClient, talkMob);
+                    TutorialMission.Of(Store.currentClient)?.OnTalk(InteractedTutorialMob(interactedView));
                     break;
 
                 case (int) objectTypesDynamic.GET:
@@ -313,6 +349,7 @@ namespace hds
                     Mob giveMob = InteractedMissionMob(interactedView);
                     Output.WriteDebugLog("[MISSION] Give to view " + interactedViewId + (giveMob != null ? " (" + giveMob.getName() + ")" : ""));
                     MissionRuntime.OnGive(Store.currentClient, giveMob);
+                    TutorialMission.Of(Store.currentClient)?.OnGive(InteractedTutorialMob(interactedView));
                     break;
 
                 case 0x04: // hardline upload, retail 80 c7 <view> <spawn> 04 00: Code Bits and fragments go into code storage

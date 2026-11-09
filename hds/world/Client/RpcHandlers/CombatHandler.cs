@@ -505,6 +505,7 @@ namespace hds
                 targetViewWithSpawnId,
                 CombatSession.CombatType.Melee
             );
+            TutorialMission.Of(client)?.OnCombatStarted(targetMob);
 
             // Set this player as the mob's combat target so mob can attack back
             if (targetMob != null)
@@ -813,7 +814,13 @@ namespace hds
                 // Award experience
                 UInt16 mobLevel = session.DefenderMob.getLevel();
                 UInt32 expGained = (UInt32)(mobLevel * 100); // Simple exp formula
-                PlayerRewards.GrantExperience(session.Attacker, expGained);
+                // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
+                bool inTutorial = TutorialMission.Of(session.Attacker) != null;
+                if (!inTutorial)
+                {
+                    PlayerRewards.GrantExperience(session.Attacker, expGained);
+                }
+
                 Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
 
                 MissionRuntime.OnMobDefeated(session.Attacker, session.DefenderMob);
@@ -821,7 +828,7 @@ namespace hds
 
                 // Calculate loot money based on mob level (50-150 per level)
                 Random rand = new Random();
-                UInt32 lootMoney = (UInt32)(mobLevel * (50 + rand.Next(100)));
+                UInt32 lootMoney = inTutorial ? 0 : (UInt32)(mobLevel * (50 + rand.Next(100)));
 
                 // Store pending loot for when player accepts
                 session.Attacker.playerData.pendingLootMoney = lootMoney;
@@ -831,7 +838,7 @@ namespace hds
                 session.Attacker.playerData.pendingLootItem = missionItem;
                 List<UInt32> drops = session.DefenderMob.missionInstance == 0
                     ? NpcLoot.Roll(mobLevel, rand)
-                    : new List<UInt32>();
+                    : TutorialMission.Of(session.Attacker)?.DropsFor(session.DefenderMob) ?? new List<UInt32>();
                 lock (session.Attacker.playerData.pendingLootDrops)
                 {
                     session.Attacker.playerData.pendingLootDrops.Clear();
@@ -1207,6 +1214,13 @@ namespace hds
         public static void HandlePlayerDeath(WorldClient player)
         {
             Output.WriteDebugLog("[COMBAT] Processing player death");
+            // Retail's tutorial gave the player an immortality ability (NPCImmortalAbility, 460)
+            if (TutorialMission.Of(player) != null)
+            {
+                player.playerInstance.Health.setValue((UInt16)1);
+                return;
+            }
+
             TradeHandler.Abort(player);
 
             player.playerInstance.IsDead.setValue(true);
