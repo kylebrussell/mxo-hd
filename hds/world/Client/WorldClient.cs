@@ -55,6 +55,10 @@ namespace hds
 
             alive = true;
             deadSignals = 0;
+            // The client is in WorldServer.Clients before its first packet is processed. With this still 0 the visibility
+            // thread could see it as 30+ seconds silent and remove it right then: its replies, queued for the flush thread,
+            // never went out, and the player stayed stuck at login (found by tools/HeadlessClient).
+            lastUsedTime = TimeUtils.getUnixTimeUint32();
         }
 
 

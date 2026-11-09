@@ -86,6 +86,26 @@ public class ConfigParserTests : IDisposable
         Assert.Equal("cr2", serverParams.ServerType);
     }
 
+    [Fact]
+    public void MxoDbNameReplacesTheConfiguredDatabase()
+    {
+        string path = WriteConfig(@"<Config><Database><Host>h</Host><Port>1</Port><Username>u</Username><Password>p</Password><Database>reality_hd</Database></Database></Config>");
+        try
+        {
+            Environment.SetEnvironmentVariable("MXO_DB_NAME", "mxotest_mine");
+            XmlParser.loadDBParams(path, out DbParams overridden);
+            Assert.Equal("mxotest_mine", overridden.DatabaseName);
+
+            Environment.SetEnvironmentVariable("MXO_DB_NAME", null);
+            XmlParser.loadDBParams(path, out DbParams configured);
+            Assert.Equal("reality_hd", configured.DatabaseName);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MXO_DB_NAME", null);
+        }
+    }
+
     private string WriteConfig(string content)
     {
         string path = Path.Combine(tempDirectory, Guid.NewGuid() + ".xml");

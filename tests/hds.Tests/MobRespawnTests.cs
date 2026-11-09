@@ -52,6 +52,20 @@ public class MobRespawnTests
         Assert.Equal(-200, mob.getZPos());
     }
 
+    /// <summary>Two players landing the last blow together: only one sends the death and gets the reward.</summary>
+    [Fact]
+    public void OnlyOneFightClaimsTheKillUntilTheNpcIsBack()
+    {
+        Mob mob = new Mob();
+        mob.setIsDead(false);
+
+        Assert.True(mob.TryClaimDeath());
+        Assert.False(mob.TryClaimDeath());
+
+        mob.setIsDead(false); // respawned
+        Assert.True(mob.TryClaimDeath());
+    }
+
     [Fact]
     public void MissionNpcsDontRespawn()
     {

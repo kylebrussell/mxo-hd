@@ -10,7 +10,7 @@ namespace hds{
 		private TcpListener tcpListener;	 
     	private Thread listenThread;
 		private bool mainThreadWorking;
-        private readonly int consoleport = 55557;
+        private readonly int consoleport = NetworkBind.ConsolePort;
 
 
         public ConsoleSocket (){

@@ -21,7 +21,9 @@ namespace hds
         
         protected override void OnConnected()
         {
-            _handler = new AuthHandler(this);
+            // Don't make a new handler here: the session can already have received its first packet when this runs (it
+            // happens under load), and replacing the handler then lost the challenge, so the client's answer crashed the
+            // server (found by tools/HeadlessClient). The constructor's handler is the only one.
             Console.WriteLine($"AuthClient with Id {Id} connected!");
             
         }
@@ -37,8 +39,17 @@ namespace hds
             byte[] packetContent = new byte[size];
             ArrayUtils.copy(packet,0, packetContent, 0, (int)size);
             PacketReader reader = new PacketReader(packetContent);
-            // Multicast message to all connected sessions
-            _handler.ProcessPacket(reader, size);
+            try
+            {
+                _handler.ProcessPacket(reader, size);
+            }
+            catch (Exception ex)
+            {
+                // This runs on a socket callback: anything escaping here ends the process and drops every player, for
+                // one bad login (a wrong MD5 and an unknown opcode both throw AuthException).
+                Output.WriteLine($"AuthClient with Id {Id} dropped: {ex.Message}");
+                Disconnect();
+            }
 
         }
 

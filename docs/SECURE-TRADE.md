@@ -14,7 +14,7 @@ No retail capture of a trade exists and none is expected, so this comes from `cl
 - The Accept box sends action 4. `81 87` COMPLETE closes the window; the bag and information are updated, and the database matches.
 - Clear sends action 2 and Cancel sends action 3; `81 87` CANCELLED closes the window.
 
-**Not checked:** a trade between two real players, so `81 82` (dropping an item on a player), resolving its TargetID to a player's view, `81 83`, and the partner's side of `81 84`/`81 86`/`81 87`. A second client is blocked by Windows Defender on this machine. Also not exercised: reset accept (action 5, the bot accepts and the trade completes at once), the refusal statuses, and aborts when a partner leaves.
+**Not checked in the real client:** a trade between two real players, so `81 82` (dropping an item on a player), resolving its TargetID to a player's view, `81 83`, and the partner's side of `81 84`/`81 86`/`81 87`. A second client is blocked by Windows Defender on this machine. `tools/HeadlessClient` plays all of those against the server (scenarios `secure-trade` and `trade-cancel-and-refusals`), which shows the server follows this document, not that the client accepts it. Also not exercised: reset accept (action 5, the bot accepts and the trade completes at once), the refusal statuses, and aborts when a partner leaves.
 
 ## How it was recovered
 Every RPC class has a vtable (+8 = debug printer naming fields, reading [this+0x10]+offset) and a ctor that writes
@@ -27,7 +27,8 @@ Keys 0x183, 0x184, 0x186, 0x187 have handlers. Keys 0x182, 0x185 hit the default
 81 82 size 0x0D  TradeRequest  ctor 0x621d3d40, sender 0x621eb790 (built at 0x621eb8bc)
   +2 TargetID u32 | +6 InfoTrade u8 (= InfoQuantity != 0) | +7 InfoQuantity u32 | +0B Slot u8 (default 0x6B = none) | +0C ItemQuantity u8 (never set by sender, 0)
   Sender bails if InfoQuantity==0 and Slot==0x6B. So a trade cannot start empty: it starts by dropping an item or information on a player.
-  Callers: 0x620a03b8 (drop info, slot=0x6B), 0x620a0417 (drop item). TargetID is resolved from a handle through [0x62a2b2bc] vcall +0x14 and [0x629df7bc] vcall +4 (not traced further).
+  Callers: 0x620a03b8 (drop info, slot=0x6B), 0x620a0417 (drop item). TargetID comes from the object's comm handle: [0x629df7bc] is ILTCommHandleMgr.Default (0x627c3c20), and vcall +4 (0x622ceef0 -> 0x622ced10) writes `<view id u16> <spawn id u8> 00`, the view from objViewAssocList (0x622c88a0) and the spawn id from obj+0x34. The spawn id is the creation record's counter byte (read 0x622d95d3, stored 0x622d9c15), the view id the record's trailing `<view id> 00` (read 0x622d9812). If the spawn id is 0, nothing is written and the send is abandoned (0x621eb8b7).
+  Not captured in retail, so inferred from the shared path: `81 51` TargetHandle's sender (0x62237ee5) uses the same call, and retail has it: a player created with spawn id 0x51 and view 0x0f is targeted with `81 51 0f 00 51 00` (crashover2k capture).
   Targets with interface 0x31 satisfying 0x62304070 take a different path (0x621eb080) with no 81 82; appears to be give-to-NPC (inferred).
 
 81 85 size 0x0A  TradeAction  ctor 0x6209ba00, send 0x6214c700 on [0x629e68a8]

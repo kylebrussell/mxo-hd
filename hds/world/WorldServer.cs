@@ -41,7 +41,7 @@ namespace hds
             objMan = new ObjectManager();
 
             listenThread = new Thread(ListenForAllClients);
-            Output.WriteLine("[World Server] Set and ready at UDP port 10000");
+            Output.WriteLine("[World Server] Set and ready at UDP port " + NetworkBind.WorldPort);
         }
 
         public void StartServer()
@@ -136,7 +136,7 @@ namespace hds
                 socket.IOControl(SIO_UDP_CONNRESET, byteTrue, null);
             }
 
-            serverport = 10000;
+            serverport = NetworkBind.WorldPort;
             udplistener = new IPEndPoint(NetworkBind.Address, serverport);
             buffer = new byte[4096];
             socket.Bind(udplistener);

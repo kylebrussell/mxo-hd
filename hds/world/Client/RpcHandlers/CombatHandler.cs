@@ -633,6 +633,14 @@ namespace hds
         {
             if (!isCombatRunning || session == null) return;
 
+            // Two players on one NPC each have a timer. When the other one has killed it, this fight is over: it used to
+            // go on against the corpse, which hit back, died again and paid out again (found by tools/HeadlessClient).
+            if (session.DefenderMob != null && session.IsDefenderDead())
+            {
+                session.Stop(CombatSession.CombatEndReason.DefenderKilledByOther);
+                return;
+            }
+
             Output.WriteDebugLog($"[COMBAT] Tick - Round {session.RoundNumber}, Tactic: {session.AttackerTactic}");
 
             if (session.Type == CombatSession.CombatType.Melee && session.DefenderMob != null)
@@ -765,7 +773,8 @@ namespace hds
             }
 
             ServerPackets packets = new ServerPackets();
-            bool defenderDied = reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null;
+            bool defenderDied = reason == CombatSession.CombatEndReason.DefenderDied && session.DefenderMob != null &&
+                                session.DefenderMob.TryClaimDeath();
 
             // The death goes out first, in its own packet, so nothing sent with the combat teardown can
             // keep the client from seeing it.
@@ -973,6 +982,7 @@ namespace hds
                 session.TargetViewSpawnId, (float)x, (float)y, (float)z, CombatStartTime(), rangedNoiseLevel,
                 firstShot, hit, attackClass), false);
             player.messageQueue.addRpcMessage(ServerPackets.BuildRangedShotRpc());
+            ShowShotToOthers(player, target, player.playerData.emoteCounter, attackClass, hit, (float)x, (float)y, (float)z);
 
             if (target == null)
             {
@@ -998,6 +1008,34 @@ namespace hds
             player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
                 true, weapon, target.getName(), playerName, session.AttackerTactic));
             return died;
+        }
+
+        /// <summary>
+        /// Everyone else who can see the shooter and the target gets the shot on their view of the shooter, with the
+        /// target as their own view and spawn id: the form retail used for other players' shots, the same as an NPC's
+        /// (RajkoPacketsNearTheEnd PacketsMaraCThenTimeDOut: <c>7a 00 02 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;</c>).
+        /// Bystanders used to get nothing (found by tools/HeadlessClient). The retail capture is of player views only; a
+        /// client that has no view of the target isn't sent the shot, because retail's handling of that is not known.
+        /// </summary>
+        private static void ShowShotToOthers(WorldClient shooter, Mob target, byte counter, byte attackClass, bool hit, float x, float y, float z)
+        {
+            if (target == null)
+            {
+                return;
+            }
+            foreach (WorldClient watcher in SocialHandler.OnlineWhere(c => c != shooter))
+            {
+                ClientView shooterView = watcher.viewMan.FindViewForEntity(shooter.playerData.getEntityId());
+                ClientView targetView = watcher.viewMan.FindViewForEntity(target.getEntityId());
+                if (shooterView == null || !shooterView.viewCreated || targetView == null || !targetView.viewCreated)
+                {
+                    continue;
+                }
+                UInt32 targetId = (UInt32)targetView.ViewID | ((UInt32)targetView.spawnId << 16);
+                watcher.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(shooterView.ViewID,
+                    ServerPackets.BuildNpcRangedShot(counter, attackClass, hit, targetId, x, y, z)), false);
+                watcher.FlushQueue();
+            }
         }
 
         /// <summary>Consecutive ticks the target was out of the gun's range.</summary>

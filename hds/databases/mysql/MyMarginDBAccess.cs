@@ -13,9 +13,16 @@ namespace hds.databases{
 
     public class MyMarginDBAccess : IMarginDBHandler{
 		
-		private IDbConnection conn;
-		private IDbCommand queryExecuter;
-		private IDataReader dr;
+		// One per thread: each margin client has a thread, and they used to share one connection, command and reader
+		// (see MyWorldDbAccess).
+		[ThreadStatic] private static IDbConnection threadConnection;
+		[ThreadStatic] private static IDbCommand threadCommand;
+		[ThreadStatic] private static IDataReader threadReader;
+		private readonly string connectionString;
+
+		private IDbConnection conn => threadConnection ??= new MySqlConnection(connectionString);
+		private IDbCommand queryExecuter { get => threadCommand; set => threadCommand = value; }
+		private IDataReader dr { get => threadReader; set => threadReader = value; }
 		private DbParams dbParams;
 		
 		public MyMarginDBAccess(){
@@ -23,7 +30,7 @@ namespace hds.databases{
             var config = Store.config;
             dbParams = config.dbParams;
 			/* Params: Host, port, database, user, password */
-            conn = new MySqlConnection("Server=" + config.dbParams.Host + ";" +
+            connectionString = ("Server=" + config.dbParams.Host + ";" +
                 "Port=" + config.dbParams.Port + ";" +
                 "Database=" + config.dbParams.DatabaseName + ";" +
                 "User ID=" + config.dbParams.Username + ";" +

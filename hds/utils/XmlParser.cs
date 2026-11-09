@@ -19,7 +19,7 @@ namespace hds{
             {
                 _params.Host = RequiredText(values, "serverHost");
                 _params.Port = int.Parse(RequiredText(values, "serverPort"));
-                _params.DatabaseName = RequiredText(values, "databaseName");
+                _params.DatabaseName = DatabaseNameOverride(RequiredText(values, "databaseName"));
                 _params.Username = RequiredText(values, "databaseUser");
                 _params.Password = RequiredText(values, "databasePassword");
                 _params.Motd = OptionalText(values, "motd", "");
@@ -35,7 +35,7 @@ namespace hds{
 
             _params.Host = RequiredText(values, "Host");
             _params.Port = int.Parse(RequiredText(values, "Port"));
-            _params.DatabaseName = RequiredText(values, "Database");
+            _params.DatabaseName = DatabaseNameOverride(RequiredText(values, "Database"));
             _params.Username = RequiredText(values, "Username");
             _params.Password = RequiredText(values, "Password");
             _params.Motd = OptionalText(values, "Motd", "");
@@ -43,6 +43,13 @@ namespace hds{
 
 		}
 	
+		/// <summary>MXO_DB_NAME replaces the configured database name, so side-by-side servers can each have their own.</summary>
+		public static string DatabaseNameOverride(string configured)
+		{
+			string name = Environment.GetEnvironmentVariable("MXO_DB_NAME");
+			return string.IsNullOrWhiteSpace(name) ? configured : name.Trim();
+		}
+
 		public static void loadServerParams(string fileName, out ServerParams _params){
             _params = new ServerParams();
             
