@@ -158,7 +158,12 @@ function Test-Regen {
     Check 'no aggro on a level 50' (-not (Wait-Log '\[AGGRO\]' 8))
     Act $cp @{ Chat = @('?weaken 150') }     # enough rounds for the NPC to land some hits
     $fightStart = @(Get-Content PacketLog.txt).Count
-    Act $cp @{ DoubleClick = @(500, 640) }
+    # One NPC is a small target: double-click again if the client sent no fight request
+    foreach ($try in 1..3) {
+        Act $cp @{ DoubleClick = @(500, 640) }
+        if (Wait-Log 'Close combat requested' 3) { break }
+        Write-Host "  no fight started, double-clicking again"
+    }
     Check 'player attack kills the NPC' (Wait-Log 'Sending death for mob' 120)
     $packets = @(Get-Content PacketLog.txt).Count
     Act $cp @{ Walk = @('S:1.5') }
