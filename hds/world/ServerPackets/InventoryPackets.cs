@@ -26,6 +26,23 @@ namespace hds
         }
 
         /// <summary>
+        /// A mission item: the 4-byte descriptor is the mission key of the NPC it's for, with 0x80 on the last byte. Retail's
+        /// statue for Gagarin (key 01 9a 02 02): 5e 07 00 f2 04 00 00 01 9a 02 82 01. The client offers Give only with this.
+        /// </summary>
+        internal static byte[] BuildMissionItemAdd(UInt16 slot, UInt32 itemId, byte element, UInt16 instance, byte keyByte = 0x02)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x5e);
+            pak.AddUint16(slot, 1);
+            pak.AddUint32(itemId, 1);
+            pak.AddByte(element);
+            pak.AddUint16(instance, 1);
+            pak.AddByte((byte)(keyByte | 0x80));
+            pak.AddUShort(1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
         /// 5e "add item to slot": slot (u16 LE), item id (u32 LE), 4-byte descriptor "00 00 amount type",
         /// then 01. Matches retail exactly; a 30,000 weapon bought into slot 0 was
         /// "5e 00 00 c1 09 00 00 00 00 00 10 01".

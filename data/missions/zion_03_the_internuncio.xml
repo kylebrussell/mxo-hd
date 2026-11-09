@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Retail capture: The Internuncio (luizoe, Recursion log, 2009-07-05). Text, NPCs, positions, goals and rewards as sent. Which event sets off each line, and the trigger radii, are our fit to where the player stood. -->
+<mission id="1203" title="The Internuncio" description="Protect an important Matrix artifact for Zion. " plot="1" order="3" exp="33000" info="42000">
+  <npc id="1" handle="Campbell" type="FRIENDLY" x="58379.0" y="1095.0" z="12850.0" rsi="58010058" level="5" maxHP="350" weapon="2568" />
+  <npc id="2" handle="Gagarin" type="FRIENDLY" x="46400.0" y="2095.0" z="7575.0" rsi="d1040058" level="5" maxHP="350" weapon="2566" phase="1" />
+  <npc id="3" handle="Boyce" type="HOSTILE" x="58550.0" y="1095.0" z="12450.0" rsi="d9040058" level="5" maxHP="175" weapon="2566" dead="1" />
+  <npc id="4" handle="Merovingian Soldier" type="HOSTILE" x="59480.0" y="1095.0" z="13120.0" rsi="c6020058" level="5" maxHP="175" weapon="2568" dead="1" />
+  <npc id="5" handle="Merovingian Soldier" type="HOSTILE" x="58450.0" y="1095.0" z="11350.0" rsi="c5020058" level="5" maxHP="175" weapon="2568" dead="1" />
+  <npc id="6" handle="Merovingian Soldier" type="HOSTILE" x="59710.0" y="1095.0" z="12840.0" rsi="c6020058" level="5" maxHP="262" weapon="2568" dead="1" />
+  <npc id="7" handle="Merovingian Soldier" type="HOSTILE" x="58450.0" y="1095.0" z="11700.0" rsi="9e0000b4" level="5" maxHP="175" weapon="2568" dead="1" />
+  <npc id="8" handle="Zion Soldier" type="FRIENDLY" x="44837.7" y="2095.0" z="7497.3" rsi="60010058" level="5" maxHP="262" weapon="2568">
+    <say display="5">Have you spoken to Gagarin yet?</say>
+    <say display="5" after="0">Maybe we'll get to work together in the future.</say>
+  </npc>
+  <npc id="9" handle="Zion Soldier" type="FRIENDLY" x="45915.0" y="2095.0" z="7737.0" rsi="60010058" level="5" maxHP="262" weapon="2564">
+    <say display="5">Hey, good to see you.</say>
+    <say display="5" after="0">Maybe we'll get to work together in the future.</say>
+  </npc>
+  <phase>
+    <briefing header="30000100450504000000000000003c00" a="59700.0,-55.0,10700.0" b="59700.0,-55.0,11300.0">We've experienced some backlash from a separate assignment -- a group of Exiles recently attacked one of our bases. Our operative, Campbell, was there when the strike took place. She is lucky to be alive! 
+
+Meet with Campbell and get the statue from her. We need this statue transported to a safer location. Once you've left the area with the statue, I will update you with the drop-off point.</briefing>
+    <waypoint x="59700.0" y="1145.0" z="11300.0" door="c9005054" />
+    <objective goal="1" text="Get the Statue from Campbell" type="Get" npc="1" item="1266">
+      <talk>
+        <say npc="1">Good, you're here. Tyndall told me to expect you. It isn't exactly safe here anymore, so we need this statue moved to a new location.</say>
+        <say>Take the statue from Campbell by right-clicking the mouse and selecting the "Get" interaction.</say>
+      </talk>
+      <done>
+        <say>I'm glad Campbell was able to hold off the Exiles until you arrived. 
+
+Campbell will be fine. Just worry about the statue. Once you've exited the area I will send you the drop-off location.</say>
+        <say npc="1">See to it that Gagarin gets this. The statue is a Matrix artifact that has been around for many years now. We cannot allow this to fall into enemy hands!</say>
+      </done>
+    </objective>
+    <near x="59700.0" y="-55.0" z="10700.0" radius="600">
+      <say>Campbell is waiting for you. Identify yourself and get the statue from her.</say>
+    </near>
+  </phase>
+  <phase>
+    <briefing header="30000100230009000000000000003c00" a="44200.0,145.0,6300.0" b="44800.0,145.0,6300.0">You're doing well, {player}. I'm sending you Gagarin's coordinates now. Deliver the statue to her.</briefing>
+    <waypoint x="44800.0" y="2145.0" z="6300.0" door="d9033002" />
+    <objective goal="0" text="Give the Statue to Gagarin" type="Give" npc="2" item="1266">
+      <talk>
+        <say npc="2">Those Exiles won't let up, will they? They insist on making trouble for us within the Matrix.
+
+Well, enough of that... Do you have the statue with you?</say>
+        <say>That's her. You may give her the statue. To do this, right-click on her and select the "Give" interaction.</say>
+      </talk>
+      <done>
+        <say>You're done here, {player}. Leave the area and Tyndall will debrief you.</say>
+        <say npc="2">Thank you, {player}. I'll secure the statue. </say>
+      </done>
+    </objective>
+    <near x="44200.0" y="145.0" z="6300.0" radius="600">
+      <say>Gagarin is stationed at the Zion base inside this building. She'll take the statue from you.</say>
+    </near>
+  </phase>
+  <finish>You have Zion's thanks, Warrior. Contact me when you are ready for your next assignment.</finish>
+</mission>

@@ -90,9 +90,10 @@ namespace hds
 		public double lastAggroAt = -1000;
 		public bool respawnPending = false;
 
-		// Running mission: which objective is next, the NPCs it spawned, and the inventory slot of its item
-		public int missionObjectiveIndex = 0;
-		public int missionItemSlot = -1;
+		// Running mission: how far through it the player is, and the NPCs it spawned
+		public MissionProgress missionProgress;
+		// Ids of finished missions; null until the first mission list loads them
+		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
 		public UInt32 pendingLootItem = 0;
 		// Items a killed NPC dropped (NpcLoot), given on Take All

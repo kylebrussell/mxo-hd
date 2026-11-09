@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Retail capture: Exile Extermination (luizoe, Recursion log, 2009-07-05). Text, NPCs, positions, goals and rewards as sent. Which event sets off each line, and the trigger radii, are our fit to where the player stood. -->
+<mission id="1204" title="Exile Extermination" description="Assassinate an Exile for Zion." plot="1" order="2" exp="11000" info="31500">
+  <npc id="1" handle="Angol" type="HOSTILE" x="48778.0" y="2095.0" z="20615.0" rsi="a10000b4" level="4" maxHP="225" weapon="692" />
+  <phase>
+    <briefing header="30000100360512000000000000003c00" a="44500.0,145.0,22800.0" b="46500.0,145.0,20000.0">Greetings, {player}. An Exile named Angol has been executing attacks against our potential redpill recruitment efforts. We need this Exile's existence put to an end.
+
+Head to this location and find Angol. Eliminate him at all costs. The best of luck to you, Warrior.</briefing>
+    <waypoint x="46500.0" y="2145.0" z="22000.0" door="590f6053" />
+    <waypoint x="46500.0" y="2145.0" z="20000.0" door="53006053" />
+    <objective goal="0" text="Kill Angol" type="Defeat" npc="1">
+      <done>
+        <say>That's a confirmed kill. Tyndall should be pleased.</say>
+      </done>
+    </objective>
+    <near x="44500.0" y="145.0" z="22800.0" radius="600">
+      <say>Good news, {player}. Our target is alone and unaware. Complete your objectives and exit.</say>
+    </near>
+    <near npc="1" radius="400">
+      <say npc="1">How did you find me? Get out of here!</say>
+    </near>
+  </phase>
+  <finish>Excellent, professional work. I see that it will be a pleasure working with you, {player}.
+
+Contact me when you are ready for your next assignment, Warrior.</finish>
+</mission>

@@ -31,6 +31,7 @@ public static class Scenarios
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
+        new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
     };
 
     // Where data/mob*.csv puts NPCs in the Slums, in both the Debug and Release lists
@@ -210,6 +211,50 @@ public static class Scenarios
         record.AddRange(BitConverter.GetBytes(result));
         record.AddRange(Sized(inviter));
         return record.ToArray();
+    }
+
+    /// <summary>
+    /// The first story mission as far as talking goes: only it is offered, under its plot flag; accepting gets the briefing,
+    /// the door waypoint and three open goals; talking closes them in any order and the third opens the fight.
+    /// The fight and the exit are covered by hand in the real client.
+    /// </summary>
+    private static async Task StoryMissionTalks(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice") { X = 58800, Y = 2495, Z = 31900 }))[0];
+
+        player.SendRpc("80 94 05 00 01");
+        RpcRecord listed = await player.WaitForTextAsync("Welcome to the Matrix");
+        Check.Equal((byte)1, listed.Bytes[14], "Plot flag on the listed mission");
+        await player.WaitForRpcAsync("80 97 05 00");
+        Check.Equal(1, player.Received("80 96").Count, "Missions offered");
+
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForTextAsync("Your introduction assignment inside the Matrix.");
+
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9c");
+        await player.WaitForTextAsync("Welcome to the Matrix, Alice!");
+        await player.WaitForRpcAsync("80 9e 00");
+        await player.WaitForTextAsync("Talk to Abalakin");
+        await player.WaitForTextAsync("Talk to Rigel");
+        await player.WaitForTextAsync("Talk to Crow");
+
+        ViewCreation crow = await player.WaitForViewNamedAsync("Crow");
+        ViewCreation rigel = await player.WaitForViewNamedAsync("Rigel");
+
+        // Crow first, out of the order the briefing suggests: the fight opens
+        player.SkipReceived();
+        player.SendRpc($"80 c7 {Le(crow.ViewId)} {crow.SpawnId:x2} 00 09 00");
+        await player.WaitForTextAsync("Kill the simulacrum");
+        await player.WaitForTextAsync("Why don't we play along with Crow?");
+
+        player.SkipReceived();
+        player.SendRpc($"80 c7 {Le(rigel.ViewId)} {rigel.SpawnId:x2} 00 09 00");
+        await player.WaitForTextAsync("We don't want hostile Agents tracking you.");
+
+        // Aborting takes the NPCs away again
+        player.SendRpc("80 a6");
+        await player.WaitForRpcAsync("80 a2 08");
     }
 
     private const byte Team = 3, Crew = 2;

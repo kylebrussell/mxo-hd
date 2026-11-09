@@ -64,6 +64,8 @@ namespace hds.databases.interfaces{
         //NEW
         void UpdateInventorySlot(UInt16 sourceSlot, UInt16 destSlot, UInt32 charId);
         UInt16 GetFirstNewSlot();
+        System.Collections.Generic.HashSet<int> GetCompletedMissions(UInt32 charId);
+        void SaveMissionCompleted(UInt32 charId, int missionId);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID);
         void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId);
         void setBackground(string backgroundText);

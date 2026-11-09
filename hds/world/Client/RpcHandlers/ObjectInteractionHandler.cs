@@ -23,7 +23,14 @@ namespace hds
         {
             SUBWAY = 0x02,
             LOOT = 0x05,
-            TALK = 0x09 // double-click on an NPC: 80 c7 <view u16> <spawn u16> 09 00
+            TALK = 0x09, // double-click on an NPC: 80 c7 <view u16> <spawn u16> 09 00
+            GET = 0x0d,  // right-click Get on a mission NPC
+            GIVE = 0x0e  // right-click Give on a mission NPC
+        }
+
+        private static Mob InteractedMissionMob(ClientView view)
+        {
+            return view == null ? null : MissionRuntime.FindMissionMob(Store.currentClient.playerData, view.entityId);
         }
 
         public void processTarget(ref byte[] packet)
@@ -291,13 +298,21 @@ namespace hds
                     break;
 
                 case (int) objectTypesDynamic.TALK:
-                    UInt16 talkViewId = (UInt16)(packet[0] | (packet[1] << 8));
-                    ClientView talkView = Store.currentClient.viewMan.getViewById(talkViewId);
-                    Mob talkMob = talkView == null
-                        ? null
-                        : MissionRuntime.FindMissionMob(Store.currentClient.playerData, talkView.entityId);
-                    Output.WriteDebugLog("[MISSION] Talk to view " + talkViewId + (talkMob != null ? " (" + talkMob.getName() + ")" : ""));
+                    Mob talkMob = InteractedMissionMob(interactedView);
+                    Output.WriteDebugLog("[MISSION] Talk to view " + interactedViewId + (talkMob != null ? " (" + talkMob.getName() + ")" : ""));
                     MissionRuntime.OnTalk(Store.currentClient, talkMob);
+                    break;
+
+                case (int) objectTypesDynamic.GET:
+                    Mob getMob = InteractedMissionMob(interactedView);
+                    Output.WriteDebugLog("[MISSION] Get from view " + interactedViewId + (getMob != null ? " (" + getMob.getName() + ")" : ""));
+                    MissionRuntime.OnGet(Store.currentClient, getMob);
+                    break;
+
+                case (int) objectTypesDynamic.GIVE:
+                    Mob giveMob = InteractedMissionMob(interactedView);
+                    Output.WriteDebugLog("[MISSION] Give to view " + interactedViewId + (giveMob != null ? " (" + giveMob.getName() + ")" : ""));
+                    MissionRuntime.OnGive(Store.currentClient, giveMob);
                     break;
 
                 case 0x04: // hardline upload, retail 80 c7 <view> <spawn> 04 00: Code Bits and fragments go into code storage
