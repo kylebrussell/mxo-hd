@@ -852,6 +852,9 @@ namespace hds
                 }
                 session.Attacker.messageQueue.addRpcMessage(NpcLoot.BuildLootWindow(lootMoney, lootItems, lootFlags));
                 Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {lootItems.Count} items");
+                // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
+                // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
+                session.Attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();
             }
 
             session.Attacker.FlushQueue();
