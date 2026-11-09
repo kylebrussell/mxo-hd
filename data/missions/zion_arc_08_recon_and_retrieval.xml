@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Recon and Retrieval, Tyndall's mission 8 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Wounded Zionite, Traitor and Hostages 1 and 2 are named. Phase 1's fragments are
+     "stored" somewhere Hadar knows of: a Search of a box for Frags (6785), after talking to him. Phase 2's fragments
+     come from Adhara's computer as Data (6787), a different item from phase 1's so neither is handed out twice; that
+     is what phase 3 uploads. The Enter Phase line of phase 3 asks to kill the remaining Exiles, but the guide's goals
+     don't, so there's no DefeatAll. Phase 3's two escorts are separate goals, out of the building and then to a
+     hardline. -->
+<mission id="2308" title="Recon and Retrieval" description="Resupply an internal base for Zion." plot="1" order="18"
+         org="1" contact="Tyndall" exp="49500" info="52500">
+  <npc id="1" handle="Hadar" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
+  <npc id="2" handle="Adhara" type="HOSTILE" at="2" rsi="720A0058" weapon="2564" />
+  <npc id="3" handle="Elnath" type="FRIENDLY" at="3" rsi="520A0058" weapon="2564" />
+  <npc id="4" handle="Huygens" type="FRIENDLY" at="3" rsi="d1040058" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I hate to ask this of you, but no one else is available right now. We need you to re-supply one of our bases in the Matrix.
+
+Go to this address and pick up the code fragments that Hadar has on hand. Be careful, Warrior. The Exiles have been making a habit of attempting to steal our transfers.</briefing>
+    <enter><say>Hadar is inside. He should be able to tell you where the Fragments are stored.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Speak with Hadar" type="Talk" npc="1" />
+    <!-- Where the fragments are stored isn't printed: a box. -->
+    <objective goal="2" text="Get the fragments" type="Search" object="1" item="6785" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I have a lock on her position right now. Adhara has already paired up with a small band of Exiles in this district. Make your way there and recover those fragments!</briefing>
+    <enter><say>This is the place ... It looks like there are a few Exiles here with Adhara. Take her out and get those frags back.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill Adhara" type="Defeat" npc="2" />
+    <objective goal="2" text="Take the fragments from Adhara's computer" type="Search" object="1" item="6787" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I'm sending you the address of the next location now.</briefing>
+    <enter><say>We have a problem. It appears that before you killed Adhara they gave up the location of this base and the Exiles that she was siding with hit us -- hard! I'm glad you're here because we need you to kill the remaining Exiles and rescue two survivors. After you've done that, get the survivors and the frags to a hardline and upload them. Good luck!</say></enter>
+    <objective goal="1" text="Lead the Zion Operatives out of the building" type="Escort" npc="3,4" to="exit" />
+    <objective goal="2" text="Lead the Zion Operatives to a hardline" type="Escort" npc="3,4" to="hardline" after="1" />
+    <objective goal="3" text="Upload the data fragments through a hardline" type="Upload" item="6787" />
+    <objective goal="4" text="Do not let either hostage die" type="Protect" npc="3,4" />
+  </phase>
+</mission>

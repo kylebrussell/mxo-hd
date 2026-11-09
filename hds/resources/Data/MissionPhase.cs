@@ -12,5 +12,12 @@ namespace hds
         public List<MissionObjective> missionObjectives = new List<MissionObjective>();
         public List<MissionTrigger> triggers = new List<MissionTrigger>();
         public List<MissionLine> completeLines = new List<MissionLine>(); // when all its goals are done
+
+        // Generated phases: the site is picked when the phase starts, and its waypoint and area come from there.
+        public string site;            // "Normal", "Any" or a style (SlumApt, GenericApt, Office, RedPillExtraction, ...)
+        public string enemy;           // Machines, Merovingian or Zion: the org of the hostiles it spawns
+        public int enemies;            // how many
+        public List<MissionLine> enterLines = new List<MissionLine>(); // on reaching the site's floor
+        public List<MissionObjectDef> objects = new List<MissionObjectDef>();
     }
 }

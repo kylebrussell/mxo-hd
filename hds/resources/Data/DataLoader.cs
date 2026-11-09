@@ -90,7 +90,7 @@ namespace hds
         /// Only Zion's early missions exist so far, so every organisation is offered them.</summary>
         public List<Mission> FindMissions(uint orgId, HashSet<int> completed)
         {
-            return ContactOffer(missions, completed);
+            return ContactOffer(missions.FindAll(m => MissionContacts.Offers(orgId, m)), completed);
         }
 
         public static List<Mission> ContactOffer(List<Mission> missions, HashSet<int> completed)

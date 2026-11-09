@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The End of the Beginning, Tyndall's mission 1 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Hostages 1 and 2, Contact and Captain are named. Captain Menkar waits at the REP and is the escort's
+     target; Alcyone (Contact) is named in a line only. The hostages' escort and protection are one goal each with
+     npc="1,2". -->
+<mission id="2301" title="The End of the Beginning" description="Rescue a pair of Bluepill hostages from Exiles." plot="1" order="11"
+         org="1" contact="Tyndall" exp="33000" info="42000">
+  <npc id="1" handle="Karen Holt" type="FRIENDLY" at="1" rsi="760A0058" weapon="0" />
+  <npc id="2" handle="Diane Foster" type="FRIENDLY" at="1" rsi="520A0058" weapon="0" />
+  <npc id="3" handle="Alcyone" type="FRIENDLY" at="2" rsi="89090058" weapon="2564" />
+  <npc id="4" handle="Menkar" type="FRIENDLY" at="2" rsi="58010058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>I'm glad that you have decided to continue to work with us. I hope this is a habit that stays with you for your future and the future of Zion. Now, on to business.
+
+Last week, several groups of Exiles attacked a few of our bases. Because of this the Merovingian has given us free reign to take out this batch of scum at their hideout. Additionally, there are a couple Bluepills being held hostage in the area. We need you to pick them up and take them to a safe location.</briefing>
+    <enter><say>These Exiles aren't tough but there are a lot of them. Be careful!</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll" />
+    <objective goal="2" text="Lead both hostages out of the area" type="Escort" npc="1,2" to="exit" />
+    <objective goal="3" text="Do not let either hostage die" type="Protect" npc="1,2" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Merovingian" enemies="3">
+    <briefing>Now get them to Menkar and Alcyone at the nearby Redpill Extraction Point. I'm sending you the address now.</briefing>
+    <enter><say>This is one of our Redpill Extraction Points. The Bluepills will be safe here.</say></enter>
+    <objective goal="1" text="Lead both hostages to Menkar at the REP" type="Escort" npc="1,2" to="npc:4" />
+    <objective goal="2" text="Do not let either hostage die" type="Protect" npc="1,2" />
+  </phase>
+</mission>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fatal Frame-Up, Flood's third story mission for the Merovingian. Text: the Prima guide (2005). Placement is
+     generated: see docs/MISSIONS.md. No named NPCs. The guide calls the stolen item a dossier in phase 1 and the
+     secret plans in phase 2; both are the one Dossier item. The storeroom is a Box. -->
+<mission id="2103" title="Fatal Frame-Up" description="Frame the Machines for killing Zion operatives." plot="1" order="13"
+         org="3" contact="Flood" exp="44000" info="42000">
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>We would like to show the Humans that Machines cannot be trusted. To do so, we feel it's necessary to take action ourselves instead of waiting for the Machines or Zion to complicate their precious little truce.
+
+We have the address of a base that has one of their lead operatives. Kill him and make it messy. We'll see to it that the Machines get the credit, using a dossier we will plant inside the target location.</briefing>
+    <enter><say>Go into the storeroom, grab the secret plans that you find there and then make your way to the second targeted location.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Steal a dossier from the Machines" type="Search" object="1" item="6799" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>The next address has been downloaded to you. Kill all the humans you can and then plant the dossier in the desk you find there.</briefing>
+    <enter><say>I will let you know when you've opened the targeted desk for the dossier. Just be careful of traps!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the Zion Operatives" type="DefeatAll" />
+    <objective goal="2" text="Put the secret plans inside the desk" type="Put" object="1" item="6799" />
+  </phase>
+</mission>

@@ -21,9 +21,21 @@ namespace hds
         private readonly HashSet<int> everDone = new HashSet<int>();
         public readonly Dictionary<UInt32, UInt16> itemSlots = new Dictionary<UInt32, UInt16>();
 
+        // A generated phase's placement, for this player: mission definitions are shared.
+        public MissionSite site;
+        public readonly List<MissionSite> sites = new List<MissionSite>();         // every site used so far, in phase order
+        public List<MissionWaypoint> waypoints = new List<MissionWaypoint>();      // this phase's, as sent
+        public readonly List<double[]> exits = new List<double[]>();              // other places that count as leaving
+        public readonly Dictionary<ushort, MissionObjectState> objects = new Dictionary<ushort, MissionObjectState>();
+        public readonly HashSet<ushort> following = new HashSet<ushort>();         // NPCs walking with the player
+        public readonly List<Mob> hostiles = new List<Mob>();                       // the phase's generated hostiles
+        public bool entered;  // the phase's enter lines have played
+        public bool failed;
+
         public MissionProgress(Mission mission)
         {
             this.mission = mission;
+            waypoints = Phase?.waypoints ?? new List<MissionWaypoint>();
         }
 
         public MissionPhase Phase => phaseIndex < mission.phases.Count ? mission.phases[phaseIndex] : null;
@@ -59,7 +71,7 @@ namespace hds
         {
             foreach (MissionObjective objective in OpenObjectives())
             {
-                if (objective.type == type && objective.npcId == npcId)
+                if (objective.type == type && objective.Has(npcId))
                 {
                     return objective;
                 }
@@ -72,7 +84,7 @@ namespace hds
         {
             foreach (MissionObjective objective in OpenObjectives())
             {
-                if (objective.npcId == npcId)
+                if (objective.Has(npcId))
                 {
                     return objective;
                 }
@@ -116,7 +128,8 @@ namespace hds
 
                 foreach (MissionObjective objective in phase.missionObjectives)
                 {
-                    if (!done.Contains(objective.goal))
+                    // Optional goals can be left; a Protect goal is kept by finishing the rest
+                    if (!objective.optional && objective.type != MissionGoalType.Protect && !done.Contains(objective.goal))
                     {
                         return false;
                     }
@@ -133,6 +146,11 @@ namespace hds
             waitingForExit = false;
             done.Clear();
             fired.Clear();
+            entered = false;
+            site = null;
+            hostiles.Clear();
+            exits.Clear();
+            waypoints = Phase?.waypoints ?? new List<MissionWaypoint>();
             return Phase != null;
         }
 
@@ -141,8 +159,11 @@ namespace hds
 
         public bool IsExiting(double x, double y, double z)
         {
-            return waitingForExit && Phase != null && MissionExit.HasLeft(Phase, x, y, z);
+            return waitingForExit && Phase != null && MissionExit.HasLeft(waypoints, exits, x, y, z);
         }
+
+        /// <summary>Whether (x, y, z) is at one of the phase's ways out, whether or not its goals are done.</summary>
+        public bool AtExit(double x, double y, double z) => Phase != null && MissionExit.HasLeft(waypoints, exits, x, y, z);
     }
 
     /// <summary>
@@ -157,21 +178,36 @@ namespace hds
 
         public static bool HasLeft(MissionPhase phase, double x, double y, double z)
         {
-            if (phase.waypoints.Count == 0)
+            return HasLeft(phase.waypoints, null, x, y, z);
+        }
+
+        /// <param name="exits">Other ways out, such as the street door of a generated site's elevator.</param>
+        public static bool HasLeft(List<MissionWaypoint> waypoints, List<double[]> exits, double x, double y, double z)
+        {
+            if (waypoints.Count == 0 && (exits == null || exits.Count == 0))
             {
                 return true;
             }
 
             double nearest = double.MaxValue;
-            foreach (MissionWaypoint door in phase.waypoints)
+            foreach (MissionWaypoint door in waypoints)
             {
-                double dx = door.x - x;
-                double dy = door.y - y;
-                double dz = door.z - z;
-                nearest = Math.Min(nearest, Math.Sqrt(dx * dx + dy * dy + dz * dz));
+                nearest = Math.Min(nearest, Distance(door.x, door.y, door.z, x, y, z));
             }
 
-            return nearest <= DoorRadiusUnits || nearest >= FarUnits;
+            double nearestExit = double.MaxValue;
+            foreach (double[] exit in exits ?? new List<double[]>())
+            {
+                nearestExit = Math.Min(nearestExit, Distance(exit[0], exit[1], exit[2], x, y, z));
+            }
+
+            return Math.Min(nearest, nearestExit) <= DoorRadiusUnits || Math.Min(nearest, nearestExit) >= FarUnits;
+        }
+
+        private static double Distance(double ax, double ay, double az, double bx, double by, double bz)
+        {
+            double dx = ax - bx, dy = ay - by, dz = az - bz;
+            return Math.Sqrt(dx * dx + dy * dy + dz * dz);
         }
     }
 }

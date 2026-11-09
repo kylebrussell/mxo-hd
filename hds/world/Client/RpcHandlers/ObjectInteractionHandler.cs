@@ -114,6 +114,11 @@ namespace hds
             {
                 DoorLifecycle.Opened(Store.currentClient, view.ViewID, entityId);
             }
+
+            if (typeId == MissionSites.ElevatorDoor1 || typeId == MissionSites.ElevatorDoor2)
+            {
+                MissionStaging.OnElevator(Store.currentClient, staticWorldObject);
+            }
         }
 
         private static GameObject PrepareDoor(GameObject door, Attribute position, Attribute orientation,
@@ -171,6 +176,17 @@ namespace hds
                 HardlineBooths.IsBooth(NumericalUtils.ByteArrayToUint16(objectValues.type, 1)))
             {
                 TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, objectValues);
+                return;
+            }
+
+            if (Elevators.IsPanel(objectValues))
+            {
+                // In a mission's building the operator offers the ride; the panel's own floor list isn't working yet
+                if (!MissionStaging.OnElevator(Store.currentClient, objectValues))
+                {
+                    Elevators.OnPanelUsed(Store.currentClient, objectValues);
+                }
+
                 return;
             }
 
@@ -288,6 +304,11 @@ namespace hds
                 return;
             }
 
+            if (interactedView != null && MissionRuntime.OnViewUse(Store.currentClient, interactedView.entityId))
+            {
+                return;
+            }
+
             if (interactedView != null && HardlineBooths.IsBooth(interactedView.GoID) && interactedView.staticObject != null)
             {
                 TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, interactedView.staticObject);
@@ -295,6 +316,7 @@ namespace hds
             }
 
 #if DEBUG
+            if (DebugChat.Enabled)
             pak.sendSystemChatMessage(Store.currentClient,
                 "Object Type ID IS " + objectTypeID.ToString() + " Dynamic Object RPC : " +
                 StringUtils.bytesToString_NS(packet), "BROADCAST");

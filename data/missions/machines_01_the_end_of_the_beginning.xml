@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The End of the Beginning, Agent Gray's mission 1 for the Machines. Text: the Prima guide (2005), with its role
+     names replaced by names. Placement is generated: see docs/MISSIONS.md. The guide prints The Merovingian as phase
+     2's enemy, but its goal is "Kill the Zion attackers" and DefeatAll counts the phase's own hostiles, so phase 2
+     spawns Zion. The guide gives Alnitak's org as "Machine Redpill" (a former Zion recruit): a bluepill-style
+     appearance and an astronomer-style name are used. -->
+<mission id="2201" title="The End of the Beginning" description="Recover a dossier from a group of Exiles." plot="1" order="11"
+         org="2" contact="Agent Gray" exp="44000" info="42000">
+  <npc id="1" handle="Alnitak" type="FRIENDLY" at="2" rsi="2D0D0098" weapon="2564" />
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>... I am very pleased that you have seen the wisdom in our ways. I insure you that you will not regret your decision. Now that you have agreed to work with the Machines, we have an assignment for you ...
+
+We require that you enter an Exile stronghold recently established in a local financial office. In the center of this stronghold is a two-room vault. Break into the vault and recover the dossier you will find there. This document is quite important to us.</briefing>
+    <enter><say>The Exile forces here are light, but keep an eye open for traps. You'll also need to find card keys to access the vault. In the last room you'll find a locked safe with the dossier. You'll need to find out the combination to the safe before you can open it.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Get the dossier from the safe" type="Search" item="6799" object="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>As your operator stated, you will be delivering the dossier to one of our other new recruits. His name is Alnitak. Meet up with him now and do not delay.</briefing>
+    <enter><say>Alnitak is another one of the former Zion recruits. Once you've delivered the dossier to him, all should be well.</say></enter>
+    <objective goal="1" text="Give the dossier to Alnitak" type="Give" npc="1" item="6799" />
+    <objective goal="2" text="Kill the Zion attackers" type="DefeatAll" />
+    <objective goal="3" text="Do not let Alnitak die" type="Protect" npc="1" />
+  </phase>
+</mission>

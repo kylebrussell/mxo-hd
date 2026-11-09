@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Stolen Artifact, Agent Gray's mission 10 for the Machines. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md. Phase 1's goal is printed "Find the artifact.
+     becomes / Find information on who has the artifact." (the goal changes): one goal with the second text, a Search of
+     furniture for the Documents (6794). Marsh ("Potential") is only the subject of a dossier, so has no NPC. Boss and
+     Extra have no lines, so no NPCs. "Search Lindqvist's computer" is a Use, then the dossier is a Search of the same
+     computer. "Find Antares" is a Talk; he waits to be attacked (attacksOnSight="0") so the artifact can be taken
+     first. "Kill Antares and the crew of the Prodito" is DefeatAll. The artifact is the Statue (1266). -->
+<mission id="2210" title="The Stolen Artifact" description="Intercept an artifact that was stolen from the Merovingian." plot="1" order="20"
+         org="2" contact="Agent Gray" exp="66000" info="63000">
+  <npc id="1" handle="Lindqvist" type="FRIENDLY" at="2" rsi="760A0058" weapon="0" />
+  <npc id="2" handle="Antares" type="HOSTILE" at="3" rsi="60010058" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Agent Corwin" type="FRIENDLY" at="4" rsi="9b000090" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>As you may have heard, the Merovingian recently had an artifact stolen from him that we would like to ... intercept. The artifact was lifted by a small band of Exiles that operate outside of the Merovingian's rule.
+
+We have the location of the Exiles' stronghold. This will be a dangerous mission ... prove to us that we have chosen the appropriate operative.</briefing>
+    <enter><say>The Exiles are scattered all over the area ... I'm afraid I don't know the exact location of the artifact, so you'll have to run a thorough search.</say></enter>
+    <object id="1" kind="Furniture" />
+    <!-- Printed as "Find the artifact. becomes" then this line: the goal changes, so one goal with the final text. -->
+    <objective goal="1" text="Find information on who has the artifact" type="Search" item="6794" object="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>I have sent you the address of Lindqvist's Laboratory. Only she can decipher the documents.</briefing>
+    <enter><say>You're almost there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Give the Documents to Lindqvist" type="Give" npc="1" item="6794" />
+    <!-- Searching the computer is a Use; the dossier is the next goal's Search. -->
+    <objective goal="2" text="Search Lindqvist's computer" type="Use" object="1" after="1" />
+    <objective goal="3" text="Get the dossier on Marsh from Lindqvist's computer" type="Search" item="6799" object="1" after="2" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="5">
+    <briefing>Captain Antares and his crew are inside a nearby REP. Find Antares and get the artifact from him by any means possible. You have been updated with the proper coordinates for the Redpill Extraction Point.</briefing>
+    <enter><say>The Redpill Extraction Point is inside this building.</say></enter>
+    <objective goal="1" text="Find Antares" type="Talk" npc="2" />
+    <objective goal="2" text="Take the artifact from Antares" type="Get" npc="2" item="1266" after="1" />
+    <objective goal="3" text="Kill Antares and the crew of the Prodito" type="DefeatAll" after="2" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="2">
+    <briefing>You have been updated with the drop-off point. Go there now before additional attempts are made to steal the artifact.</briefing>
+    <enter><say>Make sure that the artifact is returned to Agent Corwin.</say></enter>
+    <objective goal="1" text="Deliver the artifact to Agent Corwin" type="Give" npc="3" item="1266" />
+  </phase>
+</mission>

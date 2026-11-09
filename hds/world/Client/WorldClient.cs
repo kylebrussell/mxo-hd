@@ -207,7 +207,7 @@ namespace hds
                                     worldPackets.Add(packet);
                                     // Start new packet and add it to the queue 
                                     packet = new WorldPacket(playerData);
-                                    packet.addRPCContent(messageObjects);
+                                    packet.addObjectContent(messageObjects);
                                 }
                                 if (messageObjects.isTimed == true)
                                 {

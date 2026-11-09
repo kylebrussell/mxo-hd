@@ -286,7 +286,7 @@ namespace hds
 
         public void ProcessLootAccepted()
         {
-            if (TutorialMission.Of(Store.currentClient)?.OnTakeAll() == true)
+            if (TutorialMission.Of(Store.currentClient)?.OnTakeAll() == true || MissionRuntime.OnTakeAll(Store.currentClient))
             {
                 return;
             }
@@ -365,6 +365,7 @@ namespace hds
             currentClient.playerData.currentSelectedTargetViewId = viewId;
             currentClient.playerData.currentSelectedTargetSpawnId = spawnId;
             ServerPackets pak = new ServerPackets();
+            if (DebugChat.Enabled)
             pak.sendSystemChatMessage(Store.currentClient,
                 "TARGET CHANGE For ViewID " + viewId.ToString() + " AND SPAWN ID : " + spawnId.ToString(), "MODAL");
         }

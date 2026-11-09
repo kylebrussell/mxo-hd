@@ -16,6 +16,9 @@ namespace hds
         public int exp = 500;
         public int info = 1000;
         public string finishLine; // what the contact says when the mission ends
+        public byte org;          // 0: offered to everyone; 1 Zion, 2 Machines, 3 Merovingian (the mission list request's org)
+        public string contact = "Tyndall"; // who gives it: MissionContacts has their ids
+        public bool generated => phases.Exists(p => p.site != null); // placed at accept time in a site from the world's markup
         public List<MissionPhase> phases = new List<MissionPhase>();
         public List<MissionNpc> npcs = new List<MissionNpc>();
 
@@ -53,6 +56,7 @@ namespace hds
         public ushort level = 1;
         public ushort maxHealth = 500;
         public UInt32 weapon;
+        public int at;                     // placed in this phase's site (1-based) when that phase starts, instead of x, y, z
         public List<MissionLine> lines = new List<MissionLine>(); // what it says when talked to
     }
 
@@ -78,6 +82,13 @@ namespace hds
         public string text;
         public int afterGoal = -1; // only once this goal is done (an NPC's lines: the latest that applies is used)
         public byte display = 1;  // 80 a1 display flag; 5 on what bystanders say
+    }
+
+    /// <summary>A thing a phase's goals use: a computer, safe or mainframe it spawns, or furniture already on the floor.</summary>
+    public class MissionObjectDef
+    {
+        public ushort id;
+        public string kind = "Furniture"; // Computer, Safe, Mainframe, Box, Phone or Furniture
     }
 
     /// <summary>Lines the player sets off by walking near a place, once each.</summary>

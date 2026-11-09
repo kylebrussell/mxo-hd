@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nothing To Gain, Flood's seventh story mission for the Merovingian. Text: the Prima guide (2005). Placement is
+     generated: see docs/MISSIONS.md. No named NPCs. The first virus is in a filing cabinet (Furniture); the second is
+     in the black computer, one Computer object (the guide's decoy white computers aren't modelled). The two viruses
+     are different items (Virus, Virus_Electron_Chain) so the first upload can't stand for the second. -->
+<mission id="2107" title="Nothing To Gain" description="Steal a pair of computer viruses and sell them to a Zion contact." plot="1" order="17"
+         org="3" contact="Flood" exp="38500" info="42000">
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Today we will bring a bit of downtime to the infernal programs by acting as a "middle man" between Zion and the Machines.
+
+You are going to steal two computer viruses from separate locations and bring them to a tolerable Zion contact by uploading the viruses through a hardline. The location of the first virus has already been given to you. Go there now.</briefing>
+    <enter><say>The computer virus is inside a filing cabinet within this location, however it's not clear to me which cabinet has the virus. You will have to find it.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Retrieve the first computer virus" type="Search" object="1" item="6786" />
+    <objective goal="2" text="Upload the first computer virus through a hardline" type="Upload" item="6786" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Now head to the next location.</briefing>
+    <enter><say>The second computer virus is inside a black computer. If you see a white computer, it will not have the computer virus. Once you have collected the second computer virus, upload it through a hardline.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find the second computer virus" type="Search" object="1" item="6842" />
+    <objective goal="2" text="Upload the second computer virus through a hardline" type="Upload" item="6842" after="1" />
+  </phase>
+</mission>

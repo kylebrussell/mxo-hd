@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signal Loss, Tyndall's mission 7 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Contact, Target and Trader are named. Target is printed as Zion Military with Bluepill and
+     Labworker tags; his look is a Zion male's, by the printed organisation. "Stop Zosma from blocking communication"
+     is a Defeat. Trader's sex is unspecified; a male Exile look is used. "Trade the virus for the data" is a Give of
+     the Virus (6786) then a Get of Data (6787) with Fabrizio. Phase 2's Start and Enter Phase are printed "None.", so
+     it has no briefing or arrival line. Phases 1 and 3 only talk, trade and upload, so 2 hostiles. -->
+<mission id="2307" title="Signal Loss" description="Make an exchange with one of the Merovingian's men." plot="1" order="17"
+         org="1" contact="Tyndall" exp="66000" info="52500">
+  <npc id="1" handle="Zosma" type="HOSTILE" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Cassini" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="3" handle="Fabrizio" type="FRIENDLY" at="3" rsi="c5020058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>The Merovingian is willing to make an exchange with us and we need you to make the trade. Pick up the computer virus from Cassini at this address and make the switch at another. Cassini will have the rest of your instructions. Good luck, Warrior.</briefing>
+    <enter><say>... Something strange is going on ... I'm getting some interference ... I'm losing packets left and right, it's almost like something is blocking my link. I should be able to keep your map updated. Just move forward with caution -- this doesn't feel right.</say></enter>
+    <objective goal="1" text="Talk to Cassini" type="Talk" npc="2" />
+    <objective goal="2" text="Get the virus from Cassini" type="Get" npc="2" item="6786" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <!-- The guide prints this phase's Start Phase and Enter Phase as "None.". -->
+    <objective goal="1" text="Stop Zosma from blocking communication with your Operator" type="Defeat" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="2">
+    <briefing>This is where Fabrizio will make the trade with you. Try not to keep them waiting.</briefing>
+    <enter><say>When you find Fabrizio, they will take the virus from you and then give you the data that was agreed upon.</say></enter>
+    <!-- A trade: the Give, then the Get with the same text. -->
+    <objective goal="1" text="Trade the virus for the data" type="Give" npc="3" item="6786" />
+    <objective goal="2" text="Trade the virus for the data" type="Get" npc="3" item="6787" after="1" />
+    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+</mission>

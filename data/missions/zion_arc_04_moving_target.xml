@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Moving Target, Tyndall's mission 4 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Bluepills 1 to 3 are named; the four Officeworkers never appear in the text and have no NPCs.
+     Items: Access_Code (6782) from Gary Novak, Data (6787) from Linda Ortega, Data_CD (6831) from Paul Whitley and
+     Documents (6794) from the filing cabinet, each different so that no item is handed out twice. Phase 3's second
+     line names two sources, so it is two goals with the same text (a Get from Paul Whitley and a Search of the
+     cabinet). "Upload all data" uploads the cabinet's Documents and opens after Paul Whitley's goal, so both pieces
+     are in hand. Phases 1 and 2 only talk and hand over items, so 2 hostiles. -->
+<mission id="2304" title="Moving Target" description="Pick up important intel from a Bluepill." plot="1" order="14"
+         org="1" contact="Tyndall" exp="44000" info="52500">
+  <npc id="1" handle="Gary Novak" type="FRIENDLY" at="1" rsi="2D0D0098" weapon="0" />
+  <npc id="2" handle="Linda Ortega" type="FRIENDLY" at="2" rsi="760A0058" weapon="0" />
+  <npc id="3" handle="Paul Whitley" type="FRIENDLY" at="3" rsi="350A0058" weapon="0" />
+  <phase site="Office" enemy="Machines" enemies="2">
+    <briefing>Greetings, friend of Zion. We need your help to recover data from a couple Bluepills who were previously watched by Agents. Both of them have information about an aspect of the Matrix we desperately need intel on.
+
+We need you to go to their locations, meet them and receive a piece of data from each. Once you have all of the data, you will upload them through a hardline.</briefing>
+    <enter><say>Get the Access Codes from Gary Novak per Tyndall's request.</say></enter>
+    <objective goal="1" text="Get the access codes from Gary Novak" type="Get" npc="1" item="6782" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="2">
+    <briefing>Be on the watch for Exiles attackers. Any programs you run into during this data extraction are probably against our efforts.</briefing>
+    <enter><say>I'm detecting additional forces on the premises. We still need to locate Linda Ortega, but be on the look out for hostiles.</say></enter>
+    <objective goal="1" text="Locate Linda Ortega" type="Talk" npc="2" />
+    <objective goal="2" text="Pick up the data from Linda Ortega" type="Get" npc="2" item="6787" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I'm going over the information that you've found so far. All I'm getting out of this is a name and an address. We'll need you to investigate this. The address is being sent to you now.</briefing>
+    <enter><say>I hope that this is your final stop. We're looking for a Mr. Paul Whitley. Speak with him and pick up any data that he might have for you.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Speak with Paul Whitley" type="Talk" npc="3" />
+    <!-- One line, two sources: Paul Whitley's piece here, the filing cabinet's in the next goal. -->
+    <objective goal="2" text="Get the last piece of information from Paul Whitley and the filing cabinet" type="Get" npc="3" item="6831" after="1" />
+    <objective goal="3" text="Get the last piece of information from Paul Whitley and the filing cabinet" type="Search" object="1" item="6794" after="1" />
+    <objective goal="4" text="Upload all data through a hardline" type="Upload" item="6794" after="2" />
+  </phase>
+</mission>

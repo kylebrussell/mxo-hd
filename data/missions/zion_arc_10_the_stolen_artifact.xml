@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Stolen Artifact, Tyndall's mission 10 for Zion. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md.
+     Captain, Contact and Boss are named; Leader and Bruce never appear in the text and have
+     no NPCs. "Captain Captain" is Captain Castor, and a lone "Captain" is his name. "Search the Exile base for
+     documents" is a Search of furniture for Documents (6794). "Steal the artifact" is a Search of a safe for the
+     Statue (1266), which is given to Lalande. "Kill Captain" in phase 5: Castor has to be talked to, led and kept
+     alive in phases 1 to 4, which a hostile NPC can't be, so npc 1 stays friendly and npc 4 is a second, hostile
+     Castor placed in phase 5 for the kill; he waits for the player to start the fight (attacksOnSight="0"). -->
+<mission id="2310" title="The Stolen Artifact" description="Carry out assignment with first Redpill you extracted." plot="1" order="20"
+         org="1" contact="Tyndall" exp="110000" info="73500">
+  <npc id="1" handle="Castor" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Ludovica" type="HOSTILE" at="4" rsi="a8060090" weapon="2564" />
+  <npc id="3" handle="Lalande" type="FRIENDLY" at="5" rsi="58010058" weapon="2564" />
+  <npc id="4" handle="Castor" type="HOSTILE" at="5" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <phase site="RedPillExtraction" enemy="Merovingian" enemies="3">
+    <briefing>I come to you with a matter of utmost importance, Warrior. Several groups of Exiles attacked one of our bases last week. The Frenchman denies responsibility, claiming it's the work of renegades who operate outside of his control. You will be working with the crew of the Proditio on this assignment.
+
+Go to this location to meet with the crew of the Proditio. Additional instructions will be sent to you when you reach your first objective ... Oh, one more thing: You might also like to hear that the Captain of the Proditio, Castor, was the first Redpill candidate that you recruited ...</briefing>
+    <enter><say>Meet up with Captain Castor of the Proditio. Once you've spoken with him, escort him and his crew to the strike location.</say></enter>
+    <objective goal="1" text="Talk to Captain Castor" type="Talk" npc="1" />
+    <objective goal="2" text="Lead Castor out of the building" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Do not let Captain Castor die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>The purpose of this attack is to determine if what the Merovingian says is true or not. If he is lying, then we will eliminate a few of the Exiles under his control and strike back for the attacks that have been made. If he is telling the truth, we will put a stop to these renegades and hopefully prevent further attacks from being made against Zion bases.</briefing>
+    <enter><say>You must recover any documentation that will help Zion determine if these Exiles are working for the Merovingian or not. If the Merovingian is at fault, we may have to strike back for his hostility.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the Exile base for documents" type="Search" object="1" item="6794" />
+    <objective goal="2" text="Lead Castor out of the area" type="Escort" npc="1" to="exit" />
+    <objective goal="3" text="Upload the documents through a hardline" type="Upload" item="6794" after="1" />
+    <objective goal="4" text="Do not let Captain Castor die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Before we can recover the artifact for ourselves, we must cause a diversion at another base; otherwise we'll never be able to pry the artifact out of the hands of the renegades.
+
+Eliminate all of the renegade Exiles and you will proceed to the next location to extract the artifact from Exile hands.</briefing>
+    <enter><say>This is the place. Good luck..</say></enter>
+    <objective goal="1" text="Eliminate all of the Exiles" type="DefeatAll" />
+    <objective goal="2" text="Lead Castor out of the area" type="Escort" npc="1" to="exit" />
+    <objective goal="3" text="Do not let Captain Castor die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>This assault is just what we needed to pull the artifact from the hands of the renegades.
+
+I'm sending you the second set of coordinates which is the artifact's location. We're not concerned about how you complete your objective, but you must recover the artifact.</briefing>
+    <enter><say>Be on the lookout for an Exile that goes by the calling Ludovica. If you do see her, it would serve our interest and the Merovingian's if she was no longer a factor in the equation.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Steal the artifact" type="Search" object="1" item="1266" />
+    <objective goal="2" text="Kill Ludovica" type="Defeat" npc="2" />
+    <objective goal="3" text="Lead Castor out of the area" type="Escort" npc="1" to="exit" />
+    <objective goal="4" text="Do not let Captain Castor die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Keep moving, Warrior. You must meet with Lalande. Oh, and don't lose Castor.</briefing>
+    <enter><say>This is where you can find Lalande.</say></enter>
+    <objective goal="1" text="Speak with Lalande" type="Talk" npc="3" />
+    <objective goal="2" text="Lead Castor to Lalande" type="Escort" npc="1" to="npc:3" after="1" />
+    <objective goal="3" text="Give the artifact to Lalande" type="Give" npc="3" item="1266" />
+    <!-- The turned Castor: npc 4, hostile, standing in for npc 1. -->
+    <objective goal="4" text="Kill Castor" type="Defeat" npc="4" />
+  </phase>
+</mission>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Viral Insurance, Agent Gray's mission 4 for the Machines. Text: the Prima guide (2005), with its role names
+     replaced by names. Placement is generated: see docs/MISSIONS.md. The guide's NPC is tagged Agent (though the
+     briefing calls it "a program"), so it is named and dressed as an Agent. The summary says "Network base"; the phases
+     say Zion, as used here. -->
+<mission id="2204" title="Viral Insurance" description="Infiltrate a Network base and plant a virus on the mainframe." plot="1" order="14"
+         org="2" contact="Agent Gray" exp="22000" info="42000">
+  <npc id="1" handle="Agent Kessler" type="FRIENDLY" at="1" rsi="6e060040" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="2">
+    <briefing>We would like you to peerform a small task for us. Pick up a computer virus from a program named Agent Kessler and then place it at a Zion base as ... insurance ... should the Truce ever be lifted. We can trigger the computer virus remotely. In your Human terms: a remote detonator. We trust that you will follow through for us.</briefing>
+    <enter><say>First, pick up the computer virus from Agent Kessler.</say></enter>
+    <objective goal="1" text="Pick up the computer virus from Agent Kessler" type="Get" npc="1" item="6786" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>You must head to the Zion location that I am downloading to you. Whatever you do, do not err. We have very little tolerance for failure or death.</briefing>
+    <enter><say>This building is where you will be planting the computer virus. Take the virus into the back room and insert it into the mainframe.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Insert the virus into the mainframe" type="Put" item="6786" object="1" />
+  </phase>
+</mission>

@@ -569,6 +569,7 @@ namespace hds
                         {
 #if DEBUG
                             ServerPackets pak = new ServerPackets();
+                            if (DebugChat.Enabled)
                             pak.sendSystemChatMessage(thisclient,
                                 "Mob with Name " + thismob.getName() + " with new View ID " + mobView.ViewID +
                                 " spawned", "BROADCAST");
@@ -608,6 +609,7 @@ namespace hds
                         ServerPackets packets = new ServerPackets();
                         packets.sendDeleteViewPacket(thisclient, view.ViewID);
 #if DEBUG
+                        if (DebugChat.Enabled)
                         packets.sendSystemChatMessage(thisclient,
                             "MobView (" + mob.getName() + " LVL: " + mob.getLevel() +
                             " ) with View ID " + view.ViewID + " is out of range and is deleted!",

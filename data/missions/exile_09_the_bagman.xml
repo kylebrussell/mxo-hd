@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Bagman, Flood's ninth story mission for the Merovingian. Text: the Prima guide (2005). Placement is
+     generated: see docs/MISSIONS.md. No named NPCs. The code trap is the Virus item, taken from one wall safe and put
+     in another. -->
+<mission id="2109" title="The Bagman" description="Frame the Machines for stealing from Zion." plot="1" order="19"
+         org="3" contact="Flood" exp="44000" info="42000">
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The Humans recently imported some code traps from one of their bases. We want you to steal one out of their safe, transport it over to a Machine base and leave it in the Machine's safe. This will do wonders for trust between Machines and Humans.</briefing>
+    <enter>
+      <say>Watch out for wandering guards. These Humans can be quite the force to reckon with, but ... I assume you, of all people, would already know that. The code trap we seek is on a disk inside a wall safe, labeled "Virus."</say>
+      <say>Find the safe and you will have found the code trap.</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Steal the code trap virus" type="Search" object="1" item="6786" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Be on the lookout for hostile Redpills, as I think we may have drawn some of their attention.</briefing>
+    <enter><say>Now all you have to do is plant code trap into the wall safe.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Put the virus in the wall safe" type="Put" object="1" item="6786" />
+  </phase>
+</mission>
