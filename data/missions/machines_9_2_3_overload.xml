@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Overload, Machines story mission 9.2.3. Source: research/missions/transcripts/Mach9-2-3.md (the archive replay of
+     [Machine Archive 9.2.3], given by [Archived]Agent Gray; all shots of the log after it ended). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Agent Pace and Agent Stewart.
+     Pace called the player "Ms. Napilitano" and "Marie"; both are {player}. Her italic "tesoro" is plain text. Ours:
+     the description (the Summary tab was never opened), the objective texts, the sites (none is described: Normal),
+     the looks and the enemy counts. The accelerated programs are Machine programs overridden by the intruder:
+     Machines; in the last area Gray speaks of overridden Exiles, so its hostiles are Merovingian. Rewards: 396,000
+     experience and 66,500 information, shown right after this mission completed.
+     Gaps: the first area's arrival line was seen without its header; it is the Operator's voice and is used as his.
+     His "Seriously, are we surprised?" came between the briefing and it and is said on arrival before it. Pace and
+     Agent Stewart fought beside the player; we have no allies that fight, so the player clears the area and must keep
+     Pace alive. Team chat also shows The Architect saying "..." before Pace's first line, but it isn't in the visible
+     log and may be left from an earlier mission, so he isn't placed. A line may hide in Gray's third briefing at a
+     screenshot join; it reads whole and is used as such. The third area was empty when the player got there; here
+     the player searches it and the Operator's line is said then. The last area held one massive overridden program;
+     its name isn't in the log, so the area's hostiles are generated and the Operator's last line is said when they are
+     all dead. -->
+<mission id="209203" title="Overload" description="Fight back the accelerated programs the intruder has turned loose across the city." plot="1"
+         order="9203" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="2">Even these accelerated programs are no match for us, tesoro.</say>
+  </npc>
+  <npc id="2" handle="Agent Stewart" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">...</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Operative, although his program overrides have posed problems for simulation stability, up to this point the intruder had not acted in a fashion that could be interpreted as intentionally and systematically hostile to the System. This has changed. The cause of his change in behavior is not known; in fact, we had just concluded a reasonably successful initial meeting with him.
+
+However, the reality of the current situation must now be dealt with. Hostile, overridden programs have appeared across the city. All operatives are being mobilized to combat this threat.</briefing>
+    <enter>
+      <say>Seriously, are we surprised? A city-wide rampage was only a matter of time. I think these super-villain types have it in their contracts--that and evil laughter.</say>
+      <say>We've got accelerated program signals in there. Time to earn that paycheck.</say>
+    </enter>
+    <objective goal="1" text="Eliminate the accelerated programs" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Operative, as the intruder himself does not appear to be present, we can assign combat programs to assist you. Please rendezvous with Agent Pace.</briefing>
+    <enter><say>Pace should be in-- Wait a second... I'm getting accelerated signals in there.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">{player}! Hostile programs are overrunning this location. We must eliminate them immediately.</say></talk>
+      <done>
+        <say>I've got more accelerated signals in your vicinity!</say>
+        <say npc="1">Come, {player}! There is no time to waste!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Eliminate the accelerated programs" type="DefeatAll">
+      <done><say>Okay, I think you're clear.
+
+Pace didn't get hurt, did she?</say></done>
+    </objective>
+    <objective goal="3" text="Do not let Agent Pace die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I assume that you appreciate the urgency of the situation, operative.
+
+You will have to proceed, even without backup.</briefing>
+    <enter><say>Hm... Long range scans showed accelerated activity in there, but I'm not picking up anything now.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Well, I guess the news today isn't all bad...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I am less concerned about Exile casualties than the possibility that they may be turned against the System or the populace by override commands. Most sentient programs in the System will be vulnerable to the intruder's codes.</briefing>
+    <enter><say>I've got a massive override signal in there. Not sure I like the looks of this.</say></enter>
+    <objective goal="1" text="Eliminate the accelerated programs" type="DefeatAll">
+      <done><say>Ew. Is the intruder gonna go around accelerating just any old program? This could get to be a real pain.</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, operative. Continued activity of this type by the intruder will place the entire simulation in jeopardy. I anticipate having another assignment for you shortly.</finish>
+</mission>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Confession, Machines story mission 9.2.5. Source: research/missions/transcripts/Mach9-2-5.md (the archive replay of
+     [Machine Archive 9.2.5], given by [Archived]Agent Gray; all shots of the log after it ended). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Hypatia, Intruder, Agent Gray,
+     Agent Pace, Agent Marks, Agent Clark and The Architect. Gray and Agent Clark called the player "Ms. Napilitano"
+     and Pace called her "Marie"; both are {player}. The italic "will", "tesoro" and "we" are plain text. Besides the
+     contact on the datalink, a field NPC named Agent Gray confers with the player and attends the meeting; he is a
+     friendly NPC with that handle. The Architect is a friendly NPC with a civilian look, as in 6.2.5. Ours: the
+     description (the Summary tab was never opened), the objective texts, the sites (none is described: Normal; the
+     shots after the mission show a pale green room with frosted glass doors, most likely the meeting place), the
+     looks (four Agents and three Agent looks, so two share one) and the enemy count. Hypatia is an Exile and her
+     Bookwyrms are her programs: Merovingian. Rewards: 395,820 experience and 66,500 information, shown right after
+     this mission completed.
+     Gaps: about 31 minutes in Hypatia's place weren't captured, so whatever she or the Operator said there is
+     missing; the Operator's long arrival line is said on arrival. The Intruder, Agent Gray and Agent Pace are in two
+     places each, so each is two NPCs. Lines may hide at screenshot joins in Gray's first briefing, Pace's second line
+     and the Intruder's demand; they read whole and are used as such. The meeting played as a scene on arrival (the
+     Intruder's demand, the Architect's answer, then Agent Gray, the Architect, Pace and the Intruder); here talking to
+     the Architect plays it: the demand and the answer when he is talked to, the rest when that is done. -->
+<mission id="209205" title="Confession" description="Terminate the corrupted Hypatia, then bring the intruder to his meeting with the Architect." plot="1"
+         order="9205" org="2" contact="Agent Gray" exp="395820" info="66500">
+  <npc id="1" handle="Hypatia" type="HOSTILE" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say>Just tell them I'll be there.</say>
+  </npc>
+  <npc id="3" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="5" handle="Agent Marks" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">It is the duty of a program to serve the system that created it.</say>
+  </npc>
+  <npc id="6" handle="Agent Clark" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say display="5">Order will be restored, {player}.</say>
+  </npc>
+  <npc id="7" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564" />
+  <npc id="8" handle="The Architect" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
+  <npc id="9" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="10" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Greetings...operative. We appear to have succeeded in reaching the intruder and drawing his rampage to a close. However, damaged areas of the simulation remain.
+
+One problem that has come to our attention is the Exile librarian, Hypatia. Terminated by the intruder when she failed to deliver what he requested of her, she was restored by her supporters, but imperfectly: the intruder's override code still infects her system.
+
+In order to correct this glitch, Hypatia must be terminated...again.</briefing>
+    <enter><say>Dude, did you hear about the intruder killing Gray? I guess Gray managed to get him to talk, but the intruder took something the wrong way, and... And then Pace came and talked to him, and managed not to get herself killed.
+
+Anyway, I know they can restore Agents when they die and all that, but what the intruder does to programs isn't exactly normal...as I guess we're about to see for ourselves with Hypatia. Let's see...
+
+That's where she's supposed to be. I've got unregistered programs in there--probably her Bookwyrms.</say></enter>
+    <objective goal="1" text="Kill Hypatia" type="Defeat" npc="1">
+      <done><say>Phew. Now, I just hope Gray doesn't turn out to have white sparks radiating off his head, too...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, Agent Pace was able to obtain the intruder's consent to meet with the Architect concerning his...problem. This meeting is now imminent. Please approach the intruder and notify him.</briefing>
+    <enter><say>Looks like he's in there, all right.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="2">
+      <talk><say npc="2">All right. I assume they know what will happen if they try lying to me again.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I think it will be useful if we confer briefly before the meeting takes place, {player}.</briefing>
+    <enter><say>Huh. Wonder what this is about.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="3">
+      <talk><say npc="3">We did...mislead the intruder before he entered the Matrix. This was done in an attempt to convince him that there was no need for him to enter the System, as it was clear that his presence would present many dangers.
+
+We now find ourselves forced to tell him the truth, again in the hope of preventing his presence within the Matrix. If this fails as well, then the situation will be grave indeed.</say></talk>
+      <done><say npc="3">We are...constrained to certain courses of action, operative. The System must be preserved.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="4">
+      <talk><say npc="4">I am counting on you to be prepared for any eventuality, tesoro. As programs, we are at a great disadvantage when facing the intruder's override codes.</say></talk>
+      <done><say npc="4">The intruder has already shown that he will not hesitate to terminate us. Agent Gray was restored at great cost. I was fortunate that I was able to...persuade the intruder to listen to reason.
+
+I...do not want to be terminated, {player}.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Proceed to the meeting place, operative. We will be assembling there shortly.</briefing>
+    <enter><say>This is it...</say></enter>
+    <objective goal="1" text="Talk to the Architect" type="Talk" npc="8">
+      <talk>
+        <say npc="7">No more stalling. I know it exists.
+
+Give me the biological interface program!</say>
+        <say npc="8">You are correct to posit the program's existence. However, we did not create it. There is only one extant copy: the one that was removed from this simulation--the one that you yourself detected outside of the System.</say>
+      </talk>
+      <done>
+        <say npc="9">There appears to be no immediate danger from the intruder, operative. We will discuss this outcome in more detail on a private channel.</say>
+        <say npc="8">Thank you, operative. That will be all.</say>
+        <say npc="10">He is finally convinced. Good.</say>
+        <say npc="7">...
+
+Damn and blast these useless programs...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>As logic alone does not direct the intruder, his next move cannot be predicted with absolute certainty...but if he is, in fact, convinced that the object of his search is not here, he should leave the System, and we will be able to restore the simulation to its optimal state.</finish>
+</mission>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Killer, Machines story mission 9.2.4. Source: research/missions/transcripts/Mach9-2-4.md (the archive replay of
+     [Machine Archive 9.2.4], given by [Archived]Agent Gray; all shots of the log after it ended). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Rudy Reeves, Agent Johns, Agent
+     Jones, Luke Anderson, Christopher Kissel, Agent Pace and Terminator. Gray called the player "Ms. Napilitano"; that
+     is {player}. Gray's italic "not" and Pace's italic "must" are plain text. Ours: the description (the Summary tab
+     was never opened), the objective texts, the sites (the third is an office: the Operator calls it a lab with lots
+     of computers and a next room; the others are not described: Normal), the looks and the enemy counts. Rudy Reeves
+     is a bluepill; Luke Anderson and Christopher Kissel work in the Agents' lab, one with a civilian look and one with
+     a program look. The Terminator and the accelerated programs are the intruder's programs: Machines. Item
+     stand-ins: retail's "data sample" is Data (6787) and the virus is Virus (6786). Rewards: 395,820 experience and
+     66,500 information, shown right after this mission completed.
+     Gaps: the dead Agents in the first two areas aren't spawned (we have no bodies). In the second area the Operator's
+     "Not looking good..." and Gray's order to take a sample from Agent Johns came after a look around; here searching
+     the area is the look around, and Agent Johns's body is a box that holds the sample. An Agent Johns also stands in
+     the lab, as in retail. One line may hide in the Operator's line about Rudy Reeves at a screenshot join; it reads
+     whole and is used as such. Pace's first line in the lab was hidden; her next two are used, the first when she is
+     talked to and the second when the data is in. In the last area the virus was to be run from a computer near the
+     Terminator and did the killing ("We may only get one chance at this"); we have no scripted kill or failure, so the
+     virus is put in the computer and the Terminator is killed by the player, in either order. The Operator's "There it
+     is!" and "Look out! Accelerated programs!" are said on nearing the Terminator; anything said between 12:40:26 and
+     12:41:48 wasn't captured. -->
+<mission id="209204" title="Killer" description="Find out what is killing the System's Agents, and destroy it with a virus of their making." plot="1"
+         order="9204" org="2" contact="Agent Gray" exp="395820" info="66500">
+  <npc id="1" handle="Rudy Reeves" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">I don't understand it... There's no blood. It's like someone just...switched them off.</say>
+  </npc>
+  <npc id="2" handle="Agent Jones" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Agent Pace is waiting for you in the next room.</say>
+    <say display="5" after="3">On your way, operative.</say>
+  </npc>
+  <npc id="3" handle="Luke Anderson" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">It's very simple. The intruder's programs access vital sections of our own codebase.</say>
+  </npc>
+  <npc id="4" handle="Agent Johns" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say display="5">Some code routines cannot be rewritten.</say>
+  </npc>
+  <npc id="5" handle="Christopher Kissel" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
+    <say display="5">Yes, we are...beginning to evaluate at-risk core routines for possible rewrites.</say>
+  </npc>
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say after="3">You must act with great speed, operative. Please go outside and contact Agent Gray. He will guide you now.</say>
+  </npc>
+  <npc id="7" handle="Terminator" type="HOSTILE" at="4" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we have met with some success countering overridden programs with our operatives, and judicious use of our own programs.
+
+However, we have lost contact with a group of our Agent programs who were being held in reserve for counter-attacks. This requires immediate investigation.</briefing>
+    <enter><say>That's where our programs stopped responding. I'm not reading anything in particular around the place.</say></enter>
+    <objective goal="1" text="Talk to Rudy Reeves" type="Talk" npc="1">
+      <talk><say npc="1">I didn't do it!
+
+I just found them like this...</say></talk>
+      <done><say>Hm... That guy's verified to be a standard plugged-in bluepill, and his vitals don't show him to be lying.
+
+Not that anything I know of, short of the intruder, could have done that...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are reasonably certain that the intruder himself was not at that location when contact was lost with the Agents, operative.
+
+In fact, an identical situation has just occurred. If this develops into a pattern, it could be the sign of a serious new threat.</briefing>
+    <enter><say>Seems like a bad day to be an Agent.
+
+Same deal here: looks dead inside.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Box" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>Not looking good...</say>
+        <say contact="1">Operative, collect a data sample from Agent Johns.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Collect a data sample from Agent Johns" type="Search" object="2" item="6787" after="1">
+      <done><say>Okay, now I think we're supposed to take that somewhere for analysis.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Take the data you retrieved to Agent Pace for further instructions, operative.</briefing>
+    <enter><say>Pace is supposed to be in there. Lots of computers... Looks like a lab.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="6">
+      <talk><say npc="6">Please input the data at the computer terminal here, operative. We have to move quickly before more programs are lost.</say></talk>
+    </objective>
+    <objective goal="2" text="Input the data at the computer terminal" type="Put" object="1" item="6787" after="1">
+      <done><say npc="6">A program designed to counter this threat is being developed. You will find it waiting for you by the time you reach the computer in the next room.</say></done>
+    </objective>
+    <objective goal="3" text="Get the virus from the computer in the next room" type="Search" object="2" item="6786" after="2">
+      <done><say>All right. Bring that virus outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Operative, our analysis of the data you submitted identified the entity responsible for the Agent casualties as a Terminator program. This program, generated by the intruder, can terminate System programs, as can the intruder himself.
+
+The virus you have obtained has the capability to kill the Terminator program, but it must be executed from a computer terminal in the Terminator's vicinity. As our programs cannot approach the Terminator program, you will have to perform this task.</briefing>
+    <enter><say>Okay, I've got a fix on the thing. I think there is a computer terminal near it that you could use to start that virus. We may only get one chance at this.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Run the virus from the computer terminal" type="Put" object="1" item="6786" />
+    <objective goal="2" text="Kill the Terminator" type="Defeat" npc="7">
+      <done><say>...and that should do it for our deadly little problem. Nice work.</say></done>
+    </objective>
+    <near npc="7" radius="1500">
+      <say>There it is! Now, all you gotta do is put the virus in that comput--</say>
+      <say>Look out! Accelerated programs!</say>
+    </near>
+  </phase>
+  <finish>Thank you for eliminating that program, {player}.
+
+I assure you that we are exploring every possible option for ending this crisis created by the intruder.</finish>
+</mission>

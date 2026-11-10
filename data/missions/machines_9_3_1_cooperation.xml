@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cooperation, Machines story mission 9.3.1. Source: research/missions/transcripts/Mach9-3-1.md (the archive replay
+     of [Machine Archive 9.3.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Carlyne, Agent
+     Pace, Agent Johns, Agent Gray, Agent West and Agent Miller. Gray, Carlyne and Pace called the player
+     "Ms. Napilitano" and "Marie"; those are {player} (Carlyne's "Napilitano? Ah." is "{player}? Ah."). Pace's
+     "affective defense" is retail's spelling and is kept. Besides the contact on the datalink, a field NPC named
+     Agent Gray meets Carlyne in phase 2 and waits at the offices in phase 3; he is a friendly NPC with that handle
+     (one NPC per phase, as NPCs aren't placed twice). Carlyne and Agent Pace are likewise placed again in their
+     later phases.
+     Ours: the description (the Summary tab was never opened), the objective texts (retail's Objectives tab only
+     showed "Leave the area now!"), the sites (the first in Mara, the minimap there, not clearly an office: Normal;
+     the second unnamed: Normal; the last is "our offices": Office in Magog, where the log says the player was), the
+     looks (the last room has four Agents and three Agent looks, so Agent West and Agent Miller share one) and the
+     enemy count. The Operator spoke of overridden programs in the first site and some 11 minutes passed before
+     Carlyne was reached, but no fight is logged: the phase has a small pack of Machine hostiles and no goal for them.
+     Rewards: 380,768 experience and 129,500 information, shown on completing this mission. Retail also gave the item
+     "Antibiotic 2.0", which we don't give.
+     Gaps: a line or more after "disengage" in the first briefing was hidden at a screenshot join; the briefing is used
+     as "disengage immediately, and report back to me." The Operator's line right after Carlyne's first words wasn't
+     captured and is left out. Agent Johns' second line was cut off at the screen edge; his first, whole one is used.
+     "So that's him, huh?" is said on nearing Carlyne. Gray's "Yes, I see." came on the datalink after Carlyne's talk;
+     it is the contact's line when that goal completes, and the Operator's "What do you think the odds are..." (some
+     50 s later, on the way to Pace) follows it. The later lines of Carlyne, Pace and the field Agent Gray came
+     when talked to again, and are their lines after their goals. -->
+<mission id="209301" title="Cooperation" description="Make peaceful contact with Carlyne, a second human with override codes, and attend his meeting with Agent Gray." plot="1"
+         order="9301" org="2" contact="Agent Gray" exp="380768" info="129500">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="1">Yes, yes; a pleasure, {player}. I'll give them a good report about you, you can be sure of that.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="2">While it is difficult for our programs, and even for our operatives, to engage the intruder, our record of his battle with Carlyne indicates that they are evenly matched. So, you see, one of them could serve as an affective defense against the other, if necessary.</say>
+  </npc>
+  <npc id="3" handle="Agent Johns" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">I am assigned to go where my presence is most efficient, operative.
+
+Why are you looking at me in that way?</say>
+  </npc>
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say after="1">Good to see you again so soon, {player}. I did indeed mention to the Agent here how helpful you've been; it was the very first thing out of my mouth.
+
+Oh, then we went on and discussed the trouble you've been having with that other fellow. It really is a shame...and I mean to put a stop to it for you, indeed I do.</say>
+  </npc>
+  <npc id="5" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
+  <npc id="6" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say after="1">Currently, Halborn's activity appears to be relatively benign; that is to say, he is not attacking the System regularly, although his override codes create problems wherever he uses them. He continues to exhibit a disregard for the simulation's stability.</say>
+  </npc>
+  <npc id="7" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>We had hoped that, after the Architect told him that the program he sought had been removed from the Matrix, Halborn would leave the simulation. Purtroppo, he has not done so. He is a very stubborn man, and reason alone is insufficient to change his mind.
+
+I think he has convinced himself that the secret of the program he seeks lies somewhere within the simulation. His hope of finding it will diminish with each passing day, and, {player}, I fear that continued failure will eventually provoke him to great violence once again. We must do everything we can to guard against this.</say>
+  </npc>
+  <npc id="8" handle="Agent West" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">The System consists of millions of entities working together in harmony. It is a level of cooperation never approached by man.</say>
+  </npc>
+  <npc id="9" handle="Agent Miller" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Have you seen Agent Griffin?
+
+The Murphey case... Hm.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3" neighbourhoods="Mara">
+    <briefing>Operative, another human configured similarly to the "intruder" has entered the Matrix. It is of vital importance that we establish what this man's purpose here may be. As his override codes are potentially deadly to System programs, I am sending you to make contact with him. He has made no attempt to conceal himself from our scans, so locating him will not be an issue.
+
+Let me emphasize that under no circumstance are you to initiate hostilities against this individual. If he takes a hostile stance, disengage immediately, and report back to me.</briefing>
+    <enter>
+      <say>Another one?! You mean there are more of these guys? Why didn't they tell us about this?
+
+Well... I've got override readings in there, all right. Pretty much just like the ones we've seen before.</say>
+      <say>Mm-hm. Overridden programs--I figured as much. This guy's gonna be even worse than the last one, just watch.</say>
+    </enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="1">
+      <talk><say npc="1">Oh, I am sorry about that. I thought you might have been...like those others.
+
+Ah, so you are with the Machines. Excellent! Just the people I wanted to see. I don't suppose you could arrange for me to meet with one of their Agents, could you? It's... Well, it's about a mutual problem that I think I can help clear up for all of us.
+
+Thank you very much for coming to speak with me, Ms.... I'm sorry, what did you say your name was? {player}? Ah. My name is Carlyne. Delighted.</say></talk>
+      <done><say contact="1">Yes, I see.
+
+Very well. An arrangement will have to be made. I will see to this immediately.
+
+At this time, {player}, I would like you to speak with Agent Pace. She will provide you with additional information regarding this situation.</say>
+        <say>What do you think the odds are that this guy snuffs the first Agent to come talk to him? Hey, there's precedent! Sure, he talks a little more politely than the other one, but I still wouldn't want to be the poor Agent program they're gonna ship off to this guy.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Ciao, tesoro. I can confirm that the man calling himself "Carlyne" is a human from outside the pod system, much like the similar-looking man encountered previously; Carlyne's RSI code structure is comparable, and thus we anticipate that he has access to the same codes capable of overriding System routines.
+
+These two men have already been detected together within the simulation, fighting each other during a brief encounter in Westview. If they are enemies, there is a possibility that, whereas the other is generally hostile to the System, Carlyne could be cooperative. It is very important that we establish whether or not this is so.</say></talk>
+      <done><say>He fought the intruder? Huh.
+
+Now wait, does that mean that he's a good guy, or just an even bigger jerk?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>So that's him, huh? Not as big as I thought he'd be.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, I will be the Agent contacting Carlyne.
+
+As he has already met you, and reacted amicably, I consider that your presence at this meeting would be useful. Please attend me at the marked location.</briefing>
+    <enter><say>Oh, hell! Gray already got alt-eff-foured by one of these guys, and now he's going back for more? Is he nuts?
+
+Oh, never mind; I don't even wanna think about that. You'd better just get in there and save whatever's left of him.
+
+Hm... Looks like he's still functional, anyway. I've got him and a Carlyne-sized chunk of override code showing up in there.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="4">
+      <talk><say npc="4">Oh, I very much appreciate you taking the time to hear me out, Agent. Believe me, it will be a great relief to me once I've eliminated Halborn as a problem here.
+
+I won't claim that I'm doing this entirely out of altruism, mind you; we both know better than that, don't we? Haha! But rest assured, you can leave him to me.</say></talk>
+      <done><say>Who'd he say? "Halborn"?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="5" after="1">
+      <talk><say npc="5">Thank you, operative. We can consider this meeting successfully concluded; I have received Carlyne's assurances that his intentions are in line with the System's welfare. We will discuss how to proceed once we have returned to our offices.</say></talk>
+      <done><say>Hm...</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Magog">
+    <briefing>I understand that you have questions, operative. We will discuss this once you've arrived.</briefing>
+    <enter><say>All clear.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+      <talk><say npc="6">Carlyne refers to the man we have known as the "intruder" by the name "Halborn." He claims to know him personally. He proposes to remove Halborn from the simulation--presumably by force, but he did not specify his intended means of achieving this goal. He did not explain its nature or cause, but he made it clear that there is a conflict between the two of them.
+
+The override codes Carlyne possesses pose a considerable threat to the System. While he has promised to act against Halborn, and presents himself as a friend of the System, we have no real guarantee of his future behavior. Caution must be exercised when dealing with him.</say></talk>
+      <done><say>But...but...but... Is there a whole colony of these guys, or what? Where are they coming from? Ahh heck.</say></done>
+    </objective>
+  </phase>
+  <finish>The man, Carlyne, must be monitored closely, operative. His stance vis-a-vis the intruder, Halborn, is yet to be proven; we must also consider that both are subject to coercion by Zionite terrorists.
+
+That will be all for the moment. If you gather any further data on Carlyne, report it immediately.</finish>
+</mission>

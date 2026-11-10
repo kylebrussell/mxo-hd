@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Acceptable Levels, Machines story mission 9.3.4. Source: research/missions/transcripts/Mach9-3-4.md (the archive
+     replay of [Machine Archive 9.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Halborn, The
+     Architect, Agent Pace, Agent Green, Agent Long and Carlyne. Gray called the player "Ms. Napilitano" (in the
+     broken closing line only "Napilitano" came through) and the Operator used the player's handle; both are
+     {player}. The Architect (no organisation in retail) is a friendly NPC with a civilian look. Halborn is placed
+     again in each phase he is met in.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (the first is a meeting in a building with the top brass, as in Fabrication: Office; the
+     others are not described: Normal; the last in Achan, where the log says the player was at the end), the looks
+     and the enemy counts. The attack force is Zion. Gray placed these events in Richland, another district; the
+     mission plays in the Slums, so the middle phases ask for no neighbourhood.
+     Rewards: 396,000 experience and 129,500 information, shown on completing this mission.
+     Gaps: lines may be hidden at screenshot joins in Halborn's first line, Gray's second briefing and the Operator's
+     line on reaching Halborn's site; they read whole and are used as such. The Operator's "They're all [...] yours." lost
+     words at a join and is used as "They're all yours."; any lines during the fight weren't captured. At the meeting
+     Halborn and the Architect spoke together; both are said when Halborn is talked to. Agent Green's "It is the
+     operative." is said on nearing him; the later lines of Halborn, the Architect, Pace and Agent Long ("Confirmed.
+     Operative is leaving the building.") came when talked to again, and are their lines after the goals. The
+     Operator read redpills "here and there" at Halborn's site, but no fight is logged there, so it has no enemies.
+     The last phase was a code storm: Carlyne and Halborn met with override codes, the Operator's monitors failed and
+     the feed broke up; we have no fight between NPCs or failing transmission, so Carlyne is talked to, Halborn
+     answers, and the Operator's breakdown comes when that is done. The Operator's "Shee-oot!" may be its own entry
+     or the end of "I'm in the red here"; it is said after it. Gray's broken closing line is retail's. -->
+<mission id="209304" title="Acceptable Levels" description="Attend Halborn's meeting with the Machines, then keep Zion off his trail as Carlyne closes in." plot="1"
+         order="9304" org="2" contact="Agent Gray" exp="396000" info="129500">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="1">... Giving me a whole lot of crap I already know. I can't believe the incompetence...
+
+Damn it, just more of my time they've wasted.</say>
+  </npc>
+  <npc id="2" handle="The Architect" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="1">Mors tua vita mea...</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="2">Please, tesoro. The situation is developing very quickly.</say>
+  </npc>
+  <npc id="4" handle="Agent Green" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>It is the operative.</say>
+  </npc>
+  <npc id="5" handle="Agent Long" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say after="2">Confirmed. Operative is leaving the building.</say>
+  </npc>
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="1">When I'm done with this, you can bet your ass that I'll be having another talk with the old man and his little harem. I'll have all the time in the world then to make damn sure they're playing me square.</say>
+  </npc>
+  <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
+  <npc id="8" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say>I see you still haven't learned. I won't let you off as easily this time.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Operative, despite our success against terrorist incursions in Richland, Halborn has thus far failed in his attempts to locate the Oracle. This may be what has prompted him to request yet another meeting with our representatives.
+
+You are appointed to attend this meeting. I will expect a full report and analysis.</briefing>
+    <enter><say>It's you, Halborn, and some of the top brass again. Huh... Doesn't look like Gray's showing up this time, though.</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="1">
+      <talk>
+        <say npc="1">I can't find the old woman, I don't have time to keep beating around back-alleys. Obviously she's another program you've managed to lose control over, but you must have some kind of tracking data. Where is she?</say>
+        <say npc="2">We have delivered reports to you on her movements. That is all the information we are able to provide. The...unpredictability of her actions was a design choice necessitated by our commitment to maintain the human population at a level capable of reasonably ensuring the preservation of your species' genetic polymorphism.</say>
+      </talk>
+      <done><say>Hey... Don't look now, but I think Agent Pace is giving you the eye.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Leave the building, and stand by for immediate deployment, operative.</say></talk>
+      <done><say>You heard the lady.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">It is the operative.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Although reports of her presence in other areas have surfaced, the Oracle's past activity indicates a high probability that she will return to Richland, if she has not already done so. Halborn's enemy, Carlyne, is also in the Richland area, where he has been actively pursuing Halborn.
+
+Your observation of Halborn indicates increasing anxiety on his part. This cannot go unmonitored. We have been able to track him since he left the meeting. You are to go to his location, and evaluate the situation.</briefing>
+    <enter><say>So Halborn's cracking up, and we have front row seats to ground zero. Just another day on the job...
+
+Okay, he's supposed to be in there. I've got override activity all over the place. I've also been picking up redpill readings here and there, so we could get some party crashers.</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="6">
+      <talk><say npc="6">You think I don't know what's going on? Hah. Your masters don't have the balls for this. They want me to take care of it all, so they keep their hands clean.
+
+If that's the way they want to play it, fine. Isn't worth my time trying to get them to man up--not with that bastard on my tail.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>I see... Halborn's willingness to pose a continuing threat to the simulation is a concern. It will be necessary to take that into account.
+
+Operative, you are in position to intercept another incoming Zion attack force. Prevent them from reaching Halborn.
+
+Fortunately, Carlyne does not appear to be in that immediate area. We are continuing our scans to pinpoint his location.</briefing>
+    <enter><say>Darn, I was kind of hoping it'd be some more EPN.
+
+Well, better than nothing. I've got the reds showing on my scan. They're all yours.</say></enter>
+    <objective goal="1" text="Stop the Zion attack force" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Achan">
+    <briefing>Operative, Carlyne has been detected on a direct course for Halborn. The projected interception point is marked for you.
+
+Interference in the area is causing a delay in reaching our other units. Proceed to the interception point immediately, and report on the situation.</briefing>
+    <enter><say>Oh man, I'm picking up ridiculous code activity in there. Feedback's heading toward the red... Damn, there goes monitor three! Just had that one replaced, too...
+
+Better get in there and look around fast. Dunno how much longer I can hold transmission...</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="7">
+      <talk>
+        <say npc="7">Be a sport, and don't run off, hm? It's been getting a little tiresome.</say>
+        <say npc="8">I see you still haven't learned. I won't let you off as easily this time.</say>
+      </talk>
+      <done>
+        <say>{player}, I'm in the red here, buddy.</say>
+        <say>Shee-oot! Emergency shutdown sequence just tried to kick in...
+
+&amp;#@#! Feed's gonna abort any second now. Hell with the report! Get out of there!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>... {player} ...
+
+... lost ... entire sector ...
+
+... evacuate ... repeat ... area immediately ...</finish>
+</mission>

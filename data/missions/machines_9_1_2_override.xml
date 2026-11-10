@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Override, Machines story mission 9.1.2. Source: research/missions/transcripts/Mach9-1-2.md (a replay of 9.1.2
+     given by Agent Gray; the bar showed only "Override", no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Pace and Agent
+     Lee. Gray called the player "Mr. Argento" and Pace called him "Brando"; both are {player}. Ours: the description
+     (the Summary tab was never opened), the objective texts (the Objectives tab was never opened), the bluepill's
+     handle ("Bluepill": no name was logged), the sites (Pace's post is an office: Office; the others aren't
+     described: Normal), the looks and the enemy counts ("nothing but mangy signals": Exiles, Merovingian, in both
+     fights). Rewards: none were shown in these crops, so this uses Machines 9.2's 396,000 experience and 66,500
+     information.
+     Gaps: the dead program team were bodies, and we spawn no corpses, so they are a piece of furniture searched for
+     nothing; the Operator's "Ack. Dead." and "Looks like a clean sweep of our boys" are said when it is searched. The
+     bluepill survivor's own words ("moving light") weren't logged, so he has no line; the Operator's answer is said
+     when he is talked to. The Operator's first-sight lines in the two fights ("Ah, heck with it..." and "What the
+     hell? Those aren't regular Exiles!") are said on reaching the floor, after her first line there. Her phase 1
+     line was cut off after "When it rains, it pours,"; it ends there. Her line after Pace's (10:45:59) wasn't read
+     and is left out. Pace assigned "another Agent, and some of our redpills" to the player; only Agent Lee is named,
+     so he alone is led out of Pace's office and follows the player into the last fight. We have no allies that
+     fight, so he only comes along. Goals are numbered through the whole mission so that the NPCs' after-lines can't
+     be set off by a goal of an earlier phase. -->
+<mission id="209102" title="Override" description="Search for the intruder and learn what became of a missing program team." plot="1"
+         order="9102" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Bluepill" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say after="4">That information is classified, {player}. I am sure you will be told everything you need to know at the right time.</say>
+  </npc>
+  <npc id="3" handle="Agent Lee" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Operative, the intruder we have been tracking is someone who should not be in the Matrix at all. His very presence is causing a myriad of code failures. He must be removed, or at least, restrained or isolated. Our attempts to hinder his movements have thus far met with failure. We must continue to adapt our approach to deal with this issue.
+
+At the moment, we are closing on his location with teams of both programs and operatives. This dual approach may force him to change his methods. You are to investigate the indicated area for any trace of him.</briefing>
+    <enter>
+      <say>Jeez, the news about this guy keeps getting worse. Where did he get that kind of power?
+
+All right, let's see... Whoops, you've got prohibited programs in there--Exiles. When it rains, it pours.</say>
+      <say>Ah, heck with it; I'm getting nothing but mangy signals in there. Let's put these doggies down.</say>
+    </enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll">
+      <done><say>You got all the mutts. No trace of the intruder in there... But it looks like the Merv's after him, too. Figures.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It is not...surprising that the Merovingian should attempt to exploit the intruder. This could develop into a problem. It will have to be monitored.
+
+One of our program teams, who last reported that they were nearing the intruder, has stopped responding. Please confirm their status.</briefing>
+    <enter><say>We saw some dead Agents the last time we were tracking this thing... And I hear that some of our operatives who went after it were stopped by our own programs, turned against them! If it's really that easy for the intruder to screw with our programs like that, then I don't know how we're gonna stop him.
+
+I'm not picking up any activity in there. This isn't... Wait! There's a signal--a bluepill.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="2" text="Check on the program team" type="Search" object="1" item="0">
+      <done>
+        <say>Ack. Dead. I was afraid of that.</say>
+        <say>Looks like a clean sweep of our boys. Funny that blue's still on their feet. Better check 'em out.
+
+Hey... You aren't looting our own programs, are you?</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to the Bluepill" type="Talk" npc="1" after="2">
+      <done><say>Moving light killed them? Great, I'm sure Gray will love that. Why don't we sprout some laser eye-beams while we're at it.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Hm. Our programs continue to meet with little success in confronting the intruder. This is...unfortunate.
+
+{player}, it seems that I must depend upon you once again. Agent Pace will have some additional operatives to assign to you.</briefing>
+    <enter><say>Cool, we get to boss around other operatives? Nice to see the whole "rigid command structure" thing kind of working in our favor for once.
+
+I've got Pace, another Agent, and some of our redpills on the scanner. Give her my best.</say></enter>
+    <objective goal="4" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">The intruder is very dangerous, tesoro! You must be careful. But do your best, and hopefully you will be able to kill him before he causes more trouble, hm? You may take these other operatives with you for assistance.</say></talk>
+    </objective>
+    <objective goal="5" text="Talk to Agent Lee" type="Talk" npc="3" after="4">
+      <talk><say npc="3">The System is counting on you, {player}. Fortunately, we very seldom have to rely upon operatives to this extent.</say></talk>
+    </objective>
+    <objective goal="6" text="Lead Agent Lee out of the area" type="Escort" npc="3" to="exit" after="5" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Proceed with your operatives to the indicated location, {player}. Although our tracking effort has been hampered by program losses, the intruder is believed to be in that vicinity.</briefing>
+    <enter>
+      <say>Okay, I'm getting... Wait, that's just more Exiles.
+
+Did the Merv get in ahead of us again?</say>
+      <say>What the hell? Those aren't regular Exiles! They've been altered somehow... And I'm picking up traces of that weird code residue on them, too. It's gotta be something to do with the intruder.
+
+We can worry about that later, though. Right now you'd better take those things down.</say>
+    </enter>
+    <objective goal="7" text="Kill the altered Exiles" type="DefeatAll">
+      <done><say>That's all of them. No sign of the "big man" himself, though.</say></done>
+    </objective>
+  </phase>
+  <finish>Ah. Then he can override Exile programs as well.
+
+The intruder's ability to manipulate sentient programs is proving to be a significant obstacle, {player}. This will...have to be looked into further. We appreciate your assistance.</finish>
+</mission>

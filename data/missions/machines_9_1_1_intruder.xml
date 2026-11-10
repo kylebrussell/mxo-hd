@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Intruder, Machines story mission 9.1.1. Source: research/missions/transcripts/Mach9-1-1.md (a replay of 9.1.1
+     given by Agent Gray; the bar showed only "Intruder", no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Ettie Watson and Richie
+     Johnson. Gray called the player "Mr. Argento"; that is {player}. Ours: the description (the Summary tab was never
+     opened), the objective texts (the Objectives tab was never opened), the sites (Ettie Watson's home is an
+     apartment: SlumApt; the others aren't described: Normal), the looks and the enemy count. The imposter team were
+     "unidentified redpill signals" that Gray took for Zionites: enemy Zion. Rewards: none were shown in these crops,
+     so this uses Machines 9.2's 396,000 experience and 66,500 information.
+     Gaps: the missing Agents (phase 1) and the deactivated Machine program (phase 4) were bodies, and we spawn no
+     corpses, so each is a piece of furniture searched for nothing, and the Operator's line about it is said when it is
+     searched. The Operator's "There's a deactivated Machine program in there. You're getting close to it." was a
+     line on approach; with no NPC to follow it is said on reaching the floor, after her other two lines there
+     (one of them may have been the end of the line before). Gray's phase 4 briefing has a word or a line cut off
+     after "in the"; the briefing reads "in the area". The log's gaps (12:13 to 12:14, 12:36 to 12:39) may hide
+     lines or fights; nothing is built for them. Goals are numbered through the whole mission so that the NPCs'
+     after-lines can't be set off by a goal of an earlier phase. -->
+<mission id="209101" title="Intruder" description="Find the missing Agents and question the witnesses to a strange glowing intruder." plot="1"
+         order="9101" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Ettie Watson" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say after="2">This seems awfully disorganized. I just want to know what you plan to do about that freak. Hmh!</say>
+  </npc>
+  <npc id="2" handle="Richie Johnson" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say after="4">No, I never have fainting spells. Really. I think this thing could be dangerous. That's why I called. Did I... Do you think you can get it?
+
+Okay, okay.
+
+Hey, uh... Is cleaning up these... Will that be tax deductible?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, some of our Agents appear to have encountered a...problem. They are no longer responding. I would like you to locate them.</briefing>
+    <enter><say>Soo... Is this what happens when their warranty expires?
+
+Well, that's the place you're supposed to check. Good luck.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find the missing Agents" type="Search" object="1" item="0">
+      <done><say>Uh-oh...
+
+Running a scan to see if I can find anything that might... Hm... There's a weird residual signal... Just bits, but they don't fit a known code profile.
+
+Whatever it is, we'd better let Gray know that we found the missing Agents.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>I see.
+
+Very well, {player}. I did not want to involve you in the investigation, but it appears that I have little choice.
+
+Ettie Watson just called emergency services to report a certain odd occurrence. I would like you to meet Ms. Watson to get her full statement.</briefing>
+    <enter><say>He isn't giving us a whole lot to go on, is he?
+
+Okay, Ms. Watson is supposed to live in there. I've got a bluepill signal on my screen. No sign of any trouble.</say></enter>
+    <objective goal="2" text="Talk to Ettie Watson" type="Talk" npc="1">
+      <talk><say npc="1">But...some other detectives were just here. I told them all about the glowing man already. Can't you just use their report?</say></talk>
+      <done>
+        <say contact="1">That will do for now, {player}. Leave Ms. Watson and go outside, please.</say>
+        <say>"Glowing man"?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>We had sent no other units to contact Ms. Watson; those she spoke of must have been imposters--probably Zionites, eavesdropping on emergency calls.
+
+We received a similar report while you were occupied with Ms. Watson. Signal analysis shows... Yes, a slightly weakened signal, indicative of a tapped line. I will have to conduct a review of our anti-wiretapping department...
+
+You, {player}, will proceed to the call location. Your task is to intercept and disrupt the imposter team.</briefing>
+    <enter><say>I've got some unidentified redpill signals in there; must be the losers impersonating System operatives. Go get 'em!</say></enter>
+    <objective goal="3" text="Disrupt the imposter team" type="DefeatAll">
+      <done><say>Okay then. Let that be a reminder to them not to impersonate System personnel.
+
+I wonder what the heck we're after here, anyway. If Zion's after it too, then it's got to be something fairly important.
+
+Hey, might as well ask that guy for his report, now that we've got him to ourselves.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Richie Johnson" type="Talk" npc="2" after="3">
+      <talk><say npc="2">I... Uh... I didn't know they were... I mean, I thought they were you. Uh...
+
+Oh. O-okay. It was just that I saw this...thing out in the alley. Like...a neon robot--big, shaped like a big man. I-I don't know, it kind of hurt my eyes just looking at it. White sparks were shooting off of it. I think it saw me... It turned, and walked away down the alley. I was gonna follow it, but I...I guess I got kind of dizzy.</say></talk>
+      <done><say>A big neon man? I'd say that guy's crazy, but it's close to what Ms. Watson said. And if Zion's involved...
+
+Well, we'd better report in to Gray. Maybe he'll be able to tell us what this is all about.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Yes, we are trying to track reports of an unusual individual. The reports you have heard are consistent with the description of the individual we are looking for. They have...caused some difficulties, and must be understood to be highly dangerous.
+
+There has been another report in the area that we believe to be connected with the others. In this case, no name was given. You are to investigate the area thoroughly.</briefing>
+    <enter>
+      <say>I don't like the sound of this. What could this guy be? Someone who dredged up a cheat code? No, I don't even wanna go there.</say>
+      <say>Okay... It looks quiet in there. Nothing unusual, as far as I can see.</say>
+      <say>Hold on... Yeah... There's a deactivated Machine program in there. You're getting close to it. Why didn't Gray mention it?</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="5" text="Investigate the deactivated program" type="Search" object="1" item="0">
+      <done><say>There he is. I-- Huh, I'm seeing traces of that code I couldn't identify earlier. And there's something weird about that dead program...
+
+I'm not sure what to make of it. My scan isn't picking up anything else in the area, though.</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, {player}. That will be sufficient for now.
+
+Hm... I should warn you that some System forces have been pulled back to protect core routines. This is related to the potential threat posed by the intruder you have been tracking. That is all I am permitted to communicate at this time.</finish>
+</mission>

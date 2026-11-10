@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only Human, Machines story mission 9.1.5. Source: research/missions/transcripts/Mach9-1-5.md (a replay of 9.1.5
+     given by Agent Gray; the bar showed only "Only Human", no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Lon Clark, Danilo
+     Hoyos, Agent Jones, Agent Pace and Agent Gray. The player (Evol) had his name blacked out in the log and Pace
+     called him "Brando"; both are {player}. Agent Gray met the player in person in the last phase: there he is a
+     friendly field NPC of that name, besides being the mission's contact. Ours: the description (the Summary tab was
+     never opened), the objective texts (the Objectives tab was never opened), the sites (the first is a bank; the
+     last an office with elevator doors and a keypad: Office; the others aren't described: Normal), the looks and the
+     enemy count. The "active programs" with the intruder's code were turned System programs: enemy Machines. Item
+     stand-in: the dead Agent's recording is Recording (6784). Rewards: none were shown in these crops, so this uses
+     Machines 9.2's 396,000 experience and 66,500 information.
+     Gaps: the dead Agents and security men at the bank and the dead Agent with the recording were bodies, and we
+     spawn no corpses; the recording comes from a piece of furniture searched once the programs are dead. The
+     Operator's "I haven't seen this many dead Agents" is said once Lon Clark has talked. The Operator's line about
+     the guard's heart rate and Agent Jones's "The operative has arrived." were said on approach; they are said near
+     them. The computer played the recording as text on its screen ("Out of my way. ... Damn. Nothing. ... They must
+     have another... A backup, something they've kept hidden... Somewhere in this small little world...", its dash
+     made a comma here); our Put
+     shows no screen, so only the Operator's lines around it are said. Gray's phase 3 briefing was cut off by the
+     Operator and ends in "..." as in retail. Agent Jones's "Clear." and "No comment." were Team chat after the goals;
+     here they are his lines once Gray and then Pace have talked. Goals are numbered through the whole mission so
+     that the NPCs' after-lines can't be set off by a goal of an earlier phase. -->
+<mission id="209105" title="Only Human" description="Assess the damage the intruder has done to citizens and programs across the city." plot="1"
+         order="9105" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Lon Clark" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">Why aren't I dead? I should be dead...</say>
+  </npc>
+  <npc id="2" handle="Danilo Hoyos" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">God... He's still laughing...</say>
+  </npc>
+  <npc id="3" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say after="6">Clear.</say>
+    <say after="7">No comment.</say>
+  </npc>
+  <npc id="4" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="6">I am not authorized to give you information concerning the intruder's background, {player}.</say>
+  </npc>
+  <npc id="5" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="7">Ah, {player}... I wish it was a simple matter. The Matrix is very complicated. It has been rewritten several times, si, but a great many human lives were lost in doing so. We do not wish for such a thing to happen again.</say>
+  </npc>
+  <phase site="Bank" enemy="Machines" enemies="0">
+    <briefing>The intruder's presence is causing disruptions across the city. He is not being at all...subtle about his appearances. Consequently, both citizens and programs are experiencing difficulties. As we are unable to stop the intruder directly, we must work to minimize the negative impact of his activities on the simulation. You are being routed to one such trouble spot now.</briefing>
+    <enter><say>This sucks... There's got to be some way to stop this guy. If the Machines can't do it for whatever reason, maybe we can come up with something. Uh...
+
+Well, for now, it looks like you've got some traumatized people to deal with in there. No sign of hostiles.</say></enter>
+    <objective goal="1" text="Talk to Lon Clark" type="Talk" npc="1">
+      <talk><say npc="1">It wasn't human... It wasn't...anything. Emptied two clips... I couldn't hit it. Is that why I--
+
+Why am I still alive? Why? Why didn't it kill me like the others?</say></talk>
+      <done><say>I haven't seen this many dead Agents since that data mining fiasco. Uh... Never mind.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Danilo Hoyos" type="Talk" npc="2">
+      <talk><say npc="2">Bright flashes, shockwaves...
+Electricity, I guess. It felt like it went right through me. I don't know if I just wore the right shoes, or... Those security men... They weren't so lucky. We were all knocked to the ground... He just... He laughed at me. He just laughed at me.</say></talk>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Picking up an abnormally high heart rate. That guard... Pupils are dilated... This doesn't look good for him.</say>
+    </near>
+    <complete><say>Great, so he's some kind of sadist, too? Or maybe there's some biiiig joke here that we're just missing.
+
+Right.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Loss of System programs to the intruder is becoming a serious problem. They have been instructed to avoid him wherever possible; however, casualties are still occurring. For example, a team of Agents has just stopped responding. If the intruder is there, sending more programs to investigate would only put them at risk as well. Therefore, I am sending you, {player} to assess the damage.</briefing>
+    <enter><say>There's something weird... No, about what those two at the bank said. Can't quite put my finger on it. Dang, this is annoying.
+
+I've got... Ooh, I've got incomprehensible code blips, like the ones we've seen associated with the intruder. These are active programs... Careful.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="3" text="Destroy the corrupted programs" type="DefeatAll">
+      <done><say>Oh, man, you got problems.
+
+Hold on, I'm picking up some data nearby. Not the weird stuff--something in bits and bytes I can actually read. Looks like a recording of some kind.</say></done>
+    </objective>
+    <objective goal="4" text="Get the recording from the dead Agent" type="Search" object="1" item="6784" after="3">
+      <done><say>Huh... That Agent had a recording unit going when he cashed in his chips. Might be worth checking out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I see. Thank you, operative. This drain on System resources is unfortunate. We do not currently have a means of protection against the code routines used by the intruder. However, it is becoming clear that...</briefing>
+    <enter><say>Yeah, yeah... I'm getting tired of mop and bucket duty. We're gonna check out that recording you found on the Agent. The computer in there should have a compatible reader.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="5" text="Play the recording on the computer" type="Put" object="1" item="6784">
+      <done>
+        <say>Yeah, that's loading it up. See what it says.</say>
+        <say>That sounded like the intruder...but what's he talking about? Something hidden here in the Matrix--something the Machines know about?
+
+And now I know what it was that was bugging me: that guard at the bank said the intruder--presumably--"wasn't human," but everything we've seen and heard from him sounds all too human. Sure, his RSI doesn't look human, but what if he is?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Very well, operative. I can see that there are things we need to discuss in more detail about the intruder if we are to proceed in an efficient manner.</briefing>
+    <enter><say>And hey, another weird thing: he sure doesn't talk like he's all that familiar with the Matrix. That "small little world" remark, for instance; and then there's the fact that his code is so...alien. Heck, didn't the Agents tell us that the Matrix wasn't designed to support his routines? So...where'd he come from?</say></enter>
+    <objective goal="6" text="Talk to Agent Gray" type="Talk" npc="4">
+      <talk><say npc="4">No, the intruder is not from the Matrix, or the pods. He is a freeborn human. This is the first time he has been in the Matrix; he is somewhat familiar with...human history, but not with the Matrix itself. However, we must assume that now that he is here, he is learning at a rapid rate. This will only serve to make him more dangerous.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to Agent Pace" type="Talk" npc="5">
+      <talk><say npc="5">As you see, he does have powerful code routines available to him. These are...direct overrides of System routines. Short of rewriting certain root functions, there is nothing we can do...and as I am sure you can understand, changing those root functions during the live simulation would be extremely dangerous.</say></talk>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">The operative has arrived.</say>
+    </near>
+  </phase>
+  <finish>Operative, for security reasons, there have been, and will continue to be, many topics that we cannot discuss; this is part of the onus of maintaining control.
+
+The intruder, too, seeks information that he believes we have withheld from him, despite our assurances to the contrary. His stubborn refusal to face certain facts has caused him to place System stability at risk, as you have seen all too clearly. ... On the other hand, his inevitable failure to find a nonexistent object may force him to listen to reason.</finish>
+</mission>

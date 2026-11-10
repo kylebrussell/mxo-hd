@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Giving up Gotama, Machines story mission 9.3.3. Source: research/missions/transcripts/Mach9-3-3.md (the archive
+     replay of [Machine Archive 9.3.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Agent Pace,
+     Ferret, Brest, Halborn, The Oracle and Seraph. Gray and Pace called the player "Ms. Napilitano" and "Marie", and
+     the Operator and the Oracle used the player's handle; all are {player}.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (the third and fourth in Mara, where Gray placed Halborn and the Oracle, the last an apartment
+     hallway in the end screenshots: SlumApt; the others are not described: Normal), the looks and the enemy counts.
+     The hostiles are unregistered redpills: Zion. The Operator read "Redpills in there" at Halborn's site, so it has
+     a few, though the goals were done with the talk: they have no goal.
+     Rewards: 396,000 experience and 129,500 information, shown on completing this mission.
+     Gaps: lines may be hidden at screenshot joins in Gray's first and fourth briefings; they read whole and are used
+     as such ("If he does not locate the Oracle soon"). Pace put Ferret and Brest "under your command" and they fought
+     beside the player; we have no allies that fight. They follow by being led out of Pace's site (the Escort), and
+     the second phase asks that they live; their goodbyes are their lines once that phase is done, but they can't be
+     dismissed and keep following into the later phases. Their "Sir." and "Hi." are their lines before Pace is
+     talked to. Pace's second line, Halborn's "That smug idiot?" and the Oracle's "We've all got to do what we've got
+     to do" came when talked to again, and are their lines after their goals. The Operator's "Oh, joy." and "What?!
+     The Oracle?" are said on nearing Halborn and the Oracle. Seraph appeared beside the Oracle mid-conversation; he
+     stands with her from the start. Carlyne is named as hostile but never appears, and isn't placed. -->
+<mission id="209303" title="Giving up Gotama" description="Keep Zionite hunters off Halborn's trail as he searches for the Oracle." plot="1"
+         order="9303" org="2" contact="Agent Gray" exp="396000" info="129500">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">It is unfortunate to find Carlyne in opposition to us, and supporting terrorists, but Halborn is by far the more unstable of the two. We do not believe that Carlyne will act against the System once Halborn is removed.
+
+This situation relies very much upon human reactions, and that makes it difficult to control. I've given you this assignment because I know we can rely upon you, {player}.</say>
+  </npc>
+  <npc id="2" handle="Ferret" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say>Sir.</say>
+    <say after="3">Thank you. Good hunting, sir.</say>
+  </npc>
+  <npc id="3" handle="Brest" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say>Hi.</say>
+    <say after="3">Yeah, I'm sure it will work out all right. See you.</say>
+  </npc>
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say after="1">That smug idiot? Huh. He's pretty desperate if he's got these saps trying to do his dirty work.
+
+Now, get out of here. When I want something from the Machines, you'll know.</say>
+  </npc>
+  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+    <say after="1">We've all got to do what we've got to do... Isn't that right, {player}?</say>
+  </npc>
+  <npc id="6" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0">
+    <say>There is no chance to surprise the watchful.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Halborn is hunting for the Oracle, {player}. We attempted to locate her ourselves, but only stray code bits were found; these suggest that she is engaged in a coding project of some sort; the secrecy involved suggests that the project is of an...unlicensed nature.
+
+Zionite interest in the Oracle, and Carlyne's feud with Halborn, complicate the scenario. They seek to prevent Halborn from reaching the Oracle. However, she represents Halborn's last significant hope for gaining the program he seeks. The sooner he obtains the program from her, or obtains confirmation that she does not have it, the sooner he is likely to leave the Matrix.
+
+Agent Pace has additional support and information for you concerning this situation.</briefing>
+    <enter><say>All right, Pace and some of our redpills are in there. No hostiles.
+
+I'm not sure I followed everything Gray said, but it kind of sounds like they're okay with Halborn getting to the Oracle. Does that mean they think that he won't try to hurt her, or...that he will?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Ciao, {player}. Your current assignment is to eliminate Zionites pursuing Halborn. I am placing these two operatives under your command.
+
+The Zionites are believed to be working with Carlyne. You should consider Carlyne hostile, and dangerous. If you see him, please report it immediately.</say></talk>
+      <done><say>Those two won't be any help against Carlyne, that's for sure. Oh well, let's get 'em and get going.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Ferret and Brest out of the area" type="Escort" npc="2,3" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Intercept Zionite hostiles at the indicated location, operative. They must be prevented from interfering with Halborn.</briefing>
+    <enter><say>I'm finding it easier if I just concentrate on the Zion-smashing aspect of this. Unregistered redpill programs in there are lighting up my screen. We've got 'em cold.</say></enter>
+    <objective goal="1" text="Eliminate the Zionite hostiles" type="DefeatAll">
+      <done><say>Not much chance of them catching Halborn now.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Ferret die" type="Protect" npc="2" />
+    <objective goal="3" text="Do not let Brest die" type="Protect" npc="3" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3" neighbourhoods="Mara">
+    <briefing>Halborn has been detected in the vicinity of the Mara neighborhood, where the Oracle is usually found.
+
+We are unable to determine the Oracle's location at this time. Whether or not she has been concealed by hostile operatives is not known, but must be considered as a possibility. Their activity in that vicinity is high.
+
+Carlyne is not detected in Mara, but if Zion finds Halborn there, they may call Carlyne for assistance. This must be prevented.</briefing>
+    <enter><say>Redpills in there... Hey, I'm getting heavy override readings, too.</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="4">
+      <talk><say npc="4">What the hell? Beat it. You'll just lead more of these annoyances to me. Does it look like I need your help?</say></talk>
+      <done><say>Grr... This guy is really making it hard to want to help him...</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>Oh, joy. Look who it is.</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0" neighbourhoods="Mara">
+    <briefing>Zion operatives continue to pursue Halborn, operative. If he does not locate the Oracle soon, the escalation of forces in that area will reach dangerous levels. We must also assume that Carlyne is by this time approaching the area as well.
+
+Continue your elimination of the hostile forces. Halborn must remain free to reach the Oracle and conclude this affair.</briefing>
+    <enter><say>This would be a whole lot easier if they could just send in Agents without having to worry that Carlyne would zap 'em. Hell, Halborn probably would, too, come to that.
+
+Huh, this is weird... The wide scans picked up redpill activity, but I'm not reading anything in there now except standard background programs. Did the Zionites ditch out already?</say></enter>
+    <objective goal="1" text="Talk to the Oracle" type="Talk" npc="5">
+      <talk><say npc="5">All right, all right, I give up.
+
+Haha. Miss me? Well, I'm sorry for the cloak and dagger routine, I really am, and I promise you, it's almost over. If all this fuss is over little old me, well... Maybe it'd be better for everyone if I was removed from the picture, huh?</say></talk>
+      <done><say>Ah, hell, who'm I kidding? I'm calling it in...
+
+Seraph?! Where'd he-- Hang on...
+
+Damn, and they won't send in programs. ... Jesus, they freaking put me on hold! Oracle there, hostiles closing in, and they put me on hold.
+
+Look, you're just gonna have to come out and call Gray about it yourself. ... I know!</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>What?! The Oracle? Uh...
+
+So... So, {player}, do I call this in, or what?</say>
+    </near>
+  </phase>
+  <finish>I am sure you can understand, operative, that arresting the Oracle at this time, in that area, is not...feasible.
+
+Halborn's encounter with her, however, must be facilitated. This can best be accomplished by eliminating interference from hostile forces, and, in particular, by preventing contact between Halborn and Carlyne.
+
+Halborn will be notified of this sighting as soon as possible. The...promptness of your report is appreciated, {player}. You may consider this assignment completed.</finish>
+</mission>
