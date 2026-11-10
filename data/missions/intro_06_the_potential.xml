@@ -5,7 +5,7 @@
      phase's generated Machine hostiles (DefeatAll), not a placed NPC. The first phase is "at the Zion base", but the
      guide gives its area type as Normal, so the site is Normal. -->
 <mission id="1207" title="The Potential" description="Recruit your first potential Redpill." plot="1" order="6"
-         org="0" contact="Tyndall" exp="33000" info="52500">
+         org="0" contact="Tyndall" neighbourhoods="Dannah Heights, Kedemoth, Lemone, Magog, Mannsdale Housing Projects, Uriah Industrial Park, Zia" exp="33000" info="52500">
   <npc id="1" handle="Vega" type="FRIENDLY" at="1" rsi="560A0058" weapon="2564" />
   <npc id="2" handle="Kepler" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
   <npc id="3" handle="Daniel Mercer" type="FRIENDLY" at="2" rsi="2D0D0098" weapon="0" />

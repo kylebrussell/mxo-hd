@@ -25,6 +25,9 @@ public sealed class WorldSession : IDisposable
     private ushort ownSeq;
     private ushort lastServerSeq;
     private byte pss;
+    // Server sequences received lately, for the ack bits: as the real client does, bit i says lastServerSeq - (i + 1)
+    // arrived. Without them the server can't tell which packets came, and sends their RPCs again.
+    private readonly HashSet<ushort> receivedServerSeqs = new();
     private ushort rpcCounter;
     private byte[]? lastRpcPlain;
     private int? expectedServerRpc;
@@ -129,6 +132,19 @@ public sealed class WorldSession : IDisposable
         }
     }
 
+    private byte AckBits(ushort ack)
+    {
+        byte bits = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            if (receivedServerSeqs.Contains((ushort)((ack - i - 1) & 0xfff)))
+            {
+                bits |= (byte)(1 << i);
+            }
+        }
+        return bits;
+    }
+
     private void SendEncrypted(byte[] plain)
     {
         // Sequence word: own sequence in the low 12 bits, the last server sequence seen in the next 12. The server's
@@ -201,8 +217,12 @@ public sealed class WorldSession : IDisposable
         WorldPayload payload = WireFormat.ParsePayload(plain);
         lock (sendLock)
         {
-            lastServerSeq = serverSeq;
-            pss = packetPss;
+            receivedServerSeqs.Add(serverSeq);
+            if (((serverSeq - lastServerSeq) & 0xfff) < 0x800)
+            {
+                lastServerSeq = serverSeq;
+            }
+            pss = AckBits(lastServerSeq);
         }
 
         lock (logLock)
@@ -212,15 +232,22 @@ public sealed class WorldSession : IDisposable
                 viewLog.Add(payload.ViewSection);
                 creations.AddRange(WireFormat.FindCreations(payload.ViewSection));
             }
-            foreach ((ushort counter, int count) in payload.RpcLists)
+            // A list can repeat RPCs we already have: the server sends unacked ones again with their own counters.
+            // Those are skipped, as the client does; a counter past the next one is a gap.
+            foreach (RpcRecord rpc in payload.Rpcs)
             {
-                if (expectedServerRpc.HasValue && expectedServerRpc.Value != counter)
+                ushort number = (ushort)(rpc.ListCounter + rpc.Index);
+                if (expectedServerRpc.HasValue && ((number - expectedServerRpc.Value) & 0xffff) >= 0x8000)
                 {
-                    problems.Add($"Server RPC counter jumped: expected {expectedServerRpc.Value}, got {counter}");
+                    continue; // already had it
                 }
-                expectedServerRpc = (ushort)(counter + count);
+                if (expectedServerRpc.HasValue && number != expectedServerRpc.Value)
+                {
+                    problems.Add($"Server RPC counter jumped: expected {expectedServerRpc.Value}, got {number}");
+                }
+                expectedServerRpc = (ushort)(number + 1);
+                rpcLog.Add(rpc);
             }
-            rpcLog.AddRange(payload.Rpcs);
         }
 
         if (payload.ResetRequested)
@@ -251,6 +278,7 @@ public sealed class WorldSession : IDisposable
         {
             lastServerSeq = 0;
             pss = 0;
+            receivedServerSeqs.Clear();
             SendEncrypted(new byte[] { 0x42 });
             ownSeq = 0;
             rpcCounter = 0;

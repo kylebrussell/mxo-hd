@@ -127,8 +127,9 @@ namespace hds
             int objects = phase.objects.Count(o => !ObjectGoids.ContainsKey(o.kind));
             Random rng = new Random(unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
-            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng) ??
-                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng);
+            List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
+            data.missionPreview = MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, neighbourhoods: hoods) ??
+                                  MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, neighbourhoods: hoods);
             data.missionPreviewFor = mission;
             return data.missionPreview;
         }
@@ -154,8 +155,9 @@ namespace hds
             MissionSite site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
             client.playerData.missionPreview = null;
             client.playerData.missionPreviewFor = null;
-            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, placed.Count + phase.enemies, objects, rng, exclude: progress.sites)
-                        ?? MissionSites.Choose(sites, "Any", px, pz, placed.Count + phase.enemies, objects, rng, exclude: progress.sites);
+            List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
+            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, placed.Count + phase.enemies, objects, rng, progress.sites, hoods)
+                        ?? MissionSites.Choose(sites, "Any", px, pz, placed.Count + phase.enemies, objects, rng, progress.sites, hoods);
             if (site == null)
             {
                 Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
@@ -174,7 +176,7 @@ namespace hds
             };
             progress.exits.Clear();
             progress.exits.Add(new[] { site.lobbyDoor.pos_x, site.lobbyDoor.pos_y, site.lobbyDoor.pos_z });
-            Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor (" + site.CentreX + "," + site.floorY + "," +
+            Output.WriteDebugLog("[MISSION] Phase " + at + " at a " + site.style + " floor in " + site.neighbourhood + " (" + site.CentreX + "," + site.floorY + "," +
                                  site.CentreZ + "), elevator " + MissionSites.DoorHex(site.elevatorDoor) + " at " + site.elevatorDoor.pos_x + "," + site.elevatorDoor.pos_y + "," + site.elevatorDoor.pos_z + ", " + site.npcSpots.Count + " NPC spots; street door at " + site.lobbyDoor.pos_x + "," + site.lobbyDoor.pos_y + "," + site.lobbyDoor.pos_z);
 
             // NPC spots: the mission's own NPCs deepest in, away from the elevator; the hostiles between
@@ -230,11 +232,21 @@ namespace hds
             MissionSite site = progress.site;
             List<StaticWorldObject> furniture = site.containers.OrderBy(_ => rng.Next()).ToList();
             List<StaticWorldObject> spawners = site.objectSpots.OrderBy(_ => rng.Next()).ToList();
+            HashSet<StaticWorldObject> taken = new HashSet<StaticWorldObject>();
             foreach (MissionObjectDef def in progress.Phase.objects)
             {
                 StaticWorldObject spot;
                 UInt16 goid;
-                if (ObjectGoids.TryGetValue(def.kind, out goid))
+                StaticWorldObject real = site.realObjects.FirstOrDefault(o => !taken.Contains(o) &&
+                    string.Equals(MissionSites.RealObjects[MissionSites.Goid(o)], def.kind, StringComparison.OrdinalIgnoreCase));
+                if (real != null)
+                {
+                    // One already standing there, bound in place as retail bound its filing cabinets
+                    spot = real;
+                    goid = MissionSites.Goid(real);
+                    taken.Add(real);
+                }
+                else if (ObjectGoids.TryGetValue(def.kind, out goid))
                 {
                     // Spawned at a spawner meant for it, or any spawner, or failing that in place of some furniture
                     spot = spawners.FirstOrDefault(s => string.Equals(MissionSites.ObjectSpawners[MissionSites.Goid(s)], def.kind,

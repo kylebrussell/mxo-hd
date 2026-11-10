@@ -14,6 +14,54 @@ namespace hds
         public bool isTimed;
         public bool isSent = false;
 
+        // Reliable RPCs, as Reality (rajkosto/mxoemu, GameClient::FlushQueue) sent them: an RPC keeps the counter it was
+        // first sent with, remembers the packets that carried it, and goes out again until the client acks one of them.
+        // The client acks a packet's sequence and, in its ack bits, the 8 before it, so a lost one shows up as a gap.
+        public int rpcNumber = -1;
+        public readonly HashSet<UInt16> rpcPackets = new HashSet<UInt16>();
+        public long lastRpcSendTick;
+
+        /// <summary>How long an unacked RPC waits before it is sent again (Reality: the ping, 30 ms to 1 s).</summary>
+        public const long RpcResendIntervalMs = 500;
+
+        /// <summary>An RPC is sent at most this many times, then dropped.</summary>
+        public const int MaxRpcSends = 60;
+
+        public bool IsRpcDue(long nowTickMs) => rpcNumber < 0 || nowTickMs - lastRpcSendTick >= RpcResendIntervalMs;
+
+        /// <summary>Whether any packet this RPC went out in is among those the client acked.</summary>
+        public bool IsRpcAckedBy(ICollection<UInt16> ackedSeqs)
+        {
+            foreach (UInt16 seq in rpcPackets)
+            {
+                if (ackedSeqs.Contains(seq))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The server sequences an ack covers: the acked one, and for each set ack bit i the one i + 1 before it. Our
+        /// packets go out every other sequence, and the client's steady ack bits are 42 and 170 (bits 1, 3, 5 and 7: the
+        /// sent ones 2, 4, 6 and 8 back); 40 or 34 are the gaps a lost packet leaves.
+        /// </summary>
+        public static HashSet<UInt16> AckedSequences(UInt16 ackSeq, UInt16 ackBits)
+        {
+            HashSet<UInt16> acked = new HashSet<UInt16> { (UInt16)(ackSeq & 0xFFF) };
+            for (int i = 0; i < 8; i++)
+            {
+                if ((ackBits & (1 << i)) != 0)
+                {
+                    acked.Add((UInt16)((ackSeq - i - 1) & 0xFFF));
+                }
+            }
+
+            return acked;
+        }
+
         public SequencedMessage(byte[] _content)
         {
             content = new byte[_content.Length];

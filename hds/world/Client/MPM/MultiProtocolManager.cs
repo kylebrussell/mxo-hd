@@ -76,6 +76,8 @@ namespace hds{
                 Store.currentClient.playerData.setOnWorld(false);
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
+                // The client's counters started again: what was sent before can't be resent with its old counter
+                Store.currentClient.messageQueue.ForgetSentRpcs();
                 man04.ResetReceiveWindow();
                 // The client dropped all its views with the old world, and any fight with them.
                 CombatManager.GetHandler(Store.currentClient).AbandonCombat();

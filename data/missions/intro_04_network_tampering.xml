@@ -3,7 +3,7 @@
      "Contact") replaced by names. Placement is generated: see docs/MISSIONS.md. The guide lists Zion Military as the enemy
      in both phases; Machines are used here, since the mission is about a Machine network. -->
 <mission id="1205" title="Network Tampering" description="Escort a Zion Hacker to crack into a Machine network." plot="1" order="4"
-         org="0" contact="Tyndall" exp="22000" info="42000">
+         org="0" contact="Tyndall" neighbourhoods="Achan, Camon Heights, Eshean Projects, Mara, Midian Park, Moriah Projects, Tabor Park" exp="22000" info="42000">
   <npc id="1" handle="Mizar" type="FRIENDLY" at="1" rsi="89090058" level="3" maxHP="250" weapon="2564" />
   <npc id="2" handle="Checksum" type="FRIENDLY" at="2" rsi="58010058" level="4" maxHP="300" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="3">

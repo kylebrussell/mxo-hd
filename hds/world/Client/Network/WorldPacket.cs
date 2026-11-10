@@ -137,24 +137,58 @@ namespace hds
             // Here goes code from RPCPacket (As it should be generated on the fly)
             if (RPCMessages.Count > 0)
             {
-                content.append((byte)ProtocolHeaders.RPC_PROTOCOL);
-                // ToDo: Figure out what the "Lists" Count should handle ...maybe different types?
-                // Why not having just one List and adding them all ? Maybe a list has a limit ? 
-                content.append(0x01); // List Count for RPC Messages
-                content.append(NumericalUtils.uint16ToByteArray(playerData.getRPCCounter(),0));
-                content.append(NumericalUtils.uint16ToByteArrayShort((UInt16)RPCMessages.Count));
+                // New RPCs take the next counters; one resent keeps its own (Reality's MsgBlock sequenceId)
+                UInt16 counter = playerData.getRPCCounter();
                 foreach (SequencedMessage message in RPCMessages)
                 {
-                    content.append(message.content);
+                    if (message.rpcNumber < 0)
+                    {
+                        message.rpcNumber = counter++;
+                    }
                 }
 
-                // Set new RPC Counter
-                UInt16 incrementRpcCounter = playerData.getRPCCounter();
-                incrementRpcCounter += (ushort)RPCMessages.Count;
-                playerData.setRPCCounter(incrementRpcCounter);                
+                playerData.setRPCCounter(counter);
 
+                // 04 <blocks>, then each block's first counter, its count and its RPCs: a resent RPC and new ones can
+                // share a packet, as Reality's OrderedPacket did
+                List<List<SequencedMessage>> blocks = RpcBlocks(RPCMessages);
+                content.append((byte)ProtocolHeaders.RPC_PROTOCOL);
+                content.append((byte)blocks.Count);
+                UInt16 sseq = (UInt16)(neededAckSSeq & 0xFFF);
+                long now = Environment.TickCount64;
+                foreach (List<SequencedMessage> block in blocks)
+                {
+                    content.append(NumericalUtils.uint16ToByteArray((UInt16)block[0].rpcNumber, 0));
+                    content.append(NumericalUtils.uint16ToByteArrayShort((UInt16)block.Count));
+                    foreach (SequencedMessage message in block)
+                    {
+                        content.append(message.content);
+                        message.rpcPackets.Add(sseq);
+                        message.lastRpcSendTick = now;
+                    }
+                }
             }
             
+        }
+
+        /// <summary>RPCs in counter order, split where the counters stop following on.</summary>
+        public static List<List<SequencedMessage>> RpcBlocks(IEnumerable<SequencedMessage> messages)
+        {
+            List<List<SequencedMessage>> blocks = new List<List<SequencedMessage>>();
+            foreach (SequencedMessage message in messages.OrderBy(m => m.rpcNumber))
+            {
+                List<SequencedMessage> last = blocks.Count > 0 ? blocks[blocks.Count - 1] : null;
+                if (last != null && (UInt16)(last[last.Count - 1].rpcNumber + 1) == (UInt16)message.rpcNumber && last.Count < 255)
+                {
+                    last.Add(message);
+                }
+                else
+                {
+                    blocks.Add(new List<SequencedMessage> { message });
+                }
+            }
+
+            return blocks;
         }
 
         public void generateObjectMessageData()

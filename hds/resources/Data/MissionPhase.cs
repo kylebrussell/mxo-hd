@@ -17,6 +17,7 @@ namespace hds
         public string site;            // "Normal", "Any" or a style (SlumApt, GenericApt, Office, RedPillExtraction, ...)
         public string enemy;           // Machines, Merovingian or Zion: the org of the hostiles it spawns
         public int enemies;            // how many
+        public List<string> neighbourhoods = new List<string>(); // overrides the mission's for this phase
         public List<MissionLine> enterLines = new List<MissionLine>(); // on reaching the site's floor
         public List<MissionObjectDef> objects = new List<MissionObjectDef>();
     }
