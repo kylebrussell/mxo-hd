@@ -17,11 +17,13 @@ namespace hds
     {
         public string style;
         public ushort metrId;
+        public string neighbourhood = ""; // the client's own neighbourhood of its elevator's sector
         public double floorY;
         public double minX, maxX, minZ, maxZ;
         public readonly List<double[]> npcSpots = new List<double[]>();                   // where NPCs stand: x, y, z, rotation
         public readonly List<StaticWorldObject> containers = new List<StaticWorldObject>();  // furniture the player can search
         public readonly List<StaticWorldObject> objectSpots = new List<StaticWorldObject>(); // spawners for computers, safes, mainframes
+        public readonly List<StaticWorldObject> realObjects = new List<StaticWorldObject>(); // computers, safes and mainframes already there
         public StaticWorldObject elevatorDoor; // this floor's elevator door: the mission waypoint
         public StaticWorldObject lobbyDoor;   // the same elevator's street-level door
         public List<StaticWorldObject> shaft = new List<StaticWorldObject>(); // that elevator's doors, bottom floor first
@@ -60,6 +62,12 @@ namespace hds
 
         public const UInt16 PhoneGoId = 1401;
 
+        /// <summary>Computers, safes and mainframes that stand in the world as statics, by kind.</summary>
+        public static readonly Dictionary<UInt16, string> RealObjects = new Dictionary<UInt16, string>
+        {
+            { 3, "Computer" }, { 1416, "Safe" }, { 552, "Safe" }, { 357, "Mainframe" }
+        };
+
         // Building floors are 400 units apart; a floor's style pointers sit 300 to 420 units above it.
         private const double LinkDistance = 900, LinkHeight = 150, Margin = 400, FloorBelowPointer = 430;
 
@@ -67,6 +75,32 @@ namespace hds
         private static readonly Dictionary<UInt16, List<MissionSite>> byDistrict = new Dictionary<UInt16, List<MissionSite>>();
 
         public static bool IsNormal(string style) => Normal.Contains(style);
+
+        /// <summary>
+        /// data/slums_neighbourhoods.csv: each Slums sector's neighbourhood, from the client's own world file
+        /// (resource/worlds/final_world/slums_barrens_full.metr, one record per sector with its "Neighborhood"). The sector
+        /// numbers are the static data's sector_id and retail's briefing header's.
+        /// </summary>
+        public static Dictionary<UInt16, string> LoadNeighbourhoods(string path)
+        {
+            Dictionary<UInt16, string> map = new Dictionary<UInt16, string>();
+            if (!System.IO.File.Exists(path))
+            {
+                Output.WriteLine("[MISSION] No neighbourhood map at " + path);
+                return map;
+            }
+
+            foreach (string line in System.IO.File.ReadLines(path).Skip(1))
+            {
+                string[] parts = line.Split(new[] { ',' }, 2);
+                if (parts.Length == 2 && UInt16.TryParse(parts[0], out UInt16 sector))
+                {
+                    map[sector] = parts[1].Trim();
+                }
+            }
+
+            return map;
+        }
 
         /// <summary>Whether a site's style answers a mission phase's site attribute ("Normal", "Any", or a style name).</summary>
         public static bool Matches(string wanted, string style)
@@ -92,6 +126,14 @@ namespace hds
                 {
                     var timer = System.Diagnostics.Stopwatch.StartNew();
                     sites = Build(DataLoader.getInstance().WorldObjectsDB.Where(o => o.metrId == metrId), metrId);
+                    Dictionary<UInt16, string> hoods = metrId == 1 ? LoadNeighbourhoods(DataLoader.DataPath("slums_neighbourhoods.csv")) : null;
+                    foreach (MissionSite site in sites)
+                    {
+                        if (hoods != null && site.elevatorDoor != null && hoods.TryGetValue(site.elevatorDoor.sectorID, out string hood))
+                        {
+                            site.neighbourhood = hood;
+                        }
+                    }
                     byDistrict[metrId] = sites;
                     Output.WriteLine("[MISSION] " + sites.Count + " mission sites in district " + metrId + " (" +
                                      timer.ElapsedMilliseconds + " ms)");
@@ -105,8 +147,14 @@ namespace hds
         /// Picks a site for a phase: of the wanted style, with room for its NPCs and objects and an elevator to reach it,
         /// between <paramref name="minDistance"/> and <paramref name="maxDistance"/> from (x, z) when possible, nearer ones first.
         /// </summary>
+        /// <summary>
+        /// Retail's distance to a phase's site. Every captured "Normal" phase (6 of 6) was 153 to 165 m from where the player
+        /// stood when it was given, though hundreds of fitting buildings were nearer (mxo-research/locations/notes.txt).
+        /// </summary>
+        public const double TargetDistance = 15800, DistanceBandLow = 14500, DistanceBandHigh = 17000;
+
         public static MissionSite Choose(IEnumerable<MissionSite> sites, string wanted, double x, double z, int npcs, int objects,
-            Random rng, double minDistance = 5000, double maxDistance = 60000, ICollection<MissionSite> exclude = null)
+            Random rng, ICollection<MissionSite> exclude = null, ICollection<string> neighbourhoods = null)
         {
             List<(MissionSite site, double distance)> fitting = new List<(MissionSite, double)>();
             foreach (MissionSite site in sites)
@@ -127,10 +175,24 @@ namespace hds
                 return null;
             }
 
-            List<(MissionSite site, double distance)> inRange = fitting.Where(f => f.distance >= minDistance && f.distance <= maxDistance)
-                .OrderBy(f => f.distance).ToList();
-            List<(MissionSite site, double distance)> pool = inRange.Count > 0 ? inRange : fitting.OrderBy(f => f.distance).ToList();
-            return pool[rng.Next(Math.Min(pool.Count, 12))].site;
+            // At retail's distance, in the guide's neighbourhoods for the mission when it names some (8 of the 10 captured
+            // sites were in the guide's "more likely" list); failing that the nearest to retail's distance
+            bool InBand((MissionSite site, double distance) f) => f.distance >= DistanceBandLow && f.distance <= DistanceBandHigh;
+            bool InHoods((MissionSite site, double distance) f) =>
+                neighbourhoods == null || neighbourhoods.Count == 0 || neighbourhoods.Contains(f.site.neighbourhood);
+            List<(MissionSite site, double distance)> pool = fitting.Where(f => InBand(f) && InHoods(f)).ToList();
+            if (pool.Count == 0)
+            {
+                pool = fitting.Where(InBand).ToList();
+            }
+
+            if (pool.Count == 0)
+            {
+                double best = fitting.Min(f => Math.Abs(f.distance - TargetDistance));
+                pool = fitting.Where(f => Math.Abs(f.distance - TargetDistance) <= best + 2000).ToList();
+            }
+
+            return pool[rng.Next(pool.Count)].site;
         }
 
         /// <summary>Clusters a district's style pointers into floors and collects what's on each. Public for the tests.</summary>
@@ -151,7 +213,8 @@ namespace hds
                 UInt16 goid = NumericalUtils.ByteArrayToUint16(obj.type, 1);
                 bool pointer = Styles.ContainsKey(goid);
                 bool elevator = goid == ElevatorDoor1 || goid == ElevatorDoor2;
-                bool content = goid == NpcSpawner || Furniture.Contains(goid) || ObjectSpawners.ContainsKey(goid) || goid == PhoneGoId;
+                bool content = goid == NpcSpawner || Furniture.Contains(goid) || ObjectSpawners.ContainsKey(goid) || goid == PhoneGoId ||
+                               RealObjects.ContainsKey(goid);
                 if (!pointer && !elevator && !content)
                 {
                     continue;
@@ -225,6 +288,10 @@ namespace hds
                     {
                         site.containers.Add(obj);
                     }
+                    else if (RealObjects.ContainsKey(goid))
+                    {
+                        site.realObjects.Add(obj);
+                    }
                     else if (ObjectSpawners.ContainsKey(goid))
                     {
                         site.objectSpots.Add(obj);
@@ -252,6 +319,7 @@ namespace hds
                     site.npcSpots.RemoveAll(s => FlatDistance(s[0], s[2], door) > ReachUnits);
                     site.containers.RemoveAll(c => FlatDistance(c.pos_x, c.pos_z, door) > ReachUnits);
                     site.objectSpots.RemoveAll(c => FlatDistance(c.pos_x, c.pos_z, door) > ReachUnits);
+                    site.realObjects.RemoveAll(c => FlatDistance(c.pos_x, c.pos_z, door) > ReachUnits);
                     if (site.npcSpots.Count == 0)
                     {
                         site.elevatorDoor = null;

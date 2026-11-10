@@ -6,7 +6,7 @@
      an Agent (Boss) that no line or goal mentions, so it is left out. Subject is met in phase 2 and found again at a new
      location in phase 4, so he has two entries with one name (ids 1 and 8), one for each site. -->
 <mission id="1208" title="Transcendence" description="Extract a potential Redpill that has already become self-aware of the Matrix." plot="1" order="7"
-         org="0" contact="Tyndall" exp="44000" info="63000">
+         org="0" contact="Tyndall" neighbourhoods="Dannah Heights, Kedemoth, Lemone, Magog, Mannsdale Housing Projects, Zia" exp="44000" info="63000">
   <npc id="1" handle="Owen Hartley" type="FRIENDLY" at="2" rsi="350A0058" weapon="0" />
   <npc id="2" handle="Carol Hartley" type="FRIENDLY" at="1" rsi="520A0058" weapon="0" />
   <npc id="3" handle="Jenny Hartley" type="FRIENDLY" at="1" rsi="760A0058" weapon="0" />

@@ -100,7 +100,19 @@ The Ghidra project is kept at `~/Developer/mxo-client/ghidra/` (project `mxo`). 
 
 Fixed: **about half of world logins used to stall at "Negotiating with Servers..."**. The server queued the self-spawn after the client's `CLIENT_SPAWN_READY` (RPC 5), but `DeletedAckedPackets` deleted any queued message with `neededAck <= ackSeq`. An unsent message still has `neededAck` 0, so a client ack arriving before the next flush deleted the spawn unsent; the packet log showed the 199-byte self-spawn object packet missing entirely. Messages now only count as acked once sent (`SequencedMessage.IsAckedBy`). Verified: a fresh login and two relogins in one server run all reached the world.
 
-Open: **the client sometimes stops acting on server RPCs partway through a session.** No chat, vendor windows or other RPC-driven UI shows up after that point, though packets keep arriving and are acked. In 2026-11-07 tests it always happened in the burst right after a teleport:
+Fixed (2026-11-09): **the client sometimes stopped acting on server RPCs partway through a session.** The causes:
+- **RPCs were never resent.** They weren't stamped with the packet that carried them (any ack removed them once sent), and their resend check compared a counter (4000, 8000…) against Unix time. So one lost packet left a gap in the RPC counters, and the client waited for it for the rest of the session. The packet log showed the client's ack bits with gaps (40 or 34 for its usual 42) about a hundred times.
+- **Packets had no size limit** (`WorldPacket`'s local `bufferSize` shadowed the field), so a teleport's burst went out as one 6,400-byte packet that the client never took.
+
+RPCs now work as in Reality (rajkosto/mxoemu, `GameClient::FlushQueue` and `AcknowledgePacket`):
+- **Counters:** an RPC keeps the counter it was first sent with, and remembers each packet it went out in.
+- **Acks:** it is gone once the client acks one of those packets. The client acks a sequence, and its ack-bits byte (what the code calls PSS) names the 8 before it: bit i is ack − (i+1), so the steady 42 and 170 cover the server's every-other-sequence packets.
+- **Resends:** until acked, it goes out again every 500 ms, in counter order, in blocks of consecutive counters (`04 <blocks>`, then each block's first counter, count and RPCs). After 60 sends it is dropped.
+- **Comm reset:** RPCs already sent are dropped.
+- **Packet size:** packets stop at 1,300 bytes and 255 RPCs.
+- **Testing:** `MXO_DROP_RPC_PACKET=n` doesn't send the nth packet carrying RPCs, to test recovery.
+
+The history before the fix: in 2026-11-07 tests it always happened in the burst right after a teleport:
 - The client requests dozens of static objects (RPC `c9`).
 - The server used to answer each request with two debug chat messages, hundreds within seconds and 5–7 per packet.
 - With those debug messages moved to the server log (`MXO_CHAT_DEBUG=1` brings them back), the vendor opened in 2 of 2 sessions, against 0 of 3 just before. Earlier sessions with the flood sometimes worked, so this is likely but not proven.

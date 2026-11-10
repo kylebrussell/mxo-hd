@@ -31,7 +31,8 @@ namespace hds
                 info = Int(node, "info", 0),
                 finishLine = Plain(node.SelectSingleNode("finish")?.InnerText),
                 org = (byte)Int(node, "org", 0),
-                contact = Attr(node, "contact") ?? "Tyndall"
+                contact = Attr(node, "contact") ?? "Tyndall",
+                neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 
             foreach (XmlNode npcNode in Elements(node, "npc"))
@@ -80,7 +81,8 @@ namespace hds
             {
                 site = Attr(node, "site"),
                 enemy = Attr(node, "enemy"),
-                enemies = Int(node, "enemies", 0)
+                enemies = Int(node, "enemies", 0),
+                neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 
             foreach (XmlNode group in Elements(node, "enter"))
@@ -222,6 +224,12 @@ namespace hds
         {
             return text?.Replace("’", "'").Replace("‘", "'").Replace("“", "\"").Replace("”", "\"")
                 .Replace("…", "...").Replace("—", "--").Replace("–", "-");
+        }
+
+        /// <summary>"Achan, Mara".</summary>
+        private static List<string> Names(string text)
+        {
+            return (text ?? "").Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
         }
 
         /// <summary>"2" or "2,3".</summary>

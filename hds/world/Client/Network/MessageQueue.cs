@@ -60,6 +60,21 @@ namespace hds
             
         }
 
+        /// <summary>Drops the RPCs already sent: after a comm reset the client counts from 0 again.</summary>
+        public void ForgetSentRpcs()
+        {
+            lock (RPCMessagesQueue.SyncRoot)
+            {
+                for (int i = RPCMessagesQueue.Count - 1; i >= 0; i--)
+                {
+                    if (((SequencedMessage)RPCMessagesQueue[i]).rpcNumber >= 0)
+                    {
+                        RPCMessagesQueue.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
         public void addRawMessage(byte[] messageBlock)
         {
             rawMessages.Add(messageBlock);

@@ -178,6 +178,44 @@ public class GeneratedMissionTests
         Assert.Null(MissionSites.Choose(sites, "Any", 0, 0, 3, 1, rng, exclude: new List<MissionSite> { sites[0] }));
     }
 
+    private static MissionSite SiteAt(double x, double z, string hood)
+    {
+        MissionSite site = new MissionSite
+        {
+            style = "SlumApt", neighbourhood = hood, minX = x - 100, maxX = x + 100, minZ = z - 100, maxZ = z + 100,
+            elevatorDoor = Static(MissionSites.ElevatorDoor1, x, 545, z)
+        };
+        site.npcSpots.Add(new double[] { x, 495, z, 0 });
+        return site;
+    }
+
+    [Fact]
+    public void SitesAreAboutAsFarAsRetailsAndInTheGuidesNeighbourhoods()
+    {
+        MissionSite near = SiteAt(3000, 0, "Mara"), retailFar = SiteAt(15800, 0, "Magog"), retailFarInMara = SiteAt(0, 16000, "Mara"),
+            tooFar = SiteAt(40000, 0, "Mara");
+        List<MissionSite> sites = new List<MissionSite> { near, retailFar, retailFarInMara, tooFar };
+        Random rng = new Random(3);
+
+        // Retail's 150 to 165 m, and of those the one in the guide's neighbourhoods
+        Assert.Same(retailFarInMara, MissionSites.Choose(sites, "Normal", 0, 0, 1, 0, rng, neighbourhoods: new List<string> { "Mara" }));
+        // No neighbourhood in the band: still the distance
+        Assert.Contains(MissionSites.Choose(sites, "Normal", 0, 0, 1, 0, rng, neighbourhoods: new List<string> { "Zia" }),
+            new[] { retailFar, retailFarInMara });
+        // Nothing in the band: the nearest to it
+        Assert.Same(near, MissionSites.Choose(new List<MissionSite> { near, tooFar }, "Normal", 0, 0, 1, 0, rng));
+    }
+
+    [Fact]
+    public void TheNeighbourhoodMapLoads()
+    {
+        Dictionary<ushort, string> hoods = MissionSites.LoadNeighbourhoods(Path.Combine(MissionsDir(), "..", "slums_neighbourhoods.csv"));
+
+        Assert.Equal(1493, hoods.Count);
+        Assert.Equal("Tabor Park", hoods[405]); // Welcome to the Matrix's building
+        Assert.Equal("Achan", hoods[1349]);     // The Internuncio's first
+    }
+
     [Fact]
     public void StylesMatchTheGuidesAreaTypes()
     {

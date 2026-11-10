@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -126,8 +127,9 @@ namespace hds
             {
                 foreach (SequencedMessage message in messageQueue.RPCMessagesQueue)
                 {
-                    if (message.sendCounter >= 10  && message.getResendTime() >= TimeUtils.getUnixTimeUint32())
+                    if (message.sendCounter >= SequencedMessage.MaxRpcSends)
                     {
+                        Output.WriteDebugLog("[NET] Giving up on RPC " + message.rpcNumber + " after " + message.sendCounter + " sends");
                         ackedRPCMessages.Add(message);
                     }
                 }
@@ -152,6 +154,8 @@ namespace hds
         }
 
         // Flush the MessageQueue Lists to the Client
+        private int rpcPacketsSent;
+
         public void FlushQueue(bool sent = false, bool force = false)
         {
             if (!force && !sent)
@@ -231,15 +235,20 @@ namespace hds
                 {
                     lock (messageQueue.RPCMessagesQueue.SyncRoot)
                     {
+                        long rpcNow = Environment.TickCount64;
                         foreach (SequencedMessage messageRPC in messageQueue.RPCMessagesQueue)
                         {
-                            // First do stuff on messages
-                            // Just append each message...
-                            if (messageRPC.getResendTime() >= TimeUtils.getUnixTimeUint32() ||
-                                messageRPC.getResendTime() == 0 && messageRPC.isSent==sent)
+                            // New RPCs, and sent ones the client hasn't acked within RpcResendIntervalMs. They stay
+                            // in counter order, so a resent one goes out ahead of anything newer.
+                            if (messageRPC.IsRpcDue(rpcNow))
                             {
-                                // Check if this really save the resendtime or not
-                                messageRPC.increaseResendTime();
+                                if (messageRPC.rpcNumber >= 0)
+                                {
+                                    Output.WriteDebugLog("[NET] Resending RPC " + messageRPC.rpcNumber + " (send " +
+                                                         (messageRPC.sendCounter + 1) + ")");
+                                }
+
+                                messageRPC.lastRpcSendTick = rpcNow;
                                 messageRPC.IncreaseSentCounter();
                                 if (packet.addRPCContent(messageRPC) == false)
                                 {
@@ -299,7 +308,14 @@ namespace hds
 
                     byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, playerData.getPss(),
                         playerData.getCseq(), playerData.getSseq());
-                    sendPacket(encryptedData);
+                    if (thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent))
+                    {
+                        Output.WriteDebugLog("[NET] Test: dropped RPC packet sseq " + playerData.getSseq());
+                    }
+                    else
+                    {
+                        sendPacket(encryptedData);
+                    }
 
                     stopWatch.Stop();
                     TimeSpan ts = stopWatch.Elapsed;
@@ -355,10 +371,11 @@ namespace hds
             ArrayList ackedRPCMessages = new ArrayList();
             lock (messageQueue.RPCMessagesQueue.SyncRoot)
             {
+                HashSet<UInt16> ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
                 foreach (SequencedMessage message in messageQueue.RPCMessagesQueue)
                 {
-                    // Same rule as object messages: never drop an RPC that hasn't been sent.
-                    if (message.IsAckedBy(ackSeq))
+                    // Gone once the client acks a packet it was in; until then FlushQueue sends it again
+                    if (message.rpcNumber >= 0 && message.IsRpcAckedBy(ackedSeqs))
                     {
                         ackedRPCMessages.Add(message);
                     }
@@ -417,6 +434,11 @@ namespace hds
             playerData.setPss((UInt16) decValues[1]);
             playerData.setCseq((UInt16) decValues[2]);
             playerData.setACK((UInt16) decValues[3]);
+
+            if (DropTest.Enabled)
+            {
+                Output.WriteDebugLog("[NET] Client acks sseq " + (UInt16) decValues[3]);
+            }
 
             this.DeletedAckedPackets((UInt16) decValues[3]); // REMOVING FROM ACK QUEUE
             return processedPacket;
