@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subways, Machines story mission 7.3.2. Source: research/missions/transcripts/Mach7-3-2.md (the archive replay of
+     [Machine Archive 7.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line (the Operator's "a long ago" is
+     retail's), the names Agent Pace, Agent Miller, Agent Marks, Wyatt, Michale and 5 Points Brother, the Firebolt and
+     White Knight viruses, and the 5 Points barks. Gray and Agent Marks called the player "Mr. Argento"; that is
+     {player}. Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was
+     never opened), the sites (the hubs are in Tabor Park, Camon Heights and Apollyon, as the briefings and the chat
+     say; the buildings are unnamed: Normal), the looks and the enemy counts. One line of the Operator's "Quite a
+     cocktail" was unreadable and is left out. Wyatt and Michale are Demon Army Exiles; the General's Commandos are
+     Machine programs: enemy Machines. Item stand-ins: the Firebolt virus is Virus (6786), the second viral program
+     (its name is never shown) is Data_CD (6831), the White Knight virus is Data (6787). Rewards: 373,660 experience
+     and 63,000 information, shown on completing this mission.
+     Gaps: Agent Pace's three programs are three Gets after talking to her. At the first hub the Operator wanted to
+     bring Wyatt along, and as the next phase began he turned on the player and called his brethren; we have no NPC
+     that turns hostile and a follower can't be fought, so the friendly Wyatt stays at the first hub and a hostile
+     Wyatt waits at the Camon Heights hub, where his betrayal is said on arrival, among the commandos (his brethren
+     aren't placed: a phase has one enemy). The Operator's "back on track" line, which came after he died, is said
+     when he is killed. Michale is a hostile with no goal of his own. Whether the 5 Points Exiles at the last hub were
+     hostile isn't shown; nothing was fought there, so they are friendly bystanders. The 5 Points Partier (a name seen
+     on screen) said nothing and isn't placed; the first 5 Points bark ("...It's a free hang-out.") was cut and is
+     left out. -->
+<mission id="207302" title="Subways" description="Insert viral tracking programs at the Trainman's switch hubs to find the General." plot="1"
+         order="7302" org="2" contact="Agent Gray" exp="373660" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568" />
+  <npc id="2" handle="Agent Miller" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">The weather system has stabilized, operative. You need no longer concern yourself about it.</say>
+  </npc>
+  <npc id="3" handle="Agent Marks" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say display="5">There is no permanent refuge from the System within the simulation, {player}. Many Exile programs make the mistake of ignoring this fact.</say>
+  </npc>
+  <npc id="4" handle="Wyatt" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say after="2">He is here. He is watching.</say>
+  </npc>
+  <npc id="5" handle="Michale" type="HOSTILE" at="2" rsi="c6020058" weapon="2568">
+    <say>Yea, and the deceiver shall be himself deceived!</say>
+  </npc>
+  <npc id="6" handle="Wyatt" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="5 Points Brother" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say display="5">Whoo-whoo! Where'd the train go?</say>
+  </npc>
+  <npc id="8" handle="5 Points Brother" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say display="5">Man, you need to chill.</say>
+  </npc>
+  <npc id="9" handle="5 Points Brother" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say display="5">The Trainman lets us kick it here. Who're you, his mommy?</say>
+  </npc>
+  <npc id="10" handle="5 Points Brother" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say display="5">You can come ride a train with me.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>As you know, operative, the General fled into the temporary safety of the Merovingian's secure areas. We began work on forcing our way into these areas, but in the face of this threat, the General has bolted from cover, and gone into hiding in the labyrinth of the Trainman's cross-city transportation network.
+
+The General must not be allowed to escape. Agent Pace will provide you with viral programs that you will use to track the General.</briefing>
+    <enter><say>Pace is in there.
+
+Man, if it wasn't for the Merv, we'd have had the General a long ago.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Saluti, tesoro. It is a pleasure to see you again. I have three viral programs to give you. Please handle them carefully; I wouldn't want you to be...damaged.</say></talk>
+      <done><say npc="1">You will need these programs to complete your assignment, {player}.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Firebolt virus from Agent Pace" type="Get" npc="1" item="6786" after="1" />
+    <objective goal="3" text="Get the second viral program from Agent Pace" type="Get" npc="1" item="6831" after="1" />
+    <objective goal="4" text="Get the White Knight virus from Agent Pace" type="Get" npc="1" item="6787" after="1" />
+    <complete><say>Quite a cocktail you've got there. Let's go see what Gray wants us to infect with those babies.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>The Trainman's network is controlled by hacked switch hubs in the vicinity of certain train stations. By giving the General and his troops access, the Trainman has made his network vulnerable to our custom scan routines already attuned to commando activity. This has allowed us to locate several of these switch hubs. The viral programs you carry, inserted at a hub station, will map the Trainman's network, and allow us to track the General's position within it.
+
+The first hub you will approach is in Tabor Park. The Firebolt virus must be inserted into a computer at the hub area. You are also to remain alert for other information pertinent to the General's location.</briefing>
+    <enter><say>Place looks pretty quiet. I've got two programs--look like Exiles--on my screen, and a networked computer system. That's got to be the hub switch terminal.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Insert the Firebolt virus into the hub computer" type="Put" object="1" item="6786">
+      <done><say>Good. Looks like the virus is doing its thing.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Wyatt" type="Talk" npc="4">
+      <talk><say npc="4">Know? Do I know? I know many things, follower of the Machine. Ipsa scientia potestas est.</say></talk>
+      <done>
+        <say>Eh... Huh. Maybe that one knows something about the General. Let's bring him along.</say>
+        <say npc="4">He is here. He is watching.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3" neighbourhoods="Camon Heights">
+    <briefing>The next hub you will visit lies in Camon Heights.
+
+The Exile you found may have some knowledge of the Trainman's network. Bring him--
+
+Eh?</briefing>
+    <enter>
+      <say npc="6">Hah! I lured you out into the open! To me, my brethren! Together we will slay the enslaved interloper!</say>
+      <say>What th--? That Demon Army guy's lost it! Watch out!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill Wyatt" type="Defeat" npc="6">
+      <done>
+        <say>Jeez. Some programs...
+
+I wonder if he knew anything, or if he was just crazy? I'm leaning toward "crazy."</say>
+        <say>Okay, back on track. I'm seeing a networked terminal in there, and...
+
+Oh, looky here. Our scan picked up some of those sneaky commandos. They aren't much for answering questions, but maybe they could mime something for us.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Insert the viral program into the hub computer" type="Put" object="1" item="6831">
+      <done><say>Looks like another successful viral insertion.</say></done>
+    </objective>
+    <objective goal="3" text="Eliminate the General's commandos" type="DefeatAll">
+      <done><say>All I got from that was "Ow, pain," so maybe they don't make good mimes. It's all about focus.
+
+Hm... I don't see any suspicious code on them, either. Well, better just report it to Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Apollyon">
+    <briefing>The presence of the General's commandos at that location would seem to indicate that our supposition as to the General's continued presence in the Trainman's network is correct, {player}.
+
+The third known switch hub is in Apollyon. Proceed to the location and deploy the White Knight virus in the hub terminal.</briefing>
+    <enter><say>Let's see here... Exile signals. Looks like the local gang--5 Points.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Insert the White Knight virus into the hub computer" type="Put" object="1" item="6787">
+      <done>
+        <say>Virus away! Good work.</say>
+        <say>Ugh, kill me now. This reminds me why I didn't hang out with the "cool" crowd as a kid--reminds me of one of those awful underage cave mixers. I'd like to haul all of them in and let Pace give 'em twenty lashes...but I guess chances are they don't know anything.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The viral routines are already returning useful data, operative. We will soon be able to pinpoint the General's location within the Trainman's network.
+
+Certain intelligence gathered from Merovingian sources indicates that the Merovingian may intend to transport the General out of the simulation entirely, by way of the Trainman. With the data gathered from these viral probes, we will be prepared to intercept and neutralize any such attempt.</finish>
+</mission>

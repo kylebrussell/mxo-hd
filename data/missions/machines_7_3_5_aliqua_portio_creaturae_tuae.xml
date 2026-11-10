@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aliqua Portio Creaturae Tuae, Machines story mission 7.3.5. Source: research/missions/transcripts/Mach7-3-5.md
+     (the archive replay of [Machine Archive 7.3.5], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md. Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names
+     Seraph, Ghost, Agent Pace, Veil, The Oracle, Zion Gunman and E Pluribus Neo Crusader, and the guards' barks. Gray
+     and Agent Pace called the player "Mr. Argento"; that is {player}. Ours: the description (the Summary tab was
+     never opened), every objective text (the Objectives tab was never opened), the sites (none is named: Normal), the
+     looks and the enemy count. The General's Commandos are Machine programs: enemy Machines. No mission items.
+     Rewards: 373,830 experience and 63,000 information, shown on completing this mission.
+     Gaps: at the second site the commandos were already dead ("all the commandos are already kaput"); we have no
+     bodies, so the phase has no hostiles and the Operator's line is said on arrival. Agent Pace arrived during the
+     talk ("How'd Pace get there so fast?"); she is there from the start, and that line is said on coming near her.
+     Seraph is at the second site and again beside the Oracle; he isn't led between them, so he is placed in both.
+     The Cypherite redpills at Veil's meeting place and the Zion Guardian Patcher by the Oracle only said "..." or
+     nothing and aren't placed. One Operator line after the Oracle's first was never captured and is left out. Retail
+     logged no "Goals for this area are complete" in the last phase (the mission ended on the talk); ours says it. -->
+<mission id="207305" title="Aliqua Portio Creaturae Tuae" description="Eliminate the last of the General's commandos in the city." plot="1"
+         order="7305" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Seraph" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2564" />
+  <npc id="2" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say after="2">I think we're pretty much wrapped up here...</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="3">Dismissed, operative.</say>
+  </npc>
+  <npc id="4" handle="Veil" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say after="1">If you'll excuse me, I have some phone calls to make.</say>
+  </npc>
+  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="61000040" weapon="0" />
+  <npc id="6" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2564">
+    <say>...</say>
+  </npc>
+  <npc id="7" handle="Zion Gunman" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+    <say display="5">I had a friend on the Pelageus. We know who it was who really pulled their jacks.</say>
+  </npc>
+  <npc id="8" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">You're just lucky we were here to save the Oracle.</say>
+  </npc>
+  <npc id="9" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say display="5">I don't hate you... I just know that you're wrong.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>{player}, a small number of the General's commandos have once again been detected in the city.
+
+I am sending you to the location of some of the commandos now. They cannot hide from our scans.</briefing>
+    <enter><say>Oh, they're in there, all right. You'd think these guys would learn.</say></enter>
+    <objective goal="1" text="Eliminate the General's commandos" type="DefeatAll">
+      <done><say>Nice mopping. I wonder if Gray can wizard up any more for us to play with.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our scans indicate that just one more group of the commandos survives. Intercept and eliminate.</briefing>
+    <enter>
+      <say>Hm, I'm picking up redpills in there, and...is that Seraph?</say>
+      <say>Okay... It looks like all the commandos are already kaput. That definitely is Seraph in there, and...looks like Ghost, too, so that probably explains what took out the commandos. I'd better notify Gray that we've been one-upped.</say>
+    </enter>
+    <objective goal="1" text="Talk to Seraph" type="Talk" npc="1">
+      <talk><say npc="1">It is good to hear that they have been eliminated. They were brought in as a diversion, while another tried to kill the Oracle. Fortunately, he was stopped.</say></talk>
+      <done><say>Yeah, I heard talk about the Kid taking the bullet for the Oracle, or something. Seems he survived too, unfortunately.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Ghost" type="Talk" npc="2">
+      <talk><say npc="2">Thanks for asking, operative, but I think we've got them handled.</say></talk>
+      <done>
+        <say>Gee, what's his problem?</say>
+        <say npc="2">I think we're pretty much wrapped up here...</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Agent Pace" type="Talk" npc="3" after="2">
+      <talk><say npc="3">I will have a word with operative Ghost, {player}. You may leave, and report back to Agent Gray. Thank you.</say></talk>
+      <done><say>Three's a crowd? Wait a second--Seraph's still there, too. Uh... Anyhow, sounds like you'd better move out.</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Whoa... I only just got off the horn with Gray. How'd Pace get there so fast?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Cypherites searching for information have commandeered a Zion hovercraft, operative, which may account for the Zionite's unease.
+
+As this activity could have repercussions, the Cypherite controller Veil has been asked to give an explanation of the operation. You will meet with her now.</briefing>
+    <enter><say>I dunno how I feel about you meeting with Veil without an Agent at your back.
+
+That's where you're supposed to meet her. I'm picking up some redpill signals.</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="4">
+      <talk><say npc="4">I'll tell you how it went, dearie: I darn near lost a ship and crew down there, and we got precious little to show for it.
+
+You want results? Fine! We'll get them, but don't start questioning our methods. The Machines knew very well what they were asking for. Tell me we're endangering the Truce? Don't make me laugh.</say></talk>
+      <done><say>I can see why Gray would prefer to deal with Cryptos...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It is our understanding that Cryptos has resumed leadership of the Cypherites, operative. Veil, however, still controls many of their day-to-day operations.
+
+The Cypherites were created as a...politically convenient means of ensuring that Zion would abide by the Truce. As a result of Seraph's attack on Cryptos, they are now known to have operated under our instructions, which has led some to deem even their current actions our responsibility. For instance, it is probable that some will blame us for the death of the Zionite crew at their hands in this latest Cypherite operation.
+
+I should mention, operative, that Seraph has extended an invitation for you to meet with the Oracle. We ask that you remain alert for signs of her true purpose in summoning you.</briefing>
+    <enter><say>The Cypherites killed the crew? Oh, brother. Yeah, I see that going over real well with Zion.
+
+Zion and EPN are still playing "guard the Oracle," even though the General's gone, and the Merv wasted his kill-code on the Kid. They should know better than to try to stop you from getting in...hopefully.</say></enter>
+    <objective goal="1" text="Talk to The Oracle" type="Talk" npc="5">
+      <talk><say npc="5">Why do you think Neo died to get us peace, huh? 'Cause he wanted to save people--stop the killing--same as most everyone else.
+
+Problem is, people have different ideas on how to go about that, and different priorities. Machines, humans--too many see the differences, but not the similarities. Or maybe they just don't care.
+
+It's a pickle, kiddo, it really is, and I'm afraid I just don't have an easy answer for you.</say></talk>
+      <done>
+        <say npc="5">If there's one thing I've learned from all this, it's that you can't save someone who doesn't want to be saved. It's all well and good to give someone a choice, but then you gotta live with the consequences. If you don't like the choices people make, you've got to change their minds, and that, kiddo, is just about the toughest thing in the world.</say>
+        <say npc="6">...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>That is...difficult to interpret, {player}. As you know, our priority is the preservation of the System, and those whose survival depends upon it. This will not change.</finish>
+</mission>

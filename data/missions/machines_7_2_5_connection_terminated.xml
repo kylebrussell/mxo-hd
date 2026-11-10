@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Connection Terminated, Machines story mission 7.2.5. Source: research/missions/transcripts/Mach7-2-5.md (the archive
+     replay of [Machine Archive 7.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line (the Holographic Projection's is
+     garbled on purpose), the objective texts "Eliminate the hostiles", "Put the Virus in the Mainframe", "Talk to
+     Agent Gray" and "Talk to Agent Pace", and the names Holographic Projection, Agent Pace, Agent Johns, Veil, Agent
+     Clark and the field Agent Gray. Gray called the player "Mr. Argento" and the Operator used the player's handle;
+     both are {player}. Ours: the description (the Summary tab was never opened), the objective texts of phases 1 and
+     3, the sites (the terminal's location, the network hub and the meeting place are unnamed: Normal; the debriefing
+     was in an apartment), the looks and the enemy counts (retail's hub had 12 Elite Commandos; ours has 5). The Elite
+     Commandos are the General's rogue programs: enemy Machines. Items: the first virus, "uploaded to you" (its
+     inventory name wasn't shown), is Tracer (6825), given when the mission starts, since it ran a traceback to the
+     hub; the second virus, obtained from the first terminal, is Virus (6786). Rewards: 373,830 experience and 63,000
+     information, shown on completing this mission.
+     Gaps: the Operator's "You're getting near the computer" and "The computer should be in there" came on the way to
+     the terminal; they are said on arrival. The General's Holographic Projection appeared only after the virus was in
+     the mainframe; it stands there from the start and says its line when the virus goes in. At the meeting, Pace's
+     "Then we have a deal" was overheard on arrival and is said then; the Operator's reply to Agent Johns isn't said
+     (bystander lines have no follow-up), and the Cypherite Network Hacker and Cypherite Duelist, who said nothing,
+     aren't placed. The debriefing room's computers had flavour text and no goal; they aren't placed. Gray's briefing
+     for the meeting is one log entry too long for one line: its first paragraph (the network shutdown) is said when
+     the hub's goals are done, and the second is the meeting's briefing. -->
+<mission id="207205" title="Connection Terminated" description="Shut down the General's network for good by infecting its control hub." plot="1"
+         order="7205" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0">
+    <say>...</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Agent Johns" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">One of the Cypherite operatives directed some...personal observations toward Agent Pace. The Agent's response was...vigorous.</say>
+  </npc>
+  <npc id="4" handle="Veil" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say>Cryptos? Hm... Best that you don't ask, dearie. He's not in the best frame of mind these days, especially when it comes to your employers. You do know that he used to be one of the biggest anti-Machine crusaders in Zion, don't you? Mm-hm... That was before the Machines overwrote him, of course, but that's all come full circle now--minus a few fused brain cells here and there.</say>
+  </npc>
+  <npc id="5" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>As I explained to Agent Gray, the Cypherites' incorporation of feelings, emotions, and indirect reasoning into their operational system requires a...special approach. While we do not, of course, consider them as reliable as our own operatives, I believe that they can be very useful to the System, provided they are handled in the correct fashion.</say>
+  </npc>
+  <npc id="7" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">Pay attention to Agents Pace and Gray, operative.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Machine forces have destroyed the General's primary command center in the Matrix, operative. His only significant remaining system is his network, which, although it has been useful to us in neutralizing his forces, must now be shut down permanently.&#10;&#10;A virus has been uploaded to you. You will proceed to the indicated location, and insert the virus into the terminal you find there.&#10;&#10;Hostile commando forces are expected. We are running full commando counter-stealth and communication blocking routines; resistance should be...disorganized.</briefing>
+    <enter>
+      <say>Oh, this is sweet revenge for all those times the Elite Commandos have ambushed us.&#10;&#10;I can see you, suckers! Kiss your shiny butts goodbye!</say>
+      <say>You're getting near the computer. Got a few commandos in your way.</say>
+      <say>The computer should be in there.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Put the Virus in the Computer" type="Put" object="1" item="6825">
+      <done><say contact="1">Well done, operative. The virus has opened direct access to their network from our systems.&#10;&#10;I am uploading a second virus to you. Obtain it from that terminal. Directions for its use will follow shortly.</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Ohh yeah. All that's left is to tag 'em and bag 'em. Fortunately, the Machines have janitor routines to take care of that stuff.</say></done>
+    </objective>
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="6786" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>The virus you inserted has completed traceback to their network control hub. Proceed to that location, {player}, eliminate all resistance, and insert the second virus directly into their network mainframe.&#10;&#10;We are continuing to run commando countermeasure routines on your behalf. The enemy should be helpless.</briefing>
+    <enter><say>All right! Been a while since we took down a mainframe. Gotta see if we still have the old skills...</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That place is certified commando-free.</say></done>
+    </objective>
+    <objective goal="2" text="Put the Virus in the Mainframe" type="Put" object="1" item="6786">
+      <done>
+        <say>Oho! Look who just sent his hologram out to play.</say>
+        <say npc="1">This actio-- ... --erely ... --ected. I'm gla-- ... --ou continue to operate in ... --atterns. Hi-- ... --ighty Machines! Phaugh! Your refu-- ... --isten, to appreciate, will bri-- ... --ur precious System, and I ... Agent of th-- ... --etribution. You wo-- ... --preciate it, I supp-- ... my only regre--</say>
+        <say>Old blowhard!&#10;&#10;One custom virus up in his mainframe should take care of that pest.</say>
+        <say>Well, we had some good times with it, but I can't really say I'll miss that cruddy ol' network of his.</say>
+      </done>
+    </objective>
+    <complete><say contact="1">Our scans confirm that shutdown of the General's network is complete, operative. Although he may have isolated low-bandwidth subnets we have not yet detected, this stroke should for the most part prevent him from moving his men rapidly both between the Matrix and his Stalingrad base, and within the city itself. The Merovingian could still transport the commandos over his own network, of course; but on his own, the General is nearly powerless.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Now, I have a task of a different nature for you. Agent Pace has...taken the initiative in calling a second meeting between herself and the interim Cypherite leader, Veil. As you may recall, the first meeting was...less than successful. Indeed, my own confrontation with Veil was nearly fruitless; it appears that the woman intends to cooperate as little as possible. Agent Pace felt that she had found a solution to this impasse. She has a guard with her, but I would like you there to...smooth over any difficulties caused by Veil's unpredictable temper--if possible.</briefing>
+    <enter>
+      <say>Sheesh. It's nice to have Pace back and raring to go after the Merv hit her with that kill-code, but I think she might be overdoing things a bit.</say>
+      <say npc="2">Excellent! Then we have a deal: you'll bolster your surveillance efforts in Zion, and we'll provide payment to the arranged account in exchange, at the established rate.&#10;&#10;I am glad that our meeting was so fruitful; you see, Veil, that we can be quite generous to those open to reason. We look forward to continued work with our old associates on the basis of this new...understanding.</say>
+      <say>Eh? Sounds like Pace has been busy.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ah... Greetings, operative. Did Agent Gray send you to check on my progress? Yes, I thought so. As you can see, the meeting has gone just as I expected. All that was necessary was to approach Veil with an offer of reasonable rewards for efforts undertaken on our behalf--a very simple transaction, really!&#10;&#10;I was just about to go make my report to Agent Gray personally. Perhaps you would care to join me?</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Veil" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Who lit a fire under your lovely little Agent, honey? Why, she's a positive terror! I think I underestimated her.&#10;&#10;Don't sulk, dear--it makes you ugly. I'm sure you'll find that this arrangement your Agent and I have made will be delightfully "efficient" for us all.</say></talk>
+      <done><say>So Veil's really down with this deal Pace came up with... How's Gray going to take this?</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Hm... It appears that Agent Pace has shown admirable resourcefulness. I will have to compare her report with yours.&#10;&#10;For the moment, operative, you should meet us at the indicated location. There are several topics that we should touch upon.</briefing>
+    <enter><say>Gray, Pace, and some other friendly neighborhood Machine programs are in there, {player}!&#10;&#10;Not that I've forgiven them about the Cryptos thing! Oh! Right, okay--later!</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="5">
+      <talk>
+        <say npc="5">It seems that Agent Pace found the correct approach to use with the Cypherites. Veil's technique of mixing emotional language into her responses had made it difficult for me to communicate with her on a logical level. I am pleased to see that Agent Pace's specialized liaison programming has enabled her to communicate effectively with the Cypherite.&#10;&#10;Our concerns regarding the security situation in Zion persist, operative. The recent appearances by "Morpheus," despite the fact that they fly in the face of reason, appear to have stirred increasing unrest among Zion's population, already ill at ease after Seraph's attack on Cryptos, among other things. Any contact with Zion must be handled very carefully.</say>
+        <say npc="5">Our efforts have placed the General on the brink of absolute defeat. Once he is dealt with, and the weather restored, we will proceed to deal with other matters of primary concern.&#10;&#10;These include the Merovingian, whose harboring of the General's forces, and attack on Agent Pace, constitute significant violations of acceptable behavior in the simulation. Although operatives succeeded in deleting the Apothecary, the traitorous program who assisted in his latest scheme, we anticipate that further action against the Frenchman will be necessary.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="6">
+      <talk><say npc="6">Benvenuto, tesoro. I am very pleased to have been able to provide the System with a valuable service in my liaison capacity. Although my base programming has not allowed me to rival other Agents in combat prowess, I must consider myself fortunate to have access to an understanding of human interactions that is unique among our Machine ranks. I intend to utilize this capability to its fullest capacity to make up for my designed shortcomings in other areas.</say></talk>
+    </objective>
+  </phase>
+  <finish>We trust that you are as satisfied as we are with Agent Pace's complete recovery and effective resumption of duty, {player}. You can expect to work closely with the Agent in upcoming operations.&#10;&#10;Thanks to your successful implementation of our viral routines, and the subsequent destruction of the General's network, operating in parallel with the progress of our Sentinel fleet against his base on the Earth's surface, we anticipate an almost complete reduction of his independent offensive capabilities in the near future. Rest assured, however, that you will not lack for further assignments.</finish>
+</mission>

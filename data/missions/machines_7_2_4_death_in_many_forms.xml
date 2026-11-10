@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Death in Many Forms, Machines story mission 7.2.4. Source: research/missions/transcripts/Mach7-2-4.md (the archive
+     replay of [Machine Archive 7.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Brown, Agent
+     Marks, Agent Pace, Stewart The Mechanic, Jones The Mechanic, Agent Jones, Agent North and the field Agent Gray.
+     Retail's quirks are kept: the Operator's "and it if is" and Gray's "consequence restoration"; Gray's accented
+     "coup de grace" is plain ASCII. Gray called the player "Mr. Argento", Agent Jones "Brando Argento", and Pace and
+     Agent Jones used the player's handle; all are {player}. Ours: the description (the Summary tab was never opened),
+     every objective text (the Objectives tab was never shown), the name Exile Courier (retail only said "the Exile"),
+     the sites (the laboratory, Pace's location, the manufacturing facility and Gray's location are unnamed: Normal),
+     the looks and the enemy counts. Item: retail's "hefty chunk of unusual code", a piece of a stolen cheat code (its
+     inventory name wasn't shown), is Frags (6785). Rewards: 374,340 experience and 63,000 information, shown on
+     completing this mission.
+     Gaps: the Apothecary was never caught: she fled through a door in the laboratory and out through the General's
+     network terminal in the facility. She isn't placed; the chase is a kill goal on the laboratory's Exiles, and the
+     terminal is a Use goal on a computer whose done line is Gray's "Blast." Agent Brown fell dead in the middle of his
+     line; ours stays standing. The Machine units fighting in the laboratory and the facility aren't placed. The
+     facility held Exiles and the General's Elite Commandos together; a phase has one enemy kind, so it has Exiles
+     only. The Operator's "One of those signals is moving away" and "That isn't the one!" lines are said when Brown is
+     talked to and when the laboratory is cleared; "Elite goggle-boys" and Gray's "Access that terminal immediately"
+     are said on arrival at the facility. The two Mechanics fought beside the player in the facility; ours follow the
+     player but don't fight, the mission fails if one dies, and their closing lines are said when the phase is done.
+     Agent Jones's "has arrived, sir." is said on arrival at Gray's location. -->
+<mission id="207204" title="Death in Many Forms" description="Hunt down the Apothecary, the kill-code specialist working for the Merovingian." plot="1"
+         order="7204" org="2" contact="Agent Gray" exp="374340" info="63000">
+  <npc id="1" handle="Agent Brown" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Agent Marks" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">The "Morpheus" signal tracked so avidly by the adherents of Zion experienced a glitch in its last broadcast, according to reports.&#10;&#10;Remember that the System confirmed the terrorist Morpheus as terminated by the Assassin program some time ago, operative.</say>
+  </npc>
+  <npc id="4" handle="Stewart The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="Jones The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="6" handle="Exile Courier" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="8" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>You should spend every available moment training, {player}. Although perfection is not possible, there is no excuse for not operating with the highest possible efficiency in the System's service. I did not always understand this myself... Fortunately, I have realized my error, and I am happy to report a significant increase in my simulated combat rating.</say>
+  </npc>
+  <npc id="9" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">You are one of our more effective operatives, {player}. I just felt I should mention that.</say>
+  </npc>
+  <npc id="10" handle="Agent North" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say display="5">Aberrant behavior by a System program should always be reported immediately. In almost all cases, repairs can be effected within a very short period. It is our duty to maximize program uptime.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>It appears, operative, that rapid action against the Merovingian is necessary to deter him from making the mistake of further escalating hostilities against the System.&#10;&#10;The kill-code specialist he removed from our mainframes, the Apothecary, is to be deleted. This is the second time she has entered the Matrix without our permission; our indulgence is at an end.&#10;&#10;Laboratory facilities where the Merovingian is believed to be employing the Apothecary have been uncovered. Search the area for any sign of the Apothecary, and eliminate all resistance.</briefing>
+    <enter>
+      <say>It looks like the Machines already got some units in there. I'm seeing Machine and Exile signals on my screen--can't tell if one of them's the Apothecary or not.</say>
+      <say>Geez... Our guys are droppin' like flies in there.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Brown" type="Talk" npc="1">
+      <talk>
+        <say>Hey, there's one of the good guys. They're already making progress there, then.</say>
+        <say npc="1">I have detected a program in the vicinity that I believe to be the Apothecary. She is-- Zrrk!</say>
+      </talk>
+      <done>
+        <say>"She is zrrk"? What does that... Oh. Um... Okay, an Agent just spontaneously fell over dead. This probably isn't good.</say>
+        <say>One of those signals is moving away from you now... Right through that next door. Hurry!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done>
+        <say>That isn't the one! Keep going!</say>
+        <say>Aw, what th--? It just blipped off my screen. They must have ported her out somehow. Great. I hope Gray has some other lead.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are continuing to track the signal on wide area scans, operative. It matches the last confirmed Matrix RSI profile of the Apothecary; it also appears to employ her traditional "coup de grace," as she has termed it.&#10;&#10;Ah, I see an explanation is necessary. The Apothecary possesses a routine allowing her to cause a lower-level RSI's function to cease with only a movement of her hand. While this does not usually result in permanent deletion, it is somewhat inconvenient when used against our resources.&#10;&#10;Hm... The scan readings suggest that the Merovingians are mustering their forces. Proceed to the indicated location, and procure backup programs from Agent Pace. You will be pleased to see her fully operational again, I am sure.</briefing>
+    <enter><say>I knew she'd bounce back! That's my Pace! Looks like she's in there with some assault programs for you.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ah... Greetings, {player}. Yes, thank you; I am feeling very well.&#10;&#10;Ohh! I wish I could go with you... But, ah, that is not my assigned task. Take these programs then, {player}, and eliminate the Merovingian's forces!</say></talk>
+      <done>
+        <say>Wow, she's kind of feisty after being out of action for a while, isn't she?</say>
+        <say npc="2">Terminate the System's enemies!&#10;&#10;I will follow your progress with great interest, tesoro.</say>
+        <say npc="4">The Apothecary is an exceedingly dangerous program.</say>
+        <say npc="5">We should proceed, {player}. Other Machine elements are already moving into attack positions around the target.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead the Mechanics out of the area" type="Escort" npc="4,5" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Our forces are converging at the target's location, operative. It appears to be a manufacturing facility, possibly related to the Apothecary's kill-code work. Any evidence of such should be confiscated. However, your primary task is the deletion of the Apothecary herself. Remember that she is highly dangerous.</briefing>
+    <enter>
+      <say>I've got Machine and Exile signals all over the place in there. It's gonna be a brawl, no question.</say>
+      <say>Elite goggle-boys, eh? Looks like the Merv and the General are having some fun tag-teaming us.&#10;&#10;Hey! Got that signal, close by. It's moving again!</say>
+      <say contact="1">Access that terminal immediately, operative!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Access the terminal" type="Use" object="1">
+      <done><say contact="1">Blast.&#10;&#10;Very well. Complete elimination of hostiles in that facility. You will then report to me.</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="3" text="Kill the Exile Courier" type="Defeat" npc="6">
+      <done><say>There was a hefty chunk of unusual code on the Exile that just went down. Check them out.</say></done>
+    </objective>
+    <objective goal="4" text="Get the code from the Exile Courier's body" type="Loot" npc="6" item="6785" after="3">
+      <done><say>Aha! I think I know what that is, and it if is, then we'd better get it to Gray, fast.</say></done>
+    </objective>
+    <complete>
+      <say npc="5">Hostiles have been eliminated, {player}, although the primary target eluded our units.</say>
+      <say npc="4">We have survived to serve the System another day.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Bring me the item you found immediately, operative.</briefing>
+    <enter>
+      <say>Gray's in there, and hey, there's Pace, too! Man, this is a red-letter day in my book. Okay, so the Apothecary got away... Eh, well, there's only so many Exiles we can be expected to delete in a single day, right?</say>
+      <say npc="9">{player} has arrived, sir.</say>
+    </enter>
+    <objective goal="1" text="Give the code to Agent Gray" type="Give" npc="7" item="6785">
+      <done><say npc="7">Hm... Yes, this appears to be a portion of one of the stolen cheat codes. We know that the Merovingian located one recently; the presence of this at the Apothecary's workplace can be no coincidence. If her work for the Merovingian is not yet complete, the confiscation of this cheat code could retard their scheme significantly.&#10;&#10;Her escape through the General's network terminal, however, serves as a setback to our own offensive against Merovingian and commando forces. We must make the permanent shutdown of the General's network our primary task.</say></done>
+    </objective>
+    <complete>
+      <say npc="7">The simulation's weather system is nearing a state of terminal malfunction; should this happen, bluepill casualties will begin to mount rapidly. Our own analysis has concluded that the most efficient way to achieve Sati's return, and the consequence restoration of weather control, lies in neutralizing her captor, the General.&#10;&#10;The Oracle and Seraph, on the other hand, have, in association with Zion, been pursuing Sati directly. As expected, they do not appear to have made significant progress. I attempted to inform Seraph of the inutility of his tactics. He was...fairly unreceptive. It is possible that side effects of his recent accident continue to impair his logic functions.</say>
+      <say npc="8">It was very exciting to monitor your progress at the Merovingian's facility, tesoro. Do not blame yourself too much for failing to terminate the Apothecary on this occasion. I only regret that I was not permitted to assist in the attack personally; I feel confident that I could have helped prevent the traitor's escape.</say>
+      <say>Man, she's really gung-ho today! It's cute how she wants to help out. Maybe Gray should cut her a break. I can think of some assignments we could use her on...</say>
+    </complete>
+  </phase>
+  <finish>We must consider that the rumors of the Merovingian's attempted manufacture of a kill-code to use against the Oracle are likely to be accurate; there is no other plausible explanation for the close spatial and temporal proximity of the Apothecary, a cheat code, and code derived from the Oracle's own, found in the recent attack made by the Merovingian on Agent Pace.&#10;&#10;While the Oracle's preservation is not in itself a primary goal, she serves an important role in certain systems that aid the stability of the simulation, such as her tutorship of Sati. We must also recognize that, given the current hostile climate, any action counter to those of the Merovingian and the General will tend to benefit the System. For these and other reasons, the deletion of the Apothecary has been given a high priority.</finish>
+</mission>

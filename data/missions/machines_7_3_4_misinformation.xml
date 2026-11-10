@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Misinformation, Machines story mission 7.3.4. Source: research/missions/transcripts/Mach7-3-4.md (the archive
+     replay of [Machine Archive 7.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Abbs, Agent Pace,
+     August Friesen, Sammy Xander, Agent Lee, Armor, Veil, Cryptos, Agent Gray and Cypherite Network Hacker. Gray and
+     Agent Pace called the player "Mr. Argento"; that is {player}. One line of Cryptos' first line was cut at an image
+     join and is left out; the Operator's "If that's what you got" (its header was hidden) is taken as the end of her
+     line after Cryptos. The Agent Gray at the Cypherite meeting is a field NPC (no [Archived] tag in the log), so he
+     is an NPC here, not the contact. Ours: the description (the Summary tab was never opened), every objective text
+     (the Objectives tab was never opened), the sites (Armor's cover business is an office; the meeting was in Zia, as
+     the chat said; the rest are unnamed: Normal), the looks and the enemy counts. Armor and his playmates are E
+     Pluribus Neo redpills: enemy Zion. Item stand-in: the card with the address of Armor's business is
+     Document_Location_Notes (6855). Rewards: 373,830 experience and 63,000 information, shown on completing this
+     mission.
+     Gaps: Pace's two support units joined the player; to follow they are led out of her building, and they come along
+     to Armor and the meeting, but we have no allies that fight. Armor was green while he talked and was then to be
+     killed: he is a hostile who waits to be attacked, reaching him is the talk (optional, so killing him first
+     doesn't block the phase), and his playmates attack on sight. Gray's reply to Armor is said when he is reached.
+     The Cypherite Network Hacker's line comes when he is talked to; a line whose speaker was cut ("...thought about
+     raising your prices a little?") is left out. -->
+<mission id="207304" title="Misinformation" description="Verify the information of a Zionite informant who claims to know what Zion is hiding." plot="1"
+         order="7304" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Abbs" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="2">Pleasure doing business with you...ah...whatever your name is. I'll be waiting on that next payment.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="August Friesen" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568">
+    <say>EPN? Excellent.</say>
+  </npc>
+  <npc id="4" handle="Sammy Xander" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>I am currently under orders from Agent Pace.</say>
+  </npc>
+  <npc id="5" handle="Agent Lee" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">E Pluribus Neo are not members of Zion, and thus are not subject to protection under the Truce. They may be terminated as necessary.</say>
+  </npc>
+  <npc id="6" handle="Armor" type="HOSTILE" attacksOnSight="0" at="3" rsi="050100b4" weapon="2568" />
+  <npc id="7" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say after="1">What's that? My, these meetings do drag on...</say>
+    <say after="3">Give our best to Agent Pace.</say>
+  </npc>
+  <npc id="8" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
+    <say after="2">We have the privilege of living our lives over again, of undoing the wrongs we have done, of re-establishing our old companionship with the dead, and knowing their worth much better than we did before we lost them.</say>
+  </npc>
+  <npc id="9" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="3">Dismissed, operative. I will contact you shortly.</say>
+  </npc>
+  <npc id="10" handle="Cypherite Network Hacker" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">What was that? Sorry, I had a bug in my ear.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>An interrogation of the Morpheus simulacrum indicated that it has diverged from its programming, and does not pose a threat to the simulation. It may even serve as a...useful distraction.
+
+However, it also illustrates our gross lack of intelligence on Zion, due to the loss of our overwritten spies at the hands of Seraph, and the disruption in Cypherite spying activities when Cryptos was revealed as an overwritten subject. Zion had information on the Morpheus simulacrum weeks before we were able to confirm it. And there is the ongoing matter of the Merovingian plot to assassinate the Oracle, in which Zion has information we do not.
+
+Obtaining this and...other data on Zion is a vital necessity. We have made contact with a Zionite, Abbs, who claims to be able to assist. You will meet Abbs, and verify her information.</briefing>
+    <enter><say>Gray sounded a little worked up. I wonder if the Machines aren't a little more concerned about Zion than they're letting on right now.
+
+Okay, I've got a single redpill signal there. That should be our contact.</say></enter>
+    <objective goal="1" text="Talk to Abbs" type="Talk" npc="1">
+      <talk><say npc="1">'Bout time. I was starting to think you guys were going to let this opportunity slip through your fingers. Nice to see you're still on the ball--what's left of it.
+
+Just let me check... Ah, there we are. Tell the Agent thanks for that little $info injection, hm?
+
+Now, to earn my other half: you want an E Pluribus Neo operative named Armor. Seems he's managed to jack some dirt on what you all are looking for so hard in Zion. He and his playmates are using a business as a cover. I've got their card here.</say></talk>
+      <done><say>Oy. For some reason every spy thinks they're the cat's meow. Let's get that card and get on with this.</say></done>
+    </objective>
+    <objective goal="2" text="Get the business card from Abbs" type="Get" npc="1" item="6855" after="1">
+      <done><say>Roger, got that address. Let's go.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Abbs is not a proven informant, operative, and her information cannot be assumed to be reliable. The involvement of EPN complicates matters considerably... I am sending you to Agent Pace, who will supply you with several support units.</briefing>
+    <enter><say>Now that Gray mentions it, I'm getting less excited about this deal, too. I mean really, EPN? If they knew something, they'd already have stuck a bomb up it.
+
+Anyway... Pace is in there, with some other programs. Good to see some things can be relied on.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ciao, {player}. I monitored your conversation with the Zionite traitor. While I will not say she is lying, it seems to me that she is trying to appear to know more than she actually does.
+
+Of course, that does not matter, if she manages to lead us to useful information. In any case, I think you will find August Friesen and Sammy Xander here of assistance.</say></talk>
+      <done>
+        <say>Huh...</say>
+        <say npc="2">Never trust a double agent, operative. According to what I have found in our records, even among those judged useful enough to be used as contacts, 82% at some point offered false information.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead August Friesen and Sammy Xander out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>The one named Armor is necessary for data extraction. The others may be terminated.</briefing>
+    <enter><say>Okay, that's the address we got from Abbs, and I'm scanning redpill signals inside. Time to do this thing.</say></enter>
+    <objective goal="1" text="Talk to Armor" type="Talk" npc="6" optional="1">
+      <done>
+        <say npc="6">Hah, yeah, I know what you've got the Cypherites down there digging for: missing supplies, workers--sound familiar, hmm? If they won't even tell us or their own operatives about it, though, fat chance you'll find anything! Now, go to hell!</say>
+        <say contact="1">Evidently there has been some...confusion. That is nothing more than an indication of the spying activities we ourselves have ordered. You may dispose of that operative, {player}.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Armor" type="Defeat" npc="6">
+      <done><say>So wait, let's see if I've got this straight... A Zionite sold us info from EPN, who found out that we have Cypherites looking for info on Zion?
+
+This is making my brain hurt. I think I actually know less now than I did before.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Zia">
+    <briefing>As this episode has...painfully illustrated, operative, our need for reliable information from Zion is acute. In the past, the Cypherites supplied much of this information, but despite her settlement with Agent Pace, intelligence reports from the Cypherites have been less substantial under Veil's leadership than they were when Cryptos directed the group for us.
+
+While we cannot expect Cryptos to be as useful to us now as he was before Seraph disabled the program controlling him, evidence suggests that since his recovery, he has at least become somewhat stable--a description which has never been applicable to Veil. As results are needed quickly, it is necessary to...encourage Cryptos' resumption of Cypherite command. To this end, I have requested a meeting with Veil and Cryptos, to which she has finally agreed.</briefing>
+    <enter><say>Notice that Gray still isn't saying anything to us about what he thinks this business with missing stuff in Zion is about.
+
+It sounds like he wants you to play wingman and do a little nosing around on the side at this meeting. It's you, Gray, and a bunch of Cypherites. Have fun.</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="7">
+      <talk><say npc="7">Of course, dearie--top priority. And...I'm sure that we can find something useful for Cryptos to do, now that he's feeling better. So lovely of you to be concerned.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Cryptos" type="Talk" npc="8">
+      <talk><say npc="8">The reason behind the Agent's concern for my state of health is quite apparent. I am not predisposed to be uncooperative, but I do not promise results, for reasons which should be equally apparent, eh?</say></talk>
+      <done><say>Geez, you'd think he could get contacts--or at least glasses--to cover that up a bit...
+
+If that's what you got, then it's time to pass the report along to Gray.
+
+Personally, I think he'd get better results if he broke out some nice cocktails at these things. Call me crazy...</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Agent Gray" type="Talk" npc="9" after="2">
+      <talk><say npc="9">I see. I have done what I could, short of giving outright directives, which in the current conditions would likely have a negative effect.
+
+This is now an internal Cypherite matter. If it does not result in acquisition of necessary intelligence from Zion...</say></talk>
+      <done><say>Uh... He kind of trailed off there. Should someone be worried about this?</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, operative. Your observations of the Cypherite leaders were helpful. As much of their activity takes place outside of the simulation, they can be difficult to monitor.
+
+That will be all for now, {player}.</finish>
+</mission>

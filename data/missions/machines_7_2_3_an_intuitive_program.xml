@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An Intuitive Program, Machines story mission 7.2.3. Source: research/missions/transcripts/Mach7-2-3.md (the archive
+     replay of [Machine Archive 7.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Bok, Christy Zubkin,
+     Soo Fetris, Christoper Kazama (so spelled), Candace Nyhart, Dame White, Agent Pace, Agent West and Agent Jones.
+     Soo Fetris's "was design specifically" is retail's. Gray called the player "Mr. Argento" and Pace used the
+     player's handle; both are {player}. Ours: the description (the Summary tab was never opened), every objective text
+     (the Objectives tab was never shown), the guard's name (retail's guards weren't named), the sites (the lab, Dame
+     White's place and Pace's room are unnamed: Normal), the looks and the enemy counts. Bok's men are Exiles: enemy
+     Merovingian. Item: retail's Oracle "cookie" (its inventory name wasn't shown) is Data (6787). Rewards: 374,000
+     experience and 63,000 information, shown on completing this mission.
+     Gaps: Gray's "please request an initial analysis from Zubkin immediately" came after the player had talked to
+     another technician; it is said on arrival at the lab. Dame White's far door was locked until the player talked to
+     one of her guards, whose own line wasn't captured; ours is a Talk goal on one guard before Dame White's, and the
+     guard says nothing. The Operator's line about the door is said on arrival. -->
+<mission id="207203" title="An Intuitive Program" description="Recover an Oracle cookie from a Merovingian operative to learn what struck down Agent Pace." plot="1"
+         order="7203" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Bok" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568">
+    <say>Just what do you think you're-- Hey!</say>
+  </npc>
+  <npc id="2" handle="Christy Zubkin" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>If Agent Pace was injected with a program derived from this code, the result could be... Well, there's no use in speculating.</say>
+  </npc>
+  <npc id="3" handle="Soo Fetris" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say display="5">I don't believe the code used in the attack was design specifically for Agent Pace. It was a kill-code, evidently, but a program with the level of complexity we're seeing could easily have deleted the Agent if she had been its true target.</say>
+  </npc>
+  <npc id="4" handle="Christoper Kazama" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">Code of this type is extremely rare... It's custom, assembly-level source--almost impossible to abstract and decipher, and if you don't know what the intended function was, the odds of gleaning real data from it are incredibly low. And that's not even taking into account that only a handful of programs can grasp algorithms written at the Oracle's level...</say>
+  </npc>
+  <npc id="5" handle="Candace Nyhart" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
+    <say display="5">Agent Pace is an...unusual program as it is--experimental. The source of some of her core routines is classified beyond either of our security clearances.</say>
+  </npc>
+  <npc id="6" handle="Guard" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="7" handle="Dame White" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say>Yeah, yeah... Just take that to Gray; even he ought to be able to piece enough of it together. Or--&#10;&#10;Oh, I was about to say that he could get Pace to process it, but she's laid up at the moment, isn't she? Poor thing. I'll have to make a note to send some flowers...</say>
+  </npc>
+  <npc id="8" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Arrivederci, as they say, {player}. It was so kind of you to stop by. Don't worry about me; I'll be fine--better than ever.</say>
+  </npc>
+  <npc id="9" handle="Agent West" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">Agent Pace will be fully functional. Do not concern yourself.</say>
+  </npc>
+  <npc id="10" handle="Agent Jones" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say display="5">Visiting hours are over, operative.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Operative, it is my solemn duty to notify you that Agent Pace has been struck down by a Merovingian operative armed with a special code. She was not terminated, but her condition may be termed as critical. This appears to have been a deliberate strike by Merovingian forces.&#10;&#10;Analysis of the code used in the attack has shown it to be derived from code associated with the Oracle, and with her ward, Sati. To be precise, it most closely corresponds to unique code known to occur in the cookies the Oracle from time to time dispenses to certain redpills.&#10;&#10;Although a number of Machine operatives are known to have acquired such items, we do not wish to inconvenience our own operatives by confiscating their possessions. Thus, we will acquire one of these items from a Merovingian operative, Bok.</briefing>
+    <enter><say>Man... We've done a lot of harsh stuff for the System, but stealin' a guy's cookie...&#10;&#10;Yeah, yeah, you're right; it's all code. I still get hung up on appearances sometimes. I...&#10;&#10;Aw man, now I just went and reminded myself about Pace. I've been trying not to think about her. Pace...</say></enter>
+    <objective goal="1" text="Kill Bok" type="Defeat" npc="1">
+      <done><say>Fah! That guy was probably in on the hit they put on Pace! Serves the bastard right!&#10;&#10;Grab that cookie off his body before the jerkwad reconstructs.</say></done>
+    </objective>
+    <objective goal="2" text="Get the cookie from Bok's body" type="Loot" npc="1" item="6787" after="1">
+      <done><say>Uh... It may look tasty and delicious, but if you snack down on that, Gray will have us all eating out of straws for the next few months. Just bring it outside, okay?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Although it bears the appearance of a carbohydrate-laden food item, that "cookie" is an exceedingly sophisticated program written by the Oracle herself. Its purpose is not clearly understood; designed as an "intuitive" program, she employs "fuzzy" logic routines of nearly unparalleled complexity, and...questionable efficiency.&#10;&#10;Nonetheless, an analysis of this code is required in order to understand the Merovingian's plan, and Agent Pace's current condition. Transport the item safely to technician Zubkin at the indicated laboratory facility.</briefing>
+    <enter>
+      <say>So wait... The Oracle programs those cookies... Gives them to redpills... Pace gets hit with a code laced with some sort of cookie-derivative...&#10;&#10;What is going on?!</say>
+      <say contact="1">Operative, please request an initial analysis from Zubkin immediately.</say>
+    </enter>
+    <objective goal="1" text="Give the cookie to Christy Zubkin" type="Give" npc="2" item="6787">
+      <done>
+        <say npc="2">Mm... At least a sixth-dimensional data structure... Atomic self-replicating subroutines...&#10;&#10;Yes, at first glance I'd say that it's within the lines of what we were looking for. We won't know for sure until we've run a detailed analysis, which could take some time.</say>
+        <say contact="1">I see. You may leave the lab, operative.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian recently smuggled one of our programs into the Matrix, {player}--a highly dangerous program known as "The Apothecary." This program's function is the manufacture of high-level termination codes. The efficacy of such codes depends in large part on their having incorporated sample data from their target into their base structure.&#10;&#10;The code with which Agent Pace was attacked bears some hallmarks of the Apothecary's authorship. Certain sources of somewhat dubious reliability have indicated to our agents that the Merovingian seeks to use her to create a kill-code capable of destroying the Oracle--not an entirely unlikely supposition, as he has made the attempt before. What is not clear, however, is why the Apothecary would be assisting this effort. Certain...unquantifiable allegations concerning the Apothecary's past activity may have some bearing here. You will interrogate Dame White on this topic.</briefing>
+    <enter>
+      <say>Okay, listen close. Supposedly, the Dame, the Apothecary, and the Merv's wife, Persephone, knew each other somehow back before the Dame and Persephone were exiled from the Machine mainframes. The Apothecary was exiled at one point too, but the Machines took her back later. Machine records don't indicate what these three birds had to do with each other, so that's what you're gonna see the Dame about.</say>
+      <say>Supposedly the Dame's been warned that we required a meeting with her. The far door there scans as locked, though. You'd better have a chat with one of those guards.</say>
+    </enter>
+    <objective goal="1" text="Talk to the Guard" type="Talk" npc="6">
+      <done><say>You silver-tongued devil, you; that's got the door open.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Dame White" type="Talk" npc="7" after="1">
+      <talk><say npc="7">So now the Machines come digging for dirt--little late in the game, don't you think? Well, let it not be said that I haven't dealt with them fair and square... You ready to take this down? You might not understand it all, but that's not my problem.&#10;&#10;Back in my role at the pods--and in my dear apprentice Persephone's, when she got her day in the sun--emotions would come into play. It wasn't supposed to happen, but outsiders could get involved with the humans we worked on-- Just take notes, okay? We're talking highly illicit affairs here--nasty triangles... Revenge would come into it--kill-codes... Oh, it was quite the dirty business, in more ways than one. That's how we got hooked up with the Apothecary.</say></talk>
+      <done><say>Um... I think she just told us something, but darned if I know what it was.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I...see. This would seem to indicate a business favor owed by the Apothecary to Persephone for some past service. Yes, that will suffice.&#10;&#10;The lab completed their analysis of the "cookie" code, and found that it does indeed share a derivation with the code used against Agent Pace; in short, it was a kill-code manufactured by the Apothecary, with the Oracle as the specific target. The purpose of its use on Agent Pace remains unclear.&#10;&#10;Agent Pace herself has shown a faster-than-projected recovery from the attack. In fact, she...insisted that she be allowed to speak with you. I will allow it; however, I expect you to take every precaution against overexciting the Agent during her convalescent period. Understood?</briefing>
+    <enter><say>We get to be Pace's nurse. Come on, say it with me. We can make this happen. This is so awesome.&#10;&#10;Oh, hm... See if you can get those Agents in there with her to leave or something. Aw, they'll spoil the mood!</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="8">
+      <talk><say npc="8">Ah, ciao, tesoro. Oh no, it is all right. It only hurts when I have nothing to distract me...&#10;&#10;Thank you for coming! I am very glad... I just wanted to see your face... Ah... Yes... Good!&#10;&#10;Now, you see? There is no reason to be concerned about me. I can already move about, and soon they will have to let me resume my field duties. Mm, it will be very good to get back to work.</say></talk>
+      <done><say>Aw, she's not gonna make us leave already, is she?</say></done>
+    </objective>
+  </phase>
+  <finish>Considering that her runtime was nearly destroyed by an insidious code several days ago, Agent Pace's current level of activity is remarkable. I am sure you must find this encouraging, operative. As she...indicated, if she continues her rapid recovery, there will be no reason not to allow her to resume her regular duties very shortly.&#10;&#10;While it is not the System's immediate concern that the Merovingian may be attempting to create a code capable of terminating the Oracle, it is clear, with this attack on Agent Pace, that he is willing and able to escalate his level of hostilities against us. It cannot be mere coincidence that this comes at a time when we are on the verge of defeating his newfound ally, the General. We must therefore initiate plans to shift the focus of our offensive toward the Merovingian as resources become available.</finish>
+</mission>

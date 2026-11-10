@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Get to the Choppers, Machines story mission 7.2.1. Source: research/missions/transcripts/Mach7-2-1.md (the archive
+     replay of [Machine Archive 7.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Search the
+     Computer" and "Eliminate the hostiles" (phases 1 and 3), and the names Agent Pace, Agent Marks, Long The Mechanic,
+     Lee The Mechanic, Veil and the field Agent Gray. Gray, Pace and Long called the player "Mr. Argento" and Pace also
+     used the player's handle; all are {player}. Ours: the description (the Summary tab was never opened), the
+     objective texts of phases 2 and 4, the sites (phases 1 and 3 were offices; Pace's locale and the meeting place are
+     unnamed: Normal), the looks and the enemy counts. The General's commandos are rogue programs: enemy Machines. The
+     Operator's 2:17:41 line had a line hidden at an image join; it is the readable text without the hidden words. The
+     line "Erm...by which I mean..." had no visible speaker; it is Agent Pace's. No mission items. Rewards: 374,000
+     experience and 63,000 information, shown on completing this mission.
+     Gaps: Long The Mechanic's "Downloading..." came before Pace was talked to; it is said on arrival. Lee's and Long's
+     later lines are said when Pace is talked to. The two Mechanics fought beside the player in the helicopter control
+     center; ours follow the player from phase 2 on but don't fight, and the mission fails if one dies. The helicopter
+     override script is run with a Search of the computer that turns up nothing, as retail's objective read. The
+     Cypherites at the meeting said nothing and aren't placed. Gray's "You may depart, operative." is said when the
+     meeting's goals are done. -->
+<mission id="207201" title="Get to the Choppers" description="Seize control of the General's helicopters by finding and overriding their control center." plot="1"
+         order="7201" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="2" handle="Agent Marks" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Agent Pace is not here to amuse you, {player}.</say>
+  </npc>
+  <npc id="3" handle="Long The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Lee The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say>Agents can't ever unplug, sweetheart; just think about that! And here everyone assumes they have an easy time of it. The poor dears!</say>
+  </npc>
+  <npc id="6" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>{player}, as you can see from the weather around you, system degradation in the absence of Sati is reaching a critical level. Furthermore, the Sentinel strike force sent against the General's base on the Earth's surface has met with unexpectedly high levels of resistance.&#10;&#10;It is clear that in order to hasten the General's removal as a threat to the System, we must shut his systems down entirely. We will begin with his most obvious method of transportation within the Matrix: his helicopters. As we learned some time ago, these are controlled remotely. Now that we have mastered his network protocols, it should be a simple matter to locate the source of these control routines, and nullify it.</briefing>
+    <enter><say>Ah, the good old "sir, yes, sir" type of commando programs are in there. All you need to do is access their terminal so we can search the General's network for the helicopter control center.&#10;&#10;Oh, I guess you're supposed to delete the commandos while you're at it. Wouldn't want them to feel neglected.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Nice. The results are coming through now...</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>So much for that cluster.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The data your search retrieved was sufficient to pinpoint their helicopter control center, {player}. Network traffic at that location indicates a sizable Elite Commando contingent. I am directing you to Agent Pace, who will provide you with some additional support for the assault.</briefing>
+    <enter>
+      <say>I know she sure boosts my morale!&#10;&#10;Oh, right, on-topic... Uh... Yes, my code scan indicates Agent Pace's presence in that locale. Over. Roger.</say>
+      <say npc="3">Downloading...&#10;Nav routine...check.&#10;Weapon routine...check.&#10;Aggression routine...check.&#10;Loadout complete.&#10;Connection terminated.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Saluti, {player}! You must be excited to have been given such an important assignment! You are authorized to make use of these two programs for the successful completion of your mission.</say>
+        <say>Morale...rising!</say>
+      </talk>
+      <done>
+        <say npc="1">Erm...by which I mean of course that you can now lead the two programs outside with you, {player}!</say>
+        <say npc="1">Many will thank you if you can put an end to the General's helicopters, tesoro!</say>
+        <say npc="3">Time to kick some ass, {player}.</say>
+        <say npc="4">Your input is not necessary, operative. I have already received my instructions.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead the Mechanics out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>Running a scan is unnecessary, {player}. Prepare for hostiles. Locate their command terminal and execute the supplied helicopter override script.</briefing>
+    <enter><say>Feh. I could'a used a scan...&#10;&#10;Well, go knock 'em dead, killer.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>And that, as they say, is that. All their helicopters are belong to us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Excellent. We have now obtained complete control over the commando helicopters. While at this time it will be more efficient to leave them following their regular movement patterns, they will, of course, no longer be transporting men or materials for the General.&#10;&#10;Since you completed that assignment so expeditiously, operative, you may join me at a meeting I am about to hold with the interim Cypherite leader, Veil. She has proven somewhat...recalcitrant since taking over for Cryptos. It is my task to direct her to cooperate with System requirements.</briefing>
+    <enter><say>Let's see... I'm scanning Gray... And there's Veil... Those must be some of her Cypherites in there with her...</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="5">
+      <talk><say npc="5">Oh, I fully sympathize, dearie. You've got a tough job on your hands--explaining to Zion and your own people about Cryptos, I mean. I'd like to help, but I've got to lay it down in front of the other Cypherites first. They aren't all as understanding as I am about this whole thing, I'm afraid.</say></talk>
+      <done><say>Not that I'm much of a fan of how the Machines used Cryptos, but she could take that little speech of hers and sell it as fertilizer, 'cause it's a big ripe load of--&#10;&#10;Yeah, yeah...</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="6" after="1">
+      <talk><say npc="6">On the surface, her response appears reasonable, given the...circumstances; however, past experience leads me to posit that Veil is intentionally stalling. But we will discuss this further at a more suitable location.</say></talk>
+    </objective>
+    <complete><say npc="6">You may depart, operative.</say></complete>
+  </phase>
+  <finish>Control of the Cypherites is proving to be problematic. They were chosen specifically for their skills in subterfuge and sabotage; without a high-level contact feeding us information, those same skills make their true activities difficult to monitor. While it is likely that they still have resources placed in advantageous positions, the security situation in Zion, and Veil's reluctance to share information openly, have reduced their data returns to a trickle. If this situation cannot be rectified, we may have to liquidate our investment in the group.</finish>
+</mission>
