@@ -6,7 +6,7 @@
 <mission id="2208" title="Intel Recovery" description="Eliminate an Exile threat and recover stolen data." plot="1" order="18"
          org="2" contact="Agent Gray" exp="22000" info="31500">
   <npc id="1" handle="Deneb" type="FRIENDLY" at="1" rsi="59010058" weapon="2568" />
-  <npc id="2" handle="Shaula" type="FRIENDLY" at="1" rsi="560A0058" weapon="2568" />
+  <npc id="2" handle="Shaula" type="FRIENDLY" at="1" rsi="60010058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>Last night, the Exiles attacked one of our stations and killed our team there. Infiltrate the base, eliminate any remaining Exiles, and recover information that has been left exposed to Exile hands.</briefing>
     <enter><say>Once you've taken care of the Exiles, you'll have to recover the two disks in the computer system. You might also see a team of Redpills on site -- don't attack them. We don't want to cause any trouble with the Truce.</say></enter>

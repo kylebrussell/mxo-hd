@@ -6,7 +6,7 @@
      supported. The guide's "(optional)" is dropped from goal text and set as optional="1". -->
 <mission id="2101" title="The End of the Beginning" description="Eliminate Machine opposition and steal vital info." plot="1" order="11"
          org="3" contact="Flood" exp="44000" info="42000">
-  <npc id="1" handle="Clotilde" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
+  <npc id="1" handle="Clotilde" type="FRIENDLY" at="2" rsi="01040040" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="5">
     <!-- The dead Exiles are Furniture: object 1 holds the Data that goes in the safe, objects 2 to 4 the three optional
          pieces. Two DefeatAll goals, as the guide lists both a kill-all and the optional guards. -->

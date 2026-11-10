@@ -6,10 +6,10 @@
      has no goal of its own in the guide, so none here, and the cell key the operator mentions isn't modelled. -->
 <mission id="2305" title="Protection" description="Rescue a small group of Zion Operatives from the Merovingian." plot="1" order="15"
          org="1" contact="Tyndall" exp="44000" info="42000">
-  <npc id="1" handle="Celaeno" type="FRIENDLY" at="1" rsi="720A0058" weapon="2564" />
-  <npc id="2" handle="Bessel" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
-  <npc id="3" handle="Leavitt" type="FRIENDLY" at="1" rsi="520A0058" weapon="2564" />
-  <npc id="4" handle="Taygeta" type="FRIENDLY" at="2" rsi="89090058" weapon="2568" />
+  <npc id="1" handle="Celaeno" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
+  <npc id="2" handle="Bessel" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Leavitt" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="Taygeta" type="FRIENDLY" at="2" rsi="7b010058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>The Exiles are holding the crew of the Achilles, claiming that they attacked their base. This may be true but we have an agenda to look out for our operatives. Go to this address, rescue our people, take out the Exile boss and then get our people to a safe location. Good luck, Warrior! I wish you well.</briefing>
     <enter><say>The Exiles have locked three hostages up in a make-shift jail. You'll need the key to the cells to get the hostages out unless you can pick the lock. If you need the key it is probably on the Exile who guards the area. The jail keeper is on a patrol so if you plan to be stealthy, be careful!</say></enter>

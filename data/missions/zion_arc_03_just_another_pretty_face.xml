@@ -5,7 +5,7 @@
      downloaded to the player, and nothing in the mission hands it over first (a Give goal completes without it). -->
 <mission id="2303" title="Just Another Pretty Face" description="Rescue a comatose hostage from Exiles." plot="1" order="13"
          org="1" contact="Tyndall" exp="22000" info="31500">
-  <npc id="1" handle="Maia" type="FRIENDLY" at="1" rsi="560A0058" weapon="2564" />
+  <npc id="1" handle="Maia" type="FRIENDLY" at="1" rsi="58010058" weapon="2564" />
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>Thank you for contacting me. I have an important assignment for you. Before the Truce, an Exile boss grabbed one of our top operatives, Maia, and infected her with a virus. This virus allowed the Exile to use Maia as a personal slave. We need you to rescue Maia and get her back to a hardline.
 

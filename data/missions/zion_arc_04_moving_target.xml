@@ -9,9 +9,9 @@
      are in hand. Phases 1 and 2 only talk and hand over items, so 2 hostiles. -->
 <mission id="2304" title="Moving Target" description="Pick up important intel from a Bluepill." plot="1" order="14"
          org="1" contact="Tyndall" exp="44000" info="52500">
-  <npc id="1" handle="Gary Novak" type="FRIENDLY" at="1" rsi="2D0D0098" weapon="0" />
-  <npc id="2" handle="Linda Ortega" type="FRIENDLY" at="2" rsi="760A0058" weapon="0" />
-  <npc id="3" handle="Paul Whitley" type="FRIENDLY" at="3" rsi="350A0058" weapon="0" />
+  <npc id="1" handle="Gary Novak" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Linda Ortega" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="3" handle="Paul Whitley" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
   <phase site="Office" enemy="Machines" enemies="2">
     <briefing>Greetings, friend of Zion. We need your help to recover data from a couple Bluepills who were previously watched by Agents. Both of them have information about an aspect of the Matrix we desperately need intel on.
 

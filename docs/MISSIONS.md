@@ -86,7 +86,11 @@ A phase with `site` is placed when it starts instead of at fixed positions. The 
 - `site`: `Normal` (any ordinary building: SlumApt, GenericApt, Office, Derelict, Warehouse), `Any`, or one style: `SlumApt`, `GenericApt`, `Office`, `RedPillExtraction`, `ZionOutpost`, `Derelict`, `Warehouse`, `Bank`, `Hotel`, `Skyscraper`.
 - `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight.
 - On an NPC, `at="n"` places it in phase n's site when that phase starts. Without `at` it needs x, y, z and spawns at accept. Leave `level` out to match the player's level.
-- `<object id kind>`: `Computer`, `Safe`, `Mainframe` or `Box` are spawned at the floor's spawner for that kind; `Furniture` (a filing cabinet, desk or dresser already there) and `Phone` are bound to one in place, as retail bound The Internuncio's filing cabinet.
+- `<object id kind>`: a `Computer`, `Safe` or `Mainframe` already on the floor is used if there is one; otherwise one is spawned at the floor's spawner for that kind, or a `Box` at a box spawner. `Furniture` (a filing cabinet, desk or dresser) and `Phone` are bound to one in place.
+  - **Retail did the same.** It bound a spawned object to a static only when the static was the same object (`08 <goid> <static>`: The Internuncio's filing cabinets, dressers). At a spawner it spawned the object free (`0c`, no static): the client's definitions give spawner markers no Info or Usable part. Mission objects carry the key `ff <instance> 02` and use count 1, as retail's wall safes and filing cabinets did.
+  - **Clicking them.** The player selects and uses them as in retail: the client sends `80 c7 <view> <spawn> <use>`, use 3 for a container's Open, 4 for Hack, 5 for Take. The client checks the distance itself ("Target is out of range") and its reach is short, about a step. Containers (safes, cabinets, desks, dressers, boxes) can be opened in their default state, 0x835.
+  - **Computers need a state.** In its default state (0x960) a computer can't be selected. The client's `gameobjects.gob` gives computers states 0x960 to 0x965; tried in the client, 0x961 offers Take, 0x963 to 0x965 offer Hack, and 0x960 and 0x962 nothing. A computer is spawned in 0x961 for a Search goal that gives an item and 0x963 for other goals, and goes back to 0x960 when it has no open goal (update mask `01 08`). No state offered Put, so a Put goal at a computer is done with Hack.
+  - **The phone** isn't known to be usable, so its goals are done by standing beside it (2.5 m).
 
 Goal types beyond the five above:
 
@@ -95,7 +99,7 @@ Goal types beyond the five above:
 | `DefeatAll` | | every hostile of the phase is dead |
 | `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), or on using a hardline (`to="hardline"`) |
 | `Protect` | `npc` | the mission fails if the NPC dies; done with the phase's other goals |
-| `Search` | `object`, `item` | using the object opens a loot window holding the item |
+| `Search` | `object`, `item` | a container opens a loot window holding the item; a computer's Take or Hack gives it straight away |
 | `Put` | `object`, `item` | using the object while carrying the item |
 | `Use` | `object` | using the object |
 | `Upload` | `item` | uploading at a hardline while carrying it |
@@ -122,7 +126,12 @@ A site is picked as retail picked them:
 
 Each site's neighbourhood comes from `data/slums_neighbourhoods.csv`: every Slums sector's "Neighborhood" from the client's own world file (`resource/worlds/final_world/slums_barrens_full.metr`). Its sector numbers are the static data's and retail's briefing header's. All 36 contact, broker and Exile-lair positions in the guide fall in the neighbourhood it names. Some names in the file are pre-release; the CSV uses the release names (Hammerville is Dannah Heights, Toppan is Southard).
 
-**Getting upstairs.** Retail's elevators had a floor panel (`81 3f <sector u16> <region u16>`, then the client's `81 40 <button>`). The client checks the region id against the panel: retail's ids for the two panels in the captures (0x1f for sector 405's shaft at 60300, 33390, 0x19 six floors up) are accepted, others give "Unable to properly establish the elevator panel UI!". Even with retail's id the client then asks `81 41 01 00` and shows nothing, so the floor list isn't working. In a mission's building the operator takes the player instead: using its elevator door or panel takes them to the mission floor, or back to the street once that floor is done, with a follower beside them. Retail's operator asked first (`ID_OPERATOR_MISSION_ELEVATOR`, "I've hacked into the elevator control system. Do you want me to send you to the right floor?"); that modal showed from a chat command, but not after a door's use, and once it failed none showed until relogging, so we don't ask.
+**Getting upstairs.**
+- **The floor panel.** Retail's elevators have a floor panel: the server answers its use with `81 3f <sector u16> <region u16>`, and the client sends back `81 40 <button>`, counted from the bottom floor.
+- **The region id** is the floor's id in the client's own world file (`slums_barrens_full.cooked_cod` and the other districts' files: one TransportGroup per shaft, one TransportSpace per floor, its TSPI). A sector's k-th ElevatorPanel by static id is its k-th floor record. `data/elevator_panels.csv` has that for all 19,631 panels and matches all 37 of retail's `81 3f` in the captures. With any other id the client says "Unable to properly establish the elevator panel UI!".
+- **A button** moves the player to the same spot on that floor of the shaft, with any follower beside them.
+- **The floor list doesn't show yet.** With the right region the client answers `81 41 01 00` (`CurrentFloor` in client.dll) and shows no buttons. client.dll also names `CTransportGroup`, `bDesiredFloor` and an `Elevator_Button_Mission` element, so the list may need an elevator transport object we don't send. Until then the doors below do the work.
+- **The mission building's elevator doors** still take the player straight to the mission floor (or back to the street once it's done). Retail's operator offered that ride (`ID_OPERATOR_MISSION_ELEVATOR`, "I've hacked into the elevator control system. Do you want me to send you to the right floor?"), but the modal showed from a chat command and not after a door's use, so we don't ask.
 
 ## What's built
 

@@ -6,7 +6,7 @@
      appearance and an astronomer-style name are used. -->
 <mission id="2201" title="The End of the Beginning" description="Recover a dossier from a group of Exiles." plot="1" order="11"
          org="2" contact="Agent Gray" exp="44000" info="42000">
-  <npc id="1" handle="Alnitak" type="FRIENDLY" at="2" rsi="2D0D0098" weapon="2564" />
+  <npc id="1" handle="Alnitak" type="FRIENDLY" at="2" rsi="6d070058" weapon="2564" />
   <phase site="Office" enemy="Merovingian" enemies="3">
     <briefing>... I am very pleased that you have seen the wisdom in our ways. I insure you that you will not regret your decision. Now that you have agreed to work with the Machines, we have an assignment for you ...
 

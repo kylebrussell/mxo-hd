@@ -6,10 +6,10 @@
      guide gives its area type as Normal, so the site is Normal. -->
 <mission id="1207" title="The Potential" description="Recruit your first potential Redpill." plot="1" order="6"
          org="0" contact="Tyndall" neighbourhoods="Dannah Heights, Kedemoth, Lemone, Magog, Mannsdale Housing Projects, Uriah Industrial Park, Zia" exp="33000" info="52500">
-  <npc id="1" handle="Vega" type="FRIENDLY" at="1" rsi="560A0058" weapon="2564" />
-  <npc id="2" handle="Kepler" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
-  <npc id="3" handle="Daniel Mercer" type="FRIENDLY" at="2" rsi="2D0D0098" weapon="0" />
-  <npc id="4" handle="Halley" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="1" handle="Vega" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="2" handle="Kepler" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Daniel Mercer" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="4" handle="Halley" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="5">
     <briefing>You've impressed me, {player}! Because of this, you have been given your first recruitment assignment. I know that you will live up to Commander Lock's expectations.
 

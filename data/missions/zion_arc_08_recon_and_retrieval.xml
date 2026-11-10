@@ -9,10 +9,10 @@
      hardline. -->
 <mission id="2308" title="Recon and Retrieval" description="Resupply an internal base for Zion." plot="1" order="18"
          org="1" contact="Tyndall" exp="49500" info="52500">
-  <npc id="1" handle="Hadar" type="FRIENDLY" at="1" rsi="59010058" weapon="2564" />
-  <npc id="2" handle="Adhara" type="HOSTILE" at="2" rsi="720A0058" weapon="2564" />
-  <npc id="3" handle="Elnath" type="FRIENDLY" at="3" rsi="520A0058" weapon="2564" />
-  <npc id="4" handle="Huygens" type="FRIENDLY" at="3" rsi="d1040058" weapon="2564" />
+  <npc id="1" handle="Hadar" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564" />
+  <npc id="2" handle="Adhara" type="HOSTILE" at="2" rsi="58010058" weapon="2564" />
+  <npc id="3" handle="Elnath" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="Huygens" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>I hate to ask this of you, but no one else is available right now. We need you to re-supply one of our bases in the Matrix.
 

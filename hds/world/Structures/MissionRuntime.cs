@@ -307,6 +307,18 @@ namespace hds
                     continue;
                 }
 
+                if (objective.type == MissionGoalType.Search && MissionStaging.IsComputer(state.goid))
+                {
+                    // A computer's Take or Hack: no loot window, the item goes straight to the inventory
+                    if (objective.item != 0)
+                    {
+                        GiveItem(client, progress, objective.item);
+                    }
+
+                    Complete(client, progress, objective);
+                    break;
+                }
+
                 if (objective.type == MissionGoalType.Search && objective.item == 0)
                 {
                     // Searching that turns nothing up ("Search the computer", then "Get the data disk from the computer")
@@ -528,6 +540,8 @@ namespace hds
             {
                 packets.SendSetMissionObjective((ushort)next.goal, ObjectiveOpen, Fill(client, next.description), client);
             }
+
+            MissionStaging.RefreshObjects(client, progress);
 
             Say(client, objective.doneLines);
 
@@ -796,15 +810,19 @@ namespace hds
         /// is done when the two of them reach the way out (to="exit") or the NPC named (to="npc:3"). Hardlines: OnHardline.
         /// </summary>
         /// <summary>
-        /// Standing at a mission object does its goals. The client hasn't let the player select the objects we spawn (its
-        /// pick goes to nothing), so for now an object's Search, Put and Use goals are done by reaching it, Search putting
-        /// the item straight in the inventory, and using it (OnViewUse) remains for when selection works.
+        /// Standing at a mission object does its goals, for objects the player can't click (the phone): Search puts the item
+        /// straight in the inventory. Computers and containers are clicked (OnViewUse).
         /// </summary>
         private static bool TickObjects(WorldClient client, MissionProgress progress, double x, double y, double z)
         {
             bool sent = false;
             foreach (MissionObjectState state in progress.objects.Values)
             {
+                if (MissionStaging.IsClickable(state.goid))
+                {
+                    continue;
+                }
+
                 double dx = state.spot.pos_x - x, dz = state.spot.pos_z - z;
                 if (dx * dx + dz * dz > ObjectReachUnits * ObjectReachUnits || Math.Abs(state.spot.pos_y - y) > 300)
                 {

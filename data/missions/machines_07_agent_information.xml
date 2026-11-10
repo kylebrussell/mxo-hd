@@ -9,10 +9,10 @@
 <mission id="2207" title="Agent Information" description="Prevent two Zion Operatives from becoming a problem." plot="1" order="17"
          org="2" contact="Agent Gray" exp="66000" info="52500">
   <npc id="1" handle="Agent Harrow" type="FRIENDLY" at="1" rsi="3600004e" weapon="2564" />
-  <npc id="2" handle="Gaspard" type="FRIENDLY" at="1" rsi="c6020058" weapon="2564" />
-  <npc id="3" handle="Benedetto" type="FRIENDLY" at="1" rsi="ca020058" weapon="2564" />
-  <npc id="4" handle="Capella" type="HOSTILE" at="2" rsi="89090058" weapon="2568" attacksOnSight="0" />
-  <npc id="5" handle="Tycho" type="HOSTILE" at="2" rsi="d1040058" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Gaspard" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2564" />
+  <npc id="3" handle="Benedetto" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2564" />
+  <npc id="4" handle="Capella" type="HOSTILE" at="2" rsi="59010058" weapon="2568" attacksOnSight="0" />
+  <npc id="5" handle="Tycho" type="HOSTILE" at="2" rsi="d8040058" weapon="2568" attacksOnSight="0" />
   <npc id="6" handle="Agent Harrow" type="FRIENDLY" at="3" rsi="3600004e" weapon="2564" />
   <phase site="Normal" enemy="Zion" enemies="3">
     <briefing>There are two Zion operatives we must eliminate before they impart certain ... information to the Zion Council. As you may know, killing the humans would violate the Truce, so we have to be very delicate with this matter.

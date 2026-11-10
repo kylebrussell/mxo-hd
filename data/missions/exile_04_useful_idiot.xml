@@ -5,8 +5,8 @@
      Beginning. -->
 <mission id="2104" title="Useful Idiot" description="Pick up a Redpill for a friendly interrogation." plot="1" order="14"
          org="3" contact="Flood" exp="33000" info="42000">
-  <npc id="1" handle="Messier" type="FRIENDLY" at="1" rsi="58010058" weapon="2564" />
-  <npc id="2" handle="Clotilde" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
+  <npc id="1" handle="Messier" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564" />
+  <npc id="2" handle="Clotilde" type="FRIENDLY" at="2" rsi="01040040" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>This is an important job, so listen carefully. The Merovingian wants you to get a certain Redpill out of a local Machine base. Messier knows things that will be very useful to us in the foreseeable future. The Merovingian is not going to be concerned if you kill all the Machine programs that you find there.</briefing>
     <enter><say>Messier is near.</say></enter>

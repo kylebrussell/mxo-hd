@@ -7,8 +7,8 @@
 <mission id="2209" title="Control" description="Shut down a Merovingian Network." plot="1" order="19"
          org="2" contact="Agent Gray" exp="66000" info="52500">
   <npc id="1" handle="Bastion" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="2" handle="Rampart" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="3" handle="Bulwark" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Rampart" type="FRIENDLY" at="2" rsi="8e080058" weapon="2568" />
+  <npc id="3" handle="Bulwark" type="FRIENDLY" at="2" rsi="90080058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>I feel that the time has come for you to show us a better example of exactly what you are capable of. We want to test you once more before we hand you your largest task yet. If you are up to it, then by all means, proceed ...
 

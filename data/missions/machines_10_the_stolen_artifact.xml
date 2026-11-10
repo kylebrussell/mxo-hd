@@ -8,8 +8,8 @@
      first. "Kill Antares and the crew of the Prodito" is DefeatAll. The artifact is the Statue (1266). -->
 <mission id="2210" title="The Stolen Artifact" description="Intercept an artifact that was stolen from the Merovingian." plot="1" order="20"
          org="2" contact="Agent Gray" exp="66000" info="63000">
-  <npc id="1" handle="Lindqvist" type="FRIENDLY" at="2" rsi="760A0058" weapon="0" />
-  <npc id="2" handle="Antares" type="HOSTILE" at="3" rsi="60010058" weapon="2568" attacksOnSight="0" />
+  <npc id="1" handle="Lindqvist" type="FRIENDLY" at="2" rsi="9a010040" weapon="0" />
+  <npc id="2" handle="Antares" type="HOSTILE" at="3" rsi="000100b4" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Agent Corwin" type="FRIENDLY" at="4" rsi="9b000090" weapon="2564" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>As you may have heard, the Merovingian recently had an artifact stolen from him that we would like to ... intercept. The artifact was lifted by a small band of Exiles that operate outside of the Merovingian's rule.

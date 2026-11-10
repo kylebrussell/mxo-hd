@@ -5,7 +5,7 @@
      and is kept. The data disk is the Data_CD item (6831). -->
 <mission id="1206" title="Computer Crackdown" description="Steal an informational dossier on an Exile for Zion." plot="1" order="5"
          org="0" contact="Tyndall" neighbourhoods="Achan, Camon Heights, Eshean Projects, Mara, Midian Park, Moriah Projects, Tabor Park" exp="44000" info="42000">
-  <npc id="1" handle="Alcor" type="FRIENDLY" at="2" rsi="d1040058" weapon="2564" />
+  <npc id="1" handle="Alcor" type="FRIENDLY" at="2" rsi="000100b4" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>The work that our Hacker completed inside the Machine Network has uncovered some interesting data. It appears that the Machines have known about the Exiles' strikes against our recruitment efforts ever since the truce was put in place. One piece of information leads us to a database that holds files on both active programs that are in the Matrix, and those that were in the Matrix, such as Exiles.
 

@@ -5,7 +5,7 @@
 <mission id="2108" title="Digital Disturbance" description="Recover a stolen computer virus and put a small bomb in its place." plot="1" order="18"
          org="3" contact="Flood" exp="38500" info="52500">
   <npc id="1" handle="Philippa" type="FRIENDLY" at="1" rsi="a5060090" weapon="2564" />
-  <npc id="2" handle="Cornelius" type="FRIENDLY" at="3" rsi="ca020058" weapon="2564" />
+  <npc id="2" handle="Cornelius" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2564" />
   <phase site="Normal" enemy="Zion" enemies="2">
     <briefing>The Machines stole a computer virus of ours last night and it must be returned. We need the computer virus recovered and a bomb put in its place as a friendly reminder that taking what is ours will not be tolerated.
 
