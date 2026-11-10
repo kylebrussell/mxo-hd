@@ -130,69 +130,100 @@ namespace hds{
 			return createTeleportPacket(x*100.0f, y*100.0f, z*100.0f);
 		}
 
+		/// <summary>No nav polygon: the client then searches about 100 units around the position itself.</summary>
+		public const UInt16 NoPlace = 0xffff;
+
 		/// <summary>
-		/// Own-view teleport with the place it lands in. Retail's own-view record <c>01 1c &lt;yaw&gt; &lt;sector u16&gt;
-		/// &lt;region u16&gt; &lt;index u16&gt; &lt;u8&gt; &lt;x y z f32&gt;</c> named the sector and region (the pair the elevator
-		/// panel's 81 3f carries; region 1 outdoors) and an index that looks like the nav polygon (client.dll:
-		/// NavPolyID(prefabID, iNavPoly), DestinationNavPoly). The last byte is unknown.
+		/// Own-view teleport, as retail's record (about 1,700 of them in the captures): view 2, parts 01, flags 0x1c, then
+		/// <c>&lt;teleport id u8&gt; &lt;sector u16&gt; &lt;region u16&gt; &lt;polygon u16&gt;</c> (flag 0x10), <c>&lt;yaw u8&gt;</c>
+		/// (0x04, the client's own yaw echoed), <c>&lt;x y z f32&gt; &lt;server sim time ms u32&gt;</c> (0x08). The id counts up
+		/// per teleport and re-sends repeat it. The client compares the place with the elevator panel's 81 3f (it closes the
+		/// panel with 81 41 when they differ) and keeps the player on its nav mesh from it. The message queue ends the
+		/// view list with 00 00.
 		/// </summary>
-		public static byte[] createTeleportPacket(float x, float y, float z, UInt16 sector, UInt16 region, UInt16 index, byte last, byte yaw)
+		public static byte[] createTeleportPacket(float x, float y, float z, UInt16 sector, UInt16 region, UInt16 polygon, byte teleportId, byte yaw)
 		{
 			DynamicArray din = new DynamicArray();
 			din.append(StringUtils.hexStringToBytes("0200011c"));
-			din.append(yaw);
+			din.append(teleportId);
 			din.append(BitConverter.GetBytes(sector));
 			din.append(BitConverter.GetBytes(region));
-			din.append(BitConverter.GetBytes(index));
-			din.append(last);
+			din.append(BitConverter.GetBytes(polygon));
+			din.append(yaw);
 			din.append(NumericalUtils.floatToByteArray(x, 1));
 			din.append(NumericalUtils.floatToByteArray(y, 1));
 			din.append(NumericalUtils.floatToByteArray(z, 1));
-			din.append(StringUtils.hexStringToBytes("0000"));
+			din.append(BitConverter.GetBytes((UInt32)(TimeUtils.GetSimTimeSeconds() * 1000)));
 			return din.getBytes();
 		}
 
 		/// <summary>
-		/// Own-view teleport for this client: names the sector, region and nav polygon it lands in (NavMesh), as retail
-		/// did. Without them the client doesn't steer the player along its nav mesh: players walked straight and through
-		/// some walls. Where there's no nav polygon (off the mesh) it falls back to the old fixed record.
+		/// Where a teleport lands on the client's nav mesh: the polygon at the spot, else the nearest one within 4 m (a
+		/// spot in a gap between prefabs, such as beside an elevator door). False when there's none.
+		/// </summary>
+		public static bool PlaceNear(UInt16 metrId, double x, double y, double z, out NavLocation at)
+		{
+			if (NavMesh.Locate(metrId, x, y, z, out at))
+			{
+				return true;
+			}
+
+			for (int radius = 50; radius <= 400; radius += 50)
+			{
+				for (int step = 0; step < 16; step++)
+				{
+					double angle = step * Math.PI / 8;
+					if (NavMesh.Locate(metrId, x + radius * Math.Cos(angle), y, z + radius * Math.Sin(angle), out at))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>The next teleport id for this client: counts 1 to 255, never 0.</summary>
+		private static byte NextTeleportId(WorldClient client)
+		{
+			if (client?.playerData == null)
+			{
+				return 1;
+			}
+
+			client.playerData.teleportCounter = (byte)(client.playerData.teleportCounter == 255 ? 1 : client.playerData.teleportCounter + 1);
+			return client.playerData.teleportCounter;
+		}
+
+		/// <summary>
+		/// Own-view teleport for this client, naming the nav mesh place it lands in (NavMesh). Off the mesh, the nearest
+		/// place within 4 m; with none, no place (0xffff), never another sector's.
 		/// </summary>
 		public static byte[] createTeleportPacket(WorldClient client, float x, float y, float z)
 		{
-			if (client?.playerData != null && client.playerInstance != null &&
-			    NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out NavLocation at))
+			NavLocation at = new NavLocation { sector = NoPlace, region = NoPlace, polygon = NoPlace };
+			bool found = client?.playerData != null && PlaceNear((UInt16)client.playerData.getDistrictId(), x, y, z, out at);
+			if (!found)
 			{
-				byte yaw = client.playerInstance.YawInterval.getValue()[0];
-				return createTeleportPacket(x, y, z, at.sector, at.region, at.polygon, 0, yaw);
+				at = new NavLocation { sector = NoPlace, region = NoPlace, polygon = NoPlace };
+				Output.WriteDebugLog("[TELEPORT] No nav polygon near " + (int)x + "," + (int)y + "," + (int)z);
 			}
 
-			return createFixedTeleportPacket(x, y, z);
+			byte yaw = client?.playerInstance != null ? client.playerInstance.YawInterval.getValue()[0] : (byte)0;
+			return createTeleportPacket(x, y, z, at.sector, at.region, at.polygon, NextTeleportId(client), yaw);
 		}
 
 		public static byte[] createTeleportPacket(float x, float y, float z){
 			return createTeleportPacket(Store.currentClient, x, y, z);
 		}
 
-		/// <summary>The old record: the place bytes copied from one retail capture (Slums 759, region 0x5c, polygon 3).</summary>
-		private static byte[] createFixedTeleportPacket(float x, float y, float z){
-
-			byte[] xHex = NumericalUtils.floatToByteArray(x,1);
-			byte[] yHex = NumericalUtils.floatToByteArray(y,1);
-			byte[] zHex = NumericalUtils.floatToByteArray(z,1);
-
-
-			byte[] header = StringUtils.hexStringToBytes("0200011c11f7025c00030000");
-			byte[] tail = StringUtils.hexStringToBytes("0000");
-
-			DynamicArray din = new DynamicArray();
-			
-			din.append(header);
-			din.append(xHex);
-			din.append(yHex);
-			din.append(zHex);
-			din.append(tail);
-			
-			return din.getBytes();
+		/// <summary>Retail's elevator ding after a ride: 81 42 with the destination's region and sector as user data.</summary>
+		public static byte[] BuildElevatorDing(UInt16 region, UInt16 sector)
+		{
+			byte[] ding = { 0x81, 0x42, 0x2a, 0x06, 0x00, 0x22, 0, 0, 0, 0, 0, 0, 0, 0 };
+			BitConverter.GetBytes(region).CopyTo(ding, 10);
+			BitConverter.GetBytes(sector).CopyTo(ding, 12);
+			return ding;
 		}
 		
 

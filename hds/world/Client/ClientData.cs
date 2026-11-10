@@ -331,6 +331,9 @@ namespace hds
             districtId = _districtId;
         }
 
+        /// <summary>The last own-view teleport's id (PacketsUtils.createTeleportPacket).</summary>
+        public byte teleportCounter;
+
         public uint getDistrictId()
         {
             return districtId;
