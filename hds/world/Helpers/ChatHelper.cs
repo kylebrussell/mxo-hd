@@ -278,6 +278,10 @@ namespace hds
                         text += ". Hardline " + hl + (line != null ? " " + line.name + " at " + (int)line.spotX + "," + (int)line.spotY + "," + (int)line.spotZ : "");
                     }
 
+                    text += NavMesh.Locate(metr, sx, sy, sz, out NavLocation nav)
+                        ? ". Nav: " + (nav.indoors ? "indoor" : "outdoor") + " region " + nav.region + " polygon " + nav.polygon + " floor " + (int)nav.floorY + " (record " +
+                          BitConverter.ToString(nav.RecordBytes()).Replace("-", " ").ToLowerInvariant() + ")"
+                        : ". Nav: no polygon";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, text, "BROADCAST");
                 }
 
