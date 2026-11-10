@@ -88,3 +88,13 @@ u32 `0x18faeb0a`, u16 1, u16 1, zero padding, then a schema: named fields with a
 - **World NPC levels** come from `data/mob_parsed.csv` (retail spawns, with their own levels), which already agree with the sector levels, so nothing is overridden.
 - **PvP:** the server has no PvP rules yet (`pvpflag` isn't read), so `IsPvpZone` has no caller.
 - **`?sector`** (with `MXO_DEV_COMMANDS=1`) prints the sector where the player stands and the nearest hardline.
+
+## Nav meshes (`.nav`) and the own-view position record
+
+Retail's own-view record `03 02 00 01 1c <u8> <u16 sector> <u16 region> <u16 polygon> <u8> <x y z f32>` names where the player stands on the client's nav mesh. Our server used to send one fixed copy of it (sector 759, region 92, polygon 3) for every position.
+
+Each sector has a packed `.nav`: u32 0, u32 0, u32 N, u32 0, then N × (u32 offset, u32 size). Section 0 is `SNAV` (the sector's edges). Section i ≥ 1 is the nav mesh of the sector's outdoor region i − 1: a chunk header, then `NVPS`, u32 size, u32 size | 0x81000000, u32 polygon count, and per polygon the plane a, b, c, d (f32; floor y = −(a x + c z + d) / b), u32 edge count, and per edge u16 neighbour region, u16 neighbour polygon (0xffff is a wall; 0x1000, 0x2000, 0x3000 + n cross a sector side), f32 normal x, f32 normal z, f32 x, f32 z (the edge's first vertex), then `NVPL`. Coordinates are sector-local: world x − the sector's min x, world z − its min z (boxes in `sector_properties.csv`).
+
+**Outdoors, region = section − 1 and polygon = its index in the section.** This matched all 24 outdoor records in the repo captures (Slums, Downtown, International), and the player's y is the polygon's floor + 95. Region ids from N − 1 up are interior spaces: building floors, rooms and elevator spaces (the elevator panel's `81 3f` region is one of these). Their nav meshes are in the floor prefabs (`.iprf`, chunk `INAV`) and aren't decoded yet. The last byte changed over time at one spot (b7, bf, c9), so it is probably not about the place; we send 0.
+
+`research/world-data/navmesh.py` packs the outdoor polygons of the tutorial and the three cities into `data/navmesh/<district>.bin.gz` (about 8 MB): `MXNV`, u16 version 1, u16 district, u32 sector count, then per sector u16 sector, u16 region count, per region u16 polygon count, per polygon u8 vertex count (| 0x80 when sloped), f32 floor y (flat) or f32 a, b, c, d (sloped), and per vertex i16 x, i16 z (sector-local, whole units). `NavMesh.Locate(district, x, y, z)` (`hds/world/Structures/NavMesh.cs`) finds the polygon whose floor is nearest y − 95, within 200 units, and `NavLocation.RecordBytes()` gives the 7 bytes. Inside buildings it returns false. `?sector` shows it.
