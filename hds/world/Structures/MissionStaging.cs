@@ -540,7 +540,7 @@ namespace hds
         public static void Teleport(WorldClient client, double x, double y, double z)
         {
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)x, (float)y, (float)z), false);
+            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
             Output.WriteDebugLog("[MISSION] Teleported to " + x + "," + y + "," + z);
         }
 

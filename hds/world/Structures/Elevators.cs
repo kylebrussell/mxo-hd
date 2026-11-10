@@ -89,7 +89,7 @@ namespace hds
                 type = BitConverter.GetBytes(PanelGoId)
             };
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
-            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)x, (float)y, (float)z), false);
+            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
             Output.WriteDebugLog("[ELEVATOR] Button " + button + ": to " + x + "," + y + "," + z);
             MissionStaging.OnFloorReached(client, x, y, z);
             client.FlushQueue();

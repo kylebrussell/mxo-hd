@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using hds.shared;
 
 namespace hds{
 
@@ -129,7 +130,51 @@ namespace hds{
 			return createTeleportPacket(x*100.0f, y*100.0f, z*100.0f);
 		}
 
+		/// <summary>
+		/// Own-view teleport with the place it lands in. Retail's own-view record <c>01 1c &lt;yaw&gt; &lt;sector u16&gt;
+		/// &lt;region u16&gt; &lt;index u16&gt; &lt;u8&gt; &lt;x y z f32&gt;</c> named the sector and region (the pair the elevator
+		/// panel's 81 3f carries; region 1 outdoors) and an index that looks like the nav polygon (client.dll:
+		/// NavPolyID(prefabID, iNavPoly), DestinationNavPoly). The last byte is unknown.
+		/// </summary>
+		public static byte[] createTeleportPacket(float x, float y, float z, UInt16 sector, UInt16 region, UInt16 index, byte last, byte yaw)
+		{
+			DynamicArray din = new DynamicArray();
+			din.append(StringUtils.hexStringToBytes("0200011c"));
+			din.append(yaw);
+			din.append(BitConverter.GetBytes(sector));
+			din.append(BitConverter.GetBytes(region));
+			din.append(BitConverter.GetBytes(index));
+			din.append(last);
+			din.append(NumericalUtils.floatToByteArray(x, 1));
+			din.append(NumericalUtils.floatToByteArray(y, 1));
+			din.append(NumericalUtils.floatToByteArray(z, 1));
+			din.append(StringUtils.hexStringToBytes("0000"));
+			return din.getBytes();
+		}
+
+		/// <summary>
+		/// Own-view teleport for this client: names the sector, region and nav polygon it lands in (NavMesh), as retail
+		/// did. Without them the client doesn't steer the player along its nav mesh: players walked straight and through
+		/// some walls. Where there's no nav polygon (off the mesh) it falls back to the old fixed record.
+		/// </summary>
+		public static byte[] createTeleportPacket(WorldClient client, float x, float y, float z)
+		{
+			if (client?.playerData != null && client.playerInstance != null &&
+			    NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out NavLocation at))
+			{
+				byte yaw = client.playerInstance.YawInterval.getValue()[0];
+				return createTeleportPacket(x, y, z, at.sector, at.region, at.polygon, 0, yaw);
+			}
+
+			return createFixedTeleportPacket(x, y, z);
+		}
+
 		public static byte[] createTeleportPacket(float x, float y, float z){
+			return createTeleportPacket(Store.currentClient, x, y, z);
+		}
+
+		/// <summary>The old record: the place bytes copied from one retail capture (Slums 759, region 0x5c, polygon 3).</summary>
+		private static byte[] createFixedTeleportPacket(float x, float y, float z){
 
 			byte[] xHex = NumericalUtils.floatToByteArray(x,1);
 			byte[] yHex = NumericalUtils.floatToByteArray(y,1);
