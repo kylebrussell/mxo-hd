@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- House Call, Zion story mission 3.3.1. Source: research/missions/transcripts/Zion3-3-1.md (the archive replay of
+     [Zion Archive 3.3.1]; 35 screenshots, a few during play, the rest of the log after it ended). Retail's contact for
+     this one was [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives the
+     mission list. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, every NPC name, and the objective texts
+     "Defeat the Cypherites", "Search the area for clues about Cypherites" and "Search the database Computer" (shown in
+     the Objectives window). Ours: the description (the Summary tab only said "Datalink established."), the other
+     objective texts, the sites (the database is an Office, the two homes are SlumApt, the rest Normal), the looks and
+     the enemy counts. The Cypherites have no organisation here: they are Zion's (rogue redpills). The guard with the
+     key disk is the "Tactical Security" named in the log; the Cypherite with the first disk is the "Cypherite Network
+     Hacker" named in team chat (which Cypherite carried it isn't known). Item stand-ins: the Cypherites' encrypted
+     key disk (retail's Data Disk) is Data_CD (6831), the guard's key disk is Access_Code (6782). Rewards: the 412,350
+     experience and 108,500 information shown right after this mission completed.
+     Gaps: the terminals that open the database's doors (A3 the outer access door, A7 the inner one) are Use goals in
+     order, and the doors themselves aren't locked; the key disks only gate the goals that follow them. The alarm
+     systems aren't there. Alejandro Royal's and Debroah's exchange as the player leaves is said when the talk with
+     Debroah ends; a further line of Debroah's at 8:41:39 wasn't captured. The Cypherites' and Machine guards' barks
+     were only in team chat and aren't said. -->
+<mission id="103301" title="House Call" description="Hunt down a Cypherite gang and question Cryptos' old crewmates." plot="1"
+         order="3301" org="1" contact="Tyndall" exp="412350" info="108500">
+  <npc id="1" handle="Cypherite Network Hacker" type="HOSTILE" at="2" rsi="050100b4" weapon="2568" />
+  <npc id="2" handle="Tactical Security" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Debroah Pryes" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say>It's okay, baby. They were just leaving, and they won't be coming back.</say>
+  </npc>
+  <npc id="4" handle="Alejandro Royal" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say>Hey! Who are you? Get the hell away from my wife!</say>
+  </npc>
+  <npc id="5" handle="Sebastian Uris" type="FRIENDLY" at="5" rsi="c9020058" weapon="0">
+    <say>Don't know what else I could tell you about Cryptos that you don't already know. He was an okay guy to work with as long as you didn't get him going on the Machines. Always up for jacking into the Matrix. Big on recruiting people, too; he was pretty good at that. Convincing. Yeah, he didn't get annoying until you had to listen to one of his rants for the umpteenth time. I guess he's the big celebrity and all now, though. Funny. Crazy old Cryptos.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>*cough* Hey there, operative. You're probably wondering what's going on. Well, the leader of the commandos, an Exile known as the General, has agreed to help us in our battle against the Merovingian. He was really insistent, in fact. So the commandos are our allies now, and you'll treat them accordingly. We may even be working with them in future missions.&#10;&#10;But right now, we need to find out more about those Cypherites. Their apparent leader, Veil, is still at large, and they're interfering more and more with our recruiting teams. In fact, they just gave one of them a pretty rough reception. Fortunately, we've been able to track this particular Cypherite gang, and now you get to go give them the business. And while you're at it, try to find out where their leader is.</briefing>
+    <enter><say>I've got redpill signals in there--probably Cypherites. Also picking up some network activity.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Defeat the Cypherites" type="DefeatAll">
+      <done><say>That's all of them.</say></done>
+    </objective>
+    <objective goal="2" text="Search the area for clues about Cypherites" type="Use" object="1">
+      <done><say>Looks like they were downloading something they didn't want us to find. The file is lost, but I may be able to trace that address. Give me a minute here...</say></done>
+    </objective>
+    <complete><say>I've been able to trace that address. I'll point you there once you get outside.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>You've got a possible Cypherite network address? Wow. Wow. Can you feel my excitement? No? That's because I don't care! I can't do anything with that! Get me something I can use! Get me Veil!</briefing>
+    <enter><say>That's the place the Cypherites you fought earlier were downloading from. I'm picking up redpills, a computer network, and an alarm system in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Defeat the Cypherites" type="DefeatAll">
+      <done><say>That takes care of all the bandanas around there.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Cypherite Network Hacker" type="Defeat" npc="1">
+      <done><say>I'm reading some encrypted data on that Cypherite's body. See what it is.</say></done>
+    </objective>
+    <objective goal="3" text="Get the key disk from the Cypherite Network Hacker" type="Loot" npc="1" item="6831" after="2">
+      <done><say>That's an encrypted key disk. They've probably got a computer system around there that requires the disk for access. See what you can find.</say></done>
+    </objective>
+    <objective goal="4" text="Use the key disk on the computer" type="Use" object="1" after="3">
+      <done><say>Bingo! You've gained access to that computer. Now try searching it.</say></done>
+    </objective>
+    <objective goal="5" text="Search the computer" type="Search" object="1" item="0" after="4">
+      <done><say>Cryptos? The street magician? It seems that the Cypherites are awfully concerned about him. We'd better report this to Anome.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>Cryptos? That religious nut who pops out of boxes? Hmm... There was that operative who was saying something to Niobe the other day about Cryptos' speeches referring to bluepills...&#10;&#10;So this was the only lead you got, huh? That's just great. Okay, fine; here's what we're gonna do.&#10;&#10;As you ought to know by now, Cryptos used to be a Zion operative. I'm sending you to hit a Mega City resident database. You're gonna look up the whereabouts of these ex-crewmembers of Cryptos who've since "retired" from service to live like damned bluepills in the Matrix: Giuseppe Friesen, Debroah Pryes, Stanley Sheldon, Jayme Ravina, Sebastian Uris. Of course, if you're caught, Zion will disavow any knowledge, blah blah; you know the drill.</briefing>
+    <enter><say>The computer database should be in there. Ostensibly, it's just a customer database for a large retail corporation, but Zion has found that the Machines use it for tracking residents of the Mega City. You'll have to watch out for their security teams. Also...I'm reading a fairly complex network in there. It's possible that you'll have to access multiple computer terminals.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Kill the Tactical Security guard" type="Defeat" npc="2">
+      <done><say>I'm scanning some encrypted code on that guard. Could be another computer key disk.</say></done>
+    </objective>
+    <objective goal="2" text="Get the key disk from the Tactical Security guard" type="Loot" npc="2" item="6782" after="1">
+      <done><say>Yep, looks like a key disk. Try to find the computer that takes it.</say></done>
+    </objective>
+    <objective goal="3" text="Open the database's outer access" type="Use" object="1" after="2">
+      <done>
+        <say>Good. You can access that system now. See what you can find on it.</say>
+        <say>That's opened up an access door in a room nearby.</say>
+        <say>The far door is sealed shut. It's controlled by the terminal in that room.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Open the database's inner access" type="Use" object="2" after="3">
+      <done><say>The far door should be open now.</say></done>
+    </objective>
+    <objective goal="5" text="Search the database Computer" type="Search" object="3" item="0" after="4">
+      <done><say>Only two out of five found; not a very good life expectancy for Cryptos' "retired" ex-buddies. I can track those two resident codes, though. Get back out on the street.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Only two? Well, maybe Cryptos is doing these publicity stunts of his to meet new people. Sounds like it's time for you to pay a little house call to Debroah Pryes. See if she remembers anything about Cryptos that would connect him with the Cypherites.</briefing>
+    <enter><say>I've got two signals in there: a bluepill, and a redpill.</say></enter>
+    <objective goal="1" text="Talk to Debroah Pryes" type="Talk" npc="3">
+      <talk><say npc="3">Oh, you're with them, are you? Look, I've had enough of you people! Yes, I was in a crew with Cryptos, but I avoided him as much as I could. He was a pompous, conceited, self-righteous, grade-A jerk! Never happy with anything. I didn't like it there either, but I kept my trap shut, and got out quietly when the chance came. I hope I've seen the last of Cryptos, and Morpheus, and all associated "saviors." I don't need saving, got that? Now get out of my home!</say></talk>
+      <done>
+        <say>Yikes! Well, you might as well skedaddle. Hopefully Cryptos' other old crewmate will have known him a little better.</say>
+        <say npc="4">Hey! Who are you? Get the hell away from my wife!</say>
+        <say npc="3">It's okay, baby. They were just leaving, and they won't be coming back.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>You'd better get something useful out of Sebastian Uris, operative. I don't have time to be giving missions to people who don't produce results.</briefing>
+    <enter><say>I've got just a single redpill signal in there.</say></enter>
+    <objective goal="1" text="Talk to Sebastian Uris" type="Talk" npc="5">
+      <talk><say npc="5">Cryptos? Hah, yeah, I was just watching his latest little stunt on the news. Let's see... He was hard to get along with--wanted everybody to see things his way. He could draw an audience when he ranted about the Machines, which he did a lot. I mean, we all hated the Machines back then, right, but why waste your breath yelling about them? I don't think he had many real friends... Oh, he did pal around with that Cypher guy a bit. You know, Morpheus' crewmember who later went nutso and got himself zapped? That was a while after I saw him and Cryptos hanging out, though.</say></talk>
+      <done><say>Cryptos and Cypher? Did anyone else just get a little shiver? Anome's gonna want to hear this.</say></done>
+    </objective>
+  </phase>
+  <finish>Cypher. It all comes back to that stinking line-cutter, doesn't it? So Cryptos was buddy-buddy with the most infamous traitor in Zion's history. Why does this not surprise me? Cryptos. Cypher. This is starting to add up to something. We're going to have to see what other nasty little rabbits we can pull out of Cryptos' hat.&#10;&#10;Later.</finish>
+</mission>

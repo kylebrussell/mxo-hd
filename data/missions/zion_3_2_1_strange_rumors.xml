@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strange Rumors, Zion story mission 3.2.1. Source: research/missions/transcripts/Zion3-2-1.md (the archive replay of
+     [Zion Archive 3.2.1]; 17 screenshots, four taken during an earlier attempt and the rest of the log after it ended).
+     In the replay the contact was [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions,
+     and Anome's lines are spoken as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, and every NPC name. The
+     office bystanders' lines (Bluepill, Susann Boren) were seen in team chat, mostly during the earlier attempt; the
+     Operator's "but I supposed if they don't find out" is kept as shown. Chaos's "Take it!" was seen only in team chat
+     (its log entry falls between two screenshots). Ours: the description (the Summary tab was never opened), the
+     objective texts (nor was the Objectives tab, except "Talk to Kylie Nero" in the earlier attempt, whose form the
+     first one follows), the sites (phase 1 an Office, Plunkett's workplace, as the screenshots show; the others
+     Normal), the looks and the enemy counts. Item stand-in: retail's Tracker Device, the listening device Chaos hands
+     over, is Tracer (6825). Rewards: the 194,283 experience and 85,157 information shown right after this mission
+     completed. The node was in Shirakaba and the office in Kowloon, which aren't Slums neighbourhoods, so no
+     neighbourhood is forced.
+     Gaps: the earlier attempt's first witness was Kylie Nero, so retail probably picked the witness at random; this
+     file uses Jacquelyn Plunkett, whose lines were captured, and leaves Kylie Nero (no lines) out. Anome dropped the
+     other witnesses after the first, so there is one. The Machine network node was a stealth phase ("If any Machines
+     spot you, you're through"): nothing fails the mission on being seen, so three Machine programs guard the floor and
+     attack on sight, and the player can sneak past or fight them. Chaos's parting line is numbered after goal 2 so that
+     phase 1's goal 1 doesn't count for it. -->
+<mission id="103201" title="Strange Rumors" description="Find out what the bluepills know about the street magician Cryptos, then eavesdrop on the Machines." plot="1"
+         order="3201" org="1" contact="Tyndall" exp="194283" info="85157">
+  <npc id="1" handle="Jacquelyn Plunkett" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say after="1">I... I think you'd better go...</say>
+  </npc>
+  <npc id="2" handle="Bluepill" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Ummm... can I help you?</say>
+  </npc>
+  <npc id="3" handle="Susann Boren" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say display="5">I'm sorry, we don't allow solicitations in the office.</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">If you haven't filed the forms, I can't help you.</say>
+  </npc>
+  <npc id="5" handle="Chaos" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="2">Oh and hey -- if you get caught, I had nothing to do with this. Understand?</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Have you heard the rumors yet? Or maybe you've seen for yourself? These strange boxes are appearing all over the city. According to the Sentinel, they're for some street magician named Cryptos. Yeah, right.&#10;&#10;We need to know more about Cryptos. He may be a harmless bluepill entertainer... or he may be much, much more. We need you to investigate this for us.&#10;&#10;We've found some bluepills who've seen him in action. Go talk to them and find out anything you can... how he gets in the boxes... what he says... how he leaves... just get answers! Your first witness is Jacquelyn Plunkett.</briefing>
+    <enter><say>This is Plunkett's workplace, so keep a low profile in there. See what she knows about Cryptos and then get out.</say></enter>
+    <objective goal="1" text="Talk to Jacquelyn Plunkett" type="Talk" npc="1">
+      <talk><say npc="1">What? The boxes? Sure, I've seen one of them open. Some Rasta guy was in there and started ranting about all sortsa crap. None of it really made sense, but it was lunchtime and I was bored, so...&#10;&#10;...Hey, who are you, anyway? Did you check in with Michelle?</say></talk>
+      <done><say>All right, that's the first bluepill. Head out and we'll go check out the next one.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Okay, you know what? This isn't getting us anywhere. Interview the bluepills... get the info we already have... blah blah...&#10;&#10;How about we try this: you go get a listening device. I'll get you to a Machine network node. We do a little eavesdropping and find out what they know.&#10;&#10;Better than talkin' to coppertops all day, right? Go talk to Chaos, he'll hook you up.</briefing>
+    <enter><say>I wouldn't want to do anything to hurt our new friendship with the Machines... but I supposed if they don't find out...</say></enter>
+    <objective goal="2" text="Get the listening device from Chaos" type="Get" npc="5" item="6825">
+      <talk>
+        <say npc="5">Anome sent you, right? Yeah, I owe him one... here, take this.</say>
+        <say npc="5">Take it!</say>
+      </talk>
+      <done><say>Device in hand... you can head out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>All right. Let's see... this spot looks fine. The stupid toasters have let their guard down since we're all friends and whatever now.&#10;&#10;Head there, find a computer, plant the device, and don't get caught. Think you can handle that?</briefing>
+    <enter><say>Okay... you need to be careful in there. If any Machines spot you, you're through. According to this readout, you should be able to pull it off, if you're careful. Just hit the computer, plant the device, and get out. Got it?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Plant the listening device on the computer" type="Put" object="1" item="6825">
+      <done><say>Nice! Now get out of there before you're spotted.</say></done>
+    </objective>
+  </phase>
+  <finish>Not too bad, for a goodie two shoes. I'll have my people start analyzing those signals.&#10;&#10;And don't tell anyone about this. Understand?</finish>
+</mission>

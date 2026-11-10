@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trauma, Zion story mission 3.3.3. Source: research/missions/transcripts/Zion3-3-3.md (the archive replay of
+     [Zion Archive 3.3.3], given by [Archived]Tyndall; 43 screenshots, four during play, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the objective texts
+     "Access the Computer system", "Get the Data from the Computer", "Track the database sabotage", "Search the
+     Computer", "Get the Data CD from the Computer" and "Upload the Data CD at a hardline" (shown in the Objectives
+     window). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (Nunki's
+     place is SlumApt, the rave a Warehouse, the rest Normal), the looks and the enemy counts. The traitor redpills
+     (Zion Scattershot, Zion Despoiler, Zion Skript Kiddie) are Zion's. Item stand-ins: the network history data is
+     Data (6787), the disk with the list of numbers (retail's Data Disk) is Map_Disk (6783), Zu's pblip file is File
+     (6800), Caupolican's Card Key is Access_Card (6791), the Data CD is Data_CD (6831). Rewards: the 330,150
+     experience and 108,500 information shown right after this mission completed.
+     Gaps: Fuji follows the player to the computer and hacks it; here talking to him is enough, and the player then
+     uses the computer. His later "Whoa! Hey! Bogus, dude!" (shown hostile in the log, maybe as the guards turned on
+     him) isn't said. The Operator's line on first seeing the guards is said on arrival. Kat looking at the player's
+     data is only in the lines (the disk isn't handed over). The rave's bystander Fish is left out to keep the floor at
+     six NPCs. Caupolican waits for the player to start the fight (attacksOnSight="0") so reaching him can carry his
+     line; the card key only gates the goals that follow it. The guards' barks were only in team chat and aren't
+     said. -->
+<mission id="103303" title="Trauma" description="Track down the hackers who sabotaged Zion's records on Cryptos." plot="1"
+         order="3303" org="1" contact="Tyndall" exp="330150" info="108500">
+  <npc id="1" handle="Fuji" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>Where we goin'? Is this the comp-u-tor?</say>
+  </npc>
+  <npc id="2" handle="Bulgey" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">You need access? Sounds like a personal problem.</say>
+  </npc>
+  <npc id="3" handle="Brent" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say display="5">Fuji is so gullible once you get enough drinks in him. Don't tell, but later we're going to get him to strip naked and streak through Mara Central!</say>
+  </npc>
+  <npc id="4" handle="Binary" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say display="5">I know where the computer is, but I don't think I should give you access. It's secure for a reason.</say>
+  </npc>
+  <npc id="5" handle="Rat" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564">
+    <say display="5">Man, I just got here myself. I don't know where anything is. Uh... You don't know the way to the bathroom, do you?</say>
+  </npc>
+  <npc id="6" handle="Enceladus" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say display="5">This party is totally dead. I think I'm gonna go check out Polyvinyl.</say>
+  </npc>
+  <npc id="7" handle="Abanderada" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say>Oops! Mum's the word.</say>
+  </npc>
+  <npc id="8" handle="Kat" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say>That's nice.</say>
+  </npc>
+  <npc id="9" handle="Zu" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say>We don't know you. You didn't get that data from us. In fact, you've never met us, and you've never been here.</say>
+  </npc>
+  <npc id="10" handle="Christophe" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say display="5">I got three cases of blues to unload... Interested? These are the real deal, my friend.</say>
+  </npc>
+  <npc id="11" handle="Ehrdni" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say display="5">Zion data? Woo. Hot stuff. I might be able to find something that would interest you...for the right price.</say>
+  </npc>
+  <npc id="12" handle="Dwornik" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say display="5">I don't know... Maybe we could make a deal. You got anything besides that dirty old file?</say>
+  </npc>
+  <npc id="13" handle="Caupolican" type="HOSTILE" at="4" rsi="000100b4" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Hail, Warrior. You will recall that we recently discovered tampering in our database records relating to the mysterious street magician, Cryptos. Our database admins have been combing through the sabotaged records for any clue to the identity of the attackers, and, at long last, they have found one: a fragmentary log stamp of a network address from within the Matrix. It was partially spoofed, but we've run thousands of traces, and only one address corresponds to an actual terminal within the simulation.&#10;&#10;I'm sending you to that location now. You must find the hackers who sabotaged our database and, if possible, retrieve the original versions of the tampered records. This will not be an easy task, but I have complete faith in your abilities.</briefing>
+    <enter>
+      <say>I'm picking up a lot of redpills in there, and at least one active computer system. It's got some security on it... I don't think I can crack it from here. You'll have to see if you can access it physically.</say>
+      <say>Zion operatives! Could they be associated with the sabotage? From what Tyndall described, it did sound likely to be an inside job. You've got to get access to the computer in that room. If you can't hack it, maybe you can get access from one of the other redpills in that building.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Fuji" type="Talk" npc="1">
+      <talk><say npc="1">You need to access the comp? No prob, dude. I got mad skills with that stuff. Lead on!</say></talk>
+      <done><say>Sounds like that guy is willing to help you access their computer.</say></done>
+    </objective>
+    <objective goal="2" text="Access the Computer system" type="Use" object="1" after="1">
+      <done>
+        <say>Well what do you know, he actually did it. You should be able to access that system now.</say>
+        <say>That looks like the system, all right. But it's clean of any Zion datafiles. Damn. Okay, dump their network access data and bring it out of there.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="2">
+      <done><say>Good. Now upload that to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the Data at a hardline" type="Upload" item="6787" after="3" />
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>The network history files you retrieved from the terminal indicate that it was simply a router for the sabotage on our database. The hackers themselves were at another location. By matching the timestamp found in our database records to the captured history file, we've located the remote system that accessed the terminal at the time of the sabotage.&#10;&#10;I'm directing you there now, Warrior, but please proceed carefully. If Zion operatives were involved in this sabotage, as is implied by the guards you just encountered, then you are up against a group of desperate traitors to our cause. They may have information concerning this mission; in fact, we can't rule out the possibility that they are tracking you right now.</briefing>
+    <enter><say>Great, Tyndall is the last person my nerves need going all paranoid on me. That's the building we're after. Let's see... I'm reading several computer systems in there... No redpill signals.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search for the data disk" type="Search" object="1" item="6783">
+      <done><say>Interesting, but that isn't the file we were looking for. Keep searching. Hold onto that, though--never hurts to have extra data.</say></done>
+    </objective>
+    <objective goal="2" text="Track the database sabotage" type="Use" object="2" after="1">
+      <done><say>That disk you found has a list of numbers. It was encrypted, but pretty badly, and I've been able to pull down a copy of it. What was the login name on that system? Nunki? Hmm... Maybe Tyndall can run a check on it. Let's go ring her up.</say></done>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Zion" enemies="0">
+    <briefing>Warrior, we've completed checks on both the data file you retrieved, and the name you found on that computer. The data in the file did not match any information in our databases; it may be related to some program of which we are unaware. However, it may have importance of some sort to the redpills with whom you are dealing, and perhaps you can use it as a bargaining chip.&#10;&#10;We tracked the name you found, "Nunki," to an ex-Zion redpill. I'm sending you to his last known location. Remember to use the utmost caution in dealing with this individual or his associates, as they appear to be traitors to our cause. You are authorized to use whatever force is necessary against them in order to retrieve our missing database file.</briefing>
+    <enter><say>Lots of redpills in there; what is this, another warehouse rave?</say></enter>
+    <objective goal="1" text="Talk to Abanderada" type="Talk" npc="7">
+      <talk><say npc="7">Nunki? He ain't here, honey. But he isn't the only one who might know a thing or two about Zion database records. It all depends on who you talk to, and what you're offering. Now, that file you have... Why don't you go talk to my boy Kat over there? Tell him I said you're okay.</say></talk>
+      <done><say>You might be on to something there. Let's see what Kat has to say.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Kat" type="Talk" npc="8" after="1">
+      <talk><say npc="8">She said that, did she? Well... Let me see the data.</say></talk>
+      <done>
+        <say>Stay on this, man. I think this is going to lead to something.</say>
+        <say npc="8">Hmm... Mm... Ooh. I'm tempted to ask where you got this, but I'm a professional. Go talk to Zu over there, and tell her you're interested in ruby slippers.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Zu" type="Talk" npc="9" after="2">
+      <talk><say npc="9">Really? In that case, we suggest you take your inquiry to an individual known as Caupolican. He can provide you with what you're after; whether or not he will want to is another question, and you've only bought yourself one answer. Here's a pblip file with his location.</say></talk>
+      <done><say>Nice. Let's get her data.</say></done>
+    </objective>
+    <objective goal="4" text="Get the pblip file from Zu" type="Get" npc="9" item="6800" after="3">
+      <talk><say npc="9">We thought you wanted this data. Were we mistaken?</say></talk>
+      <done><say>Okay, hit a hardline and upload that to me, pronto.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the pblip file at a hardline" type="Upload" item="6800" after="4" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Warrior, the missing data record you are looking for dates from several weeks after the Truce began, which puts it around the time when, according to intelligence you gathered previously, Cryptos had just gone through a period of intense personal trauma. It could be a clue as to what happened to change him from his previous fervent anti-Machine stance to his current philosophy of embracing life in the Matrix. It could help us discover the origin of his current motives, and establish whether or not he is operating in conjunction with the Cypherite movement.&#10;&#10;This is why it is so vital that we recover this record. Do whatever it takes to get it back from Caupolican.</briefing>
+    <enter><say>I'm scanning a secured computer system, and more redpills in there. I have a feeling they're going to be a little resistant. Good luck.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find Caupolican" type="Talk" npc="13" optional="1">
+      <done><say npc="13">Zion? Impossible; we left no traces! Damn you!</say></done>
+    </objective>
+    <objective goal="2" text="Kill Caupolican" type="Defeat" npc="13">
+      <done><say>Search Caupolican. He might be carrying the file.</say></done>
+    </objective>
+    <objective goal="3" text="Get the card key from Caupolican" type="Loot" npc="13" item="6791" after="2">
+      <done><say>A card key... Check around there for a computer system that will take that key.</say></done>
+    </objective>
+    <objective goal="4" text="Use the card key on the computer" type="Use" object="1" after="3">
+      <done><say>My scan tells me that you just got access to that terminal. Search it for our missing data.</say></done>
+    </objective>
+    <objective goal="5" text="Search the Computer" type="Search" object="1" item="0" after="4">
+      <done><say>"We should all go back" stuff? They must have been talking about Cryptos! So he went AWOL in the Matrix, and came back all weirded out. Huh.&#10;&#10;I'm scanning more of our data on a CD in that computer. Grab it and upload it to me at a hardline.</say></done>
+    </objective>
+    <objective goal="6" text="Get the Data CD from the Computer" type="Search" object="1" item="6831" after="5" />
+    <objective goal="7" text="Upload the Data CD at a hardline" type="Upload" item="6831" after="6" />
+  </phase>
+  <finish>Once again you've done the impossible, operative. The file you recovered shows that several weeks after the Truce, Cryptos jacked into the Matrix without permission, and came out an hour later in an introspective, disoriented state. Shortly afterwards, he disappeared from Zion entirely, and hasn't been seen since, except in his role as a performer of impossible stunts inside the Matrix.&#10;&#10;Something happened to him in that crucial hour inside the Matrix--but what? What could have changed him so drastically? Clearly, we have much more to learn about this enigmatic, and perhaps dangerous, individual; indeed, the number of traitorous Zion operatives you just encountered worries me greatly. Is Cryptos at the heart of their betrayals? I shall have your findings presented to the Council immediately. Thank you once again for your efforts, Warrior.</finish>
+</mission>

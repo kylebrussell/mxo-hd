@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Like Candy, Zion story mission 3.3.2. Source: research/missions/transcripts/Zion3-3-2.md (the archive replay of
+     [Zion Archive 3.3.2], given by [Archived]Tyndall; 31 screenshots, one during play, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the phase 4 objective
+     texts "Eliminate Elly's captors", "Ask Mallard and Elly about Cryptos" and "Don't let Mallard die" (shown in the
+     Objectives window). Ours: the description (the Summary tab only said "Datalink established."), the other objective
+     texts, the sites (no building was described: all Normal), the looks and the enemy counts. The Cypherites have no
+     organisation here: they are Zion's (rogue redpills). Item stand-ins: the candy wrapper is Candy (6805), the card
+     with the address is Document_Location_Notes (6855), the key to the locked door is Access_Card (6791). Rewards: the
+     330,150 experience and 108,500 information shown right after this mission completed. The Operator's "Sound like
+     we don't have any time to waste" is retail's wording.
+     Gaps: phase 1's two Operator hints are said on arrival; the third ("You're close. What's in that desk?") needs a
+     spot by the desk and isn't said. How the key to Mallard's cell was found wasn't captured: it is searched for in a box. The locked door itself
+     isn't locked; the key only gates the talk with Mallard. The Operator's lines on arriving, on first seeing the
+     Cypherites and at the locked door are said on arrival. Mallard is led out and follows the player into phase 4,
+     where he must survive. The "There's Elly!" line is said as the talk with Elly starts, and Elly's and Mallard's
+     closing remarks when it ends. Elly's prison had an alarm system and a lore terminal ("He's going to die just like
+     the others."): neither is there. The Cypherites' barks were only in team chat and aren't said. -->
+<mission id="103302" title="Like Candy" description="Find two missing Zion operatives who once knew Cryptos." plot="1"
+         order="3302" org="1" contact="Tyndall" exp="330150" info="108500">
+  <npc id="1" handle="Zverev" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say>Hope that gets you somewhere! And...you might not want to tell those folks you're from Zion. They're not too big on taking orders, these days.</say>
+  </npc>
+  <npc id="2" handle="Mallard" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Elly" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Warrior, since your findings that the street magician Cryptos may be involved with the Cypherites, we have been sifting through our intelligence for any reports that may substantiate this theory. It seems that Cryptos' speeches contain veiled references to Cypherite-like activities, such as the use of blue pills. Certain reports even indicate that some of his rhetoric may be praise of the arch-traitor, Cypher, who, as you found, knew Cryptos casually in Zion.&#10;&#10;We need to know more about Cryptos' past activities. Strangely, many of Zion's records that should contain information on Cryptos from his days as our operative show signs of tampering; Commander Lock suspects sabotage. We have, however, found several references to two of our operatives in conjunction with Cryptos: Mallard and Elly. These operatives vanished recently while on a mission investigating Cypherite activity. We want you to find them. I'm sending you to their last known location.</briefing>
+    <enter>
+      <say>Mallard and Elly's last transmission came from that building. Hopefully, we'll be able to find some kind of clue to what happened to them. I've got my scan routines cranked to max cycles. Not picking up anything unusual yet...</say>
+      <say>My code trace says there's something in that room that's more recent than most of the items in the area. See what you can find.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the desk" type="Search" object="1" item="6805">
+      <done><say>A candy wrapper... Expensive brand, too; imported. Huh. My scanners aren't picking up anything else out of the ordinary. Hit the street; we'll see if Tyndall can make anything of this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I'm not sure what significance your finding may have, Warrior. I will have our databases scanned for any correlation with Cryptos or the Cypherites.&#10;&#10;In the meantime, I have another lead for you to check: Zverev, a redpill who associated with Mallard and Elly in their off-duty hours in the Matrix. Zverev claims to be unaffiliated with any faction at this point, but we suspect that he is leaning toward the Merovingian's organization. Still, you may be able to enlist his help in tracking down his missing friends.</briefing>
+    <enter><say>Our information indicates that Zverev should be in there. I'm picking up a single redpill on the premises.</say></enter>
+    <objective goal="1" text="Talk to Zverev" type="Talk" npc="1">
+      <talk><say npc="1">Whoa! Hey, you startled me. Yeah, I know 'em. Haven't seen 'em around lately, though. You must be their Zion babysitter, huh? Well, I hope you find 'em. I been bustin' my skull tryin' ta think where they could have got off to.&#10;&#10;A candy wrapper? Uh... Well, sure. Give it here.</say></talk>
+      <done><say>Perhaps something will occur to Zverev when he sees the candy wrapper you found.</say></done>
+    </objective>
+    <objective goal="2" text="Give the candy wrapper to Zverev" type="Give" npc="1" item="6805" after="1">
+      <talk><say npc="1">Candy wrapper? Uh, well, I can take a look, but it's not ringing any bells yet.</say></talk>
+      <done><say>Hey, he could have a lead for us.</say></done>
+    </objective>
+    <objective goal="3" text="Get the address card from Zverev" type="Get" npc="1" item="6855" after="2">
+      <talk><say npc="1">Hmm... *sniff* Whoa, rich stuff. Now where have I smelled that before...? Was it... No... Wait, yeah! There was this guy we used to hang with, ex-Zion guy, who was always stuffing his face with these. Elly would tell him they weren't real, and he'd laugh and say that they sure tasted real enough to him. Funny guy. Partied with this kind of wild redpill crowd. Man, there was this girl who jacked into their last party... Uh, anyway, I think I know where the dude hangs out. Here, I've written the address on this card.</say></talk>
+      <done><say>Upload that card to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the address card at a hardline" type="Upload" item="6855" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>This sounds promising, Warrior. If Mallard and Elly associated with Cryptos, it isn't surprising that they may have run with a wild crowd in their off-duty hours. But please, use great caution around any unknown redpills. It is hard to tell friends from foes these days, and Zion has more enemies than ever.</briefing>
+    <enter>
+      <say>I'm picking up some redpill signals in there.</say>
+      <say>Cypherites! Was our mysterious candy-muncher one of them? It would fit with some of their known personality profiles...</say>
+      <say>The far door seems to be locked. I'm scanning a single redpill inside.</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the key to the locked door" type="Search" object="1" item="6791">
+      <done><say>That key should open that locked door.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Mallard" type="Talk" npc="2" after="1">
+      <talk>
+        <say>It's Mallard!</say>
+        <say npc="2">These masked bastards grabbed me and my buddy, Elly, and locked us up separately. Said we "knew too much," or something. I have no idea what they were talking about. They've been talking about forcing a blue pill down my throat--thank goodness you got here! I know where they're holding Elly; they've been taunting me about it. We've got to rescue him, fast!</say>
+      </talk>
+      <done><say>Sound like we don't have any time to waste. Lead Mallard out of there, and let's go get Elly.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Mallard out of the area" type="Escort" npc="2" to="exit" after="2">
+      <talk><say npc="2">I know where they're holding Elly; they've been taunting me about it. We've got to rescue him, fast!</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>If the Cypherites are interested in Mallard and Elly, then this may be more evidence that Cryptos is somehow involved with the Cypherite movement. We must find out what Mallard and Elly know about Cryptos. Zion is counting on you, operative!</briefing>
+    <enter><say>That's where Elly is being held, according to Mallard. I'm seeing plenty of redpill signals in there; looks like they've got an alarm system, too. Good luck!</say></enter>
+    <objective goal="1" text="Eliminate Elly's captors" type="DefeatAll">
+      <done><say>That was the last of the Cypherite signals in the area.</say></done>
+    </objective>
+    <objective goal="2" text="Ask Mallard and Elly about Cryptos" type="Talk" npc="3" after="1">
+      <talk>
+        <say>There's Elly! Looks like we got here in time.</say>
+        <say npc="2">You said you thought this might be about Cryptos; in that case, I think I know why we were singled out. Not long after Neo, you know, made the deal with the Machines--a few weeks, maybe--we were in Zion with Cryptos, and he was really freaking out. He'd always been one of the biggest anti-Machine fanatics around, but...</say>
+        <say npc="3">But after he learned about the Truce, he turned super-paranoid. Totally bonkers. Would hardly talk to anyone, and then only to rave at them about the Machines. He thought the Matrix was evil--wanted to destroy the whole simulation. Said we should hand out red pills like candy, wake the sleepers, whether they were ready or not. Mallard and I tried to talk to him, snap him out of it, but he didn't take that too well--called us Machine-lovers, all kinds of crazy stuff.</say>
+      </talk>
+      <done>
+        <say>This is weird. Cryptos freaking out when he heard about the Truce, wanting to hand out red pills... I thought his shtick was about "the blues" now? We need to report this to Tyndall.</say>
+        <say npc="3">Anyway, thanks for the rescue. They were threatening to force-feed me a blue pill, and I've got no desire to go back to life as a plugged-in vegetable. If that's what Cryptos wants people to do, he's even crazier now than when we knew him back in Zion.</say>
+        <say npc="2">I'm not quite sure what that has to do with the Cypherites and all, but it seems like Cryptos might want to hide his past. Raving lunacy doesn't quite fit in with his new role as a popular entertainer, I suppose.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Don't let Mallard die" type="Protect" npc="2" />
+  </phase>
+  <finish>This is excellent intelligence, Warrior. It seems that Cryptos has some very dark skeletons hidden in his closet, even beyond his possible connection to the Cypherites. His violent change of philosophy is baffling; your findings warrant further investigation. I will notify Commander Lock at once. You have Zion's greatest thanks for your diligence.</finish>
+</mission>

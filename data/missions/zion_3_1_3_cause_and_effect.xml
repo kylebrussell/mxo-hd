@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cause and Effect, Zion story mission 3.1.3. Source: research/missions/transcripts/Zion3-1-3.md (the archive replay
+     of [Zion Archive 3.1.3]; five screenshots during play and 29 of the log after it ended). In the replay the contact
+     was [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's lines are
+     spoken as the contact (so his jabs at Tyndall come under her name). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Anome, Operator and Effectuator line, the
+     Effectuator's three "remote admin" messages from the computer window in phase 4, and the objectives "Search the
+     computer for the construct portal's location", "Search the second computer", "Search the third computer" and "Get
+     information about the Effectuator" (seen in the Objectives window). Italics in retail's lines are plain text. Ours:
+     the description (the Summary tab was never opened), the other objective texts, the sites (phase 1 was an office
+     interior in the screenshots: Office; the rest Normal), the looks and the enemy counts. Item stand-ins: the key is
+     Access_Card (6791), the key disk from the safe Data_CD (6831), the address on the last lupine's body
+     Document_Location_Notes (6855, retail's "Location Notes Document"), and the "data" that turned out to be a virus
+     Data (6787; its name wasn't shown). Rewards: the 308,280 experience and 101,500 information shown after this
+     mission completed.
+     Gaps: phase 1's key is found ransacking the place (a search of furniture), the locked safe is opened with it (it
+     can't be locked here: the safe opens once the key is held), and "The safe in that room is locked." is said when
+     the key turns up. The Effectuator is insubstantial and moves from room to room in retail; here he is three friendly
+     copies in phase 2, each a Talk that waits for the one before. Their repeat lines ("Two rooms down now",
+     "Next room... so five-minutes-ago", "Toodles!") wait for phase 2's goals, numbered 4 to 7 so that phase 1's goals
+     don't count for them. The portal guards (kind not named) are generated Exiles. The phase 3 lupines came in waves
+     ("More of them just popped in!", "One more just appeared on my screen!", not said); here they are there from the
+     start, and the address is looted from a named Dire Lupine Bane once they are all dead. Phase 4's computers must be
+     hacked in order: a chain of Uses, the Effectuator's computer messages said as his lines when each is done, and the
+     lupine ambushes are the phase's generated Exiles from the start. The data is taken from the third computer once
+     it is hacked, then uploaded; that it was a virus is only in the lines. A cut word in the Operator's 6:40:35 line
+     is bridged. -->
+<mission id="103103" title="Cause and Effect" description="Seize the control terminal of a construct portal and follow the trail of the Effectuator." plot="1"
+         order="3103" org="1" contact="Tyndall" exp="308280" info="101500">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="6">Two rooms down now, operative.</say>
+  </npc>
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="6">Next room, operative. This one is so five-minutes-ago.</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="7">Toodles!</say>
+  </npc>
+  <npc id="4" handle="Dire Lupine Bane" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" />
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>Well, if it isn't {player}. We've used that data you got on the dire lupines and their "Effectuator" leader to zero in on a computer system in the City that controls one of the Merovingian's constructs. I don't think I need to remind you how important it is that we disrupt the Merovingian's construct network, do I? Right. So, you're going to secure this computer system, then use it to track down and infiltrate the construct portal. Get moving.</briefing>
+    <enter>
+      <say>I'm picking up strange, shifting signals in there--probably more of those dire lupines.</say>
+      <say>The computer in that room is the one Zion identified as the construct portal control terminal. It looks like you'll need a key disk to access it. Time to ransack the place.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Safe" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the place for a key" type="Search" object="1" item="6791">
+      <done>
+        <say>Hey, a key. That might prove useful.</say>
+        <say>The safe in that room is locked.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Open the safe" type="Search" object="2" item="6831" after="1">
+      <done>
+        <say>That disk could come in handy.</say>
+        <say>That's a key disk. We can use it to access their computer.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Search the computer for the construct portal's location" type="Put" object="3" item="6831" after="2">
+      <done>
+        <say>Great, you've gained access to the system. Now search it for portal control routines.</say>
+        <say>Good; I can track that network address to find the portal. You're all done there.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Now that we've captured the control terminal for the portal, you should have no problem with the portal shutting down before you get to it. But there's no point in taking chances, is there? So hurry up and get over there.</briefing>
+    <enter>
+      <say>That's the place. The readings I'm getting are consistent with what we've seen from construct portals before. Looks like we'll finally get to see one before it shuts down.</say>
+      <say>The far door is the construct portal. It's still active. You'd better take out those guards first, though.</say>
+    </enter>
+    <objective goal="4" text="Kill the guards" type="DefeatAll">
+      <done><say>Great, now see if the portal-- What? Someone's just appeared in there!</say></done>
+    </objective>
+    <objective goal="5" text="Talk to the Effectuator" type="Talk" npc="1" after="4">
+      <talk><say npc="1">Why, hello there, operative. Nice day, isn't it? Yes, I'm that fellow you've been wondering about: the Effectuator. Oh, don't bother trying to threaten me; you can't hurt me. Nobody can. A happy arrangement, don't you think?&#10;&#10;But we're getting behind schedule. Why don't you proceed on to the next room? Oh, I've shut the portal down, by the way. Just go on through the door.</say></talk>
+      <done><say>This is too weird. I guess you'd better play along until we find out what he's up to.</say></done>
+    </objective>
+    <objective goal="6" text="Follow the Effectuator to the next room" type="Talk" npc="2" after="5">
+      <talk>
+        <say>Huh? The signal from the program in that room matches the one from the previous room exactly. Is he cloning himself?</say>
+        <say npc="2">Yes, it's still me. I have no corporeal existence in this simulation, you see? So I can just flit around wherever I need to. I feel a little less real than even the average Exile--we're all a tad insecure about that, actually--but there are compensations.&#10;&#10;Speaking of which: yes, I do work for the Merovingian. I run his constructs: coordinating firewalls, maintaining private servers, code maintenance... And our dear leader himself can be very demanding. Makes me wonder why some of the more powerful programs--the Trainman, for instance--put up with him at all. But oh, look at the time. Let's move on to the next room.</say>
+      </talk>
+      <done><say>Looks like he's enabled access to the next room.</say></done>
+    </objective>
+    <objective goal="7" text="Find the Effectuator in the room after that" type="Talk" npc="3" after="6">
+      <talk>
+        <say>Oy! How many of this guy are there?</say>
+        <say npc="3">So, my dear dire lupines (Aren't they neat? And so discreet. The Merovingian made them specially for me) indicated that trouble was coming, and I just had to pop in and meet you. Here's the thing: I can't have you meddling with my constructs. I mean, really, do you want to get me fired?&#10;&#10;But it wouldn't be right to leave you empty-handed, after you've worked so hard. Let's see... Aha! I'll give you some more lupines to play with; their combat routines have become a little rusty. Check with your operator. See ya!</say>
+      </talk>
+      <done><say>Hey! I'm getting a broadcast here. It's the address of a site nearby. I suppose you'll just have to leave your new friend behind for now--since he's insubstantial, there's nothing we can do to him...at the moment.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>What the friggin' hell kind of fruitcake was that? Apparently this is all some kind of big game to him. We'll just see how much he likes it once we've castrated all his "dear" dire lupines, and trapped his skinny old insubstantial butt in a mez field! And why did he assume that Tyndall is directing you? I'm in charge here! Mr. Fake Tan is in for a nasty surprise.&#10;&#10;Take those dogs to the cleaners, and find some way of tracking down the Effectuator.</briefing>
+    <enter><say>I wonder if the Effectuator made that Tyndall reference just to get under Anome's skin? Heh.&#10;&#10;Looks like he's playing square with us, at any rate; I've got lots of intermittent signals in there, of the dire lupine persuasion, from the looks of it. Does the Effectuator really not care if we waste these guys, or is he hoping to goad us in over our heads?</say></enter>
+    <objective goal="1" text="Kill the dire lupines" type="DefeatAll">
+      <done><say>That seems to be all of them. Hey, I'm reading something on the body of that last one. See what it is.</say></done>
+    </objective>
+    <objective goal="2" text="Get the address from the Dire Lupine Bane's body" type="Loot" npc="4" item="6855" after="1">
+      <done><say>An address? And not far away, either. That's awfully convenient...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>So, you found an address on one of those dogs? Well, what the hell are you waiting for? Do you want the Effectuator to get away? Move it!</briefing>
+    <enter><say>That's the address. Seems awfully quiet... I'm reading a small local network, but that's about it.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Use" object="1">
+      <done>
+        <say npc="3">Hello, operative. Still on the case? I admire your dedication! If you're going to get through my computer system there, I'm afraid you'll find that there's a certain sequence you have to follow. By the way, some mutual friends of ours should be along at any moment. Don't blink!</say>
+        <say>It sounds like you'll have to search all the computers in there in a specific order. This is-- Heads up!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the second computer" type="Use" object="2" after="1">
+      <done>
+        <say npc="3">Still going strong, eh? But you've turned your back again...</say>
+        <say>More lupines!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Search the third computer" type="Use" object="3" after="2">
+      <done>
+        <say npc="3">I do believe you've done it. I've underestimated you. Well, Architect knows I'm not perfect. C'est la vie!</say>
+        <say>I'm scanning some data on that machine. Did the Effectuator want us to find it? Well, Anome's chomping at the bit, so I suppose you'd better get it.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Get information about the Effectuator" type="Search" object="3" item="6787" after="3">
+      <done><say contact="1">What'd you find? Is it something to do with that pathetic clown, the Effectuator? Upload it to me immediately!</say></done>
+    </objective>
+    <objective goal="5" text="Upload the information at a hardline" type="Upload" item="6787" after="4">
+      <done><say>Uh-oh. From where I'm sitting, that doesn't look like it was regular data...</say></done>
+    </objective>
+  </phase>
+  <finish>What th--? Network activity is going haywire! That "data" you uploaded was a virus! Oh, crap! ...&#10;&#10;It's wiping our data on the Effectuator's lupines and construct portals! Uh... We'll get back to you.&#10;&#10;Someone get Tyndall! Shut the systems down! Shut everythi--</finish>
+</mission>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Run the Fox to Ground, Zion story mission 3.2.4. Source: research/missions/transcripts/Zion3-2-4.md (the archive
+     replay of [Zion Archive 3.2.4], given by [Archived]Tyndall; 14 screenshots, three taken during phase 1 and the rest
+     of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator line, the names of the Cypherite Hacker
+     and Rifleman and their "What the... Intruder sighted!" (seen in team chat), and the objective "Search all of the
+     computer terminals", which retail counted 1/3 to 3/3 on one goal. Ours: the description (the Summary tab was never
+     opened), the three objective texts that split that count, the other objective texts (not shown), the sites (phase 1
+     an Office, as the screenshots show; the others Normal), the looks and the enemy counts. The masked men (Cypherites)
+     have no organisation of their own, so they are Zion, with the masked thug look of 1.3.4. No mission items: the
+     terminals showed codes ("D 230", "L 240", "E 210") that only the Operator uses. Rewards: the 247,500 experience and
+     108,500 information shown right after this mission completed. Phase 1 was in Kowloon, which isn't a Slums
+     neighbourhood, so no neighbourhood is forced.
+     Gaps: one goal counting three terminals is three Search goals, one per computer, that turn up nothing. Phase 2's
+     goals weren't seen: the area completed 37 seconds after the player arrived, with Veil's signals gone and no fight
+     in the log, so it is a Search of the meeting room (a desk) that turns up nothing, and no hostiles. Phase 3's dead
+     Zion operatives aren't spawned (no corpses): their bodies are a box to search, and both Operator lines (finding
+     them, then "someone searched these bodies already") are said when it is searched. The end of the first of those
+     lines was cut after "get out of there,"; it is read as the player's name, and any lines between it and the next
+     were lost. A paragraph may be missing from Tyndall's closing line between two screenshots. -->
+<mission id="103204" title="Run the Fox to Ground" description="Find where Veil is holding a secret meeting, and find out who she is meeting." plot="1"
+         order="3204" org="1" contact="Tyndall" exp="247500" info="108500">
+  <npc id="1" handle="Cypherite Hacker" type="HOSTILE" at="1" rsi="9c0000b4" weapon="2568">
+    <say>What the-- Intruder sighted!</say>
+  </npc>
+  <npc id="2" handle="Cypherite Rifleman" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568">
+    <say>What the-- Intruder sighted!</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="3">
+    <briefing>Things are heating up, Warrior. We've received reports that an important meeting will be taking place soon. A meeting between Veil, and someone powerful. We're not sure who she's meeting; that's where you come in.&#10;&#10;We need you to get into that meeting, however you can. The first step is finding the location. Search all of the computers at the location on your HUD. If you run into any interference, do as you will.</briefing>
+    <enter><say>Okay, I'm reading 3 computer terminals in there. We should be able to put together the info and figure out where this meeting is at...</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer terminal" type="Search" object="1" item="0" />
+    <objective goal="2" text="Search the second computer terminal" type="Search" object="2" item="0" />
+    <objective goal="3" text="Search the third computer terminal" type="Search" object="3" item="0" />
+    <complete><say>Seems like some sort of code... I'll forward it to Tyndall and Gray, and see if they can turn up anything. In the meantime, get out of there!</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Gray has run those numbers through his encryption programs, and turned up a couple of likely spots. The Machines are helping us again, hitting one of the spots. We need you to get the other one.&#10;&#10;Head on in. Take care of any opposition you encounter, and find out who Veil is meeting!</briefing>
+    <enter><say>I'm reading a bunch of signals in there, including... yep. Veil is definitely on site. Don't waste this opportunity!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the meeting room" type="Search" object="1" item="0">
+      <done><say>What in the world... the signals were there a moment ago, and now there's just this weird residual signal. It seems familiar somehow...&#10;&#10;More to the point, though, I've got a destination on these signals too. The Machines are already on their way. You'd better head on over before they get all the glory!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I just got cut off from Gray. We've been in constant communication up to this point... what can that mean?&#10;&#10;Maybe the Machines need our help! Get to the new meeting location as fast as you can, Warrior!</briefing>
+    <enter><say>This spot seems awfully quiet... I don't like it. Be careful in there, {player}.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Search the bodies of the Zion operatives" type="Search" object="1" item="0">
+      <done>
+        <say>Oh, no... those are dead Zion operatives! And not a live signal on the screen... what happened here?&#10;&#10;I think you should get out of there, {player}.</say>
+        <say>It seems like someone searched these bodies already...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>This is a sad day, Warrior. Apparently one of our hovercraft crews got a little too hot headed, and went in with no backup. And somehow... somehow, someone unplugged their jacks.&#10;&#10;Keep this in mind. Don't let your emotions run away with you... we now have no idea who this meeting was with. And we don't know who unplugged those poor souls...&#10;&#10;Keep in touch. This is not over.</finish>
+</mission>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Opening Boxes, Zion story mission 3.2.2. Source: research/missions/transcripts/Zion3-2-2.md (the archive replay of
+     [Zion Archive 3.2.2]; 16 screenshots of the log after it ended). In the replay the contact was [Archived]Anome;
+     the mission is offered by Tyndall here like the other Zion missions, and Anome's lines are spoken as the contact.
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, and every NPC name.
+     Ours: the description (the Summary tab was never opened), the objective texts (nor was the Objectives tab), the
+     sites (neither place was described: both Normal), and the looks (there are more women at the meeting than redpill
+     looks, so Amphitrite wears a civilian one). Item stand-in: Eos's recording is Recording (6784). Rewards: the
+     165,000 experience and 108,500 information shown right after this mission completed.
+     Gaps in the log: one line of Eos's (at 11:12, between two screenshots) wasn't captured. The paragraph about Veil
+     sabotaging Vashuo's cranial jack starts a screenshot with no speaker shown; it is read as the rest of Amphitrite's
+     line before it. Fulvia's speech lost a cut line after "unless you hear otherwise." and maybe some text before
+     "Everybody understand?"; the Operator's line after it lost a paragraph starting "Y"; Fulvia's closing line lost a
+     few words between "and with" and "Tyndall". Each is joined over the gap.
+     Gaps in the mechanics: the meeting's barks came on approach, several at once; here talking to Wezen, who called the
+     player in, plays them in their order, and then Fulvia's talk carries her speech, Elmer's answer and the Operator's
+     reaction. The repeat lines wait for those talks, numbered 3 and 4 so that phase 1's goals don't count for them.
+     Retail's Operator then put an Audio Recording (a playable item) in the inventory; no goal of ours gives an item
+     without a giver, so it isn't given, and the Operator's line about it is said as in retail. -->
+<mission id="103202" title="Opening Boxes" description="Pick up a recording intercepted by Anome's device, then answer an emergency meeting's call." plot="1"
+         order="3202" org="1" contact="Tyndall" exp="165000" info="108500">
+  <npc id="1" handle="Eos" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Don't tell a soul, got it? If any higher ups in Zion find out about this...</say>
+  </npc>
+  <npc id="2" handle="Wezen" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say after="4">We've all got to work together to stop her!</say>
+  </npc>
+  <npc id="3" handle="Callisto" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say after="3">Stay focused, {player}. We all need to focus on the task, not let anger cloud our judgment.</say>
+  </npc>
+  <npc id="4" handle="Cebriones" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="3">Veil better pray I don't find her first...</say>
+  </npc>
+  <npc id="5" handle="Amphitrite" type="FRIENDLY" at="2" rsi="61000040" weapon="2564">
+    <say after="4">You sure of all the people on your hovercraft? Boy, this really has me freaked, remembering what happened...</say>
+  </npc>
+  <npc id="6" handle="Fulvia" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say after="4">Talk to your operator, and with Tyndall, {player}. They'll keep you up to date.&#10;&#10;Don't worry, we'll pull together and take care of this situation.</say>
+  </npc>
+  <npc id="7" handle="Elmer" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="4">Whatcha waitin' for?</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hey, {player}. Looks like we're turning up some info on this Cryptos guy already. We're pickin' up so much info from that device you planted... this is great!&#10;&#10;Head to this location. I need you to take a look at something we picked up. It's some sort of recording.</briefing>
+    <enter><say>Eos is in here with that recording.</say></enter>
+    <objective goal="1" text="Get the recording from Eos" type="Get" npc="1" item="6784">
+      <talk><say npc="1">Hey, here's the recording.</say></talk>
+      <done><say>Hmm... I think you'd better upload that to me and I'll have a look at it.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the recording at a hardline" type="Upload" item="6784" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>All right, all we need to do now is listen to that and--&#10;&#10;Hold up. Looks like an emergency meeting's been called. You need to get over there now, {player}!</briefing>
+    <enter><say>An emergency meeting! I wonder what's going on... I guess we're going to find out.</say></enter>
+    <objective goal="3" text="Talk to Wezen" type="Talk" npc="2">
+      <talk>
+        <say npc="2">{player}! Get in here... you have to hear this.&#10;&#10;Veil is out.</say>
+        <say npc="3">That's right, Veil. Remember her? We used to all call her Toorima. She was on board the Novalis II, until...</say>
+        <say npc="4">Enough talk! We need action!</say>
+        <say npc="2">We've all got to work together to stop her!</say>
+        <say npc="3">Stay focused, {player}. We all need to focus on the task, not let anger cloud our judgment.</say>
+        <say npc="5">Hey, cool it, Cebriones; {player} needs to hear this.&#10;&#10;Veil turned out to be pretty high up in the masked men's organization. Sadly for all of us, we didn't find out until after she sabotaged Vashuo's cranial jack. Imagine having a traitor in your crew, and you didn't have a clue until someone's jackout procedure didn't work... and there they are, dead...</say>
+        <say npc="4">Veil better pray I don't find her first...</say>
+      </talk>
+    </objective>
+    <objective goal="4" text="Talk to Fulvia" type="Talk" npc="6" after="3">
+      <talk>
+        <say npc="6">All right, so we're all up to speed. Now the question is this: What do we do?&#10;&#10;Number one: All masked men are kill on sight, unless you hear otherwise. We've never been friendly with them, but they have now become our prime target.&#10;&#10;Number two: Find Veil. I don't think she just up and left, never to be seen again... she'll be around the Matrix. No matter what it takes, we'll track her down and retake her... or kill her in the process.&#10;&#10;Everybody understand?</say>
+        <say npc="7">Got it!</say>
+        <say>Veil's out! This is unbelievable! This is... A lot of people were involved in her capture.&#10;&#10;I've downloaded that recording to your inventory. Hopefully it will shed some sort of light on this...</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>Veil, that underhanded, conniving... She'll get hers. Don't worry about that, {player}. I'll see to it personally.&#10;&#10;Keep in touch.</finish>
+</mission>

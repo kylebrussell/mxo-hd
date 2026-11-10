@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Back Door, Zion story mission 3.1.1. Source: research/missions/transcripts/Zion3-1-1.md (the archive replay of
+     [Zion Archive 3.1.1], given by [Archived]Tyndall; one screenshot during phase 2 and 18 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Tyndall, Operator and Buffer line, Buffer's name,
+     and the objective "Get information on the Merovingian's construct" (seen in the Objectives window at the end of
+     phase 2). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (phase 2
+     was an office interior in the screenshot: Office; the rest Normal), the looks and the enemy counts. Item stand-in:
+     the data from the new Exile's body (its name wasn't shown) is Data (6787). Rewards: the 230,860 experience and
+     101,500 information shown after this mission completed.
+     Gaps: the construct portal is scripted door state in retail (the guards divert it, a sealed far door, a remote user
+     re-routing it); here the far door is simply open. Phase 2 is a chain: hack the computer that unseals the far door,
+     search the room behind it (it is "just a normal room": the search turns up nothing), then hack the computer in the
+     other room. The Operator's three lines from the approach (the weird signal, the signal change when the guards spot
+     the player, the sealed door) are said on arrival. Retail's other way through, a security passcode looted from the
+     guards, isn't built. The guards' barks (Merovingian Scattershot, Rifleman, Arbalest and Karate Master: "Divert the
+     portal!", "They're here! Shut it down!") aren't placed; the guards are the phase's generated Exiles. The Dire Lupine
+     Savage appears when the portal closes in retail; here it waits at the portal (attacksOnSight="0"), reaching it is an
+     optional Talk that carries the Operator's alarm and its "Grrr! Human!", then it is killed and its data looted. Phase
+     3's guards (the log has a three-minute gap there) are generated Exiles. Lines lost in the log's gaps aren't said. -->
+<mission id="103101" title="Back Door" description="Break into a building the Merovingian uses as an access point to his constructs." plot="1"
+         order="3101" org="1" contact="Tyndall" exp="230860" info="101500">
+  <npc id="1" handle="Buffer" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="1">Your operator will direct you. Good luck, soldier!</say>
+  </npc>
+  <npc id="2" handle="Dire Lupine Savage" type="HOSTILE" at="3" rsi="a5060090" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Congratulations on the termination of the Assassin, Warrior--your hard work paid off. The Matrix is now a safer place for bluepills and Zion's operatives, but a greater threat remains: the Merovingian himself. By bringing the Assassin into the Matrix to kill Morpheus, the Merovingian demonstrated his hostility to some of Zion's most deeply held beliefs, and his complete disregard for human life. He must be removed from power if the Matrix is to be a safe haven for mankind.&#10;&#10;Commander Lock and the Council have decided that, as the Merovingian is too powerful to attack directly, we must find a weakness in his criminal organization that we can exploit. Our field operative, Buffer, will brief you.</briefing>
+    <enter><say>Buffer's signal is in there, loud and clear. No hostile programs in sight.</say></enter>
+    <objective goal="1" text="Talk to Buffer" type="Talk" npc="1">
+      <talk><say npc="1">Hey, soldier. I hope you're as good as Tyndall says you are. Here's the scoop: we know that the Merovingian frequently visits custom areas outside the main Matrix simulation. These pocket worlds are called "constructs." They are incredibly expensive to build and maintain, but they can be quite useful for people, like the Merovingian, who wish to conduct business without having to worry about the prying eyes of the Machines.&#10;&#10;We've located a building that we believe has been used by the Merovingian as an access point to one or more of his constructs. Your task is to penetrate this building and access the construct or, at the very least, obtain some information regarding it.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>We know very little about constructs, operative--especially those operated by the Merovingian. If you enter one, it is very likely that you will be unable to contact us from inside the construct. Also, since the construct's simulation can be written entirely from scratch by its author, it is impossible to say what you may encounter there.&#10;&#10;I suppose what I'm saying is...be careful. We--Zion--can't afford to lose people like you.</briefing>
+    <enter>
+      <say>I've got hostile programs in there, and a weird signal coming from...a door? Whatever's behind the door doesn't register as physical space inside the Matrix. Could it be the construct entrance?</say>
+      <say>Hold on... Signal change. The strange portal readings on that door have disappeared. What's going on in there?</say>
+      <say>The strange reading was coming from the far door in there. The door appears to be sealed. The control routine might be on the computer in that room. If you can't hack it, check the guards for a security passcode.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Use the computer to unseal the far door" type="Use" object="1">
+      <done><say>Excellent, you've deactivated the seal on the far door. Time to crash the Merovingian's construct?</say></done>
+    </objective>
+    <objective goal="2" text="Search the room behind the far door" type="Search" object="2" item="0" after="1">
+      <done><say>Get ready for... Huh? That's just a normal room, not a construct. Something odd is going on here... I think someone pulled the plug on us. Check the computer in the other room.</say></done>
+    </objective>
+    <objective goal="3" text="Get information on the Merovingian's construct" type="Use" object="3" after="2">
+      <done><say>Okay... It looks like the construct portal got re-routed by a remote user. I'm jacked into that terminal and running a trace now. Head outside while I work my magic.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Zion intel isn't surprised to hear that the Merovingian maintains active monitoring of his construct portals. This just goes to show how important they are to his operation; you seem to be on the right track, {player}. Zion's hopes go with you.</briefing>
+    <enter>
+      <say>Hah, I'm a genius! The construct signal is in there, all right. Now we just have to get to the portal before they deactivate it.</say>
+      <say>The portal is the next door. It's still active--I think.</say>
+    </enter>
+    <objective goal="1" text="Find the construct portal" type="Talk" npc="2" optional="1">
+      <done>
+        <say>Damn! You're still on my screen, and the portal signal is gone. They got us aga-- Hey! What the hell is that? You'd better take that thing out!</say>
+        <say npc="2">Grrr! Human!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill the strange Exile" type="Defeat" npc="2">
+      <done><say>That Exile doesn't match any known profiles. I need to run a scan on it. See if you can get any data from its body.</say></done>
+    </objective>
+    <objective goal="3" text="Get the data from the Exile's body" type="Loot" npc="2" item="6787" after="2">
+      <done><say>Ah, excellent. Upload that to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the data at a hardline" type="Upload" item="6787" after="3" />
+  </phase>
+  <finish>Warrior, I'm told that you encountered a new type of Exile at the construct portal. It's too bad that we weren't able to penetrate the portal itself, but the data you recovered on this Exile may hold the key to the Merovingian's elaborate construct network. If we can control, or disable, some of his constructs, we cripple his power. We'll contact you again once we complete our analysis of the data you gathered.</finish>
+</mission>

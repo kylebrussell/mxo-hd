@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dire Connection, Zion story mission 3.1.2. Source: research/missions/transcripts/Zion3-1-2.md (the archive replay of
+     [Zion Archive 3.1.2], given by [Archived]Tyndall; one screenshot during phase 1 and 20 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Tyndall, Operator and NPC line, every NPC name,
+     and the objective "Locate the dire lupines" (seen in the Objectives window at the end of phase 1). Ours: the
+     description (the Summary tab was never opened), the other objective texts, the sites (phase 1 is the apartment
+     Gerald Imray just moved into: SlumApt; the rest Normal), the looks and the enemy counts. Item stand-in: the Data
+     Disk Gerald found under the couch is Data_CD (6831). Rewards: the 308,000 experience and 101,500 information shown
+     after this mission completed.
+     Gaps: the dire lupines "pop out of the woodwork" in waves in retail; here each fight's lupines are the phase's
+     generated Exiles, there from the start, so the Operator's wave lines ("now I'm picking up more of them in there with
+     you", "More signals just popped up in there", "More of them!", "More of them just popped up in there. A big group,
+     this time.") aren't said; "Bingo! Data analyzers are rolling" is said on arrival. Divide's taunt is said when he
+     dies, with the Operator's answer. A cut word in two Operator lines ("dongle-protected", "port scan search") and a
+     line lost between screenshots in Tyndall's third briefing are bridged with the best reading. A second Bluepill in
+     the apartment whose only line was cut at the start isn't placed. -->
+<mission id="103102" title="Dire Connection" description="Hunt down the Merovingian's new dire lupines so that Zion can study them in action." plot="1"
+         order="3102" org="1" contact="Tyndall" exp="308000" info="101500">
+  <npc id="1" handle="Gerald Imray" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="3">Hey, wait, is there a password or something that I need in order to use that computer?</say>
+  </npc>
+  <npc id="2" handle="Divide" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, our engineers have finished analyzing the data you retrieved from the new Exile type found at the Merovingian's defunct construct portal: the "dire lupine." It seems to be a modified version of a regular lupine Exile program, with additional subroutines dedicated to stealth and infiltration effects; but it is difficult to be sure without seeing it in action.&#10;&#10;Fortunately, now that we have isolated this code signature, we can search our scan archives for dire lupine activity sites. Zion's data miners believe they have found such a site, and we need you to investigate it. Your encounter with the dire lupines will be monitored for further analysis. Commander Lock suspects that we can locate the Merovingian's construct power base by following the trail of these modified lupine programs.</briefing>
+    <enter>
+      <say>Hmm... That's the spot, but I'm not reading any matches for the dire lupine code signature that Zion sent to me.</say>
+      <say>A civilian, here? This doesn't seem promising.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Gerald Imray" type="Talk" npc="1">
+      <talk><say npc="1">Uh, can I help you, officer? No, we haven't seen anything unusual here--well, aside from a bit of a mess in the bathroom. We just moved in a few days ago.</say></talk>
+      <done><say>The computer in that room is hooked up to a network. It's got a dongle-protected security protocol, though. That means we need an access disk for it.</say></done>
+    </objective>
+    <objective goal="2" text="Get the access disk from Gerald Imray" type="Get" npc="1" item="6831" after="1">
+      <talk><say npc="1">What's that, officer? Oh, that computer was here when we got here. I think whoever was here before us left in a bit of a hurry.&#10;&#10;Say, that reminds me--I found this disk under the couch. Maybe it could help your investigation?</say></talk>
+      <done><say>That's an access disk! Try it in that computer in the next room.</say></done>
+    </objective>
+    <objective goal="3" text="Locate the dire lupines" type="Put" object="1" item="6831" after="2">
+      <done>
+        <say>Looks like you're in. Run a port scan search on that thing.</say>
+        <say>Sounds like that computer's got an encrypted connection. Gimme remote on that thing.&#10;&#10;Okay, I'm in... Shouldn't take too long to crack this. Wait for me outside.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>We've traced the location of that remote network connection. Make haste, Warrior. We can't afford to let this lead slip through our fingers.</briefing>
+    <enter>
+      <say>I'm getting some...intermittent readings from that building. Not sure if it's dire lupine programs or not--it's like something's suppressing the signal.</say>
+      <say>Bingo! Data analyzers are rolling. Engage them in combat!</say>
+    </enter>
+    <objective goal="1" text="Kill the dire lupines" type="DefeatAll">
+      <done><say>I think that accounts for all the hostile programs in the area. You can clear out of there. I'll check with Zion and see if they got any usable data from the scanners.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Our scanners detected a dire lupine signal escaping from the battle, operative. We've been able to track it. Watch out, this time they may be on their guard.</briefing>
+    <enter><say>More of them in there--I think. Can't get a precise count. Their code is shifty.</say></enter>
+    <objective goal="1" text="Kill the dire lupines" type="DefeatAll">
+      <done><say>Cool. Zion's scanners should have collected plenty of data that time.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>The data we collected during your last battle has enabled us to refine our scan for the dire lupines. We've located what we think is their main hub for that neighborhood. Clear the area of lupines and look for some sort of connection to the Merovingian's construct network.</briefing>
+    <enter><say>That's the place. Lots of readings blipping in and out on my screen--I think you're in for a party.</say></enter>
+    <objective goal="1" text="Clear the area of lupines" type="DefeatAll" />
+    <objective goal="2" text="Kill Divide" type="Defeat" npc="2">
+      <done>
+        <say npc="2">Hrahh-hah-ha! This is all pointless, you sap! You can't touch the Effectuator!</say>
+        <say>What'd that one say? "The Effectuator"? Name doesn't ring a bell. Hmm. Zion might be able to use this information.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The dire lupine referred to a leader named "The Effectuator"? Interesting. This could be an important member of the Merovingian's organization, perhaps the individual entrusted with the care of the Merovingian's private constructs. I will pass this information on to our intel group immediately. Zion thanks you, Warrior! You can be sure that we'll be in touch.</finish>
+</mission>

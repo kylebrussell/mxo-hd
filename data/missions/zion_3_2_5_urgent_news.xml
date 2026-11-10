@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Urgent News, Zion story mission 3.2.5. Source: research/missions/transcripts/Zion3-2-5.md (the archive replay of
+     [Zion Archive 3.2.5], given by [Archived]Tyndall; 18 screenshots, four taken during phases 1 and 2 and the rest of
+     the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, every NPC name, and the
+     objectives "Examine the communication logs" (counted 1/3 to 3/3 on one goal) and "Search the Computer". The Zion
+     Despoiler's and the Nescire crew's lines were seen in team chat; three of the crew's were cut at the end and are
+     read as "You'll never take me alive!", "The only way out is to return!" and "You're finished!". Ours: the
+     description (the Summary tab was never opened), the three objective texts that split the count, the phase 3
+     objective texts (not shown), the sites (phases 1 and 2 Offices, as the screenshots show; phase 3 Normal), and the
+     looks. Item stand-in: Dr. Miles Vyse's Data Disk is Data_CD (6831). The masked men (Cypherites) have no
+     organisation of their own and Downlink's crew are rogue Zionites, so the phase 3 hostiles are all Zion; the
+     Cypherites have the masked thug look of 1.3.4. Rewards: the 247,800 experience and 108,500 information shown right
+     after this mission completed. Phases 1 and 2 were in Shirakaba and Kowloon, which aren't Slums neighbourhoods, so
+     no neighbourhood is forced.
+     Gaps: one goal counting three log computers is three Search goals that turn up nothing (the readouts' codes are
+     only the Operator's). Retail's "Search the Computer" was done with the disk, so it is a Put of the disk at the lab
+     computer (done with Hack). Downlink and his crew were friendly until Zion security raided their ship, then turned
+     on the player: all six are hostiles who wait for the player to start the fight (attacksOnSight="0"). Reaching
+     Downlink is an optional Talk that carries his greeting, the Operator's go and his turn; then he and his crew are
+     killed. No generated hostiles, so that nobody attacks before the raid. Vyse's parting line waits for goal 4 so that
+     phase 1's goals 1 to 3 don't count for it. -->
+<mission id="103205" title="Urgent News" description="Root out the traitors in Zion who have been helping Veil." plot="1"
+         order="3205" org="1" contact="Tyndall" exp="247800" info="108500">
+  <npc id="1" handle="Zion Despoiler" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say display="5">I wouldn't let you be in here, but Tyndall called a few minutes ago... sounds like you've got clearance.</say>
+  </npc>
+  <npc id="2" handle="Miles Vyse" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say after="4">You know, I'm actually glad I don't have this clearance... I think I'll rest easier not knowing whatever it is.</say>
+  </npc>
+  <npc id="3" handle="Downlink" type="HOSTILE" at="3" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Zion Artillerist" type="HOSTILE" at="3" rsi="ec020058" weapon="2568" attacksOnSight="0">
+    <say>You'll never take me alive!</say>
+  </npc>
+  <npc id="5" handle="Zion Doctor" type="HOSTILE" at="3" rsi="60010058" weapon="2568" attacksOnSight="0">
+    <say>The only way out is to return!</say>
+  </npc>
+  <npc id="6" handle="Cypherite Gunslinger" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" attacksOnSight="0">
+    <say>You're finished!</say>
+  </npc>
+  <npc id="7" handle="Cypherite Rifleman" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" attacksOnSight="0">
+    <say>You're finished!</say>
+  </npc>
+  <npc id="8" handle="Cypherite Hacker" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" attacksOnSight="0" />
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>I have some chilling news for you. There are traitors in our midst.&#10;&#10;There have been too many coincidences: Veil barely escaping multiple times, a seasoned crew going in without backup, false information. We need you to ferret them out and take care of them. Are you up for this?&#10;&#10;Your first step will be analyzing communication logs. I've given you top clearance; the location I've given you is a communication nexus. Good luck, Warrior.</briefing>
+    <enter><say>You're going to have to search three different computers in here, {player}. Hopefully that'll give us something to go on.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Examine the communication logs on the first computer" type="Search" object="1" item="0" />
+    <objective goal="2" text="Examine the communication logs on the second computer" type="Search" object="2" item="0" />
+    <objective goal="3" text="Examine the communication logs on the third computer" type="Search" object="3" item="0" />
+    <complete><say>Hmm, sounds like some sort of code. You can get out of there; we'll run it past Tyndall and see what she has to say about it.</say></complete>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>Interesting. I've sent that data on to one of our processing labs. Get on over there and pick up the results in person -- I don't want them sending it unencoded over the network, not yet.&#10;&#10;Talk to Dr. Miles Vyse about the results.</briefing>
+    <enter><say>Dr. Vyse is in this building. Get the info, and then it's time to deal with the situation.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Get the data disk from Dr. Miles Vyse" type="Get" npc="2" item="6831">
+      <talk>
+        <say npc="2">{player}, I believe? I understand you're here for my results... well, I have a problem. The specific decryption has been classified. I don't actually have access to my own results!&#10;&#10;You'll need to take this disk, insert it into the computer, and view the results yourself, since Tyndall has granted you temporary high-level clearance.</say>
+        <say npc="2">Here, take it!</say>
+      </talk>
+    </objective>
+    <objective goal="5" text="Search the Computer" type="Put" object="1" item="6831" after="4">
+      <done><say>The Nescire! An entire hovercraft, working for the masked men this whole time?! How in the--&#10;&#10;Get out of there, {player}. Time to even this score.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It's all coming together. That's how they managed to botch their end of that pursuit... and they must have had access to the other hovercraft, to unplug those poor...&#10;&#10;I've got a location for the Nescire crew, {player}. I need you to get over there and make sure they don't do anything else in the Matrix! I've already got Zion security on the way to their hovercraft. Don't make any moves until I tell you!</briefing>
+    <enter><say>Okay, you need to find Downlink. He's the captain of the Nescire. Once you're in position, and the Zion forces in the Real are in position, we'll make our move.</say></enter>
+    <objective goal="1" text="Find Downlink" type="Talk" npc="3" optional="1">
+      <done>
+        <say npc="3">Hey, {player}, how's it going?</say>
+        <say>Security is in position to raid the ship! Attack them, kill them... they'll be disoriented enough for us to take them with no bloodshed.</say>
+        <say npc="3">What the-- on the ship-- you're in this too, aren't you? Damn you! You have no idea... and you never will!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Downlink" type="Defeat" npc="3" />
+    <objective goal="3" text="Kill the Nescire crew" type="DefeatAll" />
+    <complete><say>That's the last of them. Tyndall reports that they're cleaning the ship up easily.&#10;&#10;Nice work, {player}; you can leave.</say></complete>
+  </phase>
+  <finish>This is a troubling incident, indeed; who knows how long they've been working in our midst?&#10;&#10;You've done excellent work today, Warrior. Thanks to you, this threat has been removed. I won't forget this.</finish>
+</mission>
