@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Off White, a mission of Mr. Black (Downtown, Stratford Campus). From two retail captures (template 1674), both aborted
+     within 20 s: the title, description, briefing and both goals are retail's. The spies' names, looks and what they
+     carry weren't captured: the operative and the documents are ours. The site is generated (retail's was two doors in
+     Downtown). -->
+<mission id="1674" title="Off White" description="Eliminate some traitors from Mr. Black's organization." plot="1" order="1"
+         org="0" contact="Mr. Black" district="2" districtName="dt" exp="22000" info="31500">
+  <npc id="1" handle="Dame White's Operative" type="HOSTILE" at="1" rsi="ca020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>My wife, Dame White, is a constant thorn in my side, but she has her advantages. Her plans, however, cannot be allowed to interfere with my own. I happen to know that one of her operatives is meeting with informants in my organization.
+
+Get over there and make the traitors sorry they had anything to do with my wife. Recover whatever information they are exchanging.</briefing>
+    <objective goal="1" text="Kill the spies" type="DefeatAll" />
+    <objective goal="2" text="Recover any stolen material from the spies" type="Loot" npc="1" item="6794" />
+  </phase>
+</mission>

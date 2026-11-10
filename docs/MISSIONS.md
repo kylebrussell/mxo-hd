@@ -61,7 +61,7 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
 - `<say>` with no attribute is the operator, `npc="n"` that NPC, `contact="1"` the mission contact.
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
 - `order` is its place in the contact's story chain: a contact offers the first unfinished one, then all of them to replay. Finished missions are in the `char_missions` table.
-- `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
+- `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood; see Contacts below); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
 
 ### Generated phases
 
@@ -140,6 +140,7 @@ Each site's neighbourhood comes from `data/slums_neighbourhoods.csv`: every Slum
 | Welcome to the Matrix | Capture, complete | Start to finish |
 | Exile Extermination | Capture, complete | Start to finish |
 | The Internuncio | Capture, complete | Start to finish |
+| Paging, Off White, Unhealthy Competition | Capture, first phase only (text and goals) | Not yet |
 
 Text, NPCs, positions, goals and rewards are as retail sent them. **Which event sets off each line is our fit** to the order and the player's position in the captures, since only the lines themselves were sent.
 
@@ -157,6 +158,51 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
 - Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
 - A mission doesn't survive a relog: the NPCs go, and its items are taken back.
+
+## Contacts
+
+The client ships retail's contact list: `resource/missions/definitions/sponsors.xml`, the "Missile" mission system's 67 contacts. `data/mission_contacts.csv` is that file (`research/missions/gen_mission_contacts.py` writes it), and `MissionContacts` reads it.
+
+| Field | What it is |
+|---|---|
+| `id` | Retail's contact id. The list header, each list entry, the info and the accept carry it. |
+| `org` | 1 Zion, 2 Machines, 3 Merovingian, 4 Niobe, 5 Pluribus Neo, 6 Cypherites, 7 GMs, 8 the operator, 9 to 14 "Archived" copies of the first six. 0 is a neighbourhood contact. |
+| `name_id` | The name in the client's string table. |
+| `code` | "Procedural text stringtable abbreviation" (`tyn`, `gra`, `flo`, ...). Only org contacts have one. |
+| `face` | The portrait's resource id. |
+| `min_rep`, `max_rep` | An org contact needs at least `min_rep` with the org and retires above `max_rep` (0: never). |
+| `intro_text_id` | The contact's first words (`ID_CONTACT_INTRO_TYNDALL`, ...). |
+
+- **Org contacts.** The list request's org byte picks the org; of its contacts, the one whose reputation range holds the player's reputation answers (the highest `min_rep` first). The client's file gives each org one contact and no limits, so today that is always Tyndall, Agent Gray, Flood, Anome, Shimada or Veil. Reputation is the character's reputation attribute for the org (`?rep zion 500`).
+- **Every id matches the captures:** Tyndall and Agent Gray in their list headers, and The Newsie (47), The Chef (48) and Mr. Black (50) in theirs. Flood's portrait (`0x28000de6`) was missing before and used Tyndall's.
+- **The list as retail sent it:** `80 95 <status u32> <txn> <count> <preview> <org> <contact id> <name id> <portrait>`, then one `80 96 <txn> <index> 0f00 <org> <contact id> <chained> <plot> <title>` per mission, then `80 97 <txn>`. `preview` is 0 for an org contact and 1 for a neighbourhood contact. Each entry's org byte used to be 1 for every list; retail's Machines entries carried 2 and its neighbourhood entries 0.
+- Orgs 4 to 6 answer with an empty list: they have no missions yet.
+
+### Neighbourhood contacts
+
+The 53 org-0 contacts are informants who stand in the street. The client's world data has an `NPC_MissionContact` static (goid 6520) for 51 of them: 23 in the Slums, 17 Downtown, 11 International, one per neighbourhood except Moriah Projects, which has two. `data/mission_contact_npcs.csv` says who stands at which (`research/missions/gen_contact_npcs.py` writes it):
+
+| Source | Contacts |
+|---|---|
+| Retail's own creation record in the captures | 14 (The Newsie, The Chef, Mr. Black, Synn, Grace, Mr. Bishop, ...) |
+| The sector's "Contact Type" in the client's world file (`data/sector_properties.csv`), which is the sponsors.xml id | 27, 3 of them also captured |
+| The Prima guide's map position, which falls on the static to the metre | 13 |
+
+All three agree wherever they overlap, and so do the 13 Slums contacts in `data/NPC_COLLECTION.xml` (an older emulator's list). The Bartender (5) and The Grey Marshmallow (341, a test entry) have no static; the Downtown Bartender is 40.
+
+- **Spawning.** Retail spawned a contact bound to its static: `08 78 19 <static> <spawn> cd ab 05 3d`, then Position (50 units below the static, as NPCs stand below spawners), ContactName (32 bytes), DescriptionID (the RSI), ContactID and Orientation. `MissionContactNpcs` sends the same to any player within 100 m.
+- **Looks.** Retail's RSI where captured (14), else the one in `data/NPC_COLLECTION.xml` (10), else the client's model named after the contact (`characters-NPC/Contacts/thechessman.moa`). Grisaille has no model of her own: `Gray.moa` is a guess.
+- **The list.** Using the contact (retail's client sent `80 c7 <view> <spawn> 02 00`) gets their list straight back with request number 0, preview 1 and org 0, as retail's three captured neighbourhood lists were. No capture has a list request (`80 94`) for a neighbourhood contact, so `80 94` still only reaches org contacts.
+- **Info and accept.** For a neighbourhood contact's mission the info (`80 99`) and accept (`80 9c`) carry org 0, and the info has the title and `01 00 0a 00` before the description, as retail's Unhealthy Competition did. The org contacts' info now carries their org (retail: 01 for Tyndall, 02 for Agent Gray), not always 01.
+
+### What a neighbourhood contact offers
+
+- **Their own story missions** first, one at a time: missions with `org="0"` and `contact="<their name>"`. Retail's captured lists held just that one mission (plot flag set). Three are captured, all cut short: Paging (The Chef), Off White (Mr. Black) and Unhealthy Competition (The Newsie). Their title, description, briefing and goals are retail's; their site, enemies and rewards are ours, and each ends after its first phase.
+- **Generic missions** after that, built by `NeighbourhoodMissions` for every contact: Assassination ("Kill <target>"), Retrieval ("Search the computer") and Rescue ("Lead <name> out of the area", "Do not let <name> die"), each one phase on a generated site in the contact's district (in the Slums, preferring the contact's neighbourhood), with three Exiles. The goal lines are retail's generic wording from the captures. The titles, briefings, descriptions and names are ours, and retail's captured neighbourhood lists didn't show generic missions, so offering them is our design. Ids are 3000 + contact id x 10 + 1 to 3.
+
+**Retail's procedural mission text isn't in the client.** sponsors.xml's `code` names a "procedural text stringtable" for each org contact, but no such table ships: every `.sta` the client has is decoded (`stringtable_client`, `stringtable_ccr`, the cinematics', the place names and four server-only event tables), none holds a briefing of a generic mission, and the captured Assassination briefings ("I am never pleased to order an assassination...") aren't in any of them. client.dll reads only `sponsors.xml` and `organizations.xml` (not shipped) from `resource/missions/definitions`. So generic text has to come from the captures or be written.
+
+Dev: with `MXO_DEV_COMMANDS=1`, `?contact` moves the player in front of the nearest neighbourhood contact in the district, and `?contact <id>` in front of that one (or says which district they're in).
 
 ## The tutorial
 

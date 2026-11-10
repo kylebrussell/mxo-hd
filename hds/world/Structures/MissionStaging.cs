@@ -18,47 +18,6 @@ namespace hds
         public UInt32 shownState;       // a computer's CurrentState as the client last had it
     }
 
-    /// <summary>The org contacts. Ids are retail's: the mission list header and contact lines carry them.</summary>
-    public static class MissionContacts
-    {
-        /// <summary>
-        /// Who the mission list request (80 94 &lt;txn&gt; &lt;org&gt;) is for: its org byte is the contact's (Tyndall 1, Agent Gray
-        /// 2). The client only shows a list whose header names that contact; Agent Gray's stayed at "Retrieving mission header
-        /// data..." under Tyndall's header.
-        /// </summary>
-        public static string ForOrg(uint org)
-        {
-            switch (org)
-            {
-                case 2:
-                    return "Agent Gray";
-                case 3:
-                    return "Flood";
-                default:
-                    return "Tyndall";
-            }
-        }
-
-        /// <summary>Whether this contact gives the mission: its own org's, and Tyndall the introduction (org 0).</summary>
-        public static bool Offers(uint org, Mission mission)
-        {
-            return mission.org == org || (mission.org == 0 && ForOrg(org) == "Tyndall");
-        }
-
-        public static (UInt32 id, UInt32 name, UInt32 image) For(string contact)
-        {
-            switch ((contact ?? "").ToLowerInvariant())
-            {
-                case "agent gray":
-                    return (2001, 0xb4000032, 0x28000de7); // retail Machines list header
-                case "flood":
-                    return (2002, 0xb4000038, 0x28000cc0); // ID_CONTACT_FLOOD; her portrait id isn't in any capture, so Tyndall's
-                default:
-                    return (2000, 0xb4000031, 0x28000cc0); // Tyndall: retail Zion list header
-            }
-        }
-    }
-
     /// <summary>
     /// Sets up a generated phase: picks a site from the world's mission markup (MissionSites), places the phase's NPCs on its
     /// NPC spawners, spawns its hostiles and objects, and sets its waypoint to the floor's elevator door. Also walks

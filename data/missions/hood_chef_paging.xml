@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paging, a mission of The Chef (Downtown, Pillsen). From one retail capture (template 1430), aborted after 12 s: the
+     title, description, briefing and first goal are retail's. Retail sent Hypatia's name in the briefing (a {target}).
+     Retail's site was two doors in Downtown; ours is generated. The rest (later phases, rewards, enemies' looks) wasn't
+     captured, so the mission ends with this phase. -->
+<mission id="1430" title="Paging" description="Get a valuable recipe for the Chef." plot="1" order="1"
+         org="0" contact="The Chef" district="2" districtName="dt" exp="22000" info="31500">
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Every great dish starts with a great recipe. I require one that is currently in the possession of Hypatia. Unfortunately, she will not give it up without a corresponding favor from me. Go eliminate some Exiles who have been troublesome to her, and then she's bound to agree to my request.</briefing>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll" />
+  </phase>
+</mission>

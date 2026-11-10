@@ -9,6 +9,8 @@ What was found on retail missions, and from where. `docs/MISSIONS.md` covers wha
 | `Mission986-decompiled.py` | The tutorial's logic, decompiled from the client's Monolith pack | Retail's own script, but it isn't complete: some goals are completed from server data it doesn't contain |
 | `mission986_goals.tsv`, `mission986_dialog.tsv` | The tutorial's goals and voiced lines, joined to the client's string table and audio | Client data |
 | `screenshots-index.tsv`, `screenshots-pilot-*.md` | Every mission folder in the screenshot logs, and two missions transcribed as a trial | Dialogue reads clearly, with speakers in order. Lines can be lost at scroll boundaries; uncertain words are marked `[?]` |
+| `gen_mission_contacts.py` | Writes `data/mission_contacts.csv` from the client's `resource/missions/definitions/sponsors.xml` (67 contacts) | Client data |
+| `gen_contact_npcs.py` | Writes `data/mission_contact_npcs.csv`: which neighbourhood contact stands at each of the 51 contact statics, with sources | Captures, the client's world file, the guide; all agree where they overlap |
 | `web-missions.md`, `web-notes.md` | 436 mission names from the web, 56 with real objectives, with sources ranked | Fan sources. Not checked against captures except where noted. The Wayback Machine couldn't be read with the tools used, and the Fandom wiki was only seen through search excerpts |
 
 ## Not in the repo

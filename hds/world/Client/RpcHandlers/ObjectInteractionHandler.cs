@@ -112,7 +112,7 @@ namespace hds
             ClientView view = Store.currentClient.viewMan.FindViewForEntity(entityId);
             if (view != null)
             {
-                DoorLifecycle.Opened(Store.currentClient, view.ViewID, entityId);
+                DoorLifecycle.Opened(Store.currentClient, view.ViewID, entityId, typeId);
             }
 
             if (typeId == MissionSites.ElevatorDoor1 || typeId == MissionSites.ElevatorDoor2)
@@ -299,7 +299,22 @@ namespace hds
                 return;
             }
 
+            // Objects the server follows (ObjectStates.Track) move to the state retail's script gives the use
+            bool followed = interactedView != null &&
+                            ObjectStates.OnUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID);
+
             if (interactedView != null && MissionRuntime.OnViewUse(Store.currentClient, interactedView.entityId))
+            {
+                return;
+            }
+
+            if (followed)
+            {
+                Store.currentClient.FlushQueue();
+                return;
+            }
+
+            if (MissionContactNpcs.OnUse(Store.currentClient, interactedView, (byte)objectTypeID))
             {
                 return;
             }
