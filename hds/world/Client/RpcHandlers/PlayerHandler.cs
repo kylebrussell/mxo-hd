@@ -79,6 +79,17 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+
+            // Where the player stands on the client's nav mesh, as retail's record names it: without it the client has no
+            // nav location until the first teleport (it lets the player through walls, and elevator panels close at once)
+            double sx = 0, sy = 0, sz = 0;
+            NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref sx, ref sy, ref sz);
+            if (PacketsUtils.PlaceNear((UInt16)districtId, sx, sy, sz, out NavLocation place))
+            {
+                Store.currentClient.messageQueue.addObjectMessage(
+                    PacketsUtils.createTeleportPacket(Store.currentClient, (float)sx, (float)sy, (float)sz), false);
+                Output.WriteDebugLog("[SPAWN] On the nav mesh: sector " + place.sector + ", region " + place.region + ", polygon " + place.polygon);
+            }
             if (districtId == (uint)MxOLocations.TUTORIAL)
             {
                 TutorialMission.Begin(Store.currentClient);

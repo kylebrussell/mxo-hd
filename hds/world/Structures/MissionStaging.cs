@@ -505,6 +505,14 @@ namespace hds
             // middle of the building. Retail stood players 50 units below a floor after a ride (y 2495 on floor 2545).
             double dx = site.CentreX - target.pos_x, dz = site.CentreZ - target.pos_z, length = Math.Max(1, Math.Sqrt(dx * dx + dz * dz));
             double x = target.pos_x + dx / length * 200, y = target.pos_y - 50, z = target.pos_z + dz / length * 200;
+            // That spot can be in the gap between the elevator core and the floor, where the client has no nav polygon and
+            // lets the player through walls: stand on the nearest polygon to the door instead
+            if (PacketsUtils.PlaceNear((UInt16)client.playerData.getDistrictId(), target.pos_x, y, target.pos_z, out NavLocation car) &&
+                !NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out _))
+            {
+                x = NearestOnMesh(client, target.pos_x, y, target.pos_z, out z);
+            }
+
             Teleport(client, x, y, z);
             foreach (ushort id in progress.following)
             {
@@ -516,6 +524,27 @@ namespace hds
             }
 
             client.FlushQueue();
+        }
+
+        /// <summary>The nearest spot to (x, z) with a nav polygon at this height, searched outward to 4 m; returns x, sets z.</summary>
+        private static double NearestOnMesh(WorldClient client, double x, double y, double z, out double outZ)
+        {
+            UInt16 metr = (UInt16)client.playerData.getDistrictId();
+            for (int radius = 50; radius <= 400; radius += 50)
+            {
+                for (int step = 0; step < 16; step++)
+                {
+                    double angle = step * Math.PI / 8, px = x + radius * Math.Cos(angle), pz = z + radius * Math.Sin(angle);
+                    if (NavMesh.Locate(metr, px, y, pz, out _))
+                    {
+                        outZ = pz;
+                        return px;
+                    }
+                }
+            }
+
+            outZ = z;
+            return x;
         }
 
         /// <summary>The player took an elevator to another floor: following NPCs come too.</summary>

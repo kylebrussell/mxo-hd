@@ -91,6 +91,7 @@ namespace hds
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
             client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)x, (float)y, (float)z), false);
             Output.WriteDebugLog("[ELEVATOR] Button " + button + ": to " + x + "," + y + "," + z);
+            client.messageQueue.addRpcMessage(PacketsUtils.BuildElevatorDing(to.region, to.sector));
             MissionStaging.OnFloorReached(client, x, y, z);
             client.FlushQueue();
         }

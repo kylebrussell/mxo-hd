@@ -298,15 +298,16 @@ namespace hds
 
                 if (command.Equals("?tp") && commands.Length >= 7 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
-                    // Dev: ?tp <x> <y> <z> <sector hex> <region hex> <index hex> [last hex]: a teleport naming the place it
-                    // lands in, as retail's did (world units, not /100)
+                    // Dev: ?tp <x> <y> <z> <sector hex> <region hex> <polygon hex> [teleport id hex]: a teleport naming the
+                    // place it lands in, as retail's did (world units, not /100)
                     float tx = float.Parse(commands[1], System.Globalization.CultureInfo.InvariantCulture);
                     float ty = float.Parse(commands[2], System.Globalization.CultureInfo.InvariantCulture);
                     float tz = float.Parse(commands[3], System.Globalization.CultureInfo.InvariantCulture);
                     Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(tx, ty, tz));
                     Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(tx, ty, tz,
                         Convert.ToUInt16(commands[4], 16), Convert.ToUInt16(commands[5], 16), Convert.ToUInt16(commands[6], 16),
-                        commands.Length > 7 ? Convert.ToByte(commands[7], 16) : (byte)0, 0x11), false);
+                        commands.Length > 7 ? Convert.ToByte(commands[7], 16) : (byte)(Store.currentClient.playerData.teleportCounter = (byte)(Store.currentClient.playerData.teleportCounter % 255 + 1)),
+                        Store.currentClient.playerInstance.YawInterval.getValue()[0]), false);
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, "Teleported to " + commands[4] + "/" + commands[5], "BROADCAST");
                 }
 
