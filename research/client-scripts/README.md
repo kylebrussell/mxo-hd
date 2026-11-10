@@ -10,12 +10,12 @@ from the ability data, not from these scripts.
 ## How they were made
 
 - **Source:** `C:\Users\russe\Developer\mxo-research\client-data\dumps\monolith_pyc\`, extracted from the pack with
-  `tools/client-data/ltp.py` (magic 62011).
+  `ltp.py` in `C:\Users\russe\Developer\mxo-research\tools\client-data\` (magic 62011).
 - **Decompiler:** uncompyle6 3.9.3 with xdis 6.1.8 on Python 3.12, one module at a time with a 300 s limit
-  (`tools/decompile_all.py`). 61 of 62 modules decompiled cleanly: no "This code section failed" or parse-error
+  (`tools/decompile_all.py SRC OUT LOG`, run with the venv's Python on a copy of the dump). 61 of 62 modules decompiled cleanly: no "This code section failed" or parse-error
   sections anywhere.
 - **`ltfxmap`** (2,356 effect-id assignments in one run) timed out. Its values were recovered by running its
-  top-level bytecode as data (`tools/ltfxmap_values.py` with `tools/client-data/pymodule_values.py`) and written
+  top-level bytecode as data (`tools/ltfxmap_values.py` with that folder's `pymodule_values.py`) and written
   as `NAME = 0x........` lines; the disassembly has the same 2,356 stores.
 - **Python 2 artefacts:** every function ends in an extra `return` (uncompyle6 adds it), `print x` is Python 2
   syntax, and `/` on two ints is floor division. The last matters for the formulas: in `experience` the exponent
