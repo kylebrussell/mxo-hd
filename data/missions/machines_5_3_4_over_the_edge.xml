@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Over the Edge, Machines story mission 5.3.4. Source: research/missions/transcripts/Mach5-3-4.md (the archive replay
+     of [Machine Archive 5.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Eri, Seral and Unlimit
+     Reactor. The player was addressed as "Mr. Argento"; that is {player}. Ours: the description (the Summary tab was
+     never opened), every objective text (the Objectives tab was never opened), the sites (the abandoned building full
+     of vagrants is Derelict; the rest are unnamed: Normal), the looks. Nobody fights in this mission: the player poses
+     as Anome's psychiatrist, so Seral and his Unlimit guards are friendly (the chat showed "[Unlimit Reactor] is
+     friendly."), and the vagrants did nothing in the log, so no phase has hostiles. Eri's sex isn't stated. Seral is
+     at two different places, so he is placed twice (ids 3 and 5). Item stand-ins: Seral's medical record is File
+     (6800), the dead flies are Bug (6824). Rewards: 232,846 experience and 76,950 information, shown on completing
+     this mission.
+     Gaps: at both of Seral's places the far door was sealed until the guards were talked to; we have no locked doors,
+     so the goals only open in that order. What the guards said to open it wasn't logged, so they say nothing then.
+     Eri's "I don't have all day here" came a few seconds after her first line and is said with it. Eri's parting line
+     and Seral's first repeat line are said with the goal and again when talked to; his last repeat line is said
+     only with the hand-over, as he would otherwise say it before getting the flies. The guards' reactions to the
+     flies were in the chat with no time; they are said when Seral gets the flies. -->
+<mission id="205304" title="Over the Edge" description="Use the medical record of Seral, the Unlimit leader behind the power station attacks, to turn his own fears against him." plot="1"
+         order="5304" org="2" contact="Agent Gray" exp="232846" info="76950">
+  <npc id="1" handle="Eri" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say after="1">You don't know me; you never saw me. Good luck with that wacko.</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
+  <npc id="3" handle="Seral" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568">
+    <say>Careful with the door! You gotta close it fast. Otherwise he might fly in...</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="FRIENDLY" at="4" rsi="ec020058" weapon="2568" />
+  <npc id="5" handle="Seral" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568" />
+  <npc id="6" handle="Unlimit Reactor" type="FRIENDLY" at="4" rsi="60010058" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>{player}, we recently learned the name of the Unlimit leader orchestrating the attacks on city power stations: Seral.
+
+A routine check indicated that this individual was a Zion operative before joining Anome's forces. Our intelligence sources indicate that Seral manifested an unusual psychological profile during his time in Zion, and was subject to regular examinations. A certain spy in our employ, Eri, has retrieved Seral's medical record. Obtain this data from Eri.</briefing>
+    <enter><say>That's where you're supposed to meet Eri. Got one redpill signal, otherwise all clear.</say></enter>
+    <objective goal="1" text="Get the medical record from Eri" type="Get" npc="1" item="6800">
+      <talk>
+        <say npc="1">Here you go, pal. I didn't read through the whole thing, but it looks like our boy Seral had some real issues even before he went to go join Anome.
+
+Doesn't surprise me all that much though, seeing as how he was a Zionite. A lot of the folks who choose to stay in those caves aren't exactly...stable, if you get my drift.</say>
+        <say npc="1">I don't have all day here. You gonna take this or what?</say>
+      </talk>
+      <done>
+        <say>All right, find a hardline and upload that data to me.</say>
+        <say npc="1">You don't know me; you never saw me. Good luck with that wacko.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Upload the medical record at a hardline" type="Upload" item="6800" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Seral's medical file indicates a record of remarkably aberrant behavior, even for a human. He suffers from periods of extreme paranoia, and was found attempting to take his own life on three separate occasions.
+
+Considering this operative's...instability, we may be able to manipulate him into neutralizing himself. The report indicates that Seral, while afraid of unspecified "plots" against his life, regards psychiatrists as nurturing, almost god-like beings. It also indicates that he frequented a certain building in the city where, for reasons known only to himself, he felt relatively secure.
+
+Activity records show that the building is still frequented by small groups; this may be Seral and several cohorts. Visit the area and, if he is there, pose as a psychiatric official sent by Anome. In this guise, find out what you can about Seral's mental vulnerabilities.</briefing>
+    <enter>
+      <say>I've got Unlimit signals in there--strong ones. Man, I sure hope none of them recognize you.
+
+Do you think maybe you should wear a sweater or something? You don't look much like a shrink to me.</say>
+      <say>Just stay calm... The far door is sealed. I'd guess Seral probably has them lock him in. You'll have to get them to open it for you.</say>
+    </enter>
+    <objective goal="1" text="Talk to the guards" type="Talk" npc="2">
+      <done><say>I guess he believed you. The far door is unlocked now.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Seral" type="Talk" npc="3" after="1">
+      <talk><say npc="3">You're the new doctor? Oh, good, good. You gotta help me, doc. See, he's after me. I can hear him sometimes, buzzing around me, too small, too fast to see... He's angry at me, doc. He's coming to get me... Do you know why? Do you? You do, don't you? I stole his powers... Stole his powers...
+
+Help me, doc. You gotta help me. You're the only one who believes me. We gotta stop him... Figure out what to do...</say></talk>
+      <done>
+        <say>Whoa! That dude really IS nuts! Gray's gonna love this.</say>
+        <say npc="3">Careful with the door! You gotta close it fast. Otherwise he might fly in...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Derelict" enemy="Zion" enemies="0">
+    <briefing>Based on what you've recounted, operative, we calculate a 94.3% likelihood that Seral's imagined stalker is the Assassin, who was formed of flies, and whose own powers did share certain outward similarities with those shown by redpills such as Seral who have consumed Anome's stolen cheat codes.
+
+While a frontal assault on Seral in his current state could be...costly, perhaps we can use his own unreasoning fears against him.
+
+Some flies may be useful. A nearby location is known to be abandoned, inhabited only by filthy vagrants. Obtain some flies from the premises.</briefing>
+    <enter><say>Ew, I can almost smell the stench of that place through my screen. I'm guessing that finding some flies in there won't be a problem.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find some flies" type="Search" object="1" item="6824">
+      <done><say>Yes! Dead flies! Score!
+
+Hey, just looking for a silver lining here. That place is depressing me.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Seral has already attempted to contact you, {player}. I am sending you to his current address. Those flies you gathered will make an impression on his fragile psyche.</briefing>
+    <enter>
+      <say>This should be interesting...</say>
+      <say>You know the drill: talk to those guys to get let in.</say>
+    </enter>
+    <objective goal="1" text="Talk to the guards" type="Talk" npc="4">
+      <done><say>They've unsealed the far door for you.</say></done>
+    </objective>
+    <objective goal="2" text="Give the flies to Seral" type="Give" npc="5" item="6824" after="1">
+      <talk>
+        <say npc="5">Thank god you're here. I haven't heard him for a while... I wanted to ask, do you think he's gone? I mean, maybe he isn't... Maybe he's just waiting for me to let my guard down... He'll get in the door... But maybe he is? Maybe he's forgiven me? What do you think? Tell me, please!
+
+What? You have something for me? Something you found nearby? What is it? Will it help?</say>
+        <say>Oh, I'd say he's ready for them.</say>
+        <say npc="5">Let me see it! Will it keep him away from me?</say>
+      </talk>
+      <done>
+        <say>Yeah... You should probably head out of there now before he starts bouncing off the walls.</say>
+        <say npc="5">No! No! They're his! It's him! He's all around me! No!
+
+Get him away from me! Doc, help me! He's going to kill me and eat my eyes! No! NOOOOOOO!</say>
+        <say npc="4">Oh, man. Is he gonna be okay? We need him coherent for an operation tomorrow.</say>
+        <say npc="6">Aw, crap! I thought you were supposed to calm him down, doc!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Excellent work, {player}. Your manipulation of Seral's fear of the Assassin appears to have robbed him of what little reasoning power remained to him. This should inhibit Anome's designs on the city's power stations significantly. Next, we must endeavor to find a way to help Seral succeed in the one thing at which he has always failed: suicide.</finish>
+</mission>

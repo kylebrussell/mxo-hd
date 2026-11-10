@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Quarry, Machines story mission 5.3.5. Source: research/missions/transcripts/Mach5-3-5.md (the archive replay of
+     [Machine Archive 5.3.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Castafiore, Anome
+     Simulacrum and Unlimit Reactor. Gray called the player "Ms. Napilitano"; that is {player}. Ours: the description
+     (the Summary tab was never opened), every objective text (the Objectives tab only showed "Leave the area now!"),
+     the sites (the third sweep point is an office, in Tabor Park as the minimap showed; the rest are unnamed: Normal),
+     the looks and the enemy counts. Anome's Unlimit soldiers are redpills modified with his stolen code; they have no
+     org of their own, so they are the nearest, Zion, as rogue redpills. Castafiore is a rude redpill who did nothing
+     hostile, so he is friendly; the Anome Simulacrum was "friendly" in the chat at the end, so it is too. No mission
+     items. Rewards: 363,000 experience and 63,000 information, shown on completing this mission.
+     Gaps: the first sweep point was empty; we have no goal for looking around an empty floor, so it is two searches
+     that turn up nothing, with the Operator's two lines. A computer was hacked in the third phase but nothing says it
+     was a goal, so it isn't built. In the last phase a second wave of Unlimit came mid-fight ("I've got more hostiles
+     incoming!"); we can't spawn a second wave, so it is one large group and that line isn't said. The Operator spotted
+     the simulacrum before the second wave; here she says it on reaching it once the fight is over. The simulacrum's
+     power (Gray's "power levels you detected") isn't shown: it doesn't fight. -->
+<mission id="205305" title="The Quarry" description="Join a city-wide sweep to flush Anome out of hiding and eliminate him." plot="1"
+         order="5305" org="2" contact="Agent Gray" exp="363000" info="63000">
+  <npc id="1" handle="Castafiore" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say>Good luck, goose-stepper. You'll need it, if you're trying to save all your precious little "citizens."</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
+    <say>What took you so long?</say>
+  </npc>
+  <npc id="3" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="60010058" weapon="2568">
+    <say>Nice try, slick.</say>
+  </npc>
+  <npc id="4" handle="Anome Simulacrum" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
+    <say>You must be pretty pissed off.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The war against the Unlimit terrorists is a costly one, {player}, both in terms of system resources necessary, and in collateral damage to the simulation, and those jacked into it. Although we have been able to neutralize Anome's leader in charge of taking over the city's power stations, this series of narrowly averted crises indicates that it is of the utmost importance that we eliminate Unlimit's head, Anome, as swiftly as possible.
+
+Thus, based on an analysis of the placement of Unlimit attacks, we are conducting a city-wide sweep designed to flush Anome out of hiding, and eliminate him immediately. You have been assigned a series of points to check in this coordinated effort. Proceed to the first location and clear it of any hostiles.</briefing>
+    <enter><say>Hm... All's quiet on my screen here.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Nothing yet... Keep looking.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="2" item="0" after="1">
+      <done><say>Man, this "sweep" is about as exciting as cleaning my room.
+
+That place is clean. You may as well get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>You are one individual in a pack of hunters harrying Anome to a central location, {player}. Do not be concerned if you have not yet spotted your quarry. Your second assigned location awaits.</briefing>
+    <enter><say>Hey, I got a reading in there! Not an Unlimit, but then again, who can really tell?</say></enter>
+    <objective goal="1" text="Talk to Castafiore" type="Talk" npc="1">
+      <talk><say npc="1">Hey, back off! No, I ain't no Unlimit. Do you see code dripping out of my eyes? Do ya?
+
+Man, you guys are really gettin' desperate. It's enough to make a guy lose a little faith in the "System," huh?</say></talk>
+      <done>
+        <say>Wow, what a jerk. He hasn't done anything overtly hostile, though... We'd better report him to Gray.</say>
+        <say npc="1">Good luck, goose-stepper. You'll need it, if you're trying to save all your precious little "citizens."</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>We have noted the indicated individual's name and RSI, operative. His further activities will be watched. Thank you for reporting him; we cannot be too careful.
+
+The net is closing around Anome. Proceed to your next stage.</briefing>
+    <enter><say>Whoa! Oops... Just a sec...
+
+Sorry, knocked over my coffee. Anyway, I'm reading Unlimit signals in there. Looks like this sweep thing is paying off! Man, Anome better watch out!</say></enter>
+    <objective goal="1" text="Eliminate any hostiles" type="DefeatAll">
+      <done><say>All right, you've cleaned that place out.
+
+Dang, now my whole keyboard smells like coffee...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Everything is proceeding according to plan. Proceed to your final destination in this operation, {player}. Report any sighting of Anome immediately.</briefing>
+    <enter><say>Unlimit signals all over the place! I can't tell if any of them are Anome or not. Keep your eyes open!</say></enter>
+    <objective goal="1" text="Eliminate any hostiles" type="DefeatAll">
+      <done><say>I hope that's the last Unlimit I ever see.</say></done>
+    </objective>
+    <objective goal="2" text="Find Anome" type="Talk" npc="4" after="1">
+      <talk>
+        <say>Holy cow, it's Anome!
+
+Wait... Oh... No, just a simulacrum.</say>
+        <say npc="4">You must be pretty pissed off.</say>
+      </talk>
+      <done><say>Well, son of a--!
+
+Almost like they knew we were trying to catch him here...</say></done>
+    </objective>
+  </phase>
+  <finish>The results of this operation were...disappointing, {player}. Anome appears to have been aware of our design, or at least to have avoided it in a manner we did not anticipate. Our calculations may be lacking certain critical data.
+
+Furthermore, considering the power levels you detected in what was only a simulacrum of the target, terminating Anome through conventional means might at this stage be impossible. It may be necessary to engineer a custom kill-code for the target, but this will not be possible until we are able to obtain a sample of his own mutated code.</finish>
+</mission>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Weit, Machines story mission 5.2.4. Source: research/missions/transcripts/Mach5-2-4.md (the archive replay of
+     [Machine Archive 5.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, every NPC name, and the last phase's
+     objective text (the Objectives tab was shown there). The player was addressed as "Mr. Argento"; that is {player}.
+     Ours: the description (the Summary tab wasn't shown), the other objective texts, the sites (Jasper Beeman's old
+     flat and the living room with the terminal: SlumApt; the others Normal), the looks, the enemy counts. The
+     terminal is in Stamos, as the log's map shows. Anome's thugs are rogue redpills: enemy Zion. Item stand-in: the
+     encoded transmission is Data (6787). Rewards: 321,620 experience and 94,500 information, logged after the last
+     phase's screenshot.
+     Gaps: in phase 3 Pigeon was led to a desk indoors, then outside again, and asked about the vial; here the desk
+     is a piece of furniture the player uses with Pigeon in tow, Gray's "Ask Pigeon if Weit drank a vial" follows his
+     "take him outside" line, and leading Pigeon to the way out comes before asking him. Pigeon's line between those
+     two (7:27:1x) wasn't captured and is left out. Pigeon died mid-sentence when the Machines destroyed his
+     hovercraft; we can't kill a friendly in a script, so he stays a follower into the last phase. The operator's
+     "Got code corruption in there" came just before the vial answer; here it is said on reaching the terminal, where
+     Anome's thugs attack. Retail had no goal to kill them; neither do we. Unlimit Reactor's bark is "That's far
+     enough." -->
+<mission id="205204" title="Weit" description="Find out what has become of Weit, another of Anome's lieutenants." plot="1"
+         order="5204" org="2" contact="Agent Gray" exp="321620" info="94500">
+  <npc id="1" handle="Stanford Ackley" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="1">Well, if you ask me, I betcha Jasper Beeman is dead in a gutter somewhere. That's how these missing persons cases usually end up, right? Anyway, good luck finding him.</say>
+  </npc>
+  <npc id="2" handle="Pigeon" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="050100b4" weapon="2568">
+    <say>That's far enough.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Operative, information recovered in the field gave us the name of another of Anome's lieutenants: Weit. We have reason to believe that, like Genev, Weit has had his code mutated to extraordinary levels by a cheat code. In any case, if he is working for Anome, he must be terminated.
+
+Weit was a Machine operative prior to allying himself with Anome. While this is an...unfortunate connection in certain respects, it means that we have thorough information concerning him and his connections. Question a prior bluepill associate of his, Jasper Beeman, and attempt to ascertain Weit's current status.</briefing>
+    <enter><say>Jasper Beeman lives in there. I've got a bluepill signal on my screen.</say></enter>
+    <objective goal="1" text="Talk to Stanford Ackley" type="Talk" npc="1">
+      <talk><say npc="1">Hey, um, do you live around here or something? I'm new, and...
+
+Oh! Uh, no, officer. Jasper Beeman was the old renter. The landlord told me that he missed a few pay periods, and this place is just month-to-month, so Jasper Beeman is out of luck. I think the landlord sold all his stuff. Sucks to be him, I guess!</say></talk>
+      <done><say>So Jasper Beeman abruptly went missing around the same time Weit did. Coincidence? Hah!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>We have assigned agents to investigate Jasper Beeman's disappearance.
+
+We did not wish to involve other Machine operatives in this investigation, but for the time being we have no further recourse. You will confront Weit's crewmate, Pigeon, and demand the location of their hovercraft. Inform Pigeon that failure to cooperate will mean immediate termination.</briefing>
+    <enter><say>Pigeon should be in there. I've got a redpill signal; that's probably him.</say></enter>
+    <objective goal="1" text="Talk to Pigeon" type="Talk" npc="2">
+      <talk><say npc="2">N-no! I didn't know anything about it! I swear!
+
+I had nothing to do with it! This isn't fair! You can't just treat me like this! I've always helped the Machines!</say></talk>
+      <done>
+        <say contact="1">Enough of this. Bring Pigeon outside.</say>
+        <say npc="2">Where are you taking me? I demand to talk to my faction leader! This--this is an outrage!
+
+Oh, god!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Pigeon out of the area" type="Escort" npc="2" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I believe Pigeon is coming to understand the precarious nature of his existence. We must have the hovercraft coordinates from him, now.</briefing>
+    <enter><say>This guy's losing it.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Get the hovercraft coordinates from Pigeon" type="Talk" npc="2">
+      <talk><say npc="2">No! Okay! Okay, just...just make sure they know I've cooperated.
+
+Our hovercraft is at 48842.02 by 8471.49, depth 324. It's an old maintenance shaft...</say></talk>
+      <done><say contact="1">Good. Lead Pigeon to the desk, and have him sit down. He is agitated. Do not allow him to jack out, or to use his phone.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Pigeon to the desk" type="Use" object="1" after="1">
+      <done>
+        <say contact="1">Taking him indoors appears to have increased his anxiety level. Take him outside again. There is one more piece of information he can provide to us.</say>
+        <say npc="2">I didn't know I didn't know I swear I swear oh god god I didn't...
+
+He wouldn't jack out anymore; he said he couldn't; he's dying but he doesn't care. I don't want to die! Why can't I jack out? Let me jack out please please let me...</say>
+        <say contact="1">Ask Pigeon if Weit drank a vial.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Take Pigeon outside" type="Escort" npc="2" to="exit" after="2" />
+    <objective goal="4" text="Ask Pigeon if Weit drank a vial" type="Talk" npc="2" after="3">
+      <talk><say npc="2">Yes! Yes, he drank a vial! He told me he could get me one but I was afraid! I didn't know what would happen to me if I did!
+
+God I didn't know what would happen didn't knoOURK!</say></talk>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="3" neighbourhoods="Stamos">
+    <briefing>Hovercraft destroyed.
+
+Interesting... Weit's signal is still active in the Matrix, although its corrupt nature prevents us from pinpointing his exact location. This indicates that the modified cheat codes allow a human to live in the Matrix even after their body has been terminated.
+
+Just before it was destroyed, we picked up an encoded transmission from Weit's hovercraft. It was routed to a terminal nearby. Locate the terminal and retrieve the data.</briefing>
+    <enter>
+      <say>Got code corruption in there. Could be trouble...</say>
+      <say>We've got to get that data uploaded right away!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the Data from the Computer" type="Search" object="1" item="6787">
+      <done><say>Receiving data...</say></done>
+    </objective>
+  </phase>
+  <finish>The file is encrypted, but it will be decoded shortly. We anticipate that the contents will aid us in locating Weit's RSI, which remains at large, and highly dangerous, within the Matrix. While he has managed to survive the death of his human body, we have insufficient data to predict what effect this may have on his digital image.
+
+This has been an eventful day, {player}. We congratulate you on your handling of Weit's crewmate. He obviously knew of Weit's allegiance with Anome, but did nothing to report him. We deplore this lack of loyalty to the System among our own operatives. We calculate that the example made of Pigeon will prevent others from making the same mistake that he did.</finish>
+</mission>

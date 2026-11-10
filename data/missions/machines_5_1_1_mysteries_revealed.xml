@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mysteries Revealed, Machines story mission 5.1.1. Source: research/missions/transcripts/Mach5-1-1.md (the archive
+     replay of [Machine Archive 5.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, every NPC name, and the objective
+     texts "Search the computer" and "Get the Disk from the computer" (the Objectives window). The player was addressed
+     as "Mr. Argento" and "Evol"; that is {player}. Ours: the description (the Summary tab only said "Datalink
+     established."), the other objective texts, the sites (none named: Normal), the looks. Gray's line after Agent
+     Pace's briefing is split: its first paragraph is said when Pace is done, its second ("Now you must conduct some
+     data collection...") is phase 2's briefing. In it a cut-off line sits after "Agents of the Machines,"; the text
+     reads whole without it, so nothing was added. Item stand-in: the disk is Data_CD (6831). Rewards: 206,125
+     experience and 91,000 information, shown for this mission. Gaps: Alwine's site had Crow Bars gang members
+     attacking, but they look like street mobs (they also turn up on a rooftop in 5.1.5), so the phase has no
+     hostiles. The silent Zion Gunman beside Alwine is left out. The two computers showed scripted screens (ZionOS's
+     search of "Anome", Paprock's empty sighting report); ours show nothing. One Operator line (6:45:23) wasn't
+     captured. The two lab-coated Bluepill bystanders are one here. -->
+<mission id="205101" title="Mysteries Revealed" description="Learn the truth about the vials, then gather Zion's data on Anome." plot="1"
+         order="5101" org="2" contact="Agent Gray" exp="206125" info="91000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568" />
+  <npc id="2" handle="Alwine" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say after="3">If you meet up with that rat, give him a bullet right between the eyes for me!</say>
+  </npc>
+  <npc id="3" handle="Horacio Paprock" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say display="5">Quantum flipped ions... you can't do that! Can you?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Recent events require that you be apprised of some background information, {player}. We are on a very high level of alert, and we are indeed concerned for the future of the simulation.
+
+As she is so... fond of dealing with humans, I will have Agent Pace conduct your briefing. You will find her at the indicated location.</briefing>
+    <enter><say>You get to meet with Pace? And I'm stuck here on the ship? Figures.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Ciao, tesoro! I am so happy to see one of my operatives; if only it could be under better circumstances.
+
+Purtroppo, I must give you some explanation regarding these vials. You see, in a previous version of the Matrix, our Agents were given some... amazing powers to allow them to carry out their jobs. Powers you have never witnessed within the Matrix, I can assure you. Powers that would astound you.
+
+And indeed, powers that would astound anyone, including the bluepills who witnessed them. It soon became apparent that such powers were... I suppose you might say counterproductive. The codes for these powers were put into storage, never to be touched again.
+
+Apparently, we once again underestimated the amount of chaos present in this little system of ours. And so, we have a situation on our hands.</say></talk>
+      <done>
+        <say npc="1">Tesoro, I trust that you will make me proud, si? We need the best from all of our people, and all of our programs as well, if we are to come out of this without further disaster.</say>
+        <say contact="1">I hope you see now why we are so concerned. Agents of the Machines, using those powers, caused enough problems to warrant the end of the program. Now imagine those same powers in the hands of unpredictable, willful... humans...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Now you must conduct some data collection. The current location of Anome and his crew is unknown. I am sending you to meet with a Zion representative, named Alwine. Get any information they have regarding Anome, his ship, his crew; anything that can facilitate his apprehension.</briefing>
+    <enter><say>Alwine is here. Make sure you get everything they've got!</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Alwine" type="Talk" npc="2">
+      <talk><say npc="2">Hey, {player}. I heard you were going to be here. So you want to know about that bastard Anome, huh?
+
+You can have whatever you want on him, as long as you help bring him down. We're still trying to pinpoint Niobe's location and bring her home, or I'd be right there with you.
+
+Go ahead and check out that computer, and download whatever you want to a disk.</say></talk>
+      <done><say npc="2">That computer right over there should have everything we can give you.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1" />
+    <objective goal="3" text="Get the Disk from the computer" type="Search" object="1" item="6831" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We need to analyze the data you obtained from Zion. Proceed to one of our science outposts and deliver the disk to Horacio Paprock.</briefing>
+    <enter><say>Hopefully Horacio Paprock'll be able to turn something up from that data!</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Give the Disk to Horacio Paprock" type="Give" npc="3" item="6831">
+      <talk><say npc="3">So... do you have the disk? Give it to me!</say></talk>
+      <done><say npc="3">Okay, I'll just run this through. Give me a moment, will you? There, now... hm. Doesn't look too promising. You can take a look for yourself on the computer.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1">
+      <done><say npc="3">I think it's time to show yourself out.</say></done>
+    </objective>
+  </phase>
+  <finish>This information is not promising. Anome and his crew seem to have disappeared from both the Matrix and the Real. Through our contacts in Zion, we have learned that he has also managed to perform some sort of feat involving the entire floor of the building where Niobe and her associates were assaulted.
+
+The influence of the vials can already be felt. Our task becomes ever more urgent. I will speak with you soon.</finish>
+</mission>

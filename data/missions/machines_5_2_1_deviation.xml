@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deviation, Machines story mission 5.2.1. Source: research/missions/transcripts/Mach5-2-1.md (the archive replay
+     of [Machine Archive 5.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Adena Warren and
+     Unlimit Reactor. The player was addressed as "Mr. Argento"; that is {player}. Ours: the description (the Summary
+     tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (Adena Warren's home is
+     SlumApt, the others unnamed buildings: Normal), the looks, the enemy counts. Anome's enhanced humans are rogue
+     redpills: enemy Zion. Rewards: 286,000 experience and 94,500 information, in the chat when the log was read
+     after "Mission Completed!".
+     Gaps: phase 2 ("report your findings") shows only two operator lines and "those two poor bastards" on the scope,
+     probably bodies; dead NPCs aren't spawned, so the building and the victims are two searches of furniture that
+     turn up nothing, and the two operator lines are said when they are done. Phase 3's single hostile ("that person",
+     unnamed in the log) is Unlimit Reactor, the name every one of Anome's thugs in this chapter carries; the
+     operator's "watch out" lines are said on coming near him. In phase 4 the operator's "Anome's goons" line came
+     two minutes in; here it is said on coming near the named Unlimit Reactor. Unlimit Reactor's four combat barks
+     are split, one per NPC (an NPC has one line here); "Not too bright, are ya?" and "You're toast." are dropped. -->
+<mission id="205201" title="Deviation" description="Investigate reports of a corrupted human threatening the simulation." plot="1"
+         order="5201" org="2" contact="Agent Gray" exp="286000" info="94500">
+  <npc id="1" handle="Adena Warren" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say after="1">You'll find him, right? We don't want people like that in this neighborhood. This is a respectable community!</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="050100b4" weapon="2568">
+    <say>Don't worry, more where that came from!</say>
+  </npc>
+  <npc id="3" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="ec020058" weapon="2568">
+    <say>Anome sends his regards. Now fry!</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>{player}, a new threat to the simulation has been reported. You are to question citizen Warren immediately.</briefing>
+    <enter><say>Adena Warren is in there. She's supposed to have seen something suspicious.</say></enter>
+    <objective goal="1" text="Talk to Adena Warren" type="Talk" npc="1">
+      <talk><say npc="1">I...I don't know. He was big--really big--and dressed in some kind of...of...hockey outfit or something. Orange. He was right outside in the street, and he shouted at me, and then there was a bright green flash... I don't know what happened. I ran in here and locked the door. I heard screams outside.</say></talk>
+      <done><say>A green flash?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>We have reports of an individual, or possibly multiple individuals, matching the one described by Ms. Warren at a nearby building. Proceed there and report your findings.</briefing>
+    <enter><say>Nothing moving on my screen... False alarm?</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Search the building" type="Search" object="1" item="0">
+      <done><say>What was... Huh... A little static on my screen for a moment there. Maybe that bolt has come loose again...
+Hey, were you using the tool kit? It isn't where I left it.</say></done>
+    </objective>
+    <objective goal="2" text="Examine the victims" type="Search" object="2" item="0" after="1">
+      <done><say>Uh-oh. That's usually not a good sign.
+
+Running a close scan... Dang, there's that static again. Are you sure you don't know where you put the toolkit? Ugh. Hm... Well, nothing on the 'scope there, aside from those two poor bastards. We'd better report in to Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>This is developing into a serious situation, {player}. Another report of similar activity has just come in. Proceed to the location quickly.</briefing>
+    <enter><say>That's the place. Not much...
+
+Oh, damn, there's that static again. See if I can just smack this thing around a little...
+Nope, it's still there. Great, what a time for an equipment malfunction. You know, I wouldn't have this problem if you spent more of your salary on hovercraft maintenance. I'm just sayin'.</say></enter>
+    <objective goal="1" text="Kill the corrupted human" type="Defeat" npc="2">
+      <done><say>Eesh. The static was coming from that person, like they're...generating corrupted code, or something.
+
+On the plus side, at least it wasn't actually an equipment malfunction on my end. Whew!
+
+We'd better let Gray know what just went down.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Yeah, that's definitely bad.</say>
+      <say>There's that static on my screen again. Gosh darn it, I just had this thing-- Oh! Uh, watch out!
+
+What the heck? You'd better deal with that thing.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Well done, operative. The corrupt code signature you found will make them fairly easy to detect, once they choose to manifest themselves. For instance, we have located a large concentration of this code corruption nearby. The coordinates have been sent to you. We trust that you can attend to this particular manifestation.</briefing>
+    <enter><say>I've got the nastiness on my screen again. I'd say you're pretty close.</say></enter>
+    <objective goal="1" text="Kill all of Anome's goons" type="DefeatAll">
+      <done><say>Phew, my screen's clearing up. You must have got them all.
+
+Why do I get the feeling that these guys are going to be a real pain in the pod?</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Anome? These are Anome's goons? Oh, great. That's all we needed.</say>
+    </near>
+  </phase>
+  <finish>As you may have guessed, {player}, the corrupt code signature on the enhanced humans you encountered derives from the cheat codes stolen by Anome, although it has shown unexpected deviations from the original code base.
+
+We currently have insufficient data to make a precise estimate of their threat potential. This situation must be rectified. Remain alert for further orders. That is all for now.</finish>
+</mission>
