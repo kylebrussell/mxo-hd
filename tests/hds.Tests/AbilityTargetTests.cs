@@ -28,13 +28,14 @@ public class AbilityTargetTests
     [Fact]
     public void PlagueZoneIsDamageOverTime()
     {
-        // No direct damage; five ticks of 65-69 every 2.5 s with effect 0x28000430
+        // No direct damage; its damage over time is a tempmod: 424-444 over 15 s, ticks of 71 every 2.5 s
         AbilityTargets.Effect plague = AbilityTargets.Retail[466];
         Assert.Equal(0, AbilityTargets.RollDamage(plague, new Random()));
-        Assert.Equal(5, plague.Ticks);
-        Assert.Equal(2.5, plague.TickSeconds);
-        Assert.Equal(0x28000430u, plague.TickFx);
-        Assert.InRange(68, plague.MinTick, plague.MaxTick);
+        TempMods.Mod dot = Assert.Single(TempMods.Retail[466].Mods);
+        Assert.Equal(TempMods.Proc.Dot, dot.Proc);
+        Assert.Equal(15f, dot.Seconds);
+        Assert.Equal(71, TempMods.DotTick(424, 15, TempMods.DotIntervalSeconds));
+        Assert.Equal(0x28000430u, TempMods.VirusCrashFx);
     }
 
     [Fact]
@@ -58,7 +59,7 @@ public class AbilityTargetTests
         var mob = new Mob();
         double now = TimeUtils.GetSimTimeSeconds();
         Assert.False(mob.IsStunned(now));
-        mob.Stun(now + AbilityTargets.Retail[333].StunSeconds);
+        mob.Stun(now + TempMods.Retail[333].Mods[0].Seconds);
         Assert.True(mob.IsStunned(now + 3.9));
         Assert.False(mob.IsStunned(now + 4.1));
         // A shorter stun doesn't cut a longer one short

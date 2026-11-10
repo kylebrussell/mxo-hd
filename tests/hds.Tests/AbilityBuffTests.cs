@@ -106,8 +106,8 @@ public class AbilityBuffTests
         Assert.StartsWith("80bc1500" + "0001" + "00470100", on[0]);
         Assert.Contains((ushort)327, client.playerData.activeBuffs.Keys);
 
-        // The expiry runs on the shared timer
-        DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds() + 21);
+        // The expiry runs on the timed-effects server tick
+        TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 21);
         Assert.DoesNotContain((ushort)327, client.playerData.activeBuffs.Keys);
         List<string> off = Rpcs(client);
         Assert.Single(off);
@@ -139,7 +139,7 @@ public class AbilityBuffTests
         AbilityBuffs.Apply(client, 6);
         Rpcs(client);
         // Both expiries are due; only the second application's removes the buff, once
-        DelayedActions.RunDue(now + 25);
+        TimedEffects.RunDue(now + 25);
         Assert.Single(Rpcs(client));
         Assert.Empty(client.playerData.activeBuffs);
     }
