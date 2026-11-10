@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Meltdown, Zion story mission 3.1.5. Source: research/missions/transcripts/Zion3-1-5.md (the archive replay of
+     [Zion Archive 3.1.5]; five screenshots during play and 23 of the log after it ended). In the replay the contact was
+     [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's lines are spoken
+     as the contact (so his blaming of Tyndall comes under her name). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Anome, Operator and NPC line, every NPC name, and
+     the objective "Eliminate the Effectuator" (seen in the Objectives window). Ours: the description (the Summary tab
+     was never opened), the other objective texts (retail's phase 1 objective was one counted "Access all three
+     Computers (1/3)"; here it is a goal per computer), the sites (phase 1 was an apartment with a bunk bed and dressers:
+     SlumApt; phase 4 an office: Office; the rest Normal), the looks and the enemy counts. Item stand-in: Albireo's
+     virus (its name wasn't shown) is Virus (6786). Rewards: the 307,860 experience and 101,500 information shown after
+     this mission completed.
+     Gaps: Albireo's repeat line waits for his goals, numbered 4 and 5 so that phase 1's goals don't count for it
+     (Albireo's sex wasn't shown). In phase 3 the virus goes in once the lupines are dead, as in the log's order, and
+     its done line carries the Operator's news of the backup; Sirius and Fedynskij each say their line on a Talk, then
+     follow the player out and into phase 4. The Effectuator can't be harmed: "Eliminate the Effectuator" is a Talk on
+     the first of four friendly copies in one room, and his speech, cut into fragments said by his copies in turn in
+     retail, is said there by the four copies in the same order. His goodbyes in eight languages were said by his copies
+     after the speech; here each of the four copies says one ("Au revoir", "Arrivederci", "Adios" and the door; "Auf
+     wiedersehen", "Adeus", "Vaarwel" and the second "Au revoir" aren't said). "Adios" is retail's word with its accent
+     dropped (plain ASCII; the client's own team chat lost the accent too). He "tidied up" the backup in retail; here Sirius and
+     Fedynskij keep following until the mission ends. The goal is numbered 6 so that the copies' goodbyes don't count
+     earlier phases' goals. The base computer's crash dump and the phase 1 computers' netID lists are only in the
+     screenshots; phase 4's lupines (seen in team chat there) are generated Exiles. -->
+<mission id="103105" title="Meltdown" description="Plant a virus in the Effectuator's network and break into his base." plot="1"
+         order="3105" org="1" contact="Tyndall" exp="307860" info="101500">
+  <npc id="1" handle="Albireo" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="5">Take good care of our baby, huh? She's a beautiful piece of code.</say>
+  </npc>
+  <npc id="2" handle="Fedynskij" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" />
+  <npc id="3" handle="Sirius" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="6">Au revoir.</say>
+  </npc>
+  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="6">Arrivederci.</say>
+  </npc>
+  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="6">Adios.</say>
+  </npc>
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="6">Don't let the door hit you in the ass on your way out.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Merovingian" enemies="4">
+    <briefing>We've tracked down the location of the Effectuator's inner circle. The noose is closing around his withered neck, and you're gonna be the hangman. Once he's out of the way, Zion will take over the constructs he controlled, cutting off a major section of the Merovingian's power base. Then we'll watch the diseased Frenchman twist in his own leather straps.</briefing>
+    <enter><say>I'm reading a hefty computer system and an unknown number of dire lupines in there. We need to get into that system so we can trace the Effectuator back to his mainframe.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Access the first computer" type="Use" object="1" />
+    <objective goal="2" text="Access the second computer" type="Use" object="2" />
+    <objective goal="3" text="Access the third computer" type="Use" object="3" />
+    <complete><say>Good. I should have enough data to trace across their network now.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>While we're tracing the Effectuator's computer network, you're going to go get a little present for our doddering old friend--payback for something he gave us recently, if you will.</briefing>
+    <enter><say>That's the place. Go talk to Albireo.</say></enter>
+    <objective goal="4" text="Talk to Albireo" type="Talk" npc="1">
+      <talk><say npc="1">Ah, yeah, Anome told me you were coming. We've got a special virus prepared for you. Just put this in a computer on the target's network, and within about five seconds they will wish they'd never had a network to begin with. Satisfaction guaranteed or your money back! Go ahead, take it.</say></talk>
+    </objective>
+    <objective goal="5" text="Get the virus from Albireo" type="Get" npc="1" item="6786" after="4">
+      <talk><say npc="1">Come on, take it. It won't bite...you.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Hahaha! We've got that crotchety bastard now! Once you get that virus in his systems, not only will it blaze a trail for us back to his mainframe, but it will also destroy his control mechanism for the Merovingian's private constructs. Oh, I can't wait to see the look on the Effectuator's face as his systems destroy themselves before his rheumy old eyes!</briefing>
+    <enter><say>I'm picking up more computers and dire lupines in there. You have to get the virus into one of his systems. Also, we need to take out all the lupines in the area, so they won't shut the systems down and make it harder to trace the virus from this location as it seeks out his mainframe.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the dire lupines" type="DefeatAll">
+      <done><say>That takes care of all the dire lupines in the area, as far as I can see.</say></done>
+    </objective>
+    <objective goal="2" text="Put the virus into the computer" type="Put" object="1" item="6786" after="1">
+      <done>
+        <say>And the virus is off and running. Oooh... That thing really does look nasty.</say>
+        <say>Hey, I've got an update for you: looks like Zion decided to send us some backup for the big assault on the Effectuator's base. Sirius and Fedynskij have already entered that area--meet them in a room nearby and lead them outside.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Find Fedynskij" type="Talk" npc="2" after="2">
+      <talk><say npc="2">Ready when you are.</say></talk>
+    </objective>
+    <objective goal="4" text="Find Sirius" type="Talk" npc="3" after="2">
+      <talk><say npc="3">All right! This is gonna be sweet.</say></talk>
+    </objective>
+    <objective goal="5" text="Lead Sirius and Fedynskij out of the area" type="Escort" npc="2,3" to="exit" after="2" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>This is it! The virus has traced a path back to the Effectuator's base, and must be trashing his data as we speak. Break in there and finish the geezer off! Make it hurt...</briefing>
+    <enter><say>That's the place. I can see the virus permeating the local network; they should be in pretty bad shape.</say></enter>
+    <objective goal="6" text="Eliminate the Effectuator" type="Talk" npc="4">
+      <talk>
+        <say npc="4">And so we meet again. I have to say, operative, that I didn't think you'd be this much...</say>
+        <say>Huh? He's instantiating himself multiple times again--but in the same room, now. He must be a blast at parties.</say>
+        <say npc="5">...of an annoyance. Kudos to you. However, surely you realize by now...</say>
+        <say npc="6">...that you can't actually harm my root program. Oh, dear me, no. You'd have...</say>
+        <say npc="7">...to hack a major part of several backbone servers in order to do that. You might as well...</say>
+        <say npc="4">...try rewriting Downtown into a theme park, while you're at it. So you see, you've really...</say>
+        <say npc="5">...just managed to waste a good deal of time for both of us. You won't get to the Merovingian...</say>
+        <say npc="6">...through me, that much I can tell you.&#10;&#10;Now, I will bid you good day. We won't see each other again for quite some time. Don't bother collecting your hired ruffians, I've tidied them up for you.</say>
+      </talk>
+      <done><say>Uh... I'm out of ideas. Anome was thinking that zapping his computers would make him vulnerable, I guess, but obviously that hasn't happened.</say></done>
+    </objective>
+  </phase>
+  <finish>What? What d'you mean, you couldn't touch him? We melted down his control systems! He had nothing left! Nothing! I-I-I... You've got a lot of explaining to do!&#10;&#10;This must be Tyndall's fault. She said she didn't think it would work... What did she know? She's holding out on me! We'll just see what her precious Commander Lock thinks of this when I march into his office and explain it to him! Stay by your phone, operative--I'm not done with you yet, either.</finish>
+</mission>

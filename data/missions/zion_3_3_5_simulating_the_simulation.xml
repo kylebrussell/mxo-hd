@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simulating the Simulation, Zion story mission 3.3.5. Source: research/missions/transcripts/Zion3-3-5.md (the
+     archive replay of [Zion Archive 3.3.5], given by [Archived]Tyndall; 35 screenshots, four during play, the rest of
+     the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the objective texts
+     "Search for clues of Cypherite activity", "Search the second computer", "Talk to the simulacra" and "Trace the
+     override signal" (shown in the Objectives window). Ours: the description (the Summary tab was never opened), the
+     other objective texts, the sites (the network hub is an Office, the rest Normal), the looks and the enemy counts.
+     The Cypherites have no organisation here: they are Zion's (rogue redpills). Item stand-in: the dump of the
+     override signal's memory stack is Data (6787). Rewards: the 341,310 experience and 112,000 information shown
+     right after this mission completed.
+     Gaps: the simulacra (Veil, and Cryptos three times) are launched by computers in retail; here they stand on the
+     floor from the start, and talking to one only counts once its computer has been used. Veil being cut off by a
+     remote override is only in her line. The sealed far doors aren't sealed: the computers and simulacra are done in
+     order, and the Operator's lines at each door are said with the goal before it. The three Cryptos simulacra share
+     one look, as they did in retail. The hub's door-lock computer is a Use goal; the Key looted there in retail had
+     no use we could see and isn't given. The hub's alarm system isn't there. Of the Operator's two hints at the
+     abandoned facility's computers, the second ("I'm picking up some very slight computer activity...") isn't said;
+     the first is said on arrival. The Cypherites' barks were only in team chat and aren't said, and Cryptos showing
+     as hostile when targeted again isn't done. -->
+<mission id="103305" title="Simulating the Simulation" description="Track down an active Cypherite training facility." plot="1"
+         order="3305" org="1" contact="Tyndall" exp="341310" info="112000">
+  <npc id="1" handle="Fly" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>I get a little confused sometimes... But I know that we have to fight for the real world, too, and not just this one.</say>
+  </npc>
+  <npc id="2" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+    <say>EG LoopMon shutdown detect 10:52:30.</say>
+  </npc>
+  <npc id="3" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
+  <npc id="4" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
+  <npc id="5" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Warrior, the evidence of a connection between the Cypherite movement and the popular performer, Cryptos, seems to be mounting. And since Veil's escape from Zion, the Cypherites have been appearing in increasing numbers, and have been displaying superior training and discipline.&#10;&#10;While we have had mixed results trying to pursue Veil and Cryptos directly, perhaps a more oblique approach will yield better results. I am sending you to interview Fly, an ex-Cypherite who recently returned to Zion. He has been under close supervision, but we had to re-insert him into the simulation when he began showing symptoms of paranoia after being jacked out for an extended period. Ask him about the Cypherites' training procedures.</briefing>
+    <enter><say>Fly is in there.</say></enter>
+    <objective goal="1" text="Talk to Fly" type="Talk" npc="1">
+      <talk><say npc="1">Heya. Uh, thanks... It's good to be back. Training? Well, at first there wasn't much--just gave you a bandana and assigned you to a group, and that was pretty much it. Just recently, though, they started running a lot of drills and stuff at this sort of secret training facility. Sure, I can send the address to your operator. They're probably long gone, though; they move around a lot, now.</say></talk>
+      <done><say>That sounds promising. Hit the street while he sends me the training facility's location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Search the facility carefully, operative. The Cypherites may have left some clue to their activity behind.</briefing>
+    <enter>
+      <say>That's the address Fly gave me. Place scans clean. Dead, even.</say>
+      <say>I'm picking up some slight computer activity in that room. It looks like there's an active system...but it's locked down by another terminal nearby.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search for clues of Cypherite activity" type="Use" object="1">
+      <done><say>Another computer system nearby just fired up.</say></done>
+    </objective>
+    <objective goal="2" text="Search the second computer" type="Use" object="2" after="1">
+      <done><say>That computer just launched a simulacra program. Can you see it? Talk to it, and see if it responds.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the simulacra" type="Talk" npc="2" after="2">
+      <talk><say npc="2">Hello, dearie. We're so glad you choose to join the Cypherite movement. My name is Veil, and I'll be your mission controller. In the course of this training program, you'll learn to--SQUUARRRRK!!</say></talk>
+      <done><say>So that's what Veil's RSI looks like. You must have tripped an old Cypherite training program that they left behind. But it's just been deactivated by a remote override.&#10;&#10;I'm trying to trace the encrypted override signal... I think I recognize this encryption.&#10;&#10;Damn! It's gone. But I got a dump of the memory stack before the signal dropped. You'll find it on the computer in the other room. Get the data and upload it to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Get the data from the computer in the other room" type="Search" object="3" item="6787" after="3" />
+    <objective goal="5" text="Upload the data at a hardline" type="Upload" item="6787" after="4" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="5">
+    <briefing>Warrior, the voiceprint of the "Veil" simulacra you found matches the phone call you received while investigating Cryptos' early Matrix activity in your previous mission. If these recordings are legitimate, then it seems that the Cypherite controller is very interested in your investigation of Cryptos.&#10;&#10;This makes it all the more vital that we succeed in finding an active Cypherite training facility. Thanks to your recent infiltration of Cypherite networks, we are familiar enough with their data structures to decipher the information your operator captured from the command that shut down the Veil simulacra. It points to a hidden network hub, probably run by the Cypherites. I'm sending you the hub's coordinates now; go there and track the signal to its origin.</briefing>
+    <enter><say>I've got plenty of redpill signals, a computer network, and an alarm system inside. Looks like intel was on the money.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Use the computer to unlock the door" type="Use" object="1">
+      <done>
+        <say>Looks like you've unlocked a door nearby.</say>
+        <say>The network ID of the computer system in that room matches the one intel found in the captured data. We need to access that terminal.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Trace the override signal" type="Use" object="2" after="1">
+      <done><say>Got it! That's where the override signal came from. All right, get out of there. I'll work on pinning down the street address of that network ID.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>It is apparent that the Cypherites have improved their security measures recently, but they are still no match for someone with your diligence, operative. It seems likely that you have located an active Cypherite training facility, or at least a command post of some sort. Secure the area, and collect any information concerning Cryptos, or the whereabouts of Veil.</briefing>
+    <enter>
+      <say>Okay, that's where the override signal came from. You're looking at lots of redpills, as well as quite a few active computer systems. Looks like we hit the jackpot.</say>
+      <say>The far door is sealed shut. I'm reading an active computer system in that room. Try accessing it.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Access the first computer" type="Use" object="1">
+      <done><say>You just activated another training simulacra. Oh, man; does it look like who I think it looks like? You'd better check that thing out.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Cryptos simulacra" type="Talk" npc="3" after="1">
+      <talk><say npc="3">My name is Cryptos. I lead a group called the "Cypherites." We are dedicated to letting every person live the best possible life. The real world isn't all it's cracked up to be, you know. Who are we to ruin people's lives by ripping them out of the only world they know? We Cypherites want to help people stay happy.</say></talk>
+      <done>
+        <say>That's Cryptos' voice, all right--calling himself leader of the Cypherites! Whoa. That...that would actually explain quite a bit.&#10;&#10;It looks like talking to that simulacra has opened the far door.</say>
+        <say>Another active computer... Could this be part of a Cypherite indoctrination sequence? The far door is sealed, like the last one was.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Access the second computer" type="Use" object="2" after="2">
+      <done><say>That computer launched another Cryptos simulacra! See what this one has to say.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to the second Cryptos simulacra" type="Talk" npc="4" after="3">
+      <talk><say npc="4">You should think about joining the Cypherites. We would welcome you in our ranks. We are dedicated to maintaining the peace of the Matrix, and to protecting humanity from the horrors of the real world. We take on the burden of knowing what the real world is like, and we help humanity avoid it. If you are willing to make that sacrifice, to be a real hero, then you belong with us.</say></talk>
+      <done>
+        <say>Man, he really gives people the works, doesn't he? Do redpills actually fall for that stuff?&#10;&#10;The far door just unsealed.</say>
+        <say>Another active terminal--looks like that's the last stop on Cryptos' magical Cypherite tour.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Access the third computer" type="Use" object="3" after="4">
+      <done><say>It's Cryptos version 3.0! Let's see what wisdom he lavishes upon newbie Cypherites.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to the third Cryptos simulacra" type="Talk" npc="5" after="5">
+      <talk><say npc="5">I'm very pleased you've joined us. We are all that stands between humanity and the careless actions of misguided people--those who'd deprive them of any hope of a good life! They cannot thank us for sparing them--they'll never know that we protect them--but we don't do it for the praise; it's just the right thing to do. Welcome to the Cypherites.</say></talk>
+      <done><say>"The careless actions of misguided people"? I guess he means us. Well, these particular misguided people are on to his little game now. Get out of there and we'll spill the beans to Tyndall.</say></done>
+    </objective>
+  </phase>
+  <finish>So Cryptos is, in fact, a Cypherite--and not just any Cypherite, but the leader of their whole movement! Fantastic work, operative; I will report this crucial discovery to Commander Lock at once. Now that we have finally identified their true leader--and found that Veil operates as their controller--we will be able to formulate a strategy to remove the threat they pose to Zion once and for all.&#10;&#10;You have the thanks of all Zion for your efforts, Warrior--and you have my thanks as well. Please feel free to return to Zion for a few cycles of R&amp;R. It's the least I can do in the way of repaying you for your heroic work.</finish>
+</mission>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strange Epiphany, Zion story mission 3.3.4. Source: research/missions/transcripts/Zion3-3-4.md (the archive replay
+     of [Zion Archive 3.3.4]; 34 screenshots, one during play, the rest of the log after it ended). Retail's contact
+     for this one was [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives
+     the mission list. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, every NPC name, and the objective text
+     "Answer the Phone" (shown in the Objectives window). Ours: the description (the Summary tab was never opened), the
+     other objective texts, the name of the warehouse's Exile boss (unnamed in the log), the sites (the supply
+     warehouse is a Warehouse, the rest Normal), the looks and the enemy counts. The General's commandos are an Exile
+     group, so they have Exile looks; the Cypherites have no organisation here and are Zion's (rogue redpills). Item
+     stand-ins: the warehouse address Winfred Raikov writes down is Document_Location_Notes (6855), the Exile boss's
+     dossier is Dossier (6799), the encoded file on Wallaby's body (retail's Data CD) is Data_CD (6831). Rewards: the
+     402,473 experience and 108,500 information shown right after this mission completed.
+     Gaps: the commandos are led out of their meeting place and follow the player from then on; NPCs don't fight here,
+     so they don't join the fight with Heron's guards, they don't stay behind afterwards, and the mission fails if one
+     dies. Their parting lines are said when the guards are dead. Heron is friendly (he was shown so in the log) and
+     only talks once his guards are dead; his bark and the Operator's reply are said on arrival. Wallaby's jack is
+     pulled mid-sentence in retail and the file is found on her body: here she stays standing, and the file is
+     searched for in a box that stands in for her body. The phone call (a popup from an unnamed woman, Veil by the next
+     mission: "Hello, dearie. I'm afraid we had to cut your little conversation short...") has no way to show: using
+     the phone just completes the goal. The recorded conversation the Operator uploads to the player at the end
+     (retail's Audio Recording) isn't given. The Operator's "Cypherites! Was Anome right?" is said on arrival. The
+     Cypherites' barks were only in team chat and aren't said. -->
+<mission id="103304" title="Strange Epiphany" description="Find out what Cryptos was really doing when he first came to the Matrix." plot="1"
+         order="3304" org="1" contact="Tyndall" exp="402473" info="108500">
+  <npc id="1" handle="Winfred Raikov" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>Wait, don't ya wanna hear about the time I taught him to get into locked boxes without nobody seein' him? Took the darn fool a month to get it right. Kept sayin' he had a "better way." Bah! If he knows a better way than cuttin' a hole in the floor of the box and comin' up through a trap door, with mirrors around the bottom of the box, I'd like to hear it!</say>
+  </npc>
+  <npc id="2" handle="Exile Boss" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Xavier" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Modrow" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="5" handle="Heron" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>You miserable ape! My guards will finish you!</say>
+  </npc>
+  <npc id="6" handle="Wallaby" type="FRIENDLY" at="5" rsi="58010058" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So, let me get this straight. Cryptos used to hate the Machines, then suddenly he went into the Matrix alone one day, came out sorta dazed, and then left Zion to begin a life as a successful traveling magician who also, it seems, wants redpills to go back to living happily in the Matrix?&#10;&#10;Crap. A big, stinking pile of it. We've all but proven that the guy is in cahoots with the Cypherites. I bet you that he was pushing the blue pill the whole time he was in Zion, too, and just used the anti-Machine thing as a cover. And the magician act is all a cover-up, too. In fact, we're gonna blow it wide open.&#10;&#10;It just so happens that I've found a guy Cryptos worked with when he was just worming his way into showbiz. Go talk to Winfred Raikov and find out what Cryptos really did with his time back then. I bet it wasn't all just card tricks.</briefing>
+    <enter><say>Winfred Raikov should be in there. Anome's worked out a cover for you as a news reporter, anxious to get the scoop on the fabulous Cryptos' humble beginnings. Film at 11!</say></enter>
+    <objective goal="1" text="Talk to Winfred Raikov" type="Talk" npc="1">
+      <talk><say npc="1">Well, my pleasure. Sure, I knew Cryptos! Taught him nearly everything he knows! Why, I remember when he was just a rookie, puttin' in time down at the supply warehouse to earn money between shows. He sure must have worked hard, 'cause he always showed up for rehearsal all wore out. So one day I took pity on the kid, and-- Eh? The warehouse? Oh, err...sure thing. I kin write down the address. Gimme a sec here...</say></talk>
+      <done><say>Let's get the location of that warehouse. Maybe Cryptos was up to something down there.</say></done>
+    </objective>
+    <objective goal="2" text="Get the warehouse address from Winfred Raikov" type="Get" npc="1" item="6855" after="1">
+      <talk><say npc="1">Here's that address. Now, where was I? Oh, right. So, I took little Cryptos aside one day, and I said, son, I kin see you got the desire for magic. But you need more than desire, my boy! You need gadgets! Oh, his eyes went as big as saucers, yessiree.</say></talk>
+      <done><say>I know the place. Head outside and I'll put it up as your next waypoint.</say></done>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Merovingian" enemies="4">
+    <briefing>So Cryptos was sneaking off to a warehouse? Hah! I've got him! His secret HQ!&#10;&#10;Get down there and wreck the place, operative. I mean kill, maim, loot, burn, eviscerate--whatever you're inspired to do! Let me know how it goes.</briefing>
+    <enter><say>Okay, one Cryptos secret HQ, coming up!&#10;&#10;Huh... No redpill signals coming out of there. I do have something, though... Exiles!</say></enter>
+    <objective goal="1" text="Kill the Exile boss" type="Defeat" npc="2">
+      <done><say>Search that one, operative. He seems to have been in charge there.</say></done>
+    </objective>
+    <objective goal="2" text="Get the dossier from the Exile boss" type="Loot" npc="2" item="6799" after="1">
+      <done><say>That dossier has a phone number, and a name: "Heron." We'll have to go ask Heron some questions.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's the last of the Exile signals in there; the warehouse scans clean. Could those Exiles have had something to do with Cryptos? It's been some time since Cryptos would have been "working" there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Exiles? Cryptos' trail just gets slimier and slimier, doesn't it? We'd received rumors of some kind of meeting held between Veil and the Merovingian--and I'd say this cinches it beyond a shadow of a doubt! Why else would Exiles be in the same warehouse that Cryptos used to frequent? It's all plain as day!&#10;&#10;All right... You say you know where to find the leader of that Exile gang. We're gonna go get him, but first, I'm calling in some heavy artillery. Remember that the General swore a alliance with Niobe? Well, this is where I cash that in. Head to the marked location; I'm going to have the General send some of his elite commandos there to meet you. We'll use them to wipe this Exile gang out of the Matrix.</briefing>
+    <enter><say>That's the spot. Our liaison with the General tells me that the commandos are waiting for you inside.</say></enter>
+    <objective goal="1" text="Talk to Xavier" type="Talk" npc="3">
+      <talk><say npc="3">We have orders to assist you.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Modrow" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Awaiting orders, sir.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Xavier and Modrow out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Now that you've got your leg-breakers with you, go take that Exile boss out! Heck, you'll probably find Cryptos there with him.</briefing>
+    <enter>
+      <say>You're at the location. I'm picking up Exile programs inside.</say>
+      <say npc="5">You miserable ape! My guards will finish you!</say>
+      <say>That one seems to be the ringleader. See what song he sings after you've wiped out his precious guards.</say>
+    </enter>
+    <objective goal="1" text="Kill Heron's guards" type="DefeatAll">
+      <done>
+        <say>That does it for the guards. Let's see what their leader has to say for himself.</say>
+        <say npc="3">Mission accomplished, sir.</say>
+        <say npc="4">It's been a pleasure working with you, sir.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Heron" type="Talk" npc="5" after="1">
+      <talk><say npc="5">What is it? What do you want? What?!&#10;&#10;The warehouse? The bloody warehouse?! Of all the stupid-- Look, we paid the previous owner for it fair and square. Some redpill or other--not one of you Zion imbeciles, though. I think I still have her card... Ah. Here! Go look her up, and to hell with both of you!</say></talk>
+      <done>
+        <say>So the previous owner was a redpill named Wallaby. I'm plotting out her address now. You can get out of there.</say>
+        <say npc="5">I hope you're happy. Do you know how hard it is to find affordable Exile workers these days? Damn humans.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Lesson number one, operative: Exiles always lie. It's in their programming. It's obvious to me that Heron works for the Merovingian, and now we know that the Merovingian works for Cryptos, who works for the Cypherites. See? This isn't that hard.&#10;&#10;Now, how much you want to bet that Wallaby turns out to be Cryptos himself? Yes, I do believe that I, Anome, have smoked him out. And they called him a genius!</briefing>
+    <enter>
+      <say>Things always seem to fit nicely into place inside Anome's head. I wonder what it's like in there?&#10;&#10;Scanning the building now... I've got multiple redpill signals. Cryptos?</say>
+      <say>Cypherites! Was Anome right?</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Phone" />
+    <objective goal="1" text="Kill the Cypherites" type="DefeatAll">
+      <done><say>That's all the hostile Cypherites in the area.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Wallaby" type="Talk" npc="6" after="1">
+      <talk><say npc="6">What was he doing? What do you mean? Cryptos has preached peaceful sleep since he went public! Cooperation with the Machines, who have given us a home after we ruined ours! He'd never advocate--Urrgh!</say></talk>
+      <done><say>So she claims that Cryptos was all about love and peace with Machines from when he first went public in the Matrix. But if that's the case, then-- Hey! Her signal just went dead on my screens. Like someone pulled her jack.&#10;&#10;I'm picking up some kind of encoded file on her body. See what she's got.</say></done>
+    </objective>
+    <objective goal="3" text="Search Wallaby's body for the encoded file" type="Search" object="1" item="6831" after="2">
+      <done><say>Data's encrypted... I'm downloading and decrypting it locally... Huh... A conversation--sounds like Cryptos and one of those Zion operatives you rescued a few missions back; remember, the two guys who knew Cryptos in Zion when he was ranting against the Machines? But Wallaby swore that Cryptos was not against the Machines since he left Zion and started his magician routine... Hm.&#10;&#10;Wait a sec. I'm picking up an outside transmission, heavily encrypted. Can't trace it. Looks like... Is the phone in there ringing? Careful, operative. I don't know what's on the other end.</say></done>
+    </objective>
+    <objective goal="4" text="Answer the Phone" type="Use" object="2" after="3">
+      <done><say>That must have been whoever pulled Wallaby's jack. Wow, I'm not sure what just happened, but we'd better report all this to Anome.&#10;&#10;By the way, I'm uploading you a copy of that recorded conversation you found. You should have it in a few minutes.</say></done>
+    </objective>
+  </phase>
+  <finish>So wait... You didn't find Cryptos. But the old owner of the warehouse where he "worked" soon after going AWOL from Zion was a Cypherite, who carried a recording of Cryptos ranting about the Machines in Zion, while claiming that he preached nothing but cooperation with the Machines since he turned traitor and became a traveling minstrel? Like he just had a sudden peacenik epiphany or something? And someone pulled her jack while you spoke to her, then called you up on the phone and apologized?&#10;&#10;... I don't appreciate being toyed with, operative. You could have just 'fessed up to not catching Cryptos, without having to invent this ridiculous story to conceal your failure. Thanks to your bungling, we're no closer to catching Cryptos than we were before--or that escaped Cypherite leader, Veil. This is not going to look good on your performance review, I can tell you that.</finish>
+</mission>

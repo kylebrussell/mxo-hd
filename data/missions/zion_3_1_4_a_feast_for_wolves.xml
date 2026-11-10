@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Feast for Wolves, Zion story mission 3.1.4. Source: research/missions/transcripts/Zion3-1-4.md (the archive replay
+     of [Zion Archive 3.1.4], given by [Archived]Tyndall; 21 screenshots of the log after it ended, none during play).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Tyndall, Operator and NPC line, and every NPC
+     name except the lupines and the Elite Guard, which are their kinds as seen in team chat. Italics in retail's lines
+     are plain text. Ours: the description (the Summary tab was never opened), every objective text (nor was the
+     Objectives tab), the sites (no building was described: all Normal), the looks and the enemy counts. Item stand-ins
+     (no item name was shown): Potomac's Hel Club access card is Access_Card (6791), Beta's notes with Aposhanskij's
+     address Document_Location_Notes (6855), the draft agreement on Aposhanskij's body Document_Secret_Agreement (6858),
+     and the contingent's encrypted data Data (6787; "You received Data." was in the log). Rewards: the 308,000
+     experience and 101,500 information shown after this mission completed.
+     Gaps: the access card got the player past Beta's bouncers in retail; there is no gate, so the card is only carried.
+     Beta's sex wasn't shown (she has a woman's look here); her repeat line waits for her goals, numbered 3 and 4 so
+     that phase 1's goals don't count for it. At Aposhanskij's, a dire lupine drops its disguise mid-talk and blows the player's cover; here Aposhanskij and the
+     lupine wait to be attacked (attacksOnSight="0"), reaching Aposhanskij is a Talk that carries his line, the
+     Operator's alarm and his order to the guards, then both are killed; his guards (kind not named) are the phase's
+     generated Exiles and attack on sight from the start. The lupine fleeing to report to the Effectuator isn't
+     expressible: it is a plain kill. The disguised lupine's cut team chat line isn't said. Phase 4's negotiating
+     contingent is the phase's generated Exiles plus a named Dire Lupine Savage carrying the data and an Elite Guard;
+     the log has a 15-minute gap in that fight, and lines lost in it aren't said. The line cut after Beta's notes was
+     the automatic "Goals for this area are complete" and is left to the server. -->
+<mission id="103104" title="A Feast for Wolves" description="Track the Effectuator through the Merovingian's Hel Club guards and groupies." plot="1"
+         order="3104" org="1" contact="Tyndall" exp="308000" info="101500">
+  <npc id="1" handle="Potomac" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="2">Good luck. Couldn't hurt to wear more black leather, too.</say>
+  </npc>
+  <npc id="2" handle="Beta" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say after="4">Just keep that crazy old man out of my hair. Damn technocrat.</say>
+  </npc>
+  <npc id="3" handle="Aposhanskij" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Dire Lupine Bane" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" attacksOnSight="0" />
+  <npc id="5" handle="Dire Lupine Savage" type="HOSTILE" at="4" rsi="a5060090" weapon="2568" />
+  <npc id="6" handle="Elite Guard" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Excellent. The Feast will--</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hello, Warrior. Pursuit of the Effectuator and his control mechanisms for the Merovingian's private constructs has proven more difficult than expected; he may not be the weak link we had hoped for.&#10;&#10;Nevertheless, Commander Lock still believes that the Effectuator is the key to infiltrating the Merovingian's organization. We have decided to try tracking the Effectuator through a different branch of the Merovingian's gang: his pleasure-addicted "Hel Club" guards and groupies. Recent intelligence suggests that they have some communication with the Effectuator, and they may be easier to deal with than his elusive dire lupine programs.&#10;&#10;You will begin by meeting with one of our undercover operatives, Potomac, in the City. Potomac has special knowledge of the Hel Club group.</briefing>
+    <enter><say>That's the place where you're supposed to find Potomac.</say></enter>
+    <objective goal="1" text="Talk to Potomac" type="Talk" npc="1">
+      <talk><say npc="1">So you're hunting Hel Clubbers today, huh? I know a group nearby you can try; their leader is an Exile named Beta. I don't know for sure if they'll have any info on this "Effectuator" guy, but it couldn't hurt to ask. I've got one of their access cards; it should get you past the first line of their bouncers, at least. Here, take it.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the access card from Potomac" type="Get" npc="1" item="6791" after="1">
+      <talk><say npc="1">You'll need this access card to get anywhere with those Hel Club ravers.</say></talk>
+      <done><say>I recognize the logo on that card; get outside and I'll direct you.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The purpose of the sadistic programs who congregate around the Merovingian's Hel Club is to lure bluepills--and redpills--in, to be seduced by his wiles. I'm not worried about them tempting you, Warrior, but do not make the mistake of underestimating them because of their outlandish clothing. Their loose ranks include some of the deadliest Exiles in the Matrix. And while their security may appear lax, rest assured that they will be watching you closely for the slightest slip in your cover.</briefing>
+    <enter><say>That's the place. I suppose you don't look too much like a narc...</say></enter>
+    <objective goal="3" text="Talk to Beta" type="Talk" npc="2">
+      <talk><say npc="2">The Effectuator? Funny you should ask; he's been hassling my people lately about keeping him up to date on the shifting of the Floating Feast. Like he suddenly needs more juice, or something. Crazy old man. If you want to deal with him, be my guest. Here: go to the address on these notes and talk to my man, Aposhanskij. He's been meeting with the Effectuator.</say></talk>
+    </objective>
+    <objective goal="4" text="Get the notes from Beta" type="Get" npc="2" item="6855" after="3">
+      <talk><say npc="2">Go talk to my man, Aposhanskij, at the address marked on these notes.</say></talk>
+      <done><say>That went surprisingly well. Head out of the building and I'll give you a waypoint for Aposhanskij's address.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>So the Effectuator has been pursuing the Floating Feast? That might mean he needs more power--perhaps our efforts against him have begun taking their toll.&#10;&#10;Stay on his trail, operative. This seems like a promising lead.</briefing>
+    <enter><say>According to the address Beta gave you, you should find Aposhanskij in there.</say></enter>
+    <objective goal="1" text="Talk to Aposhanskij" type="Talk" npc="3">
+      <done>
+        <say npc="3">Beta sent you to ask about the Effectuator? Well, I think I've made progress with the guy. I've got the draft of an agreement here--</say>
+        <say>Damn! I didn't see that dire lupine until he dropped his cover--and blew yours! You're gonna have to get that draft from Aposhanskij the hard way. And make sure the dire lupine doesn't escape to report back to the Effectuator.</say>
+        <say npc="3">What? Damn! Guards, kill this human!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Aposhanskij" type="Defeat" npc="3">
+      <done><say>Don't forget to get the agreement from Aposhanskij's body.</say></done>
+    </objective>
+    <objective goal="3" text="Kill the dire lupine" type="Defeat" npc="4" />
+    <objective goal="4" text="Get the agreement from Aposhanskij's body" type="Loot" npc="3" item="6858" after="1">
+      <done><say>Looks like that agreement has the address of where the Effectuator's negotiating contingent can be found.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Good work, Warrior. This bargaining contingent of the Effectuator's may be carrying evidence that will lead us to his headquarters.</briefing>
+    <enter><say>That's the place. I'm picking up the familiar flicker of dire lupine signals in there.</say></enter>
+    <objective goal="1" text="Kill the negotiating contingent" type="DefeatAll" />
+    <objective goal="2" text="Kill the Dire Lupine Savage" type="Defeat" npc="5">
+      <done><say>That one was carrying some data, operative. See what they've got.</say></done>
+    </objective>
+    <objective goal="3" text="Get the data from the Dire Lupine Savage's body" type="Loot" npc="5" item="6787" after="2">
+      <done><say>Ah, nothing like mysterious, encrypted data. Let's get that uploaded at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the data at a hardline" type="Upload" item="6787" after="3">
+      <done><say>It's going through. I hope Tyndall has her antivirus routines running...</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, operative. We've taken the Effectuator by surprise this time, and initial indications are that the data you retrieved holds traces of code specific to a certain area of the City. If further analysis bears this out, we should be able to track down that location, and from there, I'm sure it will be only a matter of time before we manage to "beard him" in his digital den, so to speak. This will be a major blow to the Merovingian's schemes!</finish>
+</mission>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Swallow Your Pride, Zion story mission 3.2.3. Source: research/missions/transcripts/Zion3-2-3.md (the archive replay
+     of [Zion Archive 3.2.3], given by [Archived]Tyndall; 17 screenshots, three taken during the last phase and the rest
+     of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, and every NPC name. The
+     second and third briefings each end a screenshot, and the next screenshot starts with paragraphs whose speaker
+     isn't shown; they read as the rest of Tyndall's lines and are joined to them. Ours: the description (the Summary tab
+     was never opened), the objective texts (the Objectives tab only showed "Leave the area now!"), the sites (phase 3
+     an Office, as the screenshots show; the others Normal), the looks and the enemy counts. Item stand-in: the
+     recording of Veil's last transmissions is Recording_Coded_Message (6836). Aiguillon is on the Machines' side and
+     has a Machine Agent's look. The masked men (Cypherites) have no organisation of their own, so they are Zion, with
+     the masked thug look of 1.3.4. Rewards: the 247,500 experience and 108,500 information shown right after this
+     mission completed. The raid was in Kowloon, which isn't a Slums neighbourhood, so no neighbourhood is forced.
+     Gaps: Veil isn't at the site (the story says so), so no Veil is placed. Retail's objectives for the raid weren't
+     seen; a computer behind the hostiles was hacked ("Computer hacked successfully!") and the area completed while the
+     Cypherite Aikido Master still fought, so the phase's goal is hacking that computer, and the hostiles (five
+     generated and the named Aikido Master) are fought or slipped past. The Operator's "There they are, the masked
+     bastards!" came on sighting them; it is said on reaching the floor. The Nescire crew at the other site is only in
+     the lines. Aiguillon's parting line waits for goal 2 so that phase 1's goal 1 doesn't count for it. -->
+<mission id="103203" title="Swallow Your Pride" description="Take Veil's intercepted transmissions to the Machines for decryption, then raid one of her hideouts." plot="1"
+         order="3203" org="1" contact="Tyndall" exp="247500" info="108500">
+  <npc id="1" handle="Altaj" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="1">There's some pretty weird stuff on there; we haven't been able to make anything of it. Hope you'll have better luck!</say>
+  </npc>
+  <npc id="2" handle="Aiguillon" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="2">All right, we'll see what we can do. Glad to see you've come to us for help, {player}.</say>
+  </npc>
+  <npc id="3" handle="Cypherite Aikido Master" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Ah, there you are, Warrior. It's been too long since I've worked with you.&#10;&#10;As it turns out, Veil was a busy little bee during the last few weeks of her imprisonment. Somehow, she managed to get communications going in and out of her cell in Zion. Ask yourself how she did that, and the answer must be traitors. I know, it's unbelievable.&#10;&#10;Anyhow, we happened to record some of the last transmissions inadvertently. I'm sending you to pick up that recording from Altaj. We have a special task in mind for you.</briefing>
+    <enter><say>Altaj should be in here. Just grab the recording and we'll find out what Tyndall has in mind.</say></enter>
+    <objective goal="1" text="Get the recording from Altaj" type="Get" npc="1" item="6836">
+      <talk>
+        <say npc="1">There you are, {player}! Here, grab this recording.</say>
+        <say npc="1">Go ahead and take it.</say>
+      </talk>
+      <done><say>That's it. Now head on out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Wonderful. Now on to your meeting... with the Machines.&#10;&#10;I think we're going to have to trust them this once. Their decryption programs are unparalleled. If we really want to get Veil back, I think we're going to have to open up our counsels to them.&#10;&#10;Oh, and before you head in there, you should know... they're aware of Anome's little device. He really is too cocky for his own good. We've cleaned things up with them, so don't worry... but in the future, don't be so eager to do everything he asks, okay?</briefing>
+    <enter><say>Okay, Aiguillon should be in here somewhere. Find him and hand over the recording... and hope he doesn't bust your chops over that whole Anome deal...</say></enter>
+    <objective goal="2" text="Give the recording to Aiguillon" type="Give" npc="2" item="6836">
+      <talk>
+        <say npc="2">So, {player}. Looks like you need our help, huh? Hand over the recording and I'll get our people on it.</say>
+        <say npc="2">I'm waiting.</say>
+      </talk>
+      <done><say>That wasn't too bad. I think that's it for this mission; go ahead and head out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="5">
+    <briefing>Well, I guess we just need to wait and see-- Hold on! I'm getting an urgent message from Agent Gray...&#10;&#10;Well, that was quick. They've generated two possible locations that Veil may be trying to use right now!&#10;&#10;I've sent the crew of the Nescire to one of the sites; you get to the other one! There's no time to waste!</briefing>
+    <enter>
+      <say>I'm reading a lot of hostiles in there, {player}. I think they're all bunched up in there... your top priority in this mission is finding Veil. We have to find her so we can figure out where her hovercraft is broadcasting from.</say>
+      <say>There they are, the masked bastards! Get through there somehow and nab Veil... she must be through the far doors!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Hack the computer beyond the far doors" type="Use" object="1">
+      <done><say>Damn it! No Veil... I hope the other crew is having more luck! You'd better get out of there.</say></done>
+    </objective>
+  </phase>
+  <finish>I'm sad to say this, Warrior, but the crew of the Nescire didn't have any more luck than you. They apparently didn't have any contact, just some traces of masked activity... we're going to have to do better next time.</finish>
+</mission>
