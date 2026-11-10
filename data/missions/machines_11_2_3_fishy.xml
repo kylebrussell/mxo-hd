@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fishy, Machines story mission 11.2.3. Source: research/missions/transcripts/Mach11-2-3.md (a live run of
+     "Fishy", given by Agent Gray; the Current Mission bar had no archive number, so 11.2.3 is the folder's).
+     Placement is generated: see docs/MISSIONS.md.
+     The log has large gaps (about 9 minutes after the first area's arrival, and most of 1:11 to 1:17 PM), so this
+     is built only from the lines that survive: every briefing, Operator and Wright line that was readable and Gray's
+     closing words. No dialogue is ours. Gray called the player "Mr. Argento"; that is {player} (his "If we can
+     focus on the task at hand, Mr." was cut after "Mr." and is "..., {player}.").
+     Retail's text: the title, the lines, and the name Danielle Wright.
+     Ours: the description and every objective text (neither tab was opened), the four-area structure, what is done
+     in each area, the sites (the second is "an apartment": SlumApt; the others are not described: Normal), the looks
+     and the enemy counts. Retail's areas were in Richland (Downtown); our missions are placed in the Slums.
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Reconstruction: the first area had overridden programs (Gray: "cannot be allowed to remain active") and a
+     computer whose transfer logs the Operator went after, so it is DefeatAll and a Search of a computer that turns
+     up nothing. The Operator's "transfer history" line, then "There's a signal in there, but not a big one; and I
+     don't see any overrides." (speaker and time hidden; taken as the Operator's), are said on reaching the
+     apartment. What happened there was lost; it is a Search of the apartment's system (the one the transfer logs
+     pointed to), and the Operator's "They want us to find...a cat?" comes when it is done. Gray's "focus on the
+     task at hand" starts the third area, where the Operator read redpill signals; Gray had warned of Zion and
+     Merovingian operatives, so its enemies are Zion and the Operator's "Just when you almost think a Zionite's about
+     to be useful for once..." comes when they are dead (whatever the redpills did in retail was lost). Gray's
+     1:17 PM line starts the last area, where overrides were hit and Wright was found; her repeated line is her line
+     when talked to again. The redpill signals the Operator saw in the first area aren't spawned (a phase has one
+     enemy organisation). The lost cat, "Ms. Pickles", has no goal; Gray's closing line settles it. -->
+<mission id="211203" title="Fishy" description="Destroy the overridden programs in the slums and follow the trail of the biological interface program." plot="1"
+         order="11203" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Danielle Wright" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say after="2">They have their uses--keeping Agents away, for instance--but they are crude, and limited. They are weapons only, and not the tool I need for my work.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Operative, available data indicates that the biological interface program has moved from the Merovingian's Hel Club into Richland. Danielle Wright has been tenacious in her pursuit of the program, and, as was to be expected, override use has now spiked in the slums. The overridden programs cannot be allowed to remain active.</briefing>
+    <enter><say>There be overrides... Hey, I'm reading what look like redpill signals in there, too.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Destroy the overridden programs" type="DefeatAll" />
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>Huh. I'll see if we can access transfer logs on that thing.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>We anticipate continued encounters with hostile forces. Zion as well as Merovingian operatives have been gathering in the central Richland area.</briefing>
+    <enter>
+      <say>Okay, so, I got a transfer history showing that the computer we found connected to a system in an apartment there.</say>
+      <say>There's a signal in there, but not a big one; and I don't see any overrides.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>They want us to find...a cat?
+
+I'm really not sure if we should even tell Gray about this...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>If we can focus on the task at hand, {player}.</briefing>
+    <enter><say>Got some signals in there. Based on the hacks I'm picking up...I'd say they're redpills.
+
+They say that at the meeting in One Zero, Wright was bragging about entering the Matrix as a "complete consciousness," or some kind of crazy thing. Sounds like a load of metaphysical baloney if you ask me.</say></enter>
+    <objective goal="1" text="Kill all of the Zionites" type="DefeatAll">
+      <done><say>Damn! Just when you almost think a Zionite's about to be useful for once...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Zionite and Merovingian forces are understood to be attempting to acquire the interface program. Their operatives claim to have received fragmentary messages from the program; the nonsensical nature of these reports suggests that they are intended to manipulate susceptible humans.</briefing>
+    <enter><say>Well, Gray did tell Wright in One Zero that the Oracle made the program to help keep tabs on unplugged humans. Seems to be causing an awful lot of ruckus just for that. Could explain why Wright would want it, though.
+
+Uh-oh, it looks like we've hit some of those overrides we've been hearing about. Wonder what those would do to the interface program...?</say></enter>
+    <objective goal="1" text="Destroy the overridden programs" type="DefeatAll" />
+    <objective goal="2" text="Talk to Danielle Wright" type="Talk" npc="1">
+      <talk>
+        <say npc="1">The program has moved on, if that's what you're wondering. Its movements appear to be getting less erratic. In the right hands, it could be a truly elegant control mechanism--not like these Oligarch routines.</say>
+        <say>So the program got away again. Well, at least she didn't get her wiry mitts on it.
+
+Wonder what she meant by "control mechanism," though. Gray said the Oracle made it to control awakened humans. Could that be Wright's plan?</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>Wright appears to be under some misapprehension about the program, which could possibly be turned to our advantage. It is true, however, that it would be dangerous for the simulation if it fell under her control. Our sensors, for instance, cannot detect the program directly; this complicates the task of keeping it from her.
+
+Oh... One other thing, {player}: you may be glad to hear that "Ms. Pickles" was found in an alley in Mara, and returned safely to her owner.</finish>
+</mission>

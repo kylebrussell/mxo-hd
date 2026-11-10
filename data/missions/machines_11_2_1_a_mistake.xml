@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Mistake, Machines story mission 11.2.1. Source: research/missions/transcripts/Mach11-2-1.md (a live run of
+     "A Mistake", given by Agent Gray; the Current Mission bar had no archive number, so 11.2.1 is the folder's).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the objective "Search the area", every briefing, every Agent Gray, Operator and NPC
+     line, and the names Danielle Wright, Codi Detriech, Feldman, Agent Gray and Decelerator. Gray and Codi called
+     the player "Mr. Argento"; that is {player}. Besides the contact on the datalink, a field NPC named Agent Gray
+     waits in the office of the second phase; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), the other objective texts (the Objectives tab was
+     only seen once, in the first area), the sites (the second is an office, by the Operator's "outer office"; the
+     others are not described: Normal), the looks and the enemy counts. Retail's first area was in Shinjuku
+     (International); our missions are placed in the Slums. The Bluepill witness's handle is retail's.
+     Rewards: 297,000 experience and 98,000 information, shown right after this mission completed.
+     Gaps: the first area's computer showed a "Tracking..." readout and gave nothing, so it isn't placed; retail's
+     "Search the area" was done when Wright was found, so here it is the talk to her. The Operator's "It's hot in
+     there" is said on nearing her; her later line is her line when talked to again. Codi's "Very well." answered a
+     reply of the player's and follows her first line. Gray's "Her possession of offensive Oligarch override codes
+     has not been established." answered a question and is his line when talked to again; Codi's "Yes, yes. Go
+     ahead." (said after Gray's talk) is hers when talked to again. Gray said operatives were brought to assist; only Feldman spoke, and allies
+     don't fight, so he is talked to and stays behind. In the last area Wright had gone and left an overridden
+     program (the Operator's "big ball", to be left alone) in her place; the only program named in the log is a
+     Decelerator, which fought the player near the end, so it is a named hostile here and the Operator's two lines
+     are said on nearing it. The Exiles are the phase's enemies. Retail's Tactic Booster 3.0 (loot or reward,
+     unclear) isn't given. -->
+<mission id="211201" title="A Mistake" description="Identify a wireframed intruder who has entered the Matrix, then track her down." plot="1"
+         order="11201" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Bluepill" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">Uh-uhh...</say>
+  </npc>
+  <npc id="2" handle="Danielle Wright" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="2">I did make a mistake. The Matrix was more than I had thought it was. But you know that now too, don't you?</say>
+  </npc>
+  <npc id="3" handle="Codi Detriech" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say after="2">Yes, yes. Go ahead.</say>
+  </npc>
+  <npc id="4" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say after="2">Her possession of offensive Oligarch override codes has not been established.</say>
+  </npc>
+  <npc id="5" handle="Feldman" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="6" handle="Decelerator" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, another wireframed individual has entered the Matrix. It is necessary to identify this intruder immediately. Please note that their RSI is female.</briefing>
+    <enter><say>Don't ask who told me, but rumors in the Merv camp say this is Danielle Wright, the crazy Zionite inventor who was taken out by Sentinels not too long after the Truce ended. Just how she--
+
+Oh, you're there. Okay, check it out. We had an emergency call from there earlier, but something appears to have gone wrong...</say></enter>
+    <objective goal="1" text="Talk to the Bluepill" type="Talk" npc="1">
+      <talk><say npc="1">Th-the... Sh-she... I-it...</say></talk>
+      <done>
+        <say>Oh, damn it. Which way did they point? You sure? Okay, I'll have Gray check.
+
+And I'm calling an ambulance, too.</say>
+        <say contact="1">Override code has been detected along that vector, operative. Investigate and report.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Looking for something? So am I. I think you know what it is.</say></talk>
+      <done><say>Gray's trying to get our attention. I think we're supposed to clear out.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>He wasn't kidding when he said there was override activity. It's hot in there.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>{player}, at this juncture I believe that a brief discussion concerning the intruder is in order.</briefing>
+    <enter><say>Oh boy, here it comes...</say></enter>
+    <objective goal="1" text="Talk to Codi Detriech" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Is there something you need, {player}? The Agent is waiting for you.</say>
+        <say npc="3">Very well.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="4">
+      <talk>
+        <say npc="4">The data returned from your proximity to the intruder corresponds closely enough to characteristics of the ex-Zionite Danielle Wright that we find it likely that this is indeed her. How she survived termination by Sentinels is unknown, but there is no question that their sensors had confirmed her body destroyed.
+
+Also, we must be clear that Wright is not a member of the group termed "Oligarchs"; evidence suggests that she has adopted their jack-in protocol, but the use of force against her person is not prohibited, and the termination order previously issued for her must be considered still in effect. Operatives have been brought to assist you in enforcing it.</say>
+        <say>I think they've parked a couple greenhorns in the outer office for you.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to Feldman" type="Talk" npc="5" after="2">
+      <talk><say npc="5">No sweat.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Obviously, we would like this handled as swiftly as possible, {player}.</briefing>
+    <enter><say>They've been tracking Wright since we located her earlier. I'm getting plenty of override interference in there.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll" />
+    <near npc="6" radius="1000">
+      <say>Great... Well, now we know that she can at least override the programs she finds here, like the earlier intruders could.</say>
+    </near>
+    <near npc="6" radius="300">
+      <say>Damn, she must have taken a powder at some point and left that program in her place. So there's another override trick we know she can do. It's looking to me like she's got all the override capabilities Halborn and Carlyne had...which means we're in the deep stuff yet again.
+
+Anyway, look, just take care of those Exiles. We can leave the big ball for another team.</say>
+    </near>
+  </phase>
+  <finish>Yes. I see.
+
+Very well, operative; you are excused. Wright's termination will require further planning.</finish>
+</mission>

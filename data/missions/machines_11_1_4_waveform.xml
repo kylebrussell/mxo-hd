@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Waveform, Machines story mission 11.1.4. Source: research/missions/transcripts/Mach11-1-4.md (a run of the
+     mission given by Agent Gray; the Current Mission bar showed no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective texts "Search the
+     Computers", "Search the area", "Search the Computer" and "Search the other Computer", and the name Mariah Osby.
+     Gray called the player "Mr. Argento"; that is {player}. The bluepills' capitals are retail's; Osby's italic
+     "They" is plain here.
+     Ours: the description (the Summary tab was never opened), the objective text of phase 3's first computer, the
+     sites (the network center and the control region were offices: Office; Osby's bedroom and the hacker's living
+     room were apartments: SlumApt; retail ran in Shinjuku and Kowloon, International), the looks and the enemy
+     counts. Ouroboros Security are the corporation's own guards and have no organisation; they are Machines here,
+     the nearest (the Oligarchs' front company in the System's simulation).
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Gaps: retail's counted "Search the Computers (1/5)" is five goals with that text here; a phase has at most three
+     objects, so they are three computers, the first two taking two goals each (each use does one). The computers'
+     popups (the five "Shutdown initiated..." farewells, the hex readouts, "Terminating process ID...") can't be
+     shown. The Mainframe that didn't count isn't placed. Osby's being found ("Search the area" in phase 2) is a talk
+     with her; her second line is her line when talked to again. The data the Operator pulls in phases 3 and 4 isn't
+     an item: the searches turn up nothing for the player. Lines that lost a line at a screenshot join (Gray's first
+     and third briefings, the Operator's first, third and phase 3 lines) are used as they read; an Operator line after
+     "Okay, that didn't go so bad." was not captured. The guards' combat barks aren't used. -->
+<mission id="211104" title="Waveform" description="Shut down what remains of the Ouroboros network and trace the signals that still run through it." plot="1"
+         order="11104" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Bluepill" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">It isn't simply a matter of plugging jack A into socket B, you know. A really functional network is a dynamic environment carefully molded to the data it transmits, its wires and cables the very sinews of the contemporary corporate body, all controlled by the hub, the nexus, the gleaming silicon multibrain that is the modern data center.
+
+I wrote an article on it that received several prestigious reviews.</say>
+  </npc>
+  <npc id="2" handle="Bluepill" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+    <say display="5">My GOD! Have you been outside? They're eating us ALIVE!
+
+Where the HELL is Brewer?</say>
+  </npc>
+  <npc id="3" handle="Mariah Osby" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>I keep my eyes open. Not all of us want our company to die. Ouroboros has some unique advantages.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>Operative, questioning of Ouroboros executives has shown them to be as unaware as the other employees you have encountered of the cause behind the technical failures plaguing the company and its products.
+
+You discovered a week ago that at least some of these problems were network-related. We are all too aware of the irregular nature of the Ouroboros network, and it is possible that someone is now using that network to spread the disruptions we are seeing. You found that their network is already partially offline; we believe that we can begin to isolate the source of these problems by completing its shutdown.
+
+Visit the indicated Ouroboros network center, and shut down any of their network management systems that are still functional.</briefing>
+    <enter><say>You won't be alone in there. I'm thinking security might not take kindly to you going in to shut stuff off... Then again, considering all the problems they're having, is one tiny security incident really that bad a thing in the big picture?</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the Computers" type="Search" object="1" item="0" />
+    <objective goal="2" text="Search the Computers" type="Search" object="2" item="0" />
+    <objective goal="3" text="Search the Computers" type="Search" object="3" item="0" />
+    <objective goal="4" text="Search the Computers" type="Search" object="1" item="0" />
+    <objective goal="5" text="Search the Computers" type="Search" object="2" item="0" />
+    <complete><say>Okay, that didn't go so bad.</say></complete>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Operative, we have isolated a stream of data signals in and out of Ouroboros systems--a stream that does not suffer from the debilitating errors occurring throughout their remaining network.
+
+The terminal location of this stream is indicated. Investigate and report.</briefing>
+    <enter><say>There's the data, all right. Reading some pretty sophisticated hardware in there, and one active signal.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Talk" npc="3">
+      <talk><say npc="3">So, you found me. I'm not surprised. They have no idea of what's going on...but someone does. Parts of the network are still functional--mostly security and power regulation. Coincidence? Hah.
+
+I've found a control region. I'll bring it up on the screen... There. There will be security...but that's nothing new for you.</say></talk>
+    </objective>
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0" after="1">
+      <done><say>Huh, I don't... Oh, I see, if I run that through her data input... Okay, I think I can see the site she's talking about.
+
+Do we trust this lady? She sounds a little nuts.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>That Ouroboros employee will be investigated, {player}. They appear to have a more than common awareness of the company's...special situation.
+
+While suspect, their finding is worth investigation. Our scans show that communication activity levels at the indicated site are higher than elsewhere on the corporation's disintegrating network.</briefing>
+    <enter><say>Communication isn't the only thing there in high levels. I'm not sure what else Osby expects us to find, but she was on the money about the security situation.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>I just saw some kind of outgoing signal, but didn't catch it. That terminal's been put into a hard shutdown mode... I can't get it to respond.
+
+Wait... I'm getting another burst of network activity--somewhere nearby.</say></done>
+    </objective>
+    <objective goal="2" text="Search the other Computer" type="Search" object="2" item="0" after="1">
+      <done><say>Hey, there's a data stream... And if I key this in, like before... Whoops, it cut out. I think I got something, though.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Two brief outgoing signals from a collapsing control center, and only one we can track; this reeks of manipulation, {player}. Whatever party wishes to destroy the front corporation of the Oligarchy--and destabilize the populace in the process--cannot be operating in any interest other than its own.</briefing>
+    <enter><say>That's where the other signal looked like it was going. I think this was the hacker we met earlier... Getting similar tech readings there, but I don't see anyone home.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>It's a compressed data dump... Let me run this through... Okay, it looks like a copy of a terminal command, with data points. I think this is a wave function, but it would take me a while to calculate. I'd better get this over to Gray.</say></done>
+    </objective>
+  </phase>
+  <finish>The data set you found forms points on a function relevant to high energy reactions. The tracking information in the compressed file showed that the data set and activation command were routed to a downtown address; the only third-party generator there capable of reaching the indicated power level is the plant housed in Ouroboros' Creston Heights headquarters. The function used would trigger such a plant to a state of overload which, given time, would become a runaway reaction sufficient to destroy Creston Heights and its environs.
+
+If this message reached the control circuitry for their power plant, the reaction could begin within hours. Obviously, this must be averted.
+
+The Ouroboros employee you encountered has disappeared from our sensors. Notify us if you re-establish contact. We wish to question that individual.</finish>
+</mission>

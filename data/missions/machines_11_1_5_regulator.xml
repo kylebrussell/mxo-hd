@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Regulator, Machines story mission 11.1.5. Source: research/missions/transcripts/Mach11-1-5.md (a run of the
+     mission given by Agent Gray; the Current Mission bar showed no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective text "Search the
+     Computers" (phase 3), and the names Agent Gray, Agent Clark, Agent Wong, Agent West and Ouroboros Security. Gray
+     and Wong called the player "Mr. Argento"; that is {player}. Besides the contact on the datalink, a field NPC
+     named Agent Gray waits at the last office; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 1, 2 and 4, the sites
+     (all four are Ouroboros offices: Office; retail's last two were in Shinjuku and Shirakaba, International), the
+     looks (four male Agents share the two male Agent looks) and the enemy counts. Ouroboros Security are the
+     corporation's own guards and have no organisation; they are Machines here, the nearest (the Oligarchs' front
+     company in the System's simulation).
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Gaps: phase 1's notification is one talk with an Ouroboros employee, whose reply was not captured. The
+     Operator's "Uhh..." came minutes into phase 2's fight; it is said on nearing one named guard. Retail's counted
+     "Search the Computers (1/5)" is five goals with that text here; a phase has at most three objects, so they are
+     three computers, the first two taking two goals each (each use does one). The screen saver contest is said on
+     nearing its two players, and its end when the first computer is searched. In phase 4 Clark's and Wong's lines are
+     said on nearing them, and West's "The connection has been severed." and Gray's second line follow Gray's talk;
+     West severing the connection is narration only. Of the last office's bystander lines, "We're doomed!" is left out
+     (a phase keeps to about six NPCs); the others are said on nearing two bluepills or when talked to. Gray's first
+     and second briefings and the Operator's "bread on tables" line lost a line at a screenshot join and are used as
+     they read. -->
+<mission id="211105" title="Regulator" description="Take control of Ouroboros and find the source of its troubles." plot="1"
+         order="11105" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Bluepill" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Ouroboros Security" type="HOSTILE" at="2" rsi="38000024" weapon="2568" />
+  <npc id="3" handle="Bluepill" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">I say, I will not stand for this...this seizure of the sweat of our brow!</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">Me? Well, I... I refill the snack machines.</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5">Delete! Delete!</say>
+  </npc>
+  <npc id="6" handle="Bluepill" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say display="5">Doesn't matter to me. I only use it for email and web browsing, and I haven't been able to get online here in weeks.</say>
+  </npc>
+  <npc id="7" handle="Bluepill" type="FRIENDLY" at="3" rsi="e4050024" weapon="0" />
+  <npc id="8" handle="Bluepill" type="FRIENDLY" at="3" rsi="61000040" weapon="0" />
+  <npc id="9" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="10" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <npc id="11" handle="Agent Wong" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <npc id="12" handle="Agent West" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="13" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">No, no problems. Why?</say>
+  </npc>
+  <npc id="14" handle="Bluepill" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+    <say display="5">I would just like to take this opportunity to state that I had nothing whatsoever to do with whatever it was.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Operative, the time has come to assume control of Ouroboros. Whatever entity is manipulating the company nearly destroyed a large area of Downtown by overloading the power plant in their Creston Heights headquarters. We have been patient, because we do not want those hiding behind the company's facade, the Oligarchs, to be alerted to problems here, but the threat from those problems, including city-wide rioting only now being brought under control, can no longer be overlooked. Furthermore, we must consider the possibility that the Oligarchs themselves may be behind these problems, although why they would endanger their own front company is unknown.
+
+We have already frozen the corporation's assets. With their infrastructure near collapse, employees in separate offices must be notified in person. Please proceed.</briefing>
+    <enter><say>Hey, it's a federal bailout. Considering the hell their company's been through in the past month, they should welcome us with open arms...right?</say></enter>
+    <objective goal="1" text="Notify the Ouroboros staff" type="Talk" npc="1">
+      <done><say>See? We're keeping bread on tables here.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>{player}, a junior operative reported a problem at the Ouroboros office to which they were assigned. This facility serves Ouroboros security personnel. Some of these individuals have objected to our takeover of the company.</briefing>
+    <enter><say>Some people... So they think they're better off with the entire corporation heading for self-destruction? Well, up to us to knock some sense into them.</say></enter>
+    <objective goal="1" text="Kill all of the Ouroboros Security" type="DefeatAll">
+      <done><say>That should do it for the morons.</say></done>
+    </objective>
+    <near npc="2" radius="600">
+      <say>Uhh...</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Thank you, operative. Now that our agents completed notification of Ouroboros staff, we can begin collecting the corporation's internal data. Analysis of this data will provide the surest means of finding the cause of the company's crisis.</briefing>
+    <enter><say>All right, you're basically going to be going around to their terminals and running a small script that will upload their data to one of our servers for analysis.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the Computers" type="Search" object="1" item="0">
+      <done>
+        <say npc="8">Nooo! My record! Months of screen saving...ruined!</say>
+        <say npc="7">Haha! Serves you right!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the Computers" type="Search" object="2" item="0" />
+    <objective goal="3" text="Search the Computers" type="Search" object="3" item="0" />
+    <objective goal="4" text="Search the Computers" type="Search" object="1" item="0" />
+    <objective goal="5" text="Search the Computers" type="Search" object="2" item="0" />
+    <near npc="8" radius="400">
+      <say npc="8">There's no way you're winning this. My screen saver kicked in a few seconds before yours did. I'm going to set the all-time record!</say>
+      <say npc="7">Aw, you just wait. I'll catch up!</say>
+    </near>
+    <complete><say>Right. Shouldn't take them long to churn through this stuff.</say></complete>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>{player}, an analysis of the Ouroboros data coming in from all of our operatives has led to an important discovery. I would like you to join me at the Ouroboros office indicated on your display.</briefing>
+    <enter><say>Phew. Here's hoping this is the end of the rat race.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="9">
+      <talk><say npc="9">A series of suspect directives and programs, disseminated through a network of employees, were found to originate from this terminal. It is unique in that it is not connected to the Ouroboros Corporation's network; its connection ran outside the simulation, to the Oligarch Network.
+
+While we have yet to track down all of the messages and employees involved, the evidence points to this connection as the source of the malfunctions within the company. We can only conclude that the Oligarchs are now firmly aware of the situation, and will not hesitate to intrude into the Matrix once again.</say></talk>
+      <done>
+        <say npc="12">The connection has been severed.</say>
+        <say npc="9">Oligarch attention will have serious ramifications, as you will no doubt realize if you recollect the problems encountered with the two who have entered the Matrix to date: Halborn and Carlyne.</say>
+      </done>
+    </objective>
+    <near npc="10" radius="600">
+      <say npc="10">It appears that someone has removed all of the...staplers from this facility.</say>
+    </near>
+    <near npc="11" radius="600">
+      <say npc="11">Perhaps you would care for some...coffee, {player}?</say>
+    </near>
+    <near npc="13" radius="300">
+      <say npc="13">Uh... That's my computer... Guys...</say>
+    </near>
+    <near npc="14" radius="300">
+      <say npc="14">What do you think this is? An audit?</say>
+    </near>
+  </phase>
+  <finish>We must prepare to deal with problems beyond merely the domestic variety, operative. You will be contacted again.</finish>
+</mission>

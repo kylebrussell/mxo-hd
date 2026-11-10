@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Measure and Countermeasure, Machines story mission 11.3.2. Source: research/missions/transcripts/Mach11-3-2.md
+     (not a screenshot of the game: a player's typed write-up on the SOE forum, "Machine 11.3.2: Measure and
+     Countermeasure", given by Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text, as the poster typed it: the title, every Agent Gray, Operator and Veil line, and the names Veil
+     and Wright Accelerated Program. The poster's typos are corrected ("terorist" is "terrorist"), and the word read
+     as "hey" or "her" in the Operator's line about the Kid is "hey". The poster's stage notes aren't game text.
+     Ours: the description, every objective text (the write-up has none), the sites (not described: Normal) and the
+     looks. Veil is a Cypherite and has no organisation; she has the redpill look the other files give her. The
+     three Wright Accelerated Programs of the stage note are overridden programs: Machines, with a Machine program
+     look, placed by name; as they are the phase's whole fight, no other hostiles are generated.
+     Rewards: none were shown; this uses the 297,000 experience and 98,000 information of the Machines 11.x missions.
+     Gaps: the Cypherite guard standing with Veil had no name or line and isn't placed. Veil's second line ("Aw,
+     shucks!...") came after her first with no event between them; it is her line when talked to again. The
+     Operator's "Watch it!" is said on nearing the accelerated programs. Collecting override code from the programs
+     for Neglect in Morrell was a separate system and isn't built. Goals are numbered through the whole mission so
+     that Veil's after-line can't be set off by a later phase's goal. -->
+<mission id="211302" title="Measure and Countermeasure" description="Learn from Veil what Wright's new accelerated programs can offer, then destroy a group of them." plot="1"
+         order="11302" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Veil" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Aw, shucks! I was gonna have her sing about the encrypted code the Oracle gave her, but people are always butting in, you know, so I had to cut things short. I didn't get everything I wanted, but I guess Shimada'll do for now.</say>
+  </npc>
+  <npc id="2" handle="Wright Accelerated Program" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Wright Accelerated Program" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Wright Accelerated Program" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, be advised that a new type of accelerated program has been detected in Downtown. We believe this enhanced override method to have been developed by Danielle Wright, who continues to be active in the area.
+
+There may, however, be an important benefit to the use of this modified override process. The Cypherite known as Veil has been directed to provide you with further information.</briefing>
+    <enter><say>Veil's gotta be riding pretty high after assassinating E Pluribus Neo's second-in-command, Shimada-- got right into her hovercraft and pulled her jack, they say. I guess the Kid's pretty pissed off about it, but hey, don't be a baby-faced terrorist, you know? And maybe he shouldn't have had half their people off trying to sneak into that no-fly zone of ours.</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="1">
+      <talk><say npc="1">Hell-o, dearie. Wanna hear about the new accelerated programs Wright's been kicking out, huh? Wellllll... they're nothing to sneeze at, but they also give off some informative little code readings--informative for us, anyway.
+
+So, here's the deal: if you run into some of those things and get bits of override code from them, take those to a guy named "Neglect" in Morrell, on the 13th floor of the building just south of Club Cyclo, -1411 107 -326. He'll take them off your hands, and give you the anti-override routines we've whipped up after studying these overrides long and hard.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Programs affected by Wright's modified override scheme have caused significant disturbances across Downtown, operative. If code collected from their remains can be utilized in the manufacture of override-resistant programs, then it is all the more imperative that we locate and terminate all such infected programs.</briefing>
+    <enter><say>Don't be too hasty in there, I hear those things can really take a beating.</say></enter>
+    <objective goal="2" text="Eliminate the accelerated programs" type="DefeatAll">
+      <done><say>Whew, those things are tanks. I hope this anti-override stuff is gonna pay off.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Watch it!</say>
+    </near>
+  </phase>
+  <finish>It has become apparent that the capability of resisting override use will be essential in neutralizing Wright. You may find it useful to gather more data from the afflicted programs, and take advantage of the Cypherite contact in Morrell.
+
+When you are prepared, see our representative in Hampton Green for further assignments.</finish>
+</mission>

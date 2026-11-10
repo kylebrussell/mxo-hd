@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redundancy, Machines story mission 11.1.3. Source: research/missions/transcripts/Mach11-1-3.md (a run of the
+     mission given by Agent Gray; the Current Mission bar showed no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective texts "Visit
+     Ouroboros with Agent Clark and Agent Long", "Don't let Agent Clark die" and "Don't let Agent Long die", and the
+     names Agent Pace, Agent Long, Agent Clark and Ouroboros Security. Pace called the player "Brando"; that is
+     {player}. Her "Saluti" was in italics; it is plain here. Gray's "should have began" is retail's.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the three
+     Ouroboros offices are Office, the meeting with Pace is not described: Normal; retail ran in Murasaki and
+     Ikebukuro, International), the looks and the enemy counts. Ouroboros Security are the corporation's own guards
+     and have no organisation; they are Machines here, the nearest (the Oligarchs' front company in the System's
+     simulation).
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Gaps: the two Agents joined the player at Pace's; here they follow once Pace has been talked to (a lead out of
+     the area), and in phase 2 the visit is done by bringing them to the first office worker. Barney Rodick never
+     appears; the search for him is a talk with a second worker. Agent Long's line, logged twice, is said once on
+     nearing him. In phase 3 the manager's pep talk and the walkout are said on nearing him, with the Operator's
+     "What in hell is going on in there?". In phase 4 retail's security turned hostile after the computer was
+     searched ("drawn attention of the shiny-helmet variety"); here the guards are there from the start, and one of
+     them says the guards' bark on being neared. The support staff's puzzling is said on nearing them, and their
+     "Good God! Don't touch that!" and "Ohhh snap!" when the computer is searched. Lines that lost a line at a
+     screenshot join (Gray's phase 4 briefing, the Operator's last two) are used as they read. The bystanders' other
+     lines are their lines when talked to. -->
+<mission id="211103" title="Redundancy" description="Confront Ouroboros about the crisis caused by its failed parts." plot="1"
+         order="11103" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568" />
+  <npc id="2" handle="Agent Long" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
+  <npc id="3" handle="Agent Clark" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>Hm.</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">Who? Can't say; got my own meetings to watch out for, you know? Ha-ha.
+
+Ri-ight.</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say display="5">No... Uh... Try down that way.</say>
+  </npc>
+  <npc id="6" handle="Bluepill" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">Yeah... To tell the truth, I try not to pick up names around here. It isn't like I want to socialize with these people or anything.</say>
+  </npc>
+  <npc id="7" handle="Bluepill" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say display="5">... I'm afraid we're out of coffee. There should be...a drinking fountain around somewhere.
+
+Excuse me.</say>
+  </npc>
+  <npc id="8" handle="Bluepill" type="FRIENDLY" at="2" rsi="e4050024" weapon="0">
+    <say display="5">Wha--
+
+Wow, look at the time.</say>
+  </npc>
+  <npc id="9" handle="Bluepill" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">Hey, come back!
+
+I know your beeper numbers!</say>
+  </npc>
+  <npc id="10" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">Hey, what's that... I think I feel a touch of flu coming on--highly contagious forty-eight hour flu.</say>
+  </npc>
+  <npc id="11" handle="Bluepill" type="FRIENDLY" at="3" rsi="3c000040" weapon="0" />
+  <npc id="12" handle="Bluepill" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say display="5">Good thing my pager stopped working this morning. There's going to be hell to pay when everything's back on line, but that's what saved vacation is for...</say>
+  </npc>
+  <npc id="13" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
+  <npc id="14" handle="Bluepill" type="FRIENDLY" at="4" rsi="5a000040" weapon="0" />
+  <npc id="15" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we have been able to quell some of the rioting in the city, but civilian casualties will continue to rise as long as the widespread shortage of functional television and Internet devices persists. The Ouroboros Corporation, as the supplier of the malfunctioning parts, should have began to furnish working replacements, but this has not occurred, and their apparent recalcitrance is only increasing customer dissatisfaction. Ouroboros must be confronted about the crisis caused by their failed parts, and provide a solution--or at least an explanation.
+
+Agent Pace will provide you with several support units for this task.</briefing>
+    <enter><say>I'm not all that thrilled at the prospect of more Ouroboros products going into circulation anyway. How do we know they wouldn't have another mass "malfunction"?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Saluti, {player}. These Agents will assist you in your call on the Ouroboros Corporation.</say></talk>
+      <done><say npc="1">Yes; once the three of you leave, I will be left alone. Of course, as an Agent of the System, I can never be said to be truly alone--no, never.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Agent Clark and Agent Long out of the area" type="Escort" npc="3,2" to="exit" after="1" />
+    <near npc="2" radius="600">
+      <say npc="2">Why do you think you are required to speak to Agent Pace before being allowed to proceed? Is what she tells you of any direct value to the mission itself? If not, then what is the purpose of this procedure?</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Proceed to the Ouroboros office, operative. They have been told to expect contact from us.</briefing>
+    <enter><say>The Ouroboros honcho you'll be meeting with is some guy named Barney Rodick.</say></enter>
+    <objective goal="1" text="Visit Ouroboros with Agent Clark and Agent Long" type="Escort" npc="3,2" to="npc:4">
+      <done><say>He isn't there? Uh... Better look around for him.</say></done>
+    </objective>
+    <objective goal="2" text="Look around for Barney Rodick" type="Talk" npc="5" after="1">
+      <talk><say npc="5">Sorry, buddy; haven't got a clue. Try asking someone else?</say></talk>
+      <done><say>Huh... Well, if he does show, the Agents will report it. I think something's up, though. We'd better give Gray the news.</say></done>
+    </objective>
+    <objective goal="3" text="Don't let Agent Clark die" type="Protect" npc="3" />
+    <objective goal="4" text="Don't let Agent Long die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Ouroboros has flaunted a disdain for our representatives in the past, but they had not neglected to arrive at a meeting. The disorganized responses you obtained from the staff on site suggest that some unknown factor is at play. We may have more success in discovering the cause of this apparent disarray by paying an unscheduled visit to another Ouroboros office--one that works closely with Barney Rodick and his staff.</briefing>
+    <enter><say>Looks like a whole lot of Monday in there. Ready to do some nosing around?</say></enter>
+    <objective goal="1" text="Talk to the Ouroboros staff" type="Talk" npc="11">
+      <talk><say npc="11">What do you think I can do about it? Email's down! We can't even contact IS to tell them!</say></talk>
+      <done><say>Huh, so they've got internal service outages, too.
+
+I'd make some kind of profound statement about the fragility of prewar society due to an over-reliance on technology, but hell, it was better than having to go around sniffing each other.</say></done>
+    </objective>
+    <near npc="9" radius="600">
+      <say npc="9">So, if we all just pull together--</say>
+      <say npc="10">Oh, hell! That's manager-speak for forced overtime! I'm out of here!</say>
+      <say>What in hell is going on in there?</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Hm. Ouroboros' product problems may be a symptom of an internal malaise.
+
+The location you see marked is an Ouroboros systems support facility. Staff there should be capable of diagnosing the problems.</briefing>
+    <enter><say>Corporate internal support departments are usually sucking down more bandwidth than the rest of the company put together, but I'm hardly picking up any data movement there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done>
+        <say npc="13">Good God! Don't touch that!</say>
+        <say npc="14">Ohhh snap!</say>
+        <say>Geez, how clueless can people get?
+
+Hm... I'm picking up some data corruption on that machine: just the kind of errors that start to crop up without proper maintenance. It's also having trouble connecting to some shared network resources... Oy, the error log looks like two Sentinels in a wrestling match.
+
+Uh-oh, I think you've drawn attention of the shiny-helmet variety. Well, I don't see any actual useful data there, anyway.</say>
+      </done>
+    </objective>
+    <near npc="13" radius="400">
+      <say npc="13">It's definitely plugged in.</say>
+      <say npc="14">I just don't know what it could be, then.</say>
+      <say npc="13">I wonder if we have a backup...</say>
+      <say npc="14">Well, I'm all out of ideas.</say>
+    </near>
+    <near npc="15" radius="600">
+      <say npc="15">You!
+
+Hey!
+
+I'm talking!</say>
+    </near>
+  </phase>
+  <finish>The sudden failures cascading through Ouroboros services must have an intelligent origin. This cause must be found before more failures occur.
+
+Hm... And I believe we will have to arrange for a more...reliable company to fulfill Ouroboros' failed public service contracts.</finish>
+</mission>

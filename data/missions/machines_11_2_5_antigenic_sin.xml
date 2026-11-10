@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Antigenic Sin, Machines story mission 11.2.5. Source: research/missions/transcripts/Mach11-2-5.md (a live run of
+     "Antigenic Sin", given by Agent Gray; the Current Mission bar had no archive number, so 11.2.5 is the folder's).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Birch, Gerbil,
+     Cryptos, Agent Gray and Agent West. Gray called the player "Mr. Argento"; that is {player}. Besides the contact
+     on the datalink, a field NPC named Agent Gray meets Cryptos in the last phase; he is a friendly NPC with that
+     handle. Cryptos is placed again for the meeting.
+     Ours: the description and the objective texts (neither tab was opened), the sites (not described: Normal), the
+     looks, the enemy organisations and counts, and the handle "Redpill" of the two redpills (unnamed in the log).
+     Birch and Gerbil (the "operatives" of Gray's briefing; Gerbil's "Who do you think you are? Neo?") are taken as
+     rogue redpills, so the first area's enemies are Zion; the second area's are overridden programs (Machines).
+     Cryptos, the Cypherite leader, has a redpill look.
+     Rewards: 98,000 information was shown on completing this mission, but the experience line had scrolled off;
+     297,000 experience is 11.2.3's. Retail also sent an Anti-override Prototype v0.1 and an IS Booster on
+     completion; mission rewards are experience and information only, so they aren't given.
+     Gaps: Birch and Gerbil chatted before Birch turned hostile; here they wait to be attacked, their chat is said on
+     nearing Birch, and his "Hell, yeah! Check this out!" comes on reaching him. The second area's programs came in
+     waves ("they just keep coming"); here they are one group, and the Operator's wave lines come when they are dead.
+     What the two redpills said was lost at a screenshot join, so they have no lines; they are found, and the
+     Operator's "What the hell are they talking about?" follows. Gray's "the Morpheus simulacrum, and [...] powerful
+     Exiles" lost a word and is "and powerful Exiles"; the Operator's "better than [...] nothing" lost a line at a
+     join and is "better than nothing". Cryptos's repeated line is his line when talked to again. The meeting was
+     scripted: here the field Gray is talked to, and Gray's, Cryptos's and Agent West's later lines are their lines
+     when talked to. -->
+<mission id="211205" title="Antigenic Sin" description="Put down the hostile activity in the slums, then attend Agent Gray's meeting with Cryptos." plot="1"
+         order="11205" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Birch" type="HOSTILE" attacksOnSight="0" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="2" handle="Gerbil" type="HOSTILE" attacksOnSight="0" at="1" rsi="050100b4" weapon="2568" />
+  <npc id="3" handle="Redpill" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="4" handle="Redpill" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
+  <npc id="5" handle="Cryptos" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564">
+    <say after="1">The overrides do not have the same effect on humans as they do on Machine programs. By experimenting with their effect on my own, hybrid code, and through the assistance of our operatives in gathering bits and samples of override routines, I have been able to make some headway in reducing the effect of the overrides on humans even further.</say>
+  </npc>
+  <npc id="6" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="1">Yes... The vulnerabilities exploited by the overrides were implanted before mankind made war on us, at a time when we made the naive mistake of conducting business with humans.</say>
+  </npc>
+  <npc id="7" handle="Cryptos" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say>Regardless of the response, my work will continue.</say>
+  </npc>
+  <npc id="8" handle="Agent West" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>We are not responsible for the consequences of codes you choose to execute on yourself.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Imelda Kroller was located and killed by Danielle Wright, operative; apparently, Wright realized that we had regained control of Kroller's overridden pod system, and opted to terminate her in order to prevent us from extracting the biological interface program.
+
+With its host removed, the interface program vanished. Concentrated areas of hostile activity are again manifesting in the slums, however, which may indicate that the program has made its way back to that region. Whatever the reason, these hostile programs and operatives must be prevented from disturbing the populace.</briefing>
+    <enter><say>Damn it, how many people is that maniac going to kill? The really sick thing is that she sees herself as some sort of savior of humanity. Well, I'm sure the handful of people she doesn't manage to wipe out in her crusade to take control will think she's the bee's knees.</say></enter>
+    <objective goal="1" text="Find Birch" type="Talk" npc="1">
+      <talk><say npc="1">Hell, yeah! Check this out!</say></talk>
+    </objective>
+    <objective goal="2" text="Kill all of the hostiles" type="DefeatAll">
+      <done><say>*Man* that was satisfying.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Dang, I heard Persephone was around somewhere. Come on, let's keep looking.</say>
+      <say npc="2">Huh! Who do you think you are? Neo?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Alarming rumors of the presence of Wright, the Morpheus simulacrum, and powerful Exiles in that area persist, operative. Report any such sighting immediately, and any indication of the interface program.</briefing>
+    <enter><say>Man, Wright--I assume--is really going to town with the overrides today. What the hell's up? She's gotta be smelling the interface program somewhere nearby.</say></enter>
+    <objective goal="1" text="Destroy the override programs" type="DefeatAll">
+      <done>
+        <say>Man, they just keep coming.</say>
+        <say>Final-- Aw, I can't believe it, another one? Wait... Now it's gone, but I'm picking up what I think are a couple redpills right near your position.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to the redpills" type="Talk" npc="3,4" after="1">
+      <done><say>What the hell are they talking about?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The Cypherite leader, Cryptos, declared his intention of developing a counter-agent to the override routines months ago, when the Oligarch Carlyne left the Matrix after expelling his rival, Halborn. We understand that several weeks ago, Cryptos conducted a field test of his first prototype while fighting override programs in Mara.</briefing>
+    <enter><say>I heard something about that Mara outing. Sounded like the anti-overrides he came up with only lasted a short time, and were pretty random in terms of which override routines they were actually able to block; sometimes they'd even block the one that actually helps, and not the others! Guess it's better than nothing, but man, how about some QA?</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="5">
+      <talk><say npc="5">I do have a prototype, capable of blocking some override routines, but there is much room for improvement, and much about the overrides that I do not understand. I am willing to share the fruits of my research, but in order to progress, I will need information, which I hope the Machines will be willing to provide.</say></talk>
+      <done><say>So he wants the Machines to give him info, huh? Guess we'd better see if Gray's interested.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are willing, at least, to hear his offer. I suggest you attend, as you may find this informative.</briefing>
+    <enter><say>Okay, Gray versus Cryptos: who wins?
+
+Aw, you're just no fun sometimes.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+      <talk><say npc="6">Of course, you realize that such information must be highly restricted.
+
+However, as the ability to counter the override routines would provide a significant benefit to the safety of the simulation...I will make an inquiry.</say></talk>
+      <done><say>Hey, apparently Cryptos is sharing the love, and we get our very own anti-override prototype consumable. It's a one-shot deal, and doesn't last very long, but should be interesting to see.
+
+Just make sure you've got some extra space in your inventory for that, plus the usual IS Booster. They'll get sent to you when you complete this mission.</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, {player}. We will continue to work on means of neutralizing Wright, and preventing enemies of the System from exploiting the interface program.</finish>
+</mission>
