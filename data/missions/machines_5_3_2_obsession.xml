@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Obsession, Machines story mission 5.3.2. Source: research/missions/transcripts/Mach5-3-2.md (the archive replay of
+     [Machine Archive 5.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the names Strenlo, Rasalhague and
+     Agent Pace, and the hostile's name and bark. The player was addressed as "Mr. Argento"; that is {player}. Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     two backup programs' names (never shown), the sites (Blevins' place is an apartment; the rest are unnamed: Normal),
+     the looks and the enemy counts. Anome's Unlimit soldiers are redpills modified with his stolen code; they have no
+     org of their own, so they are the nearest, Zion, as rogue redpills. Rasalhague is a lone redpill ("one redpill
+     signal"), so his phase has no other hostiles. Item stand-in: Rasalhague's "plans and coordinates" are Plan (6798).
+     Rewards: 285,870 experience and 94,500 information, shown on completing this mission.
+     Gaps: Rasalhague turned on the player when asked about Phinney; he is a hostile who waits to be attacked, reaching
+     him is the questioning (optional, so killing him from afar doesn't block the phase), then he is killed and
+     searched. Agent Pace's two programs follow the player out and on into the last phase, but we have no allies that
+     fight. In the last phase a second wave of Unlimit arrived mid-fight ("more of them just popped in!"); we can't
+     spawn a second wave, so the phase has one large group and that line isn't said. Strenlo's and Agent Pace's
+     second lines are said when they are talked to again. -->
+<mission id="205302" title="Obsession" description="Find Phinney, the Unlimit lieutenant behind the attacks on the Aqueduct, through the Zion operative Strenlo." plot="1"
+         order="5302" org="2" contact="Agent Gray" exp="285870" info="94500">
+  <npc id="1" handle="Strenlo" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>She's got to be stopped...before it's too late.</say>
+  </npc>
+  <npc id="2" handle="Rasalhague" type="HOSTILE" attacksOnSight="0" at="2" rsi="050100b4" weapon="2568" />
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>Buona fortuna, rossapillola!
+
+The situation between Strenlo and Phinney is very fascinating, no? Such emotion, such drama! It is inspiring. I must learn such things in order to interact with humans more effectively.</say>
+  </npc>
+  <npc id="4" handle="Backup Program" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="Backup Program" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="6" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="ec020058" weapon="2568">
+    <say>Phinney is not happy with you, sucker!</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>{player}, this Daniel Blevins, aka the Zion operative "Strenlo," has been confirmed to have been socially involved with the Unlimit who is leading their sabotage attempts on the Aqueduct, one "Phinney."
+
+You will visit Mr. Blevins and question him as to Phinney's current whereabouts. If so-called emotion inhibits him, remind him that the safety of millions of innocent civilians is at stake.</briefing>
+    <enter><say>Danny-o should be in there.</say></enter>
+    <objective goal="1" text="Talk to Strenlo" type="Talk" npc="1">
+      <talk><say npc="1">Yeah, I know who you are.
+
+Phinney's nuts. I saved her from killing herself back when she was a bluepill; brought her back to Zion, helped fix her up. She got a thing for me, but I was already attached. Phinney didn't understand... She got obsessed with me. I had to tell her "no." Now she's gone to Anome, drunk a vial. Was it because of me? I don't know. Anyway, she wants to kill me, now. She sends me teasing messages sometimes... Threats, dirty talk, heartbreak, rambling... It's a nightmare. I feel bad for her, but she can't be allowed to go on like this. And she's got to be stopped before she destroys the Aqueduct.
+
+There's this guy we both knew, Rasalhague. She still uses him for intelligence gathering. He'll know what she's up to.</say></talk>
+      <done><say>All right. Sounds like Rasalhague is our man. I'll see what Gray has on him.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Good work, operative. Rasalhague is indeed known to us--a small-time peddler of black-market information. You should find him at the indicated location.</briefing>
+    <enter><say>Got one redpill signal in there. Could be our man.</say></enter>
+    <objective goal="1" text="Talk to Rasalhague" type="Talk" npc="2" optional="1">
+      <done>
+        <say npc="2">What? Phinney? Who told you that name?!</say>
+        <say>Watch out! You're going to have to take that slime ball down!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Rasalhague" type="Defeat" npc="2">
+      <done><say>See if he's got anything on him.</say></done>
+    </objective>
+    <objective goal="3" text="Get the plans from Rasalhague" type="Loot" npc="2" item="6798">
+      <done><say>Aha, plans and coordinates. Let's have Gray plot those out for us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, the coordinates you recovered from Rasalhague correspond to a control point for the Aqueduct's emergency overflow drainage system. If this system were tampered with, unusually high water levels in the Aqueduct could result in flooding throughout the city.
+
+As Rasalhague's notes indicate that this is a large operation, I am sending you to meet with Agent Pace, who will provide you with some backup programs.</briefing>
+    <enter><say>"I am sending you to meet with Agent Pace." God, I love Gray sometimes.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Ciao, tesoro! I am very pleased to see you!
+
+Agent Gray says that you must lead a large assault on the enemy! Please take these two programs here with you. They will help you in battle. I would not want you getting hurt!</say></talk>
+      <done><say>All right, bring those two chuckleheads outside.</say></done>
+    </objective>
+    <objective goal="2" text="Lead the programs out of the area" type="Escort" npc="4,5" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Indications lead us to believe that a large portion of Phinney's assault force may be located at that location. Deleting them will make it more difficult for her to execute whatever further plans she may have to sabotage the Aqueduct.</briefing>
+    <enter><say>Gray was on the money, check out all those Unlimit signals in there. Did you bring your kick-ass boots?</say></enter>
+    <objective goal="1" text="Eliminate any hostiles" type="DefeatAll">
+      <done><say>Nice. That should put quite the crimp on Phinney's plans.</say></done>
+    </objective>
+  </phase>
+  <finish>Well done, {player}. You have dealt the Aqueduct assault force a crippling blow.
+
+Phinney's further activities will be monitored closely. Her deletion is now inevitable.
+
+Oh... Agent Pace wished me to inform you that she has been researching the relationship between Phinney and Strenlo, and has a theory that Strenlo is "in denial" regarding his true feelings toward Phinney. I...do not understand what this signifies, operative, but I hope that Agent Pace's research will be of use to you.</finish>
+</mission>

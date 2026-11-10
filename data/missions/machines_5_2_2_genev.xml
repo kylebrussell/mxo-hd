@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Genev, Machines story mission 5.2.2. Source: research/missions/transcripts/Mach5-2-2.md (the archive replay of
+     [Machine Archive 5.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the names Zion Selective Phage and
+     Unlimit Reactor, and the objective texts of phases 2 and 4 (the Objectives tab was shown there). The player was
+     addressed as "Mr. Argento"; that is {player}. Ours: the description (the Summary tab wasn't shown), the objective
+     texts of phases 1 and 3, the sites (Genev's mail computer is in a room with filing cabinets and a server rack:
+     Office; Bohrmann's reply is read in a bedroom: SlumApt; the others Normal), the looks, the enemy counts. Phases 2
+     and 4 are in Lucero Point and Stamos, as the log's maps show. Anome's thugs are rogue redpills: enemy Zion.
+     Rewards: 286,000 experience and 94,500 information, logged after the phase 4 screenshots; the Slate Green Yoshi
+     Dragon Shirt received with them isn't given (no mission reward items here).
+     Gaps: the computers' mail (Genev's sent messages and Cordoba's, Bohrmann's reply about Lemone, Toad's spam) can't
+     be shown; the searches turn up no item, and the operator's lines on them are kept. The operator's spam line was
+     the first line logged at the phase 4 computer, four minutes after the briefing like the other arrivals, so it is
+     the enter line here. Gray's "await their reply" had no delay we can show: the reply is there on arrival. Phase 3's
+     "Search the area" found nothing in retail and the phase ended with the thugs: one DefeatAll, and the operator's
+     "Anome's thugs!" is said on coming near the named Unlimit Reactor. -->
+<mission id="205202" title="Genev" description="Find out what has become of Genev, one of Anome's lieutenants." plot="1"
+         order="5202" org="2" contact="Agent Gray" exp="286000" info="94500">
+  <npc id="1" handle="Zion Selective Phage" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say after="1">Damn you, what's your business with Genev? If you've hurt her...</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="050100b4" weapon="2568">
+    <say>We're Curiosity, and you're the Cat.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>{player}, operatives in the field recently uncovered what may be an important clue: the name "Genev," probably one of Anome's current lieutenants.
+A search of our data records indicates that "Genev" was the name of a female Zion operative. You will question Zion operative Zion Selective Phage, known as a past associate of Genev, regarding Genev's current status.</briefing>
+    <enter><say>Zion Selective Phage's supposed to be in there.</say></enter>
+    <objective goal="1" text="Talk to Zion Selective Phage" type="Talk" npc="1">
+      <talk><say npc="1">Hey! You can't just barge in here! Who do you think you are?
+
+The Machines? Huh! We may have a Truce, but that doesn't mean I have to give you classified information. What do you want?
+
+Genev? No, I haven't seen her for weeks. Why? Have you seen her? Do you know where she is? What do you want with her?</say></talk>
+      <done><say>That wasn't very informative, except that her disappearance corresponds roughly with Anome's break with Zion.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0" neighbourhoods="Lucero Point">
+    <briefing>The Zionite's reluctance to share information is of no consequence, {player}. While you distracted them, we accessed their terminal and located Genev's mail address.
+A computer at the indicated location will give you access to her messages. You will read them and locate information pertinent to her current status.</briefing>
+    <enter><say>Oh boy, nothing like reading through someone else's old mail. I bet we find some good dirt on this girl.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer for information on Genev" type="Search" object="1" item="0">
+      <done><say>Whoa. I think I'm going to start answering my email like that.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Of the information you retrieved, the reply to Bohrmann is of interest. Genev indicated that she would give Bohrmann a demonstration of her "power"; this indicates that Bohrmann may have seen her recently, or may see her soon.
+
+You are being routed to Bohrmann's known base of operation in the Matrix. Search the area for further information on Bohrmann or Genev.</briefing>
+    <enter><say>That's Bohrmann's hangout. Nothing on my screen.</say></enter>
+    <objective goal="1" text="Kill Anome's thugs" type="DefeatAll">
+      <done><say>Either this was a setup, or something already happened between Genev and Bohrmann...</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Anome's thugs! Take them out!</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0" neighbourhoods="Stamos">
+    <briefing>We find it...unlikely that Anome would have constructed this as an elaborate ruse to trap you, {player}.
+
+On the other hand, it is probable that Genev has made contact with Bohrmann already. Perhaps a more straightforward approach is called for. We have taken the liberty of sending Bohrmann an email on your behalf, asking about Genev. Proceed to the indicated computer and await their reply.</briefing>
+    <enter><say>I hope you have a spam blocker set up. I don't think I can take reading another message about a new way to impress my girlfriend.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer for a message from Bohrmann" type="Search" object="1" item="0">
+      <done><say>Lemone, eh?</say></done>
+    </objective>
+  </phase>
+  <finish>This is useful intelligence, {player}. There may yet be a chance to intercept either Genev or her contact in Lemone at some point. Surveillance must be established.
+
+If Genev has been modified by a cheat code vial, she presents a significant threat to the Matrix, and must be terminated.</finish>
+</mission>

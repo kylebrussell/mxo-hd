@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Return to Sender, Machines story mission 5.3.1. Source: research/missions/transcripts/Mach5-3-1.md (the archive
+     replay of [Machine Archive 5.3.1], given by [Archived]Agent Gray), with the access card detail from that file's
+     extra run (Mach5-3-3 folder, images 138 to 140). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray and Operator line, the objective texts "Eliminate any hostiles"
+     and "Enable the override computer", and the hostile's name and bark. The player was addressed as "Mr. Argento";
+     that is {player}. Ours: the description (the Summary tab was never opened), the other objective texts, the sites
+     (the water control facility and the override control center are offices; Blevins' address is an apartment; the
+     first Unlimit location is unnamed: Normal), the looks and the enemy counts. Gray sends the player to Tabor Park,
+     and the minimap showed Tabor Park in phases 2 and 3 and Stamos at Blevins' address, so the sites are picked there.
+     Anome's Unlimit soldiers are redpills modified with his stolen code; they have no org of their own, so they are
+     the nearest, Zion, as rogue redpills. The one hostile that spoke is "Unlimit Reactor"; the soldier who carried the
+     almanac page is placed under that name. At Blevins' address a hostile "Crow Bars Pin Feathers" attacked just
+     before the dossier turned up; his faction isn't known, so that phase has a small Merovingian (street gang) group.
+     Item stand-ins: the almanac page (tidal chart) is Documents (6794), the "Return to Sender" letter is
+     Document_Love_Letter (6856; retail's own item was "Love Letter Document"), the Zion operative dossier is
+     Dossier_Zion_Operative (6848, retail's "Zion Operative Dossier"). Rewards: 286,000 experience and 94,500
+     information, shown on completing this mission.
+     Gaps: Gray's first briefing may continue past the first screenshot. The override computer could be hacked, or
+     opened with an access card looted from a dead technician beside it; we have no dead bodies, so it is the hack
+     (a Use on the computer). The Operator's "Got a bit of static" line came a minute after arriving; here it is said
+     on arrival. Her line on the locked terminal came just after the letter and is said with it, so the computer opens
+     after the letter is found. The control facility's computers showed shunt and depth reports (flavour only, not
+     built). -->
+<mission id="205301" title="Return to Sender" description="Investigate a rash of Unlimit activity in Tabor Park and find out what it has to do with the Aqueduct." plot="1"
+         order="5301" org="2" contact="Agent Gray" neighbourhoods="Tabor Park" exp="286000" info="94500">
+  <npc id="1" handle="Unlimit Reactor" type="HOSTILE" at="1" rsi="d8040058" weapon="2568">
+    <say>Let me show you what we do to curious little monkeys.</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+    <say>What th--? Buddy, you just took your last wrong turn.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>{player}, recently there has been a rash of activity by Anome's "Unlimit" soldiers in Tabor Park. You are directed to investigate. You are being directed to one of their locations in the area.</briefing>
+    <enter><say>Got corrupted Unlimit signals in there, all right. Time to shoot first, maybe ask questions later. Or we could just skip the questions entirely.</say></enter>
+    <objective goal="1" text="Kill the Unlimit Reactor" type="Defeat" npc="1">
+      <done><say>Hey, looks like that one you just served was carrying something.</say></done>
+    </objective>
+    <objective goal="2" text="Get the almanac page from the Unlimit Reactor" type="Loot" npc="1" item="6794">
+      <done><say>Huh, it's an almanac page showing Aqueduct water levels this month. That's funny. Maybe that Unlimit liked to fish? I guess I'll send it to Gray.</say></done>
+    </objective>
+    <objective goal="3" text="Eliminate any hostiles" type="DefeatAll">
+      <done><say>That takes care of all the Unlimit in the area.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>Anome's modified soldiers no longer have need of material sustenance, {player}, which leads us to believe that the individual from whom you recovered that tidal chart is not, in fact, interested in catching fish.
+
+Water levels in the Aqueduct are monitored and controlled very carefully from a location nearby, in Tabor Park. A call placed to the control officer on duty has yielded no response. This could indicate some sort of problem at the facility that, considering the item you just recovered from that Unlimit soldier, is unlikely to be a coincidence. Proceed to the facility and report your findings.</briefing>
+    <enter><say>Uh-oh. Guess who beat us there?</say></enter>
+    <objective goal="1" text="Eliminate any hostiles" type="DefeatAll">
+      <done><say>That's all of them. They were messing around on the control systems, though. That can't be good.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>The operatives you eliminated were tampering with the Aqueduct water level by activating emergency shunt pumps. We would be able to reverse this tampering, except that the pump overrides are not responding. We suspect that Unlimit has attacked the override control facility as well. You will investigate.</briefing>
+    <enter>
+      <say>That's the override control center. Scan looks clean... No sign of any activity in there.</say>
+      <say>Hey, hold up a sec. Got a bit of static... Looks like there might be some residual Unlimit code corruption in that room. Check around and see what you can find.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the room" type="Search" object="1" item="6856">
+      <done>
+        <say>A letter, marked "Return to Sender," and with little red heart stickers on it. Weird... But it's definitely got Unlimit code residue on it. Someone tore off the return address, but the address it was sent to is still there; I wonder what "Daniel Blevins" has to do with all this? Female handwriting...</say>
+        <say>The computer in that room has the override control program on it, but the terminal is locked. If you can't hack it, maybe one of the dead technicians in that area still has an access card on them that can get you in.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Enable the override computer" type="Use" object="2" after="1">
+      <done>
+        <say>Nice; you should be able to initiate the pump override sequence now.</say>
+        <say>Looks good! That should save the whales...or whatever lives in the Aqueduct these days.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="3" neighbourhoods="Stamos">
+    <briefing>Aqueduct water levels are returning to normal, {player}. Obviously, Unlimit is aware of the significant problems that would be caused by the Aqueduct becoming too shallow; not only would commercial shipping be cut off, but critical sewage and water supply difficulties would result as well.
+
+That letter you found is a curiosity. The residual traces of Unlimit code corruption indicate a high probability that it was handled by one of Anome's enhanced operatives. Therefore, it may be worth investigating the address to which it was sent, and the individual, Mr. Blevins. Proceed to his address now.</briefing>
+    <enter><say>So what do you think this is? Danny-boy dumped his girlfriend once her eyes started dripping green code? I don't know... I mean, that could be kind of hot...
+
+Not that, you know, I'm into that. Normally. But I could probably fake it if I had to, for, uh, espionage and stuff.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search Blevins' apartment" type="Search" object="1" item="6848">
+      <done><say>Hell-o, what have we here? A Zion operative's dossier, what do you know. Daniel, Daniel, Daniel, you naughty boy; not only an Unlimit heartbreaker, but a Zionite to boot, by the name of "Strenlo." Well, well, well.</say></done>
+    </objective>
+  </phase>
+  <finish>This Zionite, Strenlo, and his connection to Unlimit's attack on the Aqueduct, must be investigated further. We will notify you when we have further need of your services, {player}.</finish>
+</mission>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Emergency Response, Machines story mission 5.1.5. Source: research/missions/transcripts/Mach5-1-5.md (the archive
+     replay of [Machine Archive 5.1.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray and Operator line, and the names Jamie Harvey and Tomasa
+     Quada. The player was addressed as "Mr. Argento" and "Evol"; that is {player}. Ours: the description (the Summary
+     tab only said "Datalink established."), every objective text (the Objectives window wasn't shown), the sites
+     (none described: Normal), the looks (the two operatives' sexes weren't shown; picked by name), the enemy counts
+     (the last site's "one boatload of bad guys" is 5). Anome's people and thugs are rogue redpills: Zion. Rewards:
+     the chat shown has no reward line, and neither does 5.1.4's; 161,083 experience and 71,058 information are
+     5.1.3's, the nearest of chapter 5.1 that showed one. Gaps: the first team was dead on arrival and has no NPCs.
+     The Operator's "Some of Anome's people!" came on meeting them; here it follows the site line on arrival. Jamie
+     Harvey and Tomasa Quada said nothing in the log. Gray's "Take the operatives with you" keeps them following into
+     the last site, where they must again survive; whether retail made that a goal isn't known. Street gang mobs
+     (Crow Bars) in the chat aren't the mission's. -->
+<mission id="205105" title="Emergency Response" description="Answer the Machine field teams' reports of the strange code signature." plot="1"
+         order="5105" org="2" contact="Agent Gray" exp="161083" info="71058">
+  <npc id="1" handle="Jamie Harvey" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Tomasa Quada" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>As you may know, we have several teams working on different aspects of the Anome situation. One of them has just reported the strange code signature in their vicinity.
+
+Go to their location and assess the situation.</briefing>
+    <enter>
+      <say>That code signature is all over the place here, and it sounds like they're losing contact with the other team! Get in there and help out however you can!</say>
+      <say>Some of Anome's people! Take them out.</say>
+    </enter>
+    <objective goal="1" text="Kill Anome's people" type="DefeatAll">
+      <done><say>Looks like we're too late to help them.
+
+I'm getting some reports of the code signature elsewhere. Get out of here and we'll get in touch with Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Another team is reporting the same code signature in their vicinity. It is urgent that we do not experience the same results.
+
+Proceed to the location indicated and save the team.</briefing>
+    <enter><say>There are two members of that team left in there -- Jamie Harvey and Tomasa Quada. Once you've taken care of Anome's people, get them out of there safely.</say></enter>
+    <objective goal="1" text="Kill Anome's people" type="DefeatAll" />
+    <objective goal="2" text="Lead Jamie Harvey and Tomasa Quada out of the area" type="Escort" npc="1,2" to="exit" after="1" />
+    <objective goal="3" text="Do not let Jamie Harvey or Tomasa Quada die" type="Protect" npc="1,2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Yet another team has reported a sighting of the strange code signature, operative. Fortunately, we were able to evacuate them from the area before any harm came to them.
+
+Now comes your job. Anome and his thugs are not to be allowed free rein in the Matrix, to do as they will. Their actions must be curtailed.
+
+Take the operatives with you and put an end to any of these hooligans you can find.</briefing>
+    <enter><say>Wow. I'm reading exactly one boatload of bad guys in there, {player}. Go to it!</say></enter>
+    <objective goal="1" text="Kill Anome's thugs" type="DefeatAll">
+      <done><say>Talk about a bloodbath! I think even an arrogant idiot like Anome would sit up and take notice of that.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Jamie Harvey or Tomasa Quada die" type="Protect" npc="1,2" />
+  </phase>
+  <finish>A fine moment, {player}. If we cannot yet threaten Anome directly, or destroy his base of operations, we can make it extremely... unpleasant for him to move against us.
+
+Rest assured that we will find a way to destroy him. It is... inevitable.</finish>
+</mission>

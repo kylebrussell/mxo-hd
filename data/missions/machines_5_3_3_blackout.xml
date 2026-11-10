@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Blackout, Machines story mission 5.3.3. Source: research/missions/transcripts/Mach5-3-3.md (the archive replay of
+     [Machine Archive 5.3.3], given by [Archived]Agent Gray), with the station details of that file's extra run
+     (Mach5-3-4 folder, images 89 to 92). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Search the area",
+     "Eliminate the hostiles" and "Get the power back online", and the names Charlie Runnels, Agent Pace, Bluepill and
+     Unlimit Reactor. Gray called the player "Ms. Napilitano" and Agent Pace used the player's handle; both are
+     {player}. Ours: the description (the Summary tab was never opened), the objective texts of phases 3 and 4, the
+     sites (both power control stations are offices; Charlie's home is an apartment; the safehouse is unnamed: Normal),
+     the looks and the enemy counts. The two runs had their stations in different neighbourhoods (Achan and Tabor Park,
+     Shinjuku and Murasaki), so no neighbourhood is set. Anome's Unlimit soldiers are redpills modified with his stolen
+     code; they have no org of their own, so they are the nearest, Zion, as rogue redpills. No mission items. Rewards:
+     345,353 experience and 119,000 information, shown on completing this mission.
+     Gaps: in both stations the Unlimit appeared only after the search or the power came back on; we can't spawn
+     hostiles on a goal, so they are there from the start and the kill goal is open from the start too. The Operator's
+     "That's the control room." came on reaching it; here it is said on arrival. Charlie's dead companion (and the
+     dead woman by the second station's computer) aren't placed: we have no dead bodies. Gray's ceasefire means street
+     gangs may go after the player on the way to the safehouse; we have no street ambush, so it is a plain escort.
+     The friendly Agent at the safehouse said nothing and isn't placed. -->
+<mission id="205303" title="Blackout" description="Stop a wave of rolling blackouts sweeping across the city's power control stations." plot="1"
+         order="5303" org="2" contact="Agent Gray" exp="345353" info="119000">
+  <npc id="1" handle="Unlimit Reactor" type="HOSTILE" at="1" rsi="60010058" weapon="2568">
+    <say>What th--? There wasn't supposed to be anyone here!</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+    <say>Aw, left in the dark?</say>
+  </npc>
+  <npc id="3" handle="Charlie Runnels" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Benvenuto, {player}! Have you brought the refugee?</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">Looters were destroying my neighborhood. Thank goodness these people found me! I hope there's something left when I go back.</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>Although Anome's threat to the Aqueduct appears to have ended with his lieutenant, Phinney, a sudden series of rolling blackouts has gripped the city. Oddly enough, they appear to be following a pattern. I'm sending you to the power control station for a sector that, at the current rate of the blackout's progress, will be losing power shortly. Do what you can to prevent the power outage.</briefing>
+    <enter>
+      <say>Nothin' there. Check around, I guess. All the power lines are scrambling my readings a bit.</say>
+      <say>That's the control room.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Looks good there...
+
+Whoops! Spoke too soon! You got company!</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That's all of them. Well, that's one less sector that'll get blacked out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>It is not very surprising to find Anome's forces behind this latest disaster. But this is no time for congratulations, operative. The path of the blackouts formed a wide front. There are more power control stations to protect.</briefing>
+    <enter><say>Uh-oh, looks like they've beat us there this time.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the power back online" type="Use" object="1">
+      <done><say>Aha, the power's coming back up. Nice.
+
+Whoops! So are the Unlimit! Man, those guys don't quit!</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Place is clean.
+
+Generators and Reactors shutting down power stations--irony?</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Progress of the blackouts has ceased, {player}, but many citizens remain in unstable areas. Looting and fires are significant dangers during this type of emergency. Proceed to the indicated location and assist the citizen you find there.</briefing>
+    <enter><say>I've got a bluepill signal in there. Power's on, but who knows for how long.</say></enter>
+    <objective goal="1" text="Talk to Charlie Runnels" type="Talk" npc="3">
+      <talk><say npc="3">Omigosh! He... There were sparks everywhere! I put out the fire, but I think he's...he's...</say></talk>
+      <done>
+        <say>Ouch. Sucks to be that guy.
+
+Okay, get her out of there.</say>
+        <say npc="3">Okay, i-if you say so... I can't believe this is happening...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Charlie Runnels out of the building" type="Escort" npc="3" to="exit" after="1" />
+    <objective goal="3" text="Do not let Charlie Runnels die" type="Protect" npc="3" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>We are enforcing a strict ceasefire on the gangs in the area during this crisis, {player}. They should allow the citizen to pass unmolested, although they may not be able to resist going after you. Lead Ms. Runnels to the indicated safehouse.</briefing>
+    <enter>
+      <say>That's the spot. Got some good ol' Machine programs in there.</say>
+      <say>Mama mia! I think I need saving, too!</say>
+    </enter>
+    <objective goal="1" text="Lead Charlie Runnels to Agent Pace" type="Escort" npc="3" to="npc:4">
+      <done>
+        <say>Budda-bing, budda-boom, that's another successful rescue.
+
+Do you think I could get Pace to take care of me if something terrible happened to my home?</say>
+        <say npc="4">Ah, well done, {player}. Do not worry, we will see to it that she and the others being brought here are well cared for.
+
+These humans... Their lives are so fragile. We must watch over them very carefully, rossapillola. I will do my best to console Charlie for her loss. It will be excellent practice for me!</say>
+        <say npc="3">Thank you. These people are with the government... I guess it's safe. Will someone go back and...see to the remains?</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Do not let Charlie Runnels die" type="Protect" npc="3" />
+  </phase>
+  <finish>This threat to electrical utilities will not be tolerated, {player}. Guards will be doubled at all power stations. We must remain alert for the next attack, while also endeavoring to neutralize the threat.</finish>
+</mission>

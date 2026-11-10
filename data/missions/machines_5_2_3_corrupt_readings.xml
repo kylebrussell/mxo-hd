@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Corrupt Readings, Machines story mission 5.2.3. Source: research/missions/transcripts/Mach5-2-3.md (the archive
+     replay of [Machine Archive 5.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. The player was
+     addressed as "Mr. Argento" by Gray and "Evol" by the Agents; both are {player}. Agent Pace's Italian ("Saluti",
+     "Buona fortuna, combitante!") was in italics; here it is plain text, spelled as shown. Ours: the description (the
+     Summary tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (all unnamed: Normal),
+     the looks (the two programs have different looks so they don't match), the enemy counts. Anome's thugs are rogue
+     redpills: enemy Zion. Rewards: 286,000 experience and 94,500 information, in the chat when the log was read after
+     "Mission Completed!"; the Twin Harlick Arms 464s looted from a body isn't given.
+     Gaps: Al Kissel, Monty Franguiadakis and Brown The Exterminator were fighting allies; here they only follow the
+     player (we have no allies who fight), and nothing in the log shows the mission failing if they die, so there is
+     no Protect. Both fights had a second wave ("More of them!", "More of them just zapped in!"); here every hostile is
+     there from the start, and the wave lines are said on coming near the named Unlimit Reactor. Agent Wong's "has
+     arrived" is said on coming near him. Ted Vyse only said "Aaah!" twice in the phase 2 fight; he is taken to be one
+     of the thugs. Gray's "Apologies, operative" came half a minute after reaching the empty phase 3 site; here it is
+     said on arrival. The hardline junction box in phase 4 had no goal and isn't placed. Unlimit Reactor's four barks
+     are split, one per NPC; "We're here to kiss your ass goodbye." and "Hands off, bacon." are dropped. -->
+<mission id="205203" title="Corrupt Readings" description="Gather data on the code mutations of Anome's enhanced redpills." plot="1"
+         order="5203" org="2" contact="Agent Gray" exp="286000" info="94500">
+  <npc id="1" handle="Agent Wong" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">Buona fortuna, combitante! Best of luck to you on your mission. I know that you will succeed!</say>
+  </npc>
+  <npc id="3" handle="Al Kissel" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Monty Franguiadakis" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
+  <npc id="5" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="050100b4" weapon="2568">
+    <say>Anome's had enough of you.</say>
+  </npc>
+  <npc id="6" handle="Ted Vyse" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
+    <say>Aaah!</say>
+  </npc>
+  <npc id="7" handle="Brown The Exterminator" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="8" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="ec020058" weapon="2568">
+    <say>Guess where you are? The wrong place, that's where.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It has become apparent from our operatives' encounter with Anome's enhanced lieutenant, Genev, that we do not yet fully understand the way in which the cheat codes they swallowed have modified their RSIs.
+We were unable to gather sufficient data from Genev. However, it appears that Anome's less enhanced underlings exhibit similar, if less powerful, code mutations; a study of their RSIs should be useful.
+
+Agent Pace has further instructions for you.</briefing>
+    <enter><say>It's times like this I regret not being able to jack in.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Saluti, {player}! It is wonderful to be working with you again.
+In the next room you will find two programs designated to help you on this mission. They will aid you in combating the enemy! While fighting, they will also help relay information to us on Anome's fighters.
+
+Please enter the next room, and take Al Kissel and Monty Franguiadakis with you on your mission.</say></talk>
+      <done><say>What? Oh, sorry, I was, uh, distracted by something.
+
+Right. So, get the two Machines in the next room and head outside.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Al Kissel and Monty Franguiadakis out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+    <near npc="1" radius="1000">
+      <say npc="1">{player} has arrived.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Our specially modified scan routines are running, {player}. You will engage Anome's thugs detected at the indicated location.</briefing>
+    <enter><say>Code corruption is showing on my screen; that's a good sign our pumped-up jerkfaces are inside.</say></enter>
+    <objective goal="1" text="Kill Anome's thugs" type="DefeatAll">
+      <done><say>That's all of them. I hope Gray got some good data.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>More of them! Don't let them surround you!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Good. Preliminary indications are...revealing. We have further scanning for you to conduct at the next location.</briefing>
+    <enter>
+      <say>Huh, I'm not picking up anything in there.</say>
+      <say contact="1">Apologies, operative. Anome's forces appear to have relocated themselves. We are scanning for them now. In the meantime, your reinforcement has arrived. Collect Brown The Exterminator from the room nearby and lead them out of the area.</say>
+    </enter>
+    <objective goal="1" text="Lead Brown The Exterminator out of the area" type="Escort" npc="7" to="exit" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>We have relocated the contingent of Anome's forces that we were tracking earlier. The reason for their sudden shift of locale is as yet undetermined.
+
+Enter the area and terminate the hostile parties. We will again record their RSI data.</briefing>
+    <enter><say>Anomite corruption in the house!</say></enter>
+    <objective goal="1" text="Kill Anome's thugs" type="DefeatAll">
+      <done><say>Those guys really chap my hide.</say></done>
+    </objective>
+    <near npc="8" radius="1000">
+      <say>Hey, that's a hardline junction box in there. Now why would-- Heads up! More of them just zapped in!</say>
+    </near>
+  </phase>
+  <finish>We may form several postulates from the data you collected. Postulate one: most of Anome's forces did not ingest a cheat code directly. Anome either found a way to compile a weak version of the codes, or he distributed single codes to multiple redpills in diluted form. Postulate two: the cheat codes have affected these redpills in an unforeseen way. While these weaker redpills are still able to jack out, unlike Genev, it is likely a prolonged and painful process, as their code is not perfectly compatible with the jackout routine. Furthermore, the varied abilities they display are not a normal effect of the cheat codes. The codes appear to have been modified in some way.
+
+Note that Anome abruptly reorganized his forces to protect the hardline junction box you just found. The reason behind this is unclear, and bears further investigation.</finish>
+</mission>
