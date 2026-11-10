@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strange Bedfellows, Machines story mission 2.2.2. Source: research/missions/transcripts/Mach2-2-2.md (the archive
+     replay of [Machine Archive 2.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the sites (Zion Forward Ops is ZionOutpost; Agent Marks's site, the rendezvous
+     and the research facility are unnamed buildings: Normal), the looks, the enemy count and the intruders' side (the
+     log doesn't say who they were: Merovingian, the arc's enemy so far). Item stand-ins: the flit gun prototype is
+     Weapon (6811), the insecticide (also called pesticide) is Virus (6786), Ghost's encrypted disk is Data_CD (6831).
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 297,000
+     experience and 98,000 information are Zion chapter 2's values.
+     Gaps: at the rendezvous the intruders struck while Ponch was talking; here the phase's hostiles are there on
+     arrival and the Operator's warning is said then, and Ponch's greeting is said when she is talked to. The
+     after-fight talk (Angstrom, Broomfondle, then Ponch) is said on talking to Angstrom once the intruders are dead.
+     Gray's order not to let any Zion-affiliated human die is a Protect of Ponch, Angstrom and Broomfondle; it is
+     listed last so their Talk goals are found first. Part of the Operator's lines in phases 1 and 3 fell between two
+     screenshots and may be missing a few words; the best reading is used. Ghost hands over the disk after a Talk, so
+     his offer and Gray's reply come first. The decryption computer showed the "Operation Omega" list with the
+     player's name in it; here the disk is put in the computer (a Hack) and the list isn't shown, only the Operator's
+     reaction. -->
+<mission id="202202" title="Strange Bedfellows" description="Trade a flit gun prototype to Zion for the insecticide." plot="1"
+         order="2202" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Marks" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>I will be interested to see your progress with the followers of Zion. I have always found them... difficult to deal with.</say>
+  </npc>
+  <npc id="2" handle="Ponch" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="3" handle="Angstrom" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="4" handle="Broomfondle" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say>I'm glad to see we can work this out together, {player}. We don't want to lose any more operatives, and I'm sure you don't, either.</say>
+  </npc>
+  <npc id="6" handle="Dobronravin" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say>As long as you're gunning for the Assassin, we're okay... after that, all bets are off.</say>
+  </npc>
+  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Your compliance has been noted, {player}.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our current situation is a somewhat... unusual one for us, {player}. We have assembled the components into what you might call a "flit gun" of sorts. I am certain you grasp the nature of the pest for which this flit gun is designed.
+
+However, we must have pesticide for the guns to be effective. The only pesticide effective against the Assassin is in the possession of Zion.
+
+You have been selected to carry out a trade with Zion operatives. I trust that you will be able to deal effectively with your fellow humans.</briefing>
+    <enter><say>You'll need to pick up one of the flit gun prototypes here first, as part of the trade. Keep an eye out for your contact, Agent Marks.</say></enter>
+    <objective goal="1" text="Talk to Agent Marks" type="Talk" npc="1">
+      <talk><say npc="1">{player}. I suppose you are here for the flit gun. You may take it from me.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the flit gun from Agent Marks" type="Get" npc="1" item="6811" after="1">
+      <talk><say npc="1">I do not understand your confusion, {player}. I have the flit gun device for you.</say></talk>
+      <done><say>That's the prototype. Kinda weird-looking if you ask me... Anyhow, time to get out of here and head over to the rendezvous.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Proceed to the appointed meeting place and trade with the human known as Ponch.
+
+In light of the current truce, please do not allow any Zion-affiliated humans to die during your interactions with them.</briefing>
+    <enter>
+      <say>All right, Ponch and her team should be somewhere in this area.</say>
+      <say>Looks like we've got company! Take out those intruders.</say>
+    </enter>
+    <objective goal="1" text="Talk to Ponch" type="Talk" npc="2">
+      <talk><say npc="2">Well, I didn't think you'd really show, {player}. When we heard we'd be meeting up with Machinists... let's just say we were a little dubious.
+
+And to be honest, we still are. I don't trust you, {player}. I don't trust anyone working for... what th--</say></talk>
+    </objective>
+    <objective goal="2" text="Kill the intruders" type="DefeatAll" />
+    <objective goal="3" text="Talk to Angstrom" type="Talk" npc="3" after="2">
+      <talk>
+        <say npc="3">Damn... can't argue with fighting like that. Whatd'ya think, Ponch?</say>
+        <say npc="4">What?! You gotta be kidding me! We're talking about the Machines here, not some--</say>
+      </talk>
+      <done>
+        <say>Sounds like we'll have to head to the Zion base if we're going to make this trade.</say>
+        <say npc="2">No, he's right, Broomfondle. Anybody puts their life on the line for us, I can't ignore that.
+
+Listen, I don't have the insecticide. We didn't trust this whole deal from the start. But now...
+
+Let's head back to Forward Ops. Someone there'll know what to do.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Do not let Ponch, Angstrom or Broomfondle die" type="Protect" npc="2,3,4" />
+  </phase>
+  <phase site="ZionOutpost" enemy="Machines" enemies="0">
+    <briefing>Such a level of distrust does not surprise me, {player}. Our studies have shown humans to be inherently untrustworthy; due to their bizarre psychology, they project this distrust onto others.
+
+Regardless, we are pleased that you seem to have earned their trust for the moment. I assured my colleagues that you would be the appropriate asset for this assignment, and it is obvious that I was correct.
+
+Proceed to the location indicated and perform the trade.</briefing>
+    <enter><say>Zion Forward Ops... it really is something that Ponch brought you here. Keep an eye out for Dobronravin; it looks like she'll be making the trade with you.</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="5">
+      <talk>
+        <say npc="5">{player}. I'm glad you came here... there's something I need to talk to you about.
+
+One of our operatives came across something on one of his missions against the Merovingian. It seems to be encrypted with a code we can't break and... well, we need your help decoding it.
+
+We need to overcome our differences right now. Most of the people in Zion wouldn't approve of this meeting... but I think we share a common goal: the end of the Assassin. Can we work together on this?</say>
+        <say contact="1">The actions this human has outlined appear quite logical to us. Cooperation between the Machines and Zion would be beneficial. Obtain the disk from him and we shall analyze it in due course.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the disk from Ghost" type="Get" npc="5" item="6831" after="1">
+      <talk><say npc="5">Well? What do you think?</say></talk>
+      <done><say npc="5">I'm glad to see we can work this out together, {player}. We don't want to lose any more operatives, and I'm sure you don't, either.</say></done>
+    </objective>
+    <objective goal="3" text="Give the flit gun to Dobronravin" type="Give" npc="6" item="6811">
+      <talk><say npc="6">You got the flit gun?</say></talk>
+    </objective>
+    <objective goal="4" text="Get the pesticide from Dobronravin" type="Get" npc="6" item="6786" after="3">
+      <talk><say npc="6">Okay, looks good... you can take the pesticide.</say></talk>
+      <done><say>All right, that's everything. We should get this stuff over to the Machine lab. I'm curious to see what's on that disk...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I have updated your display with the location of our nearest research facility. Proceed there with the insecticide and the disk.</briefing>
+    <enter><say>Be on the lookout for Agent Miller in here. You'll be giving the insecticide to him.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Give the insecticide to Agent Miller" type="Give" npc="7" item="6786">
+      <talk><say npc="7">I understand you have the insecticide, {player}. Give it to me.</say></talk>
+      <done><say npc="7">The computer in this room is equipped with a powerful decryption program. Place the disk you are carrying in that computer.</say></done>
+    </objective>
+    <objective goal="2" text="Put the disk in the computer" type="Put" object="1" item="6831" after="1">
+      <done>
+        <say>Uhh... {player}? Did you see that list on the computer? What the hell is your name doing on there? This can't be good.</say>
+        <say>This mission is complete. Time to head out.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>You have performed well, {player}. We shall begin the process of reverse engineering the insecticide, in order to produce enough for all of our operatives.
+
+This matter of "Operation Omega" is troubling. This is the first we have heard of it. We shall look into this in the future.</finish>
+</mission>

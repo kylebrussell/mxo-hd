@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Zero One, Machine story mission 1.3.2. Source: research/missions/transcripts/Mach1-3-2.md (the archive replay
+     of [Machine Archive 1.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, every NPC name, and the last phase's objective
+     texts ("Lead Zverev to the active computer", "Talk to Zverev about Morpheus' previous "One"", "Don't let Zverev
+     die"). Ours: the description, the other objective texts, the sites (unnamed buildings and "the indicated
+     safehouse", a Japanese-style room in Shinjuku: Normal), the looks and the enemy counts. Zverev, Burns and Shcheglov
+     are taken as redpills (Zverev is hunted by what he thinks are Agents). Item stand-in: Zverev's Business Card is
+     Access_Card (6791). Rewards: the 278,635 experience and 70,000 information shown right after this mission
+     completed.
+     Gaps: in phase 1 the imposters burst in after Zverev's first words; here they are on the floor from the start.
+     Zverev is two NPCs of one name: the one met in phase 1 stays there, and the one in phase 3 is already standing
+     with Burns and Shcheglov instead of walking in after the player arrives (the Operator's "picking up multiple
+     signals entering the area" is said on arrival). Retail's phase 3 ended once Zverev had talked and he joined the
+     player; here the player leads him out of the area ("Lead Zverev out of the area" is ours), so that he follows into
+     phases 4 and 5. In phase 4 Zverev killed Aaron Upson himself; we have no NPC killing another, so leading Zverev to
+     Upson completes the killing (the Operator's and Zverev's lines play) but Upson stays standing, and "Put the
+     Business Card on Upson's body" is a Give to Upson. Aaron Upson is two NPCs of one name too (phases 2 and 4); his
+     thanks in phase 2 is said when the imposters are down. Phase 5's "Lead Zverev to the active computer" is a Use of
+     the computer, since an escort can't end at an object. The imposters who come for Zverev at the end are only his
+     last line. -->
+<mission id="201302" title="The Zero One" description="Learn what an informant knows about the human Morpheus thought was the One before Neo." plot="1"
+         order="1302" org="2" contact="Agent Gray" exp="278635" info="70000">
+  <npc id="1" handle="Zverev" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Aaron Upson" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">Eeeep!</say>
+  </npc>
+  <npc id="3" handle="Zverev" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <npc id="4" handle="Burns" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say display="5">I'm tired of those Agents thinking that they can push us around!</say>
+  </npc>
+  <npc id="5" handle="Shcheglov" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say display="5">Those stupid Agents won't know what hit them.</say>
+  </npc>
+  <npc id="6" handle="Aaron Upson" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>You will investigate rumors of a previous "One" in Morpheus' past. While the reasons behind Morpheus' termination remain a mystery, any information about his past may assist us in tracing and eliminating the rogue agencies involved with the Assassin. We are sending you to meet with a reliable informant who claims to have first-hand knowledge of a human who Morpheus thought was the "One," before he met Mr. Anderson.</briefing>
+    <enter><say>The informant, Zverev, agreed to meet in that building. He thinks you represent a rival faction. While his profile indicates that he has every incentive to cooperate, the Machines aren't absolutely sure we can trust him, so proceed with caution.</say></enter>
+    <objective goal="1" text="Talk to Zverev" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Hey, you're who I'm supposed to meet, right? Thanks for the advance in my bank account--I like the way you folks do business. So what can I tell you about this other "One" that Morpheus had once upon a time? Well, --hey! Did you hear something? Aw cripes, it's gotta be those Agents on my ass again! You gotta help me out!</say>
+        <say>"Agents"? According to my readings, those aren't Agents, they're the imposters! Why would they have come back just to silence Zverev? There must be something he isn't telling us, but you'd better take them out before they get to him.</say>
+        <say npc="1">Oh no! Oh no! They tracked me down!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say>That's all of the imposters in the area. Zverev should be ready to talk now.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Business Card from Zverev" type="Get" npc="1" item="6791" after="2">
+      <talk><say npc="1">Th-thanks. I owe you one. Eh, listen, I think we'd better break up our little meeting here. Take this business card--I'll meet you at that address in a little while, okay? See you then.</say></talk>
+      <done><say>Zverev's skittishness is really holding this mission up. Maybe there's something we can do without him. Leave the area and I'll send you further instructions.</say></done>
+    </objective>
+    <objective goal="4" text="Don't let Zverev die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>It seems that contact Zverev has done something to tempt the imposter Agents back into the dangers of the Matrix. He will not be comfortable enough to divulge his information if they are allowed to remain in the area. We have located a band of the imposters nearby. Proceed to their location and destroy them.</briefing>
+    <enter><say>The imposter Agents are in that building. Make sure you get all of them.</say></enter>
+    <objective goal="1" text="Kill all the imposter Agents" type="DefeatAll">
+      <done>
+        <say>All right, you got all the imposters. I don't know who that other guy is, but he seems harmless. Go on and leave the area.</say>
+        <say npc="2">Oh, uh, I don't... err... Thanks for rescuing me! They kidnapped me and brought me here, I don't know why. Really, thanks!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The address from contact Zverev's business card is now uploading to you. You will proceed there and meet with Zverev.</briefing>
+    <enter>
+      <say>The area appears to be empty. You'd better search the premises.</say>
+      <say>I'm starting to think this is a waste of time. I'll bet Zverev has... wait a sec. I'm picking up multiple signals entering the area. That better be him!</say>
+      <say>Ah, it's Zverev and... friends of his, I guess.</say>
+    </enter>
+    <objective goal="1" text="Talk to Zverev" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Hey, you made it! Okay, I got a few of my buddies, and we're ready to go get rid of those Agents for good! You ready to roll?</say>
+        <say>Zverev's lucky that these aren't real Agents after him. I guess we'd better humor him though, since we still need his info.</say>
+        <say npc="3">Come on! I found out where the Agents are camped out--we'll go wipe 'em out in a surprise attack!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Zverev out of the area" type="Escort" npc="3" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>The location of the imposter Agents, according to Zverev, is now being uploaded to you.</briefing>
+    <enter><say>Scanners are detecting powerful programs in that building--it looks like Zverev's data was correct. Just don't let him get himself killed, we still need his information on Morpheus' previous "One."</say></enter>
+    <objective goal="1" text="Kill all the imposter Agents" type="DefeatAll">
+      <done><say>That's all the bad guys, soldier.</say></done>
+    </objective>
+    <objective goal="2" text="Find Aaron Upson" type="Talk" npc="6">
+      <talk>
+        <say>That guy again? He couldn't have been "kidnapped" twice! Hold up, it looks like Zverev wants to talk to Aaron Upson. Maybe they know each other?</say>
+        <say npc="6">Aaa! Keep that psycho Zverev away from me!</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to Zverev" type="Talk" npc="3" after="1">
+      <talk><say npc="3">What? Aaron Upson here? Where? Take me to that lying weasel!</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Zverev to Aaron Upson" type="Escort" npc="3" to="npc:6" after="3">
+      <done>
+        <say>Whoa, Zverev killed Upson! And now he wants you to put his business card on the body. I guess that if Upson was leading the imposters to Zverev, that explains why you ran into him earlier today.</say>
+        <say npc="3">Ha! That'll teach that lying rat Upson to double-cross me. He's the one who's been telling the Agents where I am! Tell you what--put that Business Card I gave you on Upson's body.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Put the Business Card on Upson's body" type="Give" npc="6" item="6791" after="4">
+      <done>
+        <say>Ugh. This Zverev guy is on quite the ego trip.</say>
+        <say>Looks like you're all done there. Go ahead and lead Zverev outside.</say>
+        <say npc="3">Great! That'll be my "calling card"--haha! Poor old Upson--he always was a mean son of a gun, but I didn't figure he'd've had the guts to try anything on me.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Lead Zverev outside" type="Escort" npc="3" to="exit" after="5" />
+    <objective goal="7" text="Don't let Zverev die" type="Protect" npc="3" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Zverev seems particularly pleased with himself--we trust that this will increase his lucidity regarding the history of Morpheus' earlier "One." Take him to the indicated safehouse and interrogate him.</briefing>
+    <enter><say>Zverev is anxious about the status of his next payment. Lead him to the active computer in the area--he'll be able to check his account from there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Lead Zverev to the active computer" type="Use" object="1">
+      <done><say>Zverev should be ready to deliver his part of the agreement now. Talk to him about Morpheus' previous "One."</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Zverev about Morpheus' previous &quot;One&quot;" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Okay, my account looks good so here's the scoop: way before he found Neo, Morpheus thought this other dude was the "One." This fella was one of those "extreme athlete" types: loved danger, huge ego and all that. He could pull off stunts you wouldn't believe, and he could learn skills incredibly quickly, especially combat stuff. He was also a real jerk and loved the idea of being everyone's "savior." So anyway-- Hey wait, did you hear something?</say></talk>
+      <done><say>Huh, it doesn't sound like that previous "One" has anything to do with the Assassin. The Machines are telling me to have you leave Zverev there for the imposters to deal with. You'd better get outside.</say></done>
+    </objective>
+    <objective goal="3" text="Don't let Zverev die" type="Protect" npc="3" />
+    <complete><say npc="3">Oh no, it's the Agents, they've found me again! You gotta help me out here. W-wait, where are you going? We had a deal! Waaaaaait!</say></complete>
+  </phase>
+  <finish>We may have been a bit hasty in allowing Zverev to be eliminated. Perhaps we should discover what became of this previous "One" found by Morpheus. We shall have to find a more... reliable source of information.</finish>
+</mission>

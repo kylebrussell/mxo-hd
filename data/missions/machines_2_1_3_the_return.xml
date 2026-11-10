@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Return, Machines story mission 2.1.3. Source: research/missions/transcripts/Mach2-1-3.md (the archive replay
+     of [Machine Archive 2.1.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPCs' names (Binhex, Agents
+     Stewart, Wilson, Brown, Clark and Johns). Ours: the description (the log shows no Summary), the objective texts
+     (the Objectives tab was never opened), the sites (unnamed buildings: Normal; Gray calls the last one a high
+     security location), the looks and the count of Binhex's guards (seven minutes passed before she spoke, so three
+     Exiles; no fight is in the log). Item stand-in: the component, a handle, is Weapon (6811). Rewards: the
+     screenshots are crops of the Mission window with no chat panel, so no reward is shown; these are the Zion chapter
+     2 values (about 297,000 experience and 98,000 information).
+     Gaps: Binhex is hostile but waits for the player (attacksOnSight="0"): finding her is a Talk that plays her two
+     lines, then she is killed; the safe opens after. A line saying she was defeated may be missing from the
+     screenshots. Phase 2 is a dead end in retail: Chrysothemis's meeting place has been raided and nobody is there;
+     here it is a Search of a Furniture object that turns up nothing, whose done line is the Operator's warning.
+     Stewart addressed the player by title and surname; here {player}. The Agents' barks in phase 3 are said when
+     each is talked to. The tracking device inside the component is story only. -->
+<mission id="202103" title="The Return" description="Recover the stolen device component from the Merovingian operative Binhex."
+         plot="1" order="2103" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Binhex" type="HOSTILE" at="1" rsi="a8060090" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Agent Stewart" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Agent Wilson" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Perimeter secured.</say>
+  </npc>
+  <npc id="4" handle="Agent Brown" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say display="5">All security precautions have been engaged.</say>
+  </npc>
+  <npc id="5" handle="Agent Clark" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Give the component to Agent Stewart.</say>
+  </npc>
+  <npc id="6" handle="Agent Johns" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say display="5">Security is at level five.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>We are in need of your particular... talents, {player}. The second component for our device was in the possession of another operative, until a female human in the employ of the Merovingian led a raid against us. The component was stolen, and is now in her possession. Fortunately, we were prepared for just such a contingency. A tracking device is hidden inside the component. I am sending you the location of the Merovingian operative, Binhex.</briefing>
+    <enter><say>Okay, keep an eye open for Binhex. The surveillance tapes of her raid look pretty damn impressive.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Find Binhex" type="Talk" npc="1">
+      <talk>
+        <say npc="1">So, you heard what the deal is, right?</say>
+        <say npc="1">You just made a big mistake, {player}.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Binhex" type="Defeat" npc="1">
+      <done><say>Hey, there's a wall safe in this room. It might have what you're after.</say></done>
+    </objective>
+    <objective goal="3" text="Search the wall safe" type="Search" object="1" item="6811" after="2">
+      <done><say>A handle, huh? Well, that's what we're looking for.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>One day the Merovingian and his kind shall be deleted. They are a taint upon the pure, clean code of the Matrix. I have sent you the address of one of our representatives. Take the component to her.</briefing>
+    <enter><say>Here's where you'll meet Chrysothemis.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find Chrysothemis" type="Search" object="1" item="0">
+      <done><say>Damn it! The Merovingian's people have been here. I think you should get out of there. Now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We did not anticipate this level of... interest in the device. I am sending you the coordinates of a high security location.</briefing>
+    <enter><say>Okay, you'll be looking for Agent Stewart in here.</say></enter>
+    <objective goal="1" text="Give the component to Agent Stewart" type="Give" npc="2" item="6811">
+      <talk><say npc="2">Do you have the component, {player}?</say></talk>
+      <done><say>I don't know about you, but I feel a little more comfortable with that component in someone else's hands. Talk about a hot potato.</say></done>
+    </objective>
+  </phase>
+  <finish>Rest assured, {player}, that our reprisal against the Merovingian will be devastating.</finish>
+</mission>

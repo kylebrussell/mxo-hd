@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sum of its Parts, Machines story mission 2.1.4. Source: research/missions/transcripts/Mach2-1-4.md (the archive
+     replay of [Machine Archive 2.1.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPCs' names. Ours: the
+     description (the log shows no Summary), the objective texts (the Objectives tab was never opened), the sites
+     (the meeting place and Agent Wilson's location are unnamed: Normal; the second is an office building: Office) and
+     the looks (the bluepills' sexes are guessed from their first names; Aisleen, a Machine operative planted in the
+     Merovingian's organization, has an Exile look). Item stand-ins: the bug is Bug (6824), the gun barrel is Weapon
+     (6811). Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward is shown; these
+     are the Zion chapter 2 values (about 297,000 experience and 98,000 information).
+     Gaps: retail's office held nine bluepills; to keep the floor to six NPCs, Germaine Seminatore, Jesse Quada and
+     Twyla Kidney are left out (their lines only pointed at Twyla and Hal, or asked who the player was), and the rest
+     still point at Hilario or Stacey. Giving the bug to the wrong bluepill (Aisleen and Gray warn against it) can't
+     happen here: only Hilario takes it. Hilario is decompiled in retail; here he stays standing. The secure room that
+     opens is a Safe whose Search opens after the Give. So that Adam Brandon's line after the decompiling waits for the
+     Give and not for phase 1's goal 1, the Give is goal 2 and the Safe goal 1. Agent Wilson's line after the hand over
+     wasn't captured. -->
+<mission id="202104" title="Sum of its Parts" description="Find the program guarding the last device component and recover it."
+         plot="1" order="2104" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Aisleen" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+    <say after="1">Oh yeah, one more thing... be sure to pick the right one. I'm not quite clear on what that bug would do to a bluepill, but it wouldn't be pretty.</say>
+  </npc>
+  <npc id="2" handle="Hilario Hoyos" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="3" handle="Stacey Paprock" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>You should talk to Hilario. He just got here the other day, and he doesn't really make too much sense all the time.</say>
+  </npc>
+  <npc id="4" handle="Adam Brandon" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>Hey, I hope you're here to do something about Hilario. He just came on board a few days ago, and he's already creeped out just about everybody. Sometimes it seems like he's talking to himself and laughing... you gotta do something!</say>
+    <say after="2">I didn't think that was how you'd take care of Hilario... I think I'm gonna throw up...</say>
+  </npc>
+  <npc id="5" handle="Yetta Gilbert" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>Beats me. Have you asked Hilario about that yet? He just got here a few days ago. Seems a little weird, too.</say>
+  </npc>
+  <npc id="6" handle="Michale Harvey" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>I dunno. Stacey might know something for you.</say>
+  </npc>
+  <npc id="7" handle="Hal Plemmons" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>Huh? Hey, I don't know... but Hilario sure gives me the creeps sometimes.</say>
+  </npc>
+  <npc id="8" handle="Agent Wilson" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>One component of the device remains to be collected, {player}. Once again, the Merovingian has possession of this component. His continued attempts at obstruction are becoming almost... annoying. We have an operative, Aisleen, planted within his organization. You will rendezvous with her and continue the mission according to the intelligence she has gathered.</briefing>
+    <enter><say>Man, they're really keeping mum about this "device". I'd bet anything it's something to take on the Assassin. Anyhow, this is the meeting place. Should be a safe location, but keep an eye out all the same, 'kay?</say></enter>
+    <objective goal="1" text="Get the bug from Aisleen" type="Get" npc="1" item="6824">
+      <talk><say npc="1">So... what's the password? Nah, just kiddin'. Agent Gray told me you'd be coming. Listen, the Merovingian hid the component in plain sight this time. It's in an office building near here, full of clueless bluepills. Now here's the twist: one of the "bluepills" is actually a program disguised as a human. It's controlling access to the component. I've got a specially engineered bug here that will decompile that program and bring down the security around the component.</say></talk>
+      <done>
+        <say npc="1">Here, take it.</say>
+        <say>All right, get out of here and I'll get the coordinates of that office building to you.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>I believe you understand the situation sufficiently, {player}. You must determine the identity of the program and give it the bug in order to gain access to the component. I urge you to investigate thoroughly before taking any action. We have no desire for you to reduce our energy source needlessly.</briefing>
+    <enter><say>Here's the office building Aisleen was talking about.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="2" text="Give the bug to the program" type="Give" npc="2" item="6824">
+      <talk><say npc="2">Hey, beats me, I'm just a clueless bluepill, ya know?</say></talk>
+      <done><say>All right, that was the one! There should be a secure room somewhere around here that just opened up.</say></done>
+    </objective>
+    <objective goal="1" text="Get the component from the secure room" type="Search" object="1" item="6811" after="2">
+      <done><say>Great, that's the last component -- some sort of gun barrel. Better get out of there before the authorities show up.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Proceed to the indicated location, where you will give the component to Agent Wilson.</briefing>
+    <enter><say>Agent Wilson should be waiting for you in here. Maybe we'll find out what the completed device is!</say></enter>
+    <objective goal="1" text="Give the component to Agent Wilson" type="Give" npc="8" item="6811">
+      <talk>
+        <say npc="8">You have the component, {player}?</say>
+        <say npc="8">Give me the component.</say>
+      </talk>
+      <done><say>Wow, as forthcoming as ever. I guess we'll just have to wait and see what this great "device" is...</say></done>
+    </objective>
+  </phase>
+  <finish>You will be notified of the device's use when you need to know such information, {player}. For now, be assured that we appreciate your service. Contact me soon. We are planning an operation against the Merovingian to remind him of his proper place.</finish>
+</mission>

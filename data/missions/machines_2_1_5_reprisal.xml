@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reprisal, Machines story mission 2.1.5. Source: research/missions/transcripts/Mach2-1-5.md (the archive replay of
+     [Machine Archive 2.1.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPCs' names (Agent Park,
+     Brown The Exterminator, Isaiah Copley, Lon Royer, Gnat). Ours: the description (the log shows no Summary), the
+     objective texts (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the looks (Brown The
+     Exterminator a Machine program; his two team members, whose kind isn't said, redpill operatives) and the enemy
+     counts (phase 2's "one boatload" is five). Item stand-in: the virus is Virus (6786). Rewards: the screenshots are
+     crops of the Mission window with no chat panel, so no reward is shown; these are the Zion chapter 2 values (about
+     297,000 experience and 98,000 information). A Newspaper Clipping (a bug spray advert) was seen in an item window
+     afterwards and may have been retail's reward item; it isn't given.
+     Gaps: the team (Brown, Isaiah Copley, Lon Royer) is led out in phase 1 and follows the player to the end; Gray's
+     option to leave team members outside the strong point isn't offered, and the team doesn't fight. Their barks in
+     phase 2 were six; an NPC says one line when talked to, so each says one ("Oh yeah!", "Keep your eyes open!" and
+     "Hope we find some real enemies in here." are left out), and Isaiah's "We're all set!" is said when Agent Park is
+     talked to. In phase 3 retail wanted Brown brought to the mainframe; an Escort can't end at an object, so finding
+     the mainframe is a Use of it, and Brown's jamming field failure is a Get of the virus from him that opens after,
+     then the player puts it in the mainframe. Phase 4's timer (kill them all before the security net is restored)
+     isn't kept, and the cascading resonance (killing Gnat kills the rest) can't be: the phase ends when Gnat dies,
+     and the other Exiles are left standing. At least one line after Gnat's bark wasn't captured. -->
+<mission id="202105" title="Reprisal" description="Lead an assault team against the Merovingian's strong points." plot="1"
+         order="2105" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Park" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
+  <npc id="2" handle="Brown The Exterminator" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Isaiah Copley" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say display="5">You reading any more enemy activity?</say>
+  </npc>
+  <npc id="4" handle="Lon Royer" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">Like takin' candy from a baby.</say>
+  </npc>
+  <npc id="5" handle="Gnat" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568">
+    <say>Managing power flow...</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>My colleagues are working on the assembly of that device. In the meantime, we have arranged our reprisal against the Merovingian, and we have chosen you to lead a team against his forces. You will be striking against several of his strong points near here. We will cause significant damage to his organization; enough that he will not be able to instigate any further interference for some time.</briefing>
+    <enter><say>All right, {player}, Agent Park is in this building. The assault team is waiting with him.</say></enter>
+    <objective goal="1" text="Talk to Agent Park" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Ah, there you are, {player}. This is Brown The Exterminator. He is the leader of your assault team.</say>
+        <say npc="1">Lead Brown The Exterminator and his team out of this area.</say>
+      </talk>
+      <done><say npc="3">We're all set!</say></done>
+    </objective>
+    <objective goal="2" text="Lead Brown The Exterminator and his team out of the area" type="Escort" npc="2,3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>You will now advance to the Merovingian's local strong point and eliminate all opposition. Once you are on site, you have the option to leave any or all of your team outside to secure the perimeter, and perform the mission alone. Given what we know about this location, however, I strongly advise against it.</briefing>
+    <enter><say>All right, this is it. Make sure you've got everything ready, {player} -- I'm reading exactly one boatload of bad guys in there.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say contact="1">All of the Exiles at this location have been eliminated. You and Brown The Exterminator will now continue on to the next location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>We are now sending you to a network hub. In addition to eliminating all of the Exiles you find there, you must insert a virus into the Merovingian's mainframe. Brown The Exterminator has the virus in his possession and will insert it once you have located the mainframe.</briefing>
+    <enter><say>All right, this is the spot. Remember, you're here to take everyone out and get Brown The Exterminator to the mainframe computer.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's all of the Exiles.</say></done>
+    </objective>
+    <objective goal="2" text="Find the Merovingian's mainframe" type="Use" object="1">
+      <done>
+        <say>All right, there's the mainframe. Now you've just got to get the virus in there.</say>
+        <say>Uh oh... Brown The Exterminator's code stream is all over the place. There's some sort of jamming field at work here. Go check him out!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the virus from Brown The Exterminator" type="Get" npc="2" item="6786" after="2">
+      <talk><say npc="2">Something's wrong... my visuals are failing... you've got to take the virus. Take it!</say></talk>
+      <done><say>Okay, you're going to have to insert that virus yourself, {player}.</say></done>
+    </objective>
+    <objective goal="4" text="Insert the virus into the mainframe" type="Put" object="1" item="6786" after="3">
+      <done><say>Virus is in place! Now head on out. I think Gray has one more target for you.</say></done>
+    </objective>
+    <complete><say>All right, everything is complete. You can get out of there now.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>You handled that situation well, {player}. We are now sending you to the final location. It is protected by a powerful security net; however, the virus you planted in that mainframe was designed to lower the net for a short time. Now you must get to the location and terminate all Exiles before the security net is restored. You may want to take advantage of these particular Exiles' cascading resonance programming.</briefing>
+    <enter><say>Cascading resonance! I've heard about this, but I've never seen it before. Here's the deal: all of the Exiles in there are linked to each other in a parent/child relationship. The "parents" derive power from their child nodes. But whenever an Exile is killed, any of their "children" also die, and so on down the tree. If you can take out the Exile at the top, all the rest will fall. Okay, let's see... it looks like Gnat is at the top of the tree. If you can sneak in and take him out, you're all good!</say></enter>
+    <objective goal="1" text="Kill Gnat" type="Defeat" npc="5">
+      <done>
+        <say>Beautiful! You should've seen that cascade down through the code...</say>
+        <say>Well, now I guess we know why you don't see that kind of programming more often. You can clear out of there.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>You have performed well, {player}. The disruption you have caused today will allow us to concentrate on the task of... pest control.</finish>
+</mission>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trace Route, Machine story mission 1.3.1. Source: research/missions/transcripts/Mach1-3-1.md (the archive replay
+     of [Machine Archive 1.3.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, every NPC name, and the last area's two
+     objective texts ("Search the area", "Get the contents of the computer"). Gray's "You had better to talk to Trish
+     Myers" is retail's wording. Ours: the description, the other objective texts, the sites (phase 3 is a workplace:
+     Office; phase 5 is offices at Lucero Point with a heavy Exile presence: Office, Merovingian), the looks and the
+     enemy counts. Item stand-in: the code fragments are Frags (6785). Rewards: the 237,405 experience and 70,000
+     information shown right after this mission completed.
+     Gaps: retail's scan areas were proximity triggers ("explore the area until we detect the signature", the
+     implanted scanner); here each is a Search of a desk or cabinet that turns up nothing, and Gray's "Code signature
+     detected" line is said when it's searched. Phase 2's first Gray line and anything said in that area between
+     2:53:49 and 3:02:21 weren't captured; its 8.5 minutes may have held a fight, but none is shown, so it has no
+     enemies. Phase 3's two sealed doors were opened by workers in retail (Jeffrey Seekins walked to the first; an
+     unnamed "Bluepill" offered "Yeah, I can open that sealed room for you. Take me to it." for the second); there are
+     no locked doors here: talking to Jeffrey once Trish Myers has agreed opens the search of the first room, and that
+     search opens the second. Concha, who seems to have been waiting in the first room, speaks once Jeffrey has agreed.
+     Gray's "you may have to use force" on Trish Myers isn't a choice here: she just agrees. Phase 5's security
+     computer hack is a Use of a computer, and the uploaded fragments are uploaded in the same phase. The Exiles' barks
+     (Lupine Scrapper, Merovingian Martial Arts Initiate, Elite Guard) aren't said: the phase's Exiles are generated.
+     Retail's paragraph breaks in the first briefing and the closing line are joined with a space. -->
+<mission id="201301" title="Trace Route" description="Trace the Assassin's movements back through his blowfly code trail." plot="1"
+         order="1301" org="2" contact="Agent Gray" exp="237405" info="70000">
+  <npc id="1" handle="Danial Copley" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">Man, I'm having a hard time focussing on work. I wonder what she's doing right now...</say>
+  </npc>
+  <npc id="2" handle="Darien Detriech" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">Hey, you seem cool. We're throwing a bachelor party for Danial later--feel free to stick around, it should be a blast.</say>
+  </npc>
+  <npc id="3" handle="Jeffrey Seekins" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say>I can open one of those doors, but I'll need permission from Ms. Myers first.</say>
+    <say after="4">I hope you found what you were looking for in there!</say>
+  </npc>
+  <npc id="4" handle="Trish Myers" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say after="2">Like I said, go ahead and tell Jeffrey that he has my permission to let you in that sealed room.</say>
+  </npc>
+  <npc id="5" handle="Concha" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5" after="3">Oh, is the bachelor party starting already? Good, this mask is really itchy.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, you are assigned to help find the entity who killed the Zion leader, Morpheus. This entity is popularly known as the "Assassin." Sector scans of areas where the Assassin has been seen indicate that the subject leaves behind multiple deceased specimens of Calliphora vicina, the common blowfly. These particular flies share a unique code structure that we can track. You will begin the search at the Assassin's first known location.</briefing>
+    <enter><say contact="1">A scanner has been implanted in your body. Do not worry--it will not hurt you. It allows us to detect the unique code structure of the Assassin's blowflies in your vicinity. Search the indicated area in that building. The sensor should be able to pick up the Assassin's trail.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say contact="1">Code signature detected. Tracing. Vector found. Triangulating. Location locked. Leave the area and proceed to the new scan point.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>In effect, we are tracing the Assassin's movements backwards in time. This next area is now his earliest-known location.</briefing>
+    <enter><say contact="1">Again, explore the area until we pick up the Assassin's code trail.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say contact="1">Code signature detected. Tracing. Vector found. Triangulating. Location locked. Leave the area and proceed to the new scan point.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Your waypoint will direct you to the new scan point.</briefing>
+    <enter>
+      <say contact="1">Explore the area until we detect the Assassin's blowfly code signature.</say>
+      <say>The far door is sealed shut. Maybe you can convince one of those workers to open it for you.</say>
+      <say>The door opposite is also sealed shut.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Talk to Jeffrey Seekins" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Oh, yeah, I don't know why we keep that room locked. I can get you in there... Well, actually you'd better ask my boss, Ms. Myers, first. Go talk to her and then get back to me.</say>
+        <say contact="1">How irksome. You had better to talk to Trish Myers then, {player}. If she does not cooperate then you may have to use force.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Trish Myers" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Excuse me, who are you again? Huh, never heard of them. Well, I suppose you couldn't do too much harm in there anyway. Sure, tell Jeffrey that he can let you in that sealed room.</say></talk>
+      <done><say>Jeffrey Seekins should be willing to open one of those sealed doors now.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Jeffrey Seekins" type="Talk" npc="3" after="2">
+      <talk><say npc="3">She said fine? Okay, let's go get that door open for you.</say></talk>
+      <done><say>That door should be open now.</say></done>
+    </objective>
+    <objective goal="4" text="Search the first sealed room" type="Search" object="1" item="0" after="3">
+      <done>
+        <say contact="1">Code signature detected. Tracing. Vector found. Triangulating. Triangulation failed. We need more data. Continue exploring the area.</say>
+        <say>That door should be open now.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Search the second sealed room" type="Search" object="2" item="0" after="4">
+      <done><say contact="1">Code signature detected. Tracing. Vector found. Triangulating. Location locked. Leave the area and proceed to the new scan point.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Follow your waypoint to the new scan area, human.</briefing>
+    <enter><say contact="1">The Assassin's blowfly code trail is getting fainter as we go farther back in tracing his movements. We are boosting the power to the scanner in your body. You may feel some slight... discomfort; this is normal. Do not be alarmed.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say contact="1">Code signature detected. Tracing. Tracing failed. Boosting power. Tracing. Vector found. Triangulating. Location locked. Leave the area and proceed to the new scan point.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="5">
+    <briefing>The next scan point location is uploading to you. Your internal scanner is now near maximum power. Painful sensations are normal. We are monitoring your vital signs.</briefing>
+    <enter><say contact="1">There appears to be a heavy Exile presence in that area.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Use" object="1">
+      <done>
+        <say>Hacking that system disrupted some of their security measures.</say>
+        <say contact="1">You are close to the trace origin of the last scan.</say>
+        <say contact="1">The last trace ends there. No further signature detected. A dead end? Unlikely. There is an active computer system there. Search it.</say>
+        <say>You should be able to access the contents of that computer now.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get the contents of the computer" type="Search" object="2" item="6785" after="1">
+      <done><say contact="1">You have found code fragments of unknown origin. They match part of the Assassin's blowfly signature. Upload the fragments to us at a hardline for analysis.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the code fragments at a hardline" type="Upload" item="6785" after="2">
+      <done><say contact="1">Analyzing fragment data... Ah, this is a code profile of the Assassin. Intriguing.</say></done>
+    </objective>
+  </phase>
+  <finish>You may be interested to know that the Assassin is composed entirely of that custom blowfly code--this explains why we detected no other code structures associated with his activity. He is an entity composed entirely of flies: a formidable opponent. As a reward for your service, we are removing the scanner implanted in your body. You may feel a slight... sting. This is normal.</finish>
+</mission>

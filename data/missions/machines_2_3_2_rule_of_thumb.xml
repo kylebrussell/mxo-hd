@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rule of Thumb, Machine story mission 2.3.2. Source: research/missions/transcripts/Mach2-3-2.md (the archive replay
+     of [Machine Archive 2.3.2], given by [Archived]Agent Gray; Agent Lee hands over the blue pill). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Agent Lee line, and Agent Lee's name. Agent Lee
+     and Gray call the player by a bluepill surname ("Mr. Argento"); here that is {player}, without the "Mr.". Ours:
+     the description, the objective texts, the looks, the enemy counts, the guard's handle "White Security Guard" (the
+     log names no guard), and the sites: phase 2 is retail's security office (Office), phases 1 and 3 aren't
+     described (Normal; phase 3 is a Kalt Corporation research facility). The White Security team works for a company
+     run by an Exile, so phase 2 spawns Merovingian, and so does phase 3's facility security. Item stand-ins: the blue
+     pill is Medicine (6808), the access code Access_Code (6782), the access card Access_Card (6791), the prototype
+     pill Medical_Supplies (6829). Rewards: the log is a crop with no chat panel, so no reward was shown; 300,000
+     experience and 98,000 information are Zion chapter 2.3's values.
+     Gaps: the Operator's lines on seeing the White Security guards and on finding the computer needs an access code
+     came a minute or two after arriving; here all three are said on arrival. The access code is used at the access
+     card computer (a Put, done with Hack), then the card is taken from it. Retail's access card presumably let the
+     player into the Kalt facility; here it is only carried. -->
+<mission id="202302" title="Rule of Thumb" description="Plant a blue pill in Kalt Corporation's production pipeline." plot="1"
+         order="2302" org="2" contact="Agent Gray" exp="300000" info="98000">
+  <npc id="1" handle="Agent Lee" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="1">Handing out blue pills? A very worthwhile pursuit. Some might even consider it... fun.</say>
+  </npc>
+  <npc id="2" handle="White Security Guard" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The situation with the commandos you encountered earlier is quite... perplexing. We will wait until further encounters dictate our actions. In the meantime, we must counter Zion's irresponsible recruitment procedures.
+
+If they feel entitled to conduct mass unsolicited emails, we will balance their efforts with our own.
+
+Proceed to the location indicated and collect a blue pill from Agent Lee.</briefing>
+    <enter><say>A single blue pill? I wonder what Gray has in mind.</say></enter>
+    <objective goal="1" text="Get the blue pill from Agent Lee" type="Get" npc="1" item="6808">
+      <talk><say npc="1">{player}. You may take the blue pill from me.</say></talk>
+      <done><say>Time to head out and get your next waypoint.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>Your target today will be the research facilities of Kalt Corporation. This company is run by an Exile who has not proven entirely... cooperative in the past. You need to gain access to their facilities.
+
+Your HUD has been updated with the coordinates of a security office. Procure an access card to the Kalt facilities.</briefing>
+    <enter>
+      <say>All right, the access card computer is in there.</say>
+      <say>Looks like Kalt's contracted Dame White's "White Security" team for extra muscle. They're a tough group -- you ready?</say>
+      <say>Looks like you need an access code off one of the guards.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the access code from the White Security Guard" type="Loot" npc="2" item="6782">
+      <done><say>That looks like an access code for the computer system!</say></done>
+    </objective>
+    <objective goal="2" text="Use the access code on the access card computer" type="Put" object="1" item="6782" after="1">
+      <done><say>Nice. You can snag the access card and get out of there now.</say></done>
+    </objective>
+    <objective goal="3" text="Get the access card from the computer" type="Search" object="1" item="6791" after="2">
+      <done><say>One access card... check! Looks like time to pay Kalt Corporation a little visit.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Very good. That card will allow you to gain entry to one of Kalt Corporation's research facilities. They are currently developing a new antidepressant.
+
+Break in, remove the prototype pill from their storage, and replace it with the blue pill.</briefing>
+    <enter><say>This is the place. The prototype pill should be in a container somewhere in there.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Remove the prototype pill from the container" type="Search" object="1" item="6829">
+      <done>
+        <say>There's the prototype medicine. Ready to make the switch?</say>
+        <say>All right, now put the blue pill in there.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Put the blue pill in the container" type="Put" object="1" item="6808" after="1">
+      <done><say>All right, that's it. Look out for security on your way out!</say></done>
+    </objective>
+  </phase>
+  <finish>The... efficiency of this plan pleases me. The blue pill has been planted in their production pipeline. This drug will be approved and on the shelf of every drugstore in the City very shortly.
+
+Your assistance has been quite beneficial, {player}.</finish>
+</mission>

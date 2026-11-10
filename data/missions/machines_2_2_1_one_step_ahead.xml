@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One Step Ahead, Machines story mission 2.2.1. Source: research/missions/transcripts/Mach2-2-1.md (the archive
+     replay of [Machine Archive 2.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the sites (the forward base, the two Merovingian sites and the debriefing area
+     are unnamed buildings: Normal), the looks, the enemy counts and the enemy (Fabre and Borngen speak of Exiles:
+     Merovingian). Item stand-ins: Captain Norris's notes are Document_Location_Notes (6855), the device component is
+     Device (6820). Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown;
+     297,000 experience and 98,000 information are Zion chapter 2's values.
+     Gaps: Jose Allen offers the player an item whose name the log doesn't show; he stands as a bystander with his line
+     and gives nothing. Fabre's team talks among themselves after Captain Norris hands over the notes; their first
+     three lines are said when phase 1's goals are done, and the later ones when Fabre and Rasalhague are talked to.
+     The log has a gap after Jose Allen's line, so phase 1's closing lines, if any, are missing. Phase 2's component
+     "has moved", with no trigger in the log: here a search of a desk or cabinet turns up nothing and says so. The
+     Exiles in phases 2 and 3 needn't be fought ("any collateral damage is entirely up to you"). Phase 3's computer
+     showed a terminal unlocking the wall safe; here a Use of the computer opens the Search of the safe, and the
+     terminal text isn't shown. Captain Stewart's greeting may be missing (a gap before his lines). Fabre and Borngen
+     return in the debriefing area as separate NPCs; their talk is said when the component is handed over and when
+     they are talked to. Ankar is named but never appears. -->
+<mission id="202201" title="One Step Ahead" description="Recover a stolen weapon component from the Merovingian." plot="1"
+         order="2201" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Captain Norris" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>Don't just stand around waiting for the Frenchman to come shake your hand. Get moving!</say>
+  </npc>
+  <npc id="2" handle="Jose Allen" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say>You need some extra help? This showed up the other day... who knows, maybe you could use it.</say>
+  </npc>
+  <npc id="3" handle="Fabre" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say>They better not screw this up...</say>
+  </npc>
+  <npc id="4" handle="Borngen" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564" />
+  <npc id="5" handle="Rasalhague" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564">
+    <say>'Sup?</say>
+  </npc>
+  <npc id="6" handle="Captain Stewart" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
+  <npc id="7" handle="Fabre" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
+    <say>Looks like you did better than us, {player}. Good thing we don't all have screw-ups on our teams.</say>
+  </npc>
+  <npc id="8" handle="Borngen" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say>Beware the weak link, friend. That's all I got to say.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Urgent action is required of you, {player}. The activities of the program known as the Assassin have increased in frequency. The components you gathered previously can be assembled to create a weapon capable of fighting him. Other operatives have been gathering similar components.
+
+However, the Merovingian has once again stepped in to hinder our plans. Many of the components have been stolen. We have a forward base operating under the command of Captain Norris; he will give you specific instructions.</briefing>
+    <enter><say>All right, this is where Captain Norris is coordinating the efforts.</say></enter>
+    <objective goal="1" text="Talk to Captain Norris" type="Talk" npc="1">
+      <talk><say npc="1">All right... we've got a situation on our hands here. I've got teams covering eighty percent of the target locations. Let me see...
+
+Okay, I've got a location lined up for you. Here are the details.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the notes from Captain Norris" type="Get" npc="1" item="6855" after="1">
+      <talk><say npc="1">Well, what are you waiting for? We've got a crisis on our hands here! Take the damn notes!</say></talk>
+    </objective>
+    <complete>
+      <say npc="3">All right... we've got our assignment. You've all been up against Exiles before. Remember, Ankar secures the exit. Got that?</say>
+      <say npc="4">No more of that crap you tried to pull last week, Rasalhague. You think that was funny?</say>
+      <say npc="5">Hey, not my fault, man. You should've checked your gear.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I believe you are aware of your purpose at the next location, {player}. Obtain the device component taken by the Merovingian.</briefing>
+    <enter><say>All right, this is where the component was taken. Remember, you just have to get the component -- any collateral damage is entirely up to you.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find the device component" type="Search" object="1" item="0">
+      <done><say>Looks like the component has moved. Let's get to the new location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Go to the location you discovered. Obtain the device component.
+
+It is imperative that our operation against the Assassin proceed as planned, regardless of the Merovingian's intentions.</briefing>
+    <enter><say>Okay, same deal as the last place. The only requirement here is to recover the component.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Safe" />
+    <objective goal="1" text="Use the computer to unlock the wall safe" type="Use" object="1">
+      <done><say>Looks like a wall safe around here somewhere just got unlocked.</say></done>
+    </objective>
+    <objective goal="2" text="Get the device component from the wall safe" type="Search" object="2" item="6820" after="1">
+      <done>
+        <say>Bingo! There's the component.</say>
+        <say>Great, take that outside and we'll get an update from Gray.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Captain Stewart is in charge of our debriefing area for this mission. Report to him with your results.</briefing>
+    <enter><say>Captain Stewart is in here, coordinating all of the returning operatives.</say></enter>
+    <objective goal="1" text="Give the device component to Captain Stewart" type="Give" npc="6" item="6820">
+      <talk>
+        <say npc="6">Nice job out there, {player}. I'll take the component.</say>
+        <say npc="6">The component?</say>
+      </talk>
+      <done><say>Nice work.</say></done>
+    </objective>
+    <complete>
+      <say npc="7">I can't believe Rasalhague screwed things up again, even after--</say>
+      <say npc="8">Yeah, well... believe it. You see those Exiles pilin' onto him? Bet he's thankin' his lucky stars right now for the emergency jack out.
+
+He only got what he deserved, though. And you know it.</say>
+    </complete>
+  </phase>
+  <finish>Your cooperation has proven very beneficial to us, {player}. We are now one step closer to confronting and eliminating the Assassin.
+
+I suppose you are curious, in your decidedly... human way, about why we are so intent upon killing the Assassin. Whatever his means of permanently killing operatives, it seems to place a pronounced drain upon the system resources of the Matrix. This is unacceptable, and will be rectified.</finish>
+</mission>

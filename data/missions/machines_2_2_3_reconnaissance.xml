@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reconnaissance, Machines story mission 2.2.3. Source: research/missions/transcripts/Mach2-2-3.md (the archive
+     replay of [Machine Archive 2.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, and every Agent Gray and Operator line (no NPC speaks). Ours: the
+     description, the objective texts, the sites (the supply building and the Merovingian location are unnamed
+     buildings: Normal), the enemy count and the enemy ("a Merovingian location": Merovingian). Item stand-in: the
+     shipping receipt file is File (6800). Rewards: the screenshots are crops of the Mission window with no chat panel,
+     so no reward was shown; 297,000 experience and 98,000 information are Zion chapter 2's values.
+     Gaps: phase 1's receipts were looked for around the building, and the first file found was the wrong one; here
+     there are two places to search (desks or cabinets): one turns up nothing and says so (optional), the other holds
+     the file, which is then uploaded at a hardline. No screen of the receipts was captured. Phase 2's Operation Omega
+     data was read on computers whose terminal text the log shows (the progress reports and Birch's file about
+     circumventing the emergency jack out, plus three side documents); our computers don't show text, so the three
+     main documents are three Use goals in the order the Operator reacted to them, each with that reaction, and the
+     side documents are left out (3 objects a phase). The Operator's italic "not" is plain text, and the phase's
+     closing line wasn't captured. -->
+<mission id="202203" title="Reconnaissance" description="Gather data on the insecticide and the Merovingian's Operation Omega." plot="1"
+         order="2203" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We find ourselves in need of data, {player}. We have identified two locations of interest. The first contains data pertaining to the creation of insecticide; the second holds information regarding the Merovingian's "Operation Omega."
+
+I am updating your display with the coordinates of the first location.</briefing>
+    <enter><say>Okay... according to the Machine research so far, it takes three components to create the insecticide. This building is where the Zion operatives got some of their supplies.
+
+You don't need to get any actual ingredients. Just look around for shipping receipts and find out what supplies have been through this building.
+
+And try to keep a low profile, 'kay?</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Search the files" type="Search" object="1" item="0" optional="1">
+      <done><say>Hmm... that doesn't seem to be the right file. Keep looking around...</say></done>
+    </objective>
+    <objective goal="2" text="Find the shipping receipts" type="Search" object="2" item="6800">
+      <done><say>That's it! Get that file to a hardline.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the file at a hardline" type="Upload" item="6800" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Very interesting. Along with our samples obtained from the Zion operatives, these will allow us to begin production of the insecticide shortly.
+
+Now we require that you investigate a Merovingian location. We have confirmed the existence of data regarding Operation Omega.</briefing>
+    <enter><say>This is the spot. Expect some resistance in here.
+
+I almost don't want to know what this operation is. I mean, your name on a list along with Morpheus... and we both know what happened to him.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer for Operation Omega data" type="Use" object="1">
+      <done><say>I don't like the sound of that. Looking for other subjects?</say></done>
+    </objective>
+    <objective goal="2" text="Search the second computer for Operation Omega data" type="Use" object="2" after="1">
+      <done><say>Sampling Morpheus' RSI?</say></done>
+    </objective>
+    <objective goal="3" text="Search the third computer for Operation Omega data" type="Use" object="3" after="2">
+      <done><say>So that's how they killed Morpheus. And you're on the same list... you haven't noticed any Merovingian operatives hanging around lately, have you? Oh, damn...
+
+This is not good, {player}.</say></done>
+    </objective>
+  </phase>
+  <finish>This truly is disturbing news, {player}. You are a highly valued asset.
+
+Production of the insecticide has begun. Remain vigilant. We do not know what level of danger you are in.</finish>
+</mission>
