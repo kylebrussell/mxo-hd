@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- New Concerns, Merovingian story mission 1.2.9. Source: research/missions/transcripts/Merv1-2-9.md (the archive
+     replay of [Merovingian Archive 1.2.9], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name, and the second phase's
+     kill objective ("Kill all of the programs!", from the Operator's "New objective" line). Ours: the description, the
+     other objective texts, the sites (the office complex: Office; the meeting: Normal), the looks and the Agent count.
+     Agent Lee's "Mr. DeNiro" (the player's bluepill surname) is "Mr. {player}". Rewards: the log is a level-50 player's
+     (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     Gaps: retail's Agents at the meeting could be spoken to before the fight ("try and speak with all of the Agents").
+     Here three Agents wait for the player (attacksOnSight="0"), and there are no other hostiles: finding each is a Talk
+     that plays one of the lines the Agents said in Team chat, and the kill goal is open from the start (a kill goal
+     can't wait for another), so the Operator's "New objective" line isn't said. One Agent line was cut off at the chat
+     panel's edge ("So tell me DeNiro... How does it feel to be a sy...") and isn't used. The Zion operatives at the
+     meeting never appear in the log and aren't placed. The bystanders' second lines are said once Agent Lee has been
+     talked to; retail said them together with the first. A hidden line at a scroll seam in the Operator's reply to
+     Agent Lee is read as nothing. The Military Report to the General popup seen after this mission isn't used:
+     nothing in the log ties it to the mission. -->
+<mission id="301209" title="New Concerns" description="Question the Agents about their attacks." plot="1"
+         order="1209" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Agent Lee" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="1">It is time that you left. I have matters to attend to.</say>
+  </npc>
+  <npc id="2" handle="Christian Rugsted" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">PC Load Letter? What the hell does that mean?!</say>
+    <say display="5" after="1">Peter didn't come into work today. If he's not careful, he's going to get fired.</say>
+  </npc>
+  <npc id="3" handle="Jack Hendricks" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">I'm getting worried, Jani Detriech.... First Danial Marin is dead and then Alvaro Seminatore in the same hour! I'm worried that we're going to be next...</say>
+    <say display="5" after="1">I'm getting out of here!</say>
+  </npc>
+  <npc id="4" handle="Jani Detriech" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+    <say display="5">You may be right. I haven't seen Peter come into work for a week! I think he has the right idea...</say>
+  </npc>
+  <npc id="5" handle="Darryl Hendrickson" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">You want to know what happened here? Well, I have my theories but I don't think anyone would believe me...</say>
+    <say display="5" after="1">Let me get back to my work.</say>
+  </npc>
+  <npc id="6" handle="Agent" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" attacksOnSight="0" />
+  <npc id="7" handle="Agent" type="HOSTILE" at="2" rsi="6e060040" weapon="2568" attacksOnSight="0" />
+  <npc id="8" handle="Agent" type="HOSTILE" at="2" rsi="9b000090" weapon="2568" attacksOnSight="0" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>The attacks from Agents are becoming a great concern to the Merovingian and we need you, among others, to track down Agents and question them about these attacks. We're sending you the address of an office complex where Agent Lee is currently wrapping up some business involving an incident that happened just an hour ago. Since Agent Lee is among bluepills it's our hope that we'll be able to speak with him and learn something about these new Agents.</briefing>
+    <enter><say>This is the office complex where Agent Lee can be found. Seek him out and speak with him.</say></enter>
+    <objective goal="1" text="Talk to Agent Lee" type="Talk" npc="1">
+      <talk>
+        <say npc="1">You seem to claim that we have been meddling in your affairs, Mr. {player}. This shows just how little you are aware of.
+
+Pay careful attention to these individuals and their actions... you may be able to uncover what we have not...</say>
+        <say>Agent Lee may be right about their involvement but why would we want to believe them? They are all Machines!
+
+Enough of that for now, we have something urgent that has come up. We've located an attack in progress and need you to get there quickly. Flood will update you as you make your way there.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The address is being sent to you now. The location is a meeting of some sort involving another organization and these Agents are descending upon the place as we speak.</briefing>
+    <enter><say>I think the best approach would be to try and speak with all of the Agents before breaking into combat and getting yourself killed. We can't have you taking a fall now.</say></enter>
+    <objective goal="1" text="Speak with the first Agent" type="Talk" npc="6">
+      <talk><say npc="6">Your pathetic attempt at salvation will fall short.</say></talk>
+    </objective>
+    <objective goal="2" text="Speak with the second Agent" type="Talk" npc="7">
+      <talk><say npc="7">Enough of this... It ends now.</say></talk>
+    </objective>
+    <objective goal="3" text="Speak with the third Agent" type="Talk" npc="8">
+      <talk><say npc="8">Enough.</say></talk>
+    </objective>
+    <objective goal="4" text="Kill all of the programs!" type="DefeatAll">
+      <done><say>Think about this for a minute... If the Agents attacked the Zion Operatives for no plausible reason, wouldn't they be breaking the Truce between them? This is a cause for concern, even for the Merovingian and the allied Exiles. I'll report this to Flood immediately.</say></done>
+    </objective>
+  </phase>
+  <finish>I saw the report, {player}... You did well. Contact me when you are ready for your next assignment.</finish>
+</mission>

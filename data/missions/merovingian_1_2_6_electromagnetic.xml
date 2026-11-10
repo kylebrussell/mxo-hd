@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Electromagnetic, Merovingian story mission 1.2.6. Source: research/missions/transcripts/Merv1-2-6.md (the archive
+     replay of [Merovingian Archive 1.2.6], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Flood, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the Protect goal, the site (a Zion base: ZionOutpost), the looks and the enemy count. The Zion
+     Aikido Grandmaster and Zion Duelist are placed with the barks they had in Team chat; the Zion Destroyer (no line) is
+     one of the phase's generated Zionites. Item stand-in: the EMP Bomb is Small_Bomb (6807), handed to the player when
+     the phase starts, as Flood's "The device is being downloaded to you right now". Rewards: the log is a level-50
+     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     Gaps: retail's ceaseless waves of Zion operatives until the bomb is set are a fixed group of five here. Showing
+     Churyumov to the mainframe can't target an object, so it is a Use of the Mainframe; Churyumov doesn't follow the
+     player there, and his "I've placed the EMP Bomb" line is said when it is used. The 911 Transcript popup seen
+     after this mission isn't used: nothing in the log ties it to the mission. -->
+<mission id="301206" title="Electromagnetic" description="Deliver an EMP bomb to an Exile team raiding a Zion base." plot="1"
+         order="1206" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Churyumov" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Zion Aikido Grandmaster" type="HOSTILE" at="1" rsi="c9020058" weapon="2568">
+    <say>Morpheus doesn't fear you!</say>
+  </npc>
+  <npc id="3" handle="Zion Duelist" type="HOSTILE" at="1" rsi="58010058" weapon="2568">
+    <say>You will never find Morpheus!</say>
+  </npc>
+  <phase site="ZionOutpost" enemy="Zion" enemies="5">
+    <briefing>The Merovingian needs you to deliver a delicate piece of equipment to another team who is currently on site at a Zion base. They were in the middle of a hit and are in need of an EMP Explosive to prevent more Zion Operatives from entering at this location. The device is being downloaded to you right now. Make sure that it gets in the hands of our Merovingian Operative, Churyumov.
+
+Once you find him and have delivered the bomb to Churyumov he will still be in need of assistance from you. See to it that you aid him. I hope everything is clear because I'm not going to repeat myself.</briefing>
+    <enter><say>Churyumov and his crew are in the middle of hitting this location and they've quickly realized that the waves of ceaseless Zion Operatives won't end until we can get that EMP explosive device on the network mainframe. Make sure that Churyumov gets the bomb and then assist him in planting the device.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Talk to Churyumov" type="Talk" npc="1">
+      <talk><say npc="1">You made it. Do you have the explosive device? I'll take it from you.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the EMP Bomb to Churyumov" type="Give" npc="1" item="6807" after="1">
+      <talk><say npc="1">Quickly, give me the EMP Bomb.</say></talk>
+      <done><say npc="1">Excellent. Now I need you to help me get into the heart of the base. Show me to the mainframe and I'm going to place the bomb in that room to disable the entrance of additional Zion operatives at this location.</say></done>
+    </objective>
+    <objective goal="3" text="Show Churyumov to the mainframe" type="Use" object="1" after="2">
+      <done>
+        <say>The EMP Bomb has been set! Now get out of there!</say>
+        <say>All clear, {player}.</say>
+        <say npc="1">I've placed the EMP Bomb. We should be good to go now. Thanks for the help. I'll team back up with my crew, just get out of here.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Do not let Churyumov die" type="Protect" npc="1" />
+  </phase>
+  <finish>Contact me when you are ready for your next assignment.</finish>
+</mission>

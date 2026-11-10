@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Love and Loathing, Merovingian story mission 1.3.5. Source: research/missions/transcripts/Merv1-3-5.md (one retail
+     run of the archive replay [Merovingian Archive 1.3.5], given by [Archived]Flood; every screenshot was taken after
+     the mission, so no objective was seen). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line and the NPCs' names. Ours: the description (the Summary
+     tab was never opened), every objective text, the sites (phase 1 an Office for the doctor's office, the rest
+     Normal), the enemies (phase 1's security staff as Machine-side guards, phase 2's hostiles as Zion redpills, as
+     Cheeta's "Zion reddies" suggests) and their counts, the Hospital Manager's name, and every NPC's look (Tran
+     Vandervoort's and Thusnelda's sex isn't shown). Item stand-ins: the signed letter is Letter (6793), the medical
+     supplies are Medical_Supplies (6829), Crucic's business card ("the Card Key") is Access_Card (6791), as in Medical
+     Records, Crucic's dossier is Dossier (6799) and Crucic's medical journal is Book (6814). Rewards: this run's
+     player was level 50 and got 525,000 info and no XP, so the rewards are Zion 1.3's (308,750 XP and 94,500 info, as
+     Miracle Man paid).
+     Gaps: phase 1 let the player choose how to get the supplies (the signed letter, asking the doctors, or killing a
+     doctor and taking them); here the letter route is the way, and the Operator's lines about the doctors ("These
+     doctors may have Medical Supplies on them...", "You might want to try another option...", "This poor doctor has
+     Medical Supplies on their body...") are left out. The Hospital Manager's part of the log (9:40 to 9:42) wasn't
+     captured, so he says nothing; retail's "Goals for this mission phase are no longer complete!" is left out.
+     Thusnelda opens a door to Chimay's room in retail; here Chimay's goals simply wait for hers. Phase 4 is a new site
+     with Cheeta in it (an NPC isn't placed twice), so he has a second entry. The medical journal's text (a Details
+     popup) can't be shown. -->
+<mission id="301305" title="Love and Loathing" description="Pose as Crucic to get his dossier on Morpheus." plot="1"
+         order="1305" org="3" contact="Flood" exp="308750" info="94500">
+  <npc id="1" handle="Tran Vandervoort" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>If you need Medical Supplies, I must see a letter from the hospital Manager first.</say>
+    <say after="4">That should cover it. If you see the hospital manager again, tell him to get an email account. I don't like relying on his letters for communication.</say>
+  </npc>
+  <npc id="2" handle="Hospital Manager" type="FRIENDLY" at="1" rsi="38000024" weapon="0" />
+  <npc id="3" handle="Cheeta" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>These pathetic fools thought they could kill me! Me of all people! Morons -- all of them! Now look at them now, they're all dead!</say>
+  </npc>
+  <npc id="4" handle="Thusnelda" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
+  <npc id="5" handle="Chimay" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564" />
+  <npc id="6" handle="Cheeta" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Many thanks.</say>
+  </npc>
+
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Crucic was planning on meeting a redpill named Chimay before we brought about the good doctor's demise. With him out of the way, you will run this little errand in his stead. The end result will provide you with Crucic's medical journal.
+
+The first part of your assignment is to go to this doctor's office and steal some medical supplies. I don't care how you do it, just get them. Crucic was borrowing supplies from Chimay so we need some to make this transaction go smooth.</briefing>
+    <enter><say>This office has a security staff, so don't expect a silent run. They have medical supplies in several locations. Evaluate your options before you start killing doctors, okay?</say></enter>
+    <objective goal="1" text="Talk to Tran Vandervoort" type="Talk" npc="1">
+      <talk><say npc="1">If you need Medical Supplies, I must see a letter from the hospital Manager first.
+
+Bring me a signed letter and the supplies are yours.</say></talk>
+    </objective>
+    <objective goal="2" text="Get a signed letter from the Hospital Manager" type="Get" npc="2" item="6793" after="1" />
+    <objective goal="3" text="Give the signed letter to Tran Vandervoort" type="Give" npc="1" item="6793" after="2">
+      <done><say npc="1">That'll do. The medical supplies are yours.</say></done>
+    </objective>
+    <objective goal="4" text="Get the Medical Supplies from Tran Vandervoort" type="Get" npc="1" item="6829" after="3">
+      <done>
+        <say>Those medical supplies look a little rusty. I hope Chimay bites the bait.</say>
+        <say npc="1">That should cover it. If you see the hospital manager again, tell him to get an email account. I don't like relying on his letters for communication.</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The medical supplies only cover the first half of your needs. You still need Crucic's business card from your last assignment. Pick the business card up from Cheeta at this address.</briefing>
+    <enter><say>Find Cheeta and get that card back. Keep an eye out for hostiles while you're at it.</say></enter>
+    <objective goal="1" text="Get Crucic's Business Card from Cheeta" type="Get" npc="3" item="6791">
+      <talk>
+        <say npc="3">It's about freaking time you showed up. Take the damn card.</say>
+        <say contact="1">That's Cheeta. Get the Business Card from him. We need the Card Key to convince a redpill from Zion that you're Crucic.</say>
+      </talk>
+      <done><say>This is Crucic's business card. It's good to know that we'll put it to use this time. Crucic died for a reason, I suppose.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The medical supplies and business card will help you pose as Crucic. You must convince Chimay that you're the real deal so he'll give you Crucic's medical journal.
+
+Find Chimay at this address and speak with him.</briefing>
+    <enter><say>Part with the business card if they need extra proof that you're Crucic. Once Chimay has his medical supplies, he should tell you a little more about Morpheus' vacation construct and give you Crucic's dossier on Morpheus.</say></enter>
+    <objective goal="1" text="Give Crucic's Business Card to Thusnelda" type="Give" npc="4" item="6791">
+      <talk>
+        <say npc="4">Excuse me... Can I help you? Are you here to see Chimay? If you are, I'll need some sort of identification.</say>
+        <say>Hmm... Give Thusnelda the business card. That will get you through.</say>
+      </talk>
+      <done>
+        <say>Meet with Chimay now. He should be in the next room.</say>
+        <say npc="4">Ah, you must be the doctor that Chimay has been waiting for. Chimay is very anxious to speak with you. I'll let you through.
+
+The door is open now.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Give the Medical Supplies to Chimay" type="Give" npc="5" item="6829" after="1">
+      <talk>
+        <say npc="5">You must be Doctor Crucic. It's good to finally meet you -- even if it is inside the Matrix. Things have been a little different with Niobe stepping up at Zion.
+
+So... can I get my medical supplies from you? You can have your Medical Journal back. What do you say?</say>
+        <say npc="5">Give me the supplies and the journal is back in your hands.</say>
+        <say contact="1">So it seems Chimay is willing to part with Crucic's medical journal without violence. I'm almost... disappointed. Get Crucic's dossier from Chimay now.</say>
+      </talk>
+      <done><say npc="5">Thanks for my medical supplies, Crucic. You can have your medical journal back and the dossier as well.</say></done>
+    </objective>
+    <objective goal="3" text="Get Crucic's Dossier from Chimay" type="Get" npc="5" item="6799" after="2">
+      <done>
+        <say contact="1">It appears that Crucic's dossier is included as well. You may keep the medical journal. It's the dossier I want.</say>
+        <say npc="5">I hope it's okay that I read some pages in your medical journal. Research, you know?
+
+I heard about the simulacra of Niobe for Morpheus' sex surrogate, but I didn't know she entered the construct herself and had physical -- well, digital -- contact with Morpheus. Very interesting...</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Get Crucic's Medical Journal from Chimay" type="Get" npc="5" item="6814" after="2" />
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You're free to keep Crucic's medical journal. I've already pulled all the information I need from it.
+
+We need Crucic's dossier secured. Meet up with Cheeta once more and give the dossier to him.</briefing>
+    <enter><say>Cheeta is waiting.</say></enter>
+    <objective goal="1" text="Give Crucic's Dossier to Cheeta" type="Give" npc="6" item="6799">
+      <talk><say npc="6">You're back? Slaughtered some Zion reddies I take it?
+
+I need the Dossier. The Merovingian doesn't want us losing valuable intel.</say></talk>
+      <done>
+        <say>That's a wrap.</say>
+        <say npc="6">Many thanks.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>According to Crucic's medical journal, Morpheus almost "lost it" at one point. It's humorous -- Morpheus losing his mind... It got so bad that he needed to live in some farcical fantasy construct re-living his love affair with Lock's girlfriend, Niobe. Hmm, it makes sense now, doesn't it? Morpheus' on-going love for Niobe brought on Lock's jealousy. It festered and grew into pure loathing for Morpheus. Couple this with the fact that Morpheus was meddling with the Truce and it all becomes obvious.
+
+Don't you see it? Lock hired someone to kill Morpheus... No wonder the Zion redpills are ambushing you in the streets: they are trying to cover up the truth about Lock and Morpheus.</finish>
+</mission>

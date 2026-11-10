@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Necessary Action, Merovingian story mission 1.2.8. Source: research/missions/transcripts/Merv1-2-8.md (the archive
+     replay of [Merovingian Archive 1.2.8], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
+     the objective texts, the sites (unnamed buildings: Normal), the looks and the enemy count (the Agents behind "You've
+     got company!" are the first phase's generated Machines). Item stand-in: Turso's vial of truth serum is Medicine
+     (6808). Rewards: the log is a level-50 player's (525,000 information, no experience), so this pays Zion 1.2's
+     68,750 experience and 91,000 information.
+     Gaps: in retail Dora is friendly while held, is led out of the building and to Alphonse ("If Dora dies on the way
+     there..."), then turns hostile and is killed. NPCs can't switch sides, and a follower stays with the player, so
+     Dora isn't led out: the Dora of the second phase is a hostile who waits beside Alphonse (attacksOnSight="0"); finding
+     her is a Talk that plays her plea, then she is killed. The Agents arrive after the confession in retail; here they
+     are on the floor from the start, and "You've got company!" isn't said. The white computer that would release Dora
+     if touched, and the serum only working in that room, can't be expressed: there is only the black computer, used
+     once the serum is given. Flood's "Now that we have the information we seek" came one second before Dora's
+     confession in the log; it is said after it. The Operator's line about the new Agents (said with the first area's
+     completion) is the first phase's complete line; a hidden line at a scroll seam in it, and in Turso's last line, is
+     read as nothing. The Forum Post popup seen after this mission isn't used: nothing in the log ties it to the
+     mission. -->
+<mission id="301208" title="Necessary Action" description="Extract the location of Morpheus from a captured Zion operative." plot="1"
+         order="1208" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Turso" type="FRIENDLY" at="1" rsi="a5060090" weapon="2568" />
+  <npc id="2" handle="Dora" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say>No! I'll never talk!</say>
+    <say after="3">Ugh! My stomach! Oooh...</say>
+  </npc>
+  <npc id="3" handle="Alphonse" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Dora" type="HOSTILE" at="2" rsi="60010058" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Our search for Morpheus must continue, however we have managed to capture a Zion operative by the name of Dora who has worked closely with Morpheus on a number of occasions. We need you to extract information from Dora and get her to give up information on Morpheus' current location.
+
+Dora is being held at this address. Go there now.</briefing>
+    <enter><say>Turso will be on site to assist you. Talk to her.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Turso" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Greetings, {player}. I see that you've made it on time. We have Dora held in place thanks to a program running on the white computer. On the black computer we have a program running that will inflict pain to Dora. I also have a vial of truth serum for you to use. The drugs are designed to get the victim to talk. Use the combination of the two to extract the information that the Merovingian requires.</say>
+        <say>It would seem that you'll have to try a few things before we can get Dora to talk.</say>
+        <say npc="1">One more thing, whatever you do, don't touch the white computer, as it will release Dora from the electro-magnetic bonds that hold her in place. If you release her, she will escape.</say>
+        <say>Use the drugs on Dora and then use the black computer to get her to talk.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the truth serum from Turso" type="Get" npc="1" item="6808" after="1">
+      <done><say npc="1">The truth serum will only work on Dora while she is in this room.</say></done>
+    </objective>
+    <objective goal="3" text="Use the truth serum on Dora" type="Give" npc="2" item="6808" after="2">
+      <talk><say npc="2">You won't get anything out of me, {player}!</say></talk>
+      <done>
+        <say>That's disgusting!</say>
+        <say npc="2">Ugh! My stomach! Oooh...</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Use the black computer" type="Use" object="1" after="3">
+      <done>
+        <say npc="2">I've had enough! I'll tell you where Morpheus is... He's been in the city, hanging around waste disposal sites. If you look in places where garbage is collected, you might find him. That's all I know...</say>
+        <say contact="1">Now that we have the information we seek, you must bring Dora to Alphonse at another location.</say>
+        <say npc="1">You've done well, {player}, however we have only one more favor to ask of you. With the inhibitor program still in place, take Dora to Alphonse who is waiting for you at a location nearby. Alphonse wants to see you exact punishment on Dora for making us work so hard to extract this information from her. Once you're out of here, you will be updated with the address.</say>
+      </done>
+    </objective>
+    <complete><say>I think I speak for us all when I say that I am getting rather tired of these new Agents that are causing problems for us and our redpill operatives, such as yourself. When you are ready for your next assignment Flood is going to have you do some research into these new Agents. Until then, be cautious, {player}.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I've updated you with the location of Alphonse. If Dora dies on the way there... I'll try not to worry about it.</briefing>
+    <enter><say>That's where Alphonse is waiting.</say></enter>
+    <objective goal="1" text="Talk to Alphonse" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Ah, {player}. Do you have Dora with you? I would very much like to watch her die.</say>
+        <say npc="3">Finish her! Now!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Find Dora" type="Talk" npc="4" after="1">
+      <talk><say npc="4">No... Please... Don't kill me.</say></talk>
+    </objective>
+    <objective goal="3" text="Kill Dora" type="Defeat" npc="4">
+      <done>
+        <say npc="3">Mwhaha! Excellent! I love to see the Neo-worshipping cry babies bleed!
+
+You have pleased me so. Flood will hear of your dedication. Now...be gone!</say>
+        <say>You're all done there. Exit the area and Flood will debrief you.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>You've done well, {player}. We have new information on Morpheus and Dora is dead. You prove your worth with every assignment.</finish>
+</mission>

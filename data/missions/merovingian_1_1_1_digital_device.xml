@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Digital Device, Merovingian story mission 1.1.1. Source: research/missions/transcripts/Merv1-1-1.md (the archive
+     replay of [Merovingian Archive 1.1.1], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, operator and NPC line, and the NPC names. Ours: the description
+     (the Summary tab only said "Datalink established."), the objective texts (the Objectives tab was never opened),
+     the sites (Yessenia Belmont's "office": Office; Bohrmann's base and Genaro Kiske's place: Normal), the looks and
+     the enemy counts. Whale and Bohrmann are Bohrmann's crew, the Zion operatives Flood names, so they and phase 2's
+     crew are Zion; phase 1's attackers are the Machine operatives ("the FBI guys"). Item stand-ins: the document with
+     the base's coordinates is Document_Location_Notes (6855), the key to the wall safe Access_Card (6791), the
+     Signature Manipulator Device (6820). Three cut joins are read as contiguous: "the coordinates of a base of theirs",
+     "allow Exiles to pose as legitimate programs", "He is our expert".
+     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
+     chapter 1.1 (55,200 experience, 73,500 information, as Redpill Rescue paid).
+     Gaps: Rabbit was already dead; dead NPCs aren't spawned, so his body is a Furniture object searched for nothing.
+     Whale's corpse line ("check his corpse") is the kill's done line and the document is looted from him. The key's
+     source wasn't shown; the operator's "Try that Key" came after Bohrmann died, so it is looted from him. Whale's and
+     Bohrmann's first barks are said on getting near them; Bohrmann's "You've killed my crew!" is on him but only
+     plays if he is talked to, since he attacks on sight. Log entries between 9:05:18 and 9:06:48 weren't captured.
+     The Merovingian Physician, who spoke in Team chat at the end where Genaro Kiske stood, is a bystander there; Blood
+     Drunk, targeted there, said nothing and is left out. The Email from Lock in the Details popup isn't from this
+     mission and isn't used. -->
+<mission id="301101" title="Digital Device" description="Steal a powerful device from a Zion crew." plot="1"
+         order="1101" org="3" contact="Flood" exp="55200" info="73500">
+  <npc id="1" handle="Yessenia Belmont" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>I locked myself in my office when the FBI guys showed up and then all hell broke loose! You're not here to kill me... are you?</say>
+  </npc>
+  <npc id="2" handle="Whale" type="HOSTILE" at="1" rsi="ec020058" weapon="2568">
+    <say>You're not one of the Agents?!</say>
+  </npc>
+  <npc id="3" handle="Bohrmann" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
+    <say>You've killed my crew! You'll pay for that!</say>
+  </npc>
+  <npc id="4" handle="Genaro Kiske" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+    <say after="2">If you must know what the device does, I can tell you... It's an extension of Disguise Mask that allows a person to carry the signature signal of a Machine program. Basically, all Machine programs would think you are one of them. You could live amongst Agents and they would never question who you are! It's quite amazing.</say>
+  </npc>
+  <npc id="5" handle="Merovingian Physician" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say display="5">I'm only saying what I heard.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>According to my data a group of Machine operatives descended upon one of our operatives who was assigned to steal a powerful device from a group of Zion operatives. Before we lost contact with Rabbit, he reported that the Zion operatives were still on site with the device.
+
+If this is true, we need you to find Rabbit and finish the job if he is unable. Steal the device we seek and ensure that it doesn't fall back into the hands of Zion.</briefing>
+    <enter><say>The top priority is stealing the device.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the Machine operatives" type="DefeatAll">
+      <done><say>I think you've killed them all.</say></done>
+    </objective>
+    <objective goal="2" text="Find Rabbit" type="Search" object="1" item="0">
+      <done><say>As Flood suspected, Rabbit is dead. There's no need to pull him out.</say></done>
+    </objective>
+    <objective goal="3" text="Kill Whale" type="Defeat" npc="2">
+      <done><say>I think I know who this is... He's terribly familiar. Do me a favor and check his corpse.</say></done>
+    </objective>
+    <objective goal="4" text="Search Whale's body" type="Loot" npc="2" item="6855" after="3" />
+    <near npc="1" radius="1000">
+      <say npc="1">What's going on here?!</say>
+    </near>
+    <near npc="2" radius="1000">
+      <say npc="2">You're not one of the Agents?!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Interesting... Whale was part of Bohrmann's crew. The document that he was carrying has the coordinates of a base of theirs.
+
+I'm sending you to this base to pay Bohrmann a friendly visit. Bohrmann has the device we seek.</briefing>
+    <enter><say>I doubt they will welcome your intrusion with open arms; unless they're looking forward to beating the crap out of you.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Get the key from Bohrmann" type="Loot" npc="3" item="6791">
+      <done><say>Try that Key on the wall Safe.</say></done>
+    </objective>
+    <objective goal="2" text="Open the wall safe" type="Search" object="1" item="6820" after="1">
+      <done>
+        <say>The Signature Manipulator is inside the safe. Take it!</say>
+        <say>That's the device! With this piece of hardware it will allow Exiles to pose as legitimate programs amongst the Machines; even redpills, such as yourself. They won't be able to tell the difference because it causes the carrier to give off the same signal as a Machine program!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill Bohrmann's crew" type="DefeatAll" />
+    <near npc="3" radius="1000">
+      <say npc="3">Merovingian operatives! Don't let them get the device!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Before we can make use of the device, we need to have one of our technicians try and decompile its code. If this is possible we can replicate the device and produce one for every Exile and redpill that works for the Merovingian.
+
+Meet with Genaro Kiske. He is our expert on high-level data replication.</briefing>
+    <enter><say>Genaro Kiske is waiting.</say></enter>
+    <objective goal="1" text="Talk to Genaro Kiske" type="Talk" npc="4">
+      <talk><say npc="4">Flood said I could expect you. Do you have the device? Give it to me!</say></talk>
+    </objective>
+    <objective goal="2" text="Give the Signature Manipulator to Genaro Kiske" type="Give" npc="4" item="6820" after="1">
+      <talk><say npc="4">Well, where is it?!</say></talk>
+      <done><say npc="4">If you must know what the device does, I can tell you... It's an extension of Disguise Mask that allows a person to carry the signature signal of a Machine program. Basically, all Machine programs would think you are one of them. You could live amongst Agents and they would never question who you are! It's quite amazing.</say></done>
+    </objective>
+  </phase>
+  <finish>Once Genaro Kiske has had a chance to try and replicate the device, we will need your assistance again. We'll be in touch.</finish>
+</mission>

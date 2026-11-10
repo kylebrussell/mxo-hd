@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Renegade Roundup, Merovingian story mission 1.2.5. Source: research/missions/transcripts/Merv1-2-5.md (the archive
+     replay of [Merovingian Archive 1.2.5], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
+     the objective texts, the sites (Venaticorum's place: Normal; Calypso's and Dobra's offices: Office), the looks and
+     the enemy counts (the renegades' guards and security are the phases' generated Exiles). Item stand-ins: the
+     document on Venaticorum's body is Document_Location_Notes (6855), the document in Calypso's office that names Dobra
+     is Dossier_Exile_Leader (6852), the key to Dobra's office is Access_Code (6782). Rewards: the log is a level-50
+     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     Gaps: each target greets the player and then fights. Here Venaticorum, Calypso and Dobra wait for the player to
+     start the fight (attacksOnSight="0"): finding each is a Talk that plays their lines, then they are killed.
+     Venaticorum's document is looted from his body. The receptionists' alarms (Anneliese Isenhour, Jason Pamintuan)
+     can't call in more guards; their lines are said on arrival. The Operator's line on reaching Calypso's floor wasn't
+     captured, so Flood's reminder about Calypso is said there instead. Dobra's office isn't locked: finding Dobra opens
+     once the key is found, but he can be killed at any time (a kill goal can't wait for another). The hidden line at
+     a scroll seam in the Operator's note about Dobra is read as nothing ("for sometime now and it's high time"), and
+     Flood's "location of Dobra's location" is kept as shown. Blood Drunk's and the Elite Guard's barks were only in
+     Team chat; they are placed as named hostiles with their lines. -->
+<mission id="301205" title="Renegade Roundup" description="Hunt down a chain of renegade Exile leaders." plot="1"
+         order="1205" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Venaticorum" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Calypso" type="HOSTILE" at="2" rsi="a8060090" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Anneliese Isenhour" type="HOSTILE" at="2" rsi="a5060090" weapon="2568" />
+  <npc id="4" handle="Dobra" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="5" handle="Jason Pamintuan" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Blood Drunk" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568">
+    <say>They killed Dobra!</say>
+  </npc>
+  <npc id="7" handle="Elite Guard" type="HOSTILE" at="3" rsi="a8060090" weapon="2568">
+    <say>Got 'em in my sights.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>In the Merovingian's search for Morpheus, Renegade Exiles have become a roadblock in our path. To continue our search for Morpheus we need some of these renegades decimated. Since no one else will take this current task, it has fallen upon you to carry the torch, as it were. I'm giving you the address of one of these renegade Exiles. Destroy him, then search his corpse for anything of value. Do we understand? We do.</briefing>
+    <enter><say>I have a lock on our Venaticorum's position. He doesn't like unwanted visitors, so don't be surprised if he has guards stalking the place.
+
+The target isn't behind any sort of security system other than the guards, so you might avoid a few encounters if you are cautious.</say></enter>
+    <objective goal="1" text="Find Venaticorum" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Come to my aid, my brethren!</say>
+        <say npc="1">I shall have to destroy you myself, human!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Venaticorum" type="Defeat" npc="1">
+      <done><say>Venaticorum is confirmed as dead.</say></done>
+    </objective>
+    <objective goal="3" text="Search Venaticorum's body" type="Loot" npc="1" item="6855" after="2">
+      <done><say contact="1">This appears to be a document outlining the location of another renegade Exile. Let's use this to our advantage and make a second hit.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>The other Renegade Exile leader is named Calypso. Head to this address now.</briefing>
+    <enter>
+      <say contact="1">Remember, we're on the look-out for someone named Calypso. Since they were mentioned in the document that we found, we can only assume that this is either the superior or subordinate for Venaticorum. Taking out the second target will hopefully drive the stake further into the heart of the renegades. While you are there, I want you to do a search of Calypso's office for any documents or data that might lead us further up or down this... ladder.</say>
+      <say npc="3">Calypso, we have a break in! I'm calling security!</say>
+      <say npc="3">I think I'm going to have to ask you to leave...</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find Calypso" type="Talk" npc="2">
+      <talk><say npc="2">Guards! Get in here now!</say></talk>
+    </objective>
+    <objective goal="2" text="Kill Calypso" type="Defeat" npc="2">
+      <done><say>Calypso is a confirmed kill.</say></done>
+    </objective>
+    <objective goal="3" text="Search Calypso's office" type="Search" object="1" item="6852" after="2">
+      <done>
+        <say>Very interesting...</say>
+        <say>The document outlines a man named Dobra. He's been causing trouble for the Merovingian for sometime now and it's high time you bring him down. Exit this place and Flood will send you the coordinates of Dobra.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>I'm updating you with the location of Dobra's location now. Be on your way, {player}. Do not delay.</briefing>
+    <enter>
+      <say>Don't forget, the target's name is Dobra. This could be the big one we've been looking for.</say>
+      <say npc="5">What are you doing! Security, get in here!</say>
+      <say>Search the room. There must be a key that will let you get into Dobra's office. If the receptionist isn't holding it, we can only assume that he has it in this room.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find the key to Dobra's office" type="Search" object="1" item="6782" />
+    <objective goal="2" text="Find Dobra" type="Talk" npc="4" after="1">
+      <talk><say npc="4">I had a feeling that you were coming... {player}! That's right, I know who you are. After I was unable to contact Venaticorum, Calypso or anyone at their base of operations, I prepared for your futile hit. With that, I would like to say... Welcome to your death, human... Security!</say></talk>
+    </objective>
+    <objective goal="3" text="Kill Dobra" type="Defeat" npc="4">
+      <done><say>Dobra is dead!</say></done>
+    </objective>
+  </phase>
+  <finish>I'm surprised at how well you completed this contract kill, {player}. I'd congratulate you, but that would be a compliment, wouldn't it?</finish>
+</mission>

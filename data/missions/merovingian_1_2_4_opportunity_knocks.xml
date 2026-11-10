@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Opportunity Knocks, Merovingian story mission 1.2.4. Source: research/missions/transcripts/Merv1-2-4.md (the
+     archive replay of [Merovingian Archive 1.2.4], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, both briefings, every Flood, operator and bystander line (Flood's closing "draws in an
+     end" is verbatim), the bystanders' names, and phase 2's objective text ("Search the place for documents from
+     Morpheus", from the Objectives window). Ours: the description, the other objective texts, the sites ("a Zion
+     operated area": ZionOutpost; "a Machine controlled office complex": Office), the looks, the enemy counts, and the
+     two key carriers: a Zion Ballista (his bark "Morpheus' files have been stolen!" is from the chat) and an Agent
+     (the player searched an Agent's body there in the mid-mission screenshot). Item stand-ins: the first key is
+     Access_Card (6791), the document that led to the next address Document_Location_Notes (6855), the second key
+     Access_Code (6782), the file that points to the safe File (6800), the Data Disk Data_CD (6831).
+     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
+     chapter 1.2 (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: where either key came from wasn't captured; each is looted from its carrier. The operator's "Be sure to
+     search your fallen opponents" came four minutes after the first key was found and is the second enter line here.
+     "The documents might be inside this filing cabinet." came three seconds before the document was found, so it
+     starts the cabinet's done lines. The alarm that brought guards when the safe was opened can't call anyone in: the
+     safe is used once to set off the alarm and opened again for the disk, and the Agents are on the floor from the
+     start. The operator downloaded the disk himself, so there is no upload. The Zion operatives' other barks in Team
+     chat ("Exile scum!", "...you're here and you're not going to get it!") have no place, since they are generated;
+     the Zion Ballista's is on him but only plays if he is talked to, since he attacks on sight. Darleen Anselm and
+     Adrian Quay spoke after the goals were done; Darleen's second line waits for the disk. The Threat Analysis of
+     "Kingmaker" in the Details popup came from an Agent's body as ordinary loot and isn't used. -->
+<mission id="301204" title="Opportunity Knocks" description="Search for the documents Morpheus has been hiding." plot="1"
+         order="1204" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Zion Ballista" type="HOSTILE" at="1" rsi="c9020058" weapon="2568">
+    <say>Morpheus' files have been stolen!</say>
+  </npc>
+  <npc id="2" handle="Agent" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Darleen Anselm" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say display="5">Uhm, are you new here?</say>
+    <say display="5" after="4">We got a lot of vacation time though. I wouldn't worry about it.</say>
+  </npc>
+  <npc id="4" handle="Adrian Quay" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">I don't know if I'm happy here... The hours are long and the benefits suck.</say>
+  </npc>
+  <phase site="ZionOutpost" enemy="Zion" enemies="4">
+    <briefing>It seems Morpheus discovered a way to damage the Matrix -- internally. This ability of his is a threat to our very existence... However, if we control that ability we could become quite powerful; perhaps powerful enough to take control of the Matrix from within. Information can be found that will aid us uncover the methods that Morpheus is using.
+
+The Merovingian requires this information, which is why we are sending you in. We want you to visit this location and search the place for documents, files, anything that can help us shed more light on this newfound ability of his. Is this clear? Good. Do it.</briefing>
+    <enter>
+      <say>Listen up, {player}. It appears Morpheus has been stashing documents at this location. Keep in mind that this is a Zion operated area so you will run into opposition.</say>
+      <say>Be sure to search your fallen opponents for objects or items that might be of help to us.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Get the key from the Zion Ballista" type="Loot" npc="1" item="6791">
+      <done><say>I bet that key goes to the filing cabinet...</say></done>
+    </objective>
+    <objective goal="2" text="Search the filing cabinet for Morpheus' documents" type="Search" object="1" item="6855" after="1">
+      <done>
+        <say>The documents might be inside this filing cabinet.</say>
+        <say>That must be what Morpheus was hiding here. Take the document!</say>
+        <say>Wait a minute, this isn't what we're looking for... I'm going to look over it.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>It appears you found yet another address to yet another location... I tire of this.
+
+I'm sending you there now to continue your search. Get moving.</briefing>
+    <enter><say>This is a Machine controlled office complex that acts as a front for some of their operations. I can only assume the Machines stole the document from Morpheus. Search the whole place; from corner to corner. Leave no filing cabinet closed and no safe unlocked!</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Safe" />
+    <objective goal="1" text="Get the key from the Agent" type="Loot" npc="2" item="6782">
+      <done><say>This key could be what we need to find the stolen data.</say></done>
+    </objective>
+    <objective goal="2" text="Search the place for documents from Morpheus" type="Search" object="1" item="6800" after="1">
+      <done><say>That file that you just picked up states that the data stolen from Morpheus is hidden in a safe here.</say></done>
+    </objective>
+    <objective goal="3" text="Unlock the safe" type="Use" object="2" after="2">
+      <done><say>You just set off the security alarm! Guards are headed your way right now!</say></done>
+    </objective>
+    <objective goal="4" text="Get the disk from the safe" type="Search" object="2" item="6831" after="3">
+      <done>
+        <say>That's what we were looking for. Take the disk!</say>
+        <say>I'll download that from you now...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Another one of our missions draws in an end. The light at the end of this tunnel is quite intriguing.
+
+I shall be in contact with you, {player}.</finish>
+</mission>

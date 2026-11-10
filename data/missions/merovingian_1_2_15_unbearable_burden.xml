@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unbearable Burden, Merovingian story mission 1.2.15. Source: research/missions/transcripts/Merv1-2-15.md (the
+     archive replay of [Merovingian Archive 1.2.15], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
+     the objective texts, the sites (phase 1 an unnamed building: Normal; phase 2 Salid Helmet's apartment complex:
+     SlumApt; phase 3 a Zion Redpill Extraction Point: RedPillExtraction), the looks and the enemy counts. Item
+     stand-ins: Captain Rat's document (his plan, listing three bluepills) is Plan (6798), Salid Helmet's note is Letter
+     (6793). Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's matching
+     chapter 1.2 values, 68,750 experience and 91,000 information.
+     Gaps: Gnu and the security crew are Zion's (the Bacchus' crew); in retail the crew turned on the player after Gnu
+     died, here they are the phase's generated hostiles and attack from the start, and the Operator's line about them
+     is said when Gnu dies. The Operator's remark about a bluepill recruit candidate ("Coppertop here...") was cut off
+     in the log and isn't said, and the bluepill isn't placed. Sunshine Marin collapsing ("Oh, gaah!") is only her line,
+     said when the letter is found. Phase 3's murdered crew of the Bacchus (Captain Rat among them, as far as the log
+     tells) aren't spawned, as dead NPCs aren't; only Salid Helmet stands there, and talking to him ends the mission. -->
+<mission id="301215" title="Unbearable Burden" description="Hunt down Captain Rat and the crew of the Bacchus." plot="1"
+         order="1215" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Gnu" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Sunshine Marin" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>The letter is in his bedroom. You may take it.</say>
+  </npc>
+  <npc id="3" handle="Salid Helmet" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say>I -- I can't stay here.... must.... leave.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>I have an interesting job for you, {player}. A Zion Operative known as Captain Rat of the Bacchus has taken it upon himself to become... an unbearable burden in the search for Morpheus. We require that his life, and those aboard his crew, are put to an indefinite end.
+
+Rat and his crew were last seen at this location. Go there, locate Rat and his crew and present them the gift of... death. You will succeed, won't you? Yes, of course you will.</briefing>
+    <enter><say>Search the place for Rat and the crew of the Bacchus. When you find them, kill every last one.</say></enter>
+    <objective goal="1" text="Kill Gnu" type="Defeat" npc="1">
+      <done>
+        <say>Rat isn't even here! This is going to make the assignment that much more difficult... Hmm, wait... Gnu was one of Rat's men aboard the Bacchus. We may be able to salvage something out of this, search Gnu's corpse!</say>
+        <say>I think you just pissed off the security crew. Take them out!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill the security crew" type="DefeatAll">
+      <done><say>Maybe that'll teach them that anger never solves anything.</say></done>
+    </objective>
+    <objective goal="3" text="Search Gnu's corpse" type="Loot" npc="1" item="6798" after="1">
+      <done><say>The document that you found is a plan written out by none other than the Zion Operative that we need to assassinate, Captain Rat. Let me do a scan of the file, and by the time you are out of the building, Flood should have an update for you.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Okay, here's the score, {player}. Rat and Gnu were in the middle of a job to recruit a large number of redpill candidates from the Matrix and the document that you found lists the address of three bluepills. I can only assume that Denis Jurney was the second as the first name on the list has been crossed off. The last bluepill on the list is Salid Helmet, who lives very close to your current location. I've already sent you the address of Salid Helmet's apartment, head there now.</briefing>
+    <enter><say contact="1">This is Salid Helmet's apartment complex. Search his apartment and look for Captain Rat and the rest of the crew of the Bacchus. If you find them, put an end to their miserable lives.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Sunshine Marin" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Are you looking for Salid Helmet? He just left with some of his strange friends. I can tell you where he went if you still want to talk to him. He left a note in his room with all of the details.</say>
+        <say npc="2">The letter is in his bedroom. You may take it.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Find the letter in Salid Helmet's bedroom" type="Search" object="1" item="6793" after="1">
+      <done><say>We're getting somewhere now. The letter has the address of one of the many Zion Redpill Extraction Points. Leave and Flood will update you with the address.</say></done>
+    </objective>
+    <complete><say npc="2">Uh, I don't feel good at all... Oh, gaah!</say></complete>
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="0">
+    <briefing>I'm sending you the address of Rat's current location. Go there quickly, before they move again!</briefing>
+    <enter><say>You know what to do...</say></enter>
+    <objective goal="1" text="Talk to Salid Helmet" type="Talk" npc="3">
+      <talk>
+        <say npc="3">The flies... flies everywhere! Flies in his eyes... flies in his brain... flies everywhere!</say>
+        <say>They're all dead! Someone killed the entire crew of the Bacchus! Well, except for Salid Helmet here...</say>
+        <say npc="3">I -- I can't stay here.... must.... leave.</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>This is quite odd. Each and every one of the bodies has a single, solitary bullet right in the middle of their head. Whoever murdered these Zion Operatives had precision aim. I've never heard of anyone who could shoot like that. I'm going to put in a few more leads. We may have a use for someone with such skills.</finish>
+</mission>

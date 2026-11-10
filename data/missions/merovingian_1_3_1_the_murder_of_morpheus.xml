@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Murder of Morpheus, Merovingian story mission 1.3.1. Source: research/missions/transcripts/Merv1-3-1.md (the
+     archive replay of [Merovingian Archive 1.3.1], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line (with retail's spellings, "would like to you
+     collect" and "want some to put" among them), every NPC name, and phase 2's objectives "Stop Scheat from hitting on
+     Sheba" and "Get the Virus from Sheba". Ours: the description, the other objective texts, the sites (the rundown
+     building: Derelict; Amun's party: Normal), the looks and the enemy counts. Item stand-ins: Sheba's Poison/Virus is
+     Virus (6786), the Liquor mixed for Stanley Watson (a bottle of port '45) is Liquor (6801). Rewards: the log is a
+     level-50 player's (525,000 information, no experience), so these are Zion's matching chapter 1.3 values, 308,750
+     experience and 94,500 information.
+     Gaps: phases 1 and 3 were the same rundown building in retail; a phase never reuses a site here, so phase 3 is
+     another derelict building, and Stanley Watson is placed in each (two NPCs of one name). Of the vagrants, Tanner
+     Branson, Moises Craven and Ronnie Trowe are in phase 1 and Zita Oyler in phase 3, where the log has her; Moises's
+     and Ronnie's second lines, which they repeated later, are said once Stanley has been talked to. The corpses Flood
+     remarks on aren't spawned (dead NPCs aren't): finding them is a Search of a filing cabinet, desk or dresser that
+     turns up nothing. In retail Scheat could be got rid of either by giving him the Poison or by hacking the computer
+     that disconnects him from his ship (Epotus); only the computer is built, so the Operator's "Maybe you could give
+     that to Scheat..." isn't said, and Scheat stays in the room afterwards. Scheat's line to Sheba is said on coming
+     near him. Amun hands back the mixed Liquor as a Get after the Virus is given. The Zion operatives guarding Stanley
+     are the phase's generated hostiles; the Operator's line when the Liquor was handed over wasn't captured. -->
+<mission id="301301" title="The Murder of Morpheus" description="Find out who killed Morpheus." plot="1"
+         order="1301" org="3" contact="Flood" exp="308750" info="94500">
+  <npc id="1" handle="Tanner Branson" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">The stories he tells terrify me.</say>
+  </npc>
+  <npc id="2" handle="Moises Craven" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">Ronnie doesn't remember anything, but I know who he was. Ronnie used to be a famous stock broker. He had everything; money, power, women, you name it! Some people think he had the uncanny power to predict the stock market! He was never wrong... Hmm, maybe things went too well for him...</say>
+    <say display="5" after="3">The only reason I know this is because I used to sleep on newspapers all the time and I kept seeing articles about him. Ronnie doesn't remember a thing though... It's like he was lobotomized!</say>
+  </npc>
+  <npc id="3" handle="Ronnie Trowe" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Where--where has my money gone? Who took my money? Did YOU take my money?! It was with me, but now it's gone.... Money, where are you?!</say>
+    <say display="5" after="3">Sweet money... How could you leave me?</say>
+  </npc>
+  <npc id="4" handle="Stanley Watson" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="3">Give me a good drink and then I'll tell you everything.</say>
+  </npc>
+  <npc id="5" handle="Amun" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say>Go speak with Sheba.</say>
+    <say after="6">I've mixed the special Virus with the Liquor. Once you give this to Mr. Watson he will be more than willing to share any information on Morpheus' murder with you.</say>
+  </npc>
+  <npc id="6" handle="Sheba" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say>So you want some to put Stanley in a talkative mood? If you do me a favor, then maybe, just maybe...I'll share goodies with you.
+
+Scheat has been hitting on me ALL night, and I just wish he would drop dead! If you can get him to leave me alone, I'll give you what you need.</say>
+    <say after="4">Be careful with that, hun.</say>
+  </npc>
+  <npc id="7" handle="Scheat" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say display="5">Hey, back off! I'ma...here ta talk to...the lady!</say>
+  </npc>
+  <npc id="8" handle="Stanley Watson" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say>I ain't telling these leather bound freaks a damn thing until you give me some booze.</say>
+  </npc>
+  <npc id="9" handle="Zita Oyler" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say display="5">I need to find one of those burning barrels and warm up.</say>
+  </npc>
+  <phase site="Derelict" enemy="Zion" enemies="0">
+    <briefing>There is a lot of controversy surrounding the death of Morpheus. The Merovingian would like to you collect information on this matter. Our only lead is that Morpheus' killer had visited this rundown building a few times.
+
+Search the entire area. I will notify you when I feel you've located a shred of evidence. I truly hope that you understand your orders because I don't feel very much like repeating them.</briefing>
+    <enter><say>It may not look like much but this building could be a plentiful source of information.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the building" type="Search" object="1" item="0">
+      <done><say contact="1">Corpses? How lovely. Perhaps it would be wise to interrogate some of the hapless vagrants in the area. One of them might have some information rattling around inside their cavernous head.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Tanner Branson" type="Talk" npc="1" after="1">
+      <talk><say npc="1">Hey, uh... You haven't seen Stanley around have you? You should talk to him. He's seen some crazy stuff go down in these parts of town...</say></talk>
+      <done>
+        <say contact="1">Find this homeless wretch that they call Stanley Watson. When you do, could you trouble yourself to drill him with a few questions? That's not too much to ask of you, is it?</say>
+        <say npc="1">The stories he tells terrify me.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Stanley Watson" type="Talk" npc="4" after="2">
+      <talk>
+        <say npc="4">You want to know about the big guy who was killed, eh? You have to do something for me first, see... Find me something good to drink! Other...otherwise...I ain't telling you a damn thing!</say>
+        <say>Why am I not surprised?</say>
+      </talk>
+      <done><say contact="1">I know exactly where we can get something to quench Stanley Watson's thirst... I shall update you when you've stepped out of this festering pit.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>One of the Merovingian's Exiles, Amun, is holding a quaint little party nearby. You're going to crash the celebration and tell Amun that you need to pick up something "special" for our dear friend, Stanley Watson.</briefing>
+    <enter><say>Amun's party is being held here.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Amun" type="Talk" npc="5">
+      <talk>
+        <say npc="5">Flood tells me that you need some liquor for some crazy old bum. Well, I can help you out but I want to make sure that what I give you will ensure that Stanley Watson tells you everything you need to know. Go talk to Sheba. She has something that I will need.</say>
+        <say>Sheba is in the other bedroom. Speak with her.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Sheba" type="Talk" npc="6" after="1">
+      <talk>
+        <say npc="6">So you want some to put Stanley in a talkative mood? If you do me a favor, then maybe, just maybe...I'll share goodies with you.
+
+Scheat has been hitting on me ALL night, and I just wish he would drop dead! If you can get him to leave me alone, I'll give you what you need.</say>
+        <say contact="1">Sometimes I think other Exiles can be so petty...</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Stop Scheat from hitting on Sheba" type="Use" object="1" after="2">
+      <done><say>I don't think Scheat will be bothering Sheba anymore.</say></done>
+    </objective>
+    <objective goal="4" text="Get the Virus from Sheba" type="Get" npc="6" item="6786" after="3">
+      <talk><say npc="6">That'll take care of it! Thanks for getting him off my back. I have some Poison for you that Amun will want for the "special" drink you requested.</say></talk>
+      <done>
+        <say>Give the Virus to Amun and he will prepare you a drink mixed especially for Stanley Watson.</say>
+        <say npc="6">Be careful with that, hun.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Give the Virus to Amun" type="Give" npc="5" item="6786" after="4">
+      <talk><say npc="5">If you give me the Virus, I can mix it with the Liquor for Stanley.</say></talk>
+      <done><say npc="5">Give me a second. I just need to mix this... Okay, done!</say></done>
+    </objective>
+    <objective goal="6" text="Get the Liquor from Amun" type="Get" npc="5" item="6801" after="5">
+      <talk><say npc="5">I've mixed the special Virus with the Liquor. Once you give this to Mr. Watson he will be more than willing to share any information on Morpheus' murder with you.</say></talk>
+      <done><say>Deliver the Liquor to Stanley Watson.</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">So...uh, tell me, Sheba... What, uh...*hic* ...are you doing after the party? *hic*</say>
+    </near>
+  </phase>
+  <phase site="Derelict" enemy="Zion" enemies="3">
+    <briefing>He can't escape the Merovingian. Don't mess this up.</briefing>
+    <enter><say>Once the Liquor has worked its way into Stanley's system, he'll tell us everything we need.</say></enter>
+    <objective goal="1" text="Force the Zion operatives out" type="DefeatAll">
+      <done><say npc="8">You didn't have ta beat the crap outta 'em, but I guess that does the trick, eh. So did you bring the stuff?!</say></done>
+    </objective>
+    <objective goal="2" text="Give the Liquor to Stanley Watson" type="Give" npc="8" item="6801" after="1">
+      <done><say npc="8">Ooh! A bottle of port '45! You did good, real good. This hits the spot. Okay, I'll tell you what I know.
+
+Not long ago, this strange old guy was slumming around here... One day he up and lost it! He started going on and on about bugs, insects, and flies, I think -- all sorts of stuff! Shortly after that started, he made this ugly white mask out of a toilet seat and killed Seymour Bomers! It's possible someone hired him to do killing; just not sure why. I'd give you a name but I don't know who it would be.</say></done>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">I ain't telling these leather bound freaks a damn thing until you give me some booze.</say>
+      <say>The only way that we can get what we need is if you force the Zion operatives out, but I don't think they are willing to go.</say>
+    </near>
+  </phase>
+  <finish>It would seem that Morpheus' killer was a newspaper wetter in a white porcelain mask... Funny that.
+
+Sometimes information is found in the most curious places, and this case was no exception.</finish>
+</mission>

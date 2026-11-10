@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Propaganda, Merovingian story mission 1.2.2. Source: research/missions/transcripts/Merv1-2-2.md (the archive
+     replay of [Merovingian Archive 1.2.2], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, both briefings (the second verbatim: "the address of final location") and every Flood
+     and operator line. Ours: the description, the objective texts (the Objectives tab was never opened), the sites
+     (two unnamed buildings: Normal) and the enemy counts (more in the second building, which took five minutes).
+     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
+     chapter 1.2 (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: the posters are boxes that are used (torn down), as in Zion's The Power of Propaganda. The first building
+     had "at least three"; the second had five, but a phase has at most three objects, so it has three though the
+     operator still says five. The security camera that spotted the player has nothing to stand for it; the
+     operator's line about it is the first poster's done line, and the Zion operatives are on the floor from the
+     start. The Zion operatives' barks in Team chat (Zion Expert Rifleman, Zion Ravager, Zion Kung Fu Grandmaster,
+     Zion Network Attacker: "And now, you die!", "We've got a break in!") have no place, since the hostiles are
+     generated. The Captain's Log Entry from Morpheus in the Details popup isn't from this mission and isn't used. -->
+<mission id="301202" title="Propaganda" description="Tear down Morpheus' propaganda posters." plot="1"
+         order="1202" org="3" contact="Flood" exp="68750" info="91000">
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Morpheus has been observed putting up propaganda posters in the Matrix. Much to the disdain of the Merovingian these messages are bringing Machine programs to our doorstep. We need you to locate these posters and tear them down. I will send you the address of one of these two locations now, but be on your guard; Zion Operatives could still be there.</briefing>
+    <enter><say>There are at least three posters. Don't leave a single piece of propaganda hanging!</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Box" />
+    <objective goal="1" text="Tear down the first poster" type="Use" object="1">
+      <done><say>You've been spotted by the camera! Be on your guard for Zion Operatives!</say></done>
+    </objective>
+    <objective goal="2" text="Tear down the second poster" type="Use" object="2" />
+    <objective goal="3" text="Tear down the third poster" type="Use" object="3" />
+    <complete>
+      <say>I hope removing these posters helps keep the Agents at bay.</say>
+      <say contact="1">Excellent work. We have one more location for you to hit.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>I am sending you the address of final location. You will run into more dreadful Zion Operatives.</briefing>
+    <enter><say>Inside this building you will find five more posters. We need the entire place wiped of Morpheus' propaganda.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Box" />
+    <objective goal="1" text="Tear down the first poster" type="Use" object="1" />
+    <objective goal="2" text="Tear down the second poster" type="Use" object="2" />
+    <objective goal="3" text="Tear down the third poster" type="Use" object="3" />
+    <complete><say>All posters have been torn down!</say></complete>
+  </phase>
+  <finish>That is all for now, {player}.</finish>
+</mission>
