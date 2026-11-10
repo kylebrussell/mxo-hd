@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Device, Machines story mission 2.1.1. Source: research/missions/transcripts/Mach2-1-1.md (the archive replay
+     of [Machine Archive 2.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Coyote line, and Coyote's name. Ours: the
+     description (the log shows no Summary), the objective texts (the Objectives tab was never opened), the sites (the
+     log names no building type: Normal), the looks and the enemy count. Item stand-in: the schematic found on the
+     bodies is Plan (6798). Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward
+     is shown; these are the Zion chapter 2 values (about 297,000 experience and 98,000 information).
+     Gaps: Coyote asks to be taken to a private room with a computer in the same building. An Escort can't end at an
+     object, so finding that room is a Use of a Computer, and Coyote's second speech is a Talk that opens after it; he
+     doesn't follow the player there. One more line, probably Coyote's, after his first one wasn't captured. Phase 3
+     finds Coyote and others dead in his laboratory; dead NPCs aren't spawned, so the bodies are a Furniture object to
+     search for the schematic, and the Operator's line on finding Coyote's body is said on arrival. The device itself
+     is never obtained, as in retail. No fight is shown in the laboratory, so it has no hostiles. -->
+<mission id="202101" title="The Device" description="Obtain a prototype device from the Exile Coyote." plot="1"
+         order="2101" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Coyote" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="3">All right... are you sure no one is listening? I am being stalked by shadowy figures. Just when I think I'm alone, I see them out of the corner of my eye... and then they're gone! I'm certain they are after my device. If you can free me from my stalkers, you may have the device prototype. Please, you must help me! Do you understand?</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Ah, {player}, how opportune that you have contacted me. I have a task for you to fulfill. We require that you obtain a certain... device for us. I am updating your HUD with the location and identity of an Exile who has a prototype of the device. Obtain it from him.</briefing>
+    <enter><say>The Exile, Coyote, is in this building right now -- looks like we've caught him while he's away from his lab.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Coyote" type="Talk" npc="1">
+      <talk><say npc="1">Who are you? Why are you here? The device? Wait... are you with... them? There is a private room near here with a computer. Take me there and we can speak more freely...</say></talk>
+    </objective>
+    <objective goal="2" text="Find the private room with the computer" type="Use" object="1" after="1" />
+    <objective goal="3" text="Talk to Coyote in private" type="Talk" npc="1" after="2">
+      <talk><say npc="1">All right... are you sure no one is listening? I am being stalked by shadowy figures. Just when I think I'm alone, I see them out of the corner of my eye... and then they're gone! I'm certain they are after my device. If you can free me from my stalkers, you may have the device prototype. Please, you must help me! Do you understand?</say></talk>
+      <done><say>Shadowy figures? I think this guy is cracked... let's get outside and see what Gray has to say about this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Do not dismiss the ramblings of this Exile, {player}. In fact, we had already anticipated some... resistance to our actions, from the Merovingian. An activity scan of the previous twelve hours indicates unusual Exile traffic from a nearby location. We have matched the activity to known Merovingian associates; analysis indicates a high likelihood that these individuals are responsible for the harassment of Coyote. Proceed to the specified location and eliminate any Exiles you find.</briefing>
+    <enter><say>This is the spot that Gray pointed out... I'm picking up some activity in there. Keep your eyes open!</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>Nice, you've taken out all the Exiles.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You have eliminated the threat to Coyote. Proceed to his laboratory and obtain the device from him.</briefing>
+    <enter>
+      <say>I hope he's happy that you took care-- Huh? The code's looking a little strange in there. Keep your eyes open for anything unusual.</say>
+      <say>Damn! There's Coyote... I'm running a quick scan... There's no sign of the device anywhere in the area! Check the bodies and see if you can find anything of interest.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Check the bodies" type="Search" object="1" item="6798">
+      <done><say>A schematic, huh? I think you should get out of there and upload it at a hardline. Agent Gray can figure out where to go from there.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the schematic at a hardline" type="Upload" item="6798" after="1" />
+  </phase>
+  <finish>It would appear that your intervention was too late; the Merovingian has compromised our plans. I am receiving the data from your operator. I will forward it to my colleagues, and we will proceed from there. Contact me for further instructions.</finish>
+</mission>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Investigations, Machine story mission 2.3.4. Source: research/missions/transcripts/Mach2-3-4.md (the archive
+     replay of [Machine Archive 2.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. A line of the
+     log is hidden at two image joins, in the Operator's arrival line of phase 3 and in Fillament's answer; the text
+     runs on without the gap. Ours: the description, the objective texts, the looks, the enemy counts and the sites
+     (none is described: Normal). Enemies: Enceladus's guards are Exiles (Merovingian); Yvette's hackers are an
+     awakened human's crew, generated as Zion, the nearest for rogue redpills. Fillament's kind isn't shown: he
+     wears an Exile's look. Rewards: the log is a crop with no chat panel, so no reward was shown; 300,000 experience
+     and 98,000 information are Zion chapter 2.3's values.
+     Gaps: the log doesn't show the fights. Enceladus's "It really is hard to find good help these days" and "I have to
+     hire some new guards" tell that his guards were beaten, so he answers once they are dead. The Operator speaks of
+     "the computers in here" at Yvette's; the log shows only the one with the access log, so there is one computer to
+     use, and Yvette herself isn't met ("no need to talk to Yvette in person"). -->
+<mission id="202304" title="Investigations" description="Find out what the commandos wanted from a group of smugglers." plot="1"
+         order="2304" org="2" contact="Agent Gray" exp="300000" info="98000">
+  <npc id="1" handle="Enceladus" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="2">Now please leave. I have to hire some new guards.</say>
+  </npc>
+  <npc id="2" handle="Fillament" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>After the unfortunate events surrounding your last encounter with the commandos, the most logical course of action is to gather intelligence. We still know very little about this new organization.
+
+Our only lead is a group of smugglers who were contacted by the commandos recently. Go to the smugglers' base of operations and determine the nature of the interaction.</briefing>
+    <enter><say>"Determine the nature of the interaction." Gray really has a way with words, huh?
+
+This place is run by an Exile who goes by the name Enceladus. I doubt he'll be very cooperative.</say></enter>
+    <objective goal="1" text="Kill Enceladus's guards" type="DefeatAll" />
+    <objective goal="2" text="Talk to Enceladus" type="Talk" npc="1" after="1">
+      <talk><say npc="1">It really is hard to find good help these days. All right, ask your question and be gone with you.
+
+Those soldiers? Yes, they were here. They purchased a list of login IDs and passwords from me. I don't know what their purpose was, but I do know this: the only group of hackers around here who could do anything with those logins are led by Yvette. Find her and you'll find more information.</say></talk>
+      <done><say>Looks like we'll be paying Yvette a little visit!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Ah, Yvette. She is an awakened human, once in the employ of the Merovingian but now serving only her own interests.
+
+Proceed to her location and obtain more information.</briefing>
+    <enter><say>You should be able to find some information on the computers in here. Don't expect Yvette to be happy to see you!</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer for Yvette's access log" type="Use" object="1">
+      <done><say>I just forwarded the access log from that computer to Gray for analysis. You can get out of there now -- no need to talk to Yvette in person.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Very interesting. The trace logs of Yvette's activity indicate that her target was an illicit information brokerage. These sorts of... unsavory businesses can be found throughout the Matrix.
+
+Proceed to the coordinates indicated and question any individuals you find there.</briefing>
+    <enter><say>All right... time to throw a little weight around. Let 'em know who sent you.</say></enter>
+    <objective goal="1" text="Talk to Fillament" type="Talk" npc="2">
+      <talk><say npc="2">So, first my data gets hacked, but that's not enough... the damn Machines have to come and bust my chops now?
+
+Oh, all right... if you have to know... the stuff I lost was all dealing with I/O routines. Purely external. Not that I have that much info on that stuff -- who has a use for that, anyhow? But what I had is now gone. Vanished. End of story.</say></talk>
+      <done>
+        <say>I/O routines? That means entry and exit to the Matrix! Why would they want to know anything about that? Like Fillament said, it's pretty hard to find a use for it...
+
+Well anyhow, at least we know what they wanted. You can clear out of there.</say>
+        <say npc="2">Listen, you've got everything you need, right? Can't you just leave us in peace?</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Very... perplexing, {player}. We have no reason to believe that this information could be of any use to the commandos, which leaves us with the puzzle of why they would want it.
+
+This data shall be analyzed. Your work here is... complete, for now.</finish>
+</mission>

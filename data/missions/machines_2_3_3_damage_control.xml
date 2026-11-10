@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Damage Control, Machine story mission 2.3.3. Source: research/missions/transcripts/Mach2-3-3.md (the archive
+     replay of [Machine Archive 2.3.3], given by [Archived]Agent Gray; Agent Lee and Agent Wong also speak). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. Gray's line on
+     meeting Robertson shows two blacked-out words after "opportunity"; it reads "This is quite an opportunity,
+     {player}." here. Agent Lee's first line on arriving in phase 1 is cut off in the log and isn't said. Ours: the
+     description, the objective texts, the looks, and the sites: phase 2 is Tad Zappa's apartment (SlumApt), the
+     secret meeting place and the secure location aren't described (Normal). Robertson is one of the commandos, who
+     have no look of their own: he wears a redpill's. Agent Lee appears in phases 1 and 4, so he is two NPC entries
+     with the same handle and look. Item stand-in: the bug is Bug (6824). No fighting was seen: no phase has enemies.
+     Rewards: the log is a crop with no chat panel, so no reward was shown; 300,000 experience and 98,000 information
+     are Zion chapter 2.3's values.
+     Gaps: retail's last phase is a scripted failure. Robertson takes a suicide pill on reaching Agent Lee and his
+     RSI is corrupted; we have no such script, so leading Robertson to Agent Lee completes the phase and the mission,
+     and the Operator, Agent Lee and Agent Wong then say the lines that tell of his death. Robertson isn't despawned
+     and stays standing. What happened in the log between Agent Lee's greeting and the Operator's "Damn it!" isn't
+     captured. -->
+<mission id="202303" title="Damage Control" description="Observe the Zion recruiter Loti and bring a commando in for study." plot="1"
+         order="2303" org="2" contact="Agent Gray" exp="300000" info="98000">
+  <npc id="1" handle="Agent Lee" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="1">It is preferable to have a bug and not need it, than to need a bug and not have it, {player}.</say>
+  </npc>
+  <npc id="2" handle="Tad Zappa" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="3" handle="Elisa Valle" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say>So, another one of Tad's friends, huh? Think you can just drop by here without calling first?</say>
+  </npc>
+  <npc id="4" handle="Robertson" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <npc id="5" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Ah, {player}. Is Robertson with you?</say>
+  </npc>
+  <npc id="6" handle="Agent Wong" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We have further observation for you to conduct, {player}. There is a certain Zionist who operates under the name Loti. You must observe his recruitment tactics in person.
+
+But first, meet with Agent Lee. He has an item that may become necessary in the course of your activities.</briefing>
+    <enter><say>Okay, Agent Lee is on site with the item. I think it's a bug of some sort.</say></enter>
+    <objective goal="1" text="Get the bug from Agent Lee" type="Get" npc="1" item="6824">
+      <talk><say npc="1">There you are, {player}. I have the item for you.</say></talk>
+      <done><say>That's all you need.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Our surveillance indicates that Loti recently visited a bluepill named Tad Zappa. Pay your own visit to Mr. Zappa and evaluate the situation.</briefing>
+    <enter><say>This is Zappa's apartment. Let's have a little talk with him, shall we?</say></enter>
+    <objective goal="1" text="Talk to Tad Zappa" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Who are you? Hey, you must be with that Loti guy, right?
+
+Listen, I really want to know what he's talking about. I always thought this world seemed a little... off, you know? All the things that seemed so wrong... they finally make sense...
+
+I've decided. I want to take the red pill.</say>
+        <say contact="1">And now you will see the use of this particular bug, {player}. I had you bring it along for just such an eventuality. Give the bug to Mr. Zappa.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the bug to Tad Zappa" type="Give" npc="2" item="6824" after="1">
+      <talk><say npc="2">Do you have the red pill for me?</say></talk>
+      <done><say>I don't think Zion will be hearing from good ol' Zappa anytime soon. All set?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well done, {player}. Our surveillance sources indicate that Loti left this location and continued to a meeting with some unknown individuals. You must obtain additional information. We need to know who is setting up covert meetings with Zion.
+
+Proceed to the indicated location and report your observations to me.</briefing>
+    <enter><say>All right, this is the "secret" meeting place. Good thing Zion can't actually keep anything secret.</say></enter>
+    <objective goal="1" text="Talk to Robertson" type="Talk" npc="4">
+      <talk>
+        <say npc="4">What are you doing here?!
+
+Ah, I understand. You must be tracking the movements of these Zionists... just as we are! I'm ready to come with you if you need help!</say>
+        <say contact="1">This is quite an opportunity, {player}. I want you to lead Robertson out of the area.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Robertson out of the area" type="Escort" npc="4" to="exit" after="1">
+      <talk><say npc="4">Lead on!</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Lead this individual to a secure location for study. Conceal the nature of this destination from the subject.
+
+We are in grave need of data concerning these commandos. It is imperative that you do not fail this mission. Do you understand?</briefing>
+    <enter><say>This is the spot, {player}. Play it cool...</say></enter>
+    <objective goal="1" text="Lead Robertson to Agent Lee" type="Escort" npc="4" to="npc:5">
+      <talk><say npc="4">I don't have any reliable intel on this area, {player}. Where are we going?</say></talk>
+      <done>
+        <say>Damn it! Whatever that guy did, it completely scrambled his RSI. They're not getting any data from that pile of code. You might as well get out of there.</say>
+        <say npc="5">Subject has apparently taken some sort of... suicide pill. The target RSI appears to be severely corrupted.</say>
+        <say npc="5">Disappointing.</say>
+        <say npc="6">This does not bode well, {player}.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>This was a... regrettable incident. It seemed certain that we would obtain useful information from this subject.
+
+Contact me later if you wish to continue your service to the Machines. I trust there will be no more... disappointments.</finish>
+</mission>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Bitter Pill, Machine story mission 1.3.4. Source: research/missions/transcripts/Mach1-3-4.md (the archive
+     replay of [Machine Archive 1.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line used (Ascii's "Au revior" is retail's spelling),
+     every NPC name, the Zion Gunman's and the Zionites' lines (Team chat), and phase 3's last two objective texts ("Get
+     the Data from the computer", "Upload the Data at a hardline"). Ours: the description, the other objective texts,
+     the sites (Morpheus' old apartment: SlumApt; the Zion facility: ZionOutpost; Ascii's building, Niobe's group's
+     building, the secured area and the Machine stronghold are unnamed buildings: Normal), the looks and the enemy
+     counts. Niobe's group are redpills: enemy Zion. Item stand-ins: the alien papers are Documents (6794), Ascii's
+     Virus is Virus (6786), the Intrusion Sensor is Device (6820), the Zion data is Data (6787), the 1024-bit encrypted
+     code key is Access_Code (6782), Morpheus' journal is Book (6814). Rewards: none were shown for this mission; the
+     261,535 experience and 70,000 information are 1.3.3's, the nearest mission of this sub-chapter that showed them.
+     Gaps: a few lines fall at image joins (the readings kept are the transcript's), and some log entries weren't
+     captured: one in phase 3 between 11:56:35 and 11:58:48, and maybe more in phases 3 and 4. The Operator's "Tough
+     guy. Maybe try talking to the other one?" after Hornet's "..." and "Hey, maybe one of them found the thing the
+     other one misplaced." (its context is missing) aren't said. Epeios opened the door to Ascii; here talking to him
+     opens Ascii's goals. Retail's Virus ran on the networked computer once the password "r@bb1t" was typed in: here
+     the Gunman's line gives the password, the Virus is put into the computer and the Data is then taken from it. The
+     Zionites who turned on the player at the alarm are two hostiles who wait to be attacked (their barks only play
+     if they're talked to), and the phase has no generated enemies, since everyone there took the player for one of
+     their own until the alarm. Phase 4's guards are a DefeatAll before the desk's search ("Use whatever force is
+     required"), which wasn't shown as a goal. Phase 4's "maze of locks", the Machines unlocking phase 5's entrance and
+     phase 5's alarm aren't expressed; the alarm's line is said with the find. The Operator's lines about the player
+     reading the journal are said on arrival and on reaching Agent Marks. Park The Mechanic's "Hmph." and North The
+     Mechanic's "Salutations, human." aren't said: each says one line. Retail's paragraph breaks are joined with a
+     space. -->
+<mission id="201304" title="The Bitter Pill" description="Trace Morpheus' long-lost journal and hand it over to the Machines." plot="1"
+         order="1304" org="2" contact="Agent Gray" exp="261535" info="70000">
+  <npc id="1" handle="Hornet" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say display="5">...</say>
+  </npc>
+  <npc id="2" handle="Epeios" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="4">Leaving us so soon? A pity. And I was so hoping to have you here for dinner.</say>
+  </npc>
+  <npc id="3" handle="Ascii" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568" />
+  <npc id="4" handle="Gayle" type="FRIENDLY" at="2" rsi="a5060090" weapon="2568">
+    <say display="5">Heh heh heh...</say>
+    <say display="5" after="4">Mmm-hmm.</say>
+  </npc>
+  <npc id="5" handle="Zion Gunman" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="6" handle="Zion Martial Arts Initiate" type="HOSTILE" attacksOnSight="0" at="3" rsi="d8040058" weapon="2564">
+    <say>We've got a code attack in progress here!</say>
+  </npc>
+  <npc id="7" handle="Zion Guardian Patcher" type="HOSTILE" attacksOnSight="0" at="3" rsi="60010058" weapon="2564">
+    <say>Damned traitor!</say>
+  </npc>
+  <npc id="8" handle="Agent Stewart" type="FRIENDLY" at="6" rsi="3600004e" weapon="2568">
+    <say display="5">The group following the human known as Niobe seems to resort to violence more readily than the Zion group. Some caution when dealing with them is advisable.</say>
+  </npc>
+  <npc id="9" handle="Agent Norris" type="FRIENDLY" at="6" rsi="6e060040" weapon="2568">
+    <say display="5">Tell me, {player}, do you have a diary of your own? Strange, to write down one's own thought sequences. Is your memory so limited?</say>
+  </npc>
+  <npc id="10" handle="Agent Wilson" type="FRIENDLY" at="6" rsi="9b000090" weapon="2568">
+    <say display="5">The humans had an expression: "Curiosity killed the cat." Are you like the cat, {player}?</say>
+  </npc>
+  <npc id="11" handle="Agent Marks" type="FRIENDLY" at="6" rsi="3600004e" weapon="2568" />
+  <npc id="12" handle="Park The Mechanic" type="FRIENDLY" at="6" rsi="8f080058" weapon="2568">
+    <say display="5">Keep moving, human. We are not required to tolerate your presence.</say>
+  </npc>
+  <npc id="13" handle="North The Mechanic" type="FRIENDLY" at="6" rsi="8f080058" weapon="2568">
+    <say display="5">This human has access clearance, Park The Mechanic. We are not permitted to interfere.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Now that we know the identity of Morpheus' previous candidate for the "One," analysis of surveillance records of this individual's places of residence has revealed that Morpheus visited this "One's" grave by himself, on a regular basis over a period of several months following the "One's" termination. Further archive trace-back points to a certain apartment in which Morpheus seems to have spent this time in seclusion. This period of apparently self-induced isolation may hold valuable clues to heretofore unknown elements of Morpheus' psyche--elements that may have something to do with his sudden assassination. You will investigate.</briefing>
+    <enter>
+      <say>The Machines say the apartment is in that building. Could Morpheus really have lived there, right under their nose? Crazy. Hopefully we'll find some sort of clue there.</say>
+      <say>Wait, I'm picking up an odd reading in that room. Some sort of alien code signature... maybe Zion origin. It's very faint, like it's inside something, or behind a wall. Can you find anything on one of the walls in the living room that could hold something?</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Search the walls of the living room" type="Search" object="1" item="6794">
+      <done>
+        <say>Jackpot!</say>
+        <say>Huh! I'm not sure what I expected, but it wasn't that: blank paper, with a few scribbled words. Does that say... "Is he real?" Well anyway, that seems to be the source of the alien code signal. Bring it outside with you, we'll see what The Man wants us to do with it.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Our database contains no record of the code signature associated with the alien papers you found in Morpheus' old apartment. This is rather remarkable. Because time is of the essence, we are sending you to a certain Exile program who specializes in exotic code items of this type. We anticipate that she will have information that will be of use to you, but exercise caution in dealing with her: no Exile is to be trusted.</briefing>
+    <enter><say>The Exile, Ascii, should be in that building. Better keep your hand on your wallet.</say></enter>
+    <objective goal="1" text="Talk to Epeios" type="Talk" npc="2">
+      <talk>
+        <say npc="2">We are delighted to see you here, so young and juicy. Please... enter.</say>
+        <say>O-kay. That cat is a little weirder than absolutely necessary. Does Gray really know these people? Oh well, at least he seems to have given you access to that next door.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Ascii" type="Talk" npc="3" after="1">
+      <talk>
+        <say>Whoa.</say>
+        <say npc="3">Bonjour, cher. You must be... {player}, was it not? Monsieur Gray told me to give you every possible hospitality. A rather... cold man, Monsieur Gray. But generous to his friends, no? Ah oui, you have something for me? Let me see it, cher, do. I have heard such... tantalizing things about it.</say>
+        <say>Watch out for that vamp. She's got to be up to something. I guess there's nothing for it but to give her the Documents though.</say>
+        <say>That vixen better not try to double-cross us...</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Give the Documents to Ascii" type="Give" npc="3" item="6794" after="2">
+      <done><say npc="3">Oh! Mmm... oh, yes! Why cher, this is simply delicious! The handwriting on these pages--it is Morpheus, oui? But of course you knew that, you clever devil. But perhaps you did not know this: these pages are extra leaves from Morpheus' long-lost journal. Oh yes, we all have our secrets, do we not? Especially a strong, private man like Morpheus. The longing to unburden himself must have become... overpowering. He wrote on this custom-coded paper to guard against Machine snooping. But with these pages, we can trace the rest of that paper. Take this wicked little Virus of mine, it will unlock the way for you.</say></done>
+    </objective>
+    <objective goal="4" text="Get the Virus from Ascii" type="Get" npc="3" item="6786" after="3">
+      <done><say>Morpheus'... journal? Man, I never pegged Morph for the "dear diary" type. Okay, let's see... All right, the coordinates her people provided are uploading to you now.</say></done>
+    </objective>
+    <complete><say npc="3">We have long suspected the existence of Morpheus' journal but we had of course no way to trace it. You have brought me the key, mon brave, for which I am forever in your debt... You will let me keep it, won't you, to remind me of you? Oh, you are too kind, I knew you would not deny me this little pleasure. With the code trace you've provided, that Virus you have will lead you to the journal, like an exotic perfume leads a man to his lover. Oh, I shall not be able to sleep at night for weeks just thinking of it! Au revior, cher--I will be waiting breathlessly for our next encounter.</say></complete>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>You will proceed to the indicated area and search the local network for the paper's code signature.</briefing>
+    <enter>
+      <say>That looks like a Zion facility--makes sense, I guess, since it was probably someone from Zion who did that custom code job for Morpheus' paper. Their security is remarkably lax, it looks like you can just stroll right in. You're looking for a computer that will take the Virus that Ascii gave you.</say>
+      <say>That computer over there looks like it's on the network.</say>
+      <say>Shoot, they've got some kind of nasty password protection on that thing. Hmm... since everyone there seems to assume that you're from Zion, maybe if you get friendly with them they'll give you the password.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Find the Intrusion Sensor" type="Search" object="1" item="6820">
+      <done><say>I'll bet if you give that to the person who was looking for it, they'll be willing to help you access their network. Then you could plant the Virus with ease!</say></done>
+    </objective>
+    <objective goal="2" text="Give the Intrusion Sensor to the Zion Gunman" type="Give" npc="5" item="6820" after="1">
+      <talk><say npc="5">Hey, you found the Intrusion Sensor! Can I have it?</say></talk>
+      <done>
+        <say npc="5">Thanks, I sure owe you one! Oh, you forgot the network password? It's "r@bb1t." Just go type that in and you'll be all set!</say>
+        <say>Great work, you got their password! Now you just need to find a networked computer in there.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Plant the Virus in the computer" type="Put" object="2" item="6786" after="2">
+      <done><say>Nice work, now get the Data from that computer and we're home free. Uh-oh... I guess they had some kind of silent alarm on their network, 'cause their grid is lighting up like a Christmas tree! Watch out, I think they may be on to you.</say></done>
+    </objective>
+    <objective goal="4" text="Get the Data from the computer" type="Search" object="2" item="6787" after="3">
+      <done><say>That's got to be what we're after. Now hightail it out of there and get that Data to a hardline.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the Data at a hardline" type="Upload" item="6787" after="4">
+      <done><say>The data is coming through now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>The data you recovered from the humans indicates that more of the unique code for that paper you found in Morpheus' apartment is being held by members of Niobe's new splinter group. We are sending you to a building in which high-level members of her group have been spotted. You will extract the location of Morpheus' journal from them. Use whatever force is required.</briefing>
+    <enter>
+      <say>Niobe's bunch should be in that building. Hopefully you'll be able to get some kind of clue to the journal's location from them. It's a unique artifact, so you can expect them to defend the secret vigorously.</say>
+      <say>That's no lie--I'm detecting a surprisingly intricate maze of locks on that floor. It seems they've got something they don't want anyone else getting--could it be the journal?</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill Niobe's guards" type="DefeatAll">
+      <done>
+        <say>Huh, a dead end with lots of guards. Maybe there's something hidden in that room.</say>
+        <say>Hey! I'm reading some hot code in that desk. See what it is.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the desk" type="Search" object="1" item="6782" after="1">
+      <done><say>Well well, what have we here? Let me hook into that... Ooh, a 1024-bit encrypted code key. Those usually open more interesting things than your normal everyday door key. Let me ping the Machines to do a trace for the lock it fits. Meanwhile, get outside: you're all done in there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Their encryption was impressive, for human work: it took us fully 3512.36 milliseconds to decode it. The encryption key has been traced. Enhanced scan of the target area detects the presence of Morpheus' custom paper code. The location is uploading to you now. Proceed there directly and secure the journal.</briefing>
+    <enter><say>The Machines have already used the key code they decrypted to give you access to the entrance to the secured area. It's up to you to get in there and nab the journal. We only have one chance at this, so let's do it right.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Get the journal" type="Search" object="1" item="6814">
+      <done>
+        <say>Uh-oh! That alarm means trouble. You'd better work fast.</say>
+        <say>Bingo! That Journal's component code is a match for the paper you found in Morpheus' apartment. It's got to be Morpheus'. Grab it and get out of there!</say>
+        <say>Head outside pronto. The Machines are going to tell us what they want us to do with the journal.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Surveillance indicates that Niobe's group already has powerful operatives combing the City for you. They must not recapture the journal. Make your way immediately to our stronghold at the indicated coordinates. There you will hand the journal over to our Agents for analysis.</briefing>
+    <enter><say>What? You're telling me that Morpheus wrote that he wasn't sure about finding the One? I knew you wouldn't be able to resist peeking into that journal of his. You'd better not let the Machines catch you at that. You're supposed to hand it over to Agent Marks, somewhere in that building. I suggest you skip the reading and just hand the journal over ASAP--way too many people would kill you to get that thing.</say></enter>
+    <objective goal="1" text="Talk to Agent Marks" type="Talk" npc="11">
+      <talk>
+        <say>Wait, wait--you're telling me that Morpheus was writing about giving up on the whole "One" thing after his earlier recruit was killed? Wow, who'd have ever thought that? Everyone always talked about how inspiring Morpheus was, how sure of himself-- oopsie, there's Agent Marks. Don't let him catch you reading that thing.</say>
+        <say npc="11">Human. You have the artifact. I will take it. Now.</say>
+        <say>You'd better hand it over.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the journal to Agent Marks" type="Give" npc="11" item="6814" after="1">
+      <talk><say npc="11">The artifact, {player}. Now.</say></talk>
+      <done>
+        <say>Well, I guess that's that. So Morpheus was in a big-time funk for a while there, eh? The big man himself on the verge of despair. I guess that just goes to show, even legends can have their bad days. Anyway, you'd better clear out before Agent Marks gets ticked.</say>
+        <say npc="11">Scanning... Code match found. Article is genuine. Very well {player}, you may leave. Now.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Initial analysis indicates a 99.7% chance that the journal you retrieved is indeed the work of Morpheus. None of the handwritten notes speak of anyone who may have had a motive to assassinate him, aside from us, but we have found that humans often hide their meanings in obscure references. Cross-referencing Morpheus' journal entries against our library of surviving human writings will take some time. In any event, {player}, we appreciate your reliability in this matter. Good day.</finish>
+</mission>

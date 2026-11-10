@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Down the Wire, Machines story mission 2.2.5. Source: research/missions/transcripts/Mach2-2-5.md (the archive
+     replay of [Machine Archive 2.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the name Nightingale. Ours: the
+     description, the objective texts, the sites (unnamed buildings: Normal), Nightingale's look, the enemy count and
+     the enemy (the log names no side: Merovingian, the arc's enemy so far). Item stand-ins: the key in phase 2 is
+     Access_Card (6791); phase 3's two keys are Access_Code (6782) and Document_Combination (6857); the junction box
+     schematic is Plan (6798). The hardline junction boxes are Box objects, operated with a Use. Rewards: the
+     screenshots are crops of the Mission window with no chat panel, so no reward was shown; 297,000 experience and
+     98,000 information are Zion chapter 2's values.
+     Gaps: the log doesn't say where the keys were found; they are searched for in a desk, cabinet or safe. The locked
+     doors they open can't be built, so each key's Search opens the next goal instead (in phase 3, the second key,
+     then the junction box). The Operator's lines on first seeing a junction box are said on arrival (phase 1) or when
+     the key that leads to it is found (phases 2 and 3), and his line about Nightingale is said on arrival in phase 4.
+     Phase 3 may have had only one key ("How many keys do they have around here?" could react to something else); two
+     are built. The log shows no fighting before phase 4, so phases 1 to 3 have no enemies. Gray's italic "smell" and
+     the Operator's italic "that" are plain text, and Gray's "By all indications" is the best reading of a word cut by
+     the screenshot. -->
+<mission id="202205" title="Down the Wire" description="Trace the Assassin's hidden hardline junction boxes." plot="1"
+         order="2205" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Nightingale" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568">
+    <say>I'm afraid your little journey ends here, {player}.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our analysis of the Assassin's movements indicate a... base of operations located on a garbage barge in the middle of the river. We are as yet unable to access the barge. We suspect that there is an extensive hack in progress.
+
+We have some locations for you to investigate. Discover how the Assassin travels to and from the barge. The barge, with its disgusting... stench...
+
+Go to the site I have indicated to you.</briefing>
+    <enter>
+      <say>Okay... I guess you should just poke around in this place until you find something interesting. Apparently the Assassin was seen entering this area, but not coming back out.
+
+By the way, d'you think Gray seems a little off today?</say>
+      <say>Hey, that looks like a hardline junction box! That's funny, though... I haven't heard of any junctions in this area.
+
+Check that box out, {player}.</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Operate the hardline junction box" type="Use" object="1">
+      <done><say>I grabbed the data stream from that box. I don't think you're going to turn up anything else in here; time to move on.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The data from that hardline junction box is highly atypical, {player}. By all indications, it connects not to a hardline, but rather to another interior location.
+
+Proceed to the next location. Extract all pertinent data. You are getting closer to the Assassin. I can almost... smell him.</briefing>
+    <enter><say>Huh. Gray's definitely acting a little weird. I wonder if they have shrinks for programs?
+
+Anyhow, same deal as the last place. The last junction box pointed here, so there must be something worth finding.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Box" />
+    <objective goal="1" text="Find the key" type="Search" object="1" item="6791">
+      <done>
+        <say>A key? Say what you will, {player}, but I highly suspect you'll find a locked door around here somewhere. Don't ask how I figured that one out.</say>
+        <say>Another junction box! Same drill -- you operate the box and I'll grab the code stream, and we'll be on our way.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Operate the hardline junction box" type="Use" object="2" after="1">
+      <done><say>Okay, I grabbed the code stream, and Gray's analyzing it as we speak. Head on out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>What is it like to hunger for something, {player}? What is it like to be ruled by your desires, your... cravings? I ask you because I sense a strange... compulsion... regarding the assassin. His deletion has become my one goal, my purpose, my... function...
+
+I... You will ignore my previous remarks, {player}. I am sending you the address pointed to by the previous junction box. Go there and investigate. That is all.</briefing>
+    <enter><say>I really, really hope Gray isn't flipping out on us. It's funny though, he's reminding me of somebody... ah well, we should probably just focus on the mission at hand.
+
+The last box pointed to this building, so in we go!</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Safe" />
+    <object id="3" kind="Box" />
+    <objective goal="1" text="Find the key" type="Search" object="1" item="6782">
+      <done><say>Okay, you found a key, you know the drill!</say></done>
+    </objective>
+    <objective goal="2" text="Find the second key" type="Search" object="2" item="6857" after="1">
+      <done>
+        <say>How many keys do they have around here?</say>
+        <say>Another junction box. Okay, same deal as before; we need to know where this thing leads.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Operate the hardline junction box" type="Use" object="3" after="2">
+      <done><say>Okay, got the code stream. You can head out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I am updating your HUD with the location of what is apparently the next node. Proceed there and investigate the area.
+
+My... apologies for my earlier comments, {player}. I have regained control of my faculties. This... episode is nothing that should concern you.</briefing>
+    <enter>
+      <say>What would make an Agent lose control of his "faculties"? No, no, he's right. Best not to over think it.
+
+This is where the last hardline pointed to. Stay sharp in there, {player}.</say>
+      <say>I'm not reading any junction boxes in here. I think you're going to have to take out Nightingale and see if he's got anything useful.</say>
+    </enter>
+    <objective goal="1" text="Kill Nightingale" type="Defeat" npc="1">
+      <done><say>All right, now see if that guy has any interesting data!</say></done>
+    </objective>
+    <objective goal="2" text="Get the schematic from Nightingale" type="Loot" npc="1" item="6798" after="1">
+      <done><say>That looks like a schematic to this whole junction box system! Get out of there and upload it at a hardline.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the schematic at a hardline" type="Upload" item="6798" after="2" />
+  </phase>
+  <finish>Apparently this system of clandestine hardlines runs throughout the City. Notable access points include a location referred to as the "Coroner's Office", as well as the barge in the river.
+
+I find it rather... surprising that this system has been kept secret until now. We will study this schematic in order to gain access to the Assassin's barge. You will be contacted when our research is complete, {player}.</finish>
+</mission>

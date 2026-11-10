@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Misdirections, Machine story mission 2.3.5. Source: research/missions/transcripts/Mach2-3-5.md (the archive
+     replay of [Machine Archive 2.3.5], given by [Archived]Agent Gray; Agent Green hands over the disk). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. A line of the log
+     is hidden at two image joins, in phase 2's briefing and arrival line; the text runs on without the gap. Gray's
+     italics are dropped. Ours: the description, the objective texts, the looks, the enemy counts and the sites
+     (none is described: Normal; phase 3 is an information brokerage). Who guarded the diversionary target isn't
+     shown: phase 2 spawns Merovingian. Item stand-in: the disk is Map_Disk (6783). Rewards: the log is a crop with no
+     chat panel, so no reward was shown; 300,000 experience and 98,000 information are Zion chapter 2.3's values.
+     Gaps: Agent Lee offers an unnamed item recovered from a dead Zion operative; whether the player took it isn't
+     shown, so he only says his line. In phase 3 retail asked the player not to talk to anyone or fight, then had the
+     commandos arrive as hostiles who must not be killed while the player leaves. We have no stealth or
+     fail on kill and can't spawn hostiles after a goal, so the phase has no enemies: placing the disk completes it,
+     Gray's warning is said then, and the player leaves. -->
+<mission id="202305" title="Misdirections" description="Plant misleading data where the commandos will find it." plot="1"
+         order="2305" org="2" contact="Agent Gray" exp="300000" info="98000">
+  <npc id="1" handle="Agent Green" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="1">Exit the area and Agent Gray will give you further instructions.</say>
+  </npc>
+  <npc id="2" handle="Agent Lee" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say>Can you tell me why humans behave so irrationally? I have an item here that was recovered from the body of a Zion operative. We have analyzed it extensively and found no discernible purpose.
+
+It is yours if you wish it, {player}.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are still attempting to reestablish contact with the commandos. All of our attempts have been... ineffective.
+
+We are troubled by their attempts to gain information about physical connections to the Matrix. We have laid out a counterintelligence plan. Proceed to the indicated location to meet with one of our Agents.</briefing>
+    <enter><say>Agent Green should be on site here... find him and see what he's got for you.</say></enter>
+    <objective goal="1" text="Get the disk from Agent Green" type="Get" npc="1" item="6783">
+      <talk><say npc="1">{player}. Take this disk from me. Agent Gray will instruct you in its use.</say></talk>
+      <done><say>Wow, a disk. Never seen one of those before... all right, you can get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>The disk you now possess contains misleading data concerning physical access to the Matrix. Planted in the correct location, it will be discovered by the commandos and disrupt whatever plans they have.
+
+Before you plant the data, however, you must launch a diversionary attack. This will draw off security from the final target and allow you to insert the data undetected.</briefing>
+    <enter><say>All right, this is the location of the diversionary attack. Head on in and take everyone out as quick as you can, then get out of there.</say></enter>
+    <objective goal="1" text="Kill everyone in the area" type="DefeatAll">
+      <done><say>That's everyone. Reinforcements should be on their way - but ignore them if you can. You need to get over to the drop location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Now we come to the final phase of your mission, {player}. Your HUD is displaying the coordinates of an illicit information brokerage.
+
+Your attack drew away reinforcements from this location. Enter the site and place the disk in the computer.</briefing>
+    <enter><say>All right, just get in, plant the data, and get out... don't talk to anyone or engage in combat, understand? If they realize this was a plant job, the whole mission is a waste.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Place the disk in the computer" type="Put" object="1" item="6783">
+      <done><say contact="1">Excellent. I suspect that the commandos will at some point... One moment...
+
+Apparently the commandos have come sooner than expected. They are arriving on site as we speak, and appear to be... hostile. You must exit the area without killing them; they must find the data you planted.
+
+Leave the building immediately, {player}.</say></done>
+    </objective>
+  </phase>
+  <finish>Now we must hope that the commandos will still believe the data you planted. I admit, I am not an expert in the field of predicting emotional reactions to... unpredictable situations.</finish>
+</mission>

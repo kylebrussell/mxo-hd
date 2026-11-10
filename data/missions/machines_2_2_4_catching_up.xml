@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Catching Up, Machines story mission 2.2.4. Source: research/missions/transcripts/Mach2-2-4.md (the archive replay
+     of [Machine Archive 2.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Norris and Tifis.
+     Ours: the description, the objective texts, the sites (the courier pick-up, the data location and the security
+     center are unnamed buildings: Normal; Tifis is at "the warehouse where flit guns and insecticide are being
+     produced": Warehouse), the looks, the enemy counts and the enemy (the Operator names Exiles: Merovingian). No
+     items. Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown;
+     297,000 experience and 98,000 information are Zion chapter 2's values.
+     Gaps: phase 1 is a courier job that Gray cuts short before the package is picked up, likely on a timer; here it is
+     a Talk with Agent Norris that says Gray's interruption and his reply, and the Operator's "Some real action!" is
+     said when it is done. Phase 2's witnesses and the computers' reactions fell in a gap in the log: the computers are
+     three Use goals with no lines, the witnesses (unnamed, never heard) aren't placed, and the Operator's joke about
+     witnesses, said after the phase was over, follows his closing line. The activity-log and access-card terminal
+     screens aren't shown. Phase 3's Machine programs locked in the far room have no goal in the log and aren't
+     placed; the Operator's line about them is said on arrival. Tifis's second bark ("Back for more?") is left out
+     (an NPC keeps one line), and her fight, about eight minutes in retail, is at the player's level. -->
+<mission id="202204" title="Catching Up" description="Investigate a break-in and stop the intruders." plot="1"
+         order="2204" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Norris" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
+  <npc id="2" handle="Tifis" type="HOSTILE" at="4" rsi="a8060090" weapon="2568">
+    <say>So, they sent you to stop me, huh? Not likely.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Ah, {player}. Your efforts have enabled us to equip many of our operatives with flit guns, and production of both weapons and insecticide proceeds at a great pace.
+
+All I have available for you right now is a standard courier mission. My apologies that I cannot offer anything more... exciting.</briefing>
+    <enter>
+      <say>I can't believe they're sticking you on a courier mission! Ah, well, I guess you gotta take what you can get, right?</say>
+      <say>Keep an eye out for Agent Norris. You'll be picking up some sort of package from him.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Norris" type="Talk" npc="1">
+      <talk>
+        <say contact="1">This phase of your mission is terminated. We are registering a break-in at a secure location. Your presence is required there with the utmost urgency.
+
+Leave this area immediately, {player}.</say>
+        <say npc="1">I understand that your presence is required elsewhere, {player}.</say>
+      </talk>
+    </objective>
+    <complete><say>That's what I'm talkin' about! Some real action!</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>This location houses much of our operational data. It is unclear exactly what information was sought by the intruders.
+
+Search the building and speak with any witnesses to determine the nature of the infraction.</briefing>
+    <enter><say>Okay, there's a whole bank of computers in here. You'll have to search through those, and interview any witnesses.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Use" object="1" />
+    <objective goal="2" text="Search the second computer" type="Use" object="2" />
+    <objective goal="3" text="Search the third computer" type="Use" object="3" />
+    <complete>
+      <say>All right, we've got a list of the compromised data. Get out of there, and we'll see if Gray can analyze it for us.</say>
+      <say>All right, witnesses! Make sure you find out-- Huh? Oh, uh... my bad. Carry on.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>This break-in was precisely targeted. The intruders took data referring to the warehouse where flit guns and insecticide are being produced. That location is a high security area; however, the intruders also retrieved the coordinates of one of our security centers.
+
+Travel to the security center. Recover any pertinent data, and stop the intruders if they are still within the location.</briefing>
+    <enter>
+      <say>Okay, this is the security center. Looks like there's still some activity going on in there... maybe the culprit's still on site!
+
+This break-in was too carefully targeted to be some random redpill... it smells like the Frenchman to me, {player}.</say>
+      <say>Looks like there are some Machine programs locked in the far room.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the security computer" type="Use" object="1">
+      <done><say>Damn! Looks like they printed out some sort of access card. This can't be good.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Exiles" type="DefeatAll">
+      <done><say>That's the last of those Exiles.</say></done>
+    </objective>
+    <complete><say>So, Tifis printed out an access card and took off... I have a feeling Gray'll be giving us the address to that warehouse. Time to get out of here.</say></complete>
+  </phase>
+  <phase site="Warehouse" enemy="Merovingian" enemies="4">
+    <briefing>It would appear that Tifis has proceeded to the warehouse with a fully functional access key. Go there immediately and terminate her with extreme prejudice.
+
+And prepare yourself, {player}. I am certain you will find this fight... challenging.</briefing>
+    <enter><say>Okay, it looks like Tifis and her team got here just moments ago, and they're still inside. This is your chance to take her down, {player}.</say></enter>
+    <objective goal="1" text="Kill Tifis" type="Defeat" npc="2">
+      <done><say>Nice! Now it's time to get outta there.</say></done>
+    </objective>
+  </phase>
+  <finish>Your performance in this matter has been exemplary, {player}. Your actions will allow us to continue production of the flit guns and insecticide.</finish>
+</mission>

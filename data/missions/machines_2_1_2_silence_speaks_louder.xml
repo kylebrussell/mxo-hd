@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silence Speaks Louder, Machines story mission 2.1.2. Source: research/missions/transcripts/Mach2-1-2.md (the
+     archive replay of [Machine Archive 2.1.2], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPCs' names (Agent North,
+     Agent Marks, Anhui). Ours: the description (the log shows no Summary), the objective texts (the Objectives tab was
+     never opened), the sites (unnamed buildings: Normal), the looks, Anhui's look (the log doesn't say whether the
+     smuggler is an Exile or a human, or which sex: an Exile, as Gray calls the group Exiles), and phase 3's enemies.
+     Item stand-ins: the bug is Bug (6824), the disk Anhui gives is Data_CD (6831), the device component is Device
+     (6820). Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward is shown; these
+     are the Zion chapter 2 values (about 297,000 experience and 98,000 information).
+     Gaps: Agent North meets the player in phase 1 and again at a new location in phase 4, so he is two NPC entries.
+     Agent Marks said two lines one after the other; an NPC says one line when talked to, so they are joined into one.
+     Gray forbids any fight with the smugglers' Exiles in phase 2; we can't fail the player for starting one, so phase 2
+     spawns no Exiles at all, only Anhui. The desk Gray points to is empty in retail: a Search of a Furniture object
+     that turns up nothing. The Operator's sighting of the mainframe is said on arrival. Part of Anhui's first speech
+     fell between two screenshots; the reading kept is the idiom "remember me to your boss". Phase 3 at the
+     Merovingian's hardpoint shows no fight in the log, but 2.5 minutes passed before the safe was opened and Gray then
+     speaks of Exile meddling, so it has three Exiles. -->
+<mission id="202102" title="Silence Speaks Louder" description="Plant a bug on the smugglers' mainframe and recover the first device component."
+         plot="1" order="2102" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent North" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Agent Marks" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say>Ah, {player}. I have a matter I would like to discuss with you. There have been some... troubling sightings recently. Black helicopters have been seen over the City. Their presence is unexplained. We are monitoring the situation. Some awakened humans believe that the helicopters are connected to Neo somehow. That he has been... resurrected. This counterproductive fascination with death intrigues us. Remain alert, {player}.</say>
+  </npc>
+  <npc id="3" handle="Anhui" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="3">Listen, the guys who took the component, they were kinda... creepy, if you know what I mean. I'd be careful if I were you. And don't forget to put in a good word, okay? I could use a break from all the pressure those damn Agents have been pilin' on me.</say>
+  </npc>
+  <npc id="4" handle="Agent North" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The data you obtained for us regarding the device has been very... informative. We now have a list of component pieces that will be necessary to construct our own prototype. The first piece is in the possession of a certain group of smugglers. We have a great interest in tracking the actions of this group; you will obtain a bug from one of our Agents before proceeding to the target location.</briefing>
+    <enter><say>You'll find Agent North in this area. He has the bug for you.</say></enter>
+    <objective goal="1" text="Get the bug from Agent North" type="Get" npc="1" item="6824">
+      <talk>
+        <say npc="1">{player}. I believe you are here for this.</say>
+        <say npc="1">Take the bug, {player}.</say>
+      </talk>
+      <done><say>That's the bug. You can head out of there now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You may now proceed to the location of the smugglers in question. Once there, you will plant the bug on their mainframe. You will also locate and secure the device component. It is important that you avoid any conflict or interaction with the Exiles. A low profile will be necessary to avoid rousing any undue... suspicion on their part.</briefing>
+    <enter>
+      <say>This is the place, {player}. Make sure you don't start any fights in there!</say>
+      <say>There's the mainframe!</say>
+    </enter>
+    <object id="1" kind="Mainframe" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Plant the bug on the mainframe" type="Put" object="1" item="6824">
+      <done>
+        <say>Great work, the bug's in place.</say>
+        <say contact="1">Our data indicates that the device component is in a desk in this room.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the desk" type="Search" object="2" item="0" after="1">
+      <done><say contact="1">Empty. This was not predicted by our data. You must locate any evidence indicating the component's current location.</say></done>
+    </objective>
+    <objective goal="3" text="Get the disk from Anhui" type="Get" npc="3" item="6831" after="2">
+      <talk><say npc="3">You're with who? Ah, crap... Listen, I'll do you a favor if you put in a good word with the Machines, okay? These guys showed up earlier today and snagged the component. I don't know who they were, I don't know what they were doing with it... but they were willing to pay for it, so hey, right? Here, you can have the disk they gave me in payment. Just remember me to your boss, eh?</say></talk>
+      <done>
+        <say>I think that disk is the best evidence you'll be able to find here. You'd better upload it at a hardline once you're finished.</say>
+        <say>Hm. The code signature of that disk is strange somehow.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the disk at a hardline" type="Upload" item="6831" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I am receiving the data from that disk as we speak. Very... interesting. Our scans indicate that the contents of this disk were downloaded from the Merovingian's network. The Merovingian's closest network hardpoint is nearby. I am sending you the coordinates now, {player}. Proceed there and search for the component.</briefing>
+    <enter>
+      <say>I hope this is the right spot! I'm beginning the area scan for the component now...</say>
+      <say>Okay, the scan's complete. The device is in a safe in that room.</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Get the device component from the safe" type="Search" object="1" item="6820">
+      <done><say>That's the component! Now get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>This continued Exile meddling is... troubling. We will be looking into this situation in the near future. Now, however, Agent North is waiting for you at a new location; take the device component to him.</briefing>
+    <enter><say>This is Agent North's location.</say></enter>
+    <objective goal="1" text="Give the device component to Agent North" type="Give" npc="4" item="6820">
+      <talk><say npc="4">I believe you have something for me, {player}.</say></talk>
+      <done>
+        <say>That's it. You can get out of there now.</say>
+        <say npc="4">Your task is complete, {player}.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Contact me when you are prepared for another task, {player}. More components of the device remain to be gathered.</finish>
+</mission>
