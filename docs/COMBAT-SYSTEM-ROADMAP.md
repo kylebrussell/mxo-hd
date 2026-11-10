@@ -129,6 +129,8 @@ After about 60 s, `-Click 348,358` presses Take All.
 - Mobs die when health reaches 0, marked as lootable
 - Players die when health reaches 0, can respawn via hardline
 - Loot window shows on mob death, awards money based on level
+- Kill XP follows retail's `experience.ComputeExperience` (`KillExperience.cs`): 67 x 3^((1 + NPC level - level) / 7) x 5 x (level - 1), so 391 at level 1 or 2 against the same level, 3,527 at level 10, 19,204 at level 50. The 67 (weakling) and 135 (tough) multipliers are inferred from all 15 kill rewards in the captures, which the formula reproduces exactly. Every NPC counts as a weakling (our NPC data has no rank), and the killer gets the whole reward (no damage shares or team bonus yet). It was NPC level x 100.
+- Info on a corpse follows retail's `rshooks.RunPocketChange`: NPC level x 5 x 0..99 (scale 1, inferred: all 99 loot-window amounts in the captures fit, 11 of them 0). It was NPC level x 50..149.
 - FX system has 100+ combat effects ready (randomly selected)
 - Combat ends properly: player death, mob death, or player flees
 - **Ranged combat** fully functional with distance-based damage falloff
