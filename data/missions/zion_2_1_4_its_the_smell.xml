@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- It's the Smell, Zion Archive 2.1.4. Source: research/missions/transcripts/Zion2-1-4.md (one retail run of the archive
+     replay, given by [Archived]Tyndall; 28 screenshots of the log taken after the mission ended). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's: the title, every Tyndall, Operator and NPC line (the Operator's "pesticide" kept as retail said it), the
+     names Reyes Junge and Gregory Uhrich, and the rewards (212,625 experience and 98,000 information, shown right
+     after this mission completed). Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (Normal for the meeting place and the supply house, Office for the
+     building with the sealed room and for the drop point's desk), the enemies (retail's "plenty of hostiles" included
+     Elite Guards; Exiles here, after the briefing's warning about the Frenchman's thugs) and their count, and the
+     looks. Item stand-ins: the location notes are Document_Location_Notes (6855), the "Ingredient" is Poison (6804).
+     Gaps: the Operator's lines on reaching rooms are said on arrival, including the whole of the phantom signal
+     that follows the player in the last phase (the Assassin is never seen in retail either). The janitor is the
+     Operator's "unidentified inbound signal": a plain Talk. The computer with deleted data, which retail commented on
+     after the area was done, is an optional Use. The sealed room's two password-protected computers are two Uses in
+     a row that open the Search of the wall safe; retail's other way into their network (the Operator's "look around
+     for some other way") and the Elite Guards' barks ("Hold it!") aren't built. Two blank lines that fall on image
+     seams in the log (Tyndall's sector scan line, the Operator's drop point line) are taken as paragraph breaks. -->
+<mission id="102104" title="It's the Smell" description="Collect the last chemical ingredient for the insecticides from a bluepill supplier." plot="1"
+         order="2104" org="1" contact="Tyndall" exp="212625" info="98000">
+  <npc id="1" handle="Reyes Junge" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">Yeah, well, don't say I didn't warn you.</say>
+  </npc>
+  <npc id="2" handle="Gregory Uhrich" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="1">An insecticide ingredient? I don't know nothing about that. Hey, lemme know if you see any more dead flies 'round here. Place was lousy with the things earlier.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>{player}, I'm glad you made contact. We need one last chemical ingredient for the insecticides we will use to combat the Assassin. You are to meet a bluepill, Reyes Junge, who claims to have a supply of the ingredient.&#10;&#10;Be advised that the forces of the Merovingian continue their attempts to disrupt our plans. Fortunately, the Frenchman does not seem to have ordered the Assassin to assist in these attempts. His standard Exile thugs, however, have been causing problems for some of our operatives within the City. Maintain great vigilance, Warrior.</briefing>
+    <enter><say>That's the building where you're supposed to meet with Mr. Junge to get a supply of the insecticide ingredient. I'm not reading any unusual activity inside--so far, so good.</say></enter>
+    <objective goal="1" text="Talk to Reyes Junge" type="Talk" npc="1">
+      <talk><say npc="1">You're here for the ingredient? Uh... Well, I don't have it. I was picking it up at my supply house, but I heard these helicopters buzzing around. Sounded military; black ops or something, right? And then there were these big fat...flies, I guess, a big old swarm of them, just hanging in front of the building like little flippin' vultures. Something's up, man. I don't mess with stuff like that. There've been rumors...&#10;&#10;You can go take a look yourself, if you want; I got directions on me. I ain't goin' near the place.</say></talk>
+      <done><say>Son of a--! Don't send a bluepill to do a redpill's job, I guess. Get the location notes from him; we'll have to go do this ourselves.</say></done>
+    </objective>
+    <objective goal="2" text="Get the location notes from Reyes Junge" type="Get" npc="1" item="6855" after="1">
+      <done>
+        <say npc="1">You can go take a look yourself, if you want; I got directions on me. I ain't goin' near the place.</say>
+        <say>Got the location. Head outside and I'll update your map.</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Complications are to be expected, Warrior. Remain steadfast. We must have that ingredient.&#10;&#10;Helicopters? We've heard rumors, but nothing definite. If someone really is flying military hardware around the City, they're remarkably adept at staying out of sight.</briefing>
+    <enter>
+      <say>That's the address from Mr. Junge's notes. Code stream looks normal, I-- Wait, what's that?&#10;&#10;No, never mind, nothing's there. I think I've been staring at this screen too long.</say>
+      <say>Wait, I'm getting a reading. Uh... No, it's gone. I could have sworn... Cripes, I swear the code is playing tricks on me today.</say>
+      <say>I'm not picking up any trace of the pesticide ingredient in that building. Either somebody busted in and stole it, or Junge has been lying to us. Hey, is that a dead fly on the floor over--&#10;&#10;Oh, crud! I've got an unidentified inbound signal on that floor! Maybe it's Junge--I guess you'd better go see. But wait, what if it's an Agent, or even...the Assassin?</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Gregory Uhrich" type="Talk" npc="2">
+      <talk><say npc="2">Hey, whoa, calm down there, kiddo! I'm just the janitor. No, nobody else but you been here today. I expected Junge to show up, but he must'a flaked out again. Leaves me to sweep up all those dead flies by myself; it just figgers. And some punk busted the lock off the back door, but I don't think they had the guts to come inside.</say></talk>
+      <done><say>Oh, just the janitor. Uh, I knew that. Whew.&#10;&#10;I don't know what to make of this: dead flies, busted locks... But I suppose the simplest explanation is that Reyes Junge swindled us. Head outside while I dial up Tyndall and see if she can locate him.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Use" object="1" optional="1">
+      <done><say>Huh, somebody deleted all the data on that computer without installing anything to replace it. That's sort of weird.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Merovingian" enemies="5">
+    <briefing>Our sources assure me that Reyes Junge was legitimate. If you couldn't locate his supply of the ingredient, then I fear it may have been snatched by another group. I'm also concerned about Reyes Junge himself--he's been out of contact ever since you left him.&#10;&#10;I've just called down a sector-wide scan for the insecticide ingredient. This will almost certainly trigger a reprisal from the Machines, but we must locate that ingredient at all costs. Stand by, operative; the scan results are coming through now...&#10;&#10;The scan caught a trace of the ingredient's code signature! I'm uploading the coordinates to you. Go there quickly and secure it!</briefing>
+    <enter>
+      <say>Geez, a sector scan--Tyndall's really putting our butts on the line! The Machines are sure to come swarming over here to see what's up. And I could swear that I've been seeing some program's profile popping up in the code stream on and off, ever since you left that building with the dead flies. Like someone--or something--is following you. Something with a really erratic signal.&#10;&#10;I'm picking up plenty of hostiles in there, too. I'll ping you if I get a whiff of the insecticide ingredient.</say>
+      <say>Two password-protected computers in that area control access to a sealed room. If you can't hack them, look around for some other way to get into their network.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Safe" />
+    <objective goal="1" text="Hack the first security computer" type="Use" object="1" />
+    <objective goal="2" text="Hack the second security computer" type="Use" object="2" after="1">
+      <done>
+        <say>Jackpot! The sealed room is open now. Check it out.</say>
+        <say>I got a lock on the insecticide ingredient! It's in a wall safe in that room!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the insecticide ingredient from the wall safe" type="Search" object="3" item="6804" after="2" />
+  </phase>
+
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>You're doing extraordinarily well, {player}. Take the ingredient to the drop point as quickly as possible. Make sure that you aren't followed.</briefing>
+    <enter>
+      <say>Place looks clean. The drop point is a certain desk in there. I'll give you a shout when you're close to it.&#10;&#10;I picked up that weird signal a few times as you crossed the City just now; I think whoever it is is still on your tail. Damn it, I can't lock down their position! This is so not cool.</say>
+      <say>Whoa! There it is again--the signal that's been following you! I can't pin it down but...oh man...it must be in the building with you! It's gotta be the Assassin! Nobody's ever been able to get a lock on his signal!</say>
+      <say>The desk is right in there-- Hey! It's that signal again, real close this time! He's almost on top of you! Get out of there! Get out!</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Leave the ingredient at the desk" type="Put" object="1" item="6804">
+      <done><say>Wait, the...the signal's gone now. I swear... No really, there was something there, right on your tail! Don't tell me I was just imagining the whole thing. Ohh, boy. I think I need to take a little "time out" now. I can't take much more of this Assassin thing...</say></done>
+    </objective>
+  </phase>
+  <finish>Today marks a great milestone in our struggle against the Merovingian's Assassin, Warrior! Thanks to your remarkable efforts, we now have all the chemical ingredients, and we can begin manufacturing the experimental pesticides designed to rid the Matrix of his fly swarms. Soon we will be ready to test them against live flies derived from his code.&#10;&#10;Incidentally, I suggest that you consider giving your hovercraft operator a little time off; his psychogenic indicators have recently approached dangerous levels.</finish>
+</mission>

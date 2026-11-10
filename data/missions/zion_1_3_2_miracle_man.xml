@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Miracle Man, Zion Archive 1.3.2. Source: research/missions/transcripts/Zion1-3-2.md (one retail run of the
+     archive replay, 38 screenshots; contact [Archived]Tyndall). Retail's: the title, every line, the NPCs' names and
+     roles, the objective texts "Search the access terminal for information", "Search the white computer for
+     information on Ehrsson's contact", "Locate Seginus" and "Don't let Seginus die", and the rewards (308,750 XP and
+     94,500 info, shown right after this mission ended). Ours: the description (the Summary tab was never opened), the
+     other objective texts, the sites (phases 3 and 4 Offices as the screenshots
+     show, phase 5 a ZionOutpost for the safehouse), the enemy counts, the safehouse operatives' looks (their sex isn't
+     shown) and every NPC's look.
+     Gaps: Ehrsson runs from the room the Operator points to and has to be caught; here he is simply found (a Talk)
+     and must not die, which is what "don't hurt Ehrsson himself" asks; the Operator's "He isn't there" line is left
+     out. The typed queries at the Machine terminals (password "minop") are what the two Search goals stand for; they
+     give no item. The Key from a body in phase 3 and the locked door in front of Seginus in phase 4 aren't modelled
+     (the door line is left out), and hacking the comm computer to cut the imposter Agents' uplink is an optional Use.
+     The Recording of Morpheus and an unknown redpill picked up in phase 4 is a collectible no line refers to, so it
+     isn't an item here. In phase 5 Seginus is led to Cert, who stands in the debriefing room (retail's "Don't worry,
+     this room is secure."), and his Eabani story is a Talk after that: in the log it came just after Tyndall's
+     "So that's what happened.", so the story comes first here. Duncombe's "Good job!" after the debriefing and
+     Cert's 5:00:04 line (not captured) are left out. -->
+<mission id="101302" title="Miracle Man" description="Investigate the rumor that Morpheus survived certain death before." plot="1"
+         order="1302" org="1" contact="Tyndall" exp="308750" info="94500">
+  <npc id="1" handle="Gabriel Failing" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>Hey, what are you, cops? Ask around, I'm not the only one who's heard the story.</say>
+  </npc>
+  <npc id="2" handle="Ehrsson" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say>Look, that's all I know: "Operation Eabani." The dude didn't tell me his name, I don't know where he lives, and he didn't leave me his business card.</say>
+  </npc>
+  <npc id="3" handle="Seginus" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="4" handle="Cert" type="FRIENDLY" at="5" rsi="60010058" weapon="2564">
+    <say display="5">Don't worry, this room is secure.</say>
+  </npc>
+  <npc id="5" handle="Duncombe" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">
+    <say display="5">You should take Seginus into the next room.</say>
+  </npc>
+  <npc id="6" handle="Alamak" type="FRIENDLY" at="5" rsi="ec020058" weapon="2564">
+    <say display="5">Eabani? Never heard of it.</say>
+  </npc>
+  <npc id="7" handle="Vsekhsvyatskij" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say display="5">Great, so those imposter agents are kidnapping our veteran operatives now? Sheesh.</say>
+  </npc>
+  <npc id="8" handle="Bilkis" type="FRIENDLY" at="5" rsi="58010058" weapon="2564">
+    <say display="5">I've never heard of this Seginus fellow before. Did he really know Morpheus?</say>
+  </npc>
+  <npc id="9" handle="Edmondson" type="FRIENDLY" at="5" rsi="000100b4" weapon="2564">
+    <say display="5">Did you try searching for your own name in the Machine intel database? You never know, they might have you on record.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Investigate a site where Morpheus was seen shortly before his death at the hands of the mysterious Assassin. We are hoping to find clues that will reveal the identity of the group or individual responsible for hiring the Assassin to kill Morpheus.</briefing>
+    <enter>
+      <say contact="1">Morpheus is known to have been in that area shortly before he was killed. It is possible that the Assassin was stalking him at that point. It's a long shot, but perhaps one or both of them left some trace behind that will give us a clue to the motive behind the murder. See if you can find something.</say>
+      <say>That man appears to be a resident. It couldn't hurt to question him.</say>
+    </enter>
+    <objective goal="1" text="Talk to Gabriel Failing" type="Talk" npc="1">
+      <talk><say npc="1">Morpheus' murderer? Hah, eheh... oh dear. What makes you think Morpheus is dead? He's survived worse'n this before, you know. At least, that's what I heard.</say></talk>
+      <done><say contact="1">Morpheus surviving apparent death? This sounds like an urban legend, but it also sounds like the rumor is spreading. Perhaps there's something to it. Leave the area, Warrior--we need to track this rumor down.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, I've done some checking and found that this rumor about Morpheus miraculously surviving a certain-death encounter in the past is spreading across the City. Certain factors point to the involvement of Ehrsson, an underground Exile leader and rabid rumormonger. I'm updating your waypoint with Ehrsson's suspected hideout--go see if you can get any useful information out of him.</briefing>
+    <enter>
+      <say>Ehrsson and his gang should be in that building. Defend yourself as necessary against the gang, but don't hurt Ehrsson himself. We need him to answer some questions about this Morpheus rumor.</say>
+      <say>Ehrsson should be in the room behind the far door.</say>
+    </enter>
+    <objective goal="1" text="Catch Ehrsson" type="Talk" npc="2">
+      <talk><say npc="2">Gah! Okay, you got me, copper. Hands off the threads. I heard the story about Morpheus surviving against miraculous odds--a much younger Morpheus, mind you--from a dude who claimed to be a buddy of his from way back in the day. He didn't give me his name, but he did mention that this went down during "Operation Eabani," whatever that was.</say></talk>
+      <done><say contact="1">"Operation Eabani"? I'm going to have to check on that. It sounds like it predates our current database. Leave the area for now, operative.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Ehrsson die" type="Protect" npc="2" />
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>"Operation Eabani" seems to have been a covert op that Morpheus was involved in shortly after he learned about the prophecy of "The One." Our old records from that period were destroyed in the final Machine attack on Zion, but the Machines may have a record stored somewhere. I'm going to send you to a Machine network access point that we know about...</briefing>
+    <enter>
+      <say contact="1">The Machines have an access terminal in that building where they store info for their redpill operatives. We secretly cracked it long ago. We aren't supposed to know about it, of course--in fact, under the Truce, you aren't supposed to be there. Warrior, understand that if you are captured, Zion will deny any involvement. So... let's not get caught, shall we? Just take it slow and keep an eye out for that access terminal.</say>
+      <say contact="1">There's the network terminal. Try the password "minop"--it should give you access to search for information about Operation Eabani.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the access terminal for information" type="Search" object="1" item="0">
+      <done>
+        <say contact="1">So Operation Eabani really exists. Perhaps one of those operatives is the person Ehrsson talked to. You could search using the Current Intel net machine close to that room--look for the white computer.</say>
+        <say>There's the intel computer. Run a search for recent activity by any of Morpheus' "Operation Eabani" co-operatives.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the white computer for information on Ehrsson's contact" type="Search" object="2" item="0" after="1">
+      <done><say>Great, we got a match! Leave the area and I'll upload those coordinates to you.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>I'm uploading the coordinates of Morpheus' old friend, Seginus, to you now. Let's find out what he knows about Morpheus' history of surviving certain death... Surely Morpheus couldn't still be alive after the Assassin's attack... could he?</briefing>
+    <enter><say>Seginus should be somewhere in that building. I'm detecting the presence of... imposter Agents? They must be the "hostile" programs referred to in the Machine's intel database. I thought they'd retreated from the Matrix. Could they have some special interest in Seginus?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Locate Seginus" type="Talk" npc="3">
+      <talk>
+        <say>That must be Seginus.</say>
+        <say npc="3">Hah! What kept you?</say>
+      </talk>
+      <done><say>Get him out of there, quickly!</say></done>
+    </objective>
+    <objective goal="2" text="Lead Seginus out of the area" type="Escort" npc="3" to="exit" after="1">
+      <talk><say npc="3">We needn't dally around here.</say></talk>
+      <done><say>Good, Seginus is relatively safe now.</say></done>
+    </objective>
+    <objective goal="3" text="Cut the comm computer's uplink" type="Use" object="1" optional="1">
+      <done><say>Good work, operative! You've cut their communication uplink. Now they won't be able to call for backup.</say></done>
+    </objective>
+    <objective goal="4" text="Don't let Seginus die" type="Protect" npc="3" />
+  </phase>
+
+  <phase site="ZionOutpost" enemy="Machines" enemies="0">
+    <briefing>I'm uploading the location of one of our nearby safehouses to you now. Take Seginus there for debriefing.</briefing>
+    <enter>
+      <say contact="1">We have a guarded room in that building that we can use for debriefing Seginus. We need to find out what possible connection Morpheus' escape during Operation Eabani might have with his apparently fatal encounter with the Assassin.</say>
+      <say>The debriefing room is through the next door.</say>
+    </enter>
+    <objective goal="1" text="Take Seginus to the debriefing room" type="Escort" npc="3" to="npc:4">
+      <done>
+        <say>You've reached the debriefing room.</say>
+        <say npc="3">Aren't those "agent" fellows droll? I hardly expected to see them again after The War. Small world, the Matrix.</say>
+        <say npc="4">Don't worry, this room is secure.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Debrief Seginus" type="Talk" npc="3" after="1">
+      <talk><say npc="3">So, Morpheus and Operation Eabani. The op was a bust, Agents were all over us. Morpheus wouldn't jack out until everyone else had made it, but then the Agents wrecked the hardline before he could use it. He was trapped in there with three Agents. But he got out. He told us later that he'd somehow found a truck with keys in the ignition, then managed, somehow, to steer it while the Agents were ripping it apart--and crashed it, again somehow, right next to what turned out to be an active hardline. He couldn't really explain it, just said that he felt like destiny was guiding him. He was never the same after that.</say></talk>
+      <done><say contact="1">So that's what happened. You can leave the area now, operative. Our people will handle Seginus from here.</say></done>
+    </objective>
+    <objective goal="3" text="Don't let Seginus die" type="Protect" npc="3" />
+  </phase>
+  <finish>Well done, Warrior, now we know what happened during Operation Eabani. But it doesn't sound like Morpheus would remain out of contact if he were still alive. I'm afraid that whatever guided him out of harm's way in Eabani didn't save him from the Assassin. Still, I wonder how many other secrets lie in Morpheus' past--and was it one of them that came back to haunt him in the form of the Assassin?</finish>
+</mission>

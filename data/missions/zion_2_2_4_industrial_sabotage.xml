@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Industrial Sabotage, Zion story mission 2.2.4. Source: research/missions/transcripts/Zion2-2-4.md (the archive
+     replay of [Zion Archive 2.2.4]; one screenshot at Frog's computer and 24 of the log after it ended). In the replay
+     the contact was [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's
+     lines are spoken as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, every NPC name, and the objective "Find a
+     clue to Frog's whereabouts" (phase 1, the one time the Objectives tab was open). Ours: the description (the
+     Summary tab was never opened), the other objective texts, the sites (Frog's base, the club and the Exile HQ are
+     Normal; the Zion manufacturing facility is a Warehouse), the looks and the enemy counts. Item stand-in: Frog's file
+     ("mero_src", on his computer) is File (6800). Rewards: the 296,730 experience and 98,000 information shown right
+     after this mission completed.
+     Gaps: Frog's computer took a hack before it could be read, and the Operator said his password might be written
+     down nearby; here searching the computer gives the file, and there is no password to find. A hostile "Agent" shot
+     at the player around Frog's base in retail; it isn't known to belong to the mission and isn't placed. Taking Rat
+     to the empty next room to "persuade" him has no place to lead him to: it is a second Talk with Rat, which carries
+     his confession, then he is led out and follows into phase 3. The Operator's "Nice. Lead him out of there" was
+     logged a second before Rat's confession; it is said after it. Anome says they need Rat alive, so phase 3 has a
+     Protect on him. The HQ's locked far door had no key or lock we could see, so the Operator's "The far door is
+     locked." isn't said. Bringing Rat to Frog is an Escort to Frog, and Rat's answer, the Operator's and Frog's
+     replies are said on arrival. The last part of Frog's 12:25:51 line had no header in the log and is read as the
+     same line. The facility's Exiles (retail named Elite Guards and Lupine Scrappers, whose barks were only in Team
+     chat) are the phase's generated hostiles. -->
+<mission id="102204" title="Industrial Sabotage" description="Find the missing Zion informant Frog." plot="1"
+         order="2204" org="1" contact="Tyndall" exp="296730" info="98000">
+  <npc id="1" handle="Rat" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say after="4">Where are you going? No... No, don't leave me alone with him! Hey!</say>
+  </npc>
+  <npc id="2" handle="Spinnerette Wolf" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say>See something you like?</say>
+  </npc>
+  <npc id="3" handle="Watcher Snoop" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say>Looking for a hot tip? Me too. But this place seems pretty dead.</say>
+  </npc>
+  <npc id="4" handle="Coven Apprentice" type="FRIENDLY" at="2" rsi="a5060090" weapon="2568">
+    <say>Don't know 'im, sorry.</say>
+  </npc>
+  <npc id="5" handle="Frog" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564">
+    <say after="4">Ha! I thought so! You'd better get over to that facility, operative; maybe you'll still be in time to stop the Exiles from trashing the insecticide and flit guns there. Don't worry about me. Rat and I have a lot of...catching up to do.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian has been attacking our operations with renewed vigor; intel suggests that he's alarmed by our acquisition of flit guns capable of hurting his Assassin. One of our most vital informants, Frog, has suddenly gone missing, and we suspect Exile involvement. You've been tapped to recover him. Start by checking his usual base of operations for clues.</briefing>
+    <enter>
+      <say>That's the place where Frog used to hang. Look around and see if you can find anything.</say>
+      <say>The computer in that room is active and password-protected. Maybe Frog left some sort of clue on it. If you can't break the security yourself, search around: he may have written his password down somewhere.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find a clue to Frog's whereabouts" type="Search" object="1" item="6800">
+      <done>
+        <say>Nice. Now search it for any useful information.</say>
+        <say>That file has a recent timestamp. Could Frog have been investigating an Exile plan to attack one of our facilities? Maybe the Exiles found out he was snooping and decided to shut him up. Let's see what Anome thinks of this.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Huh, sounds like you may be onto something. We don't have any data on the location specified in that file you found. If Frog went there on his own, he could very well have run into trouble. I want you to go investigate the place and see if you can find the Exile named "Rat"; maybe he knows something.</briefing>
+    <enter><say>My screen's showing a number of signals inside, both Exiles and redpills. I hope this isn't a trap.</say></enter>
+    <objective goal="1" text="Talk to Rat" type="Talk" npc="1">
+      <talk>
+        <say>Well, well; I do believe we've found our Exile.</say>
+        <say npc="1">Frog? Yeah, maybe I know 'im, and maybe I don't. What's it worth to ya?</say>
+        <say>Huh, he may be willing to talk. The next room appears to be empty; take him in there and see if you can "persuade" him to tell us what he knows about Frog.</say>
+        <say npc="1">Sure, let's go somewhere nice and quiet where we can negotiate.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Persuade Rat to talk" type="Talk" npc="1" after="1">
+      <talk>
+        <say npc="1">Ow, ow! Okay, okay, I'll talk! We figured Frog was being a bit too nosy, so we decided to keep him out of trouble back at our HQ. Whoa, easy! L-look, I'll take you to him, okay? Just don't hurt me! I'd like to keep this shell in one piece.</say>
+        <say>Nice. Lead him out of there and let's see where he takes us.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Lead Rat out of the area" type="Escort" npc="1" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>What a mewling, pathetic excuse for a program! No wonder he's an Exile--couldn't hack it in Machine City. It's almost a pity that we need him alive; I'd like to see what he'd do if his "shell" were cracked. Go where he directs you, operative. If Rat's an example of the gang we're dealing with, Frog might even still be alive.</briefing>
+    <enter><say>There's some kind of shielding on that place; I can't get a long-range scan. I'll have to depend on data relayed from your RSI.</say></enter>
+    <objective goal="1" text="Find Frog" type="Talk" npc="5">
+      <talk>
+        <say>Whew! We finally found Frog!</say>
+        <say npc="5">You're from Zion? Wow, that's fabulous. Look, take out the rest of the Exiles around here, then we'll talk. Oh hey, I'll need to talk to that Rat fellow, too.</say>
+        <say>You heard the man: take out all the Exiles in the area!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's all of them. Now let's see what Frog has for us.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Frog" type="Talk" npc="5" after="2">
+      <talk><say npc="5">Hey, do you have that bottom-feeder, Rat, with you? Let me talk to him for a sec. I've got a question that I'm sure he's just dying to answer for me.</say></talk>
+    </objective>
+    <objective goal="4" text="Bring Rat to Frog" type="Escort" npc="1" to="npc:5" after="3">
+      <done>
+        <say npc="1">Okay, okay! Just keep Frog away from me! The rest of the crew has gone to take out the Zion manufacturing facility near here. Something about stealing their bug spray guns, I think. Look, that's all I know, I swear!</say>
+        <say>So they really are after the manufacturing facility! This could be bad. Head outside while I check in with Anome.</say>
+        <say npc="5">Rat! I oughta gut you! Where are the rest of your buddies?</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Do not let Rat die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Warehouse" enemy="Merovingian" enemies="5">
+    <briefing>The manufacturing facility! Crap! Most of our new flit guns and insecticide stores are in there! Why does this kind of thing always happen to me? I'm routing you over to the facility, {player}; you're the only resource I have that can get there in time. You've got to exterminate those Exiles before they trash the place!</briefing>
+    <enter><say>I'm scanning a ton of Exile signals in there. Looks like you're in for a real rumble.</say></enter>
+    <objective goal="1" text="Kill the Exiles in the facility" type="DefeatAll" />
+  </phase>
+  <finish>Nice job. It looks like the Merovingian is making a concerted effort to protect the Assassin by taking away our weapons. Maybe this latest episode will convince the Council that we have to take the fight to him; if it was up to me, that martini-sucking pervert of a program would have been ground up into French mystery-meat a long time ago.</finish>
+</mission>
