@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bombs and Betrayal, Merovingian story mission 1.2.16. Source: research/missions/transcripts/Merv1-2-16.md (the
+     archive replay of [Merovingian Archive 1.2.16], given by [Archived]Flood; Morpheus takes the bomb in the last
+     phase). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line (with retail's spellings), every NPC name
+     but one, and phase 1's last objective ("Investigate the Agent attack", the only one the Objectives tab showed).
+     Ours: the description, the other objective texts, the name "Imposter Agent" of phase 4's bomb carrier (unnamed in
+     the log), the sites (phase 1 the Agents' office: Office; the rest unnamed buildings: Normal), the looks and the
+     enemy counts. Item stand-ins: the key is Access_Card (6791), the access codes Access_Code (6782), Sirius's cell
+     phone Device (6820), Cocodrillo's phone LED_Device (6834), the tracking device Tracer (6825), the bomb Large_Bomb
+     (6818). Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's matching
+     chapter 1.2 values, 68,750 experience and 91,000 information. Agent Wilson's "Mr. DeNiro" (the player's bluepill
+     surname) is {player}.
+     Gaps: what unlocked Agent Miller's office and what the key opened weren't captured: a Use of a computer unlocks the
+     office, the key is found in the office's furniture, and reading Miller's email (Sirius's note about the bomb, shown
+     in a popup in retail) is a Put of the access codes at his computer. An Agent's "Stop!" was only in Team chat and
+     isn't said. Sirius is found dead: dead NPCs aren't spawned, so his body is a filing cabinet, desk or dresser,
+     searched once to find him and again for the phone. The Agents who ambushed the player on the way out of phase 2
+     are the phase's generated hostiles, there from the start; the Operator's warning is said when the area's goals are
+     done. In phase 3 the tracking device was on the Zion Operatives' bodies: only a named hostile can be looted, so it
+     is in a box searched once they are dead. Agent Wong and Agent Wilson turned up when the fight was over; here they
+     stand in the area from the start and speak when its goals are done. Phase 5's lines on first seeing the Zion
+     redpills and Morpheus are said on coming near them. -->
+<mission id="301216" title="Bombs and Betrayal" description="Find out what the Agents' planned attack on the city is, and stop it." plot="1"
+         order="1216" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Agent Miller" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Cocodrillo" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
+  <npc id="3" handle="Agent Wong" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>You have no choice in the matter.</say>
+  </npc>
+  <npc id="4" handle="Agent Wilson" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="5" handle="Imposter Agent" type="HOSTILE" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="6" handle="Morpheus" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564" />
+  <npc id="7" handle="Zion Ravager" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">
+    <say display="5">This won't take long.</say>
+  </npc>
+  <npc id="8" handle="Zion Kung Fu Grandmaster" type="FRIENDLY" at="5" rsi="ec020058" weapon="2564">
+    <say display="5">He may be a patient man, but someone like yourself shouldn't keep him waiting.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>We've uncovered an important piece of information from the PDA devices that you've been recovering from Agents. The data that we've decoded informs us that an attack has been planned by Agents to make a strike against an entire section of the city. Under normal circumstances the Merovingian would pay little mind to the Machines and their petty war, and especially the truce, with Zion. In this case, we must make an exception. According to very reliable sources, the scale of this attack is sizable enough to have an effect on a large number of Exiles and Operatives working in the area, including yourself. And well... we just can't have that, can we?
+
+The decoded data leads us to this address. We believe it to be some sort of base of operations for the Agents. Go there and seek out any additional leads that will prevent us from having to go through the chore of re-staffing.
+
+Do we understand? Good.</briefing>
+    <enter><say>The Agents are inside. Search the place and try to find any information that will give us further leads into the suspected attack on the city.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Unlock the door to Agent Miller's office" type="Use" object="1">
+      <done><say>That unlocked the door to Agent Miller's office. We may find our lead in here, but be careful!</say></done>
+    </objective>
+    <objective goal="2" text="Search Agent Miller's office" type="Search" object="2" item="6791" after="1">
+      <done><say>Now we're getting somewhere. Find out what that key goes to.</say></done>
+    </objective>
+    <objective goal="3" text="Kill Agent Miller" type="Defeat" npc="1">
+      <done><say>With Agent Miller dead, you can search his office for any information on the suspected attack.</say></done>
+    </objective>
+    <objective goal="4" text="Get the access codes from Agent Miller" type="Loot" npc="1" item="6782" after="3">
+      <done><say>Those are the access codes to Agent Miller's computer. You should have access to his personal files now.</say></done>
+    </objective>
+    <objective goal="5" text="Investigate the Agent attack" type="Put" object="3" item="6782" after="4">
+      <done><say>This is very interesting... Sirius is one of the Merovingian's men and we haven't heard from him in quite some time. It is disturbing that we find an email from him here. You must pay Sirius a visit. I will send you the address of his residence once you are out of this location.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Get in here, men.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I'm sending you the address of Sirius's last known location. He's not answering his cell phone, so you're just going to have to pay him a visit.</briefing>
+    <enter><say>This is where Sirius has been staying. Search the place and see if he's still here.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find Sirius" type="Search" object="1" item="0">
+      <done><say>You found Sirius, but... he's dead! Why am I not surprised... Search his body.</say></done>
+    </objective>
+    <objective goal="2" text="Search Sirius's body" type="Search" object="1" item="6820" after="1">
+      <done>
+        <say>His cell phone! Let me check the last few numbers dialed on his phone...</say>
+        <say>Give me a minute and I'll go over these numbers. I should have some data for you by the time you step outside.</say>
+      </done>
+    </objective>
+    <complete>
+      <say>Agents! Don't let them take Sirius's cell phone!</say>
+      <say>Keep moving, {player}!</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>One of the phone numbers has pulled up something interesting... Sirius received a call from a group of Zion Operatives that are stationed not far from your current location. I don't know what the intent of the Zion Operatives are, but we need to find out what connection they have with Sirius.</briefing>
+    <enter><say contact="1">This is where the Zion Operatives have been traced. Their connection between Sirius and the Machines hasn't been placed yet, but it's my hope that you will uncover the next piece in this puzzle.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Kill Cocodrillo" type="Defeat" npc="2" />
+    <objective goal="2" text="Get the phone from Cocodrillo" type="Loot" npc="2" item="6834" after="1">
+      <done><say>That's the phone that led us here. It even has Sirius's number as the last call placed.</say></done>
+    </objective>
+    <objective goal="3" text="Kill the Zion Operatives" type="DefeatAll">
+      <done><say>The Zion Operatives are dead! Search their bodies now. We need to recover whatever it is that they received from Sirius.</say></done>
+    </objective>
+    <objective goal="4" text="Search the Zion Operatives' bodies" type="Search" object="1" item="6825" after="3">
+      <done><say>A tracking device! The device itself appears to be configured to...the bomb! We can use the tracking device to trace the location of the bomb! This is good news, {player}!</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>It's Cocodrillo! He's the one that placed the call to Sirius. Kill them!</say>
+      <say npc="2">They've found us! Merovingian operatives and... Agents! Stop them!</say>
+    </near>
+    <complete>
+      <say npc="3">You are not...</say>
+      <say npc="4">...going anywhere, human. We have heard about the situation with the explosive device and have taken it upon ourselves to see to it that the bomb is found. Do not meddle in this affair, {player}.</say>
+      <say>I don't think we have much of a choice in the matter, {player}. As much as it pains me to tell you this, we have to abide by their request.</say>
+      <say npc="3">You have no choice in the matter.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>The tracking device is pointing us to this address. Go quickly, before the bomb is detonated!</briefing>
+    <enter><say>This is it, {player}. Recover the bomb!</say></enter>
+    <objective goal="1" text="Kill the imposter Agent carrying the bomb" type="Defeat" npc="5">
+      <done><say>I do believe that one of the imposter Agents has the bomb on him. Check their bodies!</say></done>
+    </objective>
+    <objective goal="2" text="Get the bomb from the imposter Agent" type="Loot" npc="5" item="6818" after="1">
+      <done><say>That's the bomb! Luckily the bomb hasn't been armed yet, however, we still have one problem: disposal. With Sirius dead it will be very difficult for us be rid of the explosives... Wait... I'm getting a transmission from a Redpill Operative... Give me a minute, {player}. Flood will contact you again once you've made it out alive.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The Operative wouldn't give me his name, but he did tell me that he can dispose of the bomb for us. I want you to look into this. If the Redpill Operative checks out to be legit, we will present the explosive device to him. You've already been updated with the address, so get moving. Delay too much and it could result in your death.</briefing>
+    <enter><say>Whoever's inside is using a powerful program preventing me from pin-pointing their location with my scanners. I'm sorry, but I can't give you any informtion other than what we already have. Be prepared for anything, {player}!</say></enter>
+    <objective goal="1" text="Talk to Morpheus" type="Talk" npc="6">
+      <talk><say npc="6">I hoped we would not meet under such circumstances...
+
+It is I who contacted Flood when I heard that you managed to obtain the explosive device. If you wish the lives of your fellow operatives to not be lost, it would serve us all if we take the bomb off of your hands. You must give it to me.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the bomb to Morpheus" type="Give" npc="6" item="6818" after="1">
+      <talk><say npc="6">Did you bring the imposters' bomb? I promise you, I will not use it as a weapon. I have other uses for its component code.</say></talk>
+      <done><say npc="6">You have my thanks.
+
+I didn't doubt that you would make the correct choice in this matter, as it was clear that you've become quite skilled with the way you handled the imposters. Very impressive... This is why it pains me to see you work for the Frenchman. This is a decision that you've made on your own and I cannot change that... Your actions are your own and so is your pursuit for power. Do not forget the freedom that others have brought you which let you obtain strength in the Matrix. Until our paths cross again... May Neo watch over you.</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say>Those redpills look like they are from Zion. I can only assume that the individual who contacted Flood is from Zion as well.</say>
+    </near>
+    <near npc="6" radius="1000">
+      <say>The redpill operative is...Morpheus!</say>
+    </near>
+  </phase>
+  <finish>I'm still not sure how Morpheus plays a part in this, but one thing is clear; the Agents sabotaging the hardlines are imposters and they don't work for the Machines. I know that holding onto the bomb would have been too much for you, however the Merovingian will be upset that we had to turn to Morpheus for disposal.
+
+You've impressed me, {player}... Just this once.</finish>
+</mission>

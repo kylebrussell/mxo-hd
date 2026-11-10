@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mod Box, Merovingian story mission 1.2.14. Source: research/missions/transcripts/Merv1-2-14.md (the archive replay
+     of [Merovingian Archive 1.2.14], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names and phase 3's objective
+     ("Repair the Hardline Junction Box"). Ours: the description, the other objective texts, the sites (a lab, an
+     unnamed building and an apartment in Dannah Heights: all Normal), the looks and the enemy counts. Item stand-ins:
+     the modified Black Box is LED_Black_Box (6835), Genaro Whitfield's Shogo 2 DVD is Data_CD (6831). Rewards: the log
+     is a level-50 player's (525,000 information, no experience), so these are Zion's matching chapter 1.2 values,
+     68,750 experience and 91,000 information.
+     Gaps: Clarissa Babcock, who was to hand over the Black Box, is only named and never seen, so she isn't placed; the
+     Agent who took it greets the player ("You're too late", Team chat only) and the Operator's guess about him is said
+     on coming near him; the box is looted from his body. Phase 2's Bohrmann is found dead: dead NPCs aren't spawned,
+     so finding him is a Search of a filing cabinet, desk or dresser that turns up nothing. The hardline junction box on
+     a wall is a Safe (wall safes are the nearest wall-mounted mission object) and repairing it is a Put of the Black Box.
+     Genaro Whitfield was friendly until the player took the DVD from his computer, then attacked: here he is a hostile
+     who waits for the player to start the fight (attacksOnSight="0"), so meeting him is a Talk, his threat is said
+     when the DVD is taken and killing him is a Defeat. The Objectives tab only listed the junction box, so his goals
+     are optional. -->
+<mission id="301214" title="Mod Box" description="Recover a modified Black Box and repair a hardline junction box." plot="1"
+         order="1214" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Genaro Whitfield" type="HOSTILE" at="3" rsi="35000024" weapon="0" attacksOnSight="0" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Thanks to your efforts, we were able to uncover the purpose behind the Black Boxes. The Agents have been using these Black Boxes to damage hardline junction boxes and preventing redpills, such as yourself, from jacking in and out of the Matrix. We need you to pick up the modified version of one of the Black Boxes that Clarissa Babcock is holding onto for you. Pick up the Black Box and additional instructions will follow.</briefing>
+    <enter><say>This is Clarissa Babcock's lab. Pick up the Black Box from her.</say></enter>
+    <objective goal="1" text="Kill the Agent" type="Defeat" npc="1" />
+    <objective goal="2" text="Get the Black Box from the Agent" type="Loot" npc="1" item="6835" after="1">
+      <done><say>That's the box we're looking for. Get outside and we'll contact Flood with the good news.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">You're too late, {player}.</say>
+      <say>The Agent must have listened in on our transmission. I'll wager he has the Black Box on him.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Head to this address and look for a Merovingian operative by the name of Bohrmann. He will take the Black Box from you. You will be working with him to locate a hardline junction box and repair it.</briefing>
+    <enter><say>Bohrmann should be waiting for you inside.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find Bohrmann" type="Search" object="1" item="0">
+      <done><say>Bohrmann is dead! The Agents must have known you were coming... You're going to have to finish this job on your own, {player}. Get out of there and head to the hardline junction box.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I am sending you the address of where you can find the hardline junction box.
+
+There are some Agents on the site, so be careful. These Agents do not want you repairing the hardline junction boxes. They will attempt to stop you -- no matter the cost. Be prepared to defend yourself.</briefing>
+    <enter><say>The hardline junction box should be on a wall.</say></enter>
+    <object id="1" kind="Safe" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Repair the Hardline Junction Box" type="Put" object="1" item="6835">
+      <done><say>You've repaired the hardline junction box!</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Genaro Whitfield" type="Talk" npc="2" optional="1">
+      <talk>
+        <say npc="2">Hey! Have you seen my new computer? It's bad ass! I've been playing Shogo 2 all day long!</say>
+        <say>Who's this guy...?</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Take Shogo 2 from Genaro Whitfield's computer" type="Search" object="2" item="6831" optional="1">
+      <done><say npc="2">You stole my copy of Shogo 2! You jerk! I'm going to kill you!</say></done>
+    </objective>
+    <objective goal="4" text="Kill Genaro Whitfield" type="Defeat" npc="2" optional="1">
+      <done><say>Genaro Whitfield must have really enjoyed that game to try and kill you for stealing it.</say></done>
+    </objective>
+  </phase>
+  <finish>You've done very well, {player}. You should be proud of your efforts to support the Merovingian.</finish>
+</mission>

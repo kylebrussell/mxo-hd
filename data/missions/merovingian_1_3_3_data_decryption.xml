@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Data Decryption, Merovingian story mission 1.3.3. Source: research/missions/transcripts/Merv1-3-3.md (one retail run
+     of the archive replay [Merovingian Archive 1.3.3], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line (Ada Hendrickson's "What's are you doing here?!" as
+     shown), the NPCs' names, and the objective texts "Get the Map from Zverev", "Do not let Zverev die" and "Search
+     the Laptop". Ours: the description (the Summary tab was never opened), the other objective texts, the sites
+     (phases 1 and 2 Normal, phase 3 a ZionOutpost for the Zion base, phase 4 an Office for the research center), the
+     enemy counts and every NPC's look. One screenshot names the decryption contact Lempira; the log and the other
+     shots say Zverev, so Zverev it is. The masked men are Cypherites (Cypherite Kung Fu Master, Cypherite Hacker),
+     who have no organisation of their own, so phase 4's enemies are Zion. Item stand-ins: Abnoba's disk is Data_CD
+     (6831), the decrypted map is Map_Disk (6783), the dossier is Dossier (6799). Rewards: this run's player was level
+     50 and got 525,000 info and no XP, so the rewards are Zion 1.3's (308,750 XP and 94,500 info, as Miracle Man
+     paid).
+     Gaps: Zverev is to be escorted to her laptop in the other room, and an escort can't end at an object; here the
+     player uses the laptop (a Use) while Zverev must not die. The laptop's login and decryption text and the Zion
+     Medical Files text on phase 3's laptop can't be shown. Zverev's first line (9:06:43) wasn't captured. The
+     Operator's "I wasn't expecting those guys" is said on arrival in phase 3. In phase 4 Ada Hendrickson is killed by
+     the masked men in retail and her body searched; here she stays standing, and her body is a Box to search (dead
+     NPCs aren't spawned). The masked men came in two waves; here they are one generated group, and the Operator's
+     "That isn't the last of 'em. There's more back with Ada Hendrickson. Get moving!" is left out. -->
+<mission id="301303" title="Data Decryption" description="Trade for a Zion disk, decrypt it and raid the bases it points to." plot="1"
+         order="1303" org="3" contact="Flood" exp="308750" info="94500">
+  <npc id="1" handle="Abnoba" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Zverev" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="3" handle="Blood Drunk" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say display="5">Those bastards think they can storm in here like they own the place.</say>
+  </npc>
+  <npc id="4" handle="Ada Hendrickson" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say>I really think you should leave...</say>
+  </npc>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I have worked out a deal with a small group of humanitarians who are willing to trade confidential information from Zion for capital that only we can provide. It's my belief that this information will lead us closer to unraveling the murder of Morpheus.
+
+Our contact is known as Abnoba. He will present their end of the bargain to you. Don't worry about our end of the transaction. I will handle that.</briefing>
+    <enter><say>I've been searching the old Zion database archive for information on Abnoba. I'm not getting any results. I don't know who he's with so just be careful in there, okay?</say></enter>
+    <objective goal="1" text="Talk to Abnoba" type="Talk" npc="1">
+      <talk><say npc="1">Flood told me that we could work out an agreement if I provided you with a bit of information on Zion. I have a disk that I swiped from one of their captains. He seemed to think it was really important so I'm sure it will be of use to you.
+
+I will let you have the disk, but Flood had better live up to his end of the bargain!</say></talk>
+      <done><say>Get that disk from Abnoba.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Disk from Abnoba" type="Get" npc="1" item="6831" after="1">
+      <talk><say npc="1">Do you want the disk, or not? I'm not a patient man, {player}.</say></talk>
+      <done>
+        <say>We'll need to get that disk decrypted if it's going to be of any use to us. Flood will send you the coordinates of a contact who can help us once you are outside.</say>
+        <say npc="1">You're done here. Be on your way and remind Flood about the deal I made with him. I expect to be compensated for this little exchange.</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>It doesn't surprise me that Abnoba and his cohorts were unable to decrypt this information. We shall uncover what they could not. Go to this address and speak with Zverev. She will be able to decrypt the data on that disk for us.</briefing>
+    <enter><say>Zverev is another redpill who is working for the Merovingian. You can find her inside.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Zverev" type="Talk" npc="2">
+      <talk>
+        <say npc="2">You must be {player}. You got the disk from Abnoba, right?</say>
+        <say npc="2">Before I can decrypt the disk, there is something I must share with you. Prior to your arrival, a group of Zion operatives broke into the place looking for you. We took care of all the attackers, but I fear that more of them may show up.
+
+I need you to escort me to my laptop that's in the other room and keep the Zion operatives off of me, if they should return.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Use Zverev's laptop in the other room" type="Use" object="1" after="1">
+      <done><say>Go ahead and grab the map from Zverev.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Map from Zverev" type="Get" npc="2" item="6783" after="2">
+      <talk><say npc="2">That was quick! I've already decrypted the files and copied them onto a disk for you. It looks like this is a map! You want it, right?</say></talk>
+      <done>
+        <say>If you upload that Map to me through a hardline, I can read the data and forward it along to Flood.</say>
+        <say npc="2">Just be careful with the map, okay?</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Do not let Zverev die" type="Protect" npc="2" />
+    <objective goal="5" text="Upload the Map at a hardline" type="Upload" item="6783" after="3">
+      <done><say>Very interesting... This map has specific details on a couple of Zion's many bases located in the Matrix. I'll forward the information along to Flood for you.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="ZionOutpost" enemy="Zion" enemies="5">
+    <briefing>I was correct about the disk that Abnoba has presented to us. Infiltrate the first Zion base mentioned in the file and tear the place apart. Check all computers and search all bodies for any information that you can find that might lead us to Morpheus' killer. We'll be taking over operations here.</briefing>
+    <enter>
+      <say>This place may look unsuspecting, but it's a Zion base according to the Map you procured.</say>
+      <say>I wasn't expecting those guys. I bet the map we recovered is fairly dated.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Zion operatives" type="DefeatAll">
+      <done>
+        <say>According to the map, that should account for all the Zion operatives on site.</say>
+        <say contact="1">There's a laptop in this room, {player}. Run a search on it. It could lead us to who is responsible for the death of Morpheus.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the Laptop" type="Search" object="1" item="0" after="1">
+      <done><say>I don't think this is what Flood was looking for, but it's interesting nonetheless. I'll send a copy up to Flood ASAP.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Zion" enemies="5">
+    <briefing>There's one more hidden Zion base to strike. The final location is a research center, so I don't expect much in the way of Zion opposition. If you do run into Zion forces, give them a most violent message from the Merovingian.
+
+Extract any information you can from the Zion operative, Ada Hendrickson. I really don't care how you do it, just get the job done.</briefing>
+    <enter><say>The only Zion operative on site is Ada Hendrickson. She probably won't like being roughed up for the goods on Morpheus' passing, so try the friendly approach.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Talk to Ada Hendrickson" type="Talk" npc="4">
+      <talk><say npc="4">What's are you doing here?! Are you from Zion? Wait...no. You're with the Frenchman, aren't you? I don't think it's wise that you're here, {player}. Yeah... I know who you are! Your departure from Zion is widely known, traitor!</say></talk>
+      <done><say>{player}, I have some bad news. It looks like we have some hostiles on site, but they aren't Zion operatives. It's those damn masked men again. Take 'em out!</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the masked men" type="DefeatAll">
+      <done><say>The masked men weren't here for you. Maybe they were looking for the same thing we are... Check Ada Hendrickson's body.</say></done>
+    </objective>
+    <objective goal="3" text="Search Ada Hendrickson's body" type="Search" object="1" item="6799" after="2">
+      <done><say>I bet you a bowl of Tastee Wheat that this is what the masked men were after and what Flood was hoping we'd get at the last site. Can you upload that to me through a hardline?</say></done>
+    </objective>
+    <objective goal="4" text="Upload the Dossier at a hardline" type="Upload" item="6799" after="3">
+      <done>
+        <say>I'm receiving the dossier. I'll send a softcopy to Flood. I'm sure he'll have a comment or two on this...</say>
+        <say contact="1">None of us thought we would stumble across documentation on the great Morpheus requiring treatment. At first I didn't think the information on Morpheus' condition would be of any use, but it seems that one thing has led to another...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The dossier that you recovered at the second site speaks of an unnamed individual at Zion who knew Niobe and had great disdain for Morpheus. Perhaps this person is the one who killed Morpheus or maybe they put the hit out on Morpheus' head...
+
+The plot thickens, doesn't it, {player}?</finish>
+</mission>

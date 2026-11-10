@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- To the Dogs, Merovingian story mission 3.1.1. Source: research/missions/transcripts/Merv3-1-1.md (the archive replay
+     of [Merovingian Archive 3.1.1], given by [Archived]Flood; seven screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood and Operator line, and the Lupine Scrapper
+     lines from team chat. Flood's briefing spans two screenshots with no header between them and is taken as one entry.
+     Ours: the description (the Summary tab was never opened), every objective text (nor was the Objectives tab), the
+     sites (no building was described: all Normal), the looks and the enemy counts. No items. Rewards: the log shows
+     79,416,249 experience and 1,039,500 information, which is what a level-50 player got and not a normal reward; we
+     use Zion 3.1's values instead (308,000 experience, 101,500 information).
+     Gaps: retail's areas held a mix of loyal and agitating lupines and only the agitators had to die; here the
+     agitators are the phase's generated Exiles plus a named hostile Lupine Scrapper, and loyal lupines are friendly
+     Lupine Scrappers standing by. All four team chat lines were spoken by NPCs called Lupine Scrapper; the loyal sounding
+     ones ("I'll lend a hand.", "Betraying the Merovingian...") are given to the friendly ones and the defiant ones
+     ("Damn the Merovingian!", "No! Mercy!") to the hostile ones. Hostile NPCs' lines don't show on screen here (see Known
+     gaps), so "Damn the Merovingian!" and the begging lupine's "No! Mercy!" may not appear; the begging lupine waits to
+     be attacked, and the Operator's "Mercy?" reply is said on walking up to him. Retail's second area may have been
+     several buildings ("scattered around the area"); Flood's "A few more killings..." line came between them, so it is
+     the briefing of a third phase here. An Operator line at 12:06:10 wasn't captured (probably the automatic "Goals for
+     this area are complete") and isn't said. -->
+<mission id="303101" title="To the Dogs" description="Make an example of the lupines agitating against the Merovingian." plot="1"
+         order="3101" org="3" contact="Flood" exp="308000" info="101500">
+  <npc id="1" handle="Lupine Scrapper" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say display="5">Betraying the Merovingian is a good way to end up dead in a hurry.</say>
+  </npc>
+  <npc id="2" handle="Lupine Scrapper" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say display="5">I'll lend a hand.</say>
+  </npc>
+  <npc id="3" handle="Lupine Scrapper" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568">
+    <say>Damn the Merovingian!</say>
+  </npc>
+  <npc id="4" handle="Lupine Scrapper" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>It seems, human, that some of our wolfish friends have been getting out of hand. As you know, the Merovingian is not in the habit of tolerating dissent in his ranks.&#10;&#10;I want you to make an example of these disruptive lupines. A messy one. You seem to be good at making messes, so this shouldn't be a problem for you, eh?</briefing>
+    <enter><say>I'm scanning a bunch of lupines in there. You only need to take out any that are agitating.</say></enter>
+    <objective goal="1" text="Kill the agitating lupines" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>That wasn't too bad, for you; but you're not done yet. It seems that our lupine malcontents have scattered around the area. Ironic that they, who are usually the hunters, are now the hunted, no?</briefing>
+    <enter><say>I'm picking up more lupines in there. Let's see if any of them are misbehaving.</say></enter>
+    <objective goal="1" text="Kill the misbehaving lupines" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>A few more killings should get the message across. Are you warming to your task? You should be.</briefing>
+    <enter><say>More lupines in there, all right.</say></enter>
+    <objective goal="1" text="Kill the last of the lupine malcontents" type="DefeatAll" />
+    <near npc="4" radius="1000">
+      <say npc="4">No! Mercy!</say>
+      <say>Mercy? I don't think the Merovingian knows the meaning of the word. You'd better take them out.</say>
+    </near>
+  </phase>
+  <finish>Hmm. I suppose that was passable. It took you an awfully long time to finish off those puppies.&#10;&#10;I think you may need more canine training. We'll have to see what we can do about this.</finish>
+</mission>
