@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What is Humanity, Machines story mission 7.3.3. Source: research/missions/transcripts/Mach7-3-3.md (the archive
+     replay of [Machine Archive 7.3.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title (no question mark on the mission bar), every briefing, Agent Gray, Operator and NPC line,
+     and the names Jamison Brown, Austin Giggleman, Loren Dryhurst, Euboea and Morpheus. Gray called the player
+     "Mr. Argento"; that is {player}. One line of the first briefing was cut at an image join; it reads on as "locales
+     frequented by Morpheus shortly before his assassination". Ours: the description (the Summary tab was never
+     opened), every objective text (the Objectives tab was never opened), the sites (the first and last are
+     warehouses; Euboea's place and the address are unnamed: Normal), the looks, and Loren Dryhurst as a woman (the
+     log never says). The guards are bluepill security guards, friendly. Item stand-in: the papers with the address
+     on Euboea are Document_Location_Notes (6855). Rewards: 373,830 experience and 63,000 information, shown on
+     completing this mission.
+     Gaps: the box of tools is a box to search that turns up nothing. Euboea was friendly until the player went
+     through his things; he is a hostile who waits to be attacked: reaching him is talking to him and searching his
+     things sets him off (both optional, so killing him first doesn't block the phase), then he is killed and his
+     papers taken. The Operator saw "multiple redpill signals" at his place, but only Euboea was fought, so no others
+     are placed. The Morpheus poster on the wall isn't an object we have; a piece of furniture stands in for it, and
+     both of the Operator's lines about it are said when it is examined. The simulacrum "self-deactivated" after
+     speaking; ours stays where it is. -->
+<mission id="207303" title="What is Humanity" description="Track down the General's Morpheus simulacrum through the places Morpheus once frequented." plot="1"
+         order="7303" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Jamison Brown" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">'Scuse me, I'm gonna have to see some ID...
+
+Hah! Just kidding. Who'd steal something in this dump, anyway? Have a good one.</say>
+  </npc>
+  <npc id="2" handle="Austin Giggleman" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">Hey, you got some ID?
+
+Oh. Yessir. Carry on.</say>
+  </npc>
+  <npc id="3" handle="Loren Dryhurst" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say after="2">No trouble at all, officer. Good luck out there.</say>
+  </npc>
+  <npc id="4" handle="Euboea" type="HOSTILE" attacksOnSight="0" at="2" rsi="d8040058" weapon="2568" />
+  <npc id="5" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564" />
+  <phase site="Warehouse" enemy="Zion" enemies="0">
+    <briefing>As predicted, the Merovingian attempted to transport the General out of the simulation. Unfortunately, the attempt succeeded, although the Trainman was critically wounded by our forces. The General is believed to be outside of the simulation, but his exact location is unknown.
+
+Before his departure, the General denounced the "Morpheus" who has been causing disturbances among Zionite and E Pluribus Neo operatives. It is clear from the General's own tirade, as well as intelligence gathered from Zionite sources, that this "Morpheus" is in fact a simulacrum constructed by the General. Thus far, it has failed to ignite the war the General desired; however, we cannot allow a program such as this to exist unmonitored within the simulation.
+
+Data cross-referencing indicates that locales frequented by Morpheus shortly before his assassination have seen increased activity of late. You will begin your search for the simulacrum at one of these locations.</briefing>
+    <enter><say>Not much going on in that warehouse, just some standard security guards. See what you can find.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Search the warehouse" type="Search" object="1" item="0">
+      <done><say>Tools--recently deposited, too, to judge from the lack of dust. Could be something... Why don't you check with the guard captain on duty? Should be...just a sec..."Loren Dryhurst."</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Loren Dryhurst" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Oh, hello, officer. How can I help you?
+
+Box of tools? Let me see here... That's registered to one "Maston, Joshua." Brought it in just a few weeks ago.</say></talk>
+      <done><say>"Joshua Maston," huh? Right, I'll get a check run on that name. Should have it by the time you're out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Our records show "Joshua Maston" is a Zion operative, now going by the pseudonym "Euboea." It is time to pay Mr. Maston a visit.</briefing>
+    <enter><say>I've got multiple redpill signals in there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Euboea" type="Talk" npc="4" optional="1">
+      <done><say npc="4">What, is storing tools prohibited by the Truce now?
+
+Shouldn't you be shining Gray's shoes or something, anyway?</say></done>
+    </objective>
+    <objective goal="2" text="Search Euboea's things" type="Search" object="1" item="0" after="1" optional="1">
+      <done>
+        <say>Watch it! Looks like someone doesn't like us messing with his stuff.</say>
+        <say npc="4">Hey! Get your hands off that!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill Euboea" type="Defeat" npc="4">
+      <done><say>Euboea has some kind of papers on him.</say></done>
+    </objective>
+    <objective goal="4" text="Get the papers from Euboea" type="Loot" npc="4" item="6855">
+      <done><say>It's a local address. Probably worth checking out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It is remarkable that certain Zionites persist in refusing to cooperate with System investigations. You did well to obtain further data, {player}. Continue your investigation.</briefing>
+    <enter><say>That's the address from the paper in Maston's pocket. Nose around and see if you catch a whiff of anything.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Examine the poster" type="Use" object="1">
+      <done>
+        <say>Hey... On the wall over there, is that...</say>
+        <say>Yep! One of the posters that Morpheus was slapping up around town before he got himself killed, or a reasonable facsimile, at any rate. Even Zion Command kicked him out for that stunt--not that that stopped him.
+
+Euboea might have helped put it up, but that doesn't explain where it came from. That's no second-rate copy. Must have been put up recently... Maybe we can have Gray do a code trace.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Zion" enemies="0">
+    <briefing>Curious. If this is the work of the simulacrum, then it has been programmed not only to regurgitate Morpheus' speeches, but also to emulate his terrorist activities.
+
+A trace of the poster's code has been completed, operative. The origin lies at the location indicated.</briefing>
+    <enter><say>Great, another warehouse. Morpheus always hung out in the nicest spots, didn't he?
+
+Got a signal, looks like a red-- Wait... Unusual bits in his bytes... This could be our boy!</say></enter>
+    <objective goal="1" text="Talk to Morpheus" type="Talk" npc="5">
+      <talk><say npc="5">I will...not rest...until...the One is returned.
+
+I believe...it...is necessary...to....stress the system.</say></talk>
+      <done><say>Whoops. What'd you do? You broke it!
+
+Hm... Actually, it looks like it self-deactivated. Kind of extreme... Well, at least now we'll be able to get a good scan of it.</say></done>
+    </objective>
+  </phase>
+  <finish>Unusual. It is possible that the simulacrum has code allowing it to simulate operative emergency jack-out and reconstruction.
+
+In any case, we have obtained a comprehensive scan of the program's RSI structure. If it reappears, we will be able to locate it quickly. It must not be allowed to continue Morpheus' terrorist actions. You have done well in tracking it down, {player}.</finish>
+</mission>

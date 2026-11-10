@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Projection, Machines story mission 7.1.1. Source: research/missions/transcripts/Mach7-1-1.md (the archive replay of
+     [Machine Archive 7.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the Agent Gray, Operator, projection and Agent lines, the objective texts
+     "Listen to the projection", "Talk to Agent Pace", "Search the Computer" and "Put the Virus in the Computer", and the
+     names Holographic Projection, Agent Gray, Agent Pace, Agent Clark and Agent Park. Gray and the Agents called the
+     player "Mr. Argento" and Pace used the player's handle; both are {player}. Ours: the description (the Summary tab
+     was never opened), the objective texts of phase 1 and the kill goals, the sites (phase 2 was an office in Tabor
+     Park, phase 4 an apartment in Moriah Projects; phases 1 and 3 weren't shown: Normal), the looks and the enemy
+     counts. The General's commandos are his programs: enemy Machines. The virus (Gray: a variant of the Procurator
+     Virus) is the Virus game object. Rewards: 354,898 experience and 119,000 information, shown on completing this
+     mission.
+     Gaps: one line of Gray's first field line was hidden in the log, so the sentence it belonged to ("The projection
+     ... recently broadcast to Zion.") is left out rather than guessed. Retail's objective lists for phases 2 and 3
+     showed no kill goal, though Gray asked for every commando on site to be eliminated in phase 2 and the Operator
+     remarked on the cleared area in phase 3; phase 2 has a kill goal for the Operator's line, and phase 3's is
+     optional. The Operator's hints on reaching the terminal and the access point are said on arrival. Pace's edited
+     projection in phase 4 is a second Holographic Projection NPC. The commandos' shouts are left out. -->
+<mission id="207101" title="Projection" description="Trace the General's broadcast to its source with a virus planted in the commando network." plot="1"
+         order="7101" org="2" contact="Agent Gray" exp="354898" info="119000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
+    <say>This is the General. I know you recognize me, Ghost.
+
+You're a fool. You always were. The Machines are using you, just like they used me. Once you've served their purpose, those lovely arms you just left will break you in half oh-so-efficiently.
+
+I had thought you experienced enough to realize this, but I can see that I overestimated you. You have a lesson to learn, and you'll only learn it the hard way. Very well, I believe I can accommodate you. Consider this fair warning; it's the only one you'll get.</say>
+  </npc>
+  <npc id="2" handle="Agent Gray" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="3">The virus you carry is a variant of the Procurator Virus developed by one of our operatives to override commando access points. You will receive instructions on locating an access point once you have left this building.</say>
+  </npc>
+  <npc id="3" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
+    <say>Ciao, tesoro!
+
+This is Agent Pace! I edited this projection's message to illustrate the mutability of data in the Matrix. I hope this has been helpful.</say>
+  </npc>
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="2">This will enable us to turn his connection to his base against him.</say>
+  </npc>
+  <npc id="5" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">Agent Pace is here for your edification, operative. Do not let this educational opportunity go to waste.</say>
+  </npc>
+  <npc id="6" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say display="5">Agent Pace is fully functional, {player}.
+
+Her operational efficiency relative to her designated purpose is at peak capacity.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, while our Sentinel fleet approaches the General's base, code-named "Stalingrad," on the surface of the Earth, it remains to us to eliminate his remaining programs in the simulation. As you will have noticed, due to the Exile Sati's absence, the weather conditions are becoming increasingly...aberrant. It is therefore important that we pursue the defeat of his programs with efficiency.
+
+In order to find and eliminate his Elite Commando programs, techniques to defeat their sophisticated stealth technology must be developed. I have a task related to this project for which I require your assistance.</briefing>
+    <enter><say>Gee, and here I thought the freaky orange sky was just global warming.
+
+Looks like Gray himself is in there. Always nice to see him in the...er...code, as it were.
+
+Hm, there's also a weird broadcast signal of some kind. I wonder what Gray's up to?</say></enter>
+    <objective goal="1" text="Listen to the projection" type="Talk" npc="1">
+      <talk><say npc="1">This is the General. I know you recognize me, Ghost.
+
+You're a fool. You always were. The Machines are using you, just like they used me. Once you've served their purpose, those lovely arms you just left will break you in half oh-so-efficiently.
+
+I had thought you experienced enough to realize this, but I can see that I overestimated you. You have a lesson to learn, and you'll only learn it the hard way. Very well, I believe I can accommodate you. Consider this fair warning; it's the only one you'll get.</say></talk>
+      <done><say>Hah, he called you Ghost! Man, that thing is creepy.
+
+Ohh, I know whose arms he must have been talking about. Man, that broadcast she and Ghost did sure caught me by surprise. She's totally just using him, though. She just, like, went through with that to fool the General, right?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Greetings, operative. We were able to isolate and reproduce the broadcast data.
+
+The data appears to have been transferred from outside the Matrix, presumably from "Stalingrad." While we know the geographic location of the General's base, we do not know its network address.
+
+To extract the origin address, you will implant a special virus in the commando network. I have the virus for you here.</say></talk>
+      <done><say>All righty, let's get that virus from him.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Virus from Agent Gray" type="Get" npc="2" item="6786" after="2">
+      <talk><say npc="2">Efficiently, operative--efficiently.</say></talk>
+      <done><say>I guess you'd better leave Gray and the General alone now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>Your target is a locus of commando activity. A network signal has been detected there. Access their system, and run a trace to their nearest access point. The data we have already obtained concerning their network protocols should make this a trivial task. Additionally, you must eliminate all commando programs on site to prevent them from reporting your activity.</briefing>
+    <enter>
+      <say>I've got commando signals in there--the old-school sweater and camo kind, I mean. I was almost starting to miss those guys. I just love it when they shout little commands to each other.</say>
+      <say>Aha, the terminal in that room should do the trick.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>That's it! Damn, we're good.</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the Commandos" type="DefeatAll">
+      <done><say>Aw, all the widdle soldiers faw down, go boom.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Access point located. Proceed, {player}.</briefing>
+    <enter>
+      <say>I've got bupkus in there except for an access point signal, which probably means you get to party with the ribbed soldier boys.</say>
+      <say>Access point's in there. Stick the virus in, and watch the magic happen!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Put the Virus in the Computer" type="Put" object="1" item="6786">
+      <done><say>Okay, looks like viral execution is proceeding as expected... The computer should be showing you some kind of result by now.</say></done>
+    </objective>
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0" after="1">
+      <done><say>Man, that was one efficient virus! Looks like it got the address we needed.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the Commandos" type="DefeatAll" optional="1">
+      <done><say>You stopped jerking all over the area, so I guess that means you cleared 'em out, huh?</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>You have obtained the requisite data, operative. Agent Pace will handle your debriefing.</briefing>
+    <enter>
+      <say>Don't stand too close to Pace; it blocks my signal.
+
+Hm, looks like she's got that holographic projection of the General in there. That thing's gonna be fun at parties.</say>
+      <say npc="5">{player} has arrived.</say>
+    </enter>
+    <objective goal="1" text="Listen to the projection" type="Talk" npc="3">
+      <talk><say npc="3">Ciao, tesoro!
+
+This is Agent Pace! I edited this projection's message to illustrate the mutability of data in the Matrix. I hope this has been helpful.</say></talk>
+      <done><say>That...is so wrong.
+
+The bony old General speaking with Pace's hot Italian voice... Oh man... I'm gonna have bad dreams about this.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="4">
+      <talk><say npc="4">Ah, you found my surprise, {player}!
+
+You see, in the Matrix, once a code structure is understood, it can usually be changed. We have a complete understanding of the General's network protocols, and now we know where his transmissions are coming from. With this information, we should be able to intercept the data he sends in and out of the Matrix, and even modify it if we like, or send our own data over his network!</say></talk>
+      <done><say>Hm... So we can, like, run up charges on his credit card now.
+
+Ohh yeah, he's screwed.</say></done>
+    </objective>
+  </phase>
+  <finish>As Agent Pace explained, we now have an important new arena in which we can impair the General's function. It will soon be utilized.
+
+I have an additional task for you until your next assignment, operative. We have come across rumors that Seraph has reappeared in the city, possibly in an altered state. This has yet to be confirmed. Any such sighting should be reported immediately.</finish>
+</mission>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Secured Channels, Machines story mission 7.1.2. Source: research/missions/transcripts/Mach7-1-2.md (the archive
+     replay of [Machine Archive 7.1.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the Agent Gray, Operator, Agent and projection lines, the objective texts
+     "Talk to Agent Pace", "Search the Computer" and "Eliminate the strongest Elite Commando", and the names Agent Pace,
+     Agent Park, Agent Marks, Holographic Projection, Elite Commando, Agent Stewart and Agent Jones. Gray and the Agents
+     called the player "Mr. Argento" and Pace used the player's handle; both are {player}. Ours: the description (the
+     Summary tab was never opened), the other objective texts, the sites (phases 1 to 3 were offices in Mara, Mara and
+     Tabor Park; phase 4 a wood-panelled office corridor), the looks and the enemy counts. The commandos are the
+     General's programs: enemy Machines; the officer is a named hostile. The Elite Commando data (no name shown) is the
+     Data game object. Rewards: 374,000 experience and 63,000 information, shown on completing this mission.
+     Gaps: the access point kept spawning commandos until it was disabled; we can't spawn waves, so a fixed group is
+     there from the start beside a Use goal on the access point computer. The Operator's scan of the officer's body is
+     only his line on the kill; the data is a plain Loot from the body. Retail's phase 2 objective list showed no kill
+     goal, though the Operator told the player to take them all out; it is a goal here for his line. The Operator's
+     reply to Agent Park's comment on frivolous messages can't follow a bystander's line and is left out. Pace's line
+     on the hand-over was cut off after "I will receive the data from you now," and is left out; her next line is the
+     hand-over's. The projection's first line was hidden once in the log; its two readable variants are used. -->
+<mission id="207102" title="Secured Channels" description="Gather data from an Elite Commando officer to help break the commandos' stealth." plot="1"
+         order="7102" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">The General has miscalculated, tesoro. I think he was counting on his actions starting a war between us and Zion! Because the Truce has held, he is now in a very precarious position.</say>
+  </npc>
+  <npc id="2" handle="Agent Park" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say display="5">Operative, you should remind your operator that comm channels are not to be used for frivolous messages. We do, of course, monitor all such transmissions for our operatives.</say>
+  </npc>
+  <npc id="3" handle="Agent Marks" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">The System's reach extends across this planet, {player}.</say>
+  </npc>
+  <npc id="4" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0">
+    <say>Sergeant, I want a full report as soon as you have the terminal online and fully updated. The Machines are shutting down too many of our lines; we need this one ready to transfer ASAP.
+
+End transmission.</say>
+    <say after="2">Sergeant, I want a full report as soon as you have the terminal back online. The Machines are shutting down too many of our lines; we need this one up ASAP.
+
+End transmission.</say>
+  </npc>
+  <npc id="5" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="1">Grazie, operatore.
+
+I am certain that you are curious why we had you gather this data from the Elite Commando! We believe that by decompiling and studying this data from their suit's code structure, we will be able to develop a code routine that will allow us to disrupt their stealth function. If we can accomplish this, it will make finding them much easier!</say>
+  </npc>
+  <npc id="7" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">Use of communication channels is a serious matter, operative.</say>
+  </npc>
+  <npc id="8" handle="Agent Jones" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say display="5">We are aware of an increase in communication between the General and the Merovingian. You should consider hostile Merovingian Exile contact likely.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>{player}, we will now begin to leverage our capability to intercept the General's signals between his commando forces in the Matrix and his "Stalingrad" base on the Earth's surface. Agent Pace will have further details.</briefing>
+    <enter><say>I love getting the skinny from Agent Pace. Have you noticed how Gray's been giving her more to do lately?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Benvenuto, {player}.
+
+Now that we have mastered the commando network, we can locate their access points easily, based on logged data reception points. All we have to do is access one terminal on the network to scan the required information.
+
+So, what you'll be doing is locating an access point in this way, then finding an Elite Commando. There is certain data you will gather from them. I will explain the rest once you have the data!</say></talk>
+      <done><say>What? Oh, sure, sure, I think you're all done in there.
+
+Check. Roger. Over. Copy.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>You are being routed to a commando terminal we have previously secured. You will use the terminal to access commando transmission records, and pinpoint the nearest access node.</briefing>
+    <enter>
+      <say>That's the spot. Got some programs and a transmission signal in there...
+
+That's funny... I thought we were the ones who were supposed to be activating it.
+
+Wait a sec... Those live programs aren't ours! Uh-oh. They look like commandos.</say>
+      <say>Damn! The Machines were supposed to have that place secured! Looks like the commandos have made a counter-attack. You'd better take them all out.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Got it. On to the access point!</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the Commandos" type="DefeatAll">
+      <done><say>So much for the General's counter-attack.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>The holographic projection you encountered must have been a recent transmission; thus, there is a high likelihood that the access point in question is still active.
+
+The access point itself is not our goal at this time, however. If the point is active, it will inevitably be defended by Elite Commando programs. You will terminate their officer, and extract specific data from his RSI.
+
+We are sending your operator the full parameters for the data extraction.</briefing>
+    <enter>
+      <say>Aw, man, now I'm gonna have to see the code on one of those things. I was fine just not knowing, you know?
+
+Gimme a holler when you take out the officer. He'll probably be close to the access point terminal.</say>
+      <say>There's the access point. Spot that officer yet?</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Disable the access point" type="Use" object="1">
+      <done><say>You've disabled the access point. That should prevent them from popping any more commandos in there.</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the strongest Elite Commando" type="Defeat" npc="5">
+      <done><say>You got him? Okay, stand next to him. I'm running the scan...now.
+
+Looks like it's picking something up. You should be able to extract the data off the commando now.</say></done>
+    </objective>
+    <objective goal="3" text="Extract the data from the Elite Commando" type="Loot" npc="5" item="6787" after="2">
+      <done><say>It worked? All right, let's give Gray a call.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Deliver the Elite Commando data to Agent Pace, {player}.</briefing>
+    <enter>
+      <say>Woohoo, Pace is gonna love us!
+
+Uh... I mean... ahem...
+
+Scanning... The area is clear, operative. Proceed.</say>
+      <say npc="7">{player} has arrived.
+
+Affirmative; their operator has been warned.</say>
+    </enter>
+    <objective goal="1" text="Give the data to Agent Pace" type="Give" npc="6" item="6787">
+      <talk><say npc="6">Ah, I knew you would be able to get the data, tesoro. Thank you very much for bringing it to me.</say></talk>
+      <done><say npc="6">Grazie, operatore.
+
+I am certain that you are curious why we had you gather this data from the Elite Commando! We believe that by decompiling and studying this data from their suit's code structure, we will be able to develop a code routine that will allow us to disrupt their stealth function. If we can accomplish this, it will make finding them much easier!</say></done>
+    </objective>
+  </phase>
+  <finish>We are systematically removing the General's ability to hide his forces from our sensors. Soon he will have no recourse but open battle, where he cannot prevail.</finish>
+</mission>

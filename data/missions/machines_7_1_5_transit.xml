@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Transit, Machines story mission 7.1.5. Source: research/missions/transcripts/Mach7-1-5.md (the archive replay of
+     [Machine Archive 7.1.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the Agent Gray, Operator, Agent, follower and Beirn lines, the commandos'
+     shouts, the objective texts "Talk to Agent Pace", "Eliminate the hostiles", "Search the area", "Talk to Agent
+     Gray", "Talk to Agent Park" and "Talk to Agent Stewart", and the names Agent Pace, Agent Miller, Jamal Krampton,
+     Michale Bender (spelt so in retail), Commando, Elite Commando, Beirn, Agent Gray, Agent Park, Agent Stewart and
+     Agent Jones. Gray called the player "Mr. Argento" and Pace used the player's handle; both are {player}. Ours: the
+     description, the objective texts of phases 1 and 3, the sites (phase 1 was an office in Achan, phase 2 an
+     apartment in Moriah Projects, phase 4 an office in Magog; the hideout of phase 3 wasn't shown: Normal), the looks
+     and the enemy counts. Phase 2's counter read 8 hostiles, Exiles and commandos: 5 Merovingian hostiles plus three
+     named Commandos (the General's programs). Phase 3 had a couple of Elite Commandos and some Exiles: 3 Merovingian
+     hostiles plus two named Elite Commandos. No mission items; the Merovingian terminal turns up nothing to carry.
+     Rewards: 373,830 experience and 63,000 information, shown on completing this mission.
+     Gaps: Beirn appeared with a power spike once the Elite Commandos were down, threatened the player and Gray ordered
+     the player out while Agents moved in; we can't spawn an NPC on a goal, so he is there from the start as a friendly
+     NPC whose Talk goal opens after the fight, and Gray's order ends the phase. Jamal Krampton and Michale Bender
+     fought beside the player in retail; ours only follow, and their lines are said on reaching phase 2. The Operator's
+     hint that the terminal needed a hack or an access code is said on arrival. The Elite Guard shouts seen in the chat
+     may have been left over from 7.1.4 and aren't used. -->
+<mission id="207105" title="Transit" description="Raid a Merovingian network center for evidence of his dealings with the General." plot="1"
+         order="7105" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">Arrivederci! Be sure to make a note of anything you find for Agent Gray!</say>
+  </npc>
+  <npc id="2" handle="Agent Miller" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">Errors continue to accumulate in weather routines. You may notice certain...glitches until we can patch these routines.</say>
+  </npc>
+  <npc id="3" handle="Jamal Krampton" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Michale Bender" type="FRIENDLY" at="1" rsi="35000024" weapon="2568" />
+  <npc id="5" handle="Commando" type="HOSTILE" at="2" rsi="8f080058" weapon="2568">
+    <say>Target acquired! Repeat: target acquired!</say>
+  </npc>
+  <npc id="6" handle="Commando" type="HOSTILE" at="2" rsi="8f080058" weapon="2568">
+    <say>All units, engage!</say>
+  </npc>
+  <npc id="7" handle="Commando" type="HOSTILE" at="2" rsi="8f080058" weapon="2568">
+    <say>Hostile sighted!</say>
+  </npc>
+  <npc id="8" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="9" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="10" handle="Beirn" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="11" handle="Agent Gray" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say after="1">Always concentrate on the task at hand, operative.</say>
+  </npc>
+  <npc id="12" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="2">It appears that Beirn, once the Frenchman's captive, is being granted a more active role within the Merovingian's organization. This situation must be monitored carefully.</say>
+  </npc>
+  <npc id="13" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="3">Resources will be allocated to investigate this matter.</say>
+  </npc>
+  <npc id="14" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">The Merovingian cannot assist the General against our Sentinels.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>{player}, it has become clear that the Merovingian has begun assisting the General, circumventing our efforts to hinder the General's movements by shutting down his access nodes. The Merovingian must be shown the...cost inherent in his new alliance. Agent Pace will have further instructions for you.</briefing>
+    <enter><say>So, my theory about this whole Cryptos mess is that Pace would have told us about it sooner, but Gray blackmailed her into keeping quiet. I'm still not sure what he would have on her that would have prevented her from warning us, but it must be something really bad.
+
+Makes sense, right?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Saluti, {player}. Jamal Krampton and Michale Bender are at your disposal. You will be assaulting a Merovingian network center. We are looking for information on the coordination of his efforts with the General.</say></talk>
+      <done><say>Been a while since we put the Mervs in line. Gather up those two programs and get them out on the street.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Jamal Krampton and Michale Bender out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="5">
+    <briefing>Eliminate all Exile programs at the target location, and search the area thoroughly. A scan for concealed Elite Commando programs is running.</briefing>
+    <enter>
+      <say npc="3">System directive JW-682: Exile termination. In progress.</say>
+      <say npc="4">Exploits detected.</say>
+      <say>I don't actually see any Elite Commandos in there--hope the scan routine is still working. I'm picking up standard commandos and Merv Exiles, though.</say>
+      <say>That's a Merovingian system in there. You'll have to hack it, or find an access code.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>All right, now hook me up with data from that computer.</say>
+        <say>Getting a data feed from that terminal. Let's see what we can see...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>The data captured from the Merovingian terminal indicates considerable recent activity in Rogers Way. There are several references to a "Train" program at the Abandoned Subway in that neighborhood. The meaning behind this is not clear; that facility has been closed to commuter traffic for quite some time.
+
+Nevertheless, we have identified a Merovingian hideout in the vicinity. Elite Commando programs have been detected.</briefing>
+    <enter>
+      <say>They couldn't mean... Nahhh... Nobody's seen him since the beginning of the Truce...
+
+I see Elite Commandos, and some Mervs in there, too.
+
+I love this code scan the Machines have now to detect those Elites! Gray says they can't afford to run the scan routine all the time due to the power drain... Bah! Get those coppertops makin' more babies! I want my perma detection routine!</say>
+      <say>Watch it, you've got a couple Elite Commandos waiting to jump you in the next room.</say>
+    </enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Whoa! Power spike! Man alive, the feedback from that just about blew out my screen. What the...
+
+Oh. Uh-oh. Um... Do you see a big fella in there with dripping green eyes? 'Cause what I'm seeing here sure looks like you've got an Unlimit officer in there with you, and there's only one of those left, as far as we know.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Beirn" type="Talk" npc="10" after="1">
+      <talk><say npc="10">Hey there, muffins. You missed the train, you know. He's already reached the Lucero Point station, and once he gets in a subway car, well...they say there's just no catching him.
+
+Now, I strongly suggest you run along. I'm here to wrap up loose ends, and that'll include yours, if you stick around.</say></talk>
+      <done>
+        <say contact="1">Vacate the area immediately, {player}. Agents will attend to this matter.</say>
+        <say npc="10">Ooh! Agents. I hope they're a little braver than Gray was. I always wanted to see what color they are on the inside.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Meet me at the indicated location, operative. There are a number of topics to discuss.</briefing>
+    <enter><say>I'd heard that Beirn guy had issues--now I believe it. Guess you can't expect the last Unlimit to have all his marbles.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="11">
+      <talk><say npc="11">We must bear in mind that the Merovingian is not the primary objective. The General must be deleted, and the Sati program returned. It is clear that the Merovingian intends to interfere with our efforts. While this complicates the task at hand, we must focus our resources on the General himself in order to achieve a swift resolution of the direct threat his activities pose to the System's stability.</say></talk>
+      <done><say>Delete the General first, Merv second. I guess that's clear enough.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Park" type="Talk" npc="12">
+      <talk><say npc="12">The entity you encountered, known by his operative name, Beirn, achieved high power levels through the use of a cheat code given to him by the renegade Zion controller, Anome. While Anome and his other mutated followers have expired, Beirn was preserved by the Merovingian. A side effect of the code he consumed resulted in the death of his human body; Beirn now exists only as data within the Matrix. As such, he can be deleted; however, his power level, and the support of the Merovingian, makes this difficult.</say></talk>
+      <done><say>I heard Beirn actually got caught by Persephone, 'cause he had the hots for her. Sounds like a bit of a dope to me.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Agent Stewart" type="Talk" npc="13">
+      <talk><say npc="13">The Merovingian has in the past employed an Exile program known as "The Trainman" to transport programs between the Machine mainframes and the Matrix simulation without our permission. Although rumors of his activity have persisted, the Trainman himself has not been seen since the establishment of the Truce. If the Trainman has indeed returned to active service, as the data you found today suggests, it is necessary to consider the possibility that the Merovingian is planning an important program transfer.</say></talk>
+    </objective>
+  </phase>
+  <finish>The Merovingian's involvement does not negate the considerable progress we have made against the General. He is no longer able to transfer his forces in large numbers across his own network, and it is a relatively simple matter for us to detect any transfers he is still able to attempt. Finally, our Sentinel strike force's arrival at "Stalingrad," his base on the Earth's surface, is imminent. Any of his programs remaining outside the simulation will certainly be deleted.</finish>
+</mission>

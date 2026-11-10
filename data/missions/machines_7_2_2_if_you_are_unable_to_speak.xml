@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- If You Are Unable to Speak, Machines story mission 7.2.2. Source: research/missions/transcripts/Mach7-2-2.md (the
+     archive replay of [Machine Archive 7.2.2], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Eliminate the
+     hostiles" and "Search the Computer", and the names Agent Pace, Agent Johns, North The Mechanic and Jones The
+     Mechanic. Gray called the player "Mr. Argento" and Pace and the Operator used the player's handle; all are
+     {player}. Ours: the description (the Summary tab was never opened), the objective texts of phase 3, the sites
+     (phases 1 and 4 were apartments; the ambush location and Pace's facility are unnamed: Normal), the looks and the
+     enemy counts (retail's last phase had 9 Elite Commandos; ours has 5). The Elite Commandos are the General's rogue
+     programs: enemy Machines. Which Operator line closes phase 1's fight is a guess. No mission items. Rewards:
+     374,000 experience and 63,000 information, shown on completing this mission.
+     Gaps: "That would be the computer you need to access" came on reaching the computer; it is said on arrival. The
+     phase 2 commandos ambushed the player some seconds after arrival; here they are there from the start and the
+     Operator's ambush line is said on arrival. Gray wanted the squad terminated gradually to make them talk; ours is
+     a plain kill goal. The Operator's "where you running off to?" line came when the player walked away from
+     Pace between her lines; here Pace's lines and that one are said together. The two Mechanics fought beside the
+     player in the last phase; ours follow the player but don't fight, the mission fails if one dies, and their closing
+     lines are said when the phase is done. A computer in the last room showed flavour text and had no goal; it isn't
+     placed. -->
+<mission id="207202" title="If You Are Unable to Speak" description="Disrupt the voice relay the General's Elite Commandos use to coordinate their attacks." plot="1"
+         order="7202" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="2" handle="Agent Johns" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">The stability of the simulation is paramount. Take no unnecessary risks. Enforce order.</say>
+  </npc>
+  <npc id="3" handle="North The Mechanic" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Jones The Mechanic" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <phase site="SlumApt" enemy="Machines" enemies="4">
+    <briefing>{player}, we will continue our process of systematically eliminating the General's forces, this time by disrupting their communication systems.&#10;&#10;As you have doubtless observed, the Elite Commandos carry on no audible communication. Examination of the commando we captured recently, however, showed that their mask apparatus encloses a voice communication device, soundproofed to allow no noise to escape.&#10;&#10;Since this is their only means of communication, if we disrupt it, their combat tactics should suffer accordingly. We will begin by accessing the commando network from one of their terminals.</briefing>
+    <enter>
+      <say>I've got some beret-wearin' commando activity in there, as well as some network traffic. Find that terminal of theirs.</say>
+      <say>That would be the computer you need to access. No need to worry about their network security; it's already been cracked.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>I gotta get Gray back on the stick about running Elite Commando scans for us. It's downright embarrassing when I can't tell what you're doing in there.</say></done>
+    </objective>
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>All right, that should do to their network, uh, whatever it was Gray wants it to do.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Good. We have located their closed-circuit communications system, and inserted a monitoring program. It will intercept their transmission codes. Now we simply need to generate sufficient traffic on their communication system to build a database of their transmission code.&#10;&#10;Simply put, {player}, you must cause them to talk to each other. I suggest that you do this by stressing their self-preservation routines: i.e., by terminating a squad gradually.&#10;&#10;Their network traffic indicated that the marked location should have a sufficient supply of Elite Commandos for this endeavor.</briefing>
+    <enter>
+      <say>Man, I kinda like it when Gray talks dirty.&#10;&#10;Oh shoot, I forgot to bug him about running a scan for us. Uh... Well, he probably would have come up with some excuse anyway: "blah blah {player} blah System blah resources blah..."&#10;&#10;So anyway, I've got nothing showing in there. I'd bet dollars to donuts you're up for some Elite Commando action, though.</say>
+      <say>You'd think they'd get tired of that little ambush routine of theirs. One-note wonders... That's lax programming for you.</say>
+    </enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say contact="1">Although you could not hear it, operative, you generated considerable traffic on their communication relay. That last commando you terminated was particularly...verbose.&#10;&#10;You may now leave the area.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, although we calculate that the routine we are about to run on their communication system will disable the commando voice relay, effectively nullifying their ability to coordinate their defense against you, it is possible that some unforeseen safeguard might prevent the initial success of this operation. Indeed, if the General held his network to Machine standards, he would have several layers of backups and countermeasures in place.&#10;&#10;As a precaution, then, Agent Pace will provide you with additional program assistance.</briefing>
+    <enter><say>Yes! Agent Pace in da--&#10;&#10;I mean, Agent Pace's code signature detected in that facility, {player}.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Ciao, {player}! You can probably handle the target yourself, but Agent Gray is very concerned about your welfare, and doesn't want to run undue risks. You may take these two programs with you for your mission!</say>
+        <say>Whoa, whoa--where you running off to? Stay and talk to the woman! Don't want to look rude, do we?</say>
+        <say npc="1">Oh, I understand your concern, tesoro. None of us are comfortable with the Cypherite situation; however, when the System is at risk, difficult measures may become necessary to safeguard it, yes?&#10;&#10;I know that we have not been able to make significant progress with the Cypherites since the Seraph incident, but, on the other hand, the situation has not grown significantly worse, either! So! I would say that it is relatively under control at this time, and...I think that it can only get better as we continue to work things out with their group.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead the Mechanics out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="5">
+    <briefing>Your operator may see fit to derive a modicum of the emotion you term "satisfaction" from the fact that we are running a scan to counter Elite Commando stealth routines at the target location.&#10;&#10;If the communication disruption procedure has succeeded, you should notice that the commandos coordinate with each other only spasmodically.</briefing>
+    <enter><say>Is Gray hitting on me?&#10;&#10;Right, so anyway, I've got those Elite sons-of-guns on my screen. Sweep and delete!</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <complete>
+      <say npc="3">Targets have been eliminated, sir!</say>
+      <say npc="4">Hm... Yes... I find your reactions most interesting. A pity I cannot monitor you while you sleep.</say>
+    </complete>
+  </phase>
+  <finish>As anticipated, the General failed to have adequate network safeguards in place, and, to judge from your report, the disruption of his programs' communication relay was a success. Although it may need to be adjusted per relay channel, this routine should serve to significantly ease designated future hostile encounters with his forces.&#10;&#10;Rest assured, operative, that the System fully appreciates your continued contributions to the program's stability.</finish>
+</mission>
