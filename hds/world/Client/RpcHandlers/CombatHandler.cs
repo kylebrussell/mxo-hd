@@ -177,6 +177,7 @@ namespace hds
             {
                 next.Ability = session.QueuedAbility.getAbilityID();
             }
+            next.Withdraw = withdrawing;
             session.Attacker.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(kind, decided, next));
             session.CurrentMove = next;
         }
@@ -262,7 +263,7 @@ namespace hds
                     Tactic = npcTactic, Hits = npcHit, AttackRoll = npcAttack, SpecialMove = false,
                     Damage = npcDamage, Absorbed = absorbedByPlayer, Health = mob.getHealthC()
                 },
-                playerFirst, opening);
+                playerFirst, opening, withdrawing);
             bool abilityLands = outcome.SpecialMoveLands;
             // A finishing move can leave a damage field at -1 (retail's swap); nobody is healed by it
             UInt16 damageToNpc = (UInt16)Math.Max(0, outcome.DamageToNpc);
@@ -288,6 +289,15 @@ namespace hds
                 session.TargetViewSpawnId, outcome.Flags, (UInt16)outcome.DamageToPlayer, (Int16)outcome.PlayerAbsorbed,
                 (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime()));
             session.RoundRecord++;
+
+            if (outcome.Withdrew)
+            {
+                Output.WriteDebugLog($"[COMBAT] Round {session.RoundRecord}: withdrawal succeeds ({playerAttack} against {npcAttack})");
+                player.FlushQueue();
+                withdrawing = false;
+                session.Stop(CombatSession.CombatEndReason.AttackerFled);
+                return;
+            }
 
             if (opening)
             {
@@ -591,6 +601,7 @@ namespace hds
             // Retail resolved the opening move as the starter's opportunity attack straight away (tutorial 13:28:32: the
             // first RPC 45, result 0x801, came in the packet after the start; all 55 openings in the captures)
             npcOpenedFight = npcStarted;
+            withdrawing = false;
             ResolveCloseCombatRound(currentSession, true);
         }
 
@@ -599,6 +610,9 @@ namespace hds
         /// opening in the captures is a player's.
         /// </summary>
         private bool npcOpenedFight;
+
+        /// <summary>The player asked to withdraw (RPC 44 01): each round tries until it succeeds.</summary>
+        private bool withdrawing;
 
         /// <summary>
         /// Finds a mob by its combined view+spawn ID from the client's perspective.
@@ -1288,6 +1302,23 @@ namespace hds
         public void ProcessLeaveCloseCombat(ref byte[] rpcData)
         {
             Output.WriteDebugLog("[COMBAT] Leave combat requested");
+
+            // Withdraw in close combat (44 01): retail tried it at each round until it succeeded, the fight going on
+            // meanwhile (actions_combat_marketplace_abilitychangecoder 10:38:03: three failed rounds, then 0x200 at
+            // 10:38:20). Other leave requests end the fight at once, as before.
+            CombatSession session = currentSession;
+            if (rpcData != null && rpcData.Length > 0 && rpcData[0] == 0x01 && session != null && session.IsActive &&
+                session.Type == CombatSession.CombatType.Melee && session.DefenderMob != null && session.CurrentMove != null)
+            {
+                if (!withdrawing)
+                {
+                    withdrawing = true;
+                    SendNextMove(session, CombatInterlock.KindNextMoveChanged);
+                    client.FlushQueue();
+                    Output.WriteDebugLog("[COMBAT] Withdrawing: tried with the next round");
+                }
+                return;
+            }
 
             if (currentSession != null && currentSession.IsActive)
             {

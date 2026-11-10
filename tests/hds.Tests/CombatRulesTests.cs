@@ -172,6 +172,47 @@ public class CombatRulesTests
         Assert.Equal((40, 0), (o.DamageToPlayer, o.DamageToNpc));
     }
 
+    [Fact]
+    public void WithdrawalSucceedsWhenTheWithdrawersRollIsHigher()
+    {
+        // abilitychangecoder 10:38:20: player value 0x53 against the NPC's 0x1f: result 0x200, won 1, nobody hurt
+        var player = F(CombatTactic.Power, true, 30, attackRoll: 0x53);
+        var o = CombatRules.Resolve(player, F(CombatTactic.Power, true, 40, attackRoll: 0x1f), true, false, playerWithdrawing: true);
+        Assert.True(o.Withdrew);
+        Assert.True(o.PlayerWins);
+        Assert.Equal(CombatRules.Withdraw, o.Flags);
+        Assert.Equal((0, 0), (o.DamageToPlayer, o.DamageToNpc));
+    }
+
+    [Fact]
+    public void FailedWithdrawalIsARoundTheWithdrawerCantHit()
+    {
+        // Retail's 13 failed rounds: the NPC hit (0x1, won 0) or nobody did (0x4); on Block the player won it
+        var o = CombatRules.Resolve(F(CombatTactic.Power, true, 30, attackRoll: 10), F(CombatTactic.Grab, true, 40, attackRoll: 90),
+            true, false, playerWithdrawing: true);
+        Assert.False(o.Withdrew);
+        Assert.False(o.PlayerWins);
+        Assert.Equal(CombatRules.AttackerHits, o.Flags);
+        Assert.Equal((40, 0), (o.DamageToPlayer, o.DamageToNpc));
+
+        o = CombatRules.Resolve(F(CombatTactic.Power, true, attackRoll: 10), F(CombatTactic.Grab, false, attackRoll: 90), true, false, playerWithdrawing: true);
+        Assert.Equal((false, CombatRules.NoHits), (o.PlayerWins, o.Flags));
+
+        o = CombatRules.Resolve(F(CombatTactic.Power, false, attackRoll: 10), F(CombatTactic.Block, false, attackRoll: 90), true, false, playerWithdrawing: true);
+        Assert.Equal((true, CombatRules.NoHits), (o.PlayerWins, o.Flags));
+    }
+
+    [Fact]
+    public void MovesCarryTheWithdrawFlag()
+    {
+        // abilitychangecoder 10:38:20: 47 00 02 01 01 0e ... (decided and next moves both marked 2)
+        var move = new CombatInterlock.Move { Seq = 0x0e, Tactic = CombatTactic.Power, Withdraw = true };
+        var next = new CombatInterlock.Move { Seq = 0x0f, Tactic = CombatTactic.Power, Withdraw = true };
+        string hex = StringUtils.bytesToString_NS(CombatInterlock.BuildRoundState(CombatInterlock.KindNewRound, move, next)).ToLowerInvariant();
+        Assert.StartsWith("4700020101" + "0e", hex);
+        Assert.Contains("0100000201010f", hex);
+    }
+
     [Theory]
     [InlineData(1, 1, false, 1, 0)]
     [InlineData(2, 2, false, 1, -10)]

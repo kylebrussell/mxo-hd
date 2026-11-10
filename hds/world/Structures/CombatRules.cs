@@ -59,6 +59,8 @@ namespace hds
             public UInt32 Flags;
             /// <summary>The player's special move landed: no damage either way this round.</summary>
             public bool SpecialMoveLands;
+            /// <summary>The player's withdrawal succeeded (0x200): the fight ends, nobody is hurt.</summary>
+            public bool Withdrew;
             /// <summary>
             /// Damage each side takes, as RPC 45 carries it. After a finishing move these can be odd: retail swapped
             /// the killer's damage and absorbed fields (see <see cref="Resolve"/>), so 0 with 1 absorbed, or -1.
@@ -99,8 +101,22 @@ namespace hds
         /// bug: the killer's own damage and absorbed amounts come out swapped (retail: 0 damage, 1 absorbed).</item>
         /// </list>
         /// </summary>
-        public static Outcome Resolve(Fighter player, Fighter npc, bool playerAttacksFirst, bool opening)
+        public static Outcome Resolve(Fighter player, Fighter npc, bool playerAttacksFirst, bool opening, bool playerWithdrawing = false)
         {
+            if (playerWithdrawing && !opening)
+            {
+                // determineResultOfWithdrawalRequest: the withdrawer is the defender and gets away when its roll beats
+                // the attacker's (retail: 17 withdrawals, 13 failed rounds before them). A failed attempt is a round in
+                // which the withdrawer can't hit.
+                if (player.AttackRoll > npc.AttackRoll)
+                {
+                    return new Outcome { PlayerWins = true, Flags = Withdraw, Withdrew = true };
+                }
+                player.Hits = false;
+                player.SpecialMove = false;
+                playerAttacksFirst = false;
+            }
+
             Fighter attacker = playerAttacksFirst ? player : npc;
             Fighter defender = playerAttacksFirst ? npc : player;
             bool attackerHits = attacker.Hits, defenderHits = defender.Hits;

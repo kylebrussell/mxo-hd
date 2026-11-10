@@ -42,6 +42,11 @@ namespace hds
             public UInt16 R1, R2, R3, R4;
 
             public bool HasAbility => Ability != 0;
+            /// <summary>The fighter is withdrawing (RPC 44 01): retail marked such moves 2 in the has-ability byte.</summary>
+            public bool Withdraw;
+
+            /// <summary>The has-ability byte: 3 on the opening move, 2 withdrawing, 1 an ability, else 0.</summary>
+            public byte Flag => First ? (byte)0x03 : Withdraw ? (byte)0x02 : HasAbility ? (byte)0x01 : (byte)0x00;
         }
 
         private static void AddMove(PacketContent pak, Move move)
@@ -66,7 +71,7 @@ namespace hds
             PacketContent pak = new PacketContent();
             pak.AddByte(0x47);
             pak.AddByte(0x00);
-            pak.AddByte(move.First ? (byte)0x03 : move.HasAbility ? (byte)0x01 : (byte)0x00);
+            pak.AddByte(move.Flag);
             pak.AddByte((byte)move.Tactic);
             AddMove(pak, move);
             pak.AddHexBytes("1a00");
@@ -77,7 +82,7 @@ namespace hds
                 return pak.ReturnFinalPacket();
             }
             pak.AddHexBytes("010000");
-            pak.AddByte(next.HasAbility ? (byte)0x01 : (byte)0x00);
+            pak.AddByte(next.Flag);
             pak.AddByte((byte)next.Tactic);
             AddMove(pak, next);
             return pak.ReturnFinalPacket();
@@ -99,7 +104,7 @@ namespace hds
             pak.AddUint16((UInt16)(round + 1), 1);
             pak.AddByte(won ? (byte)0x01 : (byte)0x00);
             pak.AddByte(0x00);
-            pak.AddByte(player.First ? (byte)0x03 : player.HasAbility ? (byte)0x01 : (byte)0x00);
+            pak.AddByte(player.Flag);
             pak.AddByte((byte)player.Tactic);
             AddMove(pak, player);
             pak.AddHexBytes("0000");
