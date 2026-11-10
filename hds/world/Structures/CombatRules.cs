@@ -137,7 +137,7 @@ namespace hds
 
             Fighter winner;
             UInt32 flags;
-            // Damage each takes: [0] = winner, [1] = loser (retail's winnerDamage and loserDamage)
+            // Damage the winner and the loser take (retail's winnerDamage and loserDamage)
             int winnerDamage = 0, winnerAbsorbed = 0, loserDamage = 0, loserAbsorbed = 0;
             bool specialMoveLands = false;
 
