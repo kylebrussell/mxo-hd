@@ -88,7 +88,7 @@ namespace hds
         /// 00 00 &lt;NPC tactic&gt; &lt;NPC move&gt; 00000000 01 &lt;target u32&gt; &lt;target u32&gt; 00000000 &lt;result u32&gt; 00000000
         /// &lt;damage to the player u16&gt; &lt;modifier i16&gt; &lt;damage to the target u16&gt; &lt;modifier i16&gt; &lt;sim ms u32&gt; 8 x 00</c>.
         /// The damage slots follow the health updates: the tutorial's <c>04 00 00 00 15 00 fb ff</c> took 4 off the player
-        /// and 21 off the NPC. <c>won</c>'s meaning is inferred (1 mostly when the player landed the hit).
+        /// and 21 off the NPC. <c>won</c> is retail's winnerSlot: 1 when the player wins the round by <see cref="CombatRules.Resolve"/>.
         /// </summary>
         public static byte[] BuildRoundResult(UInt16 round, bool won, Move player, Move npc, UInt32 target, UInt32 result,
             UInt16 damageToPlayer, Int16 playerModifier, UInt16 damageToTarget, Int16 targetModifier, UInt32 simMs)

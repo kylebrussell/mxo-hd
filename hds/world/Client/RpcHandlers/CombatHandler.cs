@@ -204,32 +204,39 @@ namespace hds
         }
 
         /// <summary>
-        /// One close-combat round, by retail's combat_resolution.determineResultForStandardCombat: both fighters roll with
-        /// their tactics, the round's records go out, then the hits land. A queued ability (special move) lands instead of
-        /// the player's hit when their roll wins, and then the NPC doesn't hit that round (handleSpecialMove, result 0x100);
-        /// when the roll loses, the round is a plain exchange and the ability is lost.
+        /// One close-combat round, by retail's interlock/combat_resolution (see <see cref="CombatRules"/>): both fighters
+        /// roll with their tactics, <see cref="CombatRules.Resolve"/> decides who wins and who is hurt, the round's
+        /// records go out, then the hits land. A queued ability (special move) whose roll wins lands instead of the
+        /// player's hit, and then the NPC doesn't hit that round (result 0x100); when the roll loses, the ability is lost.
+        /// <paramref name="opening"/> is the round retail resolved at once when a fight started: the starter's
+        /// opportunity attack (0x801 or 0x820) on the opening move.
         /// </summary>
-        private void ResolveCloseCombatRound(CombatSession session)
+        private void ResolveCloseCombatRound(CombatSession session, bool opening = false)
         {
             WorldClient player = session.Attacker;
             Mob mob = session.DefenderMob;
             double now = TimeUtils.GetSimTimeSeconds();
 
-            AbilityItem ability = session.QueuedAbility;
+            AbilityItem ability = opening ? null : session.QueuedAbility;
             UInt16 abilityTarget = session.QueuedAbilityTarget;
-            session.QueuedAbility = null;
+            if (!opening)
+            {
+                session.QueuedAbility = null;
+            }
 
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
             UInt16 mobLevel = mob.getLevel();
+            byte[] healthBytes = player.playerInstance.Health.getValue();
+            int playerHealth = healthBytes != null && healthBytes.Length >= 2 ? NumericalUtils.ByteArrayToUint16(healthBytes, 1) : 1;
 
             CombatTactic playerTactic = session.AttackerTactic;
             CombatTacticType playerType = player.playerData.combatTacticType;
             bool stunned = mob.IsStunned(now);
-            bool playerHit, npcHit, condition;
+            bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
-            UInt16 damageToNpc = 0, damageToPlayer = 0;
-            Int16 absorbedByNpc = 0, absorbedByPlayer = 0;
+            UInt16 playerDamage, npcDamage;
+            Int16 absorbedByNpc, absorbedByPlayer;
             CombatTactic npcTactic;
             lock (roundRng)
             {
@@ -237,51 +244,66 @@ namespace hds
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType);
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense) && !stunned;
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
-                if (playerHit && ability == null)
-                {
-                    damageToNpc = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType);
-                    damageToNpc = (UInt16)Math.Round(damageToNpc * mob.IncomingDamageMultiplier());
-                }
-                if (npcHit)
-                {
-                    damageToPlayer = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer);
-                }
+                playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType);
+                playerDamage = (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier());
+                npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer);
+                playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
             }
             session.DefenderTactic = npcTactic;
 
-            // A special move whose roll wins stops the NPC's hit; one whose roll loses is lost
-            bool abilityLands = ability != null && playerHit;
-            if (abilityLands)
-            {
-                npcHit = false;
-                damageToPlayer = 0;
-            }
-            if (ability != null)
-            {
-                playerHit = false;
-            }
-            bool targetDies = damageToNpc > 0 && damageToNpc >= mob.getHealthC();
+            CombatRules.Outcome outcome = CombatRules.Resolve(
+                new CombatRules.Fighter
+                {
+                    Tactic = playerTactic, Hits = playerHit, AttackRoll = playerAttack, SpecialMove = ability != null,
+                    Damage = playerDamage, Absorbed = absorbedByNpc, Health = playerHealth
+                },
+                new CombatRules.Fighter
+                {
+                    Tactic = npcTactic, Hits = npcHit, AttackRoll = npcAttack, SpecialMove = false,
+                    Damage = npcDamage, Absorbed = absorbedByPlayer, Health = mob.getHealthC()
+                },
+                playerFirst, opening);
+            bool abilityLands = outcome.SpecialMoveLands;
+            // A finishing move can leave a damage field at -1 (retail's swap); nobody is healed by it
+            UInt16 damageToNpc = (UInt16)Math.Max(0, outcome.DamageToNpc);
+            UInt16 damageToPlayer = (UInt16)Math.Max(0, outcome.DamageToPlayer);
 
-            // Records of the round the moves belong to
+            // Records of the round the moves belong to. Retail's move value is the attack roll and its first number the
+            // defense roll: with them, attack > the other's defense matches retail's hits in 692 of 725 rounds.
             CombatInterlock.Move decided = session.CurrentMove;
-            decided.R1 = playerAttack;
-            decided.R2 = playerDefense;
-            SendNextMove(session, CombatInterlock.KindNewRound);
+            decided.Value = playerAttack;
+            decided.R1 = playerDefense;
+            if (!opening)
+            {
+                SendNextMove(session, CombatInterlock.KindNewRound);
+            }
 
             byte npcSeq = (byte)((session.NpcMove?.Seq ?? 0) + 2);
             session.NpcMove = NewMove(npcSeq, npcTactic);
-            session.NpcMove.R1 = npcAttack;
-            session.NpcMove.R2 = npcDefense;
+            session.NpcMove.Value = npcAttack;
+            session.NpcMove.R1 = npcDefense;
+            session.NpcMove.First = opening; // retail's opening round had 0 in the NPC move's ability field too
 
-            UInt32 result = CombatInterlock.ResultFor(playerHit, npcHit, abilityLands, targetDies);
-            player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, playerHit || abilityLands, decided, session.NpcMove,
-                session.TargetViewSpawnId, result, damageToPlayer, absorbedByPlayer, damageToNpc, absorbedByNpc, CombatStartTime()));
+            player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, outcome.PlayerWins, decided, session.NpcMove,
+                session.TargetViewSpawnId, outcome.Flags, (UInt16)outcome.DamageToPlayer, (Int16)outcome.PlayerAbsorbed,
+                (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime()));
             session.RoundRecord++;
 
-            Output.WriteDebugLog($"[COMBAT] Round {session.RoundRecord}: {playerTactic} ({playerAttack}/{playerDefense}) vs {npcTactic} ({npcAttack}/{npcDefense}), player " +
+            if (opening)
+            {
+                // Retail followed the opening round with the next move against a blank decided one (tutorial 13:28:33:
+                // 47 00 00 01 01 00 00 00 00 00 00 80 ... 1a 00 03 ... 01 01 0a ...)
+                CombatInterlock.Move next = NewMove((byte)(decided.Seq + 1), playerTactic);
+                player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindNewRound,
+                    new CombatInterlock.Move { Seq = 0, Tactic = playerTactic }, next));
+                session.CurrentMove = next;
+            }
+
+            Output.WriteDebugLog($"[COMBAT] Round {session.RoundRecord}{(opening ? " (opening)" : "")}: {playerTactic} ({playerAttack}/{playerDefense}) vs {npcTactic} ({npcAttack}/{npcDefense}), " +
+                                 $"{(outcome.PlayerWins ? "player" : "NPC")} wins, result 0x{outcome.Flags:x}, player " +
                                  (abilityLands ? ability.getAbilityName() + " lands" : ability != null ? ability.getAbilityName() + " fails" :
-                                     playerHit ? "hits for " + damageToNpc : "misses") +
-                                 ", NPC " + (stunned ? "stunned" : npcHit ? "hits for " + damageToPlayer : "misses"));
+                                     damageToNpc > 0 ? "hits for " + damageToNpc : "misses") +
+                                 ", NPC " + (stunned ? "stunned" : damageToPlayer > 0 ? "hits for " + damageToPlayer : "misses"));
 
             if (abilityLands)
             {
@@ -292,7 +314,7 @@ namespace hds
                     return; // the ability killed the NPC; ApplyAbilityToTarget ended the fight
                 }
             }
-            else if (playerHit)
+            else if (damageToNpc > 0)
             {
                 if (session.ApplyDamageToDefender(damageToNpc, 0))
                 {
@@ -300,7 +322,7 @@ namespace hds
                     session.Stop(CombatSession.CombatEndReason.DefenderDied);
                     return;
                 }
-                if (condition && damageToNpc > 0)
+                if (condition)
                 {
                     UInt32 bit = CombatInterlock.ConditionBit(playerTactic);
                     if (bit != 0)
@@ -311,7 +333,7 @@ namespace hds
                 }
             }
 
-            if (npcHit && mob.HitCombatTarget(damageToPlayer, 0, player))
+            if (damageToPlayer > 0 && mob.HitCombatTarget(damageToPlayer, 0, player))
             {
                 player.FlushQueue();
                 Output.WriteDebugLog("[COMBAT] Player died in combat!");
@@ -457,7 +479,7 @@ namespace hds
             return true;
         }
 
-        public void ProcessRequestCloseCombat(ref byte[] packet)
+        public void ProcessRequestCloseCombat(ref byte[] packet, bool npcStarted = false)
         {
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Close combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
@@ -550,11 +572,10 @@ namespace hds
             client.playerData.combatGeneration++;
             client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(targetViewWithSpawnId, 0x01));
 
-            // The opening move, then each round's records (ResolveCloseCombatRound)
+            // The opening move, resolved at once below, then each round's records (ResolveCloseCombatRound)
             currentSession.CurrentMove = NewMove(1, currentSession.AttackerTactic);
             currentSession.CurrentMove.First = true;
             client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindStart, currentSession.CurrentMove, null));
-            currentSession.CurrentMove = NewMove(2, currentSession.AttackerTactic);
             SendCombatEffectOn(currentSession);
             targetMob.SetInCombat(true);
 
@@ -566,7 +587,18 @@ namespace hds
             // Start combat session
             currentSession.Start(CombatInterlock.RoundMs);
             isCombatRunning = true;
+
+            // Retail resolved the opening move as the starter's opportunity attack straight away (tutorial 13:28:32: the
+            // first RPC 45, result 0x801, came in the packet after the start; all 55 openings in the captures)
+            npcOpenedFight = npcStarted;
+            ResolveCloseCombatRound(currentSession, true);
         }
+
+        /// <summary>
+        /// Whether an NPC started the current fight (an aggro). It then makes the opening attack: a guess, as every
+        /// opening in the captures is a player's.
+        /// </summary>
+        private bool npcOpenedFight;
 
         /// <summary>
         /// Finds a mob by its combined view+spawn ID from the client's perspective.
@@ -980,8 +1012,12 @@ namespace hds
             UInt32 weapon = PlayerGun(player);
             rangedNoiseLevel = RangedWeapons.NextNoiseLevel(rangedNoiseLevel, RangedWeapons.Noise(weapon));
 
-            UInt16 attackRoll, defenseRoll;
-            bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
+            // Retail's free attack (FreeAttacks): tactic rolls, then the gun's damage less the absorbed share
+            byte[] levelBytes = player.playerInstance.Level.getValue();
+            UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, player.playerData.combatTacticType,
+                target != null ? target.getLevel() : 1, session.DefenderTactic, weapon);
+            bool hit = shot.Hit;
 
             byte attackClass = PlayerGunClass(player);
 
@@ -1003,19 +1039,14 @@ namespace hds
             bool died = false;
             if (hit)
             {
-                byte[] levelBytes = player.playerInstance.Level.getValue();
-                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-                float distance = CombatCalculator.CalculateDistanceMetres(player.playerInstance.Position.getValue(),
-                    target.getXPos(), target.getYPos(), target.getZPos());
-                damage = CombatCalculator.CalculateRangedDamageWithTactics(playerLevel, target.getLevel(), distance,
-                    session.AttackerTactic);
-                damage = damage == 0 ? damage : (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(weapon))); // 0 on Block
+                // Staggered adds its share, as in close combat. Retail's gun damage has no distance falloff.
+                damage = (UInt16)Math.Round(shot.Damage * target.IncomingDamageMultiplier());
                 died = session.ApplyDamageToDefender(damage, 0);
             }
-            Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
+            Output.WriteDebugLog($"[COMBAT] Shot at {target.getName()}: {(hit ? "hit for " + damage + " (" + shot.Absorbed + " absorbed)" : "miss")} (roll {shot.AttackRoll} vs {shot.DefenseRoll})");
 
             string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
-            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
+            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, hit ? shot.Absorbed : (Int16)0, shot.AttackRoll, shot.DefenseRoll,
                 true, weapon, target.getName(), playerName, session.AttackerTactic));
             return died;
         }
@@ -1155,8 +1186,11 @@ namespace hds
                 return false;
             }
 
-            UInt16 attackRoll, defenseRoll;
-            bool hit = CombatCalculator.RollRangedHit(rangedRng, out attackRoll, out defenseRoll);
+            byte[] levelBytes = player.playerInstance.Level.getValue();
+            UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
+            FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
+                playerLevel, session.AttackerTactic, mob.getWeapon());
+            bool hit = shot.Hit;
 
             mob.rangedActionCounter++;
             ClientView mobView = player.viewMan.FindViewForEntity(mob.getEntityId());
@@ -1172,16 +1206,13 @@ namespace hds
             bool died = false;
             if (hit)
             {
-                byte[] levelBytes = player.playerInstance.Level.getValue();
-                UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
-                damage = CombatCalculator.CalculateMobDamageWithTactics(mob.getLevel(), playerLevel, session.DefenderTactic);
-                damage = (UInt16)Math.Max(1, Math.Round(damage * RangedWeapons.DamageFactor(mob.getWeapon())));
-                died = mob.HitCombatTarget(damage, 0, player);
+                damage = shot.Damage;
+                died = damage > 0 && mob.HitCombatTarget(damage, 0, player);
             }
-            Output.WriteDebugLog($"[COMBAT] {mob.getName()} fires back: {(hit ? "hit for " + damage : "miss")} (roll {attackRoll} vs {defenseRoll})");
+            Output.WriteDebugLog($"[COMBAT] {mob.getName()} fires back: {(hit ? "hit for " + damage + " (" + shot.Absorbed + " absorbed)" : "miss")} (roll {shot.AttackRoll} vs {shot.DefenseRoll})");
 
             string playerName = StringUtils.charBytesToString_NZ(player.playerInstance.CharacterName.getValue());
-            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, 0, attackRoll, defenseRoll,
+            player.messageQueue.addRpcMessage(ServerPackets.BuildCombatLog(hit, damage, hit ? shot.Absorbed : (Int16)0, shot.AttackRoll, shot.DefenseRoll,
                 false, mob.getWeapon(), playerName, mob.getName(), session.DefenderTactic));
             return died;
         }
