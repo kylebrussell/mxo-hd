@@ -91,7 +91,7 @@ from the ability data, not from these scripts.
 
 | Module | What it computes | Runs on | mxo-hd |
 |---|---|---|---|
-| `tempmods` | 327 callbacks for timed effects, called at start, end, each tick or on health change: damage and heal over time (`Value / Duration x UpdateInterval` a tick), stun and mez (seven permissions off; stun time `Value >> 8`, immunity `Value & 255`), confuse, enrage, root, sneak, Evade's IS drain, debuff sweeps, event items. The values come from the ability data. | server | Partly: `AbilityBuffs.cs` sends stat records, `AbilityTargets.cs` has one damage over time and stuns, `Mob.Stun`. |
+| `tempmods` | 327 callbacks for timed effects, called at start, end, each tick or on health change: damage and heal over time (`Value / Duration x UpdateInterval` a tick), stun and mez (seven permissions off; stun time `Value >> 8`, immunity `Value & 255`), confuse, enrage, root, sneak, Evade's IS drain, debuff sweeps, event items. The values come from the ability data. | server | The timed-effects PR: `TimedEffects.cs` (apply, refresh, stack, control immunity, expiry and 2.5 s damage over time on a server tick), `TempMods.cs` (the DOT/HOT formulas, stun packing, constants, and 33 abilities' target tempmods from the captures). Player self buffs stay in `AbilityBuffs.cs` and expire on the same tick. Sneak, confuse, enrage, debuff sweeps and the event items: no. |
 | `ability/defines` | Durations (30 s to 60 min) and combat-modifier codes (`MOD_AFFECTS_*`, `MOD_*`). | both | No. |
 | `ability/effects` | Corrode an item, destroy an item (or an NPC's weapon), disable an ability and those that depend on it. | server | No. |
 | `ability/general` | Detection (d100 + Detect against 50 + 8 x Duration + 4 x the ability), event weapons (Wooden Stake, Silver Bullet, Holy Water 10, x10 or x75 against the weak), EMP 5000, Precise Blows and Energized Attacks exclude each other, jack out. | server | No. |
@@ -151,9 +151,11 @@ kept.
 - **Validation (`combatvalidate`, `followvalidate`, `missionvalidate`):** the real client runs the same checks
   before it sends a request, so the server only needs them against a tampered client. The useful one is the
   close-combat check (7 m, alive, line of sight), which needs line of sight the server doesn't have.
-- **`tempmods`, `effects`, `virii`:** not tables. A port needs a small timed-effect engine with C# versions of the
-  callbacks, and the per-ability values from the ability data or captures. `AbilityBuffs.cs` can carry the stat
-  records they produce, but not the behaviour.
+- **`tempmods`:** the per-ability values aren't in the client; the timed-effects PR took them from the records retail
+  sent the victims (`80 bc`, see `TempMods.cs`) and checked the DOT formula against retail's ticks (2.5 s
+  UpdateInterval). Not ported: the callbacks for sneak, confuse and enrage behaviour, debuff sweeps, auras, event items,
+  and break-on-damage roots and pacifies.
+- **`effects`, `virii`:** item corrosion and destruction, ability disabling, the virus hit roll.
 - **`sneaks`:** needs NPC facing, line of sight and a stealth state shown to others; about 150 lines on top of those.
 - **`specialmoves`:** mostly event content (costumes, holiday viruses). Low value now.
 - **`npccommands`:** small, but only useful with `sequence` (Pandora boxes, data nodes) and the reward tables.

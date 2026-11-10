@@ -20,13 +20,6 @@ namespace hds
             public UInt16 MinDamage, MaxDamage;
             /// <summary>Effect id on the NPC view when the ability lands.</summary>
             public UInt32 HitFx;
-            /// <summary>Damage over time: this many ticks, every TickSeconds, each MinTick-MaxTick, with TickFx.</summary>
-            public int Ticks;
-            public double TickSeconds;
-            public UInt16 MinTick, MaxTick;
-            public UInt32 TickFx;
-            /// <summary>Seconds the NPC can neither attack nor move (stuns).</summary>
-            public double StunSeconds;
         }
 
         /// <summary>Ability id to its effect on the target.</summary>
@@ -44,20 +37,20 @@ namespace hds
             { 357, new Effect { MinDamage = 305, MaxDamage = 392, HitFx = 0x280001b8 } },
             // Code Nuke: 645, 1183 (and kills of 297 and 434), effect 0x28000a11
             { 359, new Effect { MinDamage = 645, MaxDamage = 1183, HitFx = 0x28000a11 } },
-            // Plague Zone 2 (actions_combat 10:27:49 on view 16): effect 0x28000162 and no damage, then ticks of
-            // 67-69 with effect 0x28000430 (or just the counter) at +5, +7, +10, +12, +15 s after the use.
-            { 466, new Effect { HitFx = 0x28000162, Ticks = 5, TickSeconds = 2.5, MinTick = 65, MaxTick = 69, TickFx = 0x28000430 } },
+            // Plague Zone 2 (actions_combat 10:27:49 on view 16): effect 0x28000162 and no damage; its damage over time
+            // (ticks of 67-69 with effect 0x28000430 every 2.5 s) is a tempmod (TempMods.Retail, TimedEffects).
+            { 466, new Effect { HitFx = 0x28000162 } },
             // UI Lag 1.0: effect 0x2800059c on the NPC, no damage. On a player retail sent four 27 s debuff
             // records (stats 1032 -10, 183 -17, 1011 -12, 342 -14); the NPC side isn't visible in the captures.
             { 97, new Effect { HitFx = 0x2800059c } },
             // Stun 1 / Stun 2.0: the effect id is the ability's ActivationFX (abilityIDs.csv); no retail NPC capture
-            // shows a landed stun. The 4 s is how long retail's stun effect (StunAbility, 102) stayed on a player.
-            { 315, new Effect { HitFx = 0x28000904, StunSeconds = 4 } },
+            // shows a landed stun. The stun itself is a tempmod (TempMods.Retail: 4 s, as retail's StunAbility on players).
+            { 315, new Effect { HitFx = 0x28000904 } },
             // Cheap Shot (luizoe old sniffer 19:45-19:53): the NPC lost 21-25 and once 67 within the next rounds, with
             // effect 0x280008cd when one was shown; Head Butt (17:11:35): 21, no effect id seen.
             { 198, new Effect { MinDamage = 21, MaxDamage = 67, HitFx = 0x280008cd } },
             { 197, new Effect { MinDamage = 21, MaxDamage = 45 } },
-            { 333, new Effect { HitFx = 0x28000908, StunSeconds = 4 } },
+            { 333, new Effect { HitFx = 0x28000908 } },
         };
 
         public static bool Has(UInt16 abilityId)
@@ -92,7 +85,11 @@ namespace hds
                 }
                 else
                 {
-                    damage = AbilityHandler.AbilityDamage(ability, random);
+                    // Viruses do their damage over time only (retail's Code Infection and Infect Area: "infects you",
+                    // then the ticks; TempMods.Retail)
+                    damage = TempMods.Retail.TryGetValue(abilityId, out TempMods.Effect timed) && timed.Virus
+                        ? (UInt16)0
+                        : AbilityHandler.AbilityDamage(ability, random);
                     fx = ability.getActivationFX();
                 }
             }
@@ -104,12 +101,9 @@ namespace hds
             }
 
             CombatHandler handler = CombatManager.GetHandler(client);
-            // Stun first: the fight may start here, and its rounds must already see the stun
-            if (effect != null && effect.StunSeconds > 0)
-            {
-                mob.Stun(TimeUtils.GetSimTimeSeconds() + effect.StunSeconds);
-                Output.WriteDebugLog("[ABILITY] " + mob.getName() + " stunned for " + effect.StunSeconds + " s");
-            }
+            // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
+            // must already see a stun
+            TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
             if (!handler.ApplyAbilityToTarget(targetViewId, damage, fx))
             {
                 StartFight(client, view);
@@ -119,37 +113,7 @@ namespace hds
                 }
             }
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
-
-            if (effect != null && effect.Ticks > 0)
-            {
-                ScheduleTick(client, mob, targetViewId, effect, 1);
-            }
             return true;
-        }
-
-        private static void ScheduleTick(WorldClient client, Mob mob, UInt16 targetViewId, Effect effect, int tick)
-        {
-            DelayedActions.AfterFor(client, effect.TickSeconds, () =>
-            {
-                if (mob.getIsDead())
-                {
-                    return;
-                }
-                UInt16 damage;
-                lock (random)
-                {
-                    damage = (UInt16)random.Next(effect.MinTick, effect.MaxTick + 1);
-                }
-                // A tick only lands while the fight with this NPC goes on (it ends when the NPC dies).
-                if (!CombatManager.GetHandler(client).ApplyAbilityToTarget(targetViewId, damage, effect.TickFx))
-                {
-                    return;
-                }
-                if (tick < effect.Ticks)
-                {
-                    ScheduleTick(client, mob, targetViewId, effect, tick + 1);
-                }
-            });
         }
 
         /// <summary>The live NPC in one of the client's views, or null.</summary>

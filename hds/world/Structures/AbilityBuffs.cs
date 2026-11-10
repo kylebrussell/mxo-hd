@@ -96,6 +96,14 @@ namespace hds
             // client's second 80 b9 d9 00, then the records off, 80 bd 01 d9 00 04 .. f0 41 01 (30 s) and 80 bd 05 off)
             { 217, new Buff { Exclusive = true, Toggle = true, EvadeShield = true,
                 Modifiers = new[] { new Modifier(KindState, 624, 0), new Modifier(KindLinked, 0, 0, 624) } } },
+            // Iron Body, medanon niobe3dualduality 79170: ranged and melee damage resistance, 20 s
+            { 271, new Buff { Seconds = 20, Modifiers = new[] { Stat(181, 48), Stat(180, 44) } } },
+            // Range Booster, old_world Vector 8567: DebuffAreaRadius +21, 30 s
+            { 345, new Buff { Seconds = 30, Modifiers = new[] { Stat(177, 21) } } },
+            // Force Enhancer, crashover2k proxy_024 13371: 30 s
+            { 383, new Buff { Seconds = 30, Modifiers = new[] { Stat(171, 6), Stat(109, -317), Stat(1010, 21), Stat(524, 46) } } },
+            // Corrupt Code 2, old_world Vector 46153: DamageResistance +10, CombatTactics +9 for 120 s ("boosts your toughness")
+            { 992, new Buff { Seconds = 120, Modifiers = new[] { Stat(144, 10), Stat(163, 9) } } },
             // Serene Calm, medanon niobe3dualduality: 40 s
             { 272, new Buff { Seconds = 40, Modifiers = new[] { Stat(1009, 57), Stat(1011, 49), Stat(183, 54), Stat(1010, 51) } } },
             // Upgrade Attacks
@@ -282,11 +290,7 @@ namespace hds
                 UInt16[] ids = new UInt16[buff.Modifiers.Length];
                 for (int i = 0; i < ids.Length; i++)
                 {
-                    ids[i] = data.nextBuffRecordId++;
-                    if (data.nextBuffRecordId == 0)
-                    {
-                        data.nextBuffRecordId = FirstRecordId;
-                    }
+                    ids[i] = NextRecordId(data);
                 }
                 active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration };
                 data.activeBuffs[abilityId] = active;
@@ -308,14 +312,9 @@ namespace hds
 
             if (buff.Seconds > 0)
             {
-                int generation = active.Generation;
-                DelayedActions.After(buff.Seconds, () =>
-                {
-                    if (Remove(client, abilityId, true, false, generation))
-                    {
-                        client.FlushQueue();
-                    }
-                });
+                // Comes off on the timed-effects server tick (TimedEffects.RunDue)
+                TimedEffects.ForPlayer(client).TrackBuff(abilityId, active.Generation,
+                    TimeUtils.GetSimTimeSeconds() + buff.Seconds);
             }
             return true;
         }
@@ -344,6 +343,7 @@ namespace hds
                 }
                 data.activeBuffs.Remove(abilityId);
             }
+            TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {
@@ -372,7 +372,10 @@ namespace hds
             return true;
         }
 
-        /// <summary>Takes every buff off (death). The caller flushes the queue.</summary>
+        /// <summary>
+        /// Takes every buff off (death), and every tempmod others put on the player (retail took them all off at death:
+        /// morpheuzzz_001 4276, the four viruses' records off when Morpheuzzz died). The caller flushes the queue.
+        /// </summary>
         public static void RemoveAll(WorldClient client)
         {
             List<UInt16> ids;
@@ -383,6 +386,21 @@ namespace hds
             foreach (UInt16 id in ids)
             {
                 Remove(client, id);
+            }
+            TimedEffects.Clear(TimedEffects.ForPlayer(client));
+        }
+
+        /// <summary>The next record id for the player (buffs, tactics and tempmods share them).</summary>
+        public static UInt16 NextRecordId(ClientData data)
+        {
+            lock (data.activeBuffs)
+            {
+                UInt16 id = data.nextBuffRecordId++;
+                if (data.nextBuffRecordId == 0)
+                {
+                    data.nextBuffRecordId = FirstRecordId;
+                }
+                return id;
             }
         }
     }
