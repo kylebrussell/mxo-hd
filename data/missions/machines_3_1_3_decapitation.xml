@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Decapitation, Machines story mission 3.1.3. Source: research/missions/transcripts/Mach3-1-3.md (the archive replay
+     of [Machine Archive 3.1.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the Colonel's name. A line of the
+     log is hidden or only partly visible at some image joins (in Gray's first two briefings and the Colonel's first
+     line); the text runs on without the gap. Gray's italics are dropped. Ours: the description, the objective texts,
+     the looks, the enemy counts, the sites (none is described: Normal), and the Commando Lieutenant, a name of ours
+     for the body the tracer came from. The commandos have no org of their own: they are generated as Zion, the
+     nearest. Item stand-ins: the tracer is Tracer (6825), the data CD is Data_CD (6831), found in a computer (where
+     retail kept it isn't shown). Rewards: the screenshots are crops of the Mission window with no chat panel, so no
+     reward was shown; 308,000 experience and 101,500 information are Zion chapter 3.1's values.
+     Gaps: "don't spare the bodies": where the tracer was isn't shown, so it is looted from the Commando Lieutenant.
+     A computer showed a message from "The General" asking how much the Machines know (screenshot_34, site not
+     shown); it isn't a goal and its text isn't shown. Gray ordered the Colonel eliminated, but the Colonel talked
+     first and his dead-man switch called the operation off: the Colonel is friendly and talking to him completes the
+     phase, with no fight. Retail may have failed the mission if he died; nothing in the log shows it, so there is no
+     Protect. -->
+<mission id="203103" title="Decapitation" description="Track down the Colonel, the leader of the commandos." plot="1"
+         order="3103" org="2" contact="Agent Gray" exp="308000" info="101500">
+  <npc id="1" handle="Commando Lieutenant" type="HOSTILE" at="1" rsi="ec020058" weapon="2568" />
+  <npc id="2" handle="The Colonel" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say>Come see me anytime, {player}. Nothing like a nice, leisurely chat while you're on R&amp;R.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>The data you obtained for us has been decrypted and analyzed. The nature of the data, and its structure, are most... intriguing. They are almost... machine-like in their precision and efficiency.
+
+Regardless, our analysts have narrowed down the probable location of the Colonel. A few more investigative steps, and he shall be yours to dispose of, {player}.</briefing>
+    <enter><say>From what Gray's said, I think we're getting close! Have a look around in here, and don't spare the bodies.</say></enter>
+    <objective goal="1" text="Get the tracer from the Commando Lieutenant" type="Loot" npc="1" item="6825">
+      <done><say>That tracer looks promising. Exit the area and we'll see where it points us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>These commandos initially seemed to be very precise and efficient. They obviously have their own shortcomings, however. Their thoughts seem to run in a straight line, easily intercepted.
+
+Proceed to the location indicated by the tracer. Take all necessary actions.</briefing>
+    <enter><say>Gray's right... it's almost like these commandos are just relying on brute strength, and it isn't paying off. Have a look around in here.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="6831">
+      <done><say>A data CD... okay, I need you to get that to a hardline. I have a good feeling about this.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the data CD at a hardline" type="Upload" item="6831" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The data has been received, and the Colonel's coordinates decrypted. This is the last sloppy mistake he will make.
+
+Proceed to the indicated location. Eliminate the Colonel.</briefing>
+    <enter><say>Looks like we've got the Colonel cornered, {player}. I'm reading a signal that's gotta be him... plus some sort of strange broadcast. I'm sure we'll figure that one out once you get in there.</say></enter>
+    <objective goal="1" text="Find the Colonel" type="Talk" npc="2">
+      <talk><say npc="2">So, it's you {player}. I've heard so much about you. Before you kill me, there is something you should know.
+
+Have your operator scan channel 437. That's right, 437, the Machines' physical facilities channel. Have him take a look at sector 17. Ask him to compare the broadcast signal there, and the one coming from my own RSI. Don't worry, take your time.</say></talk>
+      <done><say>Channel 437... sector 17... that covers a huge chunk of the bluepill pods. Wait, what's that -- some sort of broadcast signal? It seems familiar somehow... something from back in the war...
+
+Oh no. That signal's coming from an explosive device, positioned to take out a whole section of pods! And it looks like our friend the Colonel has a matching signal coming from his RSI... if we kill him, chances are the device will blow. I don't know how many bluepills will be slaughtered in their pods... we're gonna have to call this operation off, {player}.</say></done>
+    </objective>
+  </phase>
+  <finish>...
+
+I... this situation will be addressed, {player}. Rest assured.</finish>
+</mission>

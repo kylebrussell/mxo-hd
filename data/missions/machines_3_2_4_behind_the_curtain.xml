@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Behind the Curtain, Machines story mission 3.2.4. Source: research/missions/transcripts/Mach3-2-4.md (the archive
+     replay of [Machine Archive 3.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and Agent West line, and the name Agent
+     West. Gray and West called the player by a bluepill surname ("Mr. Argento") and the operator by handle ("Evol"):
+     both are {player}. Ours: the description, the objective texts (the Objectives tab was never opened), the sites
+     (none is described: Normal) and no enemies (none is named or fought in the log). Item stand-ins: Agent West's
+     tracer is Tracer (6825), the encoded recording from the dead Zion operatives is Recording_Coded_Message (6836).
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 200,000
+     experience and 100,000 information are Zion chapter 3.2's range.
+     Gaps: Agent West's first line spans two screenshots and a line may be missing; the best reading is used. At the
+     meeting place retail ended the area about 25 seconds after arrival with nothing the log shows (Veil and her
+     contact were gone, leaving exit signals but no jackouts); here the player searches the room (a desk or cabinet
+     that turns up nothing) and the operator's puzzlement is said then. The tracer is never planted, in retail as
+     here. At the last site the dead Zion operatives aren't spawned (dead NPCs aren't): their bodies are a box to
+     search for the recording, and the operator's "dead Zion ops all over the place" line is said on arrival with the
+     flux warning. The closing line is the operator's, not Gray's (Gray's link went dead), so it is said when the
+     last phase's goals are done and there is no finish line. The decoded Audio Recording retail put in the player's
+     inventory at the end (the Speaker 1 / Speaker 2 transcript, and a second recording, "The Machines don't always
+     have the best interests of humanity at heart.") isn't given: no reward item. -->
+<mission id="203204" title="Behind the Curtain" description="Track down Veil and plant a tracer on her." plot="1"
+         order="3204" org="2" contact="Agent Gray" exp="200000" info="100000">
+  <npc id="1" handle="Agent West" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">That item is a powerful tracer. It will pinpoint the location of Veil's hovercraft. Agent Gray will explain its use to you while you travel to the target location.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, your skills are urgently required. Compliance is mandatory.
+
+The operative known as Veil has been sighted in the Matrix. She is currently jacked in. Proceed to the location indicated for a more in-depth briefing before pursuing her further.</briefing>
+    <enter><say>Look for Agent West -- he's going to fill you in on the situation.</say></enter>
+    <objective goal="1" text="Get the tracer from Agent West" type="Get" npc="1" item="6825">
+      <talk><say npc="1">You are present, {player}. I find this adequate.
+
+Veil was sighted ten minutes ago, quite close to this building. From communications we intercepted, it appears that she is attending some sort of meeting. We do not know the nature of this meeting.
+
+I have an item for you. Take it from me.</say></talk>
+      <done>
+        <say>I wonder what the tracer does? In the meantime, you'd better head out of there.</say>
+        <say npc="1">That item is a powerful tracer. It will pinpoint the location of Veil's hovercraft. Agent Gray will explain its use to you while you travel to the target location.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>That is a very powerful tracer program, {player}. Once placed, it will trace the location of Veil's hovercraft. We will shut down their systems and dispatch Sentinels to take custody of the crew.
+
+Veil is in the next location. In addition to planting the device, you must discover the identity of the individual she is meeting.</briefing>
+    <enter><say>I'm reading signals all over the place, {player}... be careful in there!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the meeting place" type="Search" object="1" item="0">
+      <done><say>What the-- I had signals all over the place in there just a second ago! I-- hold on...
+
+I've got exit signals, but no jackouts... and some sort of locational disturbance. This makes no sense.
+
+Well get out of there, and I'll send you where the exit signals go. We'll get to the bottom of this!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The exit signals from the previous site lead to the location indicated. Proceed there. Plant the device on Veil. Discover who she is meeting with.</briefing>
+    <enter>
+      <say>I'm reading some sort of flux... get in there fast!</say>
+      <say>Dead Zion ops all over the place... damn it! You'd better check those bodies.</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Check the bodies" type="Search" object="1" item="6836">
+      <done><say>Looks like some sort of encoded recording... you'd better upload that and I'll see what I can do with it. I don't think there's anything else in here.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the encoded recording at a hardline" type="Upload" item="6836" after="1" />
+    <complete><say>Okay, I'm receiving that recording. Decoding... done. I wonder what--
+
+Huh? Gray's link to us just went dead. What's up with that?
+
+Anyhow, I downloaded that recording to your inventory. Keep an eye on your cellphone. I can't imagine that this business is over yet.</say></complete>
+  </phase>
+</mission>

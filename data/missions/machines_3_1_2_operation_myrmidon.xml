@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Operation Myrmidon, Machines story mission 3.1.2. Source: research/missions/transcripts/Mach3-1-2.md (the archive
+     replay of [Machine Archive 3.1.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, and every Agent Gray and Operator line. A line of the log is hidden or
+     only partly visible at some image joins (in all three briefings, the Operator's notes line and Gray's closing
+     line); the text runs on without the gap. Gray's italics are dropped. Ours: the description, the objective texts,
+     the enemy counts, the containers and the sites (none is described: Normal). The commandos have no org of their
+     own: they are generated as Zion, the nearest. Whether the third site had hostiles isn't shown; about seven
+     minutes of play went unlogged there, so it has a few. Item stand-ins: the dossier is Dossier (6799), the notes
+     are Document_Location_Notes (6855), the CD is Data_CD (6831). Where retail kept them isn't shown: the dossier is
+     in a box, the notes in a filing cabinet or desk, the CD in a computer. Rewards: the screenshots are crops of the
+     Mission window with no chat panel, so no reward was shown; 308,000 experience and 101,500 information are Zion
+     chapter 3.1's values.
+     Gaps: in retail the Operator scanned the dossier remotely, with no upload logged; here finding it is enough. -->
+<mission id="203102" title="Operation Myrmidon" description="Strike at the commandos and find out who leads them." plot="1"
+         order="3102" org="2" contact="Agent Gray" exp="308000" info="101500">
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Because of the commandos' brazen interference in our operations, we are launching a strike against them. I have selected you to lead this strike, {player}.
+
+Proceed to the indicated location. Eliminate all commandos. Obtain any information possible.</briefing>
+    <enter><say>Looks like Gray found you a real hornets' nest, {player}. I'm reading a lot of hostile signs in there.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Eliminate all commandos" type="DefeatAll">
+      <done><say>All enemies have been accounted for!</say></done>
+    </objective>
+    <objective goal="2" text="Find the dossier" type="Search" object="1" item="6799">
+      <done><say>That dossier looks interesting... I'll start scanning the contents.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Your operator has completed the scan of that dossier. Very efficient... for a human.
+
+The dossier reveals details about an individual known only as the Colonel. This person is now the focus of your investigation.
+
+Proceed to the next location. Eliminate all opposition and search for information on this Colonel.</briefing>
+    <enter><say>I'll let you know if you find anything of interest, {player}.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Eliminate all opposition" type="DefeatAll">
+      <done><say>All enemy commandos are down.</say></done>
+    </objective>
+    <objective goal="2" text="Search for information on the Colonel" type="Search" object="1" item="6855">
+      <done><say>Those notes look promising! Better upload them to me when you get a chance.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the notes at a hardline" type="Upload" item="6855" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Our search continues, {player}. The Colonel's exact location is carefully guarded, in a most... methodical manner. Multiple levels of security, and layers of encryption... very impressive. Very precise.
+
+Regardless, we shall break it. The notes you obtained have been decoded. Proceed to the next location.</briefing>
+    <enter><say>I don't really know what Gray wants you to find here. Maybe he doesn't know. I'll let you know if anything stands out, though.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="6831">
+      <done><say>Bingo! Get that CD to a hardline, {player}.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the CD at a hardline" type="Upload" item="6831" after="1" />
+  </phase>
+  <finish>Your operator has forwarded some data to us, {player}. We are currently...
+
+Very interesting. The nature of this data was most... unexpected. Most...
+
+This data must be processed further. Contact us in the near future.</finish>
+</mission>

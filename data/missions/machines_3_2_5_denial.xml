@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Denial, Machines story mission 3.2.5. Source: research/missions/transcripts/Mach3-2-5.md (the archive replay of
+     [Machine Archive 3.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing and every Agent Gray and Operator line (no field NPC speaks). Gray
+     called the player by a bluepill surname ("Mr. Argento"): {player}. Ours: the description, the objective texts
+     (the Objectives tab was never opened), the sites (the three Exile hideouts aren't described: Normal) and the
+     enemy counts (none is shown; three where the operator says they "shouldn't be too tough" and "nothing bad", four
+     at the last).
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 200,000
+     experience and 100,000 information are Zion chapter 3.2's range.
+     Gaps: none beyond that. The operator's arrival line at the last site spans two screenshots and may be one entry
+     or two; it is said as one. -->
+<mission id="203205" title="Denial" description="Destroy the Exiles who have been causing trouble for the Machines." plot="1"
+         order="3205" org="2" contact="Agent Gray" exp="200000" info="100000">
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>{player}, how... good to see you. I have a task for you.
+
+We have discovered the location of some of the Merovingian's minions. These particular Exiles have been causing a considerable amount of trouble for us recently. Destroy them.</briefing>
+    <enter><say>I don't get it? How does this fit in with the whole Veil thing? Seems like we were so close on her track...
+
+Well I'm sure we'll find out how it's related. Let's focus on taking out these Exiles. From my scans, it looks like they shouldn't be too tough.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's that. Maybe now we'll find out how this helps us get Veil!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Excellent work, {player}. There is a further location to clean out; please proceed.</briefing>
+    <enter><say>Uh... and we're doing this... why?
+
+I'm reading hostiles in there, but nothing bad... hopefully we'll be able to get a lead on Veil's whereabouts here.
+
+Right?</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>They're all down. Time to take down Veil, I bet!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>More than adequate, {player}. Eliminate the Exiles at one further location and you will have disposed of this hindrance to the Machines.</briefing>
+    <enter><say>Wait... this has nothing to do with Veil! I-- what the hell is going on here?
+
+Take these Exiles out, and then we're going to get an answer!</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's it! We've done this... now time to get out of there and get some answers from Gray!</say></done>
+    </objective>
+  </phase>
+  <finish>Your performance today has been splendid, {player}. It is refreshing to know that you are serving our cause. Unquestioningly.
+
+That is all.</finish>
+</mission>

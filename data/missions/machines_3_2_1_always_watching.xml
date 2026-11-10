@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Always Watching, Machines story mission 3.2.1. Source: research/missions/transcripts/Mach3-2-1.md (the archive
+     replay of [Machine Archive 3.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Stewart and
+     Gerald Gajan. Ours: the description, the objective texts (the Objectives tab was never opened), the sites (Agent
+     Stewart's spot, the masked men's suspected base and the Machine laboratory aren't described: Normal), the looks,
+     and the enemies of phase 2 (the log names none; three, since Gray asks to avoid unnecessary hostilities; the
+     masked men have no org, so Zion, as for other rogue humans). Item stand-in: the listening device is Bug (6824).
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 200,000
+     experience and 100,000 information are Zion chapter 3.2's range.
+     Gaps: the briefing of phase 1 spans two screenshots and a few words may be missing; the best reading is used.
+     "Sneak in and out" is only advice: there's no stealth check. The base had several computers and the player
+     searched them until the comms unit turned up; here the comms unit is one computer to search (Hack) and then plant
+     the device in (Put, also a Hack), and a second computer is an optional search that turns up the operator's "generic
+     spam" line. The computer screens retail showed (the install log, Fujian's spam mail, the intercepted transmissions
+     on Gajan's terminal) can't be shown. Gajan asked for the coordinates and the operator downloaded them: a Talk. -->
+<mission id="203201" title="Always Watching" description="Plant a listening device in the masked men's communications computer." plot="1"
+         order="3201" org="2" contact="Agent Gray" exp="200000" info="100000">
+  <npc id="1" handle="Agent Stewart" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say after="1">You may continue on your way, {player}.</say>
+  </npc>
+  <npc id="2" handle="Gerald Gajan" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
+    <say after="1">Excellent. The transmissions should begin coming through to this terminal now.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Greetings, {player}. Something has recently come to our attention; communications chatter related to the masked men has suddenly increased.
+
+We must establish deeper surveillance of this group. Proceed to the location indicated on your HUD and obtain a listening device from Agent Stewart.</briefing>
+    <enter><say>Agent Stewart should be on site here with the listening device.</say></enter>
+    <objective goal="1" text="Get the listening device from Agent Stewart" type="Get" npc="1" item="6824">
+      <talk><say npc="1">Greetings {player}. Please take the device from me.</say></talk>
+      <done>
+        <say npc="1">The device is ready for use, human.</say>
+        <say>Okay, on to the next spot...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The next location is actually a... suspected base of the masked humans. You must locate a main communications computer inside, plant the listening device, and exit the area. Avoid... unnecessary hostilities if possible.</briefing>
+    <enter><say>All right, see if you can sneak in and out of there. Search all of the computers until you find their comms unit, and plant the device there.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Find the communications computer" type="Search" object="1" item="0">
+      <done><say>Bingo! Plant the device in there and we can get moving.</say></done>
+    </objective>
+    <objective goal="2" text="Plant the listening device in the communications computer" type="Put" object="1" item="6824" after="1">
+      <done><say>Sweet! Device in place... now you can get out of there.</say></done>
+    </objective>
+    <objective goal="3" text="Search the other computer" type="Search" object="2" item="0" optional="1">
+      <done><say>Damn, just looks like generic spam.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Excellent work, {player}. Proceed to one of our laboratories for calibration of the listening signal.</briefing>
+    <enter><say>There should be a Dr. Gajan in here. He needs the exact coordinates of the mission location to calibrate the device's signal.</say></enter>
+    <objective goal="1" text="Talk to Dr. Gajan" type="Talk" npc="2">
+      <talk><say npc="2">Ah, {player}. I presume you have the coordinates for me? Please direct your operator to download them to me now.</say></talk>
+      <done>
+        <say>Okay, I'm downloading the coords... all set. You can get out of there now!</say>
+        <say npc="2">Excellent. The transmissions should begin coming through to this terminal now.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Excellent work, as always, {player}. We will begin analyzing the intercepted transmissions from that device, and you will be contacted when your... service is required. That is all.</finish>
+</mission>
