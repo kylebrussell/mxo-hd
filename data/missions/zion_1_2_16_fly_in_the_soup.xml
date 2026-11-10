@@ -115,7 +115,7 @@
         <say npc="10">No! They're our bodies! We found them fair and square! We're going to hold them up as examples of what happens to those who would spoil the dream of our City.</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill Armor" type="Defeat" npc="10" after="1" />
+    <objective goal="2" text="Kill Armor" type="Defeat" npc="10" />
     <objective goal="3" text="Search the bodies" type="Search" object="1" item="0" after="1">
       <done>
         <say contact="1">Oh no! That's our recruitment team--they've been murdered! And each by a single shot to the head. How awful!</say>

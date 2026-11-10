@@ -147,6 +147,10 @@ public class StoryMissionTests
                 if (goal.afterGoal >= 0)
                 {
                     Assert.Contains(phase.missionObjectives, o => o.goal == goal.afterGoal);
+
+                    // A kill only counts for a goal that is open when it happens
+                    Assert.False(mission.id >= 100000 && (goal.type == MissionGoalType.Defeat || goal.type == MissionGoalType.DefeatAll),
+                        what + ": a kill goal that waits for another can miss its kill");
                 }
 
                 switch (goal.type)

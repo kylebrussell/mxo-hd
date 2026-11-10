@@ -23,7 +23,7 @@
         <say npc="1">The box is mine!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill Burdette" type="Defeat" npc="1" after="1">
+    <objective goal="2" text="Kill Burdette" type="Defeat" npc="1">
       <done><say>The Exile group leader that you just defeated should have the black box somewhere on his person.</say></done>
     </objective>
     <objective goal="3" text="Get the black box from Burdette" type="Loot" npc="1" item="6835" after="2">
