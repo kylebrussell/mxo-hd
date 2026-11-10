@@ -79,18 +79,6 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
-
-            // Where the player stands on the client's nav mesh (sector, region, polygon), as every teleport now sends:
-            // without it the client doesn't steer the player along the mesh until the first teleport
-            double sx = 0, sy = 0, sz = 0;
-            NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref sx, ref sy, ref sz);
-            if (NavMesh.Locate((UInt16)districtId, sx, sy, sz, out NavLocation place))
-            {
-                Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(Store.currentClient,
-                    (float)sx, (float)sy, (float)sz), false);
-                Output.WriteDebugLog("[SPAWN] On the nav mesh: sector " + place.sector + ", region " + place.region +
-                                     ", polygon " + place.polygon);
-            }
             if (districtId == (uint)MxOLocations.TUTORIAL)
             {
                 TutorialMission.Begin(Store.currentClient);
