@@ -75,6 +75,10 @@ def inav(d):
     return out
 
 
+# the type bytes of the .iprf resource ids in rezmap.ltb
+PREFAB_PACKS = {0x04, 0x06, 0x08, 0x0c, 0x1a, 0x2c, 0x32, 0x38, 0x70, 0x82, 0x8a, 0x8e, 0x92, 0x98, 0xa4, 0xa8, 0xac, 0xba}
+
+
 def placements(d, known):
     """The prefab instances of a sector's .sidi, in file order: u32 prefab resource id, then i16 pivot x, y, z, i16 box
     min x, y, z, i16 box max x, y, z (all in tens of units, sector-local), u16 rotation (quarter turns), u16 0. Found by
@@ -92,7 +96,9 @@ def placements(d, known):
                 b[6] - b[3] <= 3300 and b[8] - b[5] <= 3300 and b[0] in (b[3], b[6]) and b[2] in (b[5], b[8]) and
                 b[1] == b[4]):
             rid = struct.unpack_from('<I', d, i)[0]
-            if rid in known:
+            # a resource id (0xTT00nnnn); some placed prefabs are missing from the client's index but still count
+            if rid in known or (rid >> 24 in PREFAB_PACKS and not rid & 0x00ff0000 and
+                                all((b[6 + j] - b[3 + j]) % 20 == 0 for j in range(3))):
                 out.append((rid, b, rot))
                 last = i
     return out
@@ -141,7 +147,7 @@ def main(tools, sectors_csv, out_dir):
             body += struct.pack('<H', len(insts))
             for rid, b, rot in insts:
                 if rid not in prefabs:
-                    polys = inav(R.read(index[rid])) or []
+                    polys = (inav(R.read(index[rid])) or []) if rid in index else []
                     prefabs[rid] = len(prefabs)
                     prefab_body += struct.pack('<I', rid) + pack_polygons(polys)
                 body += struct.pack('<H9hB', prefabs[rid], *b, rot)
