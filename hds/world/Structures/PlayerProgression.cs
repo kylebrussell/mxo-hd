@@ -95,6 +95,14 @@ namespace hds
             client.messageQueue.addObjectMessage(ServerPackets.BuildLevelUpUpdate((byte)newLevel, maxHealth,
                 maxInnerStrength, innerStrength, health, effectCounter), false);
             client.messageQueue.addRpcMessage(ServerPackets.BuildLevelUpMessage());
+            for (int level = oldLevel + 1; level <= newLevel; level++)
+            {
+                UInt32 advice = LevelUpAdvice(level);
+                if (advice != 0)
+                {
+                    client.messageQueue.addRpcMessage(BuildLevelUpAdvice(advice));
+                }
+            }
             client.FlushQueue();
 
             AnnounceToOthers(client, new List<Attribute>
@@ -105,6 +113,38 @@ namespace hds
 
             Output.WriteDebugLog("[LEVEL] Character " + client.playerData.getCharID() + " is now level " + newLevel +
                                  " (" + client.playerData.getExperience() + " experience)");
+        }
+
+        /// <summary>
+        /// The advice window rshooks.GoUpALevel opened at some levels (discovery.sendModalMessage), by string id:
+        /// 3 Mercury's missions in Uriah, 8 near-death trauma, 9 losing code items on death, 10 Hyper-Jump, 15 the
+        /// archive constructs. 0 for the other levels.
+        /// </summary>
+        public static UInt32 LevelUpAdvice(int level)
+        {
+            switch (level)
+            {
+                case 3: return 0x8000002e;  // ID_LEVEL_UP_FEEDBACK_THREE
+                case 8: return 0x80000030;  // ID_LEVEL_UP_FEEDBACK_EIGHT
+                case 9: return 0x04000531;  // ID_LEVEL_UP_FEEDBACK_NINE
+                case 10: return 0x0400057c; // ID_LEVEL_UP_FEEDBACK_TEN
+                case 15: return 0x0400057d; // ID_LEVEL_UP_FEEDBACK_FIFTEEN
+                default: return 0;
+            }
+        }
+
+        /// <summary>
+        /// RPC 81 8c: an advice window with one string. Retail's level 3, right after the level-up line (luizoe
+        /// Recursion line 42245, Recursion_Char, Unknown): <c>81 8c 00 00 00 00 2e 00 00 80 0e 00 01 00 01 00 00</c>. The
+        /// fields after the string id are copied as they are; their meaning is unknown.
+        /// </summary>
+        public static byte[] BuildLevelUpAdvice(UInt32 stringId)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("818c00000000");
+            pak.AddUint32(stringId, 1);
+            pak.AddHexBytes("0e000100010000");
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>Sends changed attributes to the players who can see this player, in the other-view attribute order.</summary>
