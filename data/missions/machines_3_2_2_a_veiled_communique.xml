@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Veiled Communique, Machines story mission 3.2.2. Source: research/missions/transcripts/Mach3-2-2.md (the archive
+     replay of [Machine Archive 3.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, and every Agent Gray and Operator line (no field NPC speaks; Veil is
+     only named). Ours: the description, the objective texts (the Objectives tab was never opened), the sites (neither
+     location is described: Normal), and no enemies (the log mentions none and no fight is logged). Item stand-in:
+     "that file" from the first site's computer is File (6800). Gray's "98.6%" shows on screen with a degree-like
+     sign; a percent sign is the reading used.
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 200,000
+     experience and 100,000 information are Zion chapter 3.2's range.
+     Gaps: retail had the player search all of each site's computers; here each site has two (and the second site a
+     third, below). At the first site one computer gives the file and the other, opened once the file is found, says
+     the operator's "that's all you're going to turn up" line; then the file is uploaded. At the second site a first
+     computer's search sets off the operator's "interesting stuff on my screens" line, which in retail came from
+     progress the log doesn't show, and the central communications terminal is then examined (a Hack); its screen
+     (transmissions received from offset +1 +20 +2 +10) can't be shown. After the area's goals were done, retail locked
+     the site down ("figure a way past that locked door"); locked doors aren't something we have, so the lockdown line
+     is said when the terminal is examined and a third computer stands in for the way past the door (Use, a Hack). -->
+<mission id="203202" title="A Veiled Communique" description="Trace the masked men's communications to find out why Veil's name is surfacing." plot="1"
+         order="3202" org="2" contact="Agent Gray" exp="200000" info="100000">
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Good day, {player}. There are... developments concerning the listening device you planted for us. Your attention is again required.
+
+We seem to be picking up a good deal of information regarding a certain awakened human. The name given is Veil. Our records show a reference to Veil: a Zion operative who betrayed the crew of the SS Novalis and was sentenced to imprisonment by the Zion High Council.
+
+Proceed to the location indicated. We must know why her name is surfacing.</briefing>
+    <enter><say>Apparently some of those communications went through this location. Search all the computers for a start -- we need something more to go on.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the computers" type="Search" object="1" item="6800">
+      <done><say>Bingo! Snag that file...</say></done>
+    </objective>
+    <objective goal="2" text="Search the other computer" type="Search" object="2" item="0" after="1">
+      <done><say>Okay... I think that's all you're going to turn up there. Get outside and upload that file at a hardline, and we'll go from there.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the file at a hardline" type="Upload" item="6800" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The file you obtained has been analyzed, along with the data from the computers you searched. There is a 98.6% probability that the next location is of interest to us.
+
+Proceed there and obtain any information possible.</briefing>
+    <enter><say>Looks like the same deal here -- search everything and find out anything you can.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the computers" type="Search" object="1" item="0">
+      <done><say>Wait... I'm getting some interesting stuff up on my screens. Head through that door as far as you can, and you should find a computer. It looks like it might be a central communications terminal. Take a look at it and see what you find.</say></done>
+    </objective>
+    <objective goal="2" text="Examine the central communications terminal" type="Use" object="2" after="1">
+      <done>
+        <say>Whoa! Sounds like a jailbreak being planned, or maybe it already happened? Well, that's enough for now. Better get out of there.</say>
+        <say>Uh oh, looks like a lockdown! You'd better figure a way past that locked door.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get past the locked door" type="Use" object="3" after="2" />
+  </phase>
+  <finish>So. It would appear that the masked humans will be... taking Veil into their own custody. An intriguing development indeed.
+
+Remain in contact, {player}. We must maintain control of all possible ramifications.</finish>
+</mission>

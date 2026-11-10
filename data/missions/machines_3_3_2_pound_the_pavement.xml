@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pound the Pavement, Machines story mission 3.3.2. Source: research/missions/transcripts/Mach3-3-2.md (the archive
+     replay of [Machine Archive 3.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator, Kalt and Silver line, and the names Kalt and
+     Silver. Gray called the player "Mr. Andrews" and Kalt called him "Tygrius"; both are {player}. Ours: the
+     description (the Summary tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (Kalt's
+     offices are Office, in Kedemoth as the log says; Silver's site and the Demon Army's are unnamed buildings: Normal;
+     phase 3 is "up in Tabor": Tabor Park), the looks, the enemy counts, and the names of the two Demon Army members who
+     carry the items (Demon Army Lieutenant and Demon Army Courier: the log names neither). Silver's test programs and
+     the Demon Army are Exile programs: Merovingian. Item stand-ins: the document with the "mysterious address" is
+     Document_Location_Notes (6855), the disk is Data_CD (6831). Rewards: the screenshots are crops of the Mission window
+     with no chat panel, so no reward was shown; 330,000 experience and 108,500 information are Zion chapter 3.3's
+     values.
+     Gaps: Silver's programs came in as an ambush ("I'm reading signals incoming!") after the player arrived; here they
+     are the phase's hostiles, there from the start, and that warning is said on arrival. Silver's speech is one log
+     entry, said here as two lines because it is too long for one. Retail didn't show whether the document and the disk
+     came off a body or from the room; here each is carried by one named Demon Army member. -->
+<mission id="203302" title="Pound the Pavement" description="Trace the jamming device found at the scene of the theft." plot="1"
+         order="3302" org="2" contact="Agent Gray" exp="330000" info="108500">
+  <npc id="1" handle="Kalt" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Silver" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Demon Army Lieutenant" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Demon Army Courier" type="HOSTILE" at="4" rsi="c6020058" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>It is necessary that you speak with Kalt now, {player}. You will find her in her offices at the Kalt building in Kedemoth.</briefing>
+    <enter><say>Kalt should be on site here.</say></enter>
+    <objective goal="1" text="Talk to Kalt" type="Talk" npc="1">
+      <talk><say npc="1">So, you must be {player}. I heard you might be stopping by. I have my ways, you know.
+
+I do have some information for you regarding the incident. I would assume that by sharing this information, I'm cooperating with the Machines? I value being left alone. I'm sure you understand.
+
+Where was I... ah, yes. I don't know the identity of the people involved, but I do know this: a device was found at the scene. Some sort of jamming device, quite advanced, actually. Only one person I know of could have made the device. Silver.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Silver. Silver is a very intriguing Exile... he has actually performed some research for us in the past. I have his contact information.
+
+Speak with him and find out about this jamming device.</briefing>
+    <enter>
+      <say>I'm reading a lone signal in here... looks like Silver is on site.</say>
+      <say>What the-- I'm reading signals incoming!</say>
+    </enter>
+    <objective goal="1" text="Kill Silver's programs" type="DefeatAll">
+      <done><say>Silver's got a lot of explaining to do...</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Silver" type="Talk" npc="2" after="1">
+      <talk>
+        <say npc="2">Hmm, those programs didn't perform at all as expected. Perhaps their synchronization module...
+
+What? Oh, come on, Meatbag, you can't expect to just waltz in here asking whatever you want without payment. You have aided me in my research. Consider yourself lucky; there are many other experiments I could subject you to.</say>
+        <say npc="2">The jamming device... the device. Oh yes. Something like a typical jammer, but much more comprehensive. Using that device, one could theoretically even carry out activities without the knowledge of the Machines. I was contracted by some ruffians from... now what gang was that? Ah, yes. The Demon Army. I can only assume they were the ones to use it, as I don't really care enough to find out.
+
+One thing though... they actually supplied me with a piece of the device themselves. I don't know how the Demon Army would get their hands on something like that.</say>
+      </talk>
+      <done><say>The Demon Army, up in Tabor... I think I know where we're headed.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Tabor Park">
+    <briefing>The Demon Army... they are an insignificant speck of a gang. You shall pursue more extreme measures against them.
+
+Destroy them, and keep destroying them, until you find something useful.</briefing>
+    <enter><say>This new strategy of Gray's doesn't seem very focused. More of a shotgun approach, really, but... whatever.
+
+There should be plenty of Demon Army members in here for you to occupy yourself with.</say></enter>
+    <objective goal="1" text="Kill all of the Demon Army" type="DefeatAll">
+      <done><say>That's the last hoodlum. Now check around and see if you can find anything to help our search.</say></done>
+    </objective>
+    <objective goal="2" text="Get the document from the Demon Army Lieutenant" type="Loot" npc="3" item="6855">
+      <done><say>That document must be important. In fact, come to think of it, every document you find seems to be important somehow...</say></done>
+    </objective>
+    <complete><say>All Demon Army members dead: check. One mysterious address found: check. Time to go where it points to.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I do not require any further updates from you until you have achieved your goal, {player}.</briefing>
+    <enter><say>Gray seems kinda snippy, huh? Anyhow, check out this location. Hopefully we'll turn up something more concrete this time. Oh, and kill all the Demon Army you find here too, of course.</say></enter>
+    <objective goal="1" text="Kill all of the Demon Army" type="DefeatAll">
+      <done><say>There must be something around here... be sure to search all those bodies!</say></done>
+    </objective>
+    <objective goal="2" text="Get the disk from the Demon Army Courier" type="Loot" npc="4" item="6831">
+      <done><say>That disk looks interesting. Better upload it when you get a chance.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the disk at a hardline" type="Upload" item="6831" after="2" />
+  </phase>
+  <finish>We are analyzing the data you uploaded. Contact me again after the process has been completed.</finish>
+</mission>

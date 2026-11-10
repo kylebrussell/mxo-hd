@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Revelations, Machines story mission 3.3.4. Source: research/missions/transcripts/Mach3-3-4.md (the archive replay of
+     [Machine Archive 3.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, both briefings, every Agent Gray, Operator, Agent Johns, Seraph and Oracle line, and the
+     names Agent Johns, Seraph and The Oracle. The player was addressed as "Mr. Andrews" and "Tygrius"; both are
+     {player}. Ours: the description (the Summary tab wasn't shown), the objective texts (the Objectives tab wasn't
+     shown), the sites (unnamed buildings: Normal), the looks. Item stand-in: the data Agent Johns hands over (Gray's
+     "disk", Seraph's "list of programs, and their locations") is Data_CD (6831). Rewards: the screenshots are crops of
+     the Mission window with no chat panel, so no reward was shown; 330,000 experience and 108,500 information are Zion
+     chapter 3.3's values.
+     Gaps: none beyond the generated sites. The Operator's "Wow." on first seeing Seraph is said on arrival, after
+     "Her bodyguard"?. Agent Johns's warning and the Oracle's last line are said when they are talked to again. -->
+<mission id="203304" title="Revelations" description="Deliver a gesture of goodwill and seek out the Oracle." plot="1"
+         order="3304" org="2" contact="Agent Gray" exp="330000" info="108500">
+  <npc id="1" handle="Agent Johns" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">Be careful with that data, {player}. Most human operatives would not be trusted with such... sensitive material.</say>
+  </npc>
+  <npc id="2" handle="Seraph" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="The Oracle" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
+    <say after="2">You don't have to take my word for it. But you will.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our search for Cacophony is complete, {player}. It has yielded no direct results.
+
+We can only conclude that "Cacophony" is actually a code name of sorts; the identity of its owner has apparently been a well-kept secret. We are left with one option; an option of last resort.
+
+Before you go there, however, we must line up something as a gesture of... goodwill. Collect some data from Agent Johns.</briefing>
+    <enter><say>Goodwill? Why would the Machines care about anyone's goodwill? I guess we'll find out soon enough.</say></enter>
+    <objective goal="1" text="Get the data from Agent Johns" type="Get" npc="1" item="6831">
+      <talk><say npc="1">Ah, {player}. Take the data from me.</say></talk>
+      <done><say>Looks like top security stuff there, {player}... I wonder who this is for?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Your contact is at this location. Deliver the disk to her bodyguard and then meet with her.</briefing>
+    <enter>
+      <say>"Her bodyguard"?</say>
+      <say>Wow.</say>
+    </enter>
+    <objective goal="1" text="Give the disk to Seraph" type="Give" npc="2" item="6831">
+      <talk><say npc="2">So, you have arrived. Do you have the list of programs, and their locations?</say></talk>
+      <done><say npc="2">You have delivered what you promised. You have my thanks... this amnesty could not go to more deserving programs.
+
+The Oracle will see you now.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Oracle" type="Talk" npc="3" after="1">
+      <talk><say npc="3">I've been expecting you. Seems like the Machines lost something; something important. I've got to wonder why they didn't take better care of it in the first place, if it was so important. But then this wouldn't be the first time, would it?
+
+Cacophony. Someone who doesn't like peace and quiet. Someone who thinks that if they make enough noise, they can control things. Make things turn out the way they want them to. Sound like anyone you know?
+
+Sounds to me like the General.</say></talk>
+    </objective>
+  </phase>
+  <finish>As usual, working with the Oracle is... unsettling. No hard data has been supplied, logic is ignored, a high value is placed upon "intuition"...
+
+Regardless, we shall pursue this further. It is the only lead we have.</finish>
+</mission>

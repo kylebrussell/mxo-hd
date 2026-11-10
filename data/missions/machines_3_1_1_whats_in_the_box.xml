@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What's in the Box?, Machines story mission 3.1.1. Source: research/missions/transcripts/Mach3-1-1.md (the archive
+     replay of [Machine Archive 3.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and every NPC name. A line of the log
+     is hidden or only partly visible at some image joins (in Gray's three briefings and in both witnesses' lines);
+     the text runs on without the gap. Sachiko Warren's "Well" may be followed by a word or two before "yeah", and
+     Royal Phillips's first paragraph ends in a cut off line of which only "W" is legible: it is left out. Gray's
+     italics are dropped. Ours: the description, the objective texts, the looks, the enemy count and the sites
+     (Warren's office is Office, Phillips's home is an unnamed building: Normal, Hassam's apartment is SlumApt). The
+     commandos have no org of their own: they are generated as Zion, the nearest. Shaquana Hassam never speaks and
+     has no goal in the log, so she isn't placed. Rewards: the screenshots are crops of the Mission window with no
+     chat panel, so no reward was shown; 308,000 experience and 101,500 information are Zion chapter 3.1's values.
+     Gaps: in retail the Operator spotted the hostiles a little after the arrival line; here both lines are said on
+     arrival, as the phase's hostiles are there from the start. -->
+<mission id="203101" title="What's in the Box?" description="Interview the witnesses who have seen strange boxes in the City." plot="1"
+         order="3101" org="2" contact="Agent Gray" exp="308000" info="101500">
+  <npc id="1" handle="Sachiko Warren" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say after="1">That's about all I can tell you... honestly, I don't remember anything else about it. I don't know if anybody else saw it or not.</say>
+  </npc>
+  <npc id="2" handle="Royal Phillips" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>That's all I can remember, I swear!</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>The Assassin has been destroyed. A great blight upon the Matrix has been removed. I am pleased.
+
+However, we have received numerous... troubling reports recently, involving certain strange boxes. You must interview one of the witnesses, Sachiko Warren. Find out what she knows.</briefing>
+    <enter><say>Here we are at Warren's office.</say></enter>
+    <objective goal="1" text="Talk to Sachiko Warren" type="Talk" npc="1">
+      <talk><say npc="1">What... you're who? Oh, feds. Well yeah, like I told the man on the phone: I was walking to the bus stop last night, minding my own business, when this weird box was there on the street! I'm sure it hadn't been there before, but I didn't see who brought it. It was really big -- maybe ten feet tall! There was this smoke or fog around it, and I was afraid it might be a terrorist attack, so I ran to get a police officer. When we got back, the box was gone.
+
+I don't know why you're taking such an interest -- the police just seem to think I'm crazy!</say></talk>
+      <done><say>Strange boxes... appearing and disappearing... huh. Well, I don't think you're going to get much else out of her. You can leave.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>That was rather... unsatisfying. We need more concrete evidence, more details, more... information.
+
+The next location is the home of Royal Phillips, another witness. I expect you to apply a little more pressure to Mr. Phillips.</briefing>
+    <enter><say>I think you'd better find out more this time, {player}... Gray sounded a little peeved.</say></enter>
+    <objective goal="1" text="Talk to Royal Phillips" type="Talk" npc="2">
+      <talk><say npc="2">What? Of course I'll tell you... yes...
+
+Well, I saw this weird box the other day. It was huge, and it looked kinda out of place or something. It was just sitting on a street corner. I honestly didn't see how it got there, I was just on my way to the grocery store!
+
+Okay, I'm thinking! Um... yeah, I guess there was someone there! There was this guy nearby, he looked kinda suspicious. I guess because he was wearing this bandana. I figured he was in some sort of gang, or something. I didn't stick around to ask any questions.</say></talk>
+      <done><say>Bingo. Let's get out of here.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="4">
+    <briefing>This is most intriguing, {player}. The masked men are apparently somehow linked to these boxes.
+
+I have one more witness for you to visit, Shaquana Hassam. Find out what Ms. Hassam knows.</briefing>
+    <enter>
+      <say>This is Hassam's apartment.</say>
+      <say>Uh oh, looks like we've got hostiles on site! Take 'em out, {player}.</say>
+    </enter>
+    <objective goal="1" text="Kill the commandos" type="DefeatAll">
+      <done><say>All the commandos are down!</say></done>
+    </objective>
+  </phase>
+  <finish>These commandos are becoming a... nuisance.
+
+Remain in contact, {player}. Action will be taken.</finish>
+</mission>

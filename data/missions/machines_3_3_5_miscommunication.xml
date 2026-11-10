@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Miscommunication, Machines story mission 3.3.5. Source: research/missions/transcripts/Mach3-3-5.md (the archive
+     replay of [Machine Archive 3.3.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator, Swadling, Agent Brown, Blechschmidt, Salcedo and
+     General line, and those names. The log never names the player. Ours: the description (the Summary tab wasn't
+     shown), the objective texts (the Objectives tab wasn't shown), the sites (the meeting place and the command post
+     are Office; the others are unnamed buildings: Normal), the looks, the enemy counts, and the three commandos at the
+     meeting (named Commando: the log names none). The General's commandos are Exile programs: Merovingian. No items.
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 330,000
+     experience and 108,500 information are Zion chapter 3.3's values.
+     Gaps: in phase 1 a far door was sealed and then unsealed by something the log doesn't show; we have no locked
+     doors, so "The far door is sealed." is said on arrival and "They've unsealed the far door." on reaching Swadling.
+     At the meeting the commandos turned on the player at Blechschmidt's order ("Execute maneuver Alpha-Six!"); here
+     they are three hostiles who wait to be attacked, and Blechschmidt (green in the log) stays friendly. At the command
+     post the search of the area turned up nothing; here it is a computer that turns up nothing, once the commandos are
+     dead. The General's simulacra fired up after Salcedo spoke; here it is on the floor from the start and can be
+     talked to once Salcedo has been. Two of Gray's lines had a hidden line at a screenshot join; the best reading is
+     used. -->
+<mission id="203305" title="Miscommunication" description="Arrange the return of the stolen case from the General." plot="1"
+         order="3305" org="2" contact="Agent Gray" exp="330000" info="108500">
+  <npc id="1" handle="Swadling" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Agent Brown" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
+  <npc id="3" handle="Blechschmidt" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Commando" type="HOSTILE" attacksOnSight="0" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Commando" type="HOSTILE" attacksOnSight="0" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="Commando" type="HOSTILE" attacksOnSight="0" at="2" rsi="a8060090" weapon="2568" />
+  <npc id="7" handle="Salcedo" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="8" handle="The General" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We must recover the case at all costs. You will arrange a meeting with the General, or his representative, and work out an exchange for the case. We are willing to concede...considerable resources for its return.
+
+Our scanners have detected a group of the General's commandos. Proceed to their location and propose the meeting.</briefing>
+    <enter>
+      <say>The group of commandos should be in there. Careful with these guys; don't forget the reports that they've been working to ally themselves with Zion.</say>
+      <say>The far door is sealed.</say>
+    </enter>
+    <objective goal="1" text="Talk to Swadling" type="Talk" npc="1">
+      <talk>
+        <say>They've unsealed the far door.</say>
+        <say npc="1">So the Machines want a meeting, do they? It may be possible. I'll pass your request on up the chain. We'll be in touch, operative.</say>
+      </talk>
+      <done><say>That seemed to go about as well as we could have hoped. Head outside and report to Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>The General's staff has contacted us, and the meeting is arranged. Because of your past experience interacting with the commandos, you will attend in the capacity of an advisor. Remember that the primary function of this meeting is to arrange the return of the stolen case.</briefing>
+    <enter><say>That's the meeting place. Hurry up; they've just about started.</say></enter>
+    <objective goal="1" text="Talk to Agent Brown" type="Talk" npc="2">
+      <talk><say npc="2">The commandos are...stubborn. They say that they will accept nothing less than ownership over key points of the Mega City in return for any concessions on their part. Obviously, this is unacceptable.
+
+Perhaps they will be more receptive to a human. Attempt to reason with their head representative, Blechschmidt.</say></talk>
+      <done><say>Time to work your persuasive magic on Blechschmidt. You go, girl!</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Blechschmidt" type="Talk" npc="3" after="1">
+      <talk><say npc="3">So now I'm foisted off on a lackey. This is the final insult. It is clear that the Machines are not interested in taking us seriously. We're going to have to show them that we're not to be trifled with.
+
+Execute maneuver Alpha-Six!</say></talk>
+      <done><say contact="1">This will not be tolerated. Control must be established. Destroy the commandos in the area, then report back to me.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the commandos" type="DefeatAll">
+      <done><say>That's all of them. Head out and see what Gray has for us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="5">
+    <briefing>We will recover the case from the General. There is no alternative. Decrypted comm signal intercepts have revealed their local command post. Eliminate the commandos there and search the area thoroughly.</briefing>
+    <enter><say>I've got lots of commando signals in there, as well as computers, and a security system. This should be fun.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll" />
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1">
+      <done><say>Looks like we've come up empty. Damn. Nothing to do but tell Gray...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I am...experiencing what I believe you humans refer to as "frustration." Events have not proceeded according to our calculations. Logic dictates that there is a flaw in one of our assumptions concerning the General's organization. New data must be collected. This will take some time.
+
+The General has indicated his desire to communicate with us by simulacra recording. You will meet with his envoy, Salcedo, view the recording, and report on its contents.</briefing>
+    <enter><say>The General's envoy, Salcedo, should be in there. I'm picking up just one live reading inside.</say></enter>
+    <objective goal="1" text="Talk to Salcedo" type="Talk" npc="7">
+      <talk><say npc="7">Salutations, operative. I'm firing up the simulacra program now. If you talk to it, it will deliver its message.</say></talk>
+      <done><say>I'm detecting a simulacra program firing up in your vicinity. You'll need to talk to it to trigger the General's message.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the General's simulacra" type="Talk" npc="8" after="1">
+      <talk><say npc="8">This is a recorded message from the General. Greetings. It appears that there has been some miscommunication between our representatives recently, as is not infrequent in times of conflict. So let me make this clear: we do not have the case that the Machines say has been stolen from them, nor are we aware of its current location. Hostilities against us aimed at its return are therefore futile. This incident ends here and now. Good day.</say></talk>
+      <done><say>So now he denies having the case at all. Gray's going to love this.</say></done>
+    </objective>
+  </phase>
+  <finish>The General's declaration contradicts our intelligence. These must be reviewed. It is evident that there has been some...misinformation.
+
+In any event, at this juncture we cannot count on recovering the case. Plans for damage control must be prepared. A certain amount of...instability is probable. You will be informed of contingency plans when appropriate.</finish>
+</mission>

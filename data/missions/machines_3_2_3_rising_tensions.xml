@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rising Tensions, Machines story mission 3.2.3. Source: research/missions/transcripts/Mach3-2-3.md (the archive
+     replay of [Machine Archive 3.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Bilkis, Acrux,
+     Alphonse, Tina Van Meer, Harry Zalenski, Agent Clark and Abel Gouki. Gray, Clark and Gouki called the player by a
+     bluepill surname ("Mr. Argento") and the operator by handle ("Evol"): both are {player}. Ours: the description,
+     the objective texts (the Objectives tab was never opened), the sites (Bilkis's meeting point, the analysis center
+     and the communications nexus aren't described: Normal), the looks (Acrux's sex isn't given: male by name) and the
+     enemies of phase 3 (the log names none; three, as the operator says to help the Zion crew; the masked men have no
+     org, so Zion, as for other rogue humans). Item stand-in: Bilkis's disk of intercepted communications is Data_CD
+     (6831).
+     Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown; 200,000
+     experience and 100,000 information are Zion chapter 3.2's range.
+     Gaps: "I'm sure you know about it by now... Veil is gone. We have to get her back." was said twice at Bilkis's
+     site by a speaker the screenshots hide; it is given to Bilkis, before Acrux's reply to her. The briefing and the
+     operator's clearance line each span two screenshots and a few words may be missing; the best reading is used.
+     All of Bilkis's talk came within a second in retail, so it is one Get. Tina Van Meer's second line is said once
+     Agent Clark has been talked to (in retail, once the data was given). Phase 3 is the communications nexus where
+     Veil was missed: the crew of the Nescire was there but no member is named, so none is placed, and Gray's warning
+     about firearms has no check. The two computer screens retail showed (Urchin's mail, the corrupt admin log) are
+     probably from there [uncertain]; here they are two computers to search that turn up nothing, and the operator's
+     "we all missed her" line is said when both are done. -->
+<mission id="203203" title="Rising Tensions" description="Help Zion's operatives find out where Veil has gone." plot="1"
+         order="3203" org="2" contact="Agent Gray" exp="200000" info="100000">
+  <npc id="1" handle="Bilkis" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Turns out Veil was talking with her people the whole time she was in her cell. Those are all the communications we managed to intercept. Maybe you can make something out of it.</say>
+  </npc>
+  <npc id="2" handle="Acrux" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say display="5" after="1">We were able to work together to defeat the Assassin... I think we can work together again now!</say>
+  </npc>
+  <npc id="3" handle="Alphonse" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">Don't try me, machinehead.</say>
+  </npc>
+  <npc id="4" handle="Tina Van Meer" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say display="5">Give the data to Zalenski, human.</say>
+    <say display="5" after="2">I find my work quite fulfilling. Do you?</say>
+  </npc>
+  <npc id="5" handle="Harry Zalenski" type="FRIENDLY" at="2" rsi="8f080058" weapon="0">
+    <say after="3">I believe your presence is required elsewhere.</say>
+  </npc>
+  <npc id="6" handle="Agent Clark" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say after="2">Please return to Gouki for analysis results, {player}.</say>
+  </npc>
+  <npc id="7" handle="Abel Gouki" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="3">{player}, it would appear that this data reveals some time sensitive information. The human known as Veil will be using a communications nexus to reach some associates. According to this data, she may already be at the location.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}. Your services are required once more. We have a most... unusual request for a meeting.
+
+Some Zion operatives appear to be in need of our assistance. Since the business with the Assassin, we have been on good terms with them. It is your responsibility to maintain friendly relations. Proceed to the location indicated and assist them.</briefing>
+    <enter><say>All right, your contact's name is Bilkis. She'll be able to fill you in on this whole business.</say></enter>
+    <objective goal="1" text="Get the disk from Bilkis" type="Get" npc="1" item="6831">
+      <talk>
+        <say npc="1">Well, I never. Working with the toasters...</say>
+        <say npc="1">I'm sure you know about it by now... Veil is gone. We have to get her back.</say>
+        <say npc="2">Bilkis! Remember, we've got orders... we can't let her get away with this!</say>
+        <say>She's gone, huh... sounds like those masked bastards made good on their plans. Better get that CD from Bilkis so we can see what it is.</say>
+        <say npc="1">Damn it! I know we have orders... here, take this disk. We... we need you to run this data through the Machines' systems. Maybe you'll be able to find something we can't.</say>
+      </talk>
+      <done>
+        <say>Okay, so we need to run all these communications through the Machine server, huh? I'll get the clearances lined up.</say>
+        <say npc="1">Turns out Veil was talking with her people the whole time she was in her cell. Those are all the communications we managed to intercept. Maybe you can make something out of it.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Clearance has been processed. Proceed to the analysis center and give the data to Zalenski.</briefing>
+    <enter><say>Zalenski should be here somewhere.</say></enter>
+    <objective goal="1" text="Give the data to Zalenski" type="Give" npc="5" item="6831">
+      <talk><say npc="5">Do you have the data?</say></talk>
+      <done><say npc="5">Now the data must be processed. Please speak with Agent Clark on your way out.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Clark" type="Talk" npc="6" after="1">
+      <talk><say npc="6">{player}, some related data must be relayed. The following chain of data was retrieved earlier today, perhaps related to your investigations: B200U205C210K215--
+
+One moment please...
+
+Please report back to Gouki.
+
+Apparently there is an urgent matter involving the data analysis.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Abel Gouki" type="Talk" npc="7" after="2">
+      <talk><say npc="7">{player}, it would appear that this data reveals some time sensitive information. The human known as Veil will be using a communications nexus to reach some associates. According to this data, she may already be at the location.</say></talk>
+      <done><say>You've got to get out of here now and get over to that location before she's gone again, {player}!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Proceed with all speed to the indicated location, {player}. You will be assisted on this mission by the crew of the Nescire, a Zion hovercraft. They may arrive before you; please maintain control over firearms at all times to avoid unnecessary casualties.</briefing>
+    <enter><say>I think the Zion crew is here already. Help them and don't let Veil out of there!</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0" />
+    <objective goal="2" text="Search the other computer" type="Search" object="2" item="0" />
+    <complete><say>Well, looks like we all missed her... I guess those Zion ops are going to make sure they get all the evidence...?</say></complete>
+  </phase>
+  <finish>How unfortunate that you were not able to apprehend our fugitive, {player}. Let us hope that you shall have another chance in the future.</finish>
+</mission>
