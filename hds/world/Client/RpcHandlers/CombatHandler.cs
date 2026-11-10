@@ -812,8 +812,10 @@ namespace hds
             {
 
                 // Award experience
+                // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
                 UInt16 mobLevel = session.DefenderMob.getLevel();
-                UInt32 expGained = (UInt32)(mobLevel * 100); // Simple exp formula
+                byte[] killerLevel = session.Attacker.playerInstance.Level.getValue();
+                UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
                 // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
                 bool inTutorial = TutorialMission.Of(session.Attacker) != null;
                 if (!inTutorial)
