@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Disrupted Connection, Zion story mission 4.3.4. Source: research/missions/transcripts/Zion4-3-4.md (the archive
+     replay of [Zion Archive 4.3.4]; 24 screenshots, two during phases 1 and 2, the rest of the log after the mission
+     ended). Retail's contact was [Archived]Tyndall herself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the objective texts
+     "Upload the Data at a hardline" and "Get information on Silver's whereabouts" (shown in the Objectives window).
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the drop site
+     "locked down" by Zion and the General's troops is a ZionOutpost, the rest Normal), the looks and the enemy counts.
+     The Cypherites have no organisation here: they are Zion's (rogue redpills). Silver's goons are Exiles, so
+     Merovingian; Nightmare is the one of them the log named. The commandos are the General's Exile group, so they
+     have Exile looks (Kissel's sex didn't show; she is a woman here). Item stand-ins: the Cypherites' Data is Data
+     (6787), the Data Disk the Operator calls an access disk is Data_CD (6831), the key to the General's case is
+     Access_Card (6791). Rewards: the 440,000 experience and 115,500 information shown right after this mission
+     completed.
+     Gaps: in phase 2 the access disk came off a goon's body (two Data Disks dropped, and the log shows a goal
+     reverting between them); here it is looted from Nightmare, put into the computer to get access, and the computer
+     is then used for the network search. The computer popups (the file copy in phase 1, the netsearch that finds
+     "punishment.admin" in phase 2) can't be shown. The commandos are led out of their meeting place and follow the
+     player into Silver's lair; NPCs don't fight here, so they don't take point, and their lines after the fight are
+     said when the goons are dead. Silver is friendly and only hands over the key once his guards are dead; his parting
+     line is said with the Operator's when he does. Tyndall's "hostiles are converging on your location" has no
+     hostiles behind it, as in the log. Andersen's "Have you got the key? Quick, hand it over." came between his
+     greeting and the hand-over and isn't said: handing over the key completes the goal at once. A friendly whose line
+     was lost after the fight in Silver's lair isn't placed; the Zion Doctor's line was only in team chat and is his
+     bystander line; the Zion Vector had no line and isn't placed. -->
+<mission id="104304" title="Disrupted Connection" description="Track the General's key to Silver, take it from him and get it to a Zion drop site." plot="1"
+         order="4304" org="1" contact="Tyndall" exp="440000" info="115500">
+  <npc id="1" handle="Nightmare" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Marano" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Wong" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Kissel" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568" />
+  <npc id="5" handle="Silver" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="Andersen" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564" />
+  <npc id="7" handle="Zion Doctor" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say display="5">We'll put in a good word for you with Niobe.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>{player}, as you know, the Machines have been tracking the General's missing key to a separate construct. But we've picked up a burst of Machine activity in the Matrix lately, and Commander Lock thinks it may indicate a new development in the key's status.&#10;&#10;Zion must learn whatever the Machines have found out about the key. Fortunately, we know of a group of Cypherites who maintain secret, well-placed Machine contacts. These Cypherites have probably already obtained the latest Machine intelligence on the key. Conduct a strike on this Cypherite group, and search their facility for any new data pertaining to the missing key.</briefing>
+    <enter><say>I've got redpill signals in there. Should be our Cypherite targets.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer for data on the key" type="Search" object="1" item="6787">
+      <done><say>Ooh, juicy. Upload that data to me at a hardline.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the Data at a hardline" type="Upload" item="6787" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, the data you retrieved indicates that the Machines have picked up the key's code signature back inside the Matrix. If the intelligence you recovered recently from the Frenchman's operatives was correct, our best guess is that the Exile known as Silver is in control of the key. He may have brought it back into the Matrix for an exchange with the Merovingian.&#10;&#10;Silver operates primarily in Camon Heights. We've got the location of one of his hit squads in that neighborhood. Hit them, and try to ascertain Silver's current whereabouts.</briefing>
+    <enter><say>I've got Exile programs in there; the signals fit the profile for Silver's goons.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the access disk from Nightmare" type="Loot" npc="1" item="6831">
+      <done><say>An access disk. Could get you past the security on one of the computers around there.</say></done>
+    </objective>
+    <objective goal="2" text="Use the access disk on the computer" type="Put" object="1" item="6831" after="1">
+      <done><say>Nice; you have access to that system now. Try searching their network.</say></done>
+    </objective>
+    <objective goal="3" text="Get information on Silver's whereabouts" type="Use" object="1" after="2">
+      <done><say>Good thinking. An admin machine called "punishment," huh? I'm betting that's our twisted Mr. Silver's box. Running a coord trace on it now. Get on the street and we'll confer with Tyndall.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Excellent work, {player}! We've scanned the location of that network address and found a concentration of powerful programs. Silver may be one of them.&#10;&#10;This strike is of paramount importance to Zion, so you'll have a commando squad at your disposal. I'm directing you to the squad's location now.</briefing>
+    <enter><say>Your squad's in there. I say make these guys take point.</say></enter>
+    <objective goal="1" text="Talk to Marano" type="Talk" npc="2">
+      <talk><say npc="2">The offending programs will be deleted, sir.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Wong" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Shouldn't be a problem, sir. We've dealt with this kind of target before.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Kissel" type="Talk" npc="4" after="2">
+      <talk><say npc="4">Leave it to us, sir.</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Marano, Wong and Kissel out of the area" type="Escort" npc="2,3,4" to="exit" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>All right, Warrior, you've got the target location. Secure the area as quickly as possible, and search the place thoroughly for the key. This could be it!</briefing>
+    <enter><say>I'm picking up some heavy programs in there. You've got those commandos with you, right?</say></enter>
+    <objective goal="1" text="Kill Silver's goons" type="DefeatAll">
+      <done>
+        <say>That's all of Silver's goons in the vicinity. Now let's see if the man himself will be a little more open to friendly negotiations.</say>
+        <say npc="3">I think that's got 'em, sir.</say>
+        <say npc="2">My orders are to remain on guard at this location, sir.</say>
+        <say npc="4">Hostiles eliminated, sir.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get the key from Silver" type="Get" npc="5" item="6791" after="1">
+      <talk><say npc="5">I seem to have run out of guards. Very well, you get the key...for now.&#10;&#10;Look, if you want it, take it. I don't have all day to stand around talking with meat.</say></talk>
+      <done>
+        <say>That's it! Bring it outside. I'll get Tyndall on the horn.</say>
+        <say npc="5">I suggest you make yourself scarce, meatbag. My associates will be coming for that key.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>Warrior, I'm marking out the location of our nearest secure drop site. Get the key there, fast! Reports indicate that hostiles are converging on your location.</briefing>
+    <enter><say>That's the drop site. Both Zion and the General's troops have the place locked down tight. You're supposed to make the hand-off to a Zion officer in there by the name of Andersen.</say></enter>
+    <objective goal="1" text="Give the key to Andersen" type="Give" npc="6" item="6791">
+      <talk><say npc="6">You've got the key? Good. I'll take it off your hands. We'll have it under heavy guard 24-7 until we can get it to Niobe.</say></talk>
+      <done><say npc="6">Thanks, operative. We'll take it from here. You've been a great help.</say></done>
+    </objective>
+  </phase>
+  <finish>Great work today, {player}. Thanks to you, the key is back in our hands. Zion rests easier knowing you're on the job.&#10;&#10;But we must remain vigilant. The Merovingian is sure to try to get the key back once he finds out that we took it from Silver, and even the Machines might make some sort of play for it. Stay on your toes, Warrior. I'll be in touch.</finish>
+</mission>

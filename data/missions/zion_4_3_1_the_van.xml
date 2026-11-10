@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Van, Zion story mission 4.3.1. Source: research/missions/transcripts/Zion4-3-1.md (the archive replay of
+     [Zion Archive 4.3.1]; 19 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives the mission list.
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line and every NPC name. Ours: the description
+     (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the sites (the
+     Machines' license plate records facility is an Office, Reggie Bosung's "crappy apartment" a SlumApt, the rest
+     Normal), the looks and the enemy counts. The facility's guards are Machines; the Bells are a street gang with no
+     org and are Merovingian here. Item stand-in: the license plate data (its name never showed) is Data (6787).
+     Rewards: the 352,320 experience and 115,500 information shown right after this mission completed.
+     Gaps: Marcus Harlick "pretends to be scared" and gets the player into the locked computer, asking to be taken to
+     it. Here using the computer first is a goal (the Operator's "Looks like you're gonna need some help on that" is
+     its done line), talking to Marcus unlocks it (his lines and the Operator's "you should have access" are that
+     goal's), and only then can the data be taken; he isn't led to the computer. Marcus's "Hey, do I know you?" is
+     what he says before he has a goal. The log of the Bells' HQ was lost between the Operator's arrival line and her
+     closing line; the Bells are killed there (Bling Bling isn't there, as in retail). Bell Janet's bark was only in
+     team chat and isn't said. -->
+<mission id="104301" title="The Van" description="Trace the van the General's key fell onto and track the key down in Achan." plot="1"
+         order="4301" org="1" contact="Tyndall" exp="352320" info="115500">
+  <npc id="1" handle="Marcus Harlick" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>Hey, do I know you? Weren't you at the party at the Lynch Pin this past weekend?</say>
+    <say after="2">And...there!&#10;&#10;Whew, what a rush that was! What should we do next? How about I pretend to be a cop, and arrest you? I've got some handcuffs at home. Just give me a few minutes to go get 'em, okay?</say>
+  </npc>
+  <npc id="2" handle="Reggie Bosung" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="1">It was those Bells... They took everything from the van. I am so bummed right now, man.</say>
+  </npc>
+  <npc id="3" handle="Yttri" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="1">Are you...certain that you do not simply pursue a selfish means to power?</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Alright, so we gotta get back the key to the General's case that Niobe dropped off a rooftop. It fell onto the roof of an orange van. Fortunately, I was there, and managed to read the van's license plate number. So now all we gotta do is bust into the Machines' Transportation Department records and trace that plate. I'm sure they won't mind if we "borrow" a little information--all for a good cause, right?</briefing>
+    <enter><say>The Machines keep their computer records of bluepill license plate information in that facility. Look for a computer you can access, and watch out for guards.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Access the computer" type="Use" object="1">
+      <done><say>Looks like you're gonna need some help on that. What about that guy in the last room?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Marcus Harlick" type="Talk" npc="1" after="1">
+      <talk><say npc="1">Ooh! Threatening! Great, this is so exciting. Okay, I'll pretend to be scared, all right? Here we go...&#10;&#10;Oh no! Don't hurt me! I'll help you! Just take me to the computer!&#10;&#10;Did that sound right? I think I could have done it with a little more feeling...</say></talk>
+      <done>
+        <say>Great, you should have access to that system now. Get the license plate data.</say>
+        <say npc="1">And...there!&#10;&#10;Whew, what a rush that was! What should we do next? How about I pretend to be a cop, and arrest you? I've got some handcuffs at home. Just give me a few minutes to go get 'em, okay?</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the license plate data from the computer" type="Search" object="1" item="6787" after="2">
+      <done><say>That's what we're after. Upload it to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the license plate data at a hardline" type="Upload" item="6787" after="3" />
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>That pimped-out van belongs to a bluepill named Reggie Bosung. Lives in a crappy apartment in Achan--well, I assume it's crappy; Achan is a pit. Sucks to be you, but you've gotta go there and get the key off the roof of Mr. Bosung's van.</briefing>
+    <enter><say>Reggie Bosung should be in there. Ask him about his van.</say></enter>
+    <objective goal="1" text="Talk to Reggie Bosung" type="Talk" npc="2">
+      <talk><say npc="2">My van? Man, it's totally uncool how it got broken into last night! Those punks stripped it clean. Where's the respect? Those Bells have always been jealous of my sweet hand-painted barbarian mural on the side of the van. I know they were the ones who did this. It's just so... How could they?</say></talk>
+      <done><say>The Bells, huh? Their gang rules the streets of Achan. They must have been after the key, and now they've got it. We'd better let Anome know about this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>So... The Bells: they fancy themselves really high-class chicks, but who do they think they're fooling, living in a dump like Achan? As if. So, you're gonna go show those stuck-up ladies just what happens to people who steal from Zion. I'm sending you straight to their HQ. The key's got to be there. And keep an eye out for their leader, Bling Bling.</briefing>
+    <enter><say>That's the Bells' HQ.</say></enter>
+    <objective goal="1" text="Kill all of the Bells" type="DefeatAll">
+      <done><say>Huh... I'm not seeing anything special there: no key, and no Bling Bling. Better see if Anome has another idea.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>What?! No key? No Bling? No! We've got to get that key. Think, Anome, think!&#10;&#10;Hey! Let's go ask that hippie street musician, Yttri! She knows most of what goes on in Achan, and she owes me. She's gotta have some idea of what the Bells did with that key.</briefing>
+    <enter><say>Yttri should be in there. I'm not picking up any hostiles in the vicinity.</say></enter>
+    <objective goal="1" text="Talk to Yttri" type="Talk" npc="3">
+      <talk><say npc="3">You seek the key to power. Ah...yes. It has moved on from the Bells.&#10;&#10;I've heard it's gone to the east--to Moriah. The Crossbones rule the projects there. Perhaps they have what you seek.</say></talk>
+      <done><say>Moriah? Huh... That kind of makes sense, since Moriah nearly surrounds Achan. If the Crossbones have the key, then this whole thing just got cranked up a notch.</say></done>
+    </objective>
+  </phase>
+  <finish>The Crossbones took the key? Of course! That just confirms what I suspected all along. Damn pirates... I'll get intel digging up dirt on Moriah.&#10;&#10;We'll be in touch, {player}. Anome, out.</finish>
+</mission>

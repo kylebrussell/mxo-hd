@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Merchandise, Zion story mission 4.2.2. Source: research/missions/transcripts/Zion4-2-2.md (the archive replay of
+     [Zion Archive 4.2.2]; 26 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives the mission list.
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, and every NPC name. Ours: the description
+     (the Summary tab was never opened), every objective text (only "Leave the area now!" was shown), the sites (Arnold
+     Cheng's residence is a SlumApt, the jeweler's regional office an Office, the rest Normal), the looks and the enemy
+     counts. The Jeweler's sex isn't in the log; she has a woman's look so the three people in the office don't look
+     alike. The E Pluribus Neo fanatics at Cryptos' address are renegade redpills, so they are Zion's; two of them carry
+     the names in the log (E Pluribus Neo Crusader, E Pluribus Neo Fighter). Item stand-ins: Cryptos' watch is Device
+     (6820), Woodrow Quigley's printout of the customer file is File (6800). Rewards: none were shown for this mission;
+     these are the 341,000 experience and 112,000 information of 4.2.1, the mission before it in this sub-chapter.
+     Gaps: retail had the player hand the watch to the Jeweler and to Jason Xavier and take it back; here showing it is
+     a Talk goal, so the watch stays with the player for Abalakin. Anome's "Get Cryptos' watch back from that shyster"
+     is said after the Jeweler has looked at it. Woodrow Quigley's "Get that document from him." from the Operator is
+     said with Woodrow's line. The General's commandos Anome sends to Cryptos' address never showed in the log and
+     aren't placed. The fanatics' barks were only in team chat and aren't said. Agents locking on at the end (the
+     Operator's warning and an Agent's shout) can't be staged: no Agents spawn, the warning is said when the phase is
+     done. -->
+<mission id="104202" title="Merchandise" description="Follow up a report that Cryptos' boxes were stolen from a warehouse." plot="1"
+         order="4202" org="1" contact="Tyndall" exp="341000" info="112000">
+  <npc id="1" handle="Arnold Cheng" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">Funny thing is, it never seemed to work. Hey, uh... Could I get a receipt for that?</say>
+  </npc>
+  <npc id="2" handle="The Jeweler" type="FRIENDLY" at="2" rsi="e4050024" weapon="0">
+    <say after="2">Hey, I'm on the clock here, pudding! I've got a business to run! Go check in with Jason Xavier.</say>
+    <say after="5">Check back any time, baby! I got some diamond-studded piercings you would kill for!</say>
+  </npc>
+  <npc id="3" handle="Jason Xavier" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="4">Take care of that thing, it's gonna be a collector's item some day!</say>
+  </npc>
+  <npc id="4" handle="Woodrow Quigley" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say after="5">That's all I've got. Not my fault! Gotta run!</say>
+  </npc>
+  <npc id="5" handle="Abalakin" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="6" handle="E Pluribus Neo Crusader" type="HOSTILE" at="4" rsi="d8040058" weapon="2568" />
+  <npc id="7" handle="E Pluribus Neo Fighter" type="HOSTILE" at="4" rsi="60010058" weapon="2568" />
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Since that Neo-nutcase foiled your last little attempt to dig up some dirt on the Cypherites, we're gonna have to try it again.&#10;&#10;We picked up a tip off the police wire recently about a guy who reported Cryptos' little Jack-in-the-Boxes as being stolen from his warehouse. Claimed that Cryptos had rented the storage space for 'em, and then one day they were just gone--nobody saw anyone take them out, and Cryptos himself never got back to the guy. The cops laughed it off, of course, but for some reason Lock thinks it sounds worth checking out. So you're going to pay a visit to the warehouse manager, name of Arnold Cheng.</briefing>
+    <enter><say>That should be Arnold Cheng's residence. I've got a bluepill signal inside.</say></enter>
+    <objective goal="1" text="Talk to Arnold Cheng" type="Talk" npc="1">
+      <talk><say npc="1">You want to know about the boxes? Sure! Those cops thought I was nuts. Them boxes just went missing one night; not a soul saw them go, as far as I know, and Cryptos never said a word about it--didn't even come back to claim his deposit.&#10;&#10;The deposit? Oh, it was a nice watch that he had on when he came in to rent the space. I've got it with me, actually--for safekeeping, you know. Uh, sure, I'd be okay with your borrowing it, if you think it would help in your investigation. I just want to do the right thing here.</say></talk>
+      <done><say>Cryptos' watch? Better get it from this guy. Could come in handy.</say></done>
+    </objective>
+    <objective goal="2" text="Get Cryptos' watch from Arnold Cheng" type="Get" npc="1" item="6820" after="1">
+      <talk><say npc="1">Here's that watch.</say></talk>
+      <done><say>That is one fancy watch--so fancy that I'm scanning a jeweler's mark on the back. Jackpot. Head outside while I look up this jeweler.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>Haha! We stole Cryptos' watch! Oh man, that is rich. Hey, hold on to that thing, would ya? I want to wear it the next time I go slumming.</briefing>
+    <enter><say>That's the regional office of the jeweler who worked on Cryptos' watch.</say></enter>
+    <objective goal="1" text="Talk to the Jeweler" type="Talk" npc="2">
+      <talk><say npc="2">Hey baby, what can I do you for? Cryptos' watch? Yeah, I probably did that--Jeweler to the Stars, that's me! Give it here and I'll take a gander.</say></talk>
+      <done><say>Sounds like you'll have to hand over the watch.</say></done>
+    </objective>
+    <objective goal="2" text="Show Cryptos' watch to the Jeweler" type="Talk" npc="2" after="1">
+      <talk>
+        <say npc="2">Lemme see that watch, sugar-beet.</say>
+        <say npc="2">Yep, this is my handiwork, all right. Stunning, ain't she? Damn, I'm good. Cryptos knows quality when he sees it; that's why he comes to yours truly for all his fine craftsmanship needs.&#10;&#10;I didn't do the actual sale, though; I let the little people handle the details. Go talk to my head salesperson, Jason Xavier. He'll hook you up, chief!</say>
+      </talk>
+      <done><say contact="1">Get Cryptos' watch back from that shyster before you talk to Jason Xavier, {player}! I want that watch!</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Jason Xavier" type="Talk" npc="3" after="2">
+      <talk><say npc="3">Cryptos? Doesn't ring a bell. I see a lot of people every day. You got the piece? Maybe it'll help jog something loose upstairs.</say></talk>
+      <done><say>Sounds like you'll have to let him see the watch, too. And don't forget to get it back, or Anome will get extra cranky.</say></done>
+    </objective>
+    <objective goal="4" text="Show Cryptos' watch to Jason Xavier" type="Talk" npc="3" after="3">
+      <talk>
+        <say npc="3">I'll need to see that watch, bud. A picture's worth a thousand words, ya know?</say>
+        <say npc="3">Ohh, right, this piece. Funny request; he wanted a watch that didn't run. Weird guy, huh? Anyway, seeing as how we like to keep on the right side of the law and all around here, I can pull that customer's file for you. And...that should do it. Find my clerk, Woodrow Quigley. He'll have the printout for you.</say>
+      </talk>
+      <done><say>Don't forget to get the watch back before you go find Woodrow Quigley!</say></done>
+    </objective>
+    <objective goal="5" text="Get the printout from Woodrow Quigley" type="Get" npc="4" item="6800" after="4">
+      <talk>
+        <say npc="4">Printout? Printout... Oh, that! I've got it right here.</say>
+        <say>Get that document from him.</say>
+      </talk>
+      <done><say>Well how about that, Cryptos' home address. Want to pay him a little visit?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hey, hey, not so fast, lightning. You owe me one Cryptos watch. Head to the marked waypoint and hand it over to my man, Abalakin.&#10;&#10;Oh, and we have some of the General's commandos standing by there to help you when you go to arrest Cryptos; they seem to be interested in encountering Cypherites firsthand. This time I've got that cheap parlor magician right where I want him!</briefing>
+    <enter><say>That's the place. Anome sure is anxious to get that watch. I wonder if he collects stamps, too?</say></enter>
+    <objective goal="1" text="Talk to Abalakin" type="Talk" npc="5">
+      <talk><say npc="5">You got that watch?</say></talk>
+    </objective>
+    <objective goal="2" text="Give Cryptos' watch to Abalakin" type="Give" npc="5" item="6820" after="1">
+      <talk><say npc="5">This better be the real deal. Uh... You can go now.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Okay now, get that guy! I don't care if you have to bomb the place, or kill his mother, or pull his fingernails out--just get Cryptos!</briefing>
+    <enter>
+      <say>That's the address we got from the Jeweler's people. I've got redpill readings inside.</say>
+      <say>More people dressed like Neo or Trinity? What is going on there?</say>
+    </enter>
+    <objective goal="1" text="Kill all of the Neo fanatics" type="DefeatAll">
+      <done><say>Place scans clean. No Cypherites, no Cryptos--nothing except those Neo fanatics. This is starting to become a problem.</say></done>
+    </objective>
+    <complete><say>Agents have locked on to your position! Get out of there now!</say></complete>
+  </phase>
+  <finish>What the hell? Can't you do a simple thing right? You expect me to believe that Neo came back from the dead and stopped you from capturing Cryptos? That's pathetic! I don't want to hear your ridiculous excuses, you...you...&#10;&#10;Bah! Why am I wasting my time with you? Anome, out.</finish>
+</mission>

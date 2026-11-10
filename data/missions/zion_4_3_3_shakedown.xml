@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shakedown, Zion story mission 4.3.3. Source: research/missions/transcripts/Zion4-3-3.md (the archive replay of
+     [Zion Archive 4.3.3]; 15 screenshots, one during the last phase, the rest of the log after the mission ended).
+     Retail's contact for this one was [Archived]Anome: every contact line here is his, said under Tyndall, the Zion
+     contact who gives the mission list. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, the names Aarhus and Efimov, and the
+     objective texts "Eliminate the Machine redpills" and "Get information about the key" (shown in the Objectives
+     window in the last phase). Ours: the description (the Summary tab was never opened), the other objective texts,
+     the sites (all Normal), the looks and the enemy counts. The Merv redpills are Merovingian; Efimov's people are
+     Machine redpills, so Machines. The two low ranking Machine operatives of phase 3 are named as the log's team chat
+     named them, Machine Despoiler and Machine Artillerist, and their lines are the ones they said there (which of them
+     gave Efimov's name and which the code isn't known). Item stand-in: the lead that names Aarhus is Documents (6794).
+     Rewards: the 352,000 experience and 115,500 information shown right after this mission completed.
+     Gaps: where the name Aarhus came from in phase 1 didn't show; here it turns up in a filing cabinet once the Mervs
+     are dead. Aarhus is hostile and was "persuaded" to talk: here she waits to be attacked, and reaching her gets her
+     line; her second line (4:09:17) was lost. The Machine operatives of phase 3 were fooled by the player posing as
+     an inspector: here they are friendly and simply talked to. Efimov's threat is said on arrival in phase 4. The
+     computer's Daily Report popup (constructs searched for the key's signature) can't be shown: using the computer
+     completes the goal and the Operator's line says what it found. The Machine Skript Kiddie's "Intruder!" was only in
+     team chat and isn't said. -->
+<mission id="104303" title="Shakedown" description="Squeeze the Merovingian's and the Machines' operatives for word on where the General's key has gone." plot="1"
+         order="4303" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Aarhus" type="HOSTILE" attacksOnSight="0" at="2" rsi="58010058" weapon="2568" />
+  <npc id="2" handle="Machine Despoiler" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Machine Artillerist" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" />
+  <npc id="4" handle="Efimov" type="HOSTILE" at="4" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>So I get us a good lead, and Tyndall goes and blows it, huh? I see how things work around here. I get no credit, man. Tyndall has Lock wrapped around her finger.&#10;&#10;Whatever. I'm used to it. As usual, it's up to Anome to get us out of this reeking mess we've landed in.&#10;&#10;We may not have much information on the key...but I bet you someone else does. Let's go "persuade" some Mervs to spill their guts, eh?</briefing>
+    <enter><say>Intel said we'd find some Merv redpills in there...and I'm scanning some reds, all right. Stick it to 'em.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the Merovingian redpills" type="DefeatAll" />
+    <objective goal="2" text="Search the hideout for a lead on the key" type="Search" object="1" item="6794" after="1">
+      <done><say>Aarhus, huh? We'll have to get Anome to run a check on that name.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>See? I get results. Intel ran a check on "Aarhus," and came up with a probable location based on known records. You know what to do when you find her. She'll talk... Oh yes, she'll talk...</briefing>
+    <enter><say>I've got redpill signals in there. Uh... Do you know what to do when you find Aarhus? I swear, I think Anome has torture scenes playing in his head.</say></enter>
+    <objective goal="1" text="Find Aarhus" type="Talk" npc="1">
+      <talk><say npc="1">So, you want to know about us arranging to get the key from Silver? Hah, you'll get nothing out of me!</say></talk>
+      <done><say>Silver? If that sociopathic nutball really has the key, we could have a big problem on our hands. We'd better tell Anome.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Silver, huh? I've always liked that guy's style...&#10;&#10;If the Mervs are going to get the key from Silver, then he must be hiding it somewhere. The question is, where? The Mervs wouldn't know, but maybe the Machines would. Ah Anome, you're so devious!&#10;&#10;I'm sending you after some low-ranking Machine operatives this time. We can't attack them directly--damn Truce--so pretend that you're there to check up on how the key operation is proceeding, and we'll see what they say.</briefing>
+    <enter><say>I've got a few redpill signals in there. Showtime...</say></enter>
+    <objective goal="1" text="Talk to the Machine Despoiler" type="Talk" npc="2">
+      <talk><say npc="2">Damn it! I mean, sir, damn it, sir! My "fellow" operative here is always interrupting me!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to the Machine Artillerist" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Sorry for the annoyance, sir! My "partner" here is a little slow!</say></talk>
+      <done><say>Efimov is running the operation, eh? That code the other one gave is a Machine reference address. I should be able to have it converted into a nice friendly coordinate address by the time you get outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Hah, I knew they'd fall for it. I've been getting good info from those two slow-jacks for months now.&#10;&#10;Get to this Efimov guy and find out what he knows about the key. We're not supposed to attack the Machines, but hey, that just means you can't leave any witnesses, right? Besides, redpills aren't really Machines anyway, if you ask me.</briefing>
+    <enter>
+      <say>I've got redpill signals in there.</say>
+      <say npc="4">I don't know what you think you're doing here, but I can't let you live.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the Machine redpills" type="DefeatAll">
+      <done><say>That takes care of all the Machine operatives in the area.</say></done>
+    </objective>
+    <objective goal="2" text="Get information about the key" type="Use" object="1">
+      <done><say>A construct? The Machines are searching for the key in a construct... Would Silver have access to one of those?</say></done>
+    </objective>
+  </phase>
+  <finish>A construct. Of course. I wonder why it took the Machines so long to figure that out.&#10;&#10;So let's see... Silver has the key... Going to trade it to the Mervs... The Machines think the key is in a construct... Oh yeah, I know where this is headed. Hah! Lock better promote me for this.</finish>
+</mission>

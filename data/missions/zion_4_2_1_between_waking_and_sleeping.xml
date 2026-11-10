@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Between Waking and Sleeping, Zion story mission 4.2.1. Source: research/missions/transcripts/Zion4-2-1.md (the
+     archive replay of [Zion Archive 4.2.1]; 21 screenshots, all of the log after the mission ended). Retail's contact
+     was [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line (retail's "on the history" without "of"
+     is kept), and every NPC name. Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (the Cypherite base with its underwear drawers is a SlumApt, Somnus
+     Consulting Services an Office, the rest Normal), the looks and the enemy counts. Sammie Nyhart's sex isn't in the
+     log; she has a woman's look by her name. The Cypherites have no organisation here and are Zion's (rogue
+     redpills); the one carrying the address is named Cypherite Gunslinger, one of the two Cypherite names in the log.
+     Item stand-ins: the Somnus Consulting Services business card is Flyer (6796), the key to the boss' safe is
+     Access_Card (6791), the disk in the safe is Data_CD (6831), the address on the Cypherite is
+     Document_Location_Notes (6855). Rewards: the 341,000 experience and 112,000 information shown right after this
+     mission's last target.
+     Gaps: the receptionist Dell Magnor is a lone hostile bluepill; the security he calls never came in the log, so no
+     other enemies spawn there. His first shout and the Operator's "Oops!" are said on arrival, his "Thief!" when the
+     disk is taken (hostile NPCs don't talk). The Operator's "Data source reading is getting stronger" is said once the
+     key is in hand, before the safe. The Cypherites' barks were only in team chat and aren't said. The phase 3 log may
+     miss ten minutes of fighting lines. The dead Cypherites and the unmasked dead woman at the last address aren't
+     spawned (dead NPCs aren't); the Operator's lines about them are said on arrival. Bourgeois is dying in retail;
+     here he's a friendly to talk to. -->
+<mission id="104201" title="Between Waking and Sleeping" description="Track the Cypherites from their local base of operations." plot="1"
+         order="4201" org="1" contact="Tyndall" exp="341000" info="112000">
+  <npc id="1" handle="Sammie Nyhart" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say after="2">Good luck with that data! I know it's been keeping the boss up late at night.</say>
+  </npc>
+  <npc id="2" handle="Dell Magnor" type="HOSTILE" at="2" rsi="38000024" weapon="0" />
+  <npc id="3" handle="Cypherite Gunslinger" type="HOSTILE" at="3" rsi="050100b4" weapon="2568" />
+  <npc id="4" handle="Bourgeois" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Greetings, {player}. Although we have known for some time that Cryptos is the leader of the Cypherite organization, the Zion Council is concerned that our understanding of his group's operations remains hazy at best. Although for the moment he seems content with following his program of harassing bluepill recruitment efforts, and making appearances around the city at his "boxes," we are unable to predict his next move. Clearly, we need to gather more intelligence on Cypherite activities.&#10;&#10;One of our spies managed to follow a group of Cypherites from one of Cryptos' boxes to what appears to be their local base of operations. We want you to investigate the area and track their activities. Be careful; they will most likely be hostile if encountered.</briefing>
+    <enter><say>That's where our spy traced the Cypherites to. I'm not picking up any redpill activity inside.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the Cypherites' drawers" type="Search" object="1" item="6796">
+      <done>
+        <say>Rifling through Cypherite underwear drawers, what fun! Find anything good? I'm dying to know what kind of jammies they wear.</say>
+        <say>A business card, eh? "Somnus Consulting Services." Interesting. Head outside while I look up their address.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>City records are surprisingly blank on the history "Somnus Consulting Services." All we know is that they have a current business license, membership in a prominent ethical business practices group, and a good tax record.</briefing>
+    <enter>
+      <say>I've got some signals in there. Looks like bluepills.</say>
+      <say>Oops! Looks like you just got on the receptionist's bad side.</say>
+      <say npc="2">Hey! You can't go in there! I'm calling security!</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Sammie Nyhart" type="Talk" npc="1">
+      <talk><say npc="1">Hey, what's up? Let me know if I can help you with anything while you're here.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the key from Sammie Nyhart" type="Get" npc="1" item="6791" after="1">
+      <talk><say npc="1">Oh, you're here for the boss' data? Right. You'll need this key to get into his safe. Gosh, it's a good thing you asked; he didn't tell me to expect anyone today.</say></talk>
+      <done>
+        <say>That key might come in handy.</say>
+        <say>Data source reading is getting stronger. Somewhere in that room...</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the disk from the boss' safe" type="Search" object="1" item="6831" after="2">
+      <done>
+        <say>Ah, that's where the reading was coming from. Grab that disk!</say>
+        <say>Upload that baby to me at a hardline.</say>
+        <say npc="2">Thief! Thief! Security!</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the disk at a hardline" type="Upload" item="6831" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>The data you recovered contains references to what appears to be a project for "forced reinsertion" of redpills into the Machine system. This is quite worrisome, Warrior. If the Cypherites were to get such a capability...I don't like to think what could happen.&#10;&#10;The data also contained coordinates to a rendezvous point. I'm sending you to that location now. Treat any Cypherites you find there as highly dangerous.</briefing>
+    <enter><say>I've got redpill signals in there. Have we found our Cypherites?</say></enter>
+    <objective goal="1" text="Kill the Cypherite Gunslinger" type="Defeat" npc="3">
+      <done><say>That one was carrying something. Search them.</say></done>
+    </objective>
+    <objective goal="2" text="Get the address from the Cypherite Gunslinger" type="Loot" npc="3" item="6855" after="1">
+      <done><say>Another address. How deep does this little group go? We'll have to check it out once you've finished off those Cypherites.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the Cypherites" type="DefeatAll">
+      <done><say>That's the last of the Cypherites in the area.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Stay on their trail, {player}. It is vital that we get to the bottom of this Cypherite plot.</briefing>
+    <enter>
+      <say>Weird... I've got a few redpill signals in there, but very weak.</say>
+      <say>Whoa. Dead Cypherites--and not long dead, either. Looks like someone else beat us there.</say>
+      <say>Another Cypherite...but who's the other woman? She isn't wearing their usual mask.</say>
+      <say>Hey, a live one! And would you check out the get-up that guy's in. Hm... His RSI signal is weak. You'd better see if you can give him a hand.</say>
+    </enter>
+    <objective goal="1" text="Talk to Bourgeois" type="Talk" npc="4">
+      <talk><say npc="4">F-for Neo...</say></talk>
+      <done><say>Looks like we've got a fanatic Neo martyr on our hands. But a guy like that couldn't have taken out all those Cypherites on his own. I'm not picking up anything else of interest in the area. We'd better report this to Tyndall.</say></done>
+    </objective>
+  </phase>
+  <finish>A fatally wounded young man, dressed like Neo, surrounded by dead Cypherites? I'm not sure what to make of that, Warrior. I'll have to run a search through our intel database for any matching reports. Unfortunately, his overzealous interference has destroyed our only lead into what could be a very dangerous Cypherite plot.</finish>
+</mission>
