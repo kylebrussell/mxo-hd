@@ -62,6 +62,7 @@ namespace hds
                 MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
+                MissionContactNpcs.CheckViews(aliveClients);
               }
               catch (Exception ex)
               {

@@ -151,6 +151,26 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?contact") && commands.Length <= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?contact goes to the nearest neighbourhood contact in this district, ?contact <id> to that one
+                    double px = 0, py = 0, pz = 0;
+                    NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+                    ushort district = (ushort)Store.currentClient.playerData.getDistrictId();
+                    MissionContactSpot spot = commands.Length == 2
+                        ? (uint.TryParse(commands[1], out uint contactId) ? MissionContactNpcs.SpotOf(contactId) : null)
+                        : MissionContactNpcs.Nearest(district, px, pz);
+                    string reply = spot == null ? "No such contact" : spot.metrId != district
+                        ? spot.Contact?.name + " is in district " + spot.metrId + " (" + spot.neighbourhood + ")"
+                        : spot.Contact?.name + ", " + spot.neighbourhood;
+                    if (spot != null && spot.metrId == district)
+                    {
+                        var at = MissionContactNpcs.InFrontOf(spot);
+                        Store.currentClient.messageQueue.addObjectMessage(new PlayerHelper().teleport(at.x, at.y, at.z), false);
+                    }
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                }
+
                 if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: ?missionobject <id>: the current phase's object, spawned again at the player's feet

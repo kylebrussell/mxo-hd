@@ -347,7 +347,7 @@ public class GeneratedMissionTests
         }).ToList();
 
         Assert.Equal(missions.Count, missions.Select(m => m.id).Distinct().Count());
-        Assert.Equal(missions.Count, missions.Select(m => (m.org, m.order)).Distinct().Count());
+        Assert.Equal(missions.Count, missions.Select(m => (m.org, m.contact, m.order)).Distinct().Count()); // each contact's chain
     }
 
     [Fact]
