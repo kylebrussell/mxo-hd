@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Schemes and Schematics, Zion story mission 2.2.2. Source: research/missions/transcripts/Zion2-2-2.md (the archive
+     replay of [Zion Archive 2.2.2]; 26 screenshots of the log after it ended). In the replay the contact was
+     [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's lines are spoken
+     as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, and every NPC name. Ours: the description
+     (the Summary tab was never opened), every objective text (nor was the Objectives tab), the sites (no building was
+     described: all Normal), the looks and the enemy counts. Astronomia's friends are redpills with no organisation of
+     their own: they are Zion. Item stand-ins: Astronomia's card is Access_Card (6791), her location notes are
+     Document_Location_Notes (6855), the "flit gun" schematic is Plan (6798). Rewards: the 187,650 experience and 98,000
+     information shown right after this mission completed.
+     Gaps: Astronomia is a friendly contact in phase 1, gives in at her post in phase 2 and comes back hostile in
+     phase 3, so she is three NPCs, one per phase. Her card is a Get (retail's log showed no "You received" line for
+     it). In phase 2 her friends attack on sight from the start rather than on her "Take them down!", she stays
+     friendly instead of being beaten until she gives in, and "Leave Astronomia alive" is a Protect; her notes are a
+     Get once her friends are dead, then uploaded. In phase 3 she is there from the start, waiting to be attacked,
+     rather than tracked to the player after the schematic is taken; her "Hands off my schematic!" is said when the
+     schematic is taken. Checking the computer and taking the schematic are a Use then a Search of the same computer.
+     The end of Anome's 11:04:55 line was cut off: "back to her." is our best reading. Rigil's 11:19:37 line wasn't
+     captured. Zion Selective Phage and Zion Network Hacker spoke only in Team chat; their lines are kept, the
+     Phage's as the reply to Rigil's first line. -->
+<mission id="102202" title="Schemes and Schematics" description="Recover the Machines' &quot;flit gun&quot; schematic for Zion." plot="1"
+         order="2202" org="1" contact="Tyndall" exp="187650" info="98000">
+  <npc id="1" handle="Astronomia" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say after="2">Call me any time. And let me tell you, this deal is sure to get your ass promoted!</say>
+  </npc>
+  <npc id="2" handle="Astronomia" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say after="3">Ha! Good luck getting the schematic from the Machines on your own, chump! We could have had a deal, but you blew it!</say>
+  </npc>
+  <npc id="3" handle="Astronomia" type="HOSTILE" at="3" rsi="58010058" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Rigil" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="5" handle="Zion Selective Phage" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say display="5">Shutting up now, sir!</say>
+  </npc>
+  <npc id="6" handle="Zion Network Hacker" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say display="5">I'm tellin' you, those masked crazies were Agents. They hated redpills so much that they went against Machine orders and tried to stop our recruiters. Their power must'a been cut or somethin' when they went AWOL, and that explains why they weren't as tough as regular Agents. See? It's so obvious!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Good morning, operative. Well, okay, it probably isn't morning--hard to tell when you're sitting in a dirty cave miles below a reeking, poisonous surface that's forever screened from the sun by pestilential clouds, isn't it? So it probably isn't morning, and it certainly isn't good. But look at me, digressing. We need a way to hit the Assassin with our beautifully deadly new insecticide. Word is, the Machines have a device that fits the bill nicely. You're gonna go talk to one of our field contacts who claims to have more information on this thing. Her code name is Astronomia. Off you go, now.</briefing>
+    <enter><say>Astronomia is in there. Joint scans clean.</say></enter>
+    <objective goal="1" text="Talk to Astronomia" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Here's the deal: I get you the schematic on this thing--the Machines call it a "flit gun"--if you hook me up with some of that insecticide I hear you've got. Everybody wins. You in? Hey, while you're noodling that over, take my card. Give me a ring any time you need somethin' from the Machines; I got all the hook-ups you need.</say>
+        <say contact="1">You are not authorized to make that deal, {player}; we would need the device itself, not just the schematic. And I'm not sure that I trust that woman, anyway. Take her card, though, and tell her that you'll get back to her.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get Astronomia's card" type="Get" npc="1" item="6791" after="1">
+      <done><say npc="1">You need to go get permission from daddy first, eh? Fine, fine; I got all the time in the world. Take my card and call me whenever.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Astronomia thinks she's quite the little mover and shaker, doesn't she? She's about to learn that you don't mess with Zion. We've tracked her back to her post in the City--no doubt she's gone to report to her Machine masters that she's on the verge of a major deal. She's enough of an amateur that she's probably got the "flit gun" schematic on the premises. Head over there and get it from her. Oh, and feel free to rough her up a bit. I don't like her attitude.</briefing>
+    <enter><say>Astronomia is in there, along with what appear to be other redpills; you may have to deal with some of her friends before you can get that schematic.</say></enter>
+    <objective goal="1" text="Talk to Astronomia" type="Talk" npc="2">
+      <talk>
+        <say npc="2">So I was all like "you know you want this, biyotch," and they were all drooling over it, practically. They just have to run it by their controller, then we're golden.</say>
+        <say npc="2">What? They followed me here! Take them down!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Astronomia's friends" type="DefeatAll" />
+    <objective goal="3" text="Get the location notes from Astronomia" type="Get" npc="2" item="6855" after="2">
+      <done>
+        <say npc="2">Why you...damn... Ugh! Fine! I don't have the schematic here; you'll have to go get it from the Machines at the address written down on these notes.</say>
+        <say contact="1">Leave Astronomia alive, operative. I want her story to spread, so that other filthy traitors like her will think twice before trying to pull a fast one on us. Now, upload those location notes to your operator.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the location notes at a hardline" type="Upload" item="6855" after="3" />
+    <objective goal="5" text="Do not let Astronomia die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>This is going along quite nicely, don't you think? Astronomia has been taught a lesson, and now we snatch the schematic from under the Machines' nose. Truce? Hey, you let me worry about that, all right? As long as the Machines aren't there in numbers, and our scans indicate that they are not, then you should have no problem.</briefing>
+    <enter>
+      <say>Looks like Anome was right: I'm picking up only a few active programs in there. Heck, maybe getting the schematic won't be that hard after all.</say>
+      <say>Check the data on the computer in there.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Check the data on the computer" type="Use" object="1">
+      <done><say>Yeah! That's it! Get the schematic from that computer!</say></done>
+    </objective>
+    <objective goal="2" text="Get the schematic from the computer" type="Search" object="1" item="6798" after="1">
+      <done>
+        <say contact="1">Operative, Astronomia has been tracked to your location. She must be after the schematic. We can't have her revealing Zion's role in this operation to her Machine overlords, so I need you to take her down--hard.</say>
+        <say npc="3">Bastard! Hands off my schematic!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill Astronomia" type="Defeat" npc="3">
+      <done><say>Good. Now get out of there before more programs show up.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>See? What did I tell you: piece of cake! Maybe you'll think twice about doubting me from now on, eh? Then I won't have to throw salt on that diaper rash of yours. Rigil is waiting for the schematic. Get moving.</briefing>
+    <enter><say>How much you wanna bet that Anome wouldn't be flying so high and pretty if Astronomia had been smart enough to report us to the Machines before she tried getting the schematic back? "Piece of cake"--hah! He got lucky. Well, better not keep Rigil waiting. My scan is picking up his signal in there.</say></enter>
+    <objective goal="1" text="Talk to Rigil" type="Talk" npc="4">
+      <talk>
+        <say npc="4">Would you two put a lid on it? You're like a couple of old hens.</say>
+        <say npc="5">Shutting up now, sir!</say>
+        <say npc="4">Oh, hey there, soldier. I'll take that schematic off your hands, if you've got it.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the schematic to Rigil" type="Give" npc="4" item="6798" after="1">
+      <done><say npc="4">Thanks. I'll put in a good word for you at HQ.</say></done>
+    </objective>
+  </phase>
+  <finish>Where there's a will, there's a way, eh, {player}? I get results; you don't like that, you go work for someone else. I'll bet the Machines are looking for a new yellow-bellied butt-wipe to replace Astronomia--might be right up your alley. You know, they say that turning against your own kind is as easy as taking candy from a freshly-killed baby. Still with us? Fine. You might be interested to know that the schematic you recovered looks promising; these "flit guns," loaded with our insecticide, could be highly useful against the Assassin.</finish>
+</mission>

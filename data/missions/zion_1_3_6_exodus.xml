@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exodus, Zion Archive 1.3.6. Source: research/missions/transcripts/Zion1-3-6.md (one retail run of the archive
+     replay, contact [Archived]Tyndall; screenshots 493 to 521 of the log; 491 and 492 belong to another mission, a
+     Riga mission in Akasaka, and aren't used). The log stops at Tyndall's closing line, before "Mission Completed!",
+     so no reward was shown: exp and info are those of 1.3.4, Grooving Up Slowly, the nearest mission of this
+     sub-chapter with a reward (1.3.5 has no log). Retail's: the title, every line, and the NPCs' names and roles.
+     Ours: the description, every objective text (only "Leave the area now!" was seen), the sites (phase 2 a Derelict
+     for the old church that has "seen better days", the rest Normal), the enemy counts (the last area's Elite Guards
+     only show in Team chat) and the looks. Item stand-ins: the old book is Book, Alnasi's business card is
+     Access_Card.
+     Gaps: the sealed door at Agematsu's hideout is not modelled; showing the card to Fracastoro (a Give) opens the
+     talk with Alonzo Vandervoort behind it. Alonzo is Agematsu in disguise and drops dead after his line; here he
+     stays standing, and he is two NPCs (phases 1 and 4) since he isn't led from one to the other. The guards turning
+     hostile after that ("You're dead!") is left out, so phase 4 has no fighting. In phase 5 Agematsu waits to be
+     attacked (attacksOnSight 0): reaching him is the Talk, and he isn't to be killed, as in retail, where he turned
+     hostile, an alarm went off and the player left. The Recording of the Merovingian and Persephone open in the
+     screenshots is nowhere in the log, so it isn't an item here. The Operator's "Who's that?" on reaching the guards
+     has no position to fire at and is left out. -->
+<mission id="101306" title="Exodus" description="Investigate another of the Assassin's murder sites." plot="1"
+         order="1306" org="1" contact="Tyndall" exp="423360" info="98000">
+  <npc id="1" handle="Alonzo Vandervoort" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Flies, flies everywhere! A plague of flies! Haha! This has happened before, you know. Ages ago...</say>
+  </npc>
+  <npc id="2" handle="Alnasi" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say>Now get out of here and stop tracking filth all over my carpets!</say>
+  </npc>
+  <npc id="3" handle="Fracastoro" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Alonzo Vandervoort" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="5" handle="Agematsu" type="HOSTILE" at="5" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We have another suspected Assassin murder site for you to investigate, operative. Although we now know that the Assassin is an engineered organism composed of flies, we still have little information about where he came from, and we know absolutely nothing about why he would have killed Morpheus. We're hoping that you can find a clue at one of the sites of his recent activity.</briefing>
+    <enter><say>The murder scene is in that building. The authorities have already taken the bodies away, but they probably didn't investigate the area thoroughly. See if you can find anything.</say></enter>
+    <objective goal="1" text="Talk to Alonzo Vandervoort" type="Talk" npc="1">
+      <talk><say npc="1">Flies, flies everywhere! A plague of flies! Haha! This has happened before, you know. Ages ago...</say></talk>
+      <done><say contact="1">What a crazy fellow! Ages ago, a plague of flies... Wait, that sounds familiar somehow. It's a long shot but... Leave the area, operative. I have a new assignment for you.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Derelict" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, in the Matrix they sometimes have, or used to have anyway, something called "church." They used to tell stories from long ago, before the Machines I mean, and it seems to me that there was a story about a plague of flies. They kept these stories in a special book. I'm sending you to one of these places that used to be a "church." See if you can find one of those books with these old stories.</briefing>
+    <enter><say contact="1">Oh dear, that place has seen better days. They should have--well, they used to have--some of those special books there. See if you can find one.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find one of the old books" type="Search" object="1" item="6814">
+      <done><say contact="1">That looks like the kind of book I was thinking of, operative! Hopefully it is still in readable condition. Find a hardline and upload it to us for scanning.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the book at a hardline" type="Upload" item="6814" after="1">
+      <done><say contact="1">Receiving the data now...</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We've scanned the book, operative, and I'm word-searching it now for "plague." Aha! Here we are: "If thou wilt not let my people go, behold: I will send swarms of flies upon thee." Hmm... It's quite possible that the Assassin is an Exile of some sort, from a previous cycle of the Matrix in which the Machines created fantastic creatures and monsters based on human lore--like the Merovingian's werewolves, for instance. I'm going to send you to an old Exile we know: she isn't always on friendly terms with us, but if you can talk to her she may have some insight on this.</briefing>
+    <enter><say contact="1">Hm, the being sending the plague also says that they did it to show that they are "lord in the midst of the earth." Does that sound like anyone we know? Anyway, the old Exile Alnasi should be in that building. Ask her about a living "plague of flies."</say></enter>
+    <objective goal="1" text="Ask Alnasi about a living plague of flies" type="Talk" npc="2">
+      <talk><say npc="2">Eh? What do you want? A creature made of flies? Hahaha! I suppose it could be from an old reboot--the Machines were much more creative back then. Awfully boring these days. But I think you should leave me alone and go ask Agematsu--he pokes his nose into things like this, and I think he's been up to something nasty lately. He doesn't get on well with our dear old Merovingian, you see.</say></talk>
+      <done><say>That could be useful. You'd better ask Alnasi where we can find Agematsu.</say></done>
+    </objective>
+    <objective goal="2" text="Get Agematsu's address from Alnasi" type="Get" npc="2" item="6791" after="1">
+      <talk><say npc="2">I'd say that it's been fun, except that I'll have to clean up the mess you've tracked in here. Oh, you're going to need to know where to find Agematsu. Let me see... Oh yes. He likes to hang out at the address on this business card. Here, take it. Take it!</say></talk>
+      <done><say>What's the address on that card? Okay. Leave the area and I'll send it to you as a waypoint.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>In the book we scanned, the being who sent the flies sent an earlier cataclysm: a flood that covered the entire Earth! It says "And behold, I bring a flood of waters upon the Earth, to destroy all flesh." You know, the Merovingian's controller is named "Flood." Just a coincidence? Could the Merovingian be playing the part of "lord in the midst of the earth" by sending the Assassin's "plague of flies"? We know the Merovingian likes antiquities, and he also collects Exiles... Agematsu's location is uploading to you now. Maybe we'll be able to get the truth out of him.</briefing>
+    <enter>
+      <say>If Alnasi's information was correct, the Exile named Agematsu may be in that building. Keep a sharp eye out.</say>
+      <say>The far door is sealed shut. Maybe these guards have a means of opening it.</say>
+    </enter>
+    <objective goal="1" text="Talk to Fracastoro" type="Talk" npc="3">
+      <talk><say npc="3">You got a pass? Nobody gets in without a pass.</say></talk>
+      <done><say>Maybe the business card you got from Alnasi will satisfy them.</say></done>
+    </objective>
+    <objective goal="2" text="Show the business card to Fracastoro" type="Give" npc="3" item="6791" after="1">
+      <talk><say npc="3">Nobody gets in without a pass.</say></talk>
+      <done>
+        <say>The door is now unlocked.</say>
+        <say npc="3">You're clear. Go in.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Find Agematsu" type="Talk" npc="4" after="2">
+      <talk>
+        <say>The crazy man from the murder site? What's he doing there? Something isn't right about this...</say>
+        <say npc="4">This is a rather unpleasant surprise. You were supposed to go after the Merovingian, fool! But very well. I will deal with you in the time and place of my choosing. Don't keep me waiting...</say>
+      </talk>
+      <done><say>What? He just fell down dead! What could have-- Huh? I'm receiving an encoded transmission... You'd better get out of there, operative.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>The encoded message said only "Everything that is in the earth shall die" followed by an address. I'm uploading the address to you now. Be careful, operative--this feels like a trap. If this Exile can actually assume other forms and shed them at will then he must be very powerful.</briefing>
+    <enter><say contact="1">I checked, and "Everything that is in the earth shall die" comes right after the line in that book about the "flood." I think Agematsu is toying with us, Warrior. He wanted us to go after the Merovingian for him, but when you traced his message back to himself, he decided you were too dangerous. Be careful!</say></enter>
+    <objective goal="1" text="Confront Agematsu" type="Talk" npc="5">
+      <done>
+        <say contact="1">Be careful, operative. That's no normal Exile you're facing.</say>
+        <say npc="5">The Merovingian has been in power for too long. I had hoped that after disguising myself to reveal his responsibility for Morpheus' death, you would remove him for me. Since you have proven stubborn, I will have to confront him and his Assassin myself--once I have dealt with you!</say>
+        <say contact="1">What? Could it be that the Merovingian was behind Morpheus' assassination?</say>
+      </done>
+    </objective>
+    <complete>
+      <say npc="5">A plague upon thee, human!</say>
+      <say>An alarm has gone off!</say>
+    </complete>
+  </phase>
+  <finish>Agematsu seemed to accuse the Merovingian of inciting the Assassin to kill Morpheus. If true, this intelligence could lead to war with the Merovingian's faction. I will pass this information to Commander Lock for immediate analysis. Thank you, Warrior.</finish>
+</mission>

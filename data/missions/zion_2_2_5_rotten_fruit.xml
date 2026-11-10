@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rotten Fruit, Zion story mission 2.2.5. Source: research/missions/transcripts/Zion2-2-5.md (the archive replay of
+     [Zion Archive 2.2.5], given by [Archived]Tyndall; two screenshots during phase 4 and 27 of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the objective "Find
+     the Assassin's lair" (phase 4, the one time the Objectives tab was open). Ours: the description (the Summary tab
+     was never opened), the other objective texts, the sites (phase 1's "derelict area" is Derelict, phase 4 is an
+     Office as the screenshots show, the rest Normal), the looks and the enemy counts. Item stand-ins: Stevie's heart is
+     Human_Heart (6826), the address Persephone hands over is Map_Disk (6783), the data from the networked computer is
+     Data (6787, retail's "You received Data."). Rewards: the 294,309 experience and 98,000 information shown right
+     after this mission completed.
+     Gaps: each bluepill's first line is said with their Talk goal and the second when talked to again. Stevie waits
+     to be attacked (attacksOnSight="0"), reaching her is an optional Talk that carries her "How quaint!", and her
+     heart is looted from her body; showing it to Alejandro is a Give, and his outburst, logged ten seconds later on
+     talking to him again, is said with it. Persephone's "jammer" is only in the lines. In phase 4 the Operator's
+     lines on getting closer to the network interface have no position to fire at in a generated phase: they are said
+     on arrival, and "There's the network interface" with the repair. The hardline junction box is a Computer the
+     player uses (no repair mechanic); the computer it feeds is a second Computer, searched for the data, which is
+     then uploaded. The Exiles' barks in phase 4 were only in Team chat and aren't said. -->
+<mission id="102205" title="Rotten Fruit" description="Track down the Assassin's hideout." plot="1"
+         order="2205" org="1" contact="Tyndall" exp="294309" info="98000">
+  <npc id="1" handle="Homer Raikov" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Lookit me, I'm a monster made out of flies! Buzz, buzz!</say>
+  </npc>
+  <npc id="2" handle="Shantay Vintila" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>I ain't got time to give you the story of my life, kid. Well, okay, maybe I got the time, but you don't.</say>
+  </npc>
+  <npc id="3" handle="Clare Upson" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say>Look, we get nuts, punks, drunks, felons, pimps, cops, bleeding-hearts, and public housing officials around here, but no trenchcoat-wearing guys in hockey masks. I think you've been watching a little too much TV.</say>
+  </npc>
+  <npc id="4" handle="Samantha Moore" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+    <say>I wish you'd do something about those helicopters. Sure is hard to sleep with them buzzing around all night.</say>
+  </npc>
+  <npc id="5" handle="Stevie" type="HOSTILE" at="2" rsi="a5060090" weapon="2568" attacksOnSight="0" />
+  <npc id="6" handle="Alejandro" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="7" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say>Be careful; he lives in a pit of intense decay. Death gives him power. You cannot take him by surprise, and my husband will do everything he can to protect him. You must be strong, my hero--strong, and very brave.</say>
+  </npc>
+  <phase site="Derelict" enemy="Merovingian" enemies="0">
+    <briefing>While production of flit guns proceeds apace, we have no hope of destroying the Assassin if we can't find him. He has thus far proven highly elusive. But statistical analysis of his known appearances has begun to indicate a pattern: he seems to favor areas in the slums, near the river. Since the Assassin disappears for extended periods of time, Commander Lock suspects that he may have a hideout or bolt-hole somewhere along the slum riverfront. Warrior, if you can find his den, the Assassin will soon fall into Zion's hands. Begin by investigating a certain derelict area in the slums, near the center of the Assassin sightings.</briefing>
+    <enter>
+      <say>That's the place you're supposed to check for flies. You brought your bug spray, right? I got a suspicion that we're gonna need it.</say>
+      <say>I'm scanning four bluepills in that area. Talk to them and see if they've got any information about the Assassin.</say>
+    </enter>
+    <objective goal="1" text="Talk to Homer Raikov" type="Talk" npc="1">
+      <talk><say npc="1">Flies? Sure, I got plenty of flies. Take all you want!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Shantay Vintila" type="Talk" npc="2">
+      <talk><say npc="2">I've seen plenty of stuff that would rattle your silver spoons, kiddo. Trust me, you're better off not knowin'.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Clare Upson" type="Talk" npc="3">
+      <talk><say npc="3">Nope, not here.</say></talk>
+    </objective>
+    <objective goal="4" text="Talk to Samantha Moore" type="Talk" npc="4">
+      <talk><say npc="4">Assassin? Does he fly around in a black helicopter? There've been some of those around here.</say></talk>
+    </objective>
+    <complete><say>Seems like that area's clean. I hope Tyndall has another idea.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I fear that finding the Assassin may be more difficult than we had thought. I'm going to send you to an area of Exile activity--we believe that these Exiles, in particular, are close to the center of the Merovingian's organization. If you can't find anything in the area itself, try interrogating one of the Exiles; they may know something about the Assassin's movements.</briefing>
+    <enter><say>That's the spot. Looks like Tyndall was right this time: I'm picking up Exile programs in there.</say></enter>
+    <objective goal="1" text="Talk to Alejandro" type="Talk" npc="6">
+      <talk>
+        <say npc="6">Hah! You don't scare me, pus-bag--not while Stevie is around to protect me! You'd have to show me her still-beating heart to make me talk!</say>
+        <say>Stevie's "still-beating heart"? Alejandro has quite an imagination. But maybe he knows something useful about the Assassin. If only there were a way to make him talk...</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Find Stevie" type="Talk" npc="5" optional="1">
+      <done><say npc="5">Qu'est-ce que c'est? A human? How quaint!</say></done>
+    </objective>
+    <objective goal="3" text="Take Stevie's heart" type="Loot" npc="5" item="6826">
+      <done><say>Ewww! I can't believe you just did that!</say></done>
+    </objective>
+    <objective goal="4" text="Show Stevie's heart to Alejandro" type="Give" npc="6" item="6826" after="3">
+      <done>
+        <say npc="6">Wh-what's that? Where's Stevie?</say>
+        <say>Sounds like we aren't going to get anything out of that bunch after all. We'll never find the Assassin's lair at this rate.</say>
+        <say npc="6">Noooo! Stevie! You...you animal! She was beautiful, and you've ruined her! We don't know anything about the damned Assassin! You think the Merovingian tells us where his pet lives? To hell with both of them!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, we've just received an encrypted message on a high-frequency channel, source unknown. The message mentions you specifically, and says that you will find information on the Assassin at a certain address nearby. This is highly irregular, and probably a trap. Under normal circumstances I would never ask you to go into such a dangerous situation, but...we seem to be out of options. I'm sending the address to you now. Be careful, {player}. We don't know what may be waiting for you there.</briefing>
+    <enter><say>That's the place. There's some kind of...really strong jammer or something--I can't get a clear reading on the interior. Whoever's in there must have access to top-level hacks. This could be bad.</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="7">
+      <talk>
+        <say>Oh no. No way. It can't be her... Oh, crap.</say>
+        <say npc="7">I have been waiting for you. Are you familiar with Homer, soldier? Odysseus' lover, a witch, told him to seek the gates of the underworld near "the groves of Persephone." You wish to eliminate this Satan, this...Assassin, do you not? I hate him--I want him dead. You will be my Odysseus--my hero. I will show you the way. I have what you seek.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the address from Persephone" type="Get" npc="7" item="6783" after="1">
+      <done><say npc="7">Take this, please. It is what you wanted.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>I don't like this, Warrior; I don't like having to trust that woman. But for now, at least, it seems that we have no choice. The address she gave you is in an area for which we have surprisingly little data. I'm not sure what Persephone expects you to find there; we can only hope that you will find some clue to the location of the Assassin's den.</briefing>
+    <enter>
+      <say>I'm reading plenty of Exile programs in there. There also seems to be some sort of closed network, with protocols that I haven't seen before.</say>
+      <say>Looks like they've got network trouble.</say>
+      <say>You're getting closer to the network interface I detected earlier. Something's weird with it though--the signal is sporadic.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Repair the hardline junction box" type="Use" object="1">
+      <done>
+        <say>There's the network interface: a hardline junction box. Looks like some of the wires have been cut. If you can fix it, maybe we can figure out what it's connected to.</say>
+        <say>Whoa! Data spike. One of the computers in that area must be getting a feed from that junction box. If you can find that computer, we can try analyzing the data.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Find the Assassin's lair" type="Search" object="2" item="6787" after="1">
+      <done><say>Ooh--those are some tasty-looking ones and zeroes. Get that stuff uploaded at a hardline.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <finish>The data you captured from the repaired hardline node contained information on a hidden hardline network. One of its terminals appears to be located on a garbage barge in the middle of the river--a "pit of intense decay" indeed. You have discovered the Assassin's base of operations, Warrior; now Zion must smoke him out.</finish>
+</mission>

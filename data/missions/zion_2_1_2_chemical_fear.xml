@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chemical Fear, Zion Archive 2.1.2. Source: research/missions/transcripts/Zion2-1-2.md (one retail run of the archive
+     replay, given by [Archived]Tyndall; 19 screenshots, one taken at the mainframe, the rest of the log after the
+     mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Tyndall, Operator and NPC line (Tyndall's "appraised" kept as retail spelled it), Ryan
+     Rosenburg's name, the objective text "Activate the Mainframe" and the rewards (297,000 experience and 98,000
+     information, shown right after this mission completed; the Forest Green Razorgirl Motorcycle Suit retail gave
+     isn't). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (Office for
+     the lab and for the bolt-hole, an office room in Lucero Point; Normal for the repository and the drop point), the
+     enemy counts and the looks. Item stand-ins: the location notes are Document_Location_Notes (6855), the insecticide
+     ingredient is Poison (6804).
+     Gaps: retail sent two level-255 Special Agents after the player at the lab ("You shouldn't be here", addressed by
+     the player's bluepill surname) and another at the repository; they couldn't be beaten, only fled. Here the lab
+     and the repository have a few Machine hostiles at the player's level, on the floor from the start, and the
+     Agents' barks aren't said. The repository's alarm and its Security programs ("Intruder sighted!") are the
+     phase's hostiles; the Operator's alarm line is said when the ingredient is found. Hiding a few minutes behind the
+     signal jammer is only the Operator's advice. The Operator's lines on reaching a room are said on arrival. -->
+<mission id="102102" title="Chemical Fear" description="Obtain one of the chemical ingredients for the insecticide that will be used against the Assassin." plot="1"
+         order="2102" org="1" contact="Tyndall" exp="297000" info="98000">
+  <npc id="1" handle="Ryan Rosenburg" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">Hey, I don't ask questions.</say>
+  </npc>
+
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Hail, Warrior of Zion! Today, you are entrusted with a great duty: to obtain one of the vital ingredients for the insecticide we will use to combat Morpheus' elusive killer, the Assassin. This particular ingredient is manufactured at a certain lab in the City. Please use caution, as the lab may be guarded.</briefing>
+    <enter><say>The lab in that building is supposed to have a supply of the particular insecticide ingredient we're after. This should be a cakewalk.</say></enter>
+    <objective goal="1" text="Talk to Ryan Rosenburg" type="Talk" npc="1">
+      <talk><say npc="1">Uh, can I help you? The insecticide ingredient? Oh, actually, that was transferred to another facility just today; they didn't tell me why. Sounds like another screw-up by the home office, doesn't it? Here, I'll write the address down for you. If you head over there and ask them, I'm sure they'll be able to straighten this little mess out for you.</say></talk>
+      <done><say>Transferred earlier today? Man, why does this kind of thing always happen to us? Get the lab worker's location notes and I'll direct you to the other address.</say></done>
+    </objective>
+    <objective goal="2" text="Get the location notes from Ryan Rosenburg" type="Get" npc="1" item="6855" after="1">
+      <done>
+        <say npc="1">Sorry for the inconvenience. Here, I've written down the address of the place they took the ingredient. Go ahead, take it.</say>
+        <say>This can't be right--I'm reading an Agent in your immediate vicinity! Get out of there!</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>An Agent? How can this be? I'm going to check with Commander Lock. {player}, you'd better try evading any pursuit; I'll route you to one of our old bolt-holes nearby. Hurry!</briefing>
+    <enter>
+      <say>There's a room in there with an old mainframe in it--head there. The mainframe has been converted into a signal jammer that should obscure you from the Machines for a little while.</say>
+      <say>That's the room. Code looks clean so far. Search the mainframe for the jammer activation button.</say>
+    </enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Activate the Mainframe" type="Use" object="1">
+      <done><say>Whew, it's hummin' up just fine. The area looks clear... I'd wait there a few minutes, then head out. But man, Agents on our case is not what I needed today.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Commander Lock has been appraised of the situation, {player}, and he urges you to proceed to the chemical repository with the utmost caution. It is not yet clear to us why the Agents have chosen this occasion to attack. The ingredient you pursue may have some special significance to them, in which case they could consider their current action a self-defense routine, permitted under the terms of the Truce.&#10;&#10;But this only emphasizes the importance of securing the insecticide ingredient for Zion. Persevere in your mission, Warrior!</briefing>
+    <enter>
+      <say>That joint doesn't exactly look like a lab or chemical repository to me. ... And I'm reading a security system in there, too. Could the Machines be behind the sudden transfer of the ingredient earlier today? Ooh... I don't even want to think about that.</say>
+      <say>You're close... I'm picking up a trace of the chemical compound we want. It's gotta be somewhere in that room.</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the insecticide ingredient" type="Search" object="1" item="6804">
+      <done>
+        <say>Shiznat, there goes the alarm!</say>
+        <say>The good news is that you got the insecticide ingredient. The bad news is that I'm picking up another Agent on your trail! Don't those guys ever give up? Wait, what am I asking? Of course they don't. Hoof it!</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, proceed to the drop point: a large safe inside the building marked on your map. Jammers are already in position to mask the code signature of the insecticide ingredient you've obtained, but beware of Agent interference en route. That ingredient you carry must reach its destination safely!</briefing>
+    <enter>
+      <say>That's the place; I can almost feel the lovely glow of the code jammers through my screen. But let's not rely on them more than necessary, eh? Get that precious ingredient to the safe, pronto!</say>
+      <say>The safe is in that room. It should be unlocked.</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Put the insecticide ingredient in the safe" type="Put" object="1" item="6804">
+      <done><say>Whew! I was almost expecting an Agent to pop out of that safe. I know they're just programs, but those dudes still give me the willies.</say></done>
+    </objective>
+  </phase>
+  <finish>You overcame incredible odds today, {player}; few operatives have encountered hostile Agents and lived to tell about it.&#10;&#10;But the apparent Machine interest in this mission was worrisome. Could they have their own agenda concerning the Assassin? Zion still needs several chemical ingredients to formulate the insecticide powerful enough to harm the Assassin, and I can only hope that the Machines do not get wind of our next operation.</finish>
+</mission>

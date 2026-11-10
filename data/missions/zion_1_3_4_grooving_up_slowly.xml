@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grooving Up Slowly, Zion Archive 1.3.4. Source: research/missions/transcripts/Zion1-3-4.md, two retail runs of
+     the archive replay (contact [Archived]Tyndall): run A from the start to the middle of phase 4, run B from the
+     middle of phase 4 to the end. Retail gave the ten followers random names in each run; this file uses run A's
+     (captain Zion Selective Phage, crew Behrens, Ferret, Gnu and Penguin, officer Callisto, members Anza, Abalakin,
+     Crane and Ophiuchi), with run B's lines renamed by role (Prairiedog is Zion Selective Phage, Binhex is Penguin,
+     Tombaugh is Gnu, Campbell is Anza, Parenago is Callisto). Run B's Bayesian has the tenth answer, which run A's
+     Behrens still had to give when its capture ends, so it is Behrens's. Retail's: the title, every line, the
+     objective texts "Search for Zion Selective Phage's crew using the monitoring stations", "Lead Zion Selective
+     Phage out of the area", "Lead Zion Selective Phage to meet his captured crew", "Lead Behrens (Ferret, Gnu,
+     Penguin) out of the area", "Talk to Behrens about rejoining Zion" (the others' talks follow its form) and "Don't
+     let X die", and the rewards (run B: 423,360 XP and 98,000 info). Ours: the description, the other objective
+     texts, the sites (phases 2 and 3 Offices as the screenshots show, phase 5 a RedPillExtraction for the extraction
+     point, the rest Normal), the enemy counts, the masked thug's name, and the looks (there are more followers than
+     redpill looks, so some wear civilian ones). The masked humans of phases 3 and 5 have no organisation of their own,
+     so they are Zion.
+     Gaps: bringing the captain to the monitoring station's control terminal is a Use of that computer, and the
+     security computer hack that stops reinforcements is an optional Use. Pallas the jailer (sex not shown) is a named
+     hostile with no goal of her own, as in retail's objective list. Penguin waited for his captain's order: the captain is already
+     with the player when the crew are reached, so the Operator's line about it is said on talking to Penguin. Tyndall's
+     "Well, that's everyone..." after the last answer can't be tied to whichever talk is last, so it is left out;
+     instead each of the four who say yes follows once they have said so (the captain once he has answered).
+     Behrens and Ferret, who decline, were led out of the jail in phase 3, and may keep following. In phase 5 the four
+     are led to Prymno, and the captain's farewell is a Talk after that; phase 5's objectives weren't seen, so its
+     Protect of the four is ours. -->
+<mission id="101304" title="Grooving Up Slowly" description="Rescue one of Morpheus' followers and his crew, and bring them back to Zion." plot="1"
+         order="1304" org="1" contact="Tyndall" exp="423360" info="98000">
+  <npc id="1" handle="Zion Selective Phage" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>Thanks again for helping all of us, {player}. Morpheus' dream remains alive in you!</say>
+  </npc>
+  <npc id="2" handle="Behrens" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="3" handle="Ferret" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" />
+  <npc id="4" handle="Gnu" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564" />
+  <npc id="5" handle="Penguin" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="6" handle="Pallas" type="HOSTILE" at="3" rsi="58010058" weapon="2568" />
+  <npc id="7" handle="Callisto" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <npc id="8" handle="Anza" type="FRIENDLY" at="4" rsi="58010058" weapon="2564" />
+  <npc id="9" handle="Abalakin" type="FRIENDLY" at="4" rsi="38000024" weapon="2564" />
+  <npc id="10" handle="Crane" type="FRIENDLY" at="4" rsi="35000024" weapon="2564" />
+  <npc id="11" handle="Ophiuchi" type="FRIENDLY" at="4" rsi="5a000040" weapon="2564" />
+  <npc id="12" handle="Prymno" type="FRIENDLY" at="5" rsi="60010058" weapon="2564">
+    <say>All right, I can handle the debriefing. Go take a break, operative--you've earned it.</say>
+  </npc>
+  <npc id="13" handle="Wasp" type="FRIENDLY" at="5" rsi="ec020058" weapon="2564">
+    <say display="5">Don't worry, Penguin is in good hands!</say>
+  </npc>
+  <npc id="14" handle="Masked Thug" type="HOSTILE" at="5" rsi="9c0000b4" weapon="2568" />
+
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, we need you to rescue one of Morpheus' followers. We received a distress call from him through encrypted channels. It appears that after Morpheus' death, his followers became somewhat disorganized and have come under attack from various hostile groups. Niobe's formation of a faction dedicated to bringing Morpheus' killer to justice has further divided their ranks. However, if you can rescue this person, we may be able to bring him, and through him, other followers of Morpheus, back into Zion's fold. It is also possible that Morpheus' followers can provide information that will shed more light on the motive and agencies behind Morpheus' murder.</briefing>
+    <enter><say contact="1">The distress call we received came from that building--you're looking for a man named Zion Selective Phage. I'm picking up multiple Exile signatures in the area. Be careful, but do everything you can to rescue Zion Selective Phage--the information and influence that he may be able to provide could prove invaluable to us!</say></enter>
+    <objective goal="1" text="Talk to Zion Selective Phage" type="Talk" npc="1">
+      <talk><say npc="1">Are you from Zion?</say></talk>
+      <done><say>Good work, operative. Now get Zion Selective Phage out of there safely.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Zion Selective Phage out of the area" type="Escort" npc="1" to="exit" after="1">
+      <talk><say npc="1">Get me out of here!</say></talk>
+    </objective>
+    <objective goal="3" text="Don't let Zion Selective Phage die" type="Protect" npc="1" />
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Zion Selective Phage has informed us that his crewmates are somewhere nearby, and probably under attack as he was. He knows of a Machine monitoring station in the area where you will likely be able to find some trace of them by hacking into the Machines' monitoring network--an old trick Morpheus taught him. I'm uploading the location to you now. Take Zion Selective Phage there with you.</briefing>
+    <enter>
+      <say contact="1">According to Zion Selective Phage, the Machine monitoring station is in that building. There doesn't appear to be a strong Machine presence there now, but they will surely respond in force if you trip an alarm. Try to get Zion Selective Phage to one of their control terminals without being seen. And remember, because this technically violates the Truce with the Machines, we will have to disavow any knowledge of your actions if you are caught. Be careful, {player}.</say>
+      <say>That must be the control terminal. Bring Zion Selective Phage to it.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Bring Zion Selective Phage to the control terminal" type="Use" object="1">
+      <done><say>Zion Selective Phage has gained access to the monitoring terminals. Now, if what he says is correct, we should be able to use their periodic scanning reports to locate his crew. The terminals are somewhere on that same floor.</say></done>
+    </objective>
+    <objective goal="2" text="Search for Zion Selective Phage's crew using the monitoring stations" type="Search" object="2" item="0" after="1">
+      <done>
+        <say contact="1">Well what do you know, Zion Selective Phage's hunch was right--there's the location of his lost crew. I wonder why Morpheus never showed us that trick himself? You're done there, Warrior, so get out before more reinforcements arrive.</say>
+        <say npc="1">That's them all right! I know where that is. Let's go!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Lead Zion Selective Phage out of the area" type="Escort" npc="1" to="exit" after="2" />
+    <objective goal="4" text="Hack the security computer" type="Use" object="3" optional="1">
+      <done><say>Nice work. That hack will prevent them from calling in further reinforcements.</say></done>
+    </objective>
+    <objective goal="5" text="Don't let Zion Selective Phage die" type="Protect" npc="1" />
+  </phase>
+
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>I'm uploading the location from the Machines' monitor record to you now. I hope that Zion Selective Phage's crew is still there! And make sure you bring him with you--you'll need him to reassure his crew that you're on their side.</briefing>
+    <enter>
+      <say>If Zion Selective Phage is correct, his crewmates should be in that building. They are probably being held by an anti-Zion faction--perhaps Exiles, imposter Agents or those masked humans. There are four crew members: Behrens, Ferret, Gnu and Penguin. Bring them all safely out of the area.</say>
+      <say npc="6">Nobody escapes from my jail!</say>
+      <say>An alarm has gone off in that area. Make sure you get Zion Selective Phage and his crew out safely!</say>
+    </enter>
+    <objective goal="1" text="Lead Zion Selective Phage to meet his captured crew" type="Escort" npc="1" to="npc:2">
+      <talk><say npc="1">We have to rescue my crew! If they're being held behind a computer-controlled security system, I can probably hack it for us.</say></talk>
+      <done><say>Zion Selective Phage has disabled the electromagnetic seal on the cell doors.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Behrens out of the area" type="Escort" npc="2" to="exit" after="1">
+      <talk>
+        <say>Ah, you've found Behrens.</say>
+        <say npc="2">Oh, thank goodness! Get me out of here!</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Lead Ferret out of the area" type="Escort" npc="3" to="exit" after="1">
+      <talk>
+        <say>Look, it's Ferret.</say>
+        <say npc="3">Ready when you are.</say>
+      </talk>
+    </objective>
+    <objective goal="4" text="Lead Gnu out of the area" type="Escort" npc="4" to="exit" after="1">
+      <talk>
+        <say>There's Gnu.</say>
+        <say npc="4">I think I just started liking Zion again.</say>
+      </talk>
+    </objective>
+    <objective goal="5" text="Lead Penguin out of the area" type="Escort" npc="5" to="exit" after="1">
+      <talk>
+        <say>There's Penguin.</say>
+        <say npc="5">Who are you? I'm not moving until I get orders from Captain Zion Selective Phage.</say>
+        <say>It appears that Zion Selective Phage has convinced Penguin to cooperate. You should be able to lead Penguin out now.</say>
+        <say npc="5">Well, since Captain Zion Selective Phage says so...</say>
+      </talk>
+    </objective>
+    <objective goal="6" text="Don't let Zion Selective Phage die" type="Protect" npc="1" />
+    <objective goal="7" text="Don't let Behrens die" type="Protect" npc="2" />
+    <objective goal="8" text="Don't let Ferret die" type="Protect" npc="3" />
+    <objective goal="9" text="Don't let Gnu die" type="Protect" npc="4" />
+    <objective goal="10" text="Don't let Penguin die" type="Protect" npc="5" />
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Those masked thugs were more organized than expected--perhaps this indicates that they are indeed doing tasks for the Machines, as Zion Selective Phage suspects. Now that you've got his crew out safely, he wants you to take them to one of their safe houses to meet up with the rest of their group of old Morpheus followers. I'm sending the location to you now--take Zion Selective Phage and his crew there, and be alert for ambushes.</briefing>
+    <enter><say contact="1">The rest of Zion Selective Phage's group should be at this location. Take him and his crew to meet them. Now, {player}, keep this between us, but... See how many of them you can interest in rejoining Zion, now that they no longer have Morpheus to follow. Some of them may be inclined to join Niobe's quest for revenge on his killer but I suspect that a few, like Zion Selective Phage, want to return to Zion. We must show them that they will be welcomed back with open arms!</say></enter>
+    <objective goal="1" text="Take Zion Selective Phage and his crew to meet the rest of their group" type="Escort" npc="1,2,3,4,5" to="npc:7">
+      <done><say contact="1">Well, they're all together. Now, talk to Zion Selective Phage about rejoining Zion. If we can get him to back us up, perhaps we can show them all the right path.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Zion Selective Phage about rejoining Zion" type="Talk" npc="1" after="1">
+      <talk><say npc="1">I was hoping you'd ask! Yes, now that Morpheus is gone, I think it's time for me to go back to Zion. That's where I belong. But you'd better check with Captain Callisto before asking everyone else--she's the other officer here.</say></talk>
+      <done><say contact="1">Wonderful, Zion Selective Phage has decided to return to Zion! Now talk to Callisto, as he requested--I'm sure that the rest will be easy to convince now that Zion Selective Phage is with us!</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Callisto about rejoining Zion" type="Talk" npc="7" after="2">
+      <talk><say npc="7">Back to Zion? Hah! As if your Council has done anything about seeing justice done for Morpheus' murder! Zion is perfectly happy to sit by nice and happy behind their Machine buddies while people like Morpheus and Niobe fight and die for them! I'm joining up with Niobe to find Morpheus' killer. Zion can go to hell for all I care--you tell Lock I said that.</say></talk>
+      <done><say contact="1">Well! I can't blame Callisto for wanting to help Niobe take revenge on Morpheus' killer, but there's no call to be rude to Commander Lock. Hopefully her attitude isn't shared by the rest of their group. Talk to all of them, {player}, and find out who will return to Zion.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Behrens about rejoining Zion" type="Talk" npc="2" after="3">
+      <talk><say npc="2">Go back to Zion? No thanks. Too much bureaucracy. Give me a single, strong leader to follow, like Morpheus... I'd have followed that man to hell and back. Heck, we did, most of us, more than once. Niobe--well, she's got a little of that. More than most.</say></talk>
+      <done><say contact="1">Bureaucracy? It's true that it can sometimes take our Council a while to reach a decision... but in the end it's more reliable than any one person, even a charismatic leader like Morpheus!</say></done>
+    </objective>
+    <objective goal="5" text="Talk to Ferret about rejoining Zion" type="Talk" npc="3" after="3">
+      <talk><say npc="3">Zion? I don't think so. There's too much else to see outside of that small little world. Morpheus showed us some of it. I want to see more.</say></talk>
+      <done><say contact="1">Hm. I'm not sure what Morpheus could have shown them that Zion doesn't have. It's almost like he was a religious leader to these people.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to Gnu about rejoining Zion" type="Talk" npc="4" after="3">
+      <talk><say npc="4">You mean, Zion would take me back? Huh. Well... Well all right, you've got yourself a soldier! Your helping the Captain and the rest of us convinced me that Zion's the side with their heart in the right place. Let's go!</say></talk>
+      <done><say contact="1">Good work, {player}! You see, Gnu's conversion proves that good work really is its own reward!</say></done>
+    </objective>
+    <objective goal="7" text="Talk to Penguin about rejoining Zion" type="Talk" npc="5" after="3">
+      <talk><say npc="5">If Captain Zion Selective Phage is going back to Zion, then so am I.</say></talk>
+      <done><say contact="1">Oh, excellent! Penguin is evidently a well-trained soldier, it will be good to have him on our side again.</say></done>
+    </objective>
+    <objective goal="8" text="Talk to Anza about rejoining Zion" type="Talk" npc="8" after="3">
+      <talk><say npc="8">Yes, I'd like to go with you. There's someone in Zion... er, well... I have a personal interest. So yes.</say></talk>
+      <done><say contact="1">Good! Another sheep returns to our fold.</say></done>
+    </objective>
+    <objective goal="9" text="Talk to Abalakin about rejoining Zion" type="Talk" npc="9" after="3">
+      <talk><say npc="9">Count me out. I heard that it was Lock who killed Morpheus! You think I'm going to fall into his little trap! Nice try, traitor!</say></talk>
+      <done><say contact="1">What? Commander Lock killed Morpheus? That's the most preposterous thing I've ever heard! Don't waste any more time on Abalakin, Warrior.</say></done>
+    </objective>
+    <objective goal="10" text="Talk to Crane about rejoining Zion" type="Talk" npc="10" after="3">
+      <talk><say npc="10">Rejoin Zion? Huh... Well, here's the thing. Morpheus was my inspiration for joining up in the first place, right? He gave us a reason for fighting. He gave us hope! We wanted that so badly. So when he left, I followed. Now he's gone, but Niobe is carrying on his fight. I feel like I need to help her. For Morpheus.</say></talk>
+      <done><say contact="1">Well, it's hard to fight against convictions that strong. Morpheus really did have a cult following behind him!</say></done>
+    </objective>
+    <objective goal="11" text="Talk to Ophiuchi about rejoining Zion" type="Talk" npc="11" after="3">
+      <talk><say npc="11">Back to Zion? No thanks. You weren't around back then, but once Morpheus really believed it was his destiny to find the One, he became... I don't know... like a real hero, a genuine leader, you know? He inspired people because he had a vision. He knew he could save us all. And we believed him. That's why we followed him. And I still believe him. I'm going to help Niobe carry on his mission.</say></talk>
+      <done><say contact="1">I don't think I ever realized how much Morpheus inspired these people. He really had a tremendous amount of charisma.</say></done>
+    </objective>
+    <objective goal="12" text="Lead Zion Selective Phage out of the area" type="Escort" npc="1" to="exit" after="2">
+      <talk><say npc="1">Only four of us, eh? Well don't you worry, we'll do you proud once we're back in Zion. Lead on!</say></talk>
+    </objective>
+    <objective goal="13" text="Lead Gnu out of the area" type="Escort" npc="4" to="exit" after="6">
+      <talk><say npc="4">When do we start?</say></talk>
+    </objective>
+    <objective goal="14" text="Lead Penguin out of the area" type="Escort" npc="5" to="exit" after="7">
+      <talk><say npc="5">As long as I still get to be in Captain Zion Selective Phage's crew, I have no complaints.</say></talk>
+    </objective>
+    <objective goal="15" text="Lead Anza out of the area" type="Escort" npc="8" to="exit" after="8">
+      <talk><say npc="8">Is Gnu ready? Er, and Captain Zion Selective Phage and the others? Well, let's get to it then.</say></talk>
+    </objective>
+    <objective goal="16" text="Don't let Zion Selective Phage die" type="Protect" npc="1" />
+    <objective goal="17" text="Don't let Behrens die" type="Protect" npc="2" />
+    <objective goal="18" text="Don't let Ferret die" type="Protect" npc="3" />
+    <objective goal="19" text="Don't let Gnu die" type="Protect" npc="4" />
+    <objective goal="20" text="Don't let Penguin die" type="Protect" npc="5" />
+  </phase>
+
+  <phase site="RedPillExtraction" enemy="Zion" enemies="0">
+    <briefing>Since they've been away from Zion and using other hardline systems, we need to process them at one of our extraction points and get them hooked back into our own hardline system again. I'm marking the nearest extraction point for you as a waypoint.</briefing>
+    <enter>
+      <say contact="1">The extraction point is in that building. I haven't received a response to my handshake with their Prymno... That's just a routine contact but she's usually good about responding quickly. They might be having comm link trouble.</say>
+      <say>Uh-oh, something's gone wrong! You'd better find Prymno, and fast! She should be in a room nearby.</say>
+      <say>What? There's a masked thug there! So that's why Prymno didn't respond to Tyndall's call. Take the attacker down, quickly!</say>
+    </enter>
+    <objective goal="1" text="Kill the masked thug" type="Defeat" npc="14">
+      <done><say contact="1">Good work, Warrior. I will have to warn Commander Lock about the masked humans--they are clearly very dangerous. Now, lead your four redpills to their extraction team handlers.</say></done>
+    </objective>
+    <objective goal="2" text="Lead the four redpills to their extraction team handlers" type="Escort" npc="1,4,5,8" to="npc:12" after="1">
+      <done>
+        <say npc="12">All right, I can handle the debriefing. Go take a break, operative--you've earned it.</say>
+        <say npc="5">Good, Captain Zion Selective Phage is still okay.</say>
+        <say npc="13">Don't worry, Penguin is in good hands!</say>
+        <say npc="8">Good, Gnu uh and everyone else made it okay.</say>
+        <say npc="4">Well, this is it. Thanks so much--I'll see you back in Zion!</say>
+        <say>The extraction team will take it from here. Oh wait a moment--it looks like Zion Selective Phage would like to speak with you. You'd better go see what he wants.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Zion Selective Phage" type="Talk" npc="1" after="2">
+      <talk><say npc="1">Thanks for all your hard work! It seems that Morpheus' old "cult" following has entered a new phase now--some of us back to Zion, some to Niobe. It's the end of an era in a sense... but we all still carry Morpheus' dream, the one he had even back then when he had just begun looking for the One: the dream of human liberation.</say></talk>
+      <done><say contact="1">Morpheus inspired great loyalty in his friends--and you're inspiring people with your own efforts today, {player}! You may leave the extraction area now.</say></done>
+    </objective>
+    <objective goal="4" text="Don't let the four redpills die" type="Protect" npc="1,4,5,8" />
+  </phase>
+  <finish>Warrior, today we saw evidence of the great personal charisma that Morpheus gained when he truly began to believe in his quest to find the One. And Morpheus fulfilled that quest before he died. Now we have to believe that we will succeed in our own quest to discover the truth behind his death--and perhaps what we have learned today about Morpheus' leadership qualities will help us unravel the mystery!</finish>
+</mission>

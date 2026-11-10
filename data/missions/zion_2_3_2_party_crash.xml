@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Party Crash, Zion story mission 2.3.2. Source: research/missions/transcripts/Zion2-3-2.md (the archive replay of
+     [Zion Archive 2.3.2]). In the replay the contact was [Archived]Anome; the mission is offered by Tyndall here like
+     the other Zion missions, and Anome's lines are spoken as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, and every NPC name (the
+     briefing's "the these" is kept as shown). The Commando's and the Succubus's lines were seen in team chat during the
+     meeting fight. Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab
+     was never opened), the sites (unnamed buildings: Normal; the monitoring station is a ZionOutpost), the looks and the
+     enemy counts. Item stand-in: the bug is Bug (6824). Rewards: the 164,072 experience and 98,000 information shown
+     right after this mission completed. The commandos are an Exile group and have Exile looks.
+     Gaps: the Operator's lines on nearing the file cabinet have no position to fire at in a generated phase, so "The
+     file cabinet is in that room." is said on arrival and "That's it, put the bug in there." is left out. The silent
+     alarm's building security programs came after the bug was planted and were never fought; no hostiles are spawned
+     in phase 2. At the meeting, retail's commandos were neutral and pleaded for peace while the player fought the
+     Exiles; here one Commando stands by with one of his three lines ("We come in peace."; "We can work this out." and
+     "This has been an unfortunate...misunderstanding." are left out). What triggered Commander Lock's cease-fire isn't
+     in the log; here it is said when the Succubus and the phase's Exiles are dead. Anome's call to destroy the
+     Merovingians is said on arrival with the Operator's warning about the welcoming committee. -->
+<mission id="102302" title="Party Crash" description="Plant a bug to overhear a meeting between the commandos and the Merovingian's Exiles." plot="1"
+         order="2302" org="1" contact="Tyndall" exp="164072" info="98000">
+  <npc id="1" handle="Cebriones" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say after="1">Careful with that thing, it's delicate.</say>
+  </npc>
+  <npc id="2" handle="Ruchbah" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say after="1">They're probably meeting at the alternate location.&#10;&#10;What, Anome didn't tell you about that?</say>
+  </npc>
+  <npc id="3" handle="Brenna Quada" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say display="5">You know who else we haven't spotted lately? Those masked redpills. I wonder where they went off to. Is it just coincidence that they disappeared shortly before the commandos arrived in the City?</say>
+  </npc>
+  <npc id="4" handle="Adrian Leiden" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say display="5">We're still monitoring the landing sites you discovered recently. Those black helicopters come and go much more frequently than we'd thought.</say>
+  </npc>
+  <npc id="5" handle="Jeff Topper" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say display="5">This place doesn't look like much, but that's because we need to keep a low profile--and to be able to relocate at a moment's notice.</say>
+  </npc>
+  <npc id="6" handle="Janeth Zalenski" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say display="5">As sort of a side project, I'm working on implanting surveillance cameras in pigeons. I think it's got a lot of potential, but so far I just have a lot of jerky footage of sidewalks--and other pigeons.</say>
+  </npc>
+  <npc id="7" handle="Gino Ezell" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say display="5">Data analysis isn't the most glamorous job in Zion, but it's the only way to find out most of what goes on in the City.</say>
+  </npc>
+  <npc id="8" handle="Commando" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say display="5">We come in peace.</say>
+  </npc>
+  <npc id="9" handle="Succubus" type="HOSTILE" at="4" rsi="a8060090" weapon="2568">
+    <say>A spy!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So, there's a new group in the Matrix, is there? Trying to horn in on our territory, no doubt. Good thing you recovered that list of their landing points. In fact, intel thinks that the these so-called commandos have arranged a meeting with the Frenchman's cronies near one of those points. That's where you come in.&#10;&#10;First, you're gonna meet Cebriones and get a bug.</briefing>
+    <enter><say>Sounds like Anome has his cloak and dagger on today.&#10;&#10;Cebriones's in there with the bug.</say></enter>
+    <objective goal="1" text="Get the bug from Cebriones" type="Get" npc="1" item="6824">
+      <talk><say npc="1">You're Anome's runner? Okay, I've got the bug for you.</say></talk>
+      <done><say npc="1">Here, I've got that bug you'll need.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You're going to plant that lovely little bug in a certain file cabinet, where it will pick up every word spoken by the commandos and those pestiferous Merovingian lickspittles in their upcoming meeting.&#10;&#10;The meeting isn't supposed to happen for a little while yet, so I don't think you need to worry about running into any hostiles.</briefing>
+    <enter>
+      <say>I'm not scanning any active alarm systems in there, but that doesn't mean they don't have some passive ones. I'm not sure I share Anome's confidence. I'll ping you when you're close to that file cabinet.</say>
+      <say>The file cabinet is in that room.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Put the bug in the file cabinet" type="Put" object="1" item="6824">
+      <done><say>I hate to say "I told you so," but I'm picking up building security programs heading in your direction. Betcha there was a silent alarm in there. You might want to make yourself scarce.</say></done>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Merovingian" enemies="0">
+    <briefing>Building security? Bah. Nothing to worry about. Those programs hardly have sufficient logic loops to dress themselves, let alone find that bug you planted.&#10;&#10;Head over to our monitoring station and contact Ruchbah, our local surveillance chief. She should be receiving data from the bug by the time you get there.</briefing>
+    <enter><say>That's the monitoring station. Ruchbah should be in there.</say></enter>
+    <objective goal="1" text="Talk to Ruchbah" type="Talk" npc="2">
+      <talk><say npc="2">I'm afraid I don't have anything for you, operative: the bug is transmitting, but no meeting is taking place at that location. It's possible that the security alert there earlier frightened them off.</say></talk>
+      <done><say>Uh-oh. This is what Anome gets for taking their building security lightly. I guess we'd better go see what he thinks of this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>What? They moved the meeting? How could... Where... Hell! Hang on a sec. ...&#10;&#10;Okay, okay. Intel had an alternate address where they thought the meeting had a lesser chance of taking place. I'm sending you there now. It's probably underway already, so just get there and...learn what you can. If the commandos or the Merovingian's peons cause trouble, eviscerate them!</briefing>
+    <enter>
+      <say>I'm reading multiple commando and Merovingian signals in there. That's where the meeting's going down, all right. What's Anome got us into now?</say>
+      <say>Head's up. Looks like there's a welcoming committee.</say>
+      <say contact="1">They're trying to help the Merovingian! The stinking turd lump who killed Morpheus! Destroy the Merovingians, now!</say>
+    </enter>
+    <objective goal="1" text="Kill the Succubus" type="Defeat" npc="9">
+      <done><say>I'm scanning more Exiles in nearby rooms. We'd better get them all.</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll" />
+    <complete><say contact="1">... Cease hostilities and pull out of the mission area immediately, operative. This is... That is a direct order from Commander Lock. I repeat: cease fire and leave the area immediately.</say></complete>
+  </phase>
+  <finish>I apologize for the abrupt termination of the mission, soldier. The decision was...out of my hands. Commander Lock has decided that we should...bear the olive branch when dealing with the commandos. Even if they're trying to assist our enemies!&#10;&#10;I--no, never mind. Tyndall will be your controller on the next mission. That is all.</finish>
+</mission>

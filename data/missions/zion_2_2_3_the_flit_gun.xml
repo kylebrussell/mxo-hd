@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Flit Gun, Zion story mission 2.2.3. Source: research/missions/transcripts/Zion2-2-3.md (the archive replay of
+     [Zion Archive 2.2.3], given by [Archived]Tyndall; one screenshot during phase 3 and 33 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, every NPC name, and the objective "Kill
+     the attacking Exiles" (phase 3, the one time the Objectives tab was open). Ours: the description (the Summary tab
+     was never opened), the other objective texts, the sites (Coyote's "facility in the City" is a ZionOutpost, the
+     rest Normal), the looks and the enemy counts. Item stand-ins: the three insecticide ingredients (retail's item was
+     "Ingredient") are Poison (6804), Medicine (6808) and Medical_Supplies (6829), one per trade, since each hand-over
+     needs its own item; the flit gun handle prototype is Device (6820), the casing prototype Computer_Parts (6827),
+     the gun barrel Weapon (6811). Rewards: the 368,285 experience and 94,500 information shown right after this
+     mission completed.
+     Gaps: Coyote hands the three ingredients over in one go in retail; here they are three Gets from him. Each trade
+     is a Talk, a Give of the ingredient and a Get of the part. Phase 3's Exiles burst in after the casing changed hands
+     in retail; here they are on the floor from the start. Elite Guard and Machine Gunman (Team chat only during that
+     fight, allegiance not shown) aren't placed. In phase 4 Wong The Exterminator (never seen; "his signature is very
+     faint") isn't placed; Franke waits to be attacked (attacksOnSight="0"), reaching him is an optional Talk that carries
+     his "Die, flesh!", and the gun barrel the Operator says he has is looted from his body (retail's log doesn't show
+     where the barrel was handed over; Agent Wong takes the last ingredient). Agent Wong "pops up" in retail after
+     Franke dies; here he is there from the start and his Talk opens once the barrel is taken. The Operator's 11:34:40
+     line (its middle cut off between screenshots; "they got to Wong The Exterminator" is our best reading) is said on
+     arrival after his 11:36:09 one, whose content comes first. Lines not captured (Coyote 11:24:39, Agent Wilson
+     11:27:03, Agent Wong 11:43:06, the Operator at 11:44:42) aren't said; one fragment of Tyndall's 11:25:04 line was
+     unreadable and is left out. Arago's safe takes the three parts as three Puts. Zion Gunman and Zion Selective
+     Phage were at Arago's location but said nothing we could read; the three Zion NPCs whose lines were in Team chat
+     are placed with them. -->
+<mission id="102203" title="The Flit Gun" description="Trade insecticide ingredients to the Machines for the parts of a flit gun." plot="1"
+         order="2203" org="1" contact="Tyndall" exp="368285" info="94500">
+  <npc id="1" handle="Coyote" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564">
+    <say>Watch yourself around the Machines, operative. Supposedly they always keep their word, but... Well, I wouldn't want to be there the first time they broke it.</say>
+  </npc>
+  <npc id="2" handle="Agent Wilson" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Leave now.</say>
+  </npc>
+  <npc id="3" handle="Dobrovoleva" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say>Operator, get me an exit! Operator? Hello?</say>
+  </npc>
+  <npc id="4" handle="Franke" type="HOSTILE" at="4" rsi="c6020058" weapon="2568" attacksOnSight="0" />
+  <npc id="5" handle="Agent Wong" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>I suggest that you depart immediately, human. We are unable to guarantee your safety in this sector.</say>
+  </npc>
+  <npc id="6" handle="Arago" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say>We need to get those flit gun components in the safe immediately. Is something wrong?</say>
+  </npc>
+  <npc id="7" handle="Zion Pathogenist" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">
+    <say display="5">I don't trust the Machines. They'd better not be pulling a fast one on us with these components.</say>
+  </npc>
+  <npc id="8" handle="Zion Martial Arts Initiate" type="FRIENDLY" at="5" rsi="58010058" weapon="2564">
+    <say display="5">We almost didn't get here in time to set up: those imposter Agent bastards jacked our designated hardline.</say>
+  </npc>
+  <npc id="9" handle="Zion Network Hacker" type="FRIENDLY" at="5" rsi="ec020058" weapon="2564">
+    <say display="5">I hope those Exiles do try something--we're ready for them!</say>
+  </npc>
+  <phase site="ZionOutpost" enemy="Merovingian" enemies="0">
+    <briefing>Well met, soldier of Zion! We have a crucial and delicate mission for you today, a mission whose outcome will determine the success of our struggle against the Merovingian's deadly Assassin. The "flit gun" shown in the schematic you recovered from the Machines looks like the ideal delivery device for our red insecticide. Unfortunately, we do not have sufficient engineering resources to code a working flit gun from scratch. After much discussion, the Council has arranged a deal with the Machines whereby we will trade them insecticide ingredients for flit gun parts. Once we have the parts, we can decompile them to learn their component code. You will be our representative in this vital exchange. Proceed to our facility in the City and pick up the insecticide ingredients from our contact, Coyote.</briefing>
+    <enter><say>That's the place. Coyote should have the insecticide ingredients ready for you.</say></enter>
+    <objective goal="1" text="Get the first insecticide ingredient from Coyote" type="Get" npc="1" item="6804">
+      <done><say npc="1">Good to see you, {player}. You weren't followed, were you? Ha-ha, just a little joke of mine. Here, take these insecticide ingredients.</say></done>
+    </objective>
+    <objective goal="2" text="Get the second insecticide ingredient from Coyote" type="Get" npc="1" item="6808" after="1" />
+    <objective goal="3" text="Get the third insecticide ingredient from Coyote" type="Get" npc="1" item="6829" after="2">
+      <done><say npc="1">You'll need these insecticide ingredients to make the trade with the Machines.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You'll be trading the first ingredient for a flit gun handle prototype, {player}. Your contact for this exchange is Agent Wilson. Be advised that we are reading increased patrols of the Merovingian's Exiles in the City. We know that they seek to prevent us from using the insecticide on the Assassin; let us hope that they do not learn of our trade agreement with the Machines. Be cautious, {player}. ... Tyndall out.</briefing>
+    <enter><say>Well, the good news is that Agent Wilson is in there; the bad news is that Agent Wilson is in there. I don't know about you, but hanging out with Agents gives me the willies.</say></enter>
+    <objective goal="1" text="Talk to Agent Wilson" type="Talk" npc="2">
+      <talk><say npc="2">Human, I have the flit gun handle prototype. I perceive that you have the insecticide ingredient. Give it to me, and we shall make the exchange.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the first insecticide ingredient to Agent Wilson" type="Give" npc="2" item="6804" after="1">
+      <talk><say npc="2">Give me the ingredient, human.</say></talk>
+    </objective>
+    <objective goal="3" text="Get the flit gun handle prototype from Agent Wilson" type="Get" npc="2" item="6820" after="2">
+      <done><say npc="2">Time is a limiting factor. Take the flit gun handle. Quickly.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>You'll trade the second ingredient for a flit gun casing prototype. Your contact for this exchange is Dobrovoleva. The Exile presence has increased dramatically in your sector, {player}. We don't yet know if they're zeroing in on you, but it looks as though something in the area has caught their attention.</briefing>
+    <enter><say>Exiles, shmexiles! They've sure been getting nosy since they killed Morpheus. I'm scanning a signal matching Dobrovoleva's reported profile in there, along with a few others. Looks quiet.</say></enter>
+    <objective goal="1" text="Talk to Dobrovoleva" type="Talk" npc="3">
+      <talk><say npc="3">'Bout damn time you got here. The Machines told me to keep this low-profile, but my controller tells me this district is swarming with Exile patrols. So let's do this fast, right? Gimme the insecticide ingredient.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the second insecticide ingredient to Dobrovoleva" type="Give" npc="3" item="6808" after="1">
+      <talk><say npc="3">Damn it, just give me the ingredient!</say></talk>
+    </objective>
+    <objective goal="3" text="Get the flit gun casing prototype from Dobrovoleva" type="Get" npc="3" item="6827" after="2">
+      <done>
+        <say npc="3">This better be the real stuff. ... Okay, take the casing. Come on, come on.</say>
+        <say>I'm picking up incoming Exile programs! We can't let them get either the casing or the ingredient--you've got to take them out!</say>
+        <say npc="3">What's that, operator? Exiles? In the building? Aw, crap!</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Kill the attacking Exiles" type="DefeatAll">
+      <done><say>That's all the hostiles. You'd better get out of there with the casing prototype.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I heard about the ambush, Warrior; it appears as though the Exiles are targeting your trades somehow. Under less critical circumstances I would postpone the rest of your mission until we can better ensure your safety, but Zion must have those flit gun components immediately! Please do whatever you can to obtain the final part, the gun barrel. Your Machine contact for the exchange is Wong The Exterminator.</briefing>
+    <enter>
+      <say>I don't like the looks of these readings: Wong The Exterminator's signature is very faint, and there's a lot of other activity in there.</say>
+      <say>Damn, I was afraid of that: they got to Wong The Exterminator. Hey, my scan says that Franke has the gun barrel--get it back!</say>
+    </enter>
+    <objective goal="1" text="Find Franke" type="Talk" npc="4" optional="1">
+      <done><say npc="4">Die, flesh!</say></done>
+    </objective>
+    <objective goal="2" text="Get the gun barrel from Franke's body" type="Loot" npc="4" item="6811">
+      <done><say>Good work, but we're still without a Machine to give the insecticide ingredient to in exchange. Wait... An Agent just popped up on my scanner; he should be in there with you somewhere. Go find him.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Agent Wong" type="Talk" npc="5" after="2">
+      <talk>
+        <say npc="5">This area is not quite secure. We cannot allow Exiles to witness the exchange.</say>
+        <say>You heard the program: time to finish off the rest of the Exiles.</say>
+      </talk>
+    </objective>
+    <objective goal="4" text="Kill the rest of the Exiles" type="DefeatAll">
+      <done><say>That's all of them. Agent Wong should be ready for the ingredient now.</say></done>
+    </objective>
+    <objective goal="5" text="Give the third insecticide ingredient to Agent Wong" type="Give" npc="5" item="6829" after="4">
+      <done><say npc="5">Very well, human. I will receive the ingredient now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You've got all the flit gun components--wonderful! Take them to our operative, Arago; he'll begin the process of breaking down and analyzing their code. Hopefully, we will be able to begin producing functional copies of the gun almost immediately. Hurry, soldier! Lives hang in the balance!</briefing>
+    <enter><say>That's where you're supposed to meet Arago. I swear, if any more Exiles pop out of the woodwork, I'm gonna scream.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Arago" type="Talk" npc="6">
+      <talk><say npc="6">You've got the components? Great. Put them in the safe here. The scanners embedded in it will begin decompiling the flit gun code.</say></talk>
+    </objective>
+    <objective goal="2" text="Put the flit gun handle prototype in the safe" type="Put" object="1" item="6820" after="1" />
+    <objective goal="3" text="Put the flit gun casing prototype in the safe" type="Put" object="1" item="6827" after="1" />
+    <objective goal="4" text="Put the gun barrel in the safe" type="Put" object="1" item="6811" after="1" />
+    <complete><say npc="6">Zion's mainframes are receiving and processing the data now. We should have something shortly.</say></complete>
+  </phase>
+  <finish>That was well done, {player}. It seems that the Machines kept their end of the bargain: our hackers were able to decompile the components you gathered, and we will soon be able to begin mass-producing them for use against the Assassin's flies. We will send you one as soon as they are ready. Once you and our other loyal operatives have these weapons in hand, it will not be long before we rid the Matrix of the Assassin's foul presence.</finish>
+</mission>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Heights, Zion story mission 2.3.5. Source: research/missions/transcripts/Zion2-3-5.md (the archive replay of
+     [Zion Archive 2.3.5]). In the replay the contact was [Archived]Anome; the mission is offered by Tyndall here like
+     the other Zion missions, and Anome's lines are spoken as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, every NPC name, and the
+     objective "Kill the Slashers" (seen in the Objectives window in one of the two fights). Slasher Shank's line was
+     seen in team chat. The first briefing was cut between two screenshots at "I have just" / "the thing:"; the halves
+     join grammatically and are read together ("I have just the thing:"). Ours: the description (the Summary tab was
+     never opened), the other objective texts, the sites (unnamed buildings in Camon Heights: Normal), the looks and
+     the enemy counts. No mission items. Rewards: the 308,000 experience and 98,000 information shown right after this
+     mission completed. The commandos are an Exile group and have Exile looks; the Slashers are a street gang with no
+     org and are Merovingian here.
+     Gaps: the commando squads fought beside the player in retail; here they only follow (Smallden's squad from phase
+     1, Royal's from phase 3). Each squad stayed behind after its fight; followers can't be released, so Smallden's
+     squad keeps following into phases 3 and 4 and only its farewell lines say it stays. Those lines wait for phase 2's
+     kill goal, which is numbered 3 (and Slasher Shank's 4) so that they don't count phase 1's goals 1 and 2. Anome's
+     mid-fight praise ("that slag never knew what hit her") is said when Slasher Shank, a named Slasher seen in the
+     fight, dies. The neighbourhood isn't forced to Camon Heights. -->
+<mission id="102305" title="The Heights" description="Fight alongside the commandos to break the Slashers gang's hold on Camon Heights." plot="1"
+         order="2305" org="1" contact="Tyndall" exp="308000" info="98000">
+  <npc id="1" handle="Smallden" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="3">I have orders to remain behind and secure this location, sir.</say>
+  </npc>
+  <npc id="2" handle="Firden" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>It's good to be working with you, sir.</say>
+    <say after="3">Good luck, sir!</say>
+  </npc>
+  <npc id="3" handle="Tjarden" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say>Ready, sir.</say>
+    <say after="3">It's been a pleasure working with you, sir.</say>
+  </npc>
+  <npc id="4" handle="Slasher Shank" type="HOSTILE" at="2" rsi="a8060090" weapon="2568">
+    <say>Camon Heights is ours!</say>
+  </npc>
+  <npc id="5" handle="Royal" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Vandenberg" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>All set for Slasher hunting, sir.</say>
+  </npc>
+  <npc id="7" handle="Oyler" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+    <say>We've been looking forward to this, sir.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Well, {player}, since we're supposed to be all buddy-buddy with those commando fellows now, Commander Lock thinks it would be a good idea for you to work alongside them on a mission. As it turns out, I have just the thing: the Slashers gang has been making a major power play in Camon Heights--roughing up our operatives and terrorizing the local merchants. The cops don't seem inclined to do anything about it, so it's up to us to make the neighborhood safe again for our people.&#10;&#10;The commandos have assigned a squad led by Smallden to assist you. Meet them at the designated location before proceeding to Camon Heights.</briefing>
+    <enter><say>I'm picking up the squad's signals in there.</say></enter>
+    <objective goal="1" text="Talk to Smallden" type="Talk" npc="1">
+      <talk><say npc="1">Ready when you are, sir. The Slashers won't know what hit them.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Smallden, Firden and Tjarden out of the area" type="Escort" npc="1,2,3" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I see you've got your boy scouts with you. Now, go make those Slashers pay. Kill every Slasher you see. Make them scream.</briefing>
+    <enter><say>Slashers, Slashers everywhere. Ready for a rumble? Let's do it.</say></enter>
+    <objective goal="3" text="Kill the Slashers" type="DefeatAll" />
+    <objective goal="4" text="Kill Slasher Shank" type="Defeat" npc="4">
+      <done><say contact="1">Yes, that's the way, operative; that slag never knew what hit her. Now, kill more of them!</say></done>
+    </objective>
+    <complete><say>That takes care of all the Slashers in that area. Head outside--Anome says he has some more boy scouts for you to play with.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The commandos have some more funboys for you to break in, operative. Their leader this time is Royal, and supposedly these programs are a little tougher than the last ones. Whatever. They've yet to impress me, I can tell you that.</briefing>
+    <enter><say>You're right on target.</say></enter>
+    <objective goal="1" text="Talk to Royal" type="Talk" npc="5">
+      <talk><say npc="5">Lead the way. Sir.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Royal, Vandenberg and Oyler out of the area" type="Escort" npc="5,6,7" to="exit" after="1">
+      <talk><say npc="5">Yes. Sir.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Intel believes they've found the Slasher HQ. Kick their door down and kill every last one of those murderous bitches. Oh, and try not to break too many of your toy soldiers.</briefing>
+    <enter><say>These Slashers have a rudimentary alarm system. And they look more powerful than the last programs you fought.</say></enter>
+    <objective goal="1" text="Kill the Slashers" type="DefeatAll">
+      <done><say>That's all of them. It looks like the commandos have orders to stay behind.</say></done>
+    </objective>
+  </phase>
+  <finish>Well, that's all very lovely, operative. I'm sure that Commander Lock and the Council will be pleased to see that we can work together with the commandos for peace and harmony, blah blah, etc etc.&#10;&#10;But that doesn't mean we have to trust them.</finish>
+</mission>

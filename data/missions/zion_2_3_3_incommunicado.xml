@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Incommunicado, Zion story mission 2.3.3. Source: research/missions/transcripts/Zion2-3-3.md (the archive replay of
+     [Zion Archive 2.3.3], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, every NPC name, and the
+     objective texts seen in the Objectives window ("Get information on Agassiz's whereabouts", "Get the Disk", "Upload
+     the Disk at a hardline"). Tandra Branson's last line was seen in team chat. Ours: the description (the Summary tab
+     was never opened), the other objective texts, the sites (unnamed buildings: Normal; Agassiz's home is an apartment:
+     SlumApt), the looks and the enemy counts. Item stand-ins: Buffer's document is Document_Location_Notes (6855), the
+     Disk is Data_CD (6831). Rewards: the 437,160 experience and 101,500 information shown right after this mission
+     completed.
+     Gaps: phase 1's far door was sealed and one of the men there could let the player in; there are no locked doors,
+     so the Operator's line about it is left out and Bulgakov is reached directly. Buffer greeted the player before the
+     fight: he waits to be attacked, and reaching him says his line. The security mainframe unlocking the password
+     protected computer is a Use of a Mainframe that opens the computer's Search; the Search turns up nothing (the
+     objective is checked when the phone number is found) and a second Search of the same computer gives the Disk. In
+     Agassiz's apartment retail had the player rough up his wife to make him talk; here the player talks to Tandra
+     Branson (her protest is said), leads her to Agassiz and must not let her die, and Agassiz's confession is said
+     when she reaches him. -->
+<mission id="102303" title="Incommunicado" description="Find out what the Exiles know about the commandos." plot="1"
+         order="2303" org="1" contact="Tyndall" exp="437160" info="101500">
+  <npc id="1" handle="Bulgakov" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say after="1">Give 'em hell, kid!</say>
+  </npc>
+  <npc id="2" handle="Buffer" type="HOSTILE" attacksOnSight="0" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Agassiz" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Didn't you hear me, wuss? I said, get out of here! You can't make me talk!</say>
+  </npc>
+  <npc id="4" handle="Tandra Branson" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+    <say>You'd better leave. You don't want to see my husband when he's really mad.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, as you know, Commander Lock has given orders that we are to avoid initiating hostilities against the commandos. Fortunately, no such restriction applies to our interactions with the Merovingian's Exiles. We know that meetings have taken place between the two parties, so it seems likely that the Exiles know things about the commandos that we do not.&#10;&#10;We would like to know what the Exiles know about the commandos. I'm sending you to rendezvous with one of our neighborhood intelligence officers, Bulgakov. He'll direct you to an Exile group that has met with the commandos recently.</briefing>
+    <enter><say>That's the building where you're meeting Bulgakov.</say></enter>
+    <objective goal="1" text="Talk to Bulgakov" type="Talk" npc="1">
+      <talk><say npc="1">{player}? Right, right. Okay, there's an Exile gang around here that we spotted meeting with a commando squad. The Exile leader's name is Agassiz. I'll have my boys beam their coordinates up to your operator. Good luck, soldier!</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I'm glad to hear that you're making progress, {player}. You'll probably have to get the information out of the Exile leader, Agassiz. Use whatever means seem necessary--this information is of vital importance to Zion!</briefing>
+    <enter><say>I'm reading multiple Exile signals in there. No security system, as far as I can see.</say></enter>
+    <objective goal="1" text="Find Buffer" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Well, well, look what the code dragged in. If you're looking for Agassiz, I'm afraid he isn't here right now; but if you're looking for a painful exit from this simulation, I think I can oblige you.</say>
+        <say>I was afraid of that. Maybe someone there has a clue to Agassiz's current whereabouts.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Buffer" type="Defeat" npc="2">
+      <done><say>Check Buffer's body, bwana. The code stream is showing that he's got a document of some sort.</say></done>
+    </objective>
+    <objective goal="3" text="Get information on Agassiz's whereabouts" type="Loot" npc="2" item="6855" after="2">
+      <done><say>Aha, it seems that they have a secondary base. Maybe we'll find Agassiz there. Head out and I'll update your waypoint.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Stay on his trail, Warrior. We need Agassiz's information!</briefing>
+    <enter>
+      <say>I'm picking up lots of Exiles in there. Hopefully one of them is Agassiz. They've got a security system, too.</say>
+      <say>I've finished scanning that entire area, and there's no program in there that matches Agassiz's profile. So this is a dead end, unless you can find a clue to his present location.&#10;&#10;The computer in that room is password-protected; if you need an access code, check around for their security mainframe.</say>
+    </enter>
+    <object id="1" kind="Mainframe" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Hack the security mainframe" type="Use" object="1">
+      <done><say>Good; now, search that computer. Maybe it holds a clue to Agassiz's location.</say></done>
+    </objective>
+    <objective goal="2" text="Get information on Agassiz's whereabouts" type="Search" object="2" item="0" after="1">
+      <done><say>Looks like they had a phone number for him stored away on there. Get that disk and upload it to me; I'll see if I can track the number to a new address.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Disk" type="Search" object="2" item="6831" after="2" />
+    <objective goal="4" text="Upload the Disk at a hardline" type="Upload" item="6831" after="3">
+      <done><say>Cool. Tracing it now. I should have a new waypoint for you shortly.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>You're close to finding Agassiz, {player}; I can feel it. Do whatever you have to do to get him to reveal what he's learned about the commandos.</briefing>
+    <enter><say>That's where the number led...but do Exiles really live in apartments, like everyday bluepills? Somehow I never thought about it before. If Agassiz is at home, he might be less than pleased to have you knocking down his front door.</say></enter>
+    <objective goal="1" text="Talk to Agassiz" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Hah! You want information? Well, what are you gonna do about it, you Zion puppy? Slaughter me in my own home? Even if you could, that wouldn't get you the information you want, would it? Piss off.</say>
+        <say>What a pompous ass! He might be right, though. If only there were some way to make him talk--something he values that you could use as leverage...</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Tandra Branson" type="Talk" npc="4" after="1">
+      <talk>
+        <say npc="4">Hey-- Ow! You big jerk! First you come busting in here without an invitation, then you try slapping me around in my own home? Fine, I'll follow you, but my husband, Agassiz, will give you hell for it if he catches you!</say>
+        <say contact="1">Careful, {player}. Mrs. Branson is a bluepill. It's unusual for a bluepill to have married an Exile gang leader, but nevertheless, Zion is pledged to protect bluepills to the best of our ability. Do not allow Mrs. Branson to come to harm.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Lead Tandra Branson to Agassiz" type="Escort" npc="4" to="npc:3" after="2">
+      <talk><say npc="4">You don't know who you're messing with, creep!</say></talk>
+      <done><say npc="3">So! Threatening my wife in my own home, are you? I didn't think you Zion pus-bags had the stones to pull something this devious! Hmm... Fine.&#10;&#10;All I can tell you is what the commandos told me: they're obsolete military programs who came into the Matrix to avoid deletion by the Machines. They offered us an alliance, or at least a mutual non-interference agreement.&#10;&#10;That's it. Now get this: if I ever see you again, you'll find out how a jacked-in redpill can die by an overload of simulated pain. Get out of my home!</say></done>
+    </objective>
+    <objective goal="4" text="Do not let Tandra Branson die" type="Protect" npc="4" />
+  </phase>
+  <finish>That was a dangerous game, {player}; I'm just glad that nobody was hurt. Then again, Mrs. Branson has apparently succeeded in domesticating an Exile leader, so perhaps she knows what she's doing.&#10;&#10;I think we can trust the information that Agassiz gave you, since part of it corresponded with intelligence you uncovered in a previous mission. If the commandos really are old military programs from the Machine world, as it seems they claim, they could be very valuable allies--or very dangerous enemies.&#10;&#10;I will report this information to Commander Lock immediately. Zion thanks you for your efforts today, Warrior.</finish>
+</mission>

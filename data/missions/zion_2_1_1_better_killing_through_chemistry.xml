@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Better Killing Through Chemistry, Zion Archive 2.1.1. Source: research/missions/transcripts/Zion2-1-1.md (one retail
+     run of the archive replay, 12 screenshots of the log taken after the mission ended). In the replay the contact was
+     [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's lines are spoken
+     as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title and every contact and Operator line. Ours: the description (the Summary tab was never opened),
+     every objective text (the Objectives tab was never opened), the NPC names (the chemical engineer and the guard
+     were never named), the sites (Office for the two companies, SlumApt for the engineer's home), the enemies and
+     their counts (the log only speaks of "guard programs", "a heavier security presence" and the police; they are
+     Machines here, the nearest org to company security and the City's police) and the looks. Item stand-ins: the
+     sick notice is Letter (6793), the insecticide formula is Documents (6794). Rewards: none were shown for this
+     mission, so they are the next mission's (2.1.2, Chemical Fear: 297,000 experience and 98,000 information).
+     Gaps: the searches of the two companies turn up nothing in retail; here they are Searches of a computer that give
+     nothing. Which guard carried the sick notice isn't known: a named Security Guard is killed and looted. The
+     engineer's reply (the Operator calls it "a likely story") wasn't logged, so talking to him says nothing of his own.
+     The police arrive in retail only after the formula is found ("Don't move!", "Give yourself up, scumbag!"); here
+     the phase's hostiles are on the floor from the start and their barks aren't said. -->
+<mission id="102101" title="Better Killing Through Chemistry" description="Find the formula for an insecticide that can kill the Assassin's flies." plot="1"
+         order="2101" org="1" contact="Tyndall" exp="297000" info="98000">
+  <npc id="1" handle="Security Guard" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Chemical Engineer" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
+
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Hello, operative. Now that we know what putrid collection of code rot killed Morpheus, we have to figure out how to destroy it--a tall order when the program in question is a sentient swarm of flies. Fortunately, several companies in the City produce insecticides lethal to Calliphora vicina, the blowfly species of which the Assassin is composed. Investigate these companies and liberate the chemical formula for an insecticide spray that we can use to avenge Morpheus.</briefing>
+    <enter><say>I'm reading some guard programs in there. Remember, you're just looking for an insecticide formula.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search for the insecticide formula" type="Search" object="1" item="0">
+      <done><say>Damn, damn, damn. If the formula was there, you would have found it by now. I'm not scanning anything that looks the slightest bit promising; I think intel blew it on this one. Leave the building and we'll see if Anome has any other ideas.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>Nothing there? Hm. Well, our searches did turn up another company that may have the type of insecticide formula we need. I didn't want to try them first because they have a heavier security presence at their facility, but now it seems we have no choice. Search their building for the formula.</briefing>
+    <enter><say>Anome was right about at least one thing: they definitely have heavier security there. Hopefully that means they have useful data to guard.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search for the insecticide formula" type="Search" object="1" item="0">
+      <done><say>Well, what the heck? I don't see any useful data in that building, either. Hmm... There's something on one of those guards. See what they've got.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Security Guard" type="Defeat" npc="1" />
+    <objective goal="3" text="Get the sick notice from the Security Guard" type="Loot" npc="1" item="6793" after="2">
+      <done><say>Huh, it's a sick notice from their chemical engineer; seems he's working from home today... Maybe he's working on something we can use? It's a long shot, but it's all we've got left. Head outside while I let my fingers do the walkin'.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="SlumApt" enemy="Machines" enemies="3">
+    <briefing>Intel isn't a perfect science, operative; I thought you would have appreciated that by now. I can't be held responsible if some bluepill piece of crud is too damn lazy to drag his bedsore-ridden ass into work on any given day.&#10;&#10;Sounds like it's time for you to pay them a house call.</briefing>
+    <enter><say>"Knock, knock." "Who's there?" "Zion Bug Exterminators, chump! Give us your insecticide formula!" Right?</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to the chemical engineer" type="Talk" npc="2">
+      <done><say>A likely story! I'd search the place thoroughly, if I was you.</say></done>
+    </objective>
+    <objective goal="2" text="Search the apartment for the insecticide formula" type="Search" object="1" item="6794" after="1">
+      <done><say>That's the stuff! Now just upload it at a hardline and... Uh, yeah, you'd better get out of there. Looks like our friend the chemical engineer just called the fuzz.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the insecticide formula at a hardline" type="Upload" item="6794" after="2" />
+  </phase>
+  <finish>Good. With this formula, we can begin preparations for a poison deadly enough to kill that vile swarm born from the excrement of a dead simulation.&#10;&#10;Have a nice day.</finish>
+</mission>

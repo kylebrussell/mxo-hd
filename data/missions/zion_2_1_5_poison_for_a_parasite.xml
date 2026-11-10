@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Poison for a Parasite, Zion Archive 2.1.5. Source: research/missions/transcripts/Zion2-1-5.md (one retail run of the
+     archive replay, 26 screenshots, one mid-mission and the rest of the log after the mission ended). In the replay
+     the contact was [Archived]Anome; the mission is offered by Tyndall here like the other Zion missions, and Anome's
+     lines are spoken as the contact. Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every contact, Operator and NPC line, Alden's name and the rewards (246,240 experience and
+     98,000 information, shown right after this mission completed). Ours: the description (the Summary tab was never
+     opened), every objective text (the Objectives tab only showed "Leave the area now!"), the sites (unnamed
+     buildings: Normal), the enemy counts (retail: "live Exile signals" at the second sighting, an Elite Guard and a
+     Lupine Scrapper among them, and an "Exile cleanup crew" at the third) and the looks. Item stand-ins: the live
+     Assassin flies are Pet_Carrier (6819), the red insecticide is Poison (6804), the white insecticide is Medicine
+     (6808).
+     Gaps: the Assassin's victims aren't spawned: searching each body is a Search of a filing cabinet, desk or dresser
+     (nothing at the first two sightings, the live flies at the third), and the Operator's lines on reaching the rooms
+     are said on arrival. The Exiles' barks ("Hah! You're too late, human!") aren't said. The third sighting's
+     cleanup crew arrives in retail after the flies are found; here it is on the floor from the start. At Alden's test
+     site retail had two boxes, two computer test apparatus and a box to dump the dead flies in; a phase keeps to
+     three objects and an emptied box can't be used again, so both tests are run at one computer apparatus (Alden
+     still calls it the second for the white test), Alden doesn't follow the player to it (leading her there is a Use
+     of the apparatus once the insecticide is in), and the last favour (taking the Dead Blowflies from her and dumping
+     them in the white insecticide's box) is left out with the last paragraph of her line asking for it. Her duplicate
+     red test line and two lines not captured in the log are left out. -->
+<mission id="102105" title="Poison for a Parasite" description="Collect live flies from the Assassin and test the new insecticides on them." plot="1"
+         order="2105" org="1" contact="Tyndall" exp="246240" info="98000">
+  <npc id="1" handle="Alden" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say after="7">Great. I won't keep you any longer, operative; you go ahead and take off. I gotta stay here for a sec and set a few concussion charges--don't want the Exiles or Machines finding this gear intact. Let Anome know that the white insecticide tested positive, okay?</say>
+  </npc>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hello, {player}. Today's a big day: you get to play with our first batches of the two pesticides designed to destroy the Assassin, that vomit-eating, parasitic program infecting the City like a clammy tapeworm wrapped around a starving man's bowels.&#10;&#10;All set? Super. But first we'll need some live blowflies from the Assassin. I'm sending you to a building where he's just been spotted. I'm not exactly sure how to go about getting live flies from him, but I'm sure you'll think of something.</briefing>
+    <enter>
+      <say>"Get live flies from the Assassin," he says, easy as you please. Like nice Mr. Assassin will just give some to us if we ask politely!&#10;&#10;That's the building where he was seen. The code looks normal...but then again, we've never got a solid reading on the Assassin.</say>
+      <say>Well, great. That looks like the Assassin's handiwork, all right. I'm still not picking up any unusual live code around there. Keep moving.</say>
+      <say>Eesh, more carnage. Hey, I'm picking up some blowfly code in there... On the body, maybe?</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the body" type="Search" object="1" item="0">
+      <done><say>Darn it, those flies are all dead. Looks like we didn't get here quickly enough. Better head outside and see if Anome can get us intel that's a little more up-to-date.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>So, what, it's my fault that you didn't get there quickly enough to get live flies?&#10;&#10;We've got another reported Assassin sighting. I suggest moving your fat ass with a little more dispatch this time.</briefing>
+    <enter>
+      <say>I'm reading some live Exile signals inside. Maybe we're in time?</say>
+      <say>Exiles? This could be trouble. They might be there to cover the Assassin's tracks.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the body" type="Search" object="1" item="0">
+      <done><say>That body looks like the Assassin's MO, but I don't see any trace of his flies in the area. I'm sure Anome will love this.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Assassin sightings don't grow on trees, operative. And every failure here costs lives.&#10;&#10;Unfortunately for his victims, and fortunately for you--how ironic, don't you think?--he seems to be on a bit of a rampage today. We've got another hot tip--don't blow this one.</briefing>
+    <enter>
+      <say>I'm picking up live signals inside--redpills.</say>
+      <say>I just lost one of the redpill signals. The other one-- Wow! What the hell? I've never seen a signal like that before. It's gone now. Came from the next room.</say>
+      <say>That body must be the redpill signal that just dropped; looks like the Assassin's work. Hey, check the corpse. I think that poor bastard may be our jackpot.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the redpill's body" type="Search" object="1" item="6819">
+      <done><say>How about that: live Assassin flies! Better keep a tight lid on those buggers. Bring them outside and...uh, do it quick, because I think you've got an Exile cleanup crew paying you a little visit there.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I hope you have good news for me, operative?&#10;&#10;Well, what a pleasant surprise. Now, I want you to take those lovely little insectae to our field contact, Alden. She has the insecticide prototypes that we will test on the flies.</briefing>
+    <enter><say>I'm reading Alden's signal nearby.&#10;&#10;You know what would be funny? If, after all this, the insecticides didn't work on those blowflies. ... Except that wouldn't really be funny. Man, those insecticides had better work, or we are all jacked up.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Give the live blowflies to Alden" type="Give" npc="1" item="6819">
+      <talk><say npc="1">Good, you're here. We have to move fast; the other factions would kill to get their hands on this stuff. First, I need you to give me those blowflies.</say></talk>
+      <done><say npc="1">Okay. One of those boxes has a small supply of our special red insecticide. Go get it.</say></done>
+    </objective>
+    <objective goal="2" text="Get the red insecticide from the box" type="Search" object="1" item="6804" after="1">
+      <done><say npc="1">That's it. Now, I need you to put that insecticide in the computer test apparatus here.</say></done>
+    </objective>
+    <objective goal="3" text="Put the red insecticide in the test apparatus" type="Put" object="3" item="6804" after="2">
+      <done><say npc="1">Great. I have to concentrate on managing these live blowflies, so I need your help. Lead me over to that computer apparatus.</say></done>
+    </objective>
+    <objective goal="4" text="Start the red insecticide test at the apparatus" type="Use" object="3" after="3">
+      <done><say npc="1">Exposing half of the captive blowfly population to the red insecticide...now.&#10;&#10;And...nothing. I see increased movement, but it isn't killing them--just making them angry. So much for the red insecticide. Let's try the white. Get our test supply from the other box here.</say></done>
+    </objective>
+    <objective goal="5" text="Get the white insecticide from the other box" type="Search" object="2" item="6808" after="4">
+      <done><say npc="1">Now put the white insecticide into the second computer test apparatus.</say></done>
+    </objective>
+    <objective goal="6" text="Put the white insecticide in the test apparatus" type="Put" object="3" item="6808" after="5">
+      <done><say npc="1">Okay. Lead me over to the apparatus while I keep the lid on these pissed-off blowflies.</say></done>
+    </objective>
+    <objective goal="7" text="Start the white insecticide test at the apparatus" type="Use" object="3" after="6">
+      <done><say npc="1">Exposing the captive blowflies to the white insecticide...now.&#10;&#10;Hey... Hey, it worked! They're dead! Hah, we've got the Assassin's number now!&#10;&#10;Thanks for your help with this little test.</say></done>
+    </objective>
+    <complete><say npc="1">Great. I won't keep you any longer, operative; you go ahead and take off. I gotta stay here for a sec and set a few concussion charges--don't want the Exiles or Machines finding this gear intact. Let Anome know that the white insecticide tested positive, okay?</say></complete>
+  </phase>
+  <finish>The white insecticide killed the Assassin's flies, you say? Excellent, excellent. I wish I could have been there to see it. Tell me, did the flies make any...unusual noise as the fatal white vapors seeped through the joints of their iridescent exoskeletons? You didn't notice? You really should pay more attention to these little details, operative.&#10;&#10;But, yes, this is a significant victory for Zion. Once we get a delivery mechanism for the white insecticide, the Assassin is cooked--stewed in our bitter, toxic juices, if you will. And with that, {player}, I bid you good day.</finish>
+</mission>

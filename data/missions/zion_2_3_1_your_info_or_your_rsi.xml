@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Your Info or Your RSI, Zion story mission 2.3.1. Source: research/missions/transcripts/Zion2-3-1.md (the archive
+     replay of [Zion Archive 2.3.1], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, both briefings, the closing line, every Operator and NPC line, and every NPC name. Ours:
+     the description (the Summary tab was never opened), the objective texts (the Objectives tab was never opened), the
+     sites (unnamed buildings: Normal), the looks and the enemy counts. Item stand-in: the commandos' documents are
+     Documents (6794). Rewards: the 100,505 experience and 101,500 information shown right after this mission completed.
+     The commandos are a new Exile group, so they have Exile looks; the local gang has no org and is Merovingian here.
+     Gaps: in retail the player led the three commandos into a dangerous neighbourhood where the local gangs killed
+     them, and the documents were taken from Kang's body. NPCs don't fight each other here and dead NPCs aren't
+     spawned, so the commandos simply follow the player into phase 2, the player kills the phase's gang members, and
+     the documents are searched for in a box that stands in for Kang's body (the Operator's lines about the body are
+     kept). Retail had one phase from the gang area to Castafiore; here Castafiore's building is phase 3, and the
+     Operator's "Those look like the documents intel wanted..." starts it as its briefing (no contact line came
+     between). The Operator's arrival line in phase 1 was cut between two screenshots; its two halves are said as two
+     lines. The Zion Gunslinger's line was only seen in team chat; it is his bystander line. -->
+<mission id="102301" title="Your Info or Your RSI" description="Lead a squad of commandos into gang territory and recover the documents they carry." plot="1"
+         order="2301" org="1" contact="Tyndall" exp="100505" info="101500">
+  <npc id="1" handle="Kang" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Barrows" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>Eyes front, men.</say>
+  </npc>
+  <npc id="3" handle="Vandenberg" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say>Sir!</say>
+  </npc>
+  <npc id="4" handle="Castafiore" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say>Good work. We'll have these scanned and analyzed ASAP.</say>
+  </npc>
+  <npc id="5" handle="Zion Gunslinger" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say display="5">Those guys must have been pretty new to the City to fall for that old trick!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, as you have probably already heard, a new Exile group has appeared in the City: camouflaged commandos who come and go in military helicopters. While they have yet to make an overtly hostile move against Zion, we have no hard data as to their motives. Commander Lock has decided that, at this turbulent time, we must consider this armed faction to be an enemy until proven otherwise.&#10;&#10;Our scouts spotted three of these commandos in a rooftop meeting with others who arrived by helicopter. This small group has now entered the vacant floor of a nearby building. We want you to meet with them, tell them that you represent a powerful group in the City, and get them to follow you outside. I will give you further orders at that time.</briefing>
+    <enter>
+      <say>The commandos should be in there.</say>
+      <say>Zion thinks it's unlikely that they'll shoot on sight--I guess we're the acid test. Fun, huh?</say>
+    </enter>
+    <objective goal="1" text="Talk to Kang" type="Talk" npc="1">
+      <talk><say npc="1">Very well, we will accompany you. We seek to establish friendly relations with all groups in the City.</say></talk>
+      <done><say>All right. Let's get them out on the street.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Kang, Barrows and Vandenberg out of the area" type="Escort" npc="1,2,3" to="exit" after="1">
+      <talk><say npc="1">Lead on.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, intel believes that one of those commandos is carrying valuable documents received from their superiors. The contents of the documents likely shed light on the aims of the commando group. We want you to obtain these documents.&#10;&#10;Normally, I would have you dispose of the commando programs yourself. However, because we do not want to alarm their faction, we must not appear to attack them unprovoked. Therefore, you will lead the three into a dangerous neighborhood of the City and allow the local gangs to terminate them. It should look like an unfortunate mugging or accident. Just make sure to recover the documents and deliver them to our intel contact, Castafiore.</briefing>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Kill the gang members" type="DefeatAll">
+      <done><say>I'm scanning something on Kang's body.</say></done>
+    </objective>
+    <objective goal="2" text="Get the documents from Kang's body" type="Search" object="1" item="6794" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Those look like the documents intel wanted. Take them to Castafiore at the indicated location.</briefing>
+    <enter><say>Castafiore is waiting for the documents in there.</say></enter>
+    <objective goal="1" text="Give the documents to Castafiore" type="Give" npc="4" item="6794">
+      <talk><say>There's Castafiore.</say></talk>
+      <done><say npc="4">I'll take those.</say></done>
+    </objective>
+  </phase>
+  <finish>Well done, {player}. The documents you recovered contained a coded list of coordinate sets, pointing to rooftop locations throughout the city. Our analysts think that these may be landing points for commando helicopters. Commander Lock has ordered increased surveillance of the indicated sites.</finish>
+</mission>

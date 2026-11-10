@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lord of Flies, Zion Archive 1.3.1. Source: research/missions/transcripts/Zion1-3-1.md (one retail run of the
+     archive replay, 56 screenshots). In the replay the contact was [Archived]Anome; the mission is offered by Tyndall
+     here like the other Zion missions, and Anome's lines are spoken as the contact. Retail's: the title, every line,
+     the NPCs' names and roles, the objective texts of phases 4 and 5 ("Talk to Jeanine Izuna about the dead flies at
+     the murder sites", "Give the Folder to Scanner A", "Give the Letter to Scanner B", "Take the computer Documents to
+     Royce Zatkin", "Get the Assassination Recording") and the rewards (309,010 XP and 94,500 info, shown right after
+     this mission ended). Ours: the description (the Summary tab was never opened), the other objective texts, the
+     sites (phases 4 and 5 Offices for the lab and the security
+     office), the enemy counts (the log only says Exiles at site 2 and imposter Agents at site 3) and the looks.
+     Item stand-ins: the key is Access_Card, the Book is Book, the Folder is Folder, the Letter is Letter, the scan
+     analysis is Documents, the Assassination Recording is Recording_Assassination.
+     Gaps: the locked murder room (key or lockpick) is the Get of the key opening the Search; the dead officer and
+     the bodies aren't spawned, so the Operator's line about the officer is left out; the Operator's lines on
+     reaching rooms have no position to fire at in a generated phase, so the ones that fit are said on arrival and
+     the locked door lines are left out. Earnest Hungerford's rambling is an optional Talk so that the Operator's
+     reaction to it can be said. In the lab the two scanners are Put goals at two computers (done with Hack), and the
+     white computer opens after Scanner B: retail opened it after both. Royce's 3:50:14 line and another of his were
+     not captured. In phase 5 retail let the player hack the security computer or have Samuel Quay log in for them;
+     here it is a Use of the security computer, with Samuel's offer as his line, and playing the video back is a Use
+     of the second computer. -->
+<mission id="101301" title="Lord of Flies" description="Look for clues to the identity of the masked assassin who murdered Morpheus." plot="1"
+         order="1301" org="1" contact="Tyndall" exp="309010" info="94500">
+  <npc id="1" handle="Heide Raikov" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>I hope you find what you're looking for.</say>
+  </npc>
+  <npc id="2" handle="Earnest Hungerford" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">...buzzing buzzing buzzing...&#10;&#10;...buzzing buzzing buzzing...</say>
+  </npc>
+  <npc id="3" handle="Jeanine Izuna" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="4">Now take those Documents to my assistant, Royce Zatkin. He'll compare them against previous data samples.</say>
+    <say after="5">And what did Royce Zatkin have to say about the Documents you gave him? Surely he found something?</say>
+    <say after="6">Fantastic! As I suspected. Royce Zatkin tells me that the flies are all identical, down to the molecular level. In other words, they're almost certainly artificially created. They match some specimens turned in from a police investigation last week -- I'll send the address they came from to your operator. This case is very intriguing, I can't imagine who would be capable of this kind of biological engineering.</say>
+  </npc>
+  <npc id="4" handle="Royce Zatkin" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">Hey. Oh, Jeanine Izuna? Yeah, she can be pretty demanding, but she's one of the best at what she does.</say>
+    <say display="5" after="6">Wow, wow. This could be big. I mean big! I could get a fellowship out of this! You go find wherever those flies are coming from, okay?</say>
+  </npc>
+  <npc id="5" handle="Samuel Quay" type="FRIENDLY" at="5" rsi="35000024" weapon="0">
+    <say>Oh, you need to use the Internet? Yeah sure, I can log on the computer in the next room for you.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Le roi est mort. This is a dark day for us all, {player}. I am certain that you have heard of the death of Captain Morpheus by now. I'm told that such a loss cannot be measured in words, so I will not try. The council of Zion is meeting to discuss the next course of action. While they spend their time arguing, Niobe seeks the truth. We know very little about the masked assassin who murdered Morpheus, but I know that things here are rarely what they seem. I want you to look for answers about this mysterious killer. Start at the following location. A redpill was murdered there a few days ago.</briefing>
+    <enter><say>The Assassin allegedly killed several redpills in that building a few days ago. The site has been examined, but it's possible that the City investigators missed something. I'll notify you when you get to the room where the bodies were found.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Get the key from Heide Raikov" type="Get" npc="1" item="6791">
+      <talk><say npc="1">It's a shame what happened to that poor guy. He was only a kid, you know. Couldn't have been any older than 20. I've kept the room locked up so that it isn't disturbed -- here, go ahead and take the key.</say></talk>
+      <done><say npc="1">Here's the key you'll need to get into the locked room.&#10;&#10;He was such a nice boy...</say></done>
+    </objective>
+    <objective goal="2" text="Search the room where the killings occurred" type="Search" object="1" item="6814" after="1">
+      <done><say>Hm, there are dead flies on the open pages of that book, but no open windows in this room. Not much to go on, but you never know. Bring the book outside, operative.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Earnest Hungerford" type="Talk" npc="2" optional="1">
+      <talk><say npc="2">The buzzing... oh god... can you hear it? Why can't you HEAR IT? It's everywhere... they're everywhere.. and him! He was here! The man in the mask! He... THEY spoke to me!</say></talk>
+      <done><say>What an odd guy. What could he mean?</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>We've received a report of another shooting nearby that matches the Assassin's known mode of operation. Initial reports seem to match the bullets to those that killed Morpheus. I'm sending you a waypoint to the shooting location.</briefing>
+    <enter>
+      <say>The shooting reportedly occurred in that building. There should be several bodies inside. I'm... also picking up some Exile activity nearby, so be cautious.</say>
+      <say>There are the bodies, again matching the profile associated with the Assassin. Search that room carefully.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the murder site for clues" type="Search" object="1" item="6795">
+      <done><say>That Folder is covered with dead flies -- and I'm seeing more on the floor around the room. Just like the last site, how odd. Well, bring the Folder along for now -- there's another murder site for us to check.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I'm uploading the next murder site's location to you. This killing occurred days ago; hopefully there won't be any rubberneckers prowling around the area.</briefing>
+    <enter>
+      <say>The site of the killings is inside that building. It was inspected and sealed off, so even though the bodies have been removed, you may still be able to find some sort of clue if you search carefully.</say>
+      <say>What? Imposter Agents? I thought they'd withdrawn from the Matrix. Could they have a special interest in the Assassin as well?</say>
+      <say>That's the room where the bodies were located. See what you can find.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the murder site for clues" type="Search" object="1" item="6793">
+      <done><say contact="1">More dead flies there, too; just look at all the flies that fell on that Letter! There's got to be something to this. Bring the Letter outside; I think I know someone who can help us.</say></done>
+    </objective>
+    <complete><say>Imposter Agents... What could have brought them back into the Matrix? Were they collecting clues? Or... trying to cover them up?</say></complete>
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>I want to have an analysis run on the flies you've collected from the three sites. I'm sending you to a researcher who's done some work for us in the past; entomology is one of her areas of expertise. If there's anything unusual about those insects, she should be able to tell us what it is.</briefing>
+    <enter><say>The researcher Jeanine Izuna's lab is in that building. Show her the specimen samples that you've retrieved from the homicide sites; maybe she can explain why dead flies are showing up wherever this Assassin goes.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Talk to Jeanine Izuna about the dead flies at the murder sites" type="Give" npc="3" item="6814">
+      <talk><say npc="3">Your operator told me about your mysterious dead flies. You do realize that I have important things to do, don't you? Anyway, get this over with -- let me see that Book you found.</say></talk>
+      <done><say npc="3">Mmm-hmm... This is interesting. Same ocular characteristics as the others... Okay. You have two other items with fly specimens on them, right? See those two black computers? Those are molecular scanners. Put the fly-covered Folder in Scanner A and the Letter in Scanner B. Then get the resulting analysis Documents from the white computer and take the Documents to my assistant, Royce Zatkin. If you don't know which computer is which, check the message on the computer first.</say></done>
+    </objective>
+    <objective goal="2" text="Give the Folder to Scanner A" type="Put" object="1" item="6795" after="1" />
+    <objective goal="3" text="Give the Letter to Scanner B" type="Put" object="2" item="6793" after="1">
+      <done><say>The items have been scanned. Now get the result Documents from the white computer.</say></done>
+    </objective>
+    <objective goal="4" text="Get the analysis Documents from the white computer" type="Search" object="3" item="6794" after="3">
+      <done><say>Jeanine Izuna said to take those Documents to Royce Zatkin. He's in another room on that floor.</say></done>
+    </objective>
+    <objective goal="5" text="Take the computer Documents to Royce Zatkin" type="Give" npc="4" item="6794" after="4">
+      <talk><say npc="4">Oh, you have scan analysis Documents? Yeah, let me see 'em.</say></talk>
+      <done><say>Have Royce Zatkin follow you to Jeanine Izuna. It sounds like he's found something important.</say></done>
+    </objective>
+    <objective goal="6" text="Bring Royce Zatkin to Jeanine Izuna" type="Escort" npc="4" to="npc:3" after="5">
+      <talk><say npc="4">Wow, this is incredible! Take me to Jeanine Izuna, I gotta let her know about this right away!</say></talk>
+      <done>
+        <say npc="3">Fantastic! As I suspected. Royce Zatkin tells me that the flies are all identical, down to the molecular level. In other words, they're almost certainly artificially created. They match some specimens turned in from a police investigation last week -- I'll send the address they came from to your operator. This case is very intriguing, I can't imagine who would be capable of this kind of biological engineering.</say>
+        <say>Biological engineering? But what could this have to do with Morpheus' killer? Leave the area, {player}. I'll get the address of the evidence site from Jeanine Izuna.</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Jeanine Izuna has given me the address. I cross-checked it against the police database and found something interesting: there was a mysterious break-in there a week ago but nothing was taken, they couldn't figure out how the perpetrator got in and out past the security system, and they found dead flies on the floor.</briefing>
+    <enter>
+      <say contact="1">That is the address provided by Jeanine Izuna; the break-in scene should be somewhere inside. I've contacted the building's security service and had them send someone named Samuel Quay to meet you in there--apparently, their security cameras have rough footage of the intruder. We need to get that recording; it could hold a vital clue to the Assassin's identity.</say>
+      <say>The security camera that captured the perpetrator is in the next room. The security officer, Samuel Quay, should be there to meet you.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Safe" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Talk to Samuel Quay" type="Talk" npc="5">
+      <talk><say npc="5">Hi! You're the investigator? Okay, well, I can tell you that we did have some kind of break-in here. The security camera caught the perp on tape but the video came out a bit glitchy--one moment he's there, then the image goes all dark and fuzzy and he's gone. Too bad, because we can't tell how he got out. The video's locked in the wall safe now, so I can't show it to you.</say></talk>
+      <done><say>We need to get that video. Their security systems are computer controlled, so you might be able to get through their security measures by hacking a computer, or getting someone there to log in for you.</say></done>
+    </objective>
+    <objective goal="2" text="Release the security locks from the security computer" type="Use" object="1">
+      <done><say>By accessing the program on that security computer, you've managed to disable security locks across that floor of the building. Nice.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Assassination Recording" type="Search" object="2" item="6840" after="2">
+      <done>
+        <say>Bingo!</say>
+        <say>That's the video we're looking for! Try playing it back on the computer in that room with the wall safe.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Play back the Assassination Recording on the computer" type="Use" object="3" after="3">
+      <done><say contact="1">That's it! What earlier investigators took for a glitch in the video was actually the Assassin dissolving into a cloud of flies! It's bizarre, but it explains everything! You can leave the area now, operative.</say></done>
+    </objective>
+  </phase>
+  <finish>I admire your persistence in this matter, {player}. Niobe will need operatives like you in the coming battles. We now know who it was that took Morpheus from us. My guess would be that this Assassin is no more than a hired gun. We will have to uncover who he is working for.</finish>
+</mission>

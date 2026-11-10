@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Untouchable, Zion Archive 1.3.3. Source: research/missions/transcripts/Zion1-3-3.md (one retail run of the
+     archive replay, 56 screenshots of the log after it ended; contact [Archived]Tyndall). Retail's: the title, every
+     line and the NPCs' names and roles, and the rewards (357,500 XP and 94,500 info, logged just before the
+     screenshots, after this mission's end). Ours: the description, every objective text (the Objectives tab was
+     never opened), the sites (phase 2 a ZionOutpost for the safehouse, the rest Normal), the enemy counts, and the
+     looks. The masked intruders of phase 3 have no organisation of their own; Mickey Hirsch calls them Zion
+     turncoats, so they are Zion. Item stand-ins: the package is Package, the Data Disk is Data_CD, the printout is
+     Documents.
+     Gaps: Chant is found dead and dead NPCs aren't spawned, so he isn't placed. Phase 2's debriefing room has no NPC
+     to lead Extra to, so the phase is the Talk with Extra (who follows from phase 1) and the fight; retail's Exile
+     programs came in only after Extra's mind was wiped, ours are there from the start. Likewise the masked intruders
+     of phase 3 are there from the start rather than arriving after the package is delivered, and nobody is said to
+     die, so there is no Protect. Telling Chimay the plan is "go" and getting her package are one Get. Lyndon Exner
+     and Nunki (two more bystanders with a line or two) are left out to keep the floor to six NPCs. Dubiago warns the
+     player off and turns hostile when ignored: she waits to be attacked (attacksOnSight 0), reaching her is the
+     Talk and then she is killed. Her computer took about a minute to crack before the disk could be taken; here
+     cracking it and taking the disk are one Search. The Operator's lines on reaching rooms and computers have no
+     position to fire at in a generated phase; the ones that fit are said on arrival or with a goal. The end of
+     Tyndall's 11:14:28 line was cut off in the screenshots: "to Elwanda Williams." is our best reading. -->
+<mission id="101303" title="Untouchable" description="Recover stolen Zion data on Morpheus' past from the Exiles selling it." plot="1"
+         order="1303" org="1" contact="Tyndall" exp="357500" info="94500">
+  <npc id="1" handle="Extra" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>...</say>
+  </npc>
+  <npc id="2" handle="Gavin Runnels" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5" after="3">Oh no!</say>
+  </npc>
+  <npc id="3" handle="Chimay" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say>Yeah, just take this over to Timothy, real cool-like.</say>
+  </npc>
+  <npc id="4" handle="Timothy" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="5" handle="Alfven" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say display="5">Extra? Never heard of him. If he's some kind of deadbeat, then he's probably Stepanie Bateman's friend.</say>
+    <say display="5" after="3">Ack!</say>
+  </npc>
+  <npc id="6" handle="Chrystal Stephens" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say display="5">Who? Extra? A pox on him! And Morpheus! What'd they ever do for us?</say>
+    <say display="5" after="3">Aaah! Who ratted us out?</say>
+  </npc>
+  <npc id="7" handle="Stepanie Bateman" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say display="5">I wouldn't talk to Alfven if I were you--but that's just between you and me.</say>
+    <say display="5" after="3">Get me out of here!</say>
+  </npc>
+  <npc id="8" handle="Dubiago" type="HOSTILE" at="4" rsi="60010058" weapon="2568" attacksOnSight="0" />
+  <npc id="9" handle="Elwanda Williams" type="FRIENDLY" at="5" rsi="58010058" weapon="2564">
+    <say>On the white computer--accept the prompt.</say>
+  </npc>
+  <npc id="10" handle="Clifton Hoyos" type="FRIENDLY" at="5" rsi="000100b4" weapon="2564">
+    <say display="5">What? Oh. Well, now that you mention it, I suppose that Elwanda does have an odd way of speaking. I think she finds it more efficient. We're all pretty used to it by now.</say>
+    <say display="5" after="5">Once you get used to her style, you'll find that Elwanda's speech is always very precise.</say>
+  </npc>
+  <npc id="11" handle="Mickey Hirsch" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say display="5">So some of those masked people are Zion turncoats? That could be bad... I wonder what other classified data they've got their hands on.</say>
+    <say display="5" after="5">Like... I hope the masked gangs don't know about this decryption lab. That would be bad!</say>
+  </npc>
+  <npc id="12" handle="Bridgett Xander" type="FRIENDLY" at="5" rsi="60010058" weapon="2564">
+    <say display="5">We decrypt all kinds of data here--most of it's classified, of course, so I suppose I shouldn't talk about it.</say>
+    <say display="5" after="5">Well...like... Okay, you didn't hear this from me, but we got some Exile data saying that it was Commander Lock who killed Morpheus. Which doesn't really make sense since Lock is freeborn and can't even jack into the Matrix. But anyway, that's what people are saying. I have to admit that it sounds just as plausible as your theory about the flies. *cough*</say>
+  </npc>
+  <npc id="13" handle="Clorinda Cupar" type="FRIENDLY" at="5" rsi="61000040" weapon="0">
+    <say display="5">Data decryption is a very complex science. Elwanda has studied it for years--she's a real expert. She's even written some of the more advanced decryption ability programs!</say>
+    <say display="5" after="5">You might want to think about dedicating some buffer space to decryption abilities. It can be a very rewarding investment. Just think of all the secrets floating around in the Matrix--they're all just code, there for the taking by anyone who can decrypt them.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>We need you to recover some data on Morpheus' past. It seems that some of the data that we thought had been lost from our Zion memory banks due to damage inflicted in the final Machine assault has survived and somehow made its way into the Matrix: our intelligence net has picked up indications that certain Exiles may be offering this data for sale to the highest bidder. This data includes classified records of Morpheus' early activity--records that may give us insight into why he was killed.</briefing>
+    <enter>
+      <say contact="1">One of the Exiles rumored to be selling contraband Morpheus data makes his home in that building. His name is Chant. Find him and confiscate his data.</say>
+      <say>What? Chant has been killed? I hope that's just wishful thinking, he's our only lead.</say>
+    </enter>
+    <objective goal="1" text="Talk to Extra" type="Talk" npc="1">
+      <talk>
+        <say>What's going on there? Chant appears to be dead! And who's that Zion operative?</say>
+        <say npc="1">He knew... That bastard knew that Morpheus killed my father, and he didn't tell me! You didn't know it too, did you?! No... no, I can tell by your eyes that you didn't. Can we get out of here? I'm... tired now.</say>
+      </talk>
+      <done><say>Extra must have killed Chant. But what does he mean about Morpheus killing his father? We need to have him questioned. Lead him out of the area.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Extra out of the area" type="Escort" npc="1" to="exit" after="1">
+      <talk><say npc="1">You want to take me somewhere? Sure, why not? It doesn't matter now. They're all gone: Morpheus, and my dad, and that Exile scum bag...</say></talk>
+    </objective>
+  </phase>
+
+  <phase site="ZionOutpost" enemy="Merovingian" enemies="3">
+    <briefing>Okay, I'm sending you the location of a nearby safehouse. Take Extra there. We need to find out where he got his information about Morpheus.</briefing>
+    <enter>
+      <say>Take Extra to the guarded debriefing room there.</say>
+      <say>The debriefing room is through the far door.</say>
+    </enter>
+    <objective goal="1" text="Find out where Extra got his data on Morpheus" type="Talk" npc="1">
+      <talk><say npc="1">How do I know that Morpheus killed my father? I've read the official Zion data record, man. It's all in there, he showed it to me. It said howwwRK! Ka--k. Uk. ...</say></talk>
+      <done><say>What? Extra's signal has flat-lined. It's almost like someone pulled his plug. Hold on... I'm reading inbound hostile Exile programs. You'd better take them out.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the attacking Exile programs" type="DefeatAll">
+      <done><say contact="1">That takes care of the attackers. But now that Extra has somehow been turned into a vegetable, we've got no lead on Morpheus' data. Hm... Get out on the street, Warrior. I'm going to check something.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>I've done some checking on our catatonic operative, Extra. It seems that he's been spending a lot of time at an "underground" social group--a place where a bizarre mix of bluepills, redpills, and Exile programs hang out and exchange information. They tend to change venue frequently to avoid monitoring, but I think I've got a lock on their current location. Uploading it to you now.</briefing>
+    <enter><say>It looks like that's the place, all right. Ask around and see what you can find out about Extra--it's likely that he got his data on Morpheus from a contact there. These people don't tend to like Zion much, so try keeping a low profile.</say></enter>
+    <objective goal="1" text="Talk to Gavin Runnels" type="Talk" npc="2">
+      <talk><say npc="2">Hey, I need you to do some "networking" for me. Go tell Chimay that the plan is "go." Got that? Get back to me once you're done and I'll give you a reward for your hard work.</say></talk>
+      <done><say>You'd better play along with Gavin Runnels's request, and go talk to Chimay. This may open up some kind of lead once they trust you.</say></done>
+    </objective>
+    <objective goal="2" text="Tell Chimay the plan is &quot;go&quot; and get the package from her" type="Get" npc="3" item="6817" after="1">
+      <talk>
+        <say npc="3">We're "go"? All right! Hey, you look dependable. Can you take this package to Timothy for me? We'd all appreciate it.</say>
+        <say>Get the package from Chimay and deliver it to Timothy. It sounds like they almost trust you!</say>
+      </talk>
+      <done>
+        <say>Now take the package to Timothy.</say>
+        <say>What a dork.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Take the package to Timothy" type="Give" npc="4" item="6817" after="2">
+      <done>
+        <say npc="4">Righteous, thanks. Now what can I do for you? Oh, you want some of that Morpheus data too, huh? Even though Extra got more than he bargained for? Hehe... Anyway, I heard that some cat named Dubiago is dealing that stuff. He's new on the scene, but making a splash in a big way. Seems to have friends in high places, if you know what I mean.</say>
+        <say>Aha! So if we track "Dubiago" down--Wait, what's that? I'm picking up masked intruders entering the area. You'd better take them out--we can't have those thugs killing off our informants.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Kill the masked intruders" type="DefeatAll">
+      <done><say contact="1">You've taken care of all the masked intruders, Warrior! Now leave the area and I'll brief you on what I've found out about this shadowy "Dubiago" person.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Our people tracked the location of Dubiago's supposed hideout. It's time for you to put this data-peddler out of business, and recover the lost secrets of Zion!</briefing>
+    <enter>
+      <say>I did some checking on Dubiago. It turns out that she's an ex-Zion operative, thought to have been killed in the assault on Zion at the end of The War. It looks as though she actually turned traitor and escaped with classified data amidst the chaos of the final battle. She probably has the stolen data on a portable data disk, but she may also have backups on her computers. We need to recover the disk and destroy any backups.</say>
+      <say>Dubiago may be somewhere nearby: I'm picking up increased power output in that area.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Confront Dubiago" type="Talk" npc="8">
+      <done>
+        <say npc="8">Hah! Why should I dirty my hands fighting you, you patsy of Zion? I didn't want to have to hurt you anyway, but you somehow traced me even though I destroyed Extra's mind with a neural worm before he could betray me completely. Leave now and I'll let you live!</say>
+        <say>That seems to have angered Dubiago.</say>
+        <say npc="8">Well then, so be it! I'll smash you myself! You wouldn't want to see my old Zion data anyway, you goose-stepper! Because it shows that Morpheus was wrong, that he betrayed those around him in a misguided search for a savior. How many would still be alive if not for his cursed little red pills?</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get the Data Disk from Dubiago's computer" type="Search" object="1" item="6831">
+      <done>
+        <say>That computer has been cracked; you should be able to access the data now.</say>
+        <say>That is the disk with the data on Morpheus' past!</say>
+        <say npc="8">Rrrraaa! Come back here with my data, curse you!</say>
+        <say>Good work. You've removed the data from that computer. My network scan is showing just one more computer in that area that needs to be wiped.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill Dubiago" type="Defeat" npc="8">
+      <done><say contact="1">Good riddance to that traitor. I find it hard to believe that a Zion soldier could fall so low as to sell classified data to the highest bidder using Exile go-betweens!</say></done>
+    </objective>
+    <objective goal="4" text="Wipe the backups from the other computer" type="Use" object="2" after="2">
+      <done>
+        <say contact="1">Good work, operative. You've destroyed Dubiago's backup copies of our top-secret data.</say>
+        <say>Good, you have the data disk and all backups have been destroyed. You can leave the area now, operative.</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The old Zion data was secured by an encryption technique. Dubiago knew the decryption key, somehow, but we have loyal operatives in the Matrix who can decrypt it for us. One of them is at the location I'm sending to you now. Take the disk there, and guard it carefully! There are many who would kill to get their hands on Zion's secrets.</briefing>
+    <enter><say contact="1">You've reached the location of one of our undercover decryption labs. Find Elwanda Williams--she'll be able to decrypt the data. She also has equipment capable of sending it to me directly, so you won't have to upload it later.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Talk to Elwanda Williams" type="Talk" npc="9">
+      <talk><say npc="9">{player}--greetings. The white computer: place the disk there, please.</say></talk>
+      <done><say>Put the Data Disk in the white computer to get the decryption process started.</say></done>
+    </objective>
+    <objective goal="2" text="Put the Data Disk in the white computer" type="Put" object="1" item="6831" after="1">
+      <done><say contact="1">Decrypted data is starting to come through. Let's see... This says that after Morpheus heard a prophecy from the Oracle that he would find the One, and miraculously survived an encounter with three hostile Agents, he became convinced that destiny would protect him. That's all--oh, Search the white computer to continue, {player}.</say></done>
+    </objective>
+    <objective goal="3" text="Search the white computer" type="Search" object="1" item="0" after="2">
+      <done>
+        <say contact="1">The decrypted data continues... It says that Morpheus was so convinced he could not fail that he became naively bold in his quest for the One. He was utterly heedless of danger. Oh, I think Elwanda Williams wants you to get something from the other computer, {player}.</say>
+        <say npc="9">Yes {player}. From the black computer, bring the Documents printout to me.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Get the Documents printout from the black computer" type="Search" object="2" item="6794" after="3">
+      <done><say contact="1">Decrypted data continues... It says that Morpheus' conviction of his own infallibility led him to run many risks. Oh! It appears that he lost a lot of crew members in this period. I'm checking their names... Don't forget to take those Documents to Elwanda Williams.</say></done>
+    </objective>
+    <objective goal="5" text="Give the Documents to Elwanda Williams" type="Give" npc="9" item="6794" after="4">
+      <done><say contact="1">Aha! One of Morpheus' crew casualties was Extra's father. That explains why Extra blamed Morpheus for his father's death. I suppose that Dubiago must have shown him the data, maybe in an attempt to recruit him, or to get him to kill Chant. Well, the decryption is complete, so you can leave the area now.</say></done>
+    </objective>
+  </phase>
+  <finish>It's sad that Morpheus' reckless pursuit of the One endangered the lives of his crew. I'm sure that he felt he was working toward the greater good... although that would be little consolation to the family members they left behind, like Extra. Could the Assassin have been linked to one of them? It seems unlikely... You know, {player}... I think that even now we are sometimes guilty of putting the lives of the many ahead of individuals. And while this is just, we should still strive to save everyone that we can--every life!</finish>
+</mission>

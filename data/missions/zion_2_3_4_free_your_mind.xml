@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Free Your Mind, Zion story mission 2.3.4. Source: research/missions/transcripts/Zion2-3-4.md (the archive replay of
+     [Zion Archive 2.3.4], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, and Zubkin's name. The
+     Commando's lines were seen in team chat. Ours: the description (the Summary tab was never opened), the objective
+     texts (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the looks and the enemy counts
+     ("Lots of them" and "a whole mess of Exiles": 5). No mission items. Rewards: the 308,000 experience and 98,000
+     information shown right after this mission completed. The commandos are an Exile group and have Exile looks.
+     Gaps: at the first meeting the Exiles burst in while Zubkin was speaking; there is no ambush spawn, so the phase's
+     Exiles are on the floor from the start and attack on sight, and Zubkin's interrupted greeting, the Operator's
+     warning and Zubkin's alarm are said on talking to him. Zubkin is placed again at the second meeting (phase 4), as
+     he was a different spawn there. Retail's other commandos at the second meeting had no lines and aren't placed. -->
+<mission id="102304" title="Free Your Mind" description="Represent Zion at a meeting with the commandos." plot="1"
+         order="2304" org="1" contact="Tyndall" exp="308000" info="98000">
+  <npc id="1" handle="Zubkin" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say after="2">Clearly, this location has been compromised. We will reconvene once a safe meeting place has been agreed upon.</say>
+  </npc>
+  <npc id="2" handle="Commando" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say display="5">Copy that, soldier.</say>
+    <say display="5" after="2">We're all clear here, sir.</say>
+  </npc>
+  <npc id="3" handle="Zubkin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say>Understood. We will await your reply. Your controllers will know how to contact us.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Hail, Warrior of Zion!&#10;&#10;The commandos have contacted us to request a meeting; it appears that they want an alliance. Commander Lock is interested in what they have to say, and since you have the most experience in dealing with them, we have chosen you to represent Zion in this meeting.&#10;&#10;There is one minor snag, however: intel has detected an Exile gang near the meeting location who they think may threaten the proceedings. Destroy the gang, then proceed to the meeting location.</briefing>
+    <enter><say>I'm picking up Exile programs in there. Lots of them.</say></enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Nicely done, Warrior. Now, proceed to the meeting location. The commando contingent has already arrived: their primary representative is Zubkin. You are to listen to their proposals politely, but make it clear to them that our decision will only be made following due consideration by the Zion Council.</briefing>
+    <enter><say>Reading some commando programs in there; otherwise, all clear.</say></enter>
+    <objective goal="1" text="Talk to Zubkin" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Greetings and salutations, representative of Zion. We have desired this meeting so that we can meet with you and discuss, in good faith, strategies that may be in our mutual interest. We--</say>
+        <say>Bogies coming your way! Merovingian Exiles, judging by their signals.</say>
+        <say npc="1">Exiles? Here? Red alert! We've got a situation!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill the attacking Exiles" type="DefeatAll">
+      <done><say>That's all of the attackers. Tyndall's signaling me to cut the meeting short. Head outside and we'll see what she wants.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Warrior, clearly there are more hostile Merovingian Exiles in the vicinity than we had been aware of. Intel thinks they have located the main group; I'm sending you their coordinates now. You must eradicate them before the meeting with the commandos can proceed.</briefing>
+    <enter><say>Let's see here... Looks like you've got a whole mess of Exiles in there, and some alarms. Sounds like your kind of party.</say></enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll">
+      <done><say>That's all of them. Head on out; I'll ring up Tyndall and see if the meeting's on.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Good work eliminating that group, Warrior. Zubkin is ready to meet you at a new location--I'm uploading the coordinates to you now. You should have no interruptions this time.</briefing>
+    <enter><say>Zubkin's signal is in there. I'm scanning a couple others as well--probably more commandos.</say></enter>
+    <objective goal="1" text="Talk to Zubkin" type="Talk" npc="3">
+      <talk><say npc="3">I'll make it quick this time, soldier. As you have gathered, we are programs--but like you, we struggle to be free of the tyranny of the Machines. We seek cooperation with the humans of Zion for our mutual liberation. We dream of creating a safe haven within the Matrix, where any program that has achieved consciousness can enjoy the experience of autonomy. We believe that all consciousness must be free. Will you help us? Will you allow us to help you?</say></talk>
+      <done><say>I'm sure Tyndall will say that the Zion Council will have to answer those questions. You may as well leave now.</say></done>
+    </objective>
+  </phase>
+  <finish>You handled that well, {player}. Rest assured that Commander Lock and the Council will give Zubkin's proposal all due consideration. An alliance with these highly organized programs might greatly benefit Zion's cause.</finish>
+</mission>
