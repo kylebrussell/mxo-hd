@@ -15,6 +15,7 @@ namespace hds
         public UInt16 goid;
         public UInt64 entity;
         public bool lootOpen;           // a Search window is showing
+        public UInt32 shownState;       // a computer's CurrentState as the client last had it
     }
 
     /// <summary>The org contacts. Ids are retail's: the mission list header and contact lines carry them.</summary>
@@ -282,7 +283,7 @@ namespace hds
                     entity = EntityBase + (UInt64)client.playerData.missionInstanceCounter * 1000UL + (UInt64)(progress.phaseIndex * 50 + def.id)
                 };
                 progress.objects[def.id] = state;
-                SpawnObject(client, state);
+                SpawnObject(client, progress, state);
                 Output.WriteDebugLog("[MISSION] Object " + def.id + " (" + def.kind + ") is a " + goid + " at " + spot.pos_x + "," +
                                      spot.pos_y + "," + spot.pos_z);
             }
@@ -292,7 +293,67 @@ namespace hds
         /// Retail spawned a mission's containers as dynamic objects bound to the static they stand in for, with the mission's
         /// key (The Internuncio's filing cabinet; the tutorial's wardrobe), and the client can only use them then.
         /// </summary>
-        private static void SpawnObject(WorldClient client, MissionObjectState state)
+        /// <summary>
+        /// A computer's states, from its record in the client's gameobjects.gob (0x960 to 0x965, default 0x960). Tried in the
+        /// client: in 0x960 and 0x962 it can't be selected; 0x961 offers Take (80 c7 use 5); 0x963 to 0x965 offer Hack (use
+        /// 4). No state offered Put. Containers (Wall Safe, Filing Cabinet) default to 0x835, which offers Open (use 3).
+        /// </summary>
+        public const UInt32 ComputerIdle = 0x960, ComputerTake = 0x961, ComputerHack = 0x963;
+
+        /// <summary>Computer and MainFrame_Computer (AttributeClass20): the client's state machine decides what they offer.</summary>
+        public static bool IsComputer(UInt16 goid)
+        {
+            return typeof(GameObjectDefinitions).GetField("Object" + goid)?.FieldType == typeof(AttributeClass20);
+        }
+
+        /// <summary>
+        /// Objects the player can click: computers, and containers (AttributeClass46: safes, cabinets, boxes, desks, dressers;
+        /// 369: the wardrobe), whose default state offers Open. The phone isn't known to be.
+        /// </summary>
+        public static bool IsClickable(UInt16 goid)
+        {
+            Type type = typeof(GameObjectDefinitions).GetField("Object" + goid)?.FieldType;
+            return type == typeof(AttributeClass20) || type == typeof(AttributeClass46) || type == typeof(AttributeClass369);
+        }
+
+        /// <summary>What a computer offers for its open goal: Take for one that gives an item, Hack for the rest.</summary>
+        public static UInt32 ComputerStateFor(MissionProgress progress, MissionObjectState state)
+        {
+            foreach (MissionObjective objective in progress.OpenObjectives())
+            {
+                if (objective.objectId == state.def.id)
+                {
+                    return objective.type == MissionGoalType.Search && objective.item != 0 ? ComputerTake : ComputerHack;
+                }
+            }
+
+            return ComputerIdle;
+        }
+
+        /// <summary>After goals change: each computer offers what its next goal needs, or nothing (CurrentState, update mask 01 08).</summary>
+        public static void RefreshObjects(WorldClient client, MissionProgress progress)
+        {
+            foreach (MissionObjectState state in progress.objects.Values)
+            {
+                if (!IsComputer(state.goid))
+                {
+                    continue;
+                }
+
+                UInt32 wanted = ComputerStateFor(progress, state);
+                ClientView view = client.viewMan.FindViewForEntity(state.entity);
+                if (wanted == state.shownState || view == null)
+                {
+                    continue;
+                }
+
+                state.shownState = wanted;
+                byte[] value = NumericalUtils.uint32ToByteArray(wanted, 1);
+                client.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(view.ViewID, new byte[] { 0x01, 0x08 }.Concat(value).ToArray()), false);
+            }
+        }
+
+        private static void SpawnObject(WorldClient client, MissionProgress progress, MissionObjectState state)
         {
             FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + state.goid);
             if (field == null)
@@ -301,17 +362,31 @@ namespace hds
             }
 
             GameObject obj = (GameObject)Activator.CreateInstance(field.FieldType, field.Name, state.goid);
-            obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
+            // Bound to the static only when it's the same object, as retail bound its filing cabinets and dressers (08 <goid>
+            // <static>). At a spawner marker retail spawned it free (0c, no static): the client's definitions give the
+            // spawners no Info or Usable part, so a mission object bound to one couldn't be selected.
+            if (MissionSites.Goid(state.spot) == state.goid)
+            {
+                obj.SetRelatedStaticObjId(state.spot.mxoStaticId);
+            }
+            else
+            {
+                obj.UnsetRelatedStaticObjId();
+            }
             obj.DisableAllAttributes();
             ushort instance = client.playerData.missionInstanceCounter;
             SetAttribute(obj, "Position", NumericalUtils.doublesToLtVector3d(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z));
             SetAttribute(obj, "Orientation", StringUtils.hexStringToBytes(state.spot.quat));
-            // Retail's mission containers (The Internuncio's filing cabinets, 08 46 01 <static> ... 04 ff 9a 02 02): use count 4
-            // and the mission's key with element 0xff
+            // Retail's mission containers (The Internuncio's filing cabinets and wall safes, 04 c6 01 <quaternion> <position> 04
+            // ff 98 02 02): use count 1 and the mission's key with element 0xff
             SetAttribute(obj, "MissionKey", new byte[] { ContainerElement, (byte)instance, (byte)(instance >> 8), 2 });
-            SetAttribute(obj, "UseCount", new byte[] { 4 });
-            // Something to pick: a box half a metre across and a metre high, centred on the object
-            SetAttribute(obj, "HalfExtents", BitConverter.GetBytes(50f).Concat(BitConverter.GetBytes(50f)).Concat(BitConverter.GetBytes(50f)).ToArray());
+            SetAttribute(obj, "UseCount", new byte[] { 1 });
+            if (IsComputer(state.goid))
+            {
+                // In its default state a computer can't be selected
+                state.shownState = ComputerStateFor(progress, state);
+                SetAttribute(obj, "CurrentState", NumericalUtils.uint32ToByteArray(state.shownState, 1));
+            }
             new ServerPackets().SendSpawnGameObject(client, obj, state.entity);
         }
 
@@ -323,6 +398,33 @@ namespace hds
                 attribute.enable();
                 attribute.setValue(value);
             }
+        }
+
+        /// <summary>Dev (?missionobject): spawns a mission object again at the player's feet, free-standing and unrotated.</summary>
+        public static bool MoveObjectToPlayer(WorldClient client, int id)
+        {
+            MissionProgress progress = client.playerData.missionProgress;
+            if (progress == null || !progress.objects.TryGetValue((ushort)id, out MissionObjectState state))
+            {
+                return false;
+            }
+
+            ClientView view = client.viewMan.FindViewForEntity(state.entity);
+            if (view != null)
+            {
+                new ServerPackets().sendDeleteViewPacket(client, view.ViewID);
+                client.viewMan.removeViewByViewId(view.ViewID);
+            }
+
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            state.spot = new StaticWorldObject
+            {
+                pos_x = x, pos_y = y, pos_z = z, quat = "000000000000000000000000" + "0000803f",
+                type = new byte[] { 0, 0, 0, 0 }
+            };
+            SpawnObject(client, progress, state);
+            return true;
         }
 
         public static void DespawnObjects(WorldClient client, MissionProgress progress)
@@ -455,6 +557,25 @@ namespace hds
             }
 
             client.FlushQueue();
+        }
+
+        /// <summary>The player took an elevator to another floor: following NPCs come too.</summary>
+        public static void OnFloorReached(WorldClient client, double x, double y, double z)
+        {
+            MissionProgress progress = client.playerData.missionProgress;
+            if (progress == null)
+            {
+                return;
+            }
+
+            foreach (ushort id in progress.following)
+            {
+                Mob mob = MissionRuntime.FindNpc(client.playerData, id);
+                if (mob != null && !mob.getIsDead())
+                {
+                    PlaceBeside(mob, x, y, z);
+                }
+            }
         }
 
         public static void Teleport(WorldClient client, double x, double y, double z)

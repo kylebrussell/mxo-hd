@@ -9,8 +9,8 @@
      body (the guide: "by any means possible"), since a hostile NPC can't hand it over. -->
 <mission id="2110" title="The Stolen Artifact" description="Recover a stolen artifact for the Merovingian." plot="1" order="20"
          org="3" contact="Flood" exp="88000" info="63000">
-  <npc id="1" handle="Pemberton" type="FRIENDLY" at="2" rsi="760A0058" weapon="0" />
-  <npc id="2" handle="Arcturus" type="HOSTILE" at="3" rsi="d1040058" weapon="2568" attacksOnSight="0" />
+  <npc id="1" handle="Pemberton" type="FRIENDLY" at="2" rsi="9a010040" weapon="0" />
+  <npc id="2" handle="Arcturus" type="HOSTILE" at="3" rsi="fe020058" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Bertrand" type="FRIENDLY" at="4" rsi="c700004e" weapon="2564" />
   <phase site="Normal" enemy="Zion" enemies="3">
     <briefing>As you may have heard, we recently had an artifact stolen from us that requires recovery. The prized artifact was lifted by a small band of renegade Exiles that think they can take what belongs to us. Our current lead will send you right into the den of thieves that so foolishly ran off with the Merovingian's possession. Honestly, I would rather select someone else for this task, but it would seem that you're the only person available at the moment. Prove to me that I made the right decision.</briefing>

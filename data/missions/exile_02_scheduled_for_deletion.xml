@@ -6,7 +6,7 @@
      role. -->
 <mission id="2102" title="Scheduled For Deletion" description="Protect a pair of Exiles from Machine programs." plot="1" order="12"
          org="3" contact="Flood" exp="38500" info="52500">
-  <npc id="1" handle="Ugolino" type="FRIENDLY" at="1" rsi="c6020058" weapon="2564" />
+  <npc id="1" handle="Ugolino" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2564" />
   <npc id="2" handle="Ginevra" type="FRIENDLY" at="2" rsi="a8060090" weapon="2564" />
   <npc id="3" handle="Mathilde" type="FRIENDLY" at="3" rsi="a5060090" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="5">

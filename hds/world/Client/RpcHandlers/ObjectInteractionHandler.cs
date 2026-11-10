@@ -181,12 +181,7 @@ namespace hds
 
             if (Elevators.IsPanel(objectValues))
             {
-                // In a mission's building the operator offers the ride; the panel's own floor list isn't working yet
-                if (!MissionStaging.OnElevator(Store.currentClient, objectValues))
-                {
-                    Elevators.OnPanelUsed(Store.currentClient, objectValues);
-                }
-
+                Elevators.OnPanelUsed(Store.currentClient, objectValues);
                 return;
             }
 

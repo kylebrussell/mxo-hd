@@ -8,8 +8,8 @@
      item is handed out twice. -->
 <mission id="2309" title="Buffer Overflow" description="Shut down Network Mainframe to access vital data." plot="1" order="19"
          org="1" contact="Tyndall" exp="66000" info="52500">
-  <npc id="1" handle="Pollux" type="FRIENDLY" at="2" rsi="60010058" weapon="2568" />
-  <npc id="2" handle="Nunki" type="FRIENDLY" at="2" rsi="560A0058" weapon="2564" />
+  <npc id="1" handle="Pollux" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
+  <npc id="2" handle="Nunki" type="FRIENDLY" at="2" rsi="59010058" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>I am glad to hear from you. I have an interesting assignment that should provide a bit of excitement.
 

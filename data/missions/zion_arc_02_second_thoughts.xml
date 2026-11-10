@@ -4,7 +4,7 @@
      Contact is named Hevelius. -->
 <mission id="2302" title="Second Thoughts" description="Extract a Zion Operative and escort him to a hardline." plot="1" order="12"
          org="1" contact="Tyndall" exp="22000" info="31500">
-  <npc id="1" handle="Hevelius" type="FRIENDLY" at="1" rsi="d1040058" weapon="2564" />
+  <npc id="1" handle="Hevelius" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>We have a scared Zion Operative that is proving to be a bit difficult. He called in the security forces to protect him, but he's had second thoughts and wants a pickup. Here's the address.
 

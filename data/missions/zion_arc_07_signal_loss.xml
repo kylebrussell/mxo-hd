@@ -2,15 +2,15 @@
 <!-- Signal Loss, Tyndall's mission 7 for Zion. Text: the Prima guide (2005), with its role names
      replaced by names. Placement is generated: see docs/MISSIONS.md.
      Contact, Target and Trader are named. Target is printed as Zion Military with Bluepill and
-     Labworker tags; his look is a Zion male's, by the printed organisation. "Stop Zosma from blocking communication"
+     Labworker tags; his look is a male lab worker's, by the tags, and he is unarmed. "Stop Zosma from blocking communication"
      is a Defeat. Trader's sex is unspecified; a male Exile look is used. "Trade the virus for the data" is a Give of
      the Virus (6786) then a Get of Data (6787) with Fabrizio. Phase 2's Start and Enter Phase are printed "None.", so
      it has no briefing or arrival line. Phases 1 and 3 only talk, trade and upload, so 2 hostiles. -->
 <mission id="2307" title="Signal Loss" description="Make an exchange with one of the Merovingian's men." plot="1" order="17"
          org="1" contact="Tyndall" exp="66000" info="52500">
-  <npc id="1" handle="Zosma" type="HOSTILE" at="2" rsi="d8040058" weapon="2564" />
-  <npc id="2" handle="Cassini" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
-  <npc id="3" handle="Fabrizio" type="FRIENDLY" at="3" rsi="c5020058" weapon="2564" />
+  <npc id="1" handle="Zosma" type="HOSTILE" at="2" rsi="29020040" weapon="0" />
+  <npc id="2" handle="Cassini" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Fabrizio" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="2">
     <briefing>The Merovingian is willing to make an exchange with us and we need you to make the trade. Pick up the computer virus from Cassini at this address and make the switch at another. Cassini will have the rest of your instructions. Good luck, Warrior.</briefing>
     <enter><say>... Something strange is going on ... I'm getting some interference ... I'm losing packets left and right, it's almost like something is blocking my link. I should be able to keep your map updated. Just move forward with caution -- this doesn't feel right.</say></enter>

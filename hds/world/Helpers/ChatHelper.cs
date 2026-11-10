@@ -54,9 +54,11 @@ namespace hds
                                 break;
 
                             case "Orientation":
+                                // A quaternion (x, y, z, w): the player's yaw byte left it all zeros, and the client drew
+                                // nothing. Unrotated, as the mission objects are.
                                 hasFieldsEnabled = true;
                                 theAttribute.enable();
-                                theAttribute.setValue(Store.currentClient.playerInstance.YawInterval.getValue());
+                                theAttribute.setValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x80, 0x3f });
                                 break;
                         }
                     }
@@ -146,6 +148,56 @@ namespace hds
                         myselfStateData.AddByteArray(
                             Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
                         Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                    }
+                }
+
+                if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?missionobject <id>: the current phase's object, spawned again at the player's feet
+                    bool moved = MissionStaging.MoveObjectToPlayer(Store.currentClient, int.Parse(commands[1]));
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, moved ? "Object moved" : "No such object", "BROADCAST");
+                }
+
+                if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?objtest <goid> [key element hex] [use count] [state hex], each "-" to leave it out. A mission-style
+                    // object at the player's feet, after the player's own MissionKey again, to find what makes one usable.
+                    WorldClient client = Store.currentClient;
+                    UInt16 goid = UInt16.Parse(commands[1]);
+                    FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + goid);
+                    if (field != null)
+                    {
+                        GameObject obj = (GameObject)Activator.CreateInstance(field.FieldType, field.Name, goid);
+                        obj.UnsetRelatedStaticObjId();
+                        obj.DisableAllAttributes();
+                        Action<string, byte[]> set = (name, value) =>
+                        {
+                            if (obj.GetType().GetField(name)?.GetValue(obj) is Attribute attribute)
+                            {
+                                attribute.enable();
+                                attribute.setValue(value);
+                            }
+                        };
+                        ushort instance = client.playerData.missionInstanceCounter;
+                        set("Position", client.playerInstance.Position.getValue());
+                        set("Orientation", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x80, 0x3f });
+                        if (commands.Length > 2 && commands[2] != "-")
+                        {
+                            set("MissionKey", new byte[] { Convert.ToByte(commands[2], 16), (byte)instance, (byte)(instance >> 8), 2 });
+                        }
+                        if (commands.Length > 3 && commands[3] != "-")
+                        {
+                            set("UseCount", new byte[] { byte.Parse(commands[3]) });
+                        }
+                        if (commands.Length > 4 && commands[4] != "-")
+                        {
+                            set("CurrentState", NumericalUtils.uint32ToByteArray(Convert.ToUInt32(commands[4], 16), 1));
+                        }
+
+                        client.messageQueue.addObjectMessage(ServerPackets.BuildMissionKeyUpdate(instance), false);
+                        UInt64 entity = WorldServer.entityIdCounter++;
+                        new ServerPackets().SendSpawnGameObject(client, obj, entity);
+                        new ServerPackets().sendSystemChatMessage(client, "Object " + goid + ", instance " + instance, "BROADCAST");
                     }
                 }
 

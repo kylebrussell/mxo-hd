@@ -3,11 +3,11 @@
      role names ("Informant", "Assassin") replaced by names. Placement is generated: see docs/MISSIONS.md. Phase 1's
      goal is printed "Kill Assassin becomes Kill Assassin's Guards": the target isn't there, so the goal is the
      guards, a DefeatAll. Phase 2's "Speak to the Informant" becomes "Speak to Halloran". The Informant is a Machine
-     program (printed as The Machines, Bluepill, Bum) and has a program model. -->
+     program (printed as The Machines, Bluepill, Bum) and has a bum's look, unarmed, by the tags. -->
 <mission id="2106" title="Assassin Elimination" description="Eliminate a Zion assassin." plot="1" order="16"
          org="3" contact="Flood" exp="44000" info="52500">
-  <npc id="1" handle="Halloran" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564" />
-  <npc id="2" handle="Alhena" type="HOSTILE" at="3" rsi="560A0058" weapon="2568" />
+  <npc id="1" handle="Halloran" type="FRIENDLY" at="2" rsi="1a00005c" weapon="0" />
+  <npc id="2" handle="Alhena" type="HOSTILE" at="3" rsi="60010058" weapon="2568" />
   <phase site="Normal" enemy="Zion" enemies="5">
     <!-- The guide: Kill Assassin becomes Kill Assassin's Guards. -->
     <briefing>There is a Zion assassin known as Alhena who has been the source of much grief for us. Before they can make another assassination attempt, we would rather have Alhena killed. Go to this location and kill Alhena.</briefing>

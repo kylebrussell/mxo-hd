@@ -6,7 +6,7 @@
      following from phase 1's escort. Enemies as printed (Zion, then Merovingian). -->
 <mission id="2205" title="Compromised" description="Relocate a Machine program." plot="1" order="15"
          org="2" contact="Agent Gray" exp="27500" info="42000">
-  <npc id="1" handle="Lattice" type="FRIENDLY" at="1" rsi="340A0058" weapon="0" />
+  <npc id="1" handle="Lattice" type="FRIENDLY" at="1" rsi="1400004e" weapon="0" />
   <phase site="Normal" enemy="Zion" enemies="3">
     <briefing>We have a special assignment for you as you have become a valuable asset to us. We would like you to escort a critical control program to a new location that has become overrun by Exiles.
 

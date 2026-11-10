@@ -6,10 +6,10 @@
      npc="1,2". -->
 <mission id="2301" title="The End of the Beginning" description="Rescue a pair of Bluepill hostages from Exiles." plot="1" order="11"
          org="1" contact="Tyndall" exp="33000" info="42000">
-  <npc id="1" handle="Karen Holt" type="FRIENDLY" at="1" rsi="760A0058" weapon="0" />
-  <npc id="2" handle="Diane Foster" type="FRIENDLY" at="1" rsi="520A0058" weapon="0" />
-  <npc id="3" handle="Alcyone" type="FRIENDLY" at="2" rsi="89090058" weapon="2564" />
-  <npc id="4" handle="Menkar" type="FRIENDLY" at="2" rsi="58010058" weapon="2568" />
+  <npc id="1" handle="Karen Holt" type="FRIENDLY" at="1" rsi="34050040" weapon="0" />
+  <npc id="2" handle="Diane Foster" type="FRIENDLY" at="1" rsi="e4050024" weapon="0" />
+  <npc id="3" handle="Alcyone" type="FRIENDLY" at="2" rsi="59010058" weapon="2564" />
+  <npc id="4" handle="Menkar" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>I'm glad that you have decided to continue to work with us. I hope this is a habit that stays with you for your future and the future of Zion. Now, on to business.
 
