@@ -10,63 +10,61 @@ namespace hds
     public partial class ServerPackets 
     {
 
-        public void sendMissionList(UInt16 contactId, uint orgID, List<Mission> missions, WorldClient client)
+        /// <summary>
+        /// The mission list: a header (80 95), one entry per mission (80 96) and an end (80 97), all carrying the client's
+        /// request number. Retail, The Newsie's list:
+        /// 80 95 00000000 0000 0100 01 00 2f000000 0b140058 b711000a, then 80 96 00000000 0f00 00 2f000000 00 01 "Unhealthy
+        /// Competition", then 80 97 0000. Agent Gray's: 80 95 00000000 0100 0700 00 02 d1070000 320000b4 e70d0028, and each
+        /// entry 0f00 02 d1070000.
+        /// </summary>
+        public void sendMissionList(UInt16 txn, MissionContact contact, List<Mission> missions, WorldClient client)
         {
-            /*
-             * ToDo: check if mission team was created or not
-             */
+            foreach (byte[] message in BuildMissionList(txn, contact, missions))
+            {
+                client.messageQueue.addRpcMessage(message);
+            }
+        }
 
-            /* 
-             * ToDo: Figure the "unknowns" out
-             * Examples:
-             * Neo: 18 80 95 00 00 00 00 06 00 07 00 00 01 d0 07 00 00 31 00 00 b4 c0 0c 00 28 
-             * Luz: 18 80 95 00 00 00 00 05 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00
-             * Raj: 18 80 95 00 00 00 00 00 00 01 00 01 00 22 00 00 00 f3 13 00 58 a5 11 00 0a (just one mission in list "The Hunter" - PB i think)
-             * Raj: 18 80 95 00 00 00 00 00 00 01 00 01 00 34 00 00 00 15 14 00 58 a8 11 00 0a (just one mission in list "Pretty Retribution" - PB i think)
-             */
-            // contactId is the client's request number (retail copied it back), see MissionHandler.
+        public static List<byte[]> BuildMissionList(UInt16 txn, MissionContact contact, List<Mission> missions)
+        {
+            List<byte[]> messages = new List<byte[]>();
+            // Retail: 1 for a neighbourhood contact's list (The Newsie, The Chef, Mr. Black), 0 for an org contact's
+            byte previewType = (byte)(contact.IsNeighbourhood ? 1 : 0);
+
             PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_RESPONSE_LIST,0);
-            pak.AddUint32(0, 0); // Unknown UInt32
-            pak.AddUint16(contactId, 1);
-            pak.AddUint16((ushort) missions.Count,1); // len of missions "categorys" to list
-            pak.AddUShort(0);
-            pak.AddUShort((ushort)orgID);
-            // The contact: retail's Zion list carried Tyndall (2000, 0xb4000031, 0x28000cc0), its Machines list Agent Gray
-            var contact = MissionContacts.For(MissionContacts.ForOrg(orgID));
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_RESPONSE_LIST, 0);
+            pak.AddUint32(0, 0); // status
+            pak.AddUint16(txn, 1);
+            pak.AddUint16((ushort)missions.Count, 1);
+            pak.AddByte(previewType);
+            pak.AddByte(contact.org);
             pak.AddUint32(contact.id, 1);
-            pak.AddUint32(contact.name, 1);
-            pak.AddUint32(contact.image, 1);
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
-
-            
-            // ArrayList possibleMissions = new ArrayList();
-            // possibleMissions.Add("Change the Organisation");
-            // possibleMissions.Add("Welcome to HDS Experimental!");
-            // possibleMissions.Add("Party like '99");
+            pak.AddUint32(contact.nameId, 1);
+            pak.AddUint32(contact.face, 1);
+            messages.Add(pak.ReturnFinalPacket());
 
             UInt16 i = 0;
             foreach (Mission mission in missions)
             {
-                PacketContent missionListPak = new PacketContent();
-                missionListPak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_RESPONSE_NAME, 0);
-                missionListPak.AddUint16(contactId, 1);
-                missionListPak.AddUint16(i, 1);
-                missionListPak.AddHexBytes("0f0001"); // curently unknown
-                missionListPak.AddUint32(contact.id, 1); // the contact: retail's Zion lists had d0 07 00 00 (2000) here
-                missionListPak.AddByte(0x00); // chained
-                missionListPak.AddByte((byte)(mission.plot ? 1 : 0)); // retail: 1 on story missions, 0 on the generic types
-                missionListPak.AddSizedTerminatedString(mission.title);
-                client.messageQueue.addRpcMessage(missionListPak.ReturnFinalPacket());
+                PacketContent entry = new PacketContent();
+                entry.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_RESPONSE_NAME, 0);
+                entry.AddUint16(txn, 1);
+                entry.AddUint16(i, 1);
+                entry.AddUint16(0x0f, 1); // the title's offset
+                entry.AddByte(contact.org);
+                entry.AddUint32(contact.id, 1);
+                entry.AddByte(0x00); // chained
+                entry.AddByte((byte)(mission.plot ? 1 : 0)); // retail: 1 on story missions, 0 on the generic types
+                entry.AddSizedTerminatedString(mission.title);
+                messages.Add(entry.ReturnFinalPacket());
                 i++;
             }
 
-            // And finally again a resposne
-            PacketContent finalResponse = new PacketContent();
-            finalResponse.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_LIST_END, 0);
-            finalResponse.AddUint16(contactId, 1);
-            client.messageQueue.addRpcMessage(finalResponse.ReturnFinalPacket());
-            
+            PacketContent end = new PacketContent();
+            end.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_LIST_END, 0);
+            end.AddUint16(txn, 1);
+            messages.Add(end.ReturnFinalPacket());
+            return messages;
         }
 
         public void sendMissionInfo(Mission mission, UInt16 txn, byte difficulty, WorldClient client)

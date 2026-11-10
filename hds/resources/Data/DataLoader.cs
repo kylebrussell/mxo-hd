@@ -88,9 +88,9 @@ namespace hds
 
         /// <summary>What a contact offers: the first unfinished story mission, or all of them to replay once they're done.
         /// Only Zion's early missions exist so far, so every organisation is offered them.</summary>
-        public List<Mission> FindMissions(uint orgId, HashSet<int> completed)
+        public List<Mission> FindMissions(MissionContact contact, HashSet<int> completed)
         {
-            return ContactOffer(missions.FindAll(m => MissionContacts.Offers(orgId, m)), completed);
+            return ContactOffer(missions.FindAll(m => MissionContacts.Offers(contact, m)), completed);
         }
 
         public static List<Mission> ContactOffer(List<Mission> missions, HashSet<int> completed)

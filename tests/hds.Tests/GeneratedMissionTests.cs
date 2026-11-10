@@ -231,9 +231,9 @@ public class GeneratedMissionTests
     {
         Mission intro = new Mission { org = 0 }, zion = new Mission { org = 1 }, machines = new Mission { org = 2 }, exile = new Mission { org = 3 };
 
-        Assert.Equal("Tyndall", MissionContacts.ForOrg(1));
-        Assert.Equal("Agent Gray", MissionContacts.ForOrg(2));
-        Assert.Equal("Flood", MissionContacts.ForOrg(3));
+        Assert.Equal("Tyndall", MissionContacts.ForOrg(1).name);
+        Assert.Equal("Agent Gray", MissionContacts.ForOrg(2).name);
+        Assert.Equal("Flood", MissionContacts.ForOrg(3).name);
         Assert.True(MissionContacts.Offers(1, intro));
         Assert.True(MissionContacts.Offers(1, zion));
         Assert.False(MissionContacts.Offers(1, machines));
@@ -248,7 +248,7 @@ public class GeneratedMissionTests
     {
         Assert.Equal((2000u, 0xb4000031u, 0x28000cc0u), MissionContacts.For("Tyndall"));
         Assert.Equal((2001u, 0xb4000032u, 0x28000de7u), MissionContacts.For("Agent Gray"));
-        Assert.Equal(0xb4000038u, MissionContacts.For("Flood").name);
+        Assert.Equal((2002u, 0xb4000038u, 0x28000de6u), MissionContacts.For("Flood"));
     }
 
     private static string MissionsDir()

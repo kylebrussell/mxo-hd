@@ -61,7 +61,7 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
 - `<say>` with no attribute is the operator, `npc="n"` that NPC, `contact="1"` the mission contact.
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
 - `order` is its place in the contact's story chain: a contact offers the first unfinished one, then all of them to replay. Finished missions are in the `char_missions` table.
-- `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
+- `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood; see Contacts below); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
 
 ### Generated phases
 
@@ -157,6 +157,25 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 - Reputation doesn't change. Retail's captured early missions didn't change it either.
 - Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
 - A mission doesn't survive a relog: the NPCs go, and its items are taken back.
+
+## Contacts
+
+The client ships retail's contact list: `resource/missions/definitions/sponsors.xml`, the "Missile" mission system's 67 contacts. `data/mission_contacts.csv` is that file (`research/missions/gen_mission_contacts.py` writes it), and `MissionContacts` reads it.
+
+| Field | What it is |
+|---|---|
+| `id` | Retail's contact id. The list header, each list entry, the info and the accept carry it. |
+| `org` | 1 Zion, 2 Machines, 3 Merovingian, 4 Niobe, 5 Pluribus Neo, 6 Cypherites, 7 GMs, 8 the operator, 9 to 14 "Archived" copies of the first six. 0 is a neighbourhood contact. |
+| `name_id` | The name in the client's string table. |
+| `code` | "Procedural text stringtable abbreviation" (`tyn`, `gra`, `flo`, ...). Only org contacts have one. |
+| `face` | The portrait's resource id. |
+| `min_rep`, `max_rep` | An org contact needs at least `min_rep` with the org and retires above `max_rep` (0: never). |
+| `intro_text_id` | The contact's first words (`ID_CONTACT_INTRO_TYNDALL`, ...). |
+
+- **Org contacts.** The list request's org byte picks the org; of its contacts, the one whose reputation range holds the player's reputation answers (the highest `min_rep` first). The client's file gives each org one contact and no limits, so today that is always Tyndall, Agent Gray, Flood, Anome, Shimada or Veil. Reputation is the character's reputation attribute for the org (`?rep zion 500`).
+- **Every id matches the captures:** Tyndall and Agent Gray in their list headers, and The Newsie (47), The Chef (48) and Mr. Black (50) in theirs. Flood's portrait (`0x28000de6`) was missing before and used Tyndall's.
+- **The list as retail sent it:** `80 95 <status u32> <txn> <count> <preview> <org> <contact id> <name id> <portrait>`, then one `80 96 <txn> <index> 0f00 <org> <contact id> <chained> <plot> <title>` per mission, then `80 97 <txn>`. `preview` is 0 for an org contact and 1 for a neighbourhood contact. Each entry's org byte used to be 1 for every list; retail's Machines entries carried 2 and its neighbourhood entries 0.
+- Orgs 4 to 6 answer with an empty list: they have no missions yet.
 
 ## The tutorial
 
