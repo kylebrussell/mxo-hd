@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hard Time, Machines story mission 1.2.3. Source: research/missions/transcripts/Mach1-2-3.md (the archive replay of
+     [Machine Archive 1.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray and operator line, Agematsu's name and line, the barks,
+     and the last objective ("Upload the Package at a hardline", seen in the tracker). Ours: the description, the other
+     objective texts, the sites (unnamed buildings: Normal), the looks, the enemy counts, and the Zion Selective Phage
+     who carries the Flyer (a "person" carried it; a Zion Selective Phage barked "For Morpheus!"). Item stand-ins: the
+     Flyer is Flyer (6796), the Filefolder is Folder (6795), the package of posters is Package (6817). Rewards: none
+     were visible for this mission, so these are the 88,000 experience and 59,500 information of 1.2.4 No Allies Here,
+     the next mission of the sub-chapter.
+     Gaps: where the Filefolder was found isn't said; it is in a filing cabinet or desk. Retail's uploads had no area
+     of their own; they are phases 2 and 4 here (Agent Gray's line asks for the upload before the next waypoint), and
+     those phases' sites are only a place for their waypoint: the uploads are done at any hardline. Agent Gray's
+     "These humans have such feeble security measures." came between the Package and its upload, so it is phase 3's
+     complete line. The hostiles' barks are on the named ones but only play if the player talks to them, since they
+     attack on sight; the generated Zionites' (Zion Martial Arts Initiate: "For the One!"; Zion Guardian Patcher:
+     "Yaaah!") have no place. The Journal Entry from Morpheus in the player's inventory has no visible source and is
+     left out. -->
+<mission id="201203" title="Hard Time" description="Eliminate Morpheus' poster crew and confiscate their materials." plot="1"
+         order="1203" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Zion Selective Phage" type="HOSTILE" at="1" rsi="050100b4" weapon="2568">
+    <say>For Morpheus!</say>
+  </npc>
+  <npc id="2" handle="Agematsu" type="HOSTILE" at="3" rsi="c9020058" weapon="2568">
+    <say>Traitor!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Hello, {player}. The renegade human, Morpheus, is plastering subversive posters across our City. This activity will not be tolerated. You will go to his last known location, eliminate anyone that you find there, and confiscate their materials.</briefing>
+    <enter><say contact="1">Morpheus' activities have been traced back to an area inside that building. Eradicate everyone inside the area and appropriate their materials. You should find a file folder, a flyer, and a package of posters.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Eliminate the humans" type="DefeatAll">
+      <done><say contact="1">The humans have all ceased function. Good.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Flyer from the Zion Selective Phage" type="Loot" npc="1" item="6796">
+      <done>
+        <say>That person appears to have been carrying something.</say>
+        <say>Good. You've found the Flyer.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Find the Filefolder" type="Search" object="1" item="6795">
+      <done><say contact="1">That is the Filefolder that we are looking for.</say></done>
+    </objective>
+    <complete><say contact="1">One of the humans has escaped with the Package. Our sensors have tracked him... I will update your waypoint with his location once you have uploaded those two items at a hardline.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <objective goal="1" text="Upload the Flyer at a hardline" type="Upload" item="6796" />
+    <objective goal="2" text="Upload the Filefolder at a hardline" type="Upload" item="6795" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>One human escaped with the package. Follow the waypoint to his location and eliminate him.</briefing>
+    <enter><say contact="1">We've traced the remaining human to that building. Destroy him and retrieve the package.</say></enter>
+    <objective goal="1" text="Kill Agematsu" type="Defeat" npc="2">
+      <done><say contact="1">That human was unusually troublesome; you have done well to eliminate him. Search his corpse for the package.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Package from Agematsu" type="Loot" npc="2" item="6817">
+      <done><say>Good. Now upload the item at a hardline.</say></done>
+    </objective>
+    <complete><say contact="1">These humans have such feeble security measures.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <objective goal="1" text="Upload the Package at a hardline" type="Upload" item="6817" />
+  </phase>
+  <finish>Well done, {player}. You are proving to be a reliable resource for us.</finish>
+</mission>

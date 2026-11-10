@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Under Warranty, Machines story mission 1.2.5. Source: research/missions/transcripts/Mach1-2-5.md (the archive
+     replay of [Machine Archive 1.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, Stewart The Mechanic's name, and
+     the Protect objective ("Do not allow Stewart The Mechanic to be incapacitated", seen in the tracker). Ours: the
+     description, the other objective texts, the sites (Stewart's building: Normal; the hacker nexus, cracked walls in
+     the screenshot: Derelict), the looks and the enemy count ("a large concentration of Exile programs"). Item
+     stand-in: the key to the far door is Access_Card (6791). Rewards: the 58,000 experience and 59,500 information
+     shown right after this mission completed.
+     Gaps: leading Stewart The Mechanic up to the active computer can't target an object, so it is a Use of that
+     Computer while he follows. The far door's lock can't be expressed; the key is searched for in a box, and the
+     operator's "There's the active system" line is said once it is found, and the computer opens after it. The Exile
+     reinforcements that came when the repair began are spawned with the rest from the start; Agent Gray's "Those
+     Exile vermin" line is said once all are dead. The repair took a while with Stewart to protect; here it is
+     immediate. The operator's "That's it, {player}" closes the phase. The hacked computer's SecureNet popup and the
+     Threat Analysis of "Kingmaker" in the player's inventory aren't mission goals and are left out; the Exiles'
+     barks (Elite Guard: "You're gonna get it, human!"; Merovingian Martial Arts Initiate: "Spies!") have no place,
+     since they are generated. -->
+<mission id="201205" title="Under Warranty" description="Escort a repair program to a renegade hacker nexus." plot="1"
+         order="1205" org="2" contact="Agent Gray" exp="58000" info="59500">
+  <npc id="1" handle="Stewart The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Operative, the renegade Morpheus and his followers have been disrupting the code of the Matrix to create artificial information nexus areas where their hackers can access data. We have, of course, been able to track these sites. You will escort our repair program to one of these sites and protect it while it repairs the damage.</briefing>
+    <enter><say>The repair program, Stewart The Mechanic, is inside. Escort him outside and I will update you with the location of your target.</say></enter>
+    <objective goal="1" text="Lead Stewart The Mechanic out of the building" type="Escort" npc="1" to="exit" />
+    <objective goal="2" text="Do not allow Stewart The Mechanic to be incapacitated" type="Protect" npc="1" />
+  </phase>
+  <phase site="Derelict" enemy="Merovingian" enemies="5">
+    <briefing>Your waypoint is being updated with the location of the renegade hacker nexus now. Get Stewart The Mechanic there safely.</briefing>
+    <enter>
+      <say>Morpheus' hacker site is inside that building. There appears to be a large concentration of Exile programs in the area. Wipe them out and get Stewart The Mechanic to the active computer inside the hacker nexus.</say>
+      <say>You're close to the active renegade computer system. The far door is locked--if you can't open it yourself, you'll have to look around for a key.</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Wipe out the Exile programs" type="DefeatAll">
+      <done><say contact="1">Those Exile vermin deserved a somewhat slower deletion.</say></done>
+    </objective>
+    <objective goal="2" text="Find the key to the far door" type="Search" object="1" item="6791">
+      <done><say>There's the active system. Lead Stewart The Mechanic up to it so that it can begin to repair the damage made by Morpheus' flunkies.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Stewart The Mechanic to the active computer" type="Use" object="2" after="2">
+      <done>
+        <say contact="1">Repair program initiated. Exile reinforcements detected. Destroy them, operative.</say>
+        <say npc="1">Repairs are underway.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Do not allow Stewart The Mechanic to be incapacitated" type="Protect" npc="1" />
+    <complete><say>That's it, {player}. You can get out of there now.</say></complete>
+  </phase>
+  <finish>Those Exiles endangered our mission. We will deal with them after we have finished with Morpheus.</finish>
+</mission>

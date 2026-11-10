@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redpill Redux, Machines story mission 1.1.2. Source: research/missions/transcripts/Mach1-1-2.md (the archive replay
+     of [Machine Archive 1.1.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, and the NPC names. Ours: the
+     description, the objective texts (the Objectives tab was never opened), the sites (an unnamed building: Normal;
+     "the extraction point": RedPillExtraction), the looks and the enemy count. Item stand-in: the "key" Agent Long
+     carried is Access_Card (6791). Rewards: the 88,000 experience and 59,500 information shown right after this
+     mission completed.
+     Gaps: Agent Gray's "Additional information is arriving..." came two and a half minutes into the mission, most
+     likely on reaching the building, so it is the enter line. The key most likely opened the recruit's room; doors
+     can't be locked, so talking to Dalton Jacobus waits for the key. Agent Gray's "That was good work" line is said
+     once all of the counterfeit Agents are dead. Agent Long's and Agent Jones' lines are on them, but they attack on
+     sight, so the lines only play if the player talks to them. Log entries between the briefing and the update, and
+     the operator's line after the first area, weren't captured. The Email from Lock in the player's inventory has no
+     visible source and is left out. -->
+<mission id="201102" title="Redpill Redux" description="Rescue a Zion recruit from counterfeit Agents." plot="1"
+         order="1102" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Agent Long" type="HOSTILE" at="1" rsi="3600004e" weapon="2568">
+    <say>I won't go so easily.</say>
+  </npc>
+  <npc id="2" handle="Agent Jones" type="HOSTILE" at="1" rsi="9b000090" weapon="2568">
+    <say>Rescue him? You have other things to worry about.</say>
+  </npc>
+  <npc id="3" handle="Dalton Jacobus" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Help! Help!</say>
+  </npc>
+  <npc id="4" handle="Ceres" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say>Where's the new recruit?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Renegades masquerading as our operatives are attacking a human recruitment team. It is in our best interests right now to protect this team from the renegade programs.</briefing>
+    <enter><say contact="1">Additional information is arriving... the renegade programs have destroyed the Zion recruitment team. I am updating your task accordingly. Destroy the counterfeit Agents and extract the recruit from the area.</say></enter>
+    <objective goal="1" text="Get the key from Agent Long" type="Loot" npc="1" item="6791">
+      <done><say>The renegade who you just killed appears to have been carrying some sort of key.</say></done>
+    </objective>
+    <objective goal="2" text="Kill Agent Jones" type="Defeat" npc="2" />
+    <objective goal="3" text="Kill the counterfeit Agents" type="DefeatAll">
+      <done><say contact="1">That was good work, operative. These renegade groups are becoming increasingly impertinent.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Dalton Jacobus" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Those things slaughtered the operatives who were sent to take me to Zion. Can you show me where I need to go? I want to train with Zion and become strong, like you. Then I'll make the Machines pay for their actions today.</say></talk>
+    </objective>
+    <objective goal="5" text="Lead Dalton Jacobus out of the building" type="Escort" npc="3" to="exit" after="4" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Machines" enemies="0">
+    <briefing>You will now take Dalton Jacobus to the extraction point.</briefing>
+    <enter><say>The extraction point is nearby.</say></enter>
+    <objective goal="1" text="Lead Dalton Jacobus to Ceres" type="Escort" npc="3" to="npc:4">
+      <done><say>You can leave the recruit there.</say></done>
+    </objective>
+  </phase>
+  <finish>It is unfortunate that these imposter Agents are causing discord between Zion and the Machines. We will take steps in the future to ensure that this deception does not continue.</finish>
+</mission>

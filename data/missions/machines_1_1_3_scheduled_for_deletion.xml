@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scheduled for Deletion, Machines story mission 1.1.3. Source: research/missions/transcripts/Mach1-1-3.md (the
+     archive replay of [Machine Archive 1.1.3], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, the briefing, the operator's lines, Camillo's line and Agent Gray's closing line. Ours:
+     the description, the objective texts (the Objectives tab was never opened), the site (Camillo's office: Office),
+     the looks and the guard count (Camillo called "Guards!"). Rewards: none were visible for this mission, so these
+     are the 88,000 experience and 59,500 information of 1.1.2 Redpill Redux, the nearest mission of the sub-chapter
+     that showed one.
+     Gaps: retail's security camera (sneak past it or disable it) has nothing to stand for it, and hacking the computer
+     to cut Camillo's network access drew him out of his office; here the hack is an optional Use of a Computer that
+     changes nothing, and Camillo waits in place. He is hostile but waits for the player (attacksOnSight="0"): finding
+     him is a Talk goal that carries his "Guards!" line, and the phase's generated Exiles attack on sight. The
+     operator's long line (two paragraphs in the log) is the enter line. -->
+<mission id="201103" title="Scheduled for Deletion" description="Delete an Exile who has been troubling the Zionites." plot="1"
+         order="1103" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Camillo" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>Zion-Machine relations continue to be... tenuous. We are making a considerable effort to prove our cooperation to the humans. There is an Exile by the name of Camillo who has made himself very troublesome to the Zionites. I am sending you his location. I expect you to delete him.</briefing>
+    <enter><say>I've run a scan on the area and it looks like there is a security system in Camillo's office. You can try to sneak past the camera, or if you're able, disable the system itself. It doesn't matter how you achieve access to Camillo, but you must reach him to take him out. I don't see him leaving his office anytime soon... although... There *is* a single computer that has access to the internal network that Camillo is using. If you could hack the computer and shut down his network access, you might be able to get him to leave the safety of his office, making him more... accessible.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Hack the computer to shut down Camillo's network access" type="Use" object="1" optional="1" />
+    <objective goal="2" text="Find Camillo" type="Talk" npc="1">
+      <talk><say npc="1">You! What in the name of all that is evil are you doing here? Guards!</say></talk>
+    </objective>
+    <objective goal="3" text="Kill Camillo" type="Defeat" npc="1">
+      <done><say>Target eliminated. Now get out of there before any extra security forces show up!</say></done>
+    </objective>
+  </phase>
+  <finish>You are proving yourself to be quite reliable, {player}.</finish>
+</mission>

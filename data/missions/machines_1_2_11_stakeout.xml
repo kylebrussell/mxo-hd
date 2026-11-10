@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stakeout, Machine story mission 1.2.11. Source: research/missions/transcripts/Mach1-2-11.md (the archive replay of
+     [Machine Archive 1.2.11], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray and Operator line, and the attackers' names (Merovingian
+     Martial Arts Initiate, cut to "Merovingian Martial Arts Initi" by the chat; Elite Guard). Ours: the description,
+     the objective texts (the Objectives tab wasn't shown), the site (an unnamed building: Normal), the looks and the
+     enemy count. The hardline junction box is a Box. Rewards: the 44,000 experience and 59,500 information shown
+     right after this mission completed; the Overheard Transmission and Tactic Booster 2.0 received in the same block
+     aren't given.
+     Gaps: retail held the box for about seven minutes against four waves of Exiles of rising strength, until the new
+     security code came online. We have no timers or waves: every attacker is on the floor from the start (the
+     generated Exiles plus a named Initiate and Elite Guard for the stronger waves), finding the box is a Use of it,
+     and killing all of them brings the security online. The Operator's three later wave warnings ("More hostiles
+     incoming.", "Another attack wave has been detected heading your way.", "Another assault is approaching. The
+     attackers appear to be increasing in strength.") aren't said, and neither are the Exiles' Team chat taunts. -->
+<mission id="201211" title="Stakeout" description="Guard a hardline junction box against saboteurs." plot="1"
+         order="1211" org="2" contact="Agent Gray" exp="44000" info="59500">
+  <npc id="1" handle="Merovingian Martial Arts Initiate" type="HOSTILE" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Elite Guard" type="HOSTILE" at="1" rsi="c6020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Although we are currently upgrading the security code protecting hardlines throughout the City, until this new code comes online the hardlines will remain vulnerable to sabotage. You will patrol the vicinity of a hardline junction box and watch for suspicious activity. Eradicate anyone attempting to tamper with the box.</briefing>
+    <enter><say contact="1">The junction box is in that building. You will locate the box and patrol the vicinity until our new junction box security program is online. If any intruders threaten the box, you are to destroy them immediately.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the junction box" type="Use" object="1">
+      <done><say>There's the junction box. Now look-- Wait. I'm detecting Exile programs in your immediate vicinity. Better take them out.</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say contact="1">Our upgraded junction box security is now online. You may leave the area, {player}.</say></done>
+    </objective>
+  </phase>
+  <finish>You handled those multiple attackers well, operative--we are impressed. The hardlines in this sector are now secure, but we may have a use for your battle prowess elsewhere.</finish>
+</mission>

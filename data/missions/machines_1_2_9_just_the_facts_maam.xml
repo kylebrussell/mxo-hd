@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Just the Facts Ma'am, Machine story mission 1.2.9. Source: research/missions/transcripts/Mach1-2-9.md (the
+     archive replay of [Machine Archive 1.2.9], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and Agent North line, and the names (Tonisha
+     Warren, Agent North). Ours: the description, the objective texts (the Objectives tab wasn't shown), the sites (the
+     witness "resides in that apartment building": SlumApt; "the office": Office), the looks and the enemy counts.
+     Item stand-ins: Tonisha Warren's key is Access_Card (6791), her notes are Dossier (6799). Rewards: not shown for
+     this mission; these are Witness Protection's (1.2.10), 88,000 experience and 59,500 information.
+     Gaps: Tonisha Warren is found dead; dead NPCs aren't spawned, so her body is a piece of furniture searched for the
+     key. Agent North, who killed her, is the only hostile seen in her apartment; killing him isn't a goal, and his
+     line and Agent Gray's on finding the body are said on arrival. The office's door that the key opens can't be
+     locked: the key isn't used, and the Operator's lines about the door and the room are said on arrival. The office's
+     imposters are the phase's generated Machine hostiles; their Team chat taunts aren't said. -->
+<mission id="201209" title="Just the Facts Ma'am" description="Find out what a bluepill witness saw of the hardline sabotage." plot="1"
+         order="1209" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Agent North" type="HOSTILE" at="1" rsi="6e060040" weapon="2568" />
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Someone is sabotaging hardlines throughout the City. Several bluepills have witnessed the acts of sabotage. You will interview one of these bluepill witnesses and find out what they know about the saboteurs.</briefing>
+    <enter>
+      <say contact="1">The witness, Tonisha Warren, resides in that apartment building. Find her and extract the information we need. There is no particular need to be... gentle.</say>
+      <say npc="1">Hah. Too late.</say>
+      <say contact="1">Interesting. Tonisha Warren appears to have ceased function. I suggest searching the body.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search Tonisha Warren's body" type="Search" object="1" item="6791">
+      <done>
+        <say>Hey, grab that key.</say>
+        <say>This key belongs to an office nearby. Maybe there are more clues there. Leave the building and I'll update your waypoint with the office's location.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>You have received the office building's location. Proceed there swiftly.</briefing>
+    <enter>
+      <say>The office is in that building. I'll point the door out when you get near it. Be on your guard--I'm picking up multiple foreign signals in the area.</say>
+      <say>There's the door that Tonisha Warren's key will fit.</say>
+      <say>Search this room carefully. Tonisha Warren may have left some sort of clue about what she saw at the hardline.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the office" type="Search" object="1" item="6799">
+      <done>
+        <say>Check that dossier.</say>
+        <say>Ah, this dossier contains notes she made about what she saw at the hardline sabotage. Leave the area and upload it at a hardline.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Upload the dossier at a hardline" type="Upload" item="6799" after="1">
+      <done><say contact="1">Receiving the uploaded data now.</say></done>
+    </objective>
+  </phase>
+  <finish>Her notes in the dossier indicate quite clearly that it was these same imposter programs who were present at the hardline sabotage incident. Good. Now we will know in what direction to proceed.</finish>
+</mission>

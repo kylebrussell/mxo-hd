@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Murder Mystery, Machine story mission 1.2.16. Source: research/missions/transcripts/Mach1-2-16.md (the archive
+     replay of [Machine Archive 1.2.16], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and Jazmin Quint line, and the witness's name.
+     Ours: the description, the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings:
+     Normal), the looks and the enemy count. The two police officers at the crime scene weren't named in the log;
+     they take the names of the security force's barks in phase 2 (Security, Tactical Security). The police have no
+     org; as the Machines' own "misguided security force" they are Machines here. Rewards: the 93,500 experience and
+     63,000 information shown right after this mission completed.
+     Gaps: retail's officers turn hostile once told about the special mission; here they are hostiles that wait to be
+     attacked, talking to one of them is telling them, and dealing with them is optional. The three dead Zion
+     operatives aren't spawned: their bodies are a piece of furniture to examine, which turns up nothing. In phase 2
+     the security force surrounds the building after the witness is questioned; here it is the phase's generated
+     hostiles, there from the start, and the player only has to get out. The Operator's "Agents have locked on to your
+     position!" was most likely the open world's Agent threat and isn't said. -->
+<mission id="201216" title="Murder Mystery" description="Investigate the scene of three tidily executed killings." plot="1"
+         order="1216" org="2" contact="Agent Gray" exp="93500" info="63000">
+  <npc id="1" handle="Security" type="HOSTILE" attacksOnSight="0" at="1" rsi="35000024" weapon="2568" />
+  <npc id="2" handle="Tactical Security" type="HOSTILE" attacksOnSight="0" at="1" rsi="38000024" weapon="2568" />
+  <npc id="3" handle="Jazmin Quint" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>What could be going on?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>A cluster of tidily-executed human bodies has been found in the City. We suspect that this is the work of something more dangerous than a mere serial killer. Investigate the crime scene and look for clues regarding this new, unknown threat.</briefing>
+    <enter>
+      <say contact="1">You will find the three bodies in that building, operative. Investigate the site.</say>
+      <say contact="1">Ah, two members of the local constabulary. Tell them both that you are on a special mission. You may use my name.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to the police officers" type="Talk" npc="1,2">
+      <done><say contact="1">Obviously there has been some... miscommunication in the local constabulary. I will have to take care of that... personally. In the meantime, operative, deal with these two oafs as you see fit.</say></done>
+    </objective>
+    <objective goal="2" text="Examine the bodies" type="Search" object="1" item="0">
+      <done>
+        <say>Here are the bodies that were reported. Man--they look like powerful fighters, but they all died from a single bullet to the middle of the forehead.</say>
+        <say contact="1">That is a curious crime scene, but it raises more questions than it answers. Fortunately, we have located a witness who was scared off by the blundering law enforcement officials. Go outside and you will receive a waypoint to her location.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Deal with the police officers" type="DefeatAll" optional="1">
+      <done><say contact="1">Good help is rather hard to find these days. I shall have to have words with their Captain.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>A waypoint indicating the witness' location is uploading to you now. Find the witness and question her about what she saw at the crime scene. See if you can find out what sort of entity it was that struck down three powerful fighters so easily.</briefing>
+    <enter>
+      <say>A witness to the shooting, Jazmin Quint, is in that building. I guess she was frightened and fled the scene, but she called in after she calmed down. Talk to her and find out what she saw.</say>
+      <say>There's the witness. Interview her and find out what she saw.</say>
+    </enter>
+    <objective goal="1" text="Talk to Jazmin Quint" type="Talk" npc="3">
+      <talk><say npc="3">Oh, you're the special investigator they told me about? Well, I didn't see the actual shooting, but I think I got there right after it happened. The door was open and the room was full of flies--which was kind of odd, come to think of it.</say></talk>
+      <done><say contact="1">Hm. I am not sure how relevant her observation is. You may as well leave, op-- Hello, it appears that our misguided security force has surrounded your location. Well, do what you must to get out.</say></done>
+    </objective>
+  </phase>
+  <finish>Our apologies for the... confusion among our security forces, {player}. We will be dealing with that swiftly. In any case, thank you for your investigations into the shooting. Our intelligence network will begin sifting these clues for leads. It is certainly remarkable that three powerful Zion operatives were terminated in such an efficient manner.</finish>
+</mission>

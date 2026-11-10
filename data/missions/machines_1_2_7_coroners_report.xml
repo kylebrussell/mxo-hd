@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coroner's Report, Machines story mission 1.2.7. Source: research/missions/transcripts/Mach1-2-7.md (the archive
+     replay of [Machine Archive 1.2.7], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, and the NPC names. Ours: the
+     description, the objective texts (the Objectives tab was never opened), the fourth imposter's name ("Agent": his
+     name wasn't captured), the sites (unnamed buildings: Normal), the looks and the Exile count ("Exiles? What are
+     they doing there?"). Item stand-in: the tracer programs are Tracer (6825). Rewards: the 58,000 experience and
+     59,500 information shown right after this mission completed.
+     Gaps: retail had the player "give" a tracer to each of the four imposters' bodies. Dead NPCs can't be given
+     anything and a phase has at most three objects, so the four imposters are kill goals and the tagging isn't a goal:
+     the operator's "Now give each of the bodies a tracer program" and "receiving tracer signals from all four bodies"
+     are said together once the four are dead, and the Tracer from Tomita is left unused. Agent North's icon looked
+     green in the screenshot, but his line and name make him the first of the four imposters. The bystanders were
+     threatened by the imposters; each one's relieved line follows one imposter's death, in the order of the log, so
+     phase 2's goals are numbered from 3 to keep them clear of phase 1's. Seven NPCs share the second floor (four
+     imposters, three bystanders). The imposters' lines only play if the player talks to them, since they attack on
+     sight. Code Bit 8 and the Military Report to the General in the player's inventory have no visible source and are
+     left out. -->
+<mission id="201207" title="Coroner's Report" description="Destroy a band of imposter Agents and tag their bodies with tracer programs." plot="1"
+         order="1207" org="2" contact="Agent Gray" exp="58000" info="59500">
+  <npc id="1" handle="Tomita" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="2">What, you forgot already? Okay: once you have the right body, just "give" it the tracer. It really isn't all that hard to remember, operative.</say>
+  </npc>
+  <npc id="2" handle="Angel De Marco" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">These imposter Agents are obviously being directed by a powerful new player in the City. But who that could be, I can't even conjecture.</say>
+  </npc>
+  <npc id="3" handle="Agent North" type="HOSTILE" at="2" rsi="3600004e" weapon="2568">
+    <say>We will bring your system crashing down around you.</say>
+  </npc>
+  <npc id="4" handle="Agent Park" type="HOSTILE" at="2" rsi="6e060040" weapon="2568">
+    <say>Die!</say>
+  </npc>
+  <npc id="5" handle="Agent Clark" type="HOSTILE" at="2" rsi="9b000090" weapon="2568">
+    <say>The Machines will punish you!</say>
+  </npc>
+  <npc id="6" handle="Agent" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="7" handle="Ash Sebold" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>Don't let him kill me!</say>
+    <say after="3">All right! Thanks!</say>
+  </npc>
+  <npc id="8" handle="Ronnie Miller" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>Aaaaa!</say>
+    <say after="4">Whew. I thought I was a goner!</say>
+  </npc>
+  <npc id="9" handle="Sidney Casca" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say>We're all gonna die!</say>
+    <say after="5">I--I'm still alive!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Neutralizing these imposter programs has become a priority. In order to do this, we need to know more about them. You will locate a band of these imposters, destroy them, and tag their bodies with our special tracer program for recovery and analysis.</briefing>
+    <enter><say>You'll find the operative Tomita here. She'll provide you with the tracer programs you'll use to "tag" the bodies of the dead imposter programs.</say></enter>
+    <objective goal="1" text="Talk to Tomita" type="Talk" npc="1">
+      <talk><say npc="1">Oh, you're Gray's operative. Well, pay attention: once you have the right body, just "give" it the tracer. That's all there is to it.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the tracer programs from Tomita" type="Get" npc="1" item="6825" after="1">
+      <done>
+        <say npc="1">Take these tracer programs: you'll need them to tag the bodies for recovery.</say>
+        <say>Leave the area and I'll guide you to your targets.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I am updating your waypoint with the location of the imposters. Proceed there with all due haste.</briefing>
+    <enter>
+      <say>The imposter squad is inside that building. Remember, you have to "give" a tracer to each of the four imposters once you've terminated them.</say>
+      <say>Exiles? What are they doing there?</say>
+    </enter>
+    <objective goal="3" text="Kill Agent North" type="Defeat" npc="3" />
+    <objective goal="4" text="Kill Agent Park" type="Defeat" npc="4">
+      <done>
+        <say>Don't forget to plant a tracer program on his body.</say>
+        <say>Hm, a bystander. You needn't bother about them.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Kill Agent Clark" type="Defeat" npc="5" />
+    <objective goal="6" text="Kill the fourth imposter Agent" type="Defeat" npc="6" />
+    <complete>
+      <say>You've disabled all of the imposter programs in the area. Now give each of the bodies a tracer program.</say>
+      <say>Good, I'm receiving tracer signals from all four bodies. You can leave the area now.</say>
+    </complete>
+  </phase>
+  <finish>That was efficient work, {player}... Many humans would have been distracted by those bystanders. The retrieval of those bodies should greatly facilitate our knowledge of these renegade imposter programs.</finish>
+</mission>

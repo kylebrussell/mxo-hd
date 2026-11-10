@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Disturbing Trends, Machines story mission 1.2.1. Source: research/missions/transcripts/Mach1-2-1.md (the archive
+     replay of [Machine Archive 1.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, and the NPC names. Ours: the
+     description, the objective texts (the Objectives tab was never opened), the sites (Ophiuchi's buildings: Normal;
+     the Machine operations post: Office) and the looks. Item stand-in: the info node Map Disk is Map_Disk (6783).
+     Rewards: the 54,871 experience and 45,339 information shown right after this mission completed.
+     Gaps: Ophiuchi is met in one building and found again in another, so she is two NPCs of one name, one in phase 1
+     and one in phase 3. The operator's "The Map Disk is accessible from a computer in this room." came on walking
+     into the computer's room; it is the second enter line of phase 2. The four friendly Agents at the operations post
+     only bark. No fighting: the Truce forbids force against humans and the post's Agents expect the player. -->
+<mission id="201201" title="Disturbing Trends" description="Find out where Morpheus is from one of his friends." plot="1"
+         order="1201" org="2" contact="Agent Gray" exp="54871" info="45339">
+  <npc id="1" handle="Ophiuchi" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say>Bring me the Machines' info node map, then maybe I'll know I can trust you.</say>
+  </npc>
+  <npc id="2" handle="Agent Norris" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Run along now, human.</say>
+  </npc>
+  <npc id="3" handle="Agent Wong" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say display="5">Don't forget where the real power lies in the Matrix.</say>
+  </npc>
+  <npc id="4" handle="Agent Stewart" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">Hello, operative.</say>
+  </npc>
+  <npc id="5" handle="Agent Park" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">...</say>
+  </npc>
+  <npc id="6" handle="Ophiuchi" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say>Huh, looks like you're on our side after all. Well then, here's what I know about Morpheus: he wants to find Neo's body, or what's left of it, and return it to Zion. Seems kind of morbid to me, but that's Morpheus for you.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The Zion operative Morpheus is conducting unacceptably disruptive activities inside the Matrix. We require you to interrogate one of his friends in order to ascertain his current whereabouts.</briefing>
+    <enter><say>The friend of Morpheus is in that building. She calls herself Ophiuchi. Find out what she knows about Morpheus, but remember that the Truce forbids the use of force against humans.</say></enter>
+    <objective goal="1" text="Talk to Ophiuchi" type="Talk" npc="1">
+      <talk><say npc="1">So you'd like to know about Morpheus, would you? Tell you what--if you can prove that you're on our side, I'll tell you what I know. Let's see... Ah, I've got it. There's a Machine operations post nearby. Break into it, steal the local info node map off of their internal network, and bring it to me. Then we'll talk. Your operator will know where to find me.</say></talk>
+      <done><say contact="1">Little does this human realize that the data she is asking for is relatively worthless. This is an acceptable exchange. Leave the area and I will direct you to the operations post.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Our operations post is nearby. I will mark the position with a waypoint.</briefing>
+    <enter>
+      <say>The operations post is inside that building. The Agents have been notified of your arrival. You will find the info node Map Disk on one of the computers.</say>
+      <say>The Map Disk is accessible from a computer in this room.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the Map Disk from the computer" type="Search" object="1" item="6783">
+      <done><say>Take that disk to Ophiuchi. I will mark her current location with a waypoint once you've left this area.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Ophiuchi's current waypoint has been uploaded to you. Proceed there now.</briefing>
+    <enter><say>Ophiuchi can be found inside that building. Give her the Map Disk and get her information about Morpheus.</say></enter>
+    <objective goal="1" text="Give the Map Disk to Ophiuchi" type="Give" npc="6" item="6783">
+      <talk><say npc="6">Well, so you made it back. Did you manage to steal the info node map?</say></talk>
+      <done>
+        <say>Your work is done there, operative.</say>
+        <say npc="6">Huh, looks like you're on our side after all. Well then, here's what I know about Morpheus: he wants to find Neo's body, or what's left of it, and return it to Zion. Seems kind of morbid to me, but that's Morpheus for you.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Human attitudes about cessation of awareness are puzzling. Nevertheless, this information about Morpheus' intentions may be of some use in locating him.</finish>
+</mission>

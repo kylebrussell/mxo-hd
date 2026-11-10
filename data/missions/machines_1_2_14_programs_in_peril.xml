@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Programs in Peril, Machine story mission 1.2.14. Source: research/missions/transcripts/Mach1-2-14.md (the archive
+     replay of [Machine Archive 1.2.14], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and NPC line, and every NPC name (Long The
+     Mechanic, Agents Stewart, Johns and Norris, Aleksandrov, Bulgey, Christophe). Ours: the description, the
+     objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal), the looks and the enemy
+     count. The kidnappers are the phase's generated Exiles; Aleksandrov, Bulgey and Christophe are redpill bystanders (Aleksandrov is one of the Zion guards' names in 1.2.17). Rewards: the 93,500 experience and 63,000 information
+     shown right after this mission completed; the D-A Arms Zipper received in the same block isn't given.
+     Gaps: retail's security terminals opened locked doors between rooms on the way to Long The Mechanic; here the
+     three terminals are Computers used in turn, and Long The Mechanic can only be freed once the third is used.
+     Agent Gray's and the Operator's hints between the terminals are said as each one is used. Agent Gray's "Exiles...
+     phaw." is said when the kidnappers are all dead. Agent Stewart's greeting begins with "..." and the player's name
+     in the log; here it begins with the name. His "You may go." and Long The Mechanic's thanks are said when he is
+     delivered. -->
+<mission id="201214" title="Programs in Peril" description="Free a kidnapped hardline maintenance program from the Exiles." plot="1"
+         order="1214" org="2" contact="Agent Gray" exp="93500" info="63000">
+  <npc id="1" handle="Long The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Agent Stewart" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>{player}. Where is our maintenance program?</say>
+  </npc>
+  <npc id="3" handle="Agent Johns" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say display="5">Take that program to Agent Stewart.</say>
+  </npc>
+  <npc id="4" handle="Agent Norris" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">Don't touch anything.</say>
+  </npc>
+  <npc id="5" handle="Aleksandrov" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say display="5">An "LED" is a "Light-Emitting Diode," but those imposter agents are dim bulbs!</say>
+  </npc>
+  <npc id="6" handle="Bulgey" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say display="5">Where do those imposter Agents keep coming from? There's got to be some way to track them.</say>
+  </npc>
+  <npc id="7" handle="Christophe" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say display="5">Exiles, Agent imposters... What's next? Things have been getting kind of weird lately.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Some of our maintenance programs who specialize in hardline junction box repair have been kidnapped. We have traced the signal of one of them to a building in your vicinity. Free the program and demolish the kidnappers.</briefing>
+    <enter><say contact="1">The hardline maintenance program Long The Mechanic's signal has been traced to that building. Bring him out of the area. Eradicate anyone who tries to stop you.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Hack the security terminal" type="Use" object="1">
+      <done>
+        <say>Hacking that computer seems to have enabled a door access somewhere nearby.</say>
+        <say>Scanners are detecting a computer with security access in that room.</say>
+        <say contact="1">There is a security system terminal in that room. It seems that the security system in that location is rather Byzantine.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Hack the second security terminal" type="Use" object="2" after="1">
+      <done>
+        <say>You've used that computer to enable access to a security door nearby. Good thinking.</say>
+        <say>You should find another security system terminal in that room.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Hack the third security terminal" type="Use" object="3" after="2">
+      <done><say>A door nearby has been unlocked.</say></done>
+    </objective>
+    <objective goal="4" text="Kill the kidnappers" type="DefeatAll">
+      <done><say contact="1">Exiles... phaw. They should know better than to meddle in Machine affairs.</say></done>
+    </objective>
+    <objective goal="5" text="Find Long The Mechanic" type="Talk" npc="1" after="3">
+      <talk>
+        <say contact="1">You have located our maintenance program, Long The Mechanic. Effectuate his removal from the premises.</say>
+        <say npc="1">Wow, I didn't think that anyone would be able to get through their security system. Let's get out of here!</say>
+      </talk>
+    </objective>
+    <objective goal="6" text="Lead Long The Mechanic out of the area" type="Escort" npc="1" to="exit" after="5">
+      <talk><say npc="1">Let's get out of here before the door locks recycle.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Good. Now you will take Long The Mechanic to our secure operation center nearby. Follow the waypoint.</briefing>
+    <enter><say contact="1">Our operation center is in that building. Present Long The Mechanic to our program Agent Stewart for debriefing.</say></enter>
+    <objective goal="1" text="Bring Long The Mechanic to Agent Stewart" type="Escort" npc="1" to="npc:2">
+      <talk><say npc="1">Aren't you supposed to take me somewhere safe?</say></talk>
+      <done><say contact="1">You have achieved safe delivery of the maintenance program. You may exit the area now.</say></done>
+    </objective>
+    <complete>
+      <say npc="2">You may go.</say>
+      <say npc="1">Thank you! You are now my very favorite human.</say>
+    </complete>
+  </phase>
+  <finish>You have successfully restored our maintenance program, {player}. It is unclear what the Exiles meant to do with him, but perhaps they have ambitions of taking over a section of our hardline network. We shall have to watch them closely.</finish>
+</mission>
