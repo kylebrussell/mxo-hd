@@ -208,7 +208,7 @@ function Test-Guns {
     Start-World
     $cp = Login; if (-not $cp) { return }
     try {
-        Act $cp @{ Chat = @('?weaken 150') }     # survives two shots: long enough to close in
+        Act $cp @{ Chat = @('?weaken 600') }     # survives three retail shots (about 170 each): long enough to close in
         Act $cp @{ Chat = @('?additem 2565') }   # logs "Free Fire weapon" only when the client has none chosen yet
         # Target the Blackwoods from the login spot, where it is always at the same place on screen: walking
         # distance varies between runs, and it stays targeted while walking.

@@ -204,7 +204,7 @@ namespace hds
             };
             Output.WriteDebugLog("[AGGRO] " + mob.getName() + " attacks " + client.playerData.getCharID() +
                                  " (view " + view.ViewID + ")");
-            CombatManager.GetHandler(client).ProcessRequestCloseCombat(ref request);
+            CombatManager.GetHandler(client).ProcessRequestCloseCombat(ref request, npcStarted: true);
             client.FlushQueue();
         }
     }
