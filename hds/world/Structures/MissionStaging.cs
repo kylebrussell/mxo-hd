@@ -84,7 +84,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
             MissionPhase phase = mission.phases[0];
             int npcs = mission.npcs.Count(n => n.at == 1) + phase.enemies;
-            int objects = phase.objects.Count(o => !ObjectGoids.ContainsKey(o.kind));
+            int objects = PlacesNeeded(phase);
             Random rng = new Random(unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
@@ -93,6 +93,13 @@ namespace hds
             data.missionPreviewFor = mission;
             return data.missionPreview;
         }
+
+        /// <summary>
+        /// How many furniture pieces or object spawners a phase's site needs: one per object. A furniture kind takes furniture, a
+        /// spawned kind (Safe, Computer) a spawner or else furniture. Counting only the furniture kinds let a floor with neither be
+        /// picked, and its safe was never placed ("Nowhere to put object"), so the mission couldn't finish.
+        /// </summary>
+        public static int PlacesNeeded(MissionPhase phase) => phase.objects.Count;
 
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
         public static bool Stage(WorldClient client, MissionProgress progress)
@@ -109,7 +116,7 @@ namespace hds
 
             int at = progress.phaseIndex + 1;
             List<MissionNpc> placed = mission.npcs.Where(n => n.at == at).ToList();
-            int objects = phase.objects.Count(o => !ObjectGoids.ContainsKey(o.kind));
+            int objects = PlacesNeeded(phase);
             Random rng = new Random(unchecked((int)client.playerData.getCharID() * 7919 + mission.id * 31 + at + (int)progress.startedAt));
             List<MissionSite> sites = MissionSites.For(mission.district);
             MissionSite site = progress.phaseIndex == 0 && client.playerData.missionPreviewFor == mission ? client.playerData.missionPreview : null;
