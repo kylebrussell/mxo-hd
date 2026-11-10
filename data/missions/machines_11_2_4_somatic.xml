@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Somatic, Machines story mission 11.2.4. Source: research/missions/transcripts/Mach11-2-4.md (a live run of
+     "Somatic", given by Agent Gray; the Current Mission bar had no archive number, so 11.2.4 is the folder's).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line (the log's and the Team
+     chat's), and the names Imelda Kroller, Agent Pace, Agent Jones, Agent Marks, Guillermo Hendrickson, Machine
+     Martial Arts Initiate, Machine Selective Phage, Machine Pathogenist, Machine Gunman and Bluepill. NPCs called the
+     player "Mr. Argento", and Agent Pace once "Brando"; both are {player}. The Team chat was scrolled apart from the
+     log, so where its lines fall is ours.
+     Ours: the description and the objective texts (neither tab was opened), the sites (not described: Normal), the
+     looks and the enemy counts. Agent Pace and Kroller are placed again at the lab.
+     Rewards: none were shown; 297,000 experience and 98,000 information are 11.2.3's.
+     Gaps: Gray's "She will provide a [...] situation update" lost a word and is "a situation update". Pace's second
+     line answered a question of the player's (the line before it was cut off) and is her line when talked to again.
+     Gray's "Wright's location is not confirmed." starts the override area. The Bluepill's stammer is placed in that
+     area, where the Operator's "it isn't a good day to be in a pod" is said on nearing him. At the lab the override
+     programs struck only after Pace's talk ("No overrides in sight...yet."); here a few are on the floor from the
+     start. Hendrickson's first line is said on nearing him. In retail Kroller vanished during the escort ("Unrequested
+     reinitialization of subject's image by the pod hardware"); we can't make her vanish, so she is led out of the
+     lab, Gray's "Confirm subject's status" starts a last area where she is talked to (her "impossible"), and Gray's
+     last report is the closing line. The Machine Gunman's "What happened?!" is placed in that last area. The
+     Initiate's second line ("I knew this was gonna go south fast...") has no clear place and is left out. -->
+<mission id="211204" title="Somatic" description="Keep Imelda Kroller, whose body holds the biological interface program, out of Danielle Wright's reach." plot="1"
+         order="11204" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="1">Yes, Wright has been using a scan routine of some sort that allows her to access information on the pod system through bluepills, and vice versa; it will be difficult to prevent her discovery of Ms. Kroller. We must extract the program from Ms. Kroller's body as soon as possible.</say>
+  </npc>
+  <npc id="2" handle="Agent Jones" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>The situation is serious.</say>
+  </npc>
+  <npc id="3" handle="Imelda Kroller" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>...</say>
+  </npc>
+  <npc id="4" handle="Machine Martial Arts Initiate" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say display="5">Normally I'd be cock of the walk with an Agent at my back, but he won't be worth spit if Wright or one of those Accelerator programs shows up.</say>
+  </npc>
+  <npc id="5" handle="Machine Selective Phage" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say display="5">She's been like that ever since they got her here. I don't know what that program's doing to her, but it isn't normal, that's for damn sure.</say>
+  </npc>
+  <npc id="6" handle="Bluepill" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>N-nnn... Nuh-uh-uhhh...</say>
+  </npc>
+  <npc id="7" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="8" handle="Imelda Kroller" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say>...</say>
+  </npc>
+  <npc id="9" handle="Guillermo Hendrickson" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say>Remarkable condition...</say>
+  </npc>
+  <npc id="10" handle="Agent Marks" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say>This is not the time, {player}.</say>
+  </npc>
+  <npc id="11" handle="Machine Pathogenist" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say display="5">Get the coppertop out of here.</say>
+  </npc>
+  <npc id="12" handle="Machine Gunman" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say display="5">What happened?!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we have located the biological interface program inside the physical body of a woman named Imelda Kroller. Danielle Wright has been hunting down and terminating humans in pods near Kroller's in an apparent attempt to capture the program. We have taken Kroller into protective custody. Our task is twofold: prevent Wright from finding Kroller in the simulation, and remove the interface program from Kroller's body.
+
+Agent Pace is standing by with Kroller now. She will provide a situation update.</briefing>
+    <enter><say>I guess he must mean that the program is in the woman's body in the Real. Weird... And not good, since Wright probably knows the pod system better than anyone--any human, anyway.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk>
+        <say npc="1">*Buon giorno*, {player}. We are about to move her to a lab where the interface program will be removed, but already, override programs have been detected not far away. I need you to neutralize those programs while we move Ms. Kroller.</say>
+        <say>Always wondered what my middle initial "N" stood for; now I know it stands for "Neutralize."</say>
+      </talk>
+    </objective>
+    <near npc="2" radius="300">
+      <say npc="2">It is the operative.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Wright's location is not confirmed.</briefing>
+    <enter><say>Sure wish we had some of those anti-override prototypes Cryptos was testing out the other day. Did you hear about that? I guess there are still a lot of kinks to work out, but apparently they helped...a little.</say></enter>
+    <objective goal="1" text="Neutralize the override programs" type="DefeatAll">
+      <done><say>Good work. Let's see how they're doing at the lab.</say></done>
+    </objective>
+    <near npc="6" radius="300">
+      <say>Crap, it isn't a good day to be in a pod.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Extraction of the interface program from Ms. Kroller's body is not proceeding as quickly as had been projected. With Wright approaching the lab's vicinity, we have no choice but to evacuate the subject. Report to Agent Pace at the lab.</briefing>
+    <enter><say>I don't wanna know what Wright'd do to the lady if she got ahold of her.
+
+No overrides in sight...yet.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="7">
+      <talk>
+        <say npc="7">Please take Ms. Kroller with you immediately.</say>
+        <say>Son of a--! Override signal, right next to your position! Time to move!</say>
+        <say npc="7">We have been unable to obtain the necessary response from the interface program. It has taken control of Ms. Kroller's somatic nervous system, resisting external stimuli.
+
+Now, you must hurry. Do not worry about me, {player}.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Imelda Kroller out of the area" type="Escort" npc="8" to="exit" after="1" />
+    <objective goal="3" text="Do not let Imelda Kroller die" type="Protect" npc="8" after="1" />
+    <near npc="9" radius="300">
+      <say npc="9">There just isn't enough time to try all the permutations...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, something is happening. Kroller's pod routines have stopped reporting. Confirm subject's status.</briefing>
+    <enter><say>What th--?</say></enter>
+    <objective goal="1" text="Talk to Imelda Kroller" type="Talk" npc="8">
+      <talk><say npc="8">impossible</say></talk>
+    </objective>
+  </phase>
+  <finish>... Unrequested reinitialization of subject's image by the pod hardware...
+
+Signal is active. Unable to resolve location. Status unknown. P0026:05:0149:081 is not responding.</finish>
+</mission>

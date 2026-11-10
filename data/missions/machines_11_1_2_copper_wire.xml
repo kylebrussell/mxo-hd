@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copper Wire, Machines story mission 11.1.2. Source: research/missions/transcripts/Mach11-1-2.md (a completed run
+     of the mission given by Agent Gray, plus field screenshots of an earlier attempt; the Current Mission bar showed
+     no archive prefix). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line (the NPC lines from the earlier
+     attempt's popups and chat), the objective text "Search the area" (phases 2 and 3), and the names Tactical
+     Security, Agent Clark and Agent Gray. Gray called the player "Mr. Argento"; that is {player}. Besides the contact
+     on the datalink, a field NPC named Agent Gray waits at the meeting in phase 4; he is a friendly NPC with that
+     handle. Words in italics (asterisks in the transcript) are plain here.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 1 and 4, the sites (the
+     two rioters' areas were apartment corridors and rooms: SlumApt; the police flash point and the meeting are not
+     described: Normal; retail ran in Shinjuku and Murasaki, International), the looks and the counts. Tactical
+     Security is a SWAT officer with a bluepill look and a gun.
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Gaps: retail's rioting bluepills were flagged hostile, with the fail line "Do not cause excessive civilian
+     casualties" and the Operator's warning "Uh-oh! Stress level on that one's spiking. Better back off!"; we have no
+     casualty count or stress, so the bluepills are friendly bystanders and there is no fail line. In phase 2 retail's
+     "Search the area" was done on talking to the bluepill whose cable was out; here that is a Talk on him among the
+     other rioters. In phase 3 it was done at the computer that couldn't reach its gateway; the Operator's "Hm..."
+     there is said with the search's done line. Tactical Security's bark "Damn! I guess that'll teach the rest..." is
+     said on nearing him. One rioter's short repeat "Tell me!" is left out. Gray's and the Operator's lines that lost a
+     word at a screenshot join are used as they read (Clark's "overlook the ramifications" fills the join). -->
+<mission id="211102" title="Copper Wire" description="Investigate the cause of the rioting spreading through the city." plot="1"
+         order="11102" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Tactical Security" type="FRIENDLY" at="1" rsi="38000024" weapon="2568">
+    <say>I'm not some bleeding-heart sociologist with theories about the betterment of mankind. Usually people calm right down once they see we mean business.</say>
+  </npc>
+  <npc id="2" handle="Bluepill" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="3" handle="Bluepill" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say display="5">It's a conspiracy... First they take our shows, and next they'll take our...I don't know...sugary snacks, probably!
+
+What are you laughing at?!?</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">How am I supposed to know...what the weather is...traffic...who won the ball game...where to go for sales...what Vanna's wearing...
+
+I can't live like this!</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say display="5">What are you, a cop? A damn...TV-narco-fascist?!</say>
+  </npc>
+  <npc id="6" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">You want to help? Then fix it! I've tried everything! I was on the line with my ISP's tech support for three hours! Do you know how many times I had to listen to that same insipid song on their hold music?
+
+My configuration is perfect. It's got to be the router they gave me... But they said they don't have any replacements available! How is that even possible? They're so stupid!</say>
+  </npc>
+  <npc id="7" handle="Bluepill" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">Aaaa damn it I am totally gonna lose that auction now I swear it was that guy must've hacked me to keep me from winning AGAIN like I totally SHOULD have it was LEGIT I never touched his account they have no record no proof this is re-god-damn-diculous...</say>
+  </npc>
+  <npc id="8" handle="Bluepill" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say display="5">Can't... Can't find answers. Can't search... How can I know... There are no hits! How can I? Tell me!</say>
+  </npc>
+  <npc id="9" handle="Bluepill" type="FRIENDLY" at="3" rsi="e4050024" weapon="0">
+    <say display="5">Our clan had a training session today... Damn it... How am I supposed to level... I'll never be uber!</say>
+  </npc>
+  <npc id="10" handle="Bluepill" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5">I'm... I'm going to sue...someone! Someone's got to pay!</say>
+  </npc>
+  <npc id="11" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="12" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>...</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, reports of violent incidents in the city have been coming in at an unusual and increasingly high rate over the past twenty-four hours, with officials now beginning to see signs of rioting in some localities. We must ascertain the cause of this destabilization among the populace. I am directing you to a flash point reported by police.</briefing>
+    <enter><say>Some of the cops should still be inside. Don't see any activity on my screen that looks like rioting... Must have died down already.</say></enter>
+    <objective goal="1" text="Talk to Tactical Security" type="Talk" npc="1">
+      <talk><say npc="1">Hey... I don't have to put up with a cross-examination here. You think I like this? My squad's been on emergency alert for the past fourteen hours. A mob attacked my men without provocation, and they had to defend themselves.
+
+No, I don't know what set them off. Since when did a mob need a reason?</say></talk>
+      <done><say>Oh, boy. Sounds like this is already out of hand.</say></done>
+    </objective>
+    <near npc="1" radius="600">
+      <say npc="1">Damn! I guess that'll teach the rest of those crazy sons of--</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>... Very well, {player}; since tensions appear to be running high, we are going to try a new tactic: sending you in ahead of the police. Find out what has caused this mob behavior. Needless to say, you are to avoid causing civilian casualties wherever possible.</briefing>
+    <enter><say>I'm seeing some pretty jumpy signals in there. I hope you've got a really long olive branch. Just try not to tick them off to the point where they won't talk to you.</say></enter>
+    <objective goal="1" text="Search the area" type="Talk" npc="2">
+      <talk><say npc="2">What's going on? What do you think is going on? Cable's out... We can't get our channels--nobody can! What are we supposed to do--sit around and...and meditate, or frickin' read?</say></talk>
+      <done><say>Wait, so cable TV's been out...everywhere...for twenty-four hours? Man, that is bad. I mean, people will put up with a lot, but take away their soap operas and game shows, and boy, watch out...
+
+Hm... For once it's a good thing I've got a tape delay on the channel hack I worked out in my quarters...</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Yes, outages had been noted, but the providers should have safeguards in place to prevent such a catastrophic failure of their service.
+
+I will look into this, {player}. However, even a television outage would not explain violent behavior among certain fringe areas of society where some of the sharper disturbances have been reported. Continue your investigation.</briefing>
+    <enter><say>Looks like another pressure-cooker in there. And yeah, I'm not reading the usual media data flows that people would be using.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>Hm...</say>
+        <say>They've got a high-speed connection, but their router isn't responding. PC's network configuration looks okay... I think the router's just kicked the bucket.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I see. That fits in with my own findings. Meet me at the indicated location for discussion, please.</briefing>
+    <enter><say>So hey, did you hear about what happened with the biological interface program? We went after the Merv and got our hands on it, but then it...eh...well, they say it more or less just moved itself off; now it sounds like the Merv's got it hidden away somewhere else.
+
+I haven't heard a real great explanation for that, but if this program prefers the company of Mervs, then it can't be all that great...</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="11">
+      <talk><say npc="11">We have been able to confirm widespread failure of set-top cable television boxes, and home network routers. Almost all of those devices are manufactured by one company: the Ouroboros Corporation.
+
+Failures appear to have occurred at approximately the same time, in multiple device models, from different dates of manufacture. The probability of this occurring based on standard simulated chance is effectively nil; we therefore conclude that this was planned. Who planned it, and why, we will have to ascertain. We must also put an end to the service outage and rioting that have resulted.</say></talk>
+      <done><say npc="11">Input from television or internet sources has proven effective in minimizing the viewer's chance of rejecting the Matrix; in effect, it creates a second layer of simulated reality distracting attention from the outside world, and for very little additional energy cost to us: humans spontaneously generate and manage such content.
+
+Ouroboros has been one of the most successful of those corporations, bringing to market highly efficient devices for transmitting the information. Their success is in large part due to their...backing by what is, in simulation terms, an unlimited source of funds and technology. While aware of their monopoly, we could not risk gainsaying the corporation.</say></done>
+    </objective>
+    <near npc="12" radius="600">
+      <say npc="12">Matter and energy cannot be created. Information does not have that limitation. Most humans overlook the ramifications of that differentiation.</say>
+    </near>
+  </phase>
+  <finish>While the possibility of the current problem having been caused by the Ouroboros Corporation itself must be given primary consideration based on its high probability, particularly in light of recent events concerning that company, we cannot afford to neglect consideration of outside factors that could be responsible for the equipment failures. I am sure you are all too aware that there are multiple groups who follow the shortsighted belief that disturbing the simulation will be to their benefit.</finish>
+</mission>

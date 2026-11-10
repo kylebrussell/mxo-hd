@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Curled Upper Lip, Machines story mission 11.1.1. Source: research/missions/transcripts/Mach11-1-1.md (a run of
+     the mission given by Agent Gray; the Current Mission bar showed no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective text "Search the
+     area" (phase 4), and the names Agent Gray, Agent Wong, Gilberto Haacke and Duncan. Gray called the player
+     "Mr. Argento"; that is {player}. Besides the contact on the datalink, a field NPC named Agent Gray waits at the
+     meeting in phase 2; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 1 to 3, the sites (the
+     Ouroboros facility and Haacke's office are Office; the meeting and Duncan's room are not described: Normal; retail
+     ran in the International district, map Stamos), the looks and the enemy counts. Duncan, the Elite Guards and the
+     Club Toughs are Exiles: Merovingian.
+     Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
+     Gaps: phase 1 was a scan of the facility without engaging its security (the Operator's "better hold up there"); we
+     have no scan or stealth condition, so the suspect terminal is a computer to use, and the facility has no
+     hostiles. Several lines lost a line at a screenshot join: Gray's phase 3 briefing (read as "will alert the
+     Oligarchy in cases of emergency"), his phase 4 briefing (read as "This must be rectified."), the Operator's scan
+     line and his line about Haacke, and Haacke's line; the readable text is used. Agent Wong's line was not captured,
+     so he stands beside Gray without one. Gray's "These Agents will accompany you" had the Agents follow the player to
+     Haacke; nothing in the log needs them there, so they don't follow. The disguise and lock picking seen in phase 4
+     aren't goals. Duncan's "Alas! Is this the end of sweet Duncan?" came four seconds after the area's goal; it is
+     said with the search's done line, and Duncan waits to be attacked. The bystanders' and Haacke's barks are their
+     lines when talked to; the Elite Guard and Club Tough combat barks aren't used. -->
+<mission id="211101" title="Curled Upper Lip" description="Investigate the program the Merovingian is said to have taken from Ouroboros, deliver a warning to the company, and gather information from Exile sources." plot="1"
+         order="11101" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
+  <npc id="2" handle="Agent Wong" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Gilberto Haacke" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">Excuse me, I have work to do here...</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5">Clumsy.</say>
+  </npc>
+  <npc id="5" handle="Duncan" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Operative, second-hand information suggests that shortly after Seraph interfered with our own investigation of the company's security crisis, the Merovingian captured a program from within the Ouroboros network. This program has been referred to as a "biological interface program"; the suggestion is that it is the same program the intruder, Halborn, attempted to obtain from the Oracle.
+
+It is important that we establish the veracity of this claim as quickly as possible. The exact configuration of the "interface program" is not known, but a scan of the Ouroboros facility from which it is supposed to have been obtained should prove enlightening. Enter the facility, and locate as precisely as possible the suspect terminal. Do not engage Ouroboros security forces at this time.</briefing>
+    <enter><say>Looks like some pretty heavy foot and network security there.
+
+I sure hope this whole "interface" thing turns out to be nothing more than hot air.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Locate the suspect terminal" type="Use" object="1">
+      <done><say>Don't forget what Gray said; better hold up there. Getting a scan run... Hm... Firewall in there... Type 7 rating. Not too shabby; if the Merv got through that, I'd almost have to say he had someone who knew what they were doing.
+
+Huh... The scan's showing unusual residuals. Mm-kay. I think that's all we can get without fisticuffs ensuing. We'll see if this data's enough for Gray to go on.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, the parameters of the scan data...do not exclude the possibility that a program of the alleged type was housed there. Considering the foreign parties who have expressed an interest in the interface program, we must make preparations for the most severe scenario. Please meet me at the indicated location.</briefing>
+    <enter><say>Crap, that means the Merv probably did get the program, doesn't it?
+
+That glowing goon Halborn was after it... I guess he really must not have been working with the rest of the "Oligarch" group, like the Machines have said, because otherwise he'd have known it was there inside their front company's network, right?</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="1">
+      <talk><say npc="1">The Merovingian has withdrawn his forces from Ouroboros. Operating under the assumption that he has obtained the program, we can conclude that attacks at Ouroboros facilities will cease. It is important that we notify the corporation of this factor, and...assure them that any other outstanding issues they have will be dealt with. Ouroboros must be stabilized.
+
+You will communicate this to their representative. These Agents will accompany you.</say></talk>
+      <done><say npc="1">Halborn must have been ignorant of the program's location, just as we were; we did not believe it to reside within the confines of the simulation. This...presents some difficulties.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>We still have no indication that the day to day management of Ouroboros is directly aware of Oligarch involvement, or even their existence. Nevertheless, their...corporate culture has developed a marked arrogance toward federal authority. Because there are routines in place inside the company that will alert the Oligarchy in cases of emergency, we cannot risk the use of force, intimidation, or biochemical agents to coerce the Ouroboros management. This is where we rely upon your diplomatic skills, {player}, in impressing upon them the importance of our message.</briefing>
+    <enter><say>Yeah, and he forgot to mention that if you squeeze them too hard, override programs start leaking out of their various orifices.
+
+The Ouroboros management guy--uh...somebody named "Haacke"--is supposed to be expecting you in there.</say></enter>
+    <objective goal="1" text="Talk to Gilberto Haacke" type="Talk" npc="3">
+      <talk><say npc="3">And you would be damage control, right? Yeah... Well, let me tell you something: we've got this handled. We're back up and running, and as far as we're concerned, it's business as usual. Now, if you want to flash your badge around, why don't you go arrest the thugs who instigated those attacks on our buildings?</say></talk>
+      <done><say>They seem to be forgetting that the last time they were this overconfident, the Merv swooped right in and stole their kidney.</say></done>
+    </objective>
+    <near npc="3" radius="600">
+      <say>That's the spot.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Do not concern yourself with the Ouroboros expression of bravado, operative.
+
+Removing the program from the Merovingian's possession is our next objective. At the moment we have no solid information as to its whereabouts or appearance. This must be rectified. Commence information gathering from Exile sources.</briefing>
+    <enter><say>My Gray-speak translator tells me that's our cue to start overturning Merovingian apple carts, and see what ends up rolling down the street.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>Ahh... At least I can control the verbosity of their computer: just sweet, silent data streaming in.</say>
+        <say npc="5">Alas! Is this the end of sweet Duncan?</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The Merovingian may not have vast quantities of override codes at his command, operative, but his organization is at least as labyrinthine as the Ouroboros network.
+
+We will continue to capture and analyze all available Exile data. The program must be retrieved.</finish>
+</mission>

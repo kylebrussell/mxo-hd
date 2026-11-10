@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- How and Why, Machines story mission 11.2.2. Source: research/missions/transcripts/Mach11-2-2.md (a live run of
+     "How and Why", given by Agent Gray; the Current Mission bar had no archive number, so 11.2.2 is the folder's).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Angerhofer,
+     Francis, Danielle Wright and Agent Gray. Gray called the player "Mr. Argento"; that is {player}. Besides the
+     contact on the datalink, a field NPC named Agent Gray meets Wright in the second phase; he is a friendly NPC
+     with that handle. Wright is placed again for the second phase.
+     Ours: the description and the objective texts (neither tab was opened), the sites (not described: Normal), the
+     looks and the enemy counts. Retail's area was in Shinjuku (International); our missions are placed in the
+     Slums. Agent West was in the second area but never spoke, so he isn't placed; nor are the failed programs.
+     Rewards: 296,865 experience and 98,000 information, shown on completing this mission.
+     Gaps: retail had Angerhofer fight beside Francis and give up when the Operator asked to leave one alive; we
+     can't turn a hostile friendly, so he is friendly from the start and is talked to once Francis is dead. The
+     Exiles' banter at the start of the fight is said on nearing Francis; Francis's "subscriptions [...] mailed
+     here" lost words at a screenshot join and is used as "subscriptions mailed here". What the computer showed
+     (the password was "Mistletoe") was cut off in the log; here it is used, and Gray's "Continue" comes when it is
+     done. Wright escaped in the first area ("I don't think so."); here she is found and her later line is her line
+     when talked to again. In the second area the Operator's "This [...] can't be good..." lost words at a join and
+     is used as "This can't be good..."; his "witness" line follows Gray's. The three-way talk
+     was scripted: here Wright and Gray are talked to in turn. Gray's "We are prepared to meet [...] a reasonable
+     request." lost words at a join and is left out; Wright's reply also had a hidden line at a join. Gray's and
+     Wright's last two lines come when Gray's talk is done. -->
+<mission id="211202" title="How and Why" description="Look for Danielle Wright among the Exiles, then witness her talk with Agent Gray." plot="1"
+         order="11202" org="2" contact="Agent Gray" exp="296865" info="98000">
+  <npc id="1" handle="Angerhofer" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="2">No, no! Not me! I didn't even know that guy!
+
+Wright who? Ohh, the crazy glowing woman? Uh... No... But-- But why don't you just be my guest and check the computer over there? There was some kind of spam about a problem, but I ignored it... I'm off-duty. Uh, the password is "Mistletoe."</say>
+  </npc>
+  <npc id="2" handle="Francis" type="HOSTILE" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="4">You are wasting your time.</say>
+  </npc>
+  <npc id="4" handle="Danielle Wright" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say after="1">These were just to get their attention. Their responses aren't very difficult to predict.</say>
+  </npc>
+  <npc id="5" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Operative, we know that Danielle Wright has access to override codes, but she does not appear to be using the broadcast type utilized by the Oligarchs, from whom she must have obtained those codes; a scan of her signal was unable to identify any type of data transmission at all. Without a means of finding her broadcast source in the Real, we have no effective way of stopping her activities.
+
+It has been decided that we will make an attempt to get Wright to talk; this may result in no useful information, but we have found that humans are often unable to resist discussing their achievements.
+
+We know that Wright has been searching for the biological interface program in the Merovingian's chateau. This search appears to have moved into the city. You will investigate Exile activity there for signs of Wright.</briefing>
+    <enter><say>Okay, these Exiles were spotted coming through backdoors suspected of having connections to the chateau. They may know something about this Wright stuff.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill Francis" type="Defeat" npc="2" />
+    <objective goal="2" text="Talk to Angerhofer" type="Talk" npc="1" after="1">
+      <talk><say npc="1">No, no! Not me! I didn't even know that guy!
+
+Wright who? Ohh, the crazy glowing woman? Uh... No... But-- But why don't you just be my guest and check the computer over there? There was some kind of spam about a problem, but I ignored it... I'm off-duty. Uh, the password is "Mistletoe."</say></talk>
+      <done><say>Got it. Let's go check it out.</say></done>
+    </objective>
+    <objective goal="3" text="Check the computer" type="Use" object="1" after="2">
+      <done><say contact="1">Continue, {player}. If it is Wright, she cares little for the Exiles themselves, and will not remain long with them.</say></done>
+    </objective>
+    <objective goal="4" text="Find Danielle Wright" type="Talk" npc="3" after="3">
+      <talk><say npc="3">I don't think so.</say></talk>
+      <done><say>... Crud.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="1">Hey, Francis, have you seen my copy of--</say>
+      <say>Hey, leave one of them alive! We need someone to talk to!</say>
+      <say npc="2">I told you not to have subscriptions mailed here!</say>
+      <say npc="1">Oh, crap!</say>
+    </near>
+    <near npc="3" radius="1000">
+      <say>Oh boy, my display is spazzing out. I think we've got an override overload in there.</say>
+    </near>
+    <near npc="3" radius="300">
+      <say>It's her!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, heavy override use has just been detected at another area not far from your position. Programs in the area have failed. This requires immediate investigation.</briefing>
+    <enter><say>Even more override activity than where you just were with Wright. This can't be good...</say></enter>
+    <objective goal="1" text="Talk to Danielle Wright" type="Talk" npc="4">
+      <talk>
+        <say npc="4">I've had a thought. There is something I want to discuss with them. Have them open a channel.</say>
+        <say>Uh... Okay, I'm getting in touch with Gray about this.</say>
+      </talk>
+      <done>
+        <say contact="1">I will be conversing with Wright. She has asked that you be present, as what she termed a..."witness."</say>
+        <say>Call me crazy, but I don't like the sound of this "witness" thing.
+
+They've cleared out our other programs, so it'll just be the three of you.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="5" after="1">
+      <talk>
+        <say npc="5">Very well. For our part, we would like to know how you have apparently survived the termination of your body. The technology you borrowed would not suffice in itself.</say>
+        <say npc="4">How I "exceeded my parameters," hm?
+
+Yes...I could tell you that. But not here... And I want your operatives to hear it.
+
+There's something I'll need you to tell me, too: why did the Oracle make the interface program?</say>
+      </talk>
+      <done>
+        <say npc="5">Information on the interface program is restricted... However, I believe that in this case an exception will have to be made.</say>
+        <say npc="4">They'll take some time to get around to approving it.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Thank you, {player}. As Wright has requested a larger operative presence, if the exchange of information is approved, your attendance may be asked for.</finish>
+</mission>

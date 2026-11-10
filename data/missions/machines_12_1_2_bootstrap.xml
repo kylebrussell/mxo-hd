@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bootstrap, Machines story mission 12.1.2. Source: research/missions/transcripts/Mach12-1-2.md (not a screenshot of
+     the game: a player's typed log on the SOE forum, "Machine 12.1.2: Bootstrap", given by Agent Gray). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text, as the poster typed it: the title, every Agent Gray, Operator, Helian and hostile line, the
+     objective texts "Eliminate the hostiles", "Talk to Helian" and "Lead the two Override Functions out of the area"
+     (the log's bracketed objective lines, without their full stops), the hostile counts, and the names Helian,
+     Override Function, Zion Gunslinger, Zion Kung Fu Grandmaster, Zion Karate Grandmaster and Merovingian Karate
+     Grandmaster. Gray called the player "Mr. Cloonan." (with a full stop); that is "{player}," here. The poster's
+     typos are corrected ("apppreciation" is "appreciation", "dirctional" is "directional"). The poster's preface and
+     notes aren't game text.
+     Ours: the description, the sites (Helian's spot and the two fights aren't described: Normal) and the looks.
+     Helian is an Oligarch with no organisation in the game; he has a redpill look, as in 12.1.1. The Override
+     Functions are programs: a Machine program look. The first area's four Zionite operatives are the four who spoke,
+     placed by name, so no others are generated; the second area's ambush is three generated Zionites; the third
+     area's five Merovingian operatives are the Merovingian Karate Grandmaster and four generated Exiles.
+     Rewards: none were shown; this uses 12.1.1's 288,750 experience and 126,000 information.
+     Gaps: the hostiles' barks were said in the fight; here each is said on nearing that hostile (hostile NPCs' lines
+     may not show in the client). The ambush in Helian's area had no objective of its own and is not a goal. Helian's
+     two lines and the Operator's reply between them came as one exchange; all three are said when Helian is talked
+     to. Retail's Override Functions fought for the player and took directional prompts; we have no allies that
+     fight, so they only follow the player, out of Helian's area and on into the last one. The Operator's "Hostiles
+     heading your way!" is said on nearing the Merovingian Karate Grandmaster, and his line and the Operator's
+     "Mervs! What's their angle on this?" on reaching him. -->
+<mission id="212102" title="Bootstrap" description="Drive off a Zionite patrol, receive Helian's combat routines, and put them to the test." plot="1"
+         order="12102" org="2" contact="Agent Gray" exp="288750" info="126000">
+  <npc id="1" handle="Zion Gunslinger" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Zion Kung Fu Grandmaster" type="HOSTILE" at="1" rsi="ec020058" weapon="2568" />
+  <npc id="3" handle="Zion Karate Grandmaster" type="HOSTILE" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="4" handle="Zion Karate Grandmaster" type="HOSTILE" at="1" rsi="000100b4" weapon="2568" />
+  <npc id="5" handle="Helian" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
+  <npc id="6" handle="Override Function" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="7" handle="Override Function" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="8" handle="Merovingian Karate Grandmaster" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Your continued monitoring of that district is appreciated, operative. We have indications of an active Zionite presence nearby.</briefing>
+    <enter><say>Yep, looks like they're still chasing their golden dream girl. aka the interface program. Let's just see what we can do about that.</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Jeez...</say></done>
+    </objective>
+    <near npc="1" radius="500">
+      <say npc="1">We've got static!</say>
+    </near>
+    <near npc="2" radius="500">
+      <say npc="2">Goddamnit!</say>
+    </near>
+    <near npc="3" radius="500">
+      <say npc="3">This is how you show your appreciation?!</say>
+    </near>
+    <near npc="4" radius="500">
+      <say npc="4">This is how you show your appreciation?!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>{player}, we've received a request for your presence from Helian. His location is indicated for you.</briefing>
+    <enter><say>Hah, and before he was all "I don't think we'll need your help." I knew they'd run into trouble.</say></enter>
+    <objective goal="1" text="Talk to Helian" type="Talk" npc="5">
+      <talk>
+        <say npc="5">Yes. I've noticed the other "Awakened" have been interfering. I thought you might be able to use some assistance. I'll provide you with several combat routines.</say>
+        <say>Ohh-kay. Um... They look friendly?</say>
+        <say npc="5">These programs are effective in combat, and can follow basic directional prompts. Use them correctly, and they'll take care of the problem for you.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead the two Override Functions out of the area" type="Escort" npc="6,7" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Zionite pursuit of the interface program has evidently caused the Oligarchs more trouble than they had anticipated, operative.
+
+Those two override programs appear to perform as Helian described. Attempt to lead them to the area of hostile resistance that you see indicated.</briefing>
+    <enter><say>Got reds in the vicinity. Let's see what those Functions can do...</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <near npc="8" radius="1500">
+      <say>Hm, I could swear that--
+
+Oho, there they are! Hostiles heading your way!</say>
+    </near>
+    <near npc="8" radius="500">
+      <say npc="8">A Machi--
+
+Er...
+
+Hey, look, guys! Must be one of those Zionites that've been bugging the Machines! We'd better do them a favor and take 'em out, right?</say>
+      <say>Mervs! What's their angle on this?</say>
+    </near>
+  </phase>
+  <finish>Operative, sources indicate that an exiled program working for the Merovingian has obtained sensitive information on Oligarch activities here.
+
+Merovingian interference could cause undesirable complications in the current situation; please see to the elimination of this annoyance.
+
+The Exile's name is Azuna; last known location: northwest Downtown.</finish>
+</mission>

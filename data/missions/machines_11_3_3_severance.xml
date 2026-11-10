@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Severance, Machines story mission 11.3.3. Source: research/missions/transcripts/Mach11-3-3.md (not a screenshot
+     of the game: a player's typed write-up on the SOE forum, "Machine 11.3.3: Severance", given by Agent Gray).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text, as the poster typed it: the title, every Agent Gray, Operator and Cryptos line, and the names
+     Wright Accelerated Program and Cryptos. The poster wrote the player's name as "name" in angle brackets; that is
+     {player}. The poster's own remark inside the Operator's line ("Editor's note: And she is! teehee.") and the
+     stage notes aren't game text and are left out. The second Operator line before the first site had no speaker
+     label but reads as the Operator's.
+     Ours: the description, every objective text (the write-up has none), the sites (Hampton Green and Cryptos'
+     spot aren't described: Normal) and the looks. The Wright Accelerated Program is an overridden program:
+     Machines, with a Machine program look. It was the only hostile the stage note names (level 55; ours matches
+     the player's level), so no other hostiles are generated. Cryptos is a Cypherite and has no organisation; he
+     has the redpill look the other files give him.
+     Rewards: none were shown; this uses the 297,000 experience and 98,000 information of the Machines 11.x missions.
+     Gaps: the Operator's "Yipes! There it is!" is said on nearing the program. Gray's closing line was the last
+     line written down and there is no "Mission complete" marker after it; it is the closing line here. -->
+<mission id="211303" title="Severance" description="Destroy one of Wright's accelerated programs in Hampton Green and hear Cryptos out on the anti-override codes." plot="1"
+         order="11303" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Wright Accelerated Program" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, indications are that Danielle Wright believes herself to be very close to capturing the biological interface program, somewhere in the Hampton Green Area.
+
+While Wright's access to Oligarch control codes has made her very dangerous to programs within the simulation, that is the current limit of her threat. Should she obtain the interface program, she would have the means of widening her sphere of activity significantly. She has not hesitated to declare it to be her goal to take over the Matrix completely. This must not come to pass.</briefing>
+    <enter>
+      <say>Don't usually hear Gray sound worried like that. This interface program must be serious business. Maybe what those crazy Zionites are saying about it-- Ah, nah, that's nuts.</say>
+      <say>I've got a hefty override signal in there. Not quite Wright-sized, but it could be a handful.</say>
+    </enter>
+    <objective goal="1" text="Kill the Wright Accelerated Program" type="Defeat" npc="1">
+      <done><say>Nice, and we didn't even have to burn any anti-overrides to do it. Now, if only Wright is this easy...</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Yipes! There it is!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well done, {player}, but stopping Wright will take a concerted effort. The Cypherite leader, Cryptos, whose research led to the development of the anti-override codes, may have some useful insights.</briefing>
+    <enter><say>You know what would be helpful? Like...an anti-override laser gun. Why doesn't he get to work on that? I mean, all we got now are defensive mechanisms. I don't know if anyone's noticed, but it's gonna take more than a love tap to get through that Oligarch shell of hers.</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="2">
+      <talk><say npc="2">The anti-override codes you can obtain from our man in Morrell will block Wright's wide-area hacks for a certain period of time. I am aware that those are not her only weapons; even with the anti-overrides, confronting her will be a dangerous affair.
+
+As for what may happen if critical damage can be inflicted on her RSI, that I cannot predict. We know that she has co-opted the jack-in protocol utilized by the Oligarchs, and we know, from Halborn's example, that they were to some extent vulnerable both within and without the simulation. Wright, on the other hand, has claimed to be able to enter the Matrix without maintaining an exterior connection. How that should affect the outcome remains unclear.</say></talk>
+    </objective>
+  </phase>
+  <finish>{player}, thanks to your own efforts and those of our other operatives in eliminating the spread of her programs, we have been able to pinpoint Wright's location on a rooftop in Hampton Green, coordinates 98 131 -216. Her extended time at that position suggests that she believes the interface program to be in that vicinity. In any event, we can definitely report that extremely heavy override use pervades the area.
+
+It will be very dangerous, but this is the best chance of neutralizing her that we can reasonably expect. I do not suggest venturing there without a supply of Decelerate and Signal Jamming Anti-overrides, which you can obtain from the Cypherite in Morrell.</finish>
+</mission>

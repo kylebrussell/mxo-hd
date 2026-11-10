@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dead Suits, Machines story mission 11.3.1. Source: research/missions/transcripts/Mach11-3-1.md (a live retail run
+     given by Agent Gray, not an archive replay; the bar showed only "Dead Suits", and 11.3.1 comes from the folder
+     name). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Danielle Wright line, and the name Danielle
+     Wright. The player's name was blacked out at the start of Gray's first briefing and in the Operator's "Epic
+     override signals in there" line; both are {player}. The Operator's "wracking" is as shown and is kept.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (the Downtown spots, Hampton and Maribeau, aren't described: Normal), the looks and the enemy
+     count. The overridden "Accelerated Suit" members were common Exile programs: Merovingian, five of them ("a bunch
+     of overridden programs"). Danielle Wright, a former Zion operative, has a redpill look.
+     Rewards: none were shown; this uses the 297,000 experience and 98,000 information of the Machines 11.x missions.
+     Gaps: no Goals complete line was seen after the computer (a screenshot join may hide it); the phase ends when the
+     computer is examined and Gray's next line starts the second. The computer's scrambled readout ("#oin# #o k###
+     ##m#") can't be shown, as we can't show a computer's text. The Operator's long line about the interface
+     program's messages came on the way to the first site; it is said on arrival. Wright is an Oligarch-powered boss
+     who isn't fought here: she is a friendly NPC who is talked to, and no hostiles were logged around her. Her second
+     line, after the area was done, is her line when talked to again. Goals are numbered through the whole mission so
+     that Wright's after-line can't be set off by an earlier phase's goal. -->
+<mission id="211301" title="Dead Suits" description="Follow Danielle Wright's trail of overrides through Downtown and intercept her." plot="1"
+         order="11301" org="2" contact="Agent Gray" exp="297000" info="98000">
+  <npc id="1" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say after="3">There's really nothing you can do about it, is there? The Machines left a gaping security hole in their core programming a long time ago. They were only as perfect as the people who made them.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>{player}, the former Zion operative Danielle Wright has moved her sphere of activity into Downtown, presumably in pursuit of the biological interface program.
+
+Reports from Zion and Merovingian sources indicate that the program has shown increasing signs of intelligence in its communication. As you know, the program cannot be detected by standard means. Wright, however, appears to have some method of tracking it, and her widely destructive use of override programs renders her easy to follow. We cannot approach her with our own programs, so we rely on you to find her and secure the program.</briefing>
+    <enter><say>I heard that the last messages Zionites and Mervs found from the interface program were close to things that they always used to tell us Trinity sent to Neo back when he was still a bluepill--stuff like "knock, knock" and "wake up." Pretty weird, huh? I guess there are some wild theories flying around, but I don't see what those messages have to do with what Gray said the program's purpose was: controlling awakened humans in the Real.
+
+Anyway, you're heading to a spot where the Machines detected a glitched-out computer system. Looks like probable override use, which means Wright could be nearby.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Examine the computer" type="Use" object="1">
+      <done><say>Aw, geez. Looks like another case of simulation rejection there... I wonder if the program realizes Wright's been wracking up quite a body count trying to catch it?
+
+I'm reading override residuals on that computer, and it's been scrambled pretty good, all right. Data paths from it are messed up, too, but that could give us something to follow. Let me work on this and see what I can find.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Data shows program override use among the common Exile programs in the area, operative. This could make them significantly more dangerous than usual. Be on your guard.</briefing>
+    <enter><say>Phew, we must be on the right path, because I'm reading a bunch of overridden programs in there.
+
+Once one of Wright's overrides hits a program, they usually go all aggro on anything they see as a potential threat. They're also pretty much dead as far as being a sentient program goes. If you see someone with those white override blips shooting out of their head, don't bother trying to ask questions.</say></enter>
+    <objective goal="2" text="Eliminate the overridden programs" type="DefeatAll">
+      <done><say>Man, and those Suits are usually such pushovers. Good work on that; we can't have overridden programs running loose in the city. The business execs and lounge lizards in Hampton are usually too busy running up their credit accounts to notice freaks on the street, but even they'd be bound to spot a gang of hyperactive homicidal business women sooner or later.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Our operatives have reported encounters with Accelerated Suit members at a number of areas in Hampton Green. An analysis of the encounter locations and their time of appearance has allowed us to calculate the most likely current location of the override source. Move to Maribeau and intercept the target.</briefing>
+    <enter><say>Epic override signals in there, {player}. I dunno if we can handle this, but maybe we can at least get some idea of where the interface program's at.</say></enter>
+    <objective goal="3" text="Talk to Danielle Wright" type="Talk" npc="1">
+      <talk>
+        <say npc="1">I told you people it was only a matter of time before I acquire the program. If you're concerned about collateral damage to the Matrix, then don't try to hinder me. I'll have it soon enough.</say>
+        <say>She isn't sparing the override routines, that's for sure.
+
+I don't see any sign of the interface program in there; do you? It sounds like she still hasn't pinned it down. That's something, anyway.</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>Inevitability, operative, is highly debatable, and this is especially the case if its predication is not based on a thorough statistical analysis.
+
+While it is true that Wright currently enjoys a window of opportunity in which our options against her are limited, development of a solution to this problem has been underway for some time. We will elaborate when you are prepared for your next assignment. Use the same contact in Hampton Green.</finish>
+</mission>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Representative, Machines story mission 12.1.1. Source: research/missions/transcripts/Mach12-1-1.md (a live retail
+     run given by Agent Gray, not an archive replay; the bar showed only "Representative", and 12.1.1 comes from the
+     folder name; all of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Tesarova, Helian and
+     Agent Pace. Agent Pace called the player "Mr. Argento"; that is {player}. Tesarova's "*That's*" is as shown.
+     Agent Pace's last line was in italics; the italics are dropped. Besides the contact on the datalink, a field NPC
+     named Agent Gray waits in the last area (Shirakaba) for the player's report; he is a friendly NPC with that
+     handle. Helian and Tesarova are Oligarchs with no organisation in the game; they have redpill looks, as
+     Halborn and Carlyne do in the other files.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (Akasaka, the Oligarchs' meeting place and Shirakaba aren't described: Normal; the missions
+     run in the Slums, not the International District), the looks and the enemy count (the Zionites' number wasn't
+     shown; four, as in 12.1.2's first area).
+     Rewards: 288,750 experience and 126,000 information, shown in System chat in the last area, just after this
+     mission ended.
+     Gaps: the Oligarchs' and Pace's lines came as one scripted exchange a few seconds apart; here Tesarova, Helian
+     and Pace are talked to in turn, each saying the lines that were theirs. Pace's farewell after the area was done
+     is his line when talked to again, and so is Gray's second line in the last area. Gray's "ensure that they are
+     not aggravated by terrorist interference" had no fight in the log, so the meeting has no hostiles. Goals are
+     numbered through the whole mission so that the NPCs' after-lines can't be set off by an earlier phase's goal. -->
+<mission id="212101" title="Representative" description="Clear Zionites out of Akasaka, then stand by as Agent Pace receives the newly arrived Oligarchs." plot="1"
+         order="12101" org="2" contact="Agent Gray" exp="288750" info="126000">
+  <npc id="1" handle="Tesarova" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
+  <npc id="2" handle="Helian" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="4">Thank you for your assistance, operative. We will be leaving this location so that our guests may continue their business at their leisure.</say>
+  </npc>
+  <npc id="4" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say after="5">Let me state plainly that we do not consider them to constitute a threat, operative. It is very important that we are clear on that head, so that there is no...misunderstanding. However, I want you to bear in mind that we are now dealing with a situation much larger in scope than the individual attacks of the Oligarchs who came here previously.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Operative, Wright's threat to the simulation ended abruptly in a battle against operatives; it appears that the biological interface program, which we had suspected to be in the vicinity, took advantage of her weakened state, and somehow aided in her termination.
+
+However, more members of the Oligarchy--the group of freeborn humans whose codes Wright had stolen--have arrived in the Matrix. We expect that their primary interest here lies with the interface program. There has been some...initial contact with them, but they have yet to request a formal meeting with us.
+
+A heightened effort by Zion operatives to locate the program has begun to complicate the situation. Contact between Zion and the interface program was confirmed in Ikebukuro. The latest report has come from Akasaka. I am assigning you to investigate this.</briefing>
+    <enter><say>A lot of Zionites seem convinced that the interface program is Trinity. Or Trinity is the interface program. Or...something. I haven't heard them explain how she's supposed to be alive, or whatever you could call it, years after she was supposed to have died carting Neo to the Machine city, but hey, details, right?
+
+Hm... Looks like we've got some of our cave-dwellers there. Maybe you can ask them to lay their theories out for us while we kick their butts out of the district.</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Hm... Wish we had a direct means of tracking her--it--whatever.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Operative, contact with the newly arrived Oligarchs has been made nearby. I would like you to assist Agent Pace in dealing with them, and to ensure that they are not aggravated by terrorist interference.</briefing>
+    <enter><say>The dossier they've uploaded to me says that there are two of these Oli-whatsits there: Helian and Tesarova.
+
+Hopefully they won't turn out to be real rats like those others, Halborn and Carlyne. The Machines still insist on a hands-off approach with these characters, so...eh. Guess we'll see how it goes.</say></enter>
+    <objective goal="2" text="Talk to Tesarova" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Ohhh... I get it! All the exciting ones have been escaping from the pods! *That's* why our entertainment's been so dull lately.
+
+What a profitable trip this has been already. Ooh... This is giving me some great ideas...</say>
+        <say npc="1">And is it true that you've learned to fly around in ships? You use little electric guns and things?
+
+It's so cute!</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to Helian" type="Talk" npc="2" after="2">
+      <talk>
+        <say npc="2">Ah, I see; another of the "freed" humans.
+
+As I've told this program here, we have come to acquire what you refer to as "the biological interface program." I don't think we'll require your assistance for this.</say>
+        <say npc="2">Yes, we're aware of what happened to the others. Hardly surprising, given that they were operating independently, and without adequate preparation. We've made adjustments that will ensure our safety from the compromises they allowed to our security.</say>
+      </talk>
+    </objective>
+    <objective goal="4" text="Talk to Agent Pace" type="Talk" npc="3" after="3">
+      <talk><say npc="3">I see that they do not object to your presence, {player}. Although they may not request our aid, it will be...helpful to have you standing by in case additional information or...monitoring is required.
+
+As they appear to be satisfied for the moment, we will conclude this introduction.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Come see me, operative. I would like to hear your report on this matter.</briefing>
+    <enter><say>I guess it went okay... At least we got to stomp some Zionites in the process.</say></enter>
+    <objective goal="5" text="Talk to Agent Gray" type="Talk" npc="4">
+      <talk><say npc="4">Hm. Helian and Tesarova appear to be operating as agents of the larger body of Oligarchs, unlike Halborn and Carlyne, who ventured here on their own initiative.
+
+This may cause them to behave with more...moderation than those other two displayed. On the other hand, it also means that their progress will be monitored closely by the Oligarchy. We cannot expect them to fall victim to the surprise tactics that forced Halborn and Carlyne to withdraw from the simulation.</say></talk>
+    </objective>
+  </phase>
+  <finish>Thank you, operative.
+
+The code profiles of Helian and Tesarova suggest a number of modifications made to their connection protocol; we do not yet know how their capabilities may differ, but this is another indication that we cannot expect them to conform to the parameters followed by Halborn and Carlyne.
+
+At this time, I would like you to continue to patrol the International District. We must anticipate further activity from the interface program and Zion operatives in that region.</finish>
+</mission>
