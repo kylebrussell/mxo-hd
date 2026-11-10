@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Snoop, Zion story mission 9.2.1. Source: research/missions/transcripts/Zion9-2-1.md (the archive replay of
+     [Zion Archive 9.2.1]; 22 screenshots, two during play in phase 3, the rest of the log after it ended). Retail's
+     contact was [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Tyndall, Operator, Intruder and Ghost line (the Operator's "We've better", "a real
+     pain the jack" and "Look like that did the trick" kept as retail wrote them), the names, the objective texts "Stop
+     the intruder from accessing the computer", "Access the other computer" and "Talk to the Intruder" (phase 3's
+     Objectives window), and the rewards (362,835 experience and 63,000 information, shown right after this mission
+     completed). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the
+     terminal center in the Moriah Projects was a ruined interior, so Derelict; the network hub and Ghost's place
+     Normal), the looks and the enemy counts. The hostiles in the network center and at the terminal center are Machine
+     programs (Machine Mechanic, Security). The Intruder is in two places, so he is two NPCs.
+     Gaps: phase 3 is a race against the Intruder for the terminal: here the player uses his terminal (the Operator's
+     "He's reached the terminal" is said then), then the other computer, then talks to him; nothing times it. The
+     computers' screens (a buffer overflow dump, then the subnet shutdown) aren't shown. Whatever the Operator said
+     between 9:49:50 and 9:51:59 wasn't captured. -->
+<mission id="109201" title="Snoop" description="Draw the intruder away from Zion's network hub before he compromises its uplink." plot="1"
+         order="9201" org="1" contact="Tyndall" exp="362835" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say after="1">What do you think about my chances of convincing that Captain Niobe of yours to give me root access? No? Even if I promised not to change her password?</say>
+  </npc>
+  <npc id="2" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say after="3">Yes, I know you shut it down. I'd have done the same--but the nice thing about this race is that I'm the only one who knows what the goal is.</say>
+  </npc>
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, we've got a bit of a problem. It's the intruder; he's made his way into one of our network hubs. It isn't clear what he's doing there, but if he has some means of accessing the uplink at that location, he could compromise New Zion's security. I need you to try to draw him off.</briefing>
+    <enter><say>I knew this guy was trouble. Heck, he can probably cut through our firewall like it isn't even there.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="1">
+      <talk><say npc="1">Hm... So your network is completely custom coded, is it? How inconvenient. I could crack it, I suppose, but I doubt it would be worth that much effort just to get through to Zion's machines.&#10;&#10;No, no, I've never been there--or to that other one you had. Cave systems, aren't they? Sounds incredibly dreary.</say></talk>
+      <done><say>Hey... Maybe he can't take over our programs like he can with the Machines. Phew, I was worried he was gonna open up a massive network hole straight to our new mainframe.&#10;&#10;We'd heard rumors of the Machines letting it out that he was freeborn. Now he says he's never been in Zion. So where'd he come from?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>I'm relieved to hear that, operative. We hardly want him getting free access to our systems.&#10;&#10;But I'm afraid his unannounced visit is causing other problems. The Machines must have been tracking him; we're picking up a group of Machine programs converging nearby. We're going to have to evacuate that network center. I need you to intercept the Machines and buy us some time.</briefing>
+    <enter><say>Great, so now he's leading the toasters right to us.&#10;&#10;I've got what look like Machine hostiles in the area. We've got to stop them from getting to that uplink system.</say></enter>
+    <objective goal="1" text="Kill all of the Machine programs" type="DefeatAll">
+      <done><say>That's cleared my screen. We've better check with Tyndall to see if we have any more incoming.</say></done>
+    </objective>
+  </phase>
+  <phase site="Derelict" enemy="Machines" enemies="3">
+    <briefing>Warrior, the security system at one of our terminal centers has picked up the intruder on-site. We don't have any staff there right now. I need you to get there and stop him from accessing our data.</briefing>
+    <enter><say>Geez, this guy's a real pain the jack. Hasn't he heard of private property?&#10;&#10;Okay, that's the place. I'm picking up his code readings inside.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Stop the intruder from accessing the computer" type="Use" object="1">
+      <done><say>Uh-oh. He's reached the terminal. Uh...&#10;&#10;Okay. There's another computer on that local network. If you can get to it quickly, we can use it to shut down that subnet. That'll cut his access.</say></done>
+    </objective>
+    <objective goal="2" text="Access the other computer" type="Use" object="2" after="1">
+      <done><say>Look like that did the trick. I hope we got to it before he managed to get into our data. Um... Want to go check?</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the Intruder" type="Talk" npc="2" after="2">
+      <talk><say npc="2">I think I broke it. That's the problem with relying on machines, eh?&#10;&#10;Then again, I have that problem with people, too. ...&#10;&#10;No matter. We're not in danger of running short of either, are we?</say></talk>
+      <done><say>Sheesh. Well, I don't think he can do any more damage there for now, at least.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well done, {player}.&#10;&#10;Ghost has been following reports of your progress, and would like to speak to you. I'm uploading his coordinates to you now.</briefing>
+    <enter><say>I'm picking up Ghost's signal in there.</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+      <talk><say npc="3">You handled that well, operative. Looks like the intruder views our working relationship as a mere matter of convenience, and has no compunctions about trying to take us for all we're worth.&#10;&#10;We've got to be careful with him. We judge others by our own measure, and if he trusts no one, it could very well be because he knows that he can't be trusted himself.</say></talk>
+      <done><say npc="3">He wants to use us; we want to use him. We may like to think our motives are better than his--whatever his are--but in certain respects, we're no different than he is--even if he doesn't come from Zion, or the pods, as he and the Machines claim.</say></done>
+    </objective>
+  </phase>
+  <finish>We're going to have to watch the intruder very carefully, {player}. It's fortunate that he can't manipulate our programs as easily as he can the Machines', but he's clearly determined to stop at nothing to get what he wants.</finish>
+</mission>

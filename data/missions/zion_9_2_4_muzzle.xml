@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Muzzle, Zion story mission 9.2.4. Source: research/missions/transcripts/Zion9-2-4.md (the archive replay of
+     [Zion Archive 9.2.4]; 22 screenshots, two during play (phase 1 or 2 in Achan, phase 4 in Tabor Park), the rest of
+     the log after it ended). Retail's contact was [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Tyndall, Operator, Intruder, Colt and The Kid line (the Operator's "Hm.." kept as
+     retail wrote it), the names, the objective texts "Search the Computer", "Get the Data from the Computer" and
+     "Upload the Data at a hardline" (phase 4's Objectives window), the Data the computer gave, and the rewards (362,835
+     experience and 63,000 information, shown right after this mission completed). Ours: the description (the Summary
+     tab was never opened), the other objective texts, the sites (phase 1's office in Achan and the Machine facility,
+     an office with a whiteboard, are Office; the rest Normal), the looks and the enemy counts. Phase 1's
+     "intruder-style code" and phase 2's "high-speed hostility" are the intruder's overridden programs, so Machines;
+     phase 4's Tactical Security and Machine Mechanic are Machine programs.
+     Gaps: phase 1's goals weren't shown. In retail the player swept the building for the intruder, who had gone; a
+     computer there was hacked (its screen listed sectors desynchronized by control-switched programs). Here the player
+     kills the programs ("No big intruder-sized blips so far" when they're dead), then uses the computer ("he's already
+     ditched" then); the screen isn't shown. Log entries between 10:30:34 and 10:33:46, between 10:34:41 and 10:37:58,
+     and between 10:45:56 and the end weren't captured. The Intruder is hostile in tone but doesn't fight; he is
+     friendly here. Phase 4's computer screen ("RT SCN CR ... Loading...") isn't shown. -->
+<mission id="109204" title="Muzzle" description="Find the intruder and try to calm him down." plot="1"
+         order="9204" org="1" contact="Tyndall" exp="362835" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
+  <npc id="2" handle="Colt" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="3" handle="The Kid" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Warrior, the intruder has been out of contact and prone to fits of violence for the past week. This presents a danger to bluepills in the simulation who witness his inexplicable violence; we're also concerned that, without guidance, he may end up doing something even more rash.&#10;&#10;I'm sending you after him to try to calm him down. He did not respond well when operatives tried to ask him what was wrong. I would advise just trying to talk to him in some sort of supportive fashion.</briefing>
+    <enter><say>Yeah, like talking ever gets us anywhere...&#10;&#10;I've got some intruder-style code in there. I'm not sure he's in there himself, but there's only one way to find out.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the intruder's programs" type="DefeatAll">
+      <done><say>Hm.. No big intruder-sized blips so far. Keep going.</say></done>
+    </objective>
+    <objective goal="2" text="Hack the computer" type="Use" object="1" after="1">
+      <done><say>Nah, I think he's already ditched. Let's see if Tyndall's picked up anything else.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>He is difficult to track, since he can jump around the Matrix seemingly at will. I'm uploading another set of coordinates for you to try, operative.</briefing>
+    <enter><say>Yep... Looks like it's time for more high-speed hostility.</say></enter>
+    <objective goal="1" text="Kill all of the accelerated programs" type="DefeatAll">
+      <done><say>Bingo, bango, bongo.&#10;&#10;So, uh... Got a good icebreaker handy?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Intruder" type="Talk" npc="1" after="1">
+      <talk><say npc="1">I know why you're here... Just stay out of my way!&#10;&#10;It's none of your damn business now. I've got some fish to fry.</say></talk>
+      <done>
+        <say>Yeah...okay I think we've done all we can and you should just get the hell out of there right now.</say>
+        <say npc="1">I don't like being lied to. Keep your trap shut or you'll be next on my list.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>At least you got him to talk, operative. For now we'll have to consider that a sign of progress.&#10;&#10;I need you to rendezvous with Captain Colt. E Pluribus Neo has a report to relay about their findings at the surface facility where they rescued Commander Lock.</briefing>
+    <enter><say>Colt's in there, and some other redpills...probably EPN.</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="2">
+      <talk><say npc="2">We still can't give Mauser a decent burial.&#10;&#10;Talk to the Kid, he'll explain.</say></talk>
+      <done>
+        <say>Oh, they sent the Kid? All right, let's see what's up.</say>
+        <say npc="2">*Tch.* Tyndall knows I hate it when she calls me "Captain Colt"...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to the Kid" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Sentinel claws and lasers had cut a large breach in the structure where Lock was hidden. We found Mauser's fingerprints, and traces of blood that match his samples provided by your people, but we haven't been able to locate his body. It's possible that the Sentinels took it for...recycling.&#10;&#10;There were no dead Sentinels near the place, either, but lightning gun scorch marks were everywhere. There was lab equipment of some kind, but it was pretty much completely wrecked. We haven't been able to recover any useful data from the computers that were there.</say></talk>
+      <done>
+        <say>Ugh. Hell of a way to go.</say>
+        <say npc="3">I wish we had better news for you. We'll notify you if we find anything else.</say>
+        <say npc="2">... At least he went out fighting. That's more than a lot of people get.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>Although the facility where EPN found Commander Lock is positioned roughly above Zion, it isn't on any of our records, and we have no sensor or surveillance feeds from the place to indicate what the Sentinels did with Mauser's body.&#10;&#10;It may be a little ghoulish, but it would be nice to have the final answer. At this point, the only ones who would have activity records of the area would be the Machines. Intel thinks that a terminal at the location marked on your screen could be used to access recent Sentinel logs.</briefing>
+    <enter><say>Okay, that's a Machine facility, so it's safe to say you should expect some static.&#10;&#10;... You know, a bad reception?&#10;&#10;Hostiles?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0" />
+    <objective goal="2" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="1">
+      <done><say>Alright, we got something. Grab the data and vamoose.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the Data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <finish>I'm afraid the data you were able to recover didn't contain any record of Sentinel activity at that surface site, {player}, even though the captured log information went back several months. It's possible that the Machines moved those records to a more secure location.&#10;&#10;Outbreaks of intruder-spawned violence in the city have decreased since the intruder's initial rampage, and the fact that you were able to communicate with him today, however briefly, may indicate that the immediate threat has passed. We must look for an opportunity to re-establish regular contact with him; although we don't know the exact reason for his behavior, his incredible abilities have already created a new balance of power within the Matrix.</finish>
+</mission>

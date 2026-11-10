@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1313, Zion story mission 9.2.2. Source: research/missions/transcripts/Zion9-2-2.md (the archive replay of
+     [Zion Archive 9.2.2]; 17 screenshots, all taken after it ended, scrolling the log). Retail's contact was
+     [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Tyndall, Operator, Intruder, Colt, Shimada and E Pluribus Neo Crusader line, the
+     names, and the rewards (363,000 experience and 63,000 information, shown after this mission completed). Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     sites (the room where Neo was woken up is a Hotel, after the title's room number; the rest Normal), the looks
+     (Shimada's sex isn't in the log), the enemy counts, and the hostiles' side: the intruder's "multiple readings"
+     near the Oracle's apartment are unnamed programs he set loose, so they are Machines.
+     Gaps: the Operator's line after Colt's first speech (10:05:16) wasn't captured; Colt's "How should I know?" answers
+     it and is said after his speech as in retail. The Operator's "getting less cool now" has one line between "less
+     cool" and "now" that may be missing; it is used as read. The Intruder's and Shimada's first lines may continue
+     past the screenshots. Operator's "More of the intruder's mischief" came a minute after arrival in retail; it is
+     said on arrival. The Zion Network Hacker beside Colt said nothing and isn't placed. -->
+<mission id="109202" title="1313" description="Track down the intruder near the Oracle's apartment." plot="1"
+         order="9202" org="1" contact="Tyndall" exp="363000" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say after="1">I'm not surprised you didn't know about this place; the Machines changed it, and after all, everyone who did know is dead now, aren't they, hm?&#10;&#10;Fortunately, there are others who are somewhat more reliable when it comes to keeping records.</say>
+  </npc>
+  <npc id="2" handle="Colt" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say after="1">How should I know? Maybe the Kid found Neo's old gym locker or something.</say>
+  </npc>
+  <npc id="3" handle="Shimada" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+    <say after="1">It's amazing that he managed to survive all these months in his condition--and alone, near the surface! It's simply incredible. I'm sure this will be a very happy day in Zion once you give them the great news.</say>
+  </npc>
+  <npc id="4" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">Just goes to show that you should never give up hope!</say>
+  </npc>
+  <npc id="5" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say display="5">You can be certain that we will guard the Commander's life with our own until he can be escorted to New Zion.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>{player}, the intruder has been asking operatives for information on Neo and Trinity, and now he's been detected entering the vicinity of the Oracle's apartment; Commander Roland is concerned that the intruder may be trying to extract sensitive information from her.&#10;&#10;I'm sending you to the location of intruder code readings in the area. Do what you can to contain him.</briefing>
+    <enter>
+      <say>"Contain him"? Ri-ight.&#10;&#10;Okay, I've got an intruder-style reading in there. Wait a sec... Make that multiple readings.</say>
+      <say>More of the intruder's mischief. We'd better prevent those things from rampaging around the neighborhood. "Contain," right?</say>
+    </enter>
+    <objective goal="1" text="Kill all of the intruder's programs" type="DefeatAll">
+      <done><say>Head outside. We still need to track down the big man himself.</say></done>
+    </objective>
+  </phase>
+  <phase site="Hotel" enemy="Machines" enemies="0">
+    <briefing>Stay on his trail, operative. I've got some updated readings for you.</briefing>
+    <enter><say>Got a reading in there. Judging by the power levels, I'm betting it's the big kahuna this time.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="1">
+      <talk><say npc="1">Oh, it's you. Wondering why I'm here, maybe?&#10;&#10;Hm... You don't know what this place is, do you? It's where your precious savior, Neo, was "woken up." Interesting, don't you think? I know I do.&#10;&#10;Now, if you'll excuse me, I have some code readings to take.</say></talk>
+      <done><say>What? He's saying that's where Neo...&#10;&#10;Oh man, this guy is really starting to creep me out. I guess he wasn't after the Oracle...but we need to report this ASAP.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, please report to Colt. I understand that he also has an important situation update for you.</briefing>
+    <enter><say>Ya know, the intruder's interest in Zion and Neo and Trinity and all that was kind of cute for a while there, but somehow it's getting less cool now.&#10;&#10;Colt's in there. Coast is clear.</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="2">
+      <talk><say npc="2">He was scanning the room where Morpheus extracted Neo? Jesus. He could have been lying about that, but even so... All right. I'll get that to Roland straight off.&#10;&#10;Now, I've got something else for you. Those Neo and Trinity wanna-bes in E Pluribus have been ringing my phone off the hook--say they've found something important around old Zion that we need to know about. I'm delegating you to go meet their officer Shimada and get the dope.</say></talk>
+      <done><say npc="2">How should I know? Maybe the Kid found Neo's old gym locker or something.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The information we have indicates that EPN continues to fortify old Zion. They've been exploring the area, and excavating the wreckage in the city. It's possible that they've been able to salvage data or equipment of ours that survived the Machine attack.</briefing>
+    <enter><say>I'm picking up redpill signals in there; should be EPN.</say></enter>
+    <objective goal="1" text="Talk to Shimada" type="Talk" npc="3">
+      <talk><say npc="3">I have news--very good news for Zion. Your Commander Lock is alive! We picked up an emergency beacon signal that led us to a wrecked surface facility above Zion, where we found him. He's in a weakened state, and appears to be recovering from injuries, but none of them seem life-threatening; he's conscious, and responsive. We're moving him down to the old city now.</say></talk>
+      <done><say>What?! Deadbolt's still alive? Holy smokes... Tyndall's gonna pop her sockets.</say></done>
+    </objective>
+  </phase>
+  <finish>Jason! He's alive?! Oh! {player}! I... I-I have to go tell Commander Roland right away!&#10;&#10;Commander Roland! Commander...</finish>
+</mission>

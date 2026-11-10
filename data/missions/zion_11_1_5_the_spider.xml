@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Spider, Zion story mission 11.1.5. Source: research/missions/transcripts/Zion11-1-5.md (the archive replay
+     of [Zion Archive 11.1.5], given by [Archived]Tyndall; 21 screenshots, one during phase 3, the rest of the log
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Operator and closing line, and the Bluepill bystanders' lines. Ours:
+     the description (the Summary tab was never opened), every objective text (only "Leave the area now!" was shown),
+     the goals themselves (the log only has the Operator's reactions), the sites (two Wright offices, the lab and the
+     Wright facility are all Office; retail's lab was in Shinjuku, International), the looks and the enemy counts.
+     Rewards: the 352,000 experience and 115,500 information shown right after this mission completed.
+     Gaps: the shape-shifter is never met; the signal tracking and area scans are narration. Phase 1 ended in retail
+     when Wright's security arrived (no fight is seen): here it ends on searching the office, which turns up nothing.
+     Phase 2's find ("That's our bogey's MO!") is a computer search that turns up nothing. In phase 3 the terminal that
+     sends the super-encrypted signal is a Computer to use; its readout ("24810219.") can't be shown, and both of the
+     Operator's lines after it (the second's header was hidden between screenshots) are said when it is used. The
+     first lab bystander line was cut at its start and is left out. Phase 4's collapsed woman (the residual shell)
+     isn't spawned, as dead NPCs aren't: a Box stands in for her body, and examining it says the Operator's "That must
+     be it." and his theory. The witness's three whole lines are joined as one; her first line, cut at its start, is
+     left out. The lab bystanders' three lines are three Bluepills here, one line each. The
+     Operator's emphasis on "they're" (asterisks) is dropped. -->
+<mission id="111105" title="The Spider" description="Track down the shape-shifter that has been pillaging Wright Research's facilities." plot="1"
+         order="11105" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">What, you didn't see Lambright stick their head in a minute ago? I was about to ask them what happened to their vacation, but then they sort of got this funny look, and ran out.</say>
+  </npc>
+  <npc id="2" handle="Bluepill" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5">Oh. I guess I just spaced out.</say>
+  </npc>
+  <npc id="3" handle="Bluepill" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">Lambright needs to take it easy. Some of those old-timers still think they're going to change the world.</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+    <say display="5">She didn't make a sound. It must have been painless...but I wouldn't want to go that way. It just seems so...empty. What's life worth if it can stop, just like that?&#10;&#10;From nothing to nothing...&#10;&#10;I'm sorry. I didn't mean to sound so maudlin.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Warrior, a group of operatives managed to locate the individual apparently responsible for the Wright security problems. Whoever it was, they shifted forms when trying to escape from the operatives; it looks like we're dealing with someone who can vary their signal to alter their RSI at will. This, coupled with seeming inside knowledge of Wright's operations, has allowed them to pillage the company's facilities. Now that we know what we're up against, we can watch for their signal alterations.&#10;&#10;We've just picked up another security alert at a Wright office. Get to the area as quickly as possible, and look for traces of the culprit. We'll be running an area scan to try to pick up any signals that transform themselves.</briefing>
+    <enter><say>From the radio chatter, it sounds like Wright's security is on their way, but I think you've got them beat by a few minutes. So far, I'm only scanning standard office activity there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the office for traces of the culprit" type="Search" object="1" item="0">
+      <done><say>Sounds like they already made a break for it.&#10;&#10;Hey, security just caught up with you. I think that's our exit cue. Maybe we'll have more luck with the area scan.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Yes, we detected a signal transformation at about the same time that Wright's security forces arrived on the scene. More transformations have made the signal difficult to track, but we've located another Wright office along one of their projected paths. We don't have the resources to do a wide scan right now, so we need to confirm where the target went.</briefing>
+    <enter><say>More office noise... It doesn't sound like their security has been alerted to any problems at that location. I hope this is the right track.&#10;&#10;Hey, you hear about EPN sending reinforcements off to that mystery zone on the surface that even the Machines avoid? Rumor is they've been seeing more Sentinels than usual just outside it, and the Kid himself is heading out with more ships to help protect that expedition they sent out there a month ago. I wonder if they're on to something.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>That's our bogey's MO! I'm calling in the scan!</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Good work, {player}. We've caught another signal transformation. There was only one this time, so we're fairly confident of their destination. I'm marking it for you now.</briefing>
+    <enter><say>Getting a lot of electronic activity in there, and there's some kind of signal... I don't know what that is--nothing that looks like our morpher. I'm going to see if Tyndall can squeeze out another area scan.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Use the computer" type="Use" object="1">
+      <done>
+        <say>Whoa. Some kind of super-encrypted signal just went out from that terminal. Let me see if... Nope, no trace.</say>
+        <say>Not sure what half the stuff in there is, but it looks like some of it has been cobbled together from that stolen Wright prototype whose schematics we tracked down a few weeks back. It's...some kind of interface or broadcast device, I think, but not like anything I've seen before. We're gonna have to get a tech team to take that stuff in for a good hard look.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>We picked up a quick series of signal transformations, {player}; too quick to maintain our tracking. However, we have just detected an alert at a Wright facility not far from the tracking area.</briefing>
+    <enter><say>Jeez... Mauser--or whoever this is--sure can move. I don't know how we'll catch them at this rate...&#10;&#10;Hey, on Wright's security channel, they're saying that this is a medical emergency, not an alarm response.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Investigate the medical emergency" type="Search" object="1" item="0">
+      <done>
+        <say>That must be it.</say>
+        <say>Can't really explain this to the people there, I suppose, but I'm pretty sure that isn't whoever they think it is. The residual program is not a human RSI; it's some other kind of shell, and breaking down rapidly, too. It probably wasn't stable to begin with.&#10;&#10;Ya know, I'll bet this was our shape-shifter; that computer you activated, and the signal it sent, could have been a shut-down command for this thing. Like, it was just following a script someone had given it to gather stuff from different Wright facilities, and it was programmed with Wright access codes, and RSIs of employees who were supposed to be somewhere else at the time. But who would do that?</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>That's...an interesting theory, operative. It does seem that someone with great knowledge of Wright Research's operations must have been involved in this plot. It looks like they were constructing something in that lab, using stolen Wright programs and materials.&#10;&#10;We know Mauser was a skilled technician, and spent time in Wright's surface lab. Possibly this was more of his handiwork. We've secured the equipment you found in the lab, and we're going over it now. We'll find out what was going on there.&#10;&#10;Oh, {player}... We've received multiple reports that Carlyne has been seen inside the Matrix again. There's some indication that he's approached the Merovingian, who has been acting very secretively since capturing--apparently--the "biological interface program" from Ouroboros. That was the program Carlyne's rival, Halborn, had wanted. I'll let you know when we have more details.</finish>
+</mission>

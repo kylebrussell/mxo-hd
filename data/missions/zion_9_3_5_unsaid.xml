@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unsaid, Zion story mission 9.3.5. Source: research/missions/transcripts/Zion9-3-5.md (the archive replay of
+     [Zion Archive 9.3.5]; 20 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Tyndall himself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. The "####" in
+     Tyndall's and the Operator's lines is retail's own garbling while the Oracle hijacks the channel, and Ghost's "It
+     make you wonder" and the Operator's "*&#@!!" are kept as shown. Ours: the description (the Summary tab was
+     empty), the objective texts (the Objectives tab was never opened), the sites (Normal, and Derelict for Niobe: the
+     player ended the mission in a derelict basement), the looks, the enemy counts (none: the log shows no fighting) and
+     the "Talk to Colt" goal. Carlyne is a wireframed man, neither Machine nor Exile: he has an Exile look and weapon.
+     The Oracle has a bluepill woman's look. Rewards: the 374,000 experience and 63,000 information shown right after
+     this mission completed.
+     Gaps: the Oracle hijacks the comms and cuts Tyndall off wherever the player is; here the cut-off line is phase 3's
+     briefing and the Oracle stands on a floor of her own, to be talked to. The Operator's "What?! The Oracle?" came
+     just before her first line and is said with it. Colt said his warning twice before Niobe spoke: he is a Talk goal
+     before her, which lets his and Niobe's later lines wait until she has been talked to. Some lines run across two
+     screenshots with no header on the second (Tyndall's first and fourth briefings, Carlyne's, the Operator's in phase
+     4); each is joined as one line. -->
+<mission id="109305" title="Unsaid" description="Catch up on the hunt for the Oracle, and meet with Carlyne." plot="1"
+         order="9305" org="1" contact="Tyndall" exp="374000" info="63000">
+  <npc id="1" handle="Ghost" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say>It make you wonder how much of this she worked out in advance...and how she plans to survive Halborn.</say>
+  </npc>
+  <npc id="2" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say>No, no, don't worry yourself. I've got to move through their systems quickly if I'm going to find him, and I'll be able to do that best on my own.</say>
+  </npc>
+  <npc id="3" handle="The Oracle" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say>It's been good seeing you kiddo, but I've got to go, and so do you.&#10;&#10;Hm? Oh, I really don't know if we'll see each other again. Do you stick around when a ghost comes knocking?</say>
+  </npc>
+  <npc id="4" handle="Colt" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say>Hey, better make it good. I've seen her in better moods.</say>
+    <say after="2">Well...could've been better, but hey, any time you don't end up getting demoted can't be all that bad.</say>
+  </npc>
+  <npc id="5" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say after="2">She tells you whatever she thinks you need to know, and that's all. It's her way of manipulating things. The hell of it is that she's usually right.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, there are some indications that Carlyne survived the clash with Halborn a week ago, but we've yet to be able to contact him. During that time, there have been a number of occurrences you need to know about.&#10;&#10;Ghost will update you on the situation.</briefing>
+    <enter><say>Yeah, I've been hearing some things. Something's going on... I just wish I knew what it was.&#10;&#10;Anyway, you'll get in touch with Ghost in there. Scan's clean so far.</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="1">
+      <talk><say npc="1">All right. First, we've received reports of Halborn being removed from the battle zone by Merovingian operatives, so it seems he survived the encounter with Carlyne. Some of the slum areas that saw heavy override use are still unstable; we've seen Machine operatives moving into the area.&#10;&#10;The other news is that the Oracle's been seen. EPN has confirmed that she met with them, and imparted something of importance; they've been officially mum about the details, but word is that it was some kind of encrypted program. Cypherite sources claim that the Oracle met with Veil as well, but we're still working to confirm that.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we've finally heard from Carlyne. I'm routing you to his position.</briefing>
+    <enter><say>Huh. Guess he made it out of that code meltdown he and Halborn put on. That reminds me, I've still got to repair one of our displays that blew out when those two threw down.&#10;&#10;Hey, I've been busy, okay? You're welcome to jack out and come get your hands greasy down here any time.&#10;&#10;Right, right... Yeah, the surviving instruments are reading what's got to be Carlyne in there.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="2">
+      <talk><say npc="2">Apologies for the impromptu appearance, {player}. Ah, I assure you, I'm quite all right; it's Halborn who got the worst of it. I might have been able to incapacitate him entirely if the code of the surrounding simulation hadn't begun to fail. Still, he's got to be in bad shape at the moment; it's just a matter of finishing him off. I hear the Frenchman's tucked him away somewhere, but all that means is that he's become a stationary target.&#10;&#10;I'd stay and chat, but I don't want him getting away.</say></talk>
+      <done><say>Hey, wasn't it us who helped him catch Halborn before? Why aren't we in on this?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, Carlyne's already disappeared off our scan, but we're go####</briefing>
+    <enter><say>What? What the hell was that #### thing? Where's Tyndall? Where the hell are you? What's going on?</say></enter>
+    <objective goal="1" text="Talk to the Oracle" type="Talk" npc="3">
+      <talk>
+        <say>What?! The Oracle? Hold on, I'll get Tyn-- Oh, da####</say>
+        <say npc="3">Sorry about that. I had to cross a few wires...but I think it was worth it.&#10;&#10;... You know, there's a lot I want to say, but it isn't the right time. Maybe it won't ever be. But looking at you... Well, I think I made the right choice. I think you'll do just fine.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Derelict" enemy="Machines" enemies="0">
+    <briefing>###perative, are you-- Oh! {player}, are you reading this? We'd lost contact with you. I think we'd better have your hovercraft in for a full inspection the next time you come back to New Zion.&#10;&#10;The Oracle? Are you-- Yes... I see... Or...well, this is very strange...&#10;&#10;{player}, I'm going to have you report this to Captain Niobe immediately. She may understand what the Oracle meant, and where she's gone.</briefing>
+    <enter><say>Maaaaaan what the hell is going on?!?&#10;&#10;Oracle? Niobe? Full inspection?! *&amp;#@!!</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="4">
+      <talk><say npc="4">Hey, better make it good. I've seen her in better moods.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Niobe" type="Talk" npc="5" after="1">
+      <talk><say npc="5">... You know, I'm not even going to get mad at you...because she pulls this same kind of crap every time.&#10;&#10;She may know something we don't, but the fact remains that she's out there right now, with Halborn after her. We've got to find her before he does, whether she wants us to or not.</say></talk>
+    </objective>
+  </phase>
+  <finish>There's been no word on Carlyne since he left you, operative, and still no lead on the position of the Oracle or Halborn. Machinists are still present in damaged areas of the slums, and we know that the Machines have been giving their tacit support to Halborn.&#10;&#10;It's a dangerous situation for the Oracle to be in. We'll just have to do what we can. I'll contact you if I get a lead.</finish>
+</mission>

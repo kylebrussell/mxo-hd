@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Building 27, Zion story mission 9.2.5. Source: research/missions/transcripts/Zion9-2-5.md (the archive replay of
+     [Zion Archive 9.2.5]; 25 screenshots, one during play in Building 27, the rest of the log after it ended). Retail's
+     contact was [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Tyndall, Operator, Domenic Van Meer, Adan Durden, Ghost, Anacost, Ajax and Intruder
+     line, the names, the objective text "Search the area" (phase 3's Objectives window), the Data found in Building 27,
+     and the rewards (363,000 experience and 63,000 information, shown right after this mission completed). Ours: the
+     description (the Summary tab was never opened), the other objective texts, the sites (the branch office and the
+     guarded Building 27 are Office, the rest Normal), the looks (Domenic's, Anacost's and Ajax's sexes aren't in the
+     log), the enemy counts, and the guards' side: Wright Research Security are bluepill guards with no organisation
+     here, so they are Machines (the system's own security). Item stand-in: the key to the far door (implied by the
+     Operator, never shown as received) is Access_Card (6791), found in a filing cabinet.
+     Gaps: the far door is locked in retail and the key opens it; doors aren't locked here, so Adan Durden can only be
+     talked to once the key is found. The Operator's "The far door is locked." is said on arrival. Anacost and Ajax are
+     recruited and led out of Ghost's site and follow the player from then on; NPCs don't fight here, so they don't join
+     the fight with the guards, and the mission fails if one dies. In Building 27 the player searched several places
+     ("Nope.", "Nada.", a program the Operator already knew, and a last computer with device drivers): here a filing
+     cabinet, a box and a computer, which is searched for the Data and then used for the last scan; the computer's
+     screen (a DNA-like listing) isn't shown. Retail logged the last scan's "Searching..." after the area was complete;
+     here it is said when the last goal is done, and "if that's all they've got" when the area is complete. Tyndall's
+     "If it is what he said" may have lost a line between "is" and "what". Anacost's question was said twice in
+     retail. -->
+<mission id="109205" title="Building 27" description="Search Wright Research for the biological interface program the intruder is looking for." plot="1"
+         order="9205" org="1" contact="Tyndall" exp="363000" info="63000">
+  <npc id="1" handle="Domenic Van Meer" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Do you have anything I can file?&#10;&#10;Come on--anything?</say>
+    <say display="5" after="1">It gets *so* boring here when I've got nothing to do. I can only burn *so* much time drinking coffee!</say>
+  </npc>
+  <npc id="2" handle="Adan Durden" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">N-no, I don't know how to get in. I don't have any clearance.&#10;&#10;Please don't tell anyone I talked to you!</say>
+  </npc>
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="4" handle="Anacost" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="5" handle="Ajax" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="6" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say after="1">I'm not going to tell you that. The less you know, the better. This isn't your problem, anyway.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Warrior, operatives were able to talk to the intruder long enough to learn that he is looking for something he called a "biological interface program." While the Council isn't at all sure that helping the intruder achieve this goal is in Zion's best interests, locating such a program on our own could give us an advantage.&#10;&#10;It isn't clear exactly what the program might be, but intel thinks that Wright Research may be a good place to start looking, since the specialty of their founder, Danielle Wright, was network interfaces, often in combination with human systems, such as the emergency jack-out system used by most operatives today.&#10;&#10;Wright was killed by the Machines, but her company continues their research and development projects. I want you to check one of their offices for evidence of any new developments that could be related to what the intruder is looking for.</briefing>
+    <enter>
+      <say>I'm reading a few people in that Wright Research branch office. See what you can find.</say>
+      <say>The far door is locked.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find the key to the far door" type="Search" object="1" item="6791">
+      <done><say>Locked door plus key equals golden?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Adan Durden" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Good...God! Don't...don't hurt me. I'm nobody important. I just clean slides.&#10;&#10;I...I know where you want to go. It's our secured facility: Building 27. That's where they keep the really important new research. I...I saw a memo about it that had fallen behind a cabinet, when I was cleaning up.</say></talk>
+      <done><say>27, huh? I'll have Tyndall look that up.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We've been able to locate the Wright Research building he spoke of. If it is what he said, it's likely to be heavily guarded. You've been authorized to get some backup from Ghost.</briefing>
+    <enter><say>Looks like Ghost is in there with a few helping hands.&#10;&#10;You think the intruder has something to do with Wright? She was kind of a-- Well, she had some pretty crazy ideas about how people should take over the Matrix and stuff.&#10;&#10;I don't know, I'm just... Free association and all that, right?</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+      <talk><say npc="3">Although we didn't exactly see eye to eye with Danielle Wright, we worked with her in the past; in fact, it was the work she did for us on the new red pill code that got her killed.&#10;&#10;With her out of the picture, we can't expect any of the bluepills in the company to understand why we need access to their most valuable research...so we're going to have to do this the old fashioned way. These two here will go with you.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Anacost" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Do you think they really have what he's looking for?</say></talk>
+      <done><say npc="3">I don't know. If they do have what the intruder's after, then we'll have to decide what to do with it after we figure out what it actually is.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Ajax" type="Talk" npc="5" after="2">
+      <talk><say npc="5">Let me give you a boost.</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Anacost and Ajax out of the area" type="Escort" npc="4,5" to="exit" after="3" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>Discreet surveillance shows that Wright building 27 is heavily guarded, operative. You'll need to search the area thoroughly for any new research that might match the "biological interface program" description.</briefing>
+    <enter><say>I'm reading lots of blips in there, and they're probably guard blips, so be careful.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the filing cabinet" type="Search" object="1" item="0">
+      <done><say>Nope.</say></done>
+    </objective>
+    <objective goal="2" text="Search the box" type="Search" object="2" item="0">
+      <done><say>Nada.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Data from the Computer" type="Search" object="3" item="6787">
+      <done><say>Ooh, let me scan that data...&#10;&#10;Nope, we already knew about that program.</say></done>
+    </objective>
+    <objective goal="4" text="Search the area" type="Use" object="3" after="3">
+      <done><say>Searching...&#10;&#10;Hm. Nothing really out of the ordinary in there. Device drivers, network controllers, junk like that.</say></done>
+    </objective>
+    <complete><say>Great. Well, if that's all they've got, then Wright Research is really alienating their operative customer base these days.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>If that was the extent of Wright Research's recent development, then they don't appear to be working on any breakthrough interface technologies.&#10;&#10;The intruder has made himself more accessible of late; we've heard of him contacting the Merovingian and the Machines, for instance. This may be an indication that he's willing to divulge more of his goals; if we tell him that the Wright Research corporation does not have a biological interface program, he may give us more information on what he's looking for. I'm sending you to his most recently reported location.</briefing>
+    <enter><say>So, if Wright Research doesn't have something like what this guy is after, then who would? I'm kind of coming up empty on ideas here.&#10;&#10;Anyway, it looks like the intruder's in there. Good luck.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="6">
+      <talk><say npc="6">Hm? Huh. Doesn't surprise me.&#10;&#10;If a human could have written it, I'd have had it by now.</say></talk>
+      <done><say>Hey! Did he just insult us?&#10;&#10;Wait... He's supposedly human, isn't he?</say></done>
+    </objective>
+  </phase>
+  <finish>Hm. That could be significant, {player}. If this "biological interface program" he's looking for isn't made by humans, then could it be something the Machines made? But if that were the case, then why would they...&#10;&#10;We'll have to do some more checking into this, operative. Thank you for your report.</finish>
+</mission>

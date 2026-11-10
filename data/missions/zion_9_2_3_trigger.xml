@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trigger, Zion story mission 9.2.3. Source: research/missions/transcripts/Zion9-2-3.md (the archive replay of
+     [Zion Archive 9.2.3]; 25 screenshots, two during play in phase 1, the rest of the log after it ended). Retail's
+     contact was [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Tyndall, Operator, Intruder, Colt, Ghost, Acamar, Wasserman and Niobe line, the
+     names, the objective texts "Search the Computer" and "Talk to the intruder" (phase 1's Objectives window), and the
+     rewards (362,835 experience and 63,000 information, shown after this mission completed). Ours: the description
+     (the Summary tab was never opened), the other objective texts, the sites (all Normal), the looks (Acamar's and
+     Wasserman's sexes aren't in the log), the enemy counts, and the hostiles' side: the "accelerated" programs the
+     intruder overrides are Machine programs, so Machines.
+     Gaps: the computer shows Commander Lock's letter in retail; here searching it turns up nothing and the letter
+     isn't shown. The Intruder's outburst was said twice in retail; here once when the talk ends and again if he is
+     talked to after. Colt's "Was it something I said?" and his talk about Mauser were logged during phase 2: the first
+     is said on reaching Ghost's site, the second is Colt's line when talked to again in phase 1. Acamar and Wasserman
+     are recruited and led out of Ghost's site, and follow the player from then on; NPCs don't fight here, so they
+     don't join the fight, and the mission fails if one dies. The big signal in phase 3 ("Could be Chuckles") that the
+     Operator says to skip isn't spawned, since a kill-all goal would have to count it, so the Operator's "There's the
+     big signal... Just concentrate on the little ones" isn't said. In phase 4 Niobe kills the accelerated programs in
+     retail ("looks like someone already had things in hand"); here the player kills them, and the Operator's two lines
+     are said when they're dead. Niobe's "TiAmo! ****, I'm glad to see you." was censored by the client; the censored
+     word is left out. The Operator's "get out of there, fast as you can" may have lost a line before "Oh, sorry." -->
+<mission id="109203" title="Trigger" description="Get Commander Lock's message from Colt." plot="1"
+         order="9203" org="1" contact="Tyndall" exp="362835" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say after="2">What?! He terminated Sentinels with a gesture?!&#10;&#10;Blast them to hell! They WERE lying!</say>
+  </npc>
+  <npc id="2" handle="Colt" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="2">Mauser and I were crewmates under Roland. Mauser was a good man--a good friend. I figured he'd gone down with the Hammer when the Machines wiped Zion's mainframe. Then there were rumors that Mervs had spotted him in Zion during the Sentinel attack... And now it turns out that he *was* alive, saving Lock's commissioned butt, and getting killed for it.&#10;&#10;Just... Damn it.</say>
+  </npc>
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="1">You'd better get going, operative. Those programs aren't just waiting around.</say>
+  </npc>
+  <npc id="4" handle="Acamar" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="5" handle="Wasserman" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
+  <npc id="6" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Hello, {player}! Colt has been in contact with E Pluribus Neo again, and they say they have a message from Commander Lock for us! He's recuperating in the old city, where EPN has established a base; hopefully it won't be long before he's well enough to be brought here, to New Zion.&#10;&#10;Please report to Colt, and get the Commander's message. It will be wonderful to hear from him, won't it?</briefing>
+    <enter><say>Sounds like *someone* got up on the right side of the bed this morning...&#10;&#10;Colt should be in there. Looks like the message from Lock is already incoming on one of the terminals.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Aw, hell. Don't look now, but you've got a level 100 stalker.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the intruder" type="Talk" npc="1" after="1">
+      <talk><say npc="1">How touching.&#10;&#10;Now, what was that about a "lightning gun"? You people have the capability of fighting Sentinels yourselves? Huh.</say></talk>
+      <done>
+        <say npc="2">Bet your wiry ass we do! Mauser'd be a match for any Sentinel. They must've got him with numbers. Damn it...&#10;&#10;Yeah, buddy. Hell, Neo was one of us, and he didn't even need a gun. He could just wave his hands, man, and the squids fried.</say>
+        <say npc="1">What?! He terminated Sentinels with a gesture?!&#10;&#10;Blast them to hell! They WERE lying!</say>
+      </done>
+    </objective>
+    <complete><say npc="2">Damn it, Mauser. Why'd you have to go get yourself killed for Lock? Just a goddamn waste...</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, reports of hostile "accelerated" programs just started coming in from all over the city. I need you to rendezvous with Ghost immediately.</briefing>
+    <enter>
+      <say>Uh... You don't think this has something to do with that little shouting fit he had back there, do you?</say>
+      <say npc="2">Was it something I said? Jesus...</say>
+    </enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+      <talk><say npc="3">The intruder's launched a major rampage, {player}. He's overriding programs indiscriminately; they're going to hurt a lot of people unless they get shut down in short order.&#10;&#10;Take Acamar and Wasserman with you, and take out those programs.</say></talk>
+      <done><say>You heard the man. Get those two and hit the road.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Acamar" type="Talk" npc="4" after="1">
+      <talk><say npc="4">What the hell have we stepped in now?</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Wasserman" type="Talk" npc="5" after="2">
+      <talk><say npc="5">Smooth move.</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Acamar and Wasserman out of the area" type="Escort" npc="4,5" to="exit" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>I'm sending you to the largest trouble indication we had, {player}. If you encounter the intruder himself, possibly you can find some way to...calm him down.</briefing>
+    <enter><say>Well hey... At least when the city's a smoking ruin, we can look back and say we were there when he went over the edge.&#10;&#10;Actually... Maybe we shouldn't tell anyone about that.&#10;&#10;Okay, I've got a heap of accelerated signals in there, including something pretty big. Could be Chuckles.</say></enter>
+    <objective goal="1" text="Kill all of the accelerated programs" type="DefeatAll">
+      <done>
+        <say>All right, get out of there, fast as you can.&#10;&#10;Oh, sorry.</say>
+        <say npc="4">I'm glad that's over with.</say>
+        <say npc="5">Job done.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Operative, Captain Niobe wanted to see you, but now I can't raise her. I'm sending you to her last broadcast point.</briefing>
+    <enter><say>I think I see Niobe in there, but I'm reading some accelerated programs as well.</say></enter>
+    <objective goal="1" text="Kill all of the accelerated programs" type="DefeatAll">
+      <done>
+        <say>Well, there's one down...</say>
+        <say>All righty then, looks like someone already had things in hand.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Niobe" type="Talk" npc="6" after="1">
+      <talk><say npc="6">{player}! I'm glad to see you.&#10;&#10;Look, I don't know what set him off, but we're going to have to find the intruder and chill him out. This tantrum of his is going to cause major problems if it lasts much longer.</say></talk>
+      <done><say npc="6">He said someone lied to him? Do you have any idea what he was talking about?</say></done>
+    </objective>
+  </phase>
+  <finish>The intruder's dropped off our scanners, operative. We're going to have to try to track him down before he starts another outbreak of overridden programs.&#10;&#10;And {player}, thank you for relaying the message from Commander Lock. I'm going to send it to the Council right away. The news about Mauser is terrible, but Zion will never forget what he did for the Commander.</finish>
+</mission>

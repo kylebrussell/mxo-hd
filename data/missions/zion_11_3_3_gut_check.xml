@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gut Check, Zion story mission 11.3.3. Source: research/missions/transcripts/Zion11-3-3.md (a live retail run, not
+     an archive replay, given by Tyndall; 13 screenshots, two during phase 1, the rest of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Operator, Agent Park and Ghost line, the NPC names (Agent Park,
+     Decelerator, Ghost), and the objective texts "Search the area", "Eliminate the Agent" and "Get the Data from the
+     Computer" (shown in the Objectives window). Ours: the description (the Summary tab was never opened), the "Talk
+     to Ghost" objective text, the sites (the Park East office is an Office, Ghost's spot in Hampton Green Normal;
+     both were in Downtown), the looks and the enemy counts. The Decelerator is a Machine program. The Agent calls
+     the player "Mr. DeNiro" (the player's surname); here it is "Mr. {player}". Item stand-in: the data is Data
+     (6787). Rewards: none were shown; the information is Resistance's (11.3.2, 525,000) and the experience The
+     Spider's (11.1.5, 352,000).
+     Gaps: in retail Agent Park appeared when the computer was first searched. Here he stands on the floor from the
+     start and waits to be attacked (attacksOnSight="0"), and his cut-off line and the Operator's reply are said when
+     the search is done; "Get the Data from the Computer" opens once he is dead. The computer's readouts ("Soon." on
+     the first search, "#####" on the second) can't be shown. The Operator's emphasis on "just" (italics) is dropped.
+     The Corrupted the player fought after the mission ended were ambient hostiles and aren't part of it. -->
+<mission id="111303" title="Gut Check" description="Search Park East for the interface program while Wright and the Machines fight it out." plot="1"
+         order="11303" org="1" contact="Tyndall" exp="352000" info="525000">
+  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Decelerator" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say after="1">That's just how it is.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Warrior, even with anti-override codes developed by Cypherites, the Machines are having serious problems dealing with Wright in Downtown. It hasn't been easy for us, either, but at least this gives us a fighting chance of locating the interface program while she and the Machines slug it out.&#10;&#10;The latest override use has appeared in the heart of the Machine power structure: Park East. Under normal circumstances, the heavy Machine presence would make a search impractical, but Wright's overrides throw the usual rules out the window.</briefing>
+    <enter><say>Looks like Tyndall was right. I don't see a whole lot of security in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>That's gotta be from the interface program! Let's see if--&#10;&#10;Damn! What's with this timing?</say>
+        <say npc="1">Mr. {player}, you are un--</say>
+        <say>Oh, now that's just what we needed.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Eliminate the Agent" type="Defeat" npc="1">
+      <done><say>See if there's any data left intact on the computer.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="2">
+      <done><say>I knew it. The data's been completely scrambled by the override; another chance to find the program down the tubes.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, I'm getting a call from Ghost. He wants you to meet him in Hampton Green.</briefing>
+    <enter><say>Hope we aren't in trouble or something...&#10;&#10;There's a lot of override background fuzz, but it looks like that immediate area is clear of problems.</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+      <talk><say npc="3">{player}, I called you here because I've got a feeling Wright is nearby. I'm not sure where exactly, but probably somewhere in Hampton, high up; I've been picking up override traces on rooftops. If she's here, then the...program is probably here too.&#10;&#10;Taking on Wright will be tough, but I'm not going to stand around when I know she's out there. I'm not ordering you to help search... What you do is up to you.</say></talk>
+      <done><say>Those anti-override codes the Cyphs are supposedly giving their people in Morrell sure would be handy if we're actually thinking of going after Wright.</say></done>
+    </objective>
+  </phase>
+  <finish>I wish we had been able to find the program, operative, but having been unable to do that, a direct attack against Wright may be the only option, if she really is standing her ground in Hampton. Although, even if we had anti-override codes, her enormous power level would still present a massive obstacle.</finish>
+</mission>
