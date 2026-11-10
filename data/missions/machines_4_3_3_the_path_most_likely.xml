@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Path Most Likely, Machines story mission 4.3.3. Source: research/missions/transcripts/Mach4-3-3.md (the
+     archive replay of [Machine Archive 4.3.3], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, every NPC name, and the objective
+     "Talk to the scientists" (the Objectives window was open in the lab). Gray addressed the player as "Ms. Donna" and
+     the Oracle by her handle; both are {player}. Gray's and the Operator's italics (nature, could, vexing) are plain
+     text. Ours: the description (the Summary tab wasn't shown), the other objective texts, the sites (the lab's map
+     said Gracy Heights and the portal was in Camon Heights, so those phases are placed there; all Normal), the looks,
+     the enemy counts. Blood Drunk and the others at the portal are Silver's people, Exiles: Merovingian. Rewards: the
+     175,000 information shown right after this mission completed (a level-50 player, so no experience showed);
+     352,000 experience is Zion chapter 4.3's value.
+     Gaps: Gray's briefing and closing line each span a screenshot join where a line could be hidden. The portal was a
+     phone the player found ("it could be anything"); here it is a Use goal on the phone, done by standing beside it.
+     Blood Drunk's shouts were team chat only and aren't said. The lab's computer status texts aren't shown, and the
+     newspaper clipping and chemical fact sheet seen before the lab look like another mission's items. -->
+<mission id="204303" title="The Path Most Likely" description="Seek the Oracle's advice and search for the construct where the key is hidden." plot="1"
+         order="4303" org="2" contact="Agent Gray" exp="352000" info="175000">
+  <npc id="1" handle="The Oracle" type="FRIENDLY" at="1" rsi="3c000040" weapon="0" />
+  <npc id="2" handle="Glen Friesen" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="3" handle="Chaya Exner" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say display="5">I'd tell you a little tidbit about what we're doing here, if you could even understand it. As it is, you might as well move along.</say>
+  </npc>
+  <npc id="4" handle="Miles Zalenski" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">This can't be right! Maybe the flux intake capacitor hasn't been calibrated...</say>
+  </npc>
+  <npc id="5" handle="Carla Paris" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say display="5">I don't need any input from you, thank you very much.</say>
+  </npc>
+  <npc id="6" handle="Blood Drunk" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>As the key has now disappeared from the Matrix, we must trace its route and predict its current location. Our scientists are busy examining evidence from your previous mission. Your task shall be... different.
+
+{player}, we are seeking the aid of the Oracle. I think she will help us, given the particular... nature of the items we are searching for.</briefing>
+    <enter><say>The Oracle! That's her code signature in there...</say></enter>
+    <objective goal="1" text="Talk to the Oracle" type="Talk" npc="1">
+      <talk><say npc="1">Hello there! You're right on time. Time, that's something everyone seems a little short on these days, isn't it? Everyone running this way and that way, chasing after this key.
+
+I know why they sent you to talk to me, sweetie. Of course the key's in a construct now. I don't think they really needed me to tell them that, though. And don't expect it to make a difference. I expect this would all turn out better if that key just lost itself permanently, but I think we both know that isn't going to happen.
+
+Sometimes it seems like the only thing that could help this world is a little motherly love. But the people who need it the most always seem to get the least.</say></talk>
+      <done><say npc="1">The best thing for the Matrix is if you got that key back, {player}. But if I were you, I wouldn't waste any more time chasing it.
+
+But then, who ever listens to my ramblings?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Gracy Heights">
+    <briefing>Set aside her rambling psychobabble and the Oracle can sometimes be rather helpful. Now we know that the key is hidden in a construct, and our search can be much more focused.
+
+Proceed to one of our laboratories. The scientists have already changed their search to target possible construct access points, particularly in Camon Heights where our device lost the key's signal.</briefing>
+    <enter><say>Find Dr. Friesen in here. He's leading the team.</say></enter>
+    <objective goal="1" text="Talk to the scientists" type="Talk" npc="2">
+      <talk><say npc="2">Ah, there you are! Gray said you would be here.
+
+It's quite fascinating, really, the number of little nooks and crannies connected to the Matrix in some fashion or other. I wonder what sort of pattern you might find if they were all mapped out, given...
+
+Oh, but you're not here for that. Okay, here are the results. You're going to be making a stop by Camon Heights, apparently. We have reason to suspect that Silver is involved in this.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3" neighbourhoods="Camon Heights">
+    <briefing>The location chosen by the scientists is indicated on your HUD. Go there now, and search the area for any evidence of a construct portal. Other teams are examining more possible sites.</briefing>
+    <enter><say>Remember, this construct portal could look like anything.</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Find the construct portal" type="Use" object="1">
+      <done><say>Bingo! Well, it could be anything, but it turns out it's a phone. How original.
+
+Looks like the portal's been shut down. There's a team of security coming to lock down this building. You can leave now.</say></done>
+    </objective>
+  </phase>
+  <finish>So Silver is behind this after all. His people have shut down this particular access, and he is in hiding somewhere. How... vexing.
+
+I believe we shall have to devise our own method of entering this construct. Remain in contact.</finish>
+</mission>

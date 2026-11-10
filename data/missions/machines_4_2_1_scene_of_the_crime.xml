@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scene of the Crime, Machines story mission 4.2.1. Source: research/missions/transcripts/Mach4-2-1.md (the archive
+     replay of [Machine Archive 4.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray and Operator line. The player was addressed as
+     "MeretrixMeretricis" and "Ms. Donna"; both are {player}. Ours: the description (the Summary tab wasn't shown), the
+     objective texts (the Objectives tab wasn't shown), the NPC handles "Survivor" and "Witness" (retail's names
+     weren't logged), the sites (unnamed buildings: Normal), the looks. No fighting is logged, so no phase has
+     hostiles. Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward was shown;
+     341,000 experience and 112,000 information are Zion chapter 4.2's values.
+     Gaps: the survivors' own lines weren't logged (only the operator's reactions), so they say nothing; talking to
+     them completes their goals. The dead bodies aren't spawned: the scene is a Search of a piece of furniture that
+     turns up nothing. The order of the operator's reactions is a guess: "Poor thing!" on the survivor, "Dead bodies"
+     on the scene, "too creepy" on the witness, the pods line when the area is done. What was found at the second site
+     ("Yikes", Gray's "terrible messes") isn't known; it is a Search that turns up nothing. A computer message (user
+     N30_LIVES, signed MKP, on Cypherites and Cryptos) was screenshotted during this mission but when it was read isn't
+     known, and we can't show a computer's text, so it is left out. The third site is found empty, as in retail. -->
+<mission id="204201" title="Scene of the Crime" description="Investigate a mysterious incident and track down the missing witness." plot="1"
+         order="4201" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Survivor" type="FRIENDLY" at="1" rsi="34050040" weapon="0" />
+  <npc id="2" handle="Witness" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Greetings, operative. There is an unfortunate situation developing which warrants your involvement.
+
+An incident has occurred. The nature of the incident remains uncertain. Proceed to the location indicated, investigate the site, and interview any survivors.</briefing>
+    <enter><say>Incident? Survivors? Be careful in there, {player}.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to the survivor" type="Talk" npc="1">
+      <done><say>Poor thing!</say></done>
+    </objective>
+    <objective goal="2" text="Investigate the scene" type="Search" object="1" item="0">
+      <done><say>Dead bodies, but no signs of violence...</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the witness" type="Talk" npc="2">
+      <done><say>This is too creepy. Make sure you get a good look at the whole scene before you leave!</say></done>
+    </objective>
+    <complete><say>I hate to say it, but... it sounds like those people woke up in their pods. I wouldn't wish that on anyone.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>According to the events described by those witnesses, it would seem that some party has set off a code bomb in the building.
+
+Code bombs were once used by certain... extremist Zion elements. They expose the true nature of the Matrix to those unprepared to accept it. Such activities were thought to be over for some time now. Apparently, we were in error.
+
+We are interested in discovering the identity of the missing witness described by that bluepill; the man dressed something like a priest. We have found a match in the local surveillance reports. Proceed to the next location and find him.</briefing>
+    <enter><say>"Extremist Zion elements"? I think we both know who he's talking about...
+
+Anyhow, keep a low profile in here until you've got a solid lead.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Yikes. At least we know he was here.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>How unpleasant. Humans sometimes tend to make terrible messes of themselves.
+
+Regardless, the story of that witness is corroborated by further surveillance evidence. A man was seen fleeing the area while you were inside the building.
+
+It is beginning to look like the missing witness is trying to... escape investigation. Proceed carefully, operative.</briefing>
+    <enter><say>I guess the guy ran in here... keep an eye out, {player}!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find the missing witness" type="Search" object="1" item="0">
+      <done><say>Damn it! Empty... Better get out and talk to Gray.</say></done>
+    </objective>
+  </phase>
+  <finish>How... intriguing. The man you were chasing has seemingly disappeared. I believe we can safely say that he has moved from being a witness to being a... suspect.
+
+Remain in contact, {player}.</finish>
+</mission>

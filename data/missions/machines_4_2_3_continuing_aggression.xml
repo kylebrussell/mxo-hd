@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Continuing Aggression, Machines story mission 4.2.3. Source: research/missions/transcripts/Mach4-2-3.md (the
+     archive replay of [Machine Archive 4.2.3], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md. Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPC name
+     Anome. The player was addressed as "Ms. Donna"; that is {player}. Ours: the description (the Summary tab wasn't
+     shown), the objective texts (the Objectives tab wasn't shown), the sites (the code storage facility and the
+     meeting place aren't described further: Normal), the looks, the enemy count (retail's fight took about eight
+     minutes, so a full group). The attackers are Pluribus Neo, Zion radicals: Zion. "Intolerable" in Gray's second
+     briefing is read from a half-hidden line at a screenshot join. Rewards: the screenshots are crops of the Mission
+     window with no chat panel, so no reward was shown; 341,000 experience and 112,000 information are Zion chapter
+     4.2's values. Gaps: none beyond those; Anome's second line, said in retail after the area was done, is what he
+     says when talked to again. -->
+<mission id="204203" title="Continuing Aggression" description="Stop the Zion radicals' assault on a Machine code storage facility." plot="1"
+         order="4203" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Anome" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say after="1">Just between you and me, I wouldn't give these Neo freaks much longer. I got some contacts working on it right now and, well... let's just say the way to any organization is through their leader. Heh.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>The Zion radicals have proven to be remarkably... resistant to any sort of cooperation, {player}. At this moment, they are making a concentrated assault on one of our code storage facilities. We believe that they may be searching for components to construct more code bombs.
+
+Proceed to the location and stop the attackers.</briefing>
+    <enter><say>I'm reading some serious activity in there.</say></enter>
+    <objective goal="1" text="Kill all of the attackers" type="DefeatAll">
+      <done><say>I'm not reading any more signals in there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>This activity has reached an intolerable level. I have requested a meeting with a Zion representative to discuss this conduct.
+
+You will meet with the Zion controller, Anome. We must have clarification on where Zion stands.</briefing>
+    <enter><say>Anome... I've heard some stories about him, and not all of 'em are good ones. He should be somewhere in here.</say></enter>
+    <objective goal="1" text="Talk to Anome" type="Talk" npc="1">
+      <talk><say npc="1">So, you're the poor sap workin' for the Machines, huh? They put you in a box at night or something?
+
+Okay, okay. Here's the deal, you may or may not know this stuff: They call themselves "Pluribus Neo." They're obviously way outta line, but the Council hasn't got the ba-- the backbone to deal with 'em. One thing's clear, though: they've been disavowed by the Council.
+
+You heard right. However you want to deal with them... don't expect any problems from us.</say></talk>
+      <done><say>That guy gives me the creeps. You can get out of there now.</say></done>
+    </objective>
+  </phase>
+  <finish>This clarification is highly satisfactory. Zion has agreed, in effect, to what you humans refer to as "carte blanche." The freedom to pursue this little... issue... however we see fit.
+
+I am typically not one for predictions, {player}, but I will make one now. I predict that our campaign against Pluribus Neo will be very... satisfying.</finish>
+</mission>

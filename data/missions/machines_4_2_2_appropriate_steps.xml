@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Appropriate Steps, Machines story mission 4.2.2. Source: research/missions/transcripts/Mach4-2-2.md (the archive
+     replay of [Machine Archive 4.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPC names Anneliese and
+     Ceres. The player was addressed as "MeretrixMeretricis" and "Ms. Donna"; both are {player}. Ours: the
+     description (the Summary tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites
+     (unnamed buildings: Normal), the looks, the enemy count. Ceres and the radicals at the second bomb are Pluribus
+     Neo, Zion radicals: Zion. Rewards: the screenshots are crops of the Mission window with no chat panel, so no
+     reward was shown; 341,000 experience and 112,000 information are Zion chapter 4.2's values.
+     Gaps: retail's first bomb went off about 14 seconds after the player arrived, probably on a timer; we have no
+     timers, so the bomb is found (Use on a box) and its done line says it already went off. Retail probably also had
+     a timer on the second bomb; here there is none. Ceres said her line when the fight started; she waits to be
+     attacked, reaching her is the confrontation (optional, so killing her from afar doesn't block the phase) and
+     carries the line, then she is killed. No separate disarm step was logged, so stopping Ceres stops the second
+     bomb. The operator's "the bomb is a little further on" came half a minute after arriving; it is said on arrival.
+     Gray's "one of the bombs" may have lost a word at a screenshot join ("code"?); it is given as read. -->
+<mission id="204202" title="Appropriate Steps" description="Stop a group of Zion radicals from setting off their code bombs." plot="1"
+         order="4202" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Anneliese" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Whatever you do, don't let it get out that I helped you. There are people in Zion -- even ones who aren't with Pluribus Neo -- that wouldn't look too fondly on me after this.</say>
+  </npc>
+  <npc id="2" handle="Ceres" type="HOSTILE" attacksOnSight="0" at="3" rsi="58010058" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Dangerous activities are underway in the Matrix, {player}. It is our duty to... safeguard the system.
+
+The man you pursued earlier has been linked to a group of Zion radicals. According to our surveillance, they are planning another code bombing.
+
+Proceed to the indicated location and interview our informant, Anneliese. We need specifics concerning the location and timing of the planned activity.</briefing>
+    <enter><say>Anneliese is in here. Feel free to apply a little pressure -- like Gray said, lives are at stake here.</say></enter>
+    <objective goal="1" text="Talk to Anneliese" type="Talk" npc="1">
+      <talk><say npc="1">Hey, {player}. You sure you weren't followed?
+
+Okay, here's the deal. The Kid's going too far, okay? I know a lot of people miss Morpheus, but what he was doing at the end... threatening the lives of humans to get what he wanted... it just isn't right.
+
+You'd better get moving if you're going to stop this. They've got two code bombs, and they're planning to set them both off very soon. I'm going to try to interfere with their comms, but there's only so much I can do, especially without getting spotted...
+
+You've got to stop them!</say></talk>
+      <done><say>Sounds like you've got your work cut out for you!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>According to the information we are receiving from Anneliese, one of the bombs is being targeted at the location indicated.
+
+Get there as quickly as possible.</briefing>
+    <enter><say>No, no... I just read a crazy signal... Get in there now!</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the code bomb" type="Use" object="1">
+      <done><say>Damn it! It already went off.
+
+Get out of there! We've got to stop the second bomb!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Anneliese is interfering with their communications as we speak, {player}. It is imperative that you travel with all possible speed, to prevent the second device from detonating.</briefing>
+    <enter>
+      <say>I don't think they've activated it yet... get in there!</say>
+      <say>Keep going! I think the bomb is a little further on.</say>
+    </enter>
+    <objective goal="1" text="Confront Ceres" type="Talk" npc="2" optional="1">
+      <done><say npc="2">No! We have to do this... for Neo!</say></done>
+    </objective>
+    <objective goal="2" text="Stop Ceres" type="Defeat" npc="2">
+      <done><say>Nice! You stopped Ceres.</say></done>
+    </objective>
+  </phase>
+  <finish>It is good that you stopped the second device from detonating, {player}. Innocent lives were saved.
+
+It seems that some elements in Zion misunderstand the terms of the Truce. They are allowed to awaken those who... wish to awaken; the one percent of humanity who seem to reject the simulation.
+
+The rest of humanity does not need to be awakened. Indeed, it is both counterproductive and destructive... as we have seen today.</finish>
+</mission>

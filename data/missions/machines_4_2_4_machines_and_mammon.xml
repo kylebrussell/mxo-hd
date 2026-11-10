@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Machines and Mammon, Machines story mission 4.2.4. Source: research/missions/transcripts/Mach4-2-4.md (the archive
+     replay of [Machine Archive 4.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPC names Robin, Agent Pace,
+     Louis Bonner, Leopoldon Royal and Mammon. The player was addressed as "Ms. Donna"; that is {player}. Gray's
+     second briefing names two real players from the live event, Illyria1 (who detected Darago) and DragnMastyr (who
+     deleted him); they aren't the current player, so they are "one of our operatives" and "another of our
+     operatives". Ours: the description (the Summary tab wasn't shown), the objective texts (the Objectives tab wasn't
+     shown), the handle "Demon Army Member" for the one carrying the code (not named in the log), the sites (unnamed
+     buildings: Normal; the Demon Army's building and Mammon's are put in Tabor Park, their turf), the looks, the
+     enemy counts (Mammon's "large group": 5). The Demon Army are Exiles: Merovingian. Item stand-ins: the encrypted
+     code is Data (6787), Robin's package of encrypted info is Package (6817), his location notes (Robin's orders)
+     are Document_Location_Notes (6855). "93.76%" is read from "93.76*." on screen. Rewards: the screenshots are crops
+     of the Mission window with no chat panel, so no reward was shown; 341,000 experience and 112,000 information are
+     Zion chapter 4.2's values.
+     Gaps: the decrypted message on the computer ("Cacophony - Darago contact / $i200M partial payment / Robin"; a
+     second run showed "Elijah" in place of Robin) can't be shown; using the computer is the decryption. Robin's site
+     had "a couple Exile signals", nobody hostile is logged, so it has no hostiles. Retail's Robin handed over both
+     items at once; here they are two Gets, in turn, with his "Take them!" on the first. Louis Bonner and Leopoldon
+     Royal were backup units who would aid in Mammon's deletion; we have no allies who fight, so they only speak.
+     Mammon said his line three times in the fight; he waits to be attacked, reaching him is the confrontation
+     (optional, so killing him from afar doesn't block the phase) and carries the line once. One line of Gray's last
+     briefing and one of his closing line were hidden at screenshot joins; they are given as read. -->
+<mission id="204204" title="Machines and Mammon" description="Track down and delete Mammon, leader of the Demon Army gang." plot="1"
+         order="4204" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Demon Army Member" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Robin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="3">That's all I got, copper. You can't squeeze $info from an empty drive.</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say after="1">Good luck, tesoro! I'll be monitoring your progress...closely.</say>
+  </npc>
+  <npc id="4" handle="Louis Bonner" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say display="5">You should address Agent Pace, {player}.</say>
+  </npc>
+  <npc id="5" handle="Leopoldon Royal" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say display="5">You are scheduled to speak with Agent Pace, operative.</say>
+  </npc>
+  <npc id="6" handle="Mammon" type="HOSTILE" attacksOnSight="0" at="4" rsi="c6020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>As you are no doubt aware, {player}, we have...unfinished business on our hands. A recent city-wide investigation into the whereabouts of a case of valuables stolen from us ended in the discovery that the theft was perpetrated by the Exile program known as the General. The General had denied our allegations following the initial theft of the case.
+
+It is...unfortunate that the General has allied himself with Zion, with whom we maintain a strict truce. This will make it difficult, but not impossible, to move against him. Certain plans that I cannot yet reveal are underway with respect to this goal.
+
+But there is a much more...accessible target available. The Demon Army gang attempted to hinder our operation. You will proceed to their self-described "turf," Tabor Park, locate their leader, Mammon, and delete him.</briefing>
+    <enter><say>We had a report of a Demon Army sighting in that building. It's up to you to get some information out of them about Mammon's location.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill the Demon Army member" type="Defeat" npc="1">
+      <done><say>That one was carrying some interesting code. See what they've got.</say></done>
+    </objective>
+    <objective goal="2" text="Get the encrypted code from the Demon Army member" type="Loot" npc="1" item="6787">
+      <done><say>Encrypted data... They might have the decryption routine there somewhere. See if you can locate a computer system.</say></done>
+    </objective>
+    <objective goal="3" text="Decrypt the code at the computer" type="Use" object="1" after="2">
+      <done><say>Some data's coming up on that computer. Scan it for me.</say></done>
+    </objective>
+    <complete><say>Cacophony I recognize; the rest of that is pretty cryptic. Let's go see what Gray can make of it.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That is an easily explained message, operative. "Cacophony," as you will no doubt recall, was the code-name you found used by the thieves to refer to their employer. The Oracle guessed that "Cacophony" was, in fact, the General; and she happened to be correct, as our operatives would prove.
+
+"Darago" was the individual found carrying the evidence, assisted by Demon Army members. He was detected by one of our operatives, pursued across the city by our forces, and ultimately deleted by another of our operatives, with the help of many others.
+
+The last name given, Robin, must be the individual carrying payment to the Demon Army for their services rendered to Darago. He is known Exile scum, working for the highest bidder. Question him concerning Mammon.</briefing>
+    <enter><say>I've got a couple Exile signals in there.</say></enter>
+    <objective goal="1" text="Question Robin" type="Talk" npc="2">
+      <talk><say npc="2">Who do you think you are? I ain't done no-- Agent Gray? Ohhhh crud. Oh no. No no nononono.
+
+L-look, I pick up a package from one spot, and deliver it to another. That's all I know. You want the package and the location? Good, good! I never wanted 'em! But a program's gotta make a living somehow, right? H-here, just take the damn things!</say></talk>
+      <done><say>Eesh. Get the package and the location notes from him. I hope he didn't rub too much scum off on them.</say></done>
+    </objective>
+    <objective goal="2" text="Get the package from Robin" type="Get" npc="2" item="6817" after="1">
+      <talk><say npc="2">Take them! Just take them already!</say></talk>
+    </objective>
+    <objective goal="3" text="Get the location notes from Robin" type="Get" npc="2" item="6855" after="2">
+      <done><say>Ooh, that's a nice little chunk of encrypted $info, if I remember my crypto class. You'd better upload both of those items to me at a hardline.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the package at a hardline" type="Upload" item="6817" after="3" />
+    <objective goal="5" text="Upload the location notes at a hardline" type="Upload" item="6855" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You are operating at a high rate of efficiency, {player}.
+
+We calculate a 93.76% chance that Mammon will be present at the location marked on Robin's orders. Based on what we saw during the operation against Darago, he will almost certainly have a large group of Demon Army programs with him.
+
+In consideration of the likely opposition, we are providing you with backup units. Report to the location indicated and meet with our liaison.</briefing>
+    <enter>
+      <say>I've got some high-powered programs in there. I love it when Gray lets us play with his toys.</say>
+      <say>Oh baby, the code stream just got cranked up to "Smokin'"! Doth mine eyes deceive me, or is Agent Pace in there? Now that's my kind of liaison.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Ah, tesoro. I've been looking forward to seeing you. Louis Bonner and Leopoldon Royal are at your disposal for this operation. They will aid you in Mammon's deletion, but please, be careful. We wouldn't want a human of your abilities damaged over such a trivial matter as this rogue gang leader.</say></talk>
+      <done><say>I wonder if Gray would mind if we just hung out with Pace for a while?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Tabor Park">
+    <briefing>It took slightly longer than projected to complete that phase of the mission, operative. Are you functioning at optimal levels?
+
+Proceed to the indicated area and delete Mammon. Additionally, we request that you delete any of his Demon Army programs that you encounter in the area.</briefing>
+    <enter><say>I've got some beefy Exile programs in there. They match the usual Demon Army profile, only quite a bit tougher. Except for one--that's probably Mammon. Wonder how he keeps the stronger programs under his control...</say></enter>
+    <objective goal="1" text="Confront Mammon" type="Talk" npc="6" optional="1">
+      <done><say npc="6">You shall die a thousand times for this impertinence, unbeliever!</say></done>
+    </objective>
+    <objective goal="2" text="Kill Mammon" type="Defeat" npc="6">
+      <done><say>One deleted Mammon: check.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the Demon Army programs" type="DefeatAll" />
+  </phase>
+  <finish>Our thanks, {player}. That should serve to...dissuade any other Exile groups who may have been considering direct acts of civil disobedience. The System will not tolerate such disruptions.
+
+It is unfortunate that Mammon and his cohorts successfully aided in the original theft of the case. We assure you that appropriate countermeasures are being taken to ensure the stability of the Matrix.</finish>
+</mission>

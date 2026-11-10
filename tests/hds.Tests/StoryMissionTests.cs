@@ -135,6 +135,13 @@ public class StoryMissionTests
             Assert.NotEmpty(phase.missionObjectives);
             Assert.Equal(phase.missionObjectives.Count, phase.missionObjectives.Select(o => o.goal).Distinct().Count());
             Assert.Equal(phase.objects.Count, phase.objects.Select(o => o.id).Distinct().Count());
+            foreach (MissionTrigger trigger in phase.triggers.Where(t => t.npcId != 0))
+            {
+                MissionNpc? near = mission.npcs.Find(n => n.id == trigger.npcId);
+                Assert.True(near != null && (!mission.generated || near.at == p + 1 || FollowsInto(mission, near.id, p)),
+                    where + ": a near trigger follows NPC " + trigger.npcId + ", who isn't in this phase");
+            }
+
             foreach (MissionObjectDef obj in phase.objects)
             {
                 Assert.Contains(obj.kind, ObjectKinds);
