@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Execute, Machines story mission 8.2.5. Source: research/missions/transcripts/Mach8-2-5.md (the archive replay of
+     [Machine Archive 8.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective text "Talk to Agent
+     Gray", and the names Agent Pace, Veil, Jason Westwater, Agent Brown, Dusty Haacke, Danielle Wright, Agent Gray,
+     Agent Norris and Zion Gunman. The field "Agent Gray" of the third phase is an NPC of his own, not the contact.
+     Gray called the player "Mr. Argento"; that is {player}, also in the Operator's joke at the end. Italics are plain
+     text. Ours: the description (the Summary tab was never opened), the other objective texts, the sites (Wright's
+     conference room and the Zion terminal's room are Office; Pace's and Gray's locations are unnamed: Normal),
+     Kedemoth for the second and last phases (the maps there), the looks and the enemy count. The Zionites at the
+     terminal are enemy Zion. Item stand-in: the virus disk is Virus (6786). Rewards: 385,000 experience and 63,000
+     information, shown on completing this mission.
+     Gaps: Pace's "these two" are taken to be Jason Westwater and Dusty Haacke, who spoke at Wright's location
+     afterwards ("Quite satisfactory.", and "Still looking." in Team chat); they are led out of Pace's site and follow
+     the player from then on, but we have no allies that fight. Pace sent them to "eliminate her security", but the
+     Operator found none, so Wright's phase has no fight. Wright was killed by Sentinels in the Real once the trace
+     ran; here talking to her (being in close range) ends the phase and she stays standing. Her computer, hacked in
+     retail with no goal shown, isn't built. At the Zion terminal the Operator opened a second terminal in another
+     room and more Zionites arrived, but the player hacked the terminal directly; here the terminal is checked, then
+     the disk is put into it, and the reinforcements are left out. Veil's first line is said until Pace has been
+     talked to, then her second; the other bystanders have one line each. -->
+<mission id="208205" title="Execute" description="Trace Danielle Wright through her RSI and deliver a virus to the Zion mainframe." plot="1"
+         order="8205" org="2" contact="Agent Gray" exp="385000" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say>Hurry, tesoro. Do not let her escape.</say>
+  </npc>
+  <npc id="2" handle="Jason Westwater" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say>A sweep of the full surface area would not be efficient.</say>
+  </npc>
+  <npc id="3" handle="Dusty Haacke" type="FRIENDLY" at="1" rsi="38000024" weapon="2568">
+    <say>Instructions?</say>
+    <say after="2">Still looking.</say>
+  </npc>
+  <npc id="4" handle="Veil" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say display="5">Of course, honey. We've done this kind of thing before, you know. And the other diversion is all set, so don't you worry about a thing.</say>
+    <say display="5" after="1">Oh, I do wish I could be there when it all comes crashing down.</say>
+  </npc>
+  <npc id="5" handle="Agent Brown" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">The redpill herself is only the means to the end: the Zion mainframe.</say>
+  </npc>
+  <npc id="6" handle="Danielle Wright" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say>Our plan depends upon your success.</say>
+  </npc>
+  <npc id="8" handle="Agent Norris" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Virus departure to target terminal imminent.</say>
+  </npc>
+  <npc id="9" handle="Zion Gunman" type="HOSTILE" at="4" rsi="050100b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, with information obtained from the Exile, Silver, we have been able to trace Danielle Wright's signal in the Matrix. Agent Pace will have instructions for you.</briefing>
+    <enter><say>Pace is in there, and some of our programs.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Analysis of her unique signal has already shown us that Wright must broadcast from an outpost near the surface, somewhere above Zion. But now that we have detected her in the simulation, you can obtain a much more direct trace for us through her RSI, Brando.
+
+Take these two, eliminate her security, and reach Wright herself. Once you are within close range, our scan will do the rest.</say></talk>
+      <done><say>Cool, some bullet-catchers.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Jason Westwater and Dusty Haacke out of the area" type="Escort" npc="2,3" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>Reach her before she can leave the simulation, operative. Sentinels on standby at the surface will close on Wright's jack-in location as soon as the signal backtrace from her RSI has run. She will have no avenue of escape.</briefing>
+    <enter><say>Uh-oh. I've got just one signal in there--a redpill. It looks like hers, but if she doesn't have her security team around...she must have some other defense, right? I'll keep scanning.</say></enter>
+    <objective goal="1" text="Talk to Danielle Wright" type="Talk" npc="6">
+      <talk>
+        <say>There she is! And there goes the Machine trace... They'll be moving in on her in the Real now...
+
+That is her, isn't it? Why isn't she running, or... And I still got no security or anything on the screen here.</say>
+        <say npc="6">I didn't think it would take so many--</say>
+      </talk>
+      <done>
+        <say>Signal's dead. The Sentinels must've got her. They sure didn't waste time. I thought they might've wanted her alive to get the mainframe info, but...I guess not. I'll check with Gray.</say>
+        <say npc="2">Quite satisfactory.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Wright's connection to the Zion mainframe utilizes a custom interface device in her surface lab, {player}. With the mainframe location and configuration data we acquired by exploiting Zion's old red pill trace program, we were able to recognize the nature of the device immediately. Wright herself was no longer necessary, so her body was terminated by Sentinels. She is no longer a threat to the simulation.
+
+Her interface device does not connect directly to the mainframe, however, so your services are required for one further task. Please proceed to my location.</briefing>
+    <enter><say>Man, what could it be now? Is Wright still gonna give us problems even after she's dead?</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Get" npc="7" item="6786">
+      <talk><say npc="7">Wright's device opens a connection to Zion's mainframe at an algorithmically determined Zion terminal within the Matrix--a different connection location each time. This is why her access over the years was not discovered by Zion. An elegant solution.
+
+This disk holds a unique computer virus. Once the disk is inserted into the terminal accessed by Wright's device, the virus will enter the Zion mainframe.</say></talk>
+      <done>
+        <say>Sounds good to me.</say>
+        <say>Let's bring it home, daddy!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4" neighbourhoods="Kedemoth">
+    <briefing>Should you fail to upload the virus, operative, another mainframe connection can be established using Wright's device. However, this would threaten synchronization with considerable forces prepared for deployment against Zion. A delay would be...regrettable. Is this understood?</briefing>
+    <enter><say>I've got Zionites in there, and I'm pretty sure that lovely string of code I see there is the connection to Zion's mainframe.
+
+Time to show Gray how the pros deliver.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Zionites" type="DefeatAll" />
+    <objective goal="2" text="Check the Zion terminal" type="Use" object="1">
+      <done>
+        <say>You're getting close to the terminal. Looks like they've got it secured...just a simple alphanum keycheck. Lemme see if I can do anything about that.</say>
+        <say>I got through to a terminal in another room. If you can get to that one, you should be able to enable access from there.
+
+Hm... They might have noticed that; I'm picking up more redpill signals now. Oops.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Insert the virus disk into the Zion terminal" type="Put" object="1" item="6786" after="2">
+      <done>
+        <say>...Or you could just hack it yourself. Nice.
+
+Down the chute, man. Straight to Zion.</say>
+        <say>'So what do you want to do today, Agent Gray?'
+
+Destroy the Zion mainframe, {player}.
+
+'Don't mind if we do!'</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Initial data returned from the virus is within expected parameters. Execution within Zion's mainframe will follow shortly.
+
+You will be pleased to know that with confirmation of your delivery of the virus, Sentinels have begun converging on Zion. Sabotage, and the viral attack on their mainframe, will leave their physical defenses in disarray.
+
+The city of Zion, {player}, is about to be destroyed.</finish>
+</mission>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dream Compilation, Machines story mission 8.3.1. Source: research/missions/transcripts/Mach8-3-1.md (the archive
+     replay of [Machine Archive 8.3.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Gray (met in
+     person twice, a field NPC with that handle), Agent Norris, Agent Pace, Chery Roberts, Stan Du Pre, Galen Imray,
+     Agent Stewart and Morpheus. Gray called the player "Mr. Argento"; that is {player}. The first Operator entry was
+     one log entry (a remark and the arrival line); it is said on arrival. Ours: the description (the Summary tab was
+     never opened), every objective text (only "Leave the area now!" was seen), the sites (the Zion facility is a Zion
+     outpost; Pace's lab and the last room, an office with a whiteboard in Zia, are offices; the first is unnamed:
+     Normal), the looks and sexes of the lab staff (the log never says), and the enemy count at the Zion facility
+     ("unregistered redpill and network signals"; no fight was logged). Item stand-in: the recorded Morpheus data is
+     Recording (6784). Rewards: 385,000 experience and 63,000 information, shown on completing this mission.
+     Gaps: Agent Gray is met at the first site and again in the last room; he isn't led between them, so he is placed
+     in both. The Operator's "Ah, I think I see the recorded data we're after" came a while into the Zion facility;
+     ours says it when its Zionites are dead, and the computer opens then. The Operator's "Is good?" came just before
+     Pace spoke; it is said when the data is handed over. In the last room Agent Stewart ran the program each time the
+     simulacrum was talked to; here his "Running program." follows the talk to Gray and his "executed" line comes
+     before the simulacrum's first reply. NPC lines can't wait for a goal of a later phase whose number an earlier
+     phase already used, so the simulacrum's second reply, Gray's "Talk to the simulacrum" and Stewart's line are
+     said whenever they are talked to outside a goal. The last room's computer (a status report on Exile Incidence
+     5.991 naming real players) had no goal and isn't built. -->
+<mission id="208301" title="Dream Compilation" description="Gather Zion's records of Morpheus for a simulacrum that can unlock the captured RSI archive." plot="1"
+         order="8301" org="2" contact="Agent Gray" exp="385000" info="63000">
+  <npc id="1" handle="Agent Gray" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say after="1">Zion has been unable to locate their Commander Lock since the attack on Zion, where he was present at the time. Our searches of the area and its surroundings have not located him; it is most likely that he was obliterated in the explosion that destroyed their command center. The loss of their top military official will cause additional consternation and disorganization among Zion's remaining forces.</say>
+  </npc>
+  <npc id="2" handle="Agent Norris" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">Cypherite operatives were responsible for two primary surprise attacks: a commandeered hovercraft rammed and damaged Zion's dock gate, and, shortly thereafter, the Cypherite operative "silenci0" infiltrated Zion's command and control facility, detonating an explosive device that destroyed the structure.
+
+Coupled with our viral attack on their mainframe, these attacks effectively eliminated any measurable resistance to our Sentinels. This sixth capture of Zion was by far our most efficient.</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="4" handle="Chery Roberts" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say display="5">Would you care for some coffee?</say>
+  </npc>
+  <npc id="5" handle="Stan Du Pre" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">No, no... Just doesn't add up. Awareness-order consciousness requires the instantiated avatar for referential extrapolation...</say>
+  </npc>
+  <npc id="6" handle="Galen Imray" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">Simulating the grosser functions and reactions, based on the subject's recorded details, is simple enough, and the synthesis of these provides a rough pattern for neural structure, but achieving a simulation of what is called "personality"--those inefficient and irrelevant individual differences in human thought processes--requires significant amounts of data if high levels of accuracy are required.</say>
+  </npc>
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>Talk to the simulacrum please, {player}.</say>
+  </npc>
+  <npc id="8" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>The program has executed within the designated parameters.</say>
+  </npc>
+  <npc id="9" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say>Fine...but we can't wait too long... Why haven't they... Zion refuses to fight... Even if I am said to be dead.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, know that we have succeeded in destroying the city of Zion. Surviving Zionite forces have retreated to their new city, leaving our Sentinels in full command of the entire area around the old city. The work of finding and eliminating any remaining hostiles in the area continues at a satisfactory pace.
+
+Simultaneous with the destruction of the city, another success was achieved, which may prove even more important than the physical conquest of Zion. Our virus that struck Zion's mainframe succeeded in preserving some of their remaining stored data from their emergency shutdown sequence. The potential usefulness of this data is high. I will explain more fully in person. Please meet me at the location indicated.</briefing>
+    <enter><say>Wow. I almost didn't think it could happen, but...man. No more raves in those caves for Zion.
+
+Okay, Agent Gray's in there waiting for you. No hostiles, blips, or bogeys in sight.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="1">
+      <talk><say npc="1">We captured an archived database of operative RSI signatures from Zion's mainframe. The database is three years old; however, the signatures would allow us to track and lock the broadcast signals of those operatives who are still active with Zion. It is likely that the signatures would also allow us to access many of Zion's supposedly secured areas within the simulation.
+
+The archive, however, is encrypted with a neural pattern lock, responding only to the brainwave activity of one of the individuals who "signed" the encryption: Zion's Commander Lock, or Captain Morpheus. Lock cannot jack-in, and, furthermore, his current whereabouts are unknown even to Zion; and Morpheus is dead. However, extant records of Morpheus will allow us to construct a simulated version. You will gather some necessary additional data from Zion.</say></talk>
+      <done><say>Morpheus again? Sheesh.</say></done>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="3">
+    <briefing>Our own data on Morpheus is considerable, but insufficient for constructing a simulacrum of the cerebral complexity necessary to break the captured archive's neural encryption.
+
+The Exile known as "The General" constructed a simulacrum based in part on the deceased terrorist. This program, however, is not sufficiently...cooperative, and cannot be forced in this case, because matching the patterns expected by the encryption scheme requires duplicating the relatively relaxed mental state of the individual at the time they signed the encryption with their neural pattern.
+
+Despite federal regulations forbidding their possession, Zion has maintained records of Morpheus and other operatives for training purposes. You will capture this data from the indicated Zion facility.</briefing>
+    <enter><say>Pish! Something tells me Agent Smith should'da done more recording, and less unplugging, back when he had Morpheus captive.
+
+Let's see... I've got unregistered redpill and network signals in there. Seems about right.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Zionites" type="DefeatAll">
+      <done><say>Ah, I think I see the recorded data we're after. Check the computer in there.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Morpheus records from the computer" type="Search" object="1" item="6784" after="1">
+      <done><say>That's it. Get that outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Your progress is adequate, operative. Convey the recorded data to Agent Pace at the lab facility marked on your route display.</briefing>
+    <enter><say>Ya know, it is kind of like we're stealing memories, isn't it? I mean, once all the recorded appearances of Morpheus are gone, and the people who knew him are killed...well, that's pretty much the end of it, huh? Then at most he's sort of a vague legend, like, uh...Paul Bunyan or something.
+
+That'd be the lab where you're meeting Pace. You'll have to save her from being bored to death by the eggheads. Although, she probably goes for the brainy type. That would just figure...</say></enter>
+    <objective goal="1" text="Give the Morpheus records to Agent Pace" type="Give" npc="3" item="6784">
+      <done>
+        <say>Is good?</say>
+        <say npc="3">Ciao, tesoro! Ah, the additional Morpheus data, yes? Grazie.
+
+Our simulacrum of him is progressing satisfactorily. It is...mm...not complete, but all we need it to do is approximate his brainwave function very briefly, to fool the encryption scheme on the RSI database we captured.
+
+We will have this data you have brought compiled into his logic routines very shortly. Would you care to join Agent Gray for its initial inspection?</say>
+        <say>Back to Gray, then.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Zia">
+    <briefing>Allow me to remind you, operative, that although we welcome the high morale brought by achieving our goals, it is inefficient, and potentially hazardous, to allow the secretions of your glands to influence your behavior beyond what is absolutely necessary.
+
+And...{player}, please remind your operator to keep his unproductive speculation to himself.</briefing>
+    <enter><say>Sorry sir! Yes, sir!
+
+...
+
+I wonder if we've got Morph doing the "rabbit hole" bit. I always liked that one...</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="7">
+      <talk><say npc="7">Welcome, operative. Your input will be useful in evaluating the accuracy of this new program in simulating the distinctly human responses of its model. It is being initialized now.</say></talk>
+      <done>
+        <say>Huh. Good visual likeness...</say>
+        <say npc="8">Running program.</say>
+        <say npc="7">Talk to the simulacrum please, {player}.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Morpheus" type="Talk" npc="9" after="1">
+      <talk>
+        <say npc="8">The program has executed within the designated parameters.</say>
+        <say npc="9">Neo did not give up on us, and I will not give up on him. ... His remains must be... The terrorist... Return him to Zion. His body?!</say>
+      </talk>
+      <done><say npc="7">Hm. It is functional. However, I see that the manner of its responses varies from the desired pattern. Possibly it will require further direction by humans in order to simulate Morpheus' neural activity with sufficient accuracy.</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, operative. Once the simulacrum is fully inspected, we will apply its neural pattern to the encryption on the captured RSI signature archive.</finish>
+</mission>

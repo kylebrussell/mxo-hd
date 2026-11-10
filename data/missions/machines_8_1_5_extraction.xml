@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Extraction, Machines story mission 8.1.5. Source: research/missions/transcripts/Mach8-1-5.md (the archive replay
+     of [Machine Archive 8.1.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Eliminate the
+     hostiles", "Get the Data from the Computer", "Give the Data to Agent Pace" and "Talk to Agent Pace" (last phase),
+     the names Navin Manohar, Agent Pace, Agent Miller, Hunter Leiden, Allan Allen, Agent Johns, Agent Marks, Zion
+     Gunman, Zion Guardian Patcher and Zion Martial Arts Initiate, and the Zionites' barks. The lines called the
+     player "Mr. Argento", "Brando" and "Evol"; that is {player}. Pace's "tesoro" is an endearment and stays. One line
+     of Pace's last speech was partly hidden at an image join; the best reading (nothing missing) is used. Ours: the
+     description (the Summary tab was never opened), the objective texts of the first two phases, the sites (Navin's
+     apartment: SlumApt; the extraction point was a run-down apartment in Moriah Projects: SlumApt; the field office
+     in Tabor Park, as Gray and the minimap said: Office; Pace's monitoring place isn't shown: Normal), the looks and
+     the enemy counts. Hunter Leiden and Allan Allen are "our programs": a program look and a bluepill look. Item
+     stand-in: "the Data" is Data (6787). Rewards: 374,000 experience and 63,000 information, shown on completing this
+     mission.
+     Gaps: Pace's narration of the trace and override programs is all we have of that cinematic. Allan Allen and
+     Hunter Leiden "will assist you"; they follow the player out of Pace's place to the extraction point, but we have
+     no allies that fight. The time pressure (reach the point before Zion unplugs) had no timer shown and isn't built.
+     The Operator read "our boy Navin" at the extraction point, but he said nothing and had no goal there, so he isn't
+     placed again. At the field office retail's "Give the Data" and "Talk to Agent Pace" were done in one exchange;
+     here they are two talks, her long line first. -->
+<mission id="208105" title="Extraction" description="Let Zion extract a Machine-groomed double, then strike at their extraction point through his trace." plot="1"
+         order="8105" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Navin Manohar" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>No problem. I'd walk you down there, but I'm expecting visitors any minute now. I hope you find who you're looking for.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say>You must hurry, {player}.</say>
+  </npc>
+  <npc id="3" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Agent Pace is monitoring the operation.</say>
+  </npc>
+  <npc id="4" handle="Hunter Leiden" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568">
+    <say display="5">I have no significant response.</say>
+  </npc>
+  <npc id="5" handle="Allan Allen" type="FRIENDLY" at="2" rsi="35000024" weapon="2568">
+    <say display="5">Smoke?
+
+Huh... Too bad.</say>
+  </npc>
+  <npc id="6" handle="Zion Gunman" type="HOSTILE" at="3" rsi="d8040058" weapon="2568">
+    <say>Oh, crap!</say>
+  </npc>
+  <npc id="7" handle="Zion Guardian Patcher" type="HOSTILE" at="3" rsi="58010058" weapon="2568">
+    <say>Shut it down!</say>
+  </npc>
+  <npc id="8" handle="Zion Martial Arts Initiate" type="HOSTILE" at="3" rsi="c9020058" weapon="2568">
+    <say>What the hell?</say>
+  </npc>
+  <npc id="9" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
+  <npc id="10" handle="Agent Johns" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">The loss of Mr. Manohar is...regrettable. However, it serves a larger purpose.</say>
+  </npc>
+  <npc id="11" handle="Agent Marks" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say display="5">I caution you against overconfidence. Moderate your emotional response.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>{player}, the recruiting data we captured from Zion has made it possible for us to intercept and replace one of the humans they intend to extract from our pod system. This man's name is--or rather, was--Navin Manohar. Mr. Manohar has been terminated; a bluepill carefully groomed to resemble him has been put in his place. This man's mind has been partially overwritten by a special program.
+
+We will now allow Zion to attempt to extract our version of Mr. Manohar from the Matrix. He has been placed in the original Manohar's apartment. I would like you to check on his status quickly. Zion's recruiting team plans to take him to their extraction point soon.</briefing>
+    <enter><say>That's Navin's apartment complex. I'm reading our blue's signal in the apartment. No sign of the Zion team yet; better make this quick, though. And remember to look incognito.</say></enter>
+    <objective goal="1" text="Talk to Navin Manohar" type="Talk" npc="1">
+      <talk><say npc="1">Hello. Are you from... Oh, sorry. You must have the wrong apartment. If you call the number in the lobby, you can find whoever you're looking for in the automated index.</say></talk>
+      <done><say>He seems to be holding up. Place looks all right... I'd say we're solid. Let's notify Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Good. You may await with Agent Pace the progress of Mr. Manohar at the hands of Zion's extraction team. She will notify you when your assistance is required for the next step of the operation.</briefing>
+    <enter><say>Got a few of our programs in there. That blond one's gotta be Pace...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ah, {player}--one moment, per favore. The Zionites have given Navin the red pill. Their trace program is running, and is about to interface with our override program...
+
+There! Our program has locked their trace process, and is proceeding back through their systems. You must reach the extraction point and eliminate the Zionites before they identify the threat and unplug their systems. Allan Allen and Hunter Leiden will assist you.</say></talk>
+      <done><say>You heard the lady! Grab those guys and go!</say></done>
+    </objective>
+    <objective goal="2" text="Lead Allan Allen and Hunter Leiden out of the area" type="Escort" npc="5,4" to="exit" after="1" />
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="3" neighbourhoods="Moriah Projects">
+    <briefing>Eliminate the Zionites present, and obtain the data from their machine.</briefing>
+    <enter>
+      <say>Some weird signals bouncing around in there...but I'm reading our boy Navin, and some reds.</say>
+      <say>Groovy. Looks like we got there in time.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That got the red out.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Data from the Computer" type="Search" object="1" item="6787" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Return the data to Agent Pace at our Tabor Park field office.</briefing>
+    <enter><say>Ah, I like that place. They really should invite us in more often.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="9">
+      <talk><say npc="9">Magnifico, {player}. The program implanted in our Navin, unwittingly triggered by Zion when they attempted to extract him, exploited a vulnerability in their trace program, gaining access to their systems which, during the critical portion of the extraction procedure, rely on data processed and returned by Zion's core server farm.
+
+Although the interface to that system is protected, an analysis of the feedback data you retrieved should give us vital information on its location and configuration. {player}, this data could be the key to the Zion Mainframe.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the Data to Agent Pace" type="Give" npc="9" item="6787">
+      <talk><say npc="9">You have done very well, tesoro. If there is...anything I can do for you as System Liaison, do not hesitate to ask.</say></talk>
+    </objective>
+  </phase>
+  <finish>While access to Zion's mainframe system would allow us to nullify their offensive capabilities almost immediately, obtaining such access is by no means assured. Further data is required.
+
+Measurable progress against Zionite forces and systems continues to be made, however, and you have played no small part in this, {player}. The System benefits significantly from your continued support.</finish>
+</mission>

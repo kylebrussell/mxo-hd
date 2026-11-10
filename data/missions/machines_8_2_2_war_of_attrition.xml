@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- War of Attrition, Machines story mission 8.2.2. Source: research/missions/transcripts/Mach8-2-2.md (the archive
+     replay of [Machine Archive 8.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Corey Bailie, Cindie
+     Hargreaves, Clifton Schaeffer, Graciela Hungerford, Holographic Projection, The Auditor and Machine Mechanic. Gray
+     called the player "Mr. Argento"; that is {player}. Corey Bailie's "What're you gonna to about it?" is read as
+     "gonna do". Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was
+     never opened), the sites (the landlord's property is an apartment: SlumApt; the others are unnamed: Normal), Tabor
+     Park for the last phase (the player entered Tabor Park just before the mission ended), the looks and the enemy
+     count. The Exiles who killed the police squad are Merovingian. Rewards: 384,825 experience and 63,000
+     information, shown on completing this mission.
+     Gaps: the hardline junction box isn't a known object; it is a Computer here. The Operator's "definitely
+     malfunctioning" line came on reaching the box and "Looks like that did the trick" once it was fixed, so the box is
+     checked and then fixed (two Use goals on the one object). The Holographic Projection appeared at the box only
+     after the fix; here it stands there from the start and its talk opens after the fix. Graciela Hungerford's second
+     line wasn't captured. Gray's closing words came as one long entry (or two: no header was visible between them)
+     too long for one line, so the first paragraph is said when the last phase's goals are done and the second is the
+     closing line. The two Machine Mechanics each say one of the two lines seen in Team chat. -->
+<mission id="208202" title="War of Attrition" description="Investigate a rash of utility failures and gang attacks across the city." plot="1"
+         order="8202" org="2" contact="Agent Gray" exp="384825" info="63000">
+  <npc id="1" handle="Corey Bailie" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>Well? What're you gonna do about it?</say>
+  </npc>
+  <npc id="2" handle="Cindie Hargreaves" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say display="5">Usually I drink tap water, but not now! Thank goodness I stocked up on Aqua Gulp.</say>
+  </npc>
+  <npc id="3" handle="Clifton Schaeffer" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">I've been working on these lines for twelve years, and I ain't never seen anything like this.</say>
+  </npc>
+  <npc id="4" handle="Graciela Hungerford" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say display="5">Actually, I get paid whether or not I fix it, so...whatever.</say>
+  </npc>
+  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
+  <npc id="6" handle="The Auditor" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>I am unable to conduct a more detailed analysis given the data at my disposal. I am certain that an audit of your own code records will enable you to identify the problem precisely.</say>
+  </npc>
+  <npc id="7" handle="Machine Mechanic" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say display="5">We have detected no attempt by the Merovingian to contact this program.</say>
+  </npc>
+  <npc id="8" handle="Machine Mechanic" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say display="5">This program's data access is restricted.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Operative, in the past week we have begun to record an alarming increase in utility and service failures across the city.
+
+You are being dispatched to investigate one of these incidents.</briefing>
+    <enter><say>Okay, I guess you're there to talk to this landlord guy about some kind of...plumbing problem he's been having.
+
+Man... Aren't there, like, specialists paid to do this kind of thing?</say></enter>
+    <objective goal="1" text="Talk to Corey Bailie" type="Talk" npc="1">
+      <talk><say npc="1">I tried the plumbers, man. I can't even get them to come in here now.
+
+First the water's all hot. Then it's all cold. Then it's off entirely. Then it's coming out in bursts, like machine-gun fire. You know? Rat-a-tat-tat!
+
+And it isn't just here! I've got three other properties, and they're all having problems. This is messed up, man. It's something upstream, and I expect the city to take care of it. I pay my property taxes, don't I?</say></talk>
+      <done><say>Hm... That is...pretty weird. Maybe there's a problem of some kind at the local water utility.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>I will have a team sent to check the utility's records, {player}.
+
+This past week has also seen a distinct rise in gang activity. Local authorities in some neighborhoods have been overwhelmed by heavily armed bands of thugs. Near your location, the police dispatcher has lost contact with a tactical police unit responding to one such report. You are to investigate immediately.</briefing>
+    <enter><say>At least it's a step up from plumbing.
+
+Mm-kay, let's see what we've got here... Uh... Okay, I see a lot of dead bluepill signals, and a lot of live Exile signals.
+
+I think I've got a guess as to why the team stopped answering the radio.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>Okay, nothin' but dead people and you in there now.
+
+Call me crazy, but I think a certain pattern is starting to appear here.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You may be interested to know, operative, that the water utility superintendent revealed, under interrogation, that the utility worker's union had persuaded him to look the other way while workers made unmonitored adjustments to equipment. This is being investigated further.
+
+The Exiles you found preying on the police squad match the profile of an underground group commonly found frequenting the Merovingian's Hel Club.
+
+I have yet another trouble report for you to investigate. Certain districts have begun to suffer from phone outages. A scan of the system reveals that the problem extends even to operative-tapped "hardline" networks, indicating that this cannot be a typical loss of service.</briefing>
+    <enter><say>Jeez, it's like the whole city's going to hell--no pun intended. I wouldn't be caught dead th-- Oh, never mind.
+
+I'm reading a couple bluepills in there--alive, this time--and some kind of... Oh, right. That's a hardline junction box.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Check the hardline junction box" type="Use" object="1">
+      <done><say>Okay, that hardline junction box is definitely malfunctioning. That's probably the cause of this outage.</say></done>
+    </objective>
+    <objective goal="2" text="Fix the hardline junction box" type="Use" object="1" after="1">
+      <done><say>Looks like that did the trick. Now if only--
+
+Oh, sweet Jiminy Christmas. This guy's worse than the Effectuator.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the Holographic Projection" type="Talk" npc="5" after="2">
+      <talk><say npc="5">Just a little skill I acquired a few years ago... I'm glad to see I haven't lost my touch.
+
+If there are any more public disturbances you require, operative, I'm sure you know who to call.</say></talk>
+      <done>
+        <say>Well, as if it wasn't completely obvious by now who was behind these problems... He does like to rub it in, doesn't he?</say>
+        <say npc="5">End transmission.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>I see. Yes, clearly the Merovingian is claiming responsibility for these disturbances, and the evidence appears to bear this claim out. It seems logical to conclude that this is his response to our recent attacks on his organization. While he cannot hope to defeat us in a direct confrontation, there are...other difficulties.
+
+Furthermore, there may be a more direct threat requiring our attention. The Auditor, who we have been monitoring since you confronted him a week ago, claims to have discovered a new problem in his latest code analysis. Since the matter appears to originate with other human operatives, I am sending you to take his report.</briefing>
+    <enter><say>Man, what more could go wrong today?
+
+The Auditor's in there, with a few of our people standing guard.</say></enter>
+    <objective goal="1" text="Talk to the Auditor" type="Talk" npc="6">
+      <talk><say npc="6">Ah, yes. Several page faults have appeared recently, with memory dump data of a new type. The faults are in pod energy generation control subroutine modules, and the data indicates source code of a unique Zionite/Machine synthesis, bearing marked similarities, however, to the "red pill" program used by Zion.
+
+In short, it appears that Zion is attempting to develop a new, more sophisticated red pill program. Why they would be pursuing such a thing, I can only speculate.</say></talk>
+      <done><say>A new red pill program? I don't suppose that would have anything to do with us having used their old one to get close to their mainframe?
+
+Useful guy, that Auditor. I can see why the Merv likes him. I say we keep him around.</say></done>
+    </objective>
+    <complete>
+      <say contact="1">A full analysis of our own data will begin immediately. As we are able to exploit a vulnerability in Zion's current red pill program, it is in our interest to prevent Zion from devising a replacement. Furthermore, the report of code synthesized from Zion and Machine elements is...disturbing. Zion was not thought capable of compiling such a code.</say>
+    </complete>
+  </phase>
+  <finish>Our operation against the Merovingian must be put on hold, at least until a more efficient way of damaging his organization can be found. The demand for resources to end the conflict with Zion is high, and...exploration of the extent of their new city is proving costly. Sentinel groups sent to scout New Zion continue to be lost to uncharted EMP charges. At this time we do not have forces available to continue a widespread search for the fleet under the Merovingian's control. However, surface facilities within his short-term range have sufficient defenses to repel an attack. As a military force, his threat is negligible.</finish>
+</mission>

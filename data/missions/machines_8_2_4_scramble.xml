@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scramble, Machines story mission 8.2.4. Source: research/missions/transcripts/Mach8-2-4.md (the archive replay of
+     [Machine Archive 8.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective text "Search the area",
+     the names Hector Hendrix, JC Uhrich, Elite Guard and Nightmare, and the barks "Well, looky what we've got here!" and
+     "No! Silver said no". A word may be missing after "Rumors," in the first arrival line (a line was cut off between
+     two screenshots); it is read as it stands. Ours: the description (the Summary tab was never opened), the other
+     objective texts, the sites (the Wright branch office and the Argent Biometrics office are Office, the Lemone
+     warehouse is Warehouse, the last is unnamed: Normal), the neighbourhoods (Tabor Park for the first two, from the
+     maps; Lemone, where Gray says the company's warehouses are; Camon Heights for the last, from the map), the looks
+     and the enemy counts. The company that came for the player at the Wright office isn't named: Wright's security, as
+     in 8.2.3, enemy Zion. Silver's Exiles are Merovingian. Item stand-in: the gross package at the warehouse (its name
+     never shown) is Package (6817). Rewards: 385,000 experience and 63,000 information, shown on completing this
+     mission.
+     Gaps: the Wright office's three secured terminals were one "Search the area"; here they are three Search goals,
+     each called "Search the area" and opened by the one before, so the Objectives window shows one at a time. Each
+     Operator line on finding a terminal is said with the one after its hack. The "little more company" that turned up
+     as the player left can't arrive later, so a few hostiles are there from the start. 16 minutes of the log are
+     missing after that phase; Gray's line about Argent Biometrics is the next briefing. Hector Hendrix turned hostile
+     when his e-mail was read; here he stays friendly and says "Hey! That's my e-mail!" when the computer is searched,
+     after JC Uhrich's "You got no right!" (Team chat only). In the last phase Nightmare lay dead on the floor and the
+     computer was the "weird signal from the Exile"; Nightmare and an Elite Guard are named hostiles, and the
+     computer's search opens once the Exiles are dead. -->
+<mission id="208204" title="Scramble" description="Search Wright Research's business dealings for the origin of her signal's encryption." plot="1"
+         order="8204" org="2" contact="Agent Gray" exp="385000" info="63000">
+  <npc id="1" handle="Hector Hendrix" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>This is a private office!</say>
+  </npc>
+  <npc id="2" handle="JC Uhrich" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">What the hell?</say>
+  </npc>
+  <npc id="3" handle="Elite Guard" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Well, looky what we've got here!</say>
+  </npc>
+  <npc id="4" handle="Nightmare" type="HOSTILE" at="4" rsi="c6020058" weapon="2568">
+    <say>No! Silver said no--</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Tabor Park">
+    <briefing>Operative, in attempting to identify the location from which Danielle Wright accesses the Matrix, we were foiled in part by the signal's unique encoding: it utilized real-time variable encryption of an order not known to be possible in human broadcast signals.
+
+While Wright herself is known to have some ability in network interface programming, the biological aspect of the interface would have posed the most significant hurdle. Given that this technology is highly exclusive--exclusive enough that we were not previously aware of it--a search of Wright's business dealings of the past several years may reveal its origin.
+
+This search will require accessing secure files from within a Wright facility.</briefing>
+    <enter><say>Since Wright vanished a few days ago-- What, you didn't hear about that? Oh, yeah, well, she told off Zion--said something about how the Matrix should be left intact--and hasn't been seen since.
+
+Anyway, her company's been in something of an uproar. Rumors, media frenzy, et cetera... The upshot is that the confusion might end up working to our advantage. For instance...I'm hardly picking up a soul in there right now.
+
+You need to find some kind of way to get into her business records from that Wright branch office, and see what you can come up with on the subject of variable encryption and biological interfaces.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>Hm. That terminal appears to be secured. This might not be as easy as I'd hoped.</say>
+        <say>Dang.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Search" object="2" item="0" after="1">
+      <done>
+        <say>Another secured terminal? Uh-oh.</say>
+        <say>Well, that was no help.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Search the area" type="Search" object="3" item="0" after="2">
+      <done>
+        <say>Geez, a third locked workstation. And...uh, who is that?</say>
+        <say>Um... Oh.
+
+Well, I said the confusion would help, didn't I?
+
+By the way, it looks like you've just earned yourself a little more company. Careful on your way out.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Argent Biometrics is less than three years old--a small bio-research company with few known clients, and a record of steady quarter-end losses.
+
+It is not likely that such a company could be responsible for the technology in question. It is possible that you have received incorrect information.</briefing>
+    <enter><say>Someone's up to some damn thing, I know that, and I am not happy about it.
+
+Sorry, that Wright network's just got me in a mood.
+
+I'm reading a computer, and a couple bluepills in there. Doesn't look like much.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say npc="2">You got no right!</say>
+        <say>A warehouse? That's it?
+
+How does a company like that stay in business?</say>
+        <say npc="1">Hey! That's my e-mail!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Machines" enemies="0" neighbourhoods="Lemone">
+    <briefing>Lemone Warehouse King owns warehouse facilities throughout the city, but primarily in the Lemone neighborhood in Richland.
+
+Although the company owns many square feet of storage space, their posted profits are miniscule. The original owner was imprisoned a year ago on racketeering charges, but was found dead in his cell prior to arraignment.</briefing>
+    <enter><say>I'm telling you, something stinks about this whole setup! That network shutdown at Wright, that psycho at the Argent office... And now we're stuck in a frickin' Lemone-owned dump, for crying out loud!
+
+Well, I just don't like it.
+
+That place is absolutely deserted: no guards. There's some kind of... Oh, I think that's probably a dead rat.
+
+Figures.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="6817">
+      <done><say>Oh! Oh, that is just gross!
+
+Man, I mean really. What kind of sick...
+
+Hey, is there an address on that thing?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>The...package you found was addressed from Camon Heights.
+
+While this line of investigation does not appear to be promising, you may as well follow it to its logical conclusion.
+
+Incidentally, operative, you may be pleased to know that the power line sabotage attempt by E Pluribus Neo to which the General alluded recently was successfully countered.</briefing>
+    <enter><say>Whoa! Hold up. That place is crawling with Exile signals.
+
+Didn't I say something was fishy about this whole thing?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>Hm... Getting some kind of weird signal from the Exile in there.</say></done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0" after="1">
+      <done><say>Silver! Silver's the Exile who likes to think he controls Camon. He's a crackpot inventor, always dissecting stuff...
+
+Hang on. Isn't there that old rumor about Silver having something to do with Wright Research? I could swear we saw something about that on the internet once. We thought it had to be bogus, because it also said Wright was in Tabor, and Silver in Achan...</say></done>
+    </objective>
+  </phase>
+  <finish>Silver. Hm. That Exile is known to dabble in unusual biological experiments. If he was involved in devising Wright's broadcast encryption, then he may know of a way to track it to its origin, or even hack the signal itself.
+
+It would simply be a matter of finding him, and getting him to talk.
+
+It is unlikely that she would have shared any means of accessing the Zion mainframe with him, but that information we can obtain from her--once we locate her jack-in location.</finish>
+</mission>
