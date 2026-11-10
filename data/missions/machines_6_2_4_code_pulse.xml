@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Code Pulse, Machines story mission 6.2.4. Source: research/missions/transcripts/Mach6-2-4.md (the archive replay
+     of [Machine Archive 6.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the Team chat lines of the
+     Cypherites and the E Pluribus Neo fighters, the objective texts "Get the Data", "Terminate all hostiles" and
+     "Upload the Device at a hardline", and the names Cryptos, Yed, Rabbit, Cypherite Network Hacker, Cypherite SMG
+     Specialist, E Pluribus Neo Crusader and E Pluribus Neo Fighter. Gray called the player "Mr. Argento" and Cryptos
+     used the player's handle; both are {player}. Ours: the description (the Summary tab was never opened), the other
+     objective texts, the sites (the EPN terminal and the trace target are in Tabor Park, the trace target an office
+     with cubicles; Cryptos' place isn't described: Normal), the looks and the enemy counts (retail's trace target held
+     13 EPN; here 5 plus two named). E Pluribus Neo are redpill terrorists from Zion: Zion. The Cypherites are
+     friendly. Item stand-ins: the data dump is Data (6787), the compiled "Code Pulse Device" is Device (6820).
+     Rewards: 362,670 experience and 59,500 information, shown on completing this mission.
+     Gaps: retail's terminal first showed a trace and a network reconstruction ("Data compiled successfully."), then
+     gave the data; here the terminal is examined (a Hack) and then searched for the data, and its screen can't be
+     shown. The Operator's "There's the terminal" came on reaching it; here it is said on arrival. The Cypherite
+     Network Hacker and SMG Specialist spoke in Team chat during the fight at the terminal, so they stand there as
+     friendlies, but we have no allies that fight. Cryptos stands in two places; each has its own Cryptos, since an
+     NPC is placed in one phase only. Rabbit and Yed followed the player from Cryptos to the trace target: here they
+     are led out of Cryptos' place once the data is handed over and stay with the player into the last phase. The
+     Code Pulse Device is looted from the named E Pluribus Neo Crusader; the Operator's two lines about it are said
+     together. The trace target's terminal wiped itself ("Formatting... Format complete."); it is a search that turns
+     up nothing. The part of the log after the fight (the upload) wasn't captured, so the upload has no line. -->
+<mission id="206204" title="Code Pulse" description="Follow the Cypherite leader Cryptos' lead to capture one of E Pluribus Neo's Code Pulse Devices." plot="1"
+         order="6204" org="2" contact="Agent Gray" exp="362670" info="59500">
+  <npc id="1" handle="Cryptos" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say>I will admit that we have tried to obtain one of the devices on our own, but have not been successful. We might have done it, perhaps, with a certain show of force, but we are always reluctant to mount operations that might unduly disturb the citizens of this fair city.</say>
+  </npc>
+  <npc id="2" handle="E Pluribus Neo Crusader" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>Hold them off! I've got to upload the data!</say>
+  </npc>
+  <npc id="3" handle="E Pluribus Neo Fighter" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+    <say>It's the Machines!</say>
+  </npc>
+  <npc id="4" handle="Cypherite Network Hacker" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say>EPN are becoming a real threat to the System. We're glad to help you get rid of them.</say>
+  </npc>
+  <npc id="5" handle="Cypherite SMG Specialist" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say>Sweet dreams.</say>
+  </npc>
+  <npc id="6" handle="Cryptos" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say>Good luck to you, {player}! I must say, I do admire your Machine efficiency!</say>
+  </npc>
+  <npc id="7" handle="Yed" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564">
+    <say>I'm sure.</say>
+    <say after="3">We'll make a Cypherite out of you yet.</say>
+  </npc>
+  <npc id="8" handle="Rabbit" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say>Howdy.</say>
+    <say after="3">That was nice--very nice.</say>
+  </npc>
+  <npc id="9" handle="E Pluribus Neo Crusader" type="HOSTILE" at="4" rsi="c9020058" weapon="2568">
+    <say>Stop them!</say>
+  </npc>
+  <npc id="10" handle="E Pluribus Neo Fighter" type="HOSTILE" at="4" rsi="58010058" weapon="2568">
+    <say>Working for the masked? Coward!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The Cypherites are still attempting to win our trust, {player}. You have been invited to meet with their leader, Cryptos. He claims to have information which may be useful to us.</briefing>
+    <enter><say>I'm reading some redpill signals in there. Should be Cryptos and his bunch.</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="1">
+      <talk><say npc="1">Ah, welcome, friend! I do indeed have some information that I think may prove of interest to you.
+
+E Pluribus Neo has recently come up with something they call a "Code Pulse Device." Not surprisingly, it looks like a small, timed bomb. When it detonates, it sends out a pulse of customized code that permeates the locality, and sends back data to certain receivers. They seem to believe that they can use these devices to wrest specific data out of the simulation.
+
+Whether or not these devices can do what they claim, I do not know, as they guard them very carefully. However, it occurred to me that you Machines may have the resources to capture one. I know where you can start looking. The relevant information will be uploaded to your operator.</say></talk>
+      <done><say>"Code Pulse Device"? Huh. Sounds like they could be a problem.
+
+I'm getting a data feed now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>The data Cryptos sent us includes coordinates of an EPN network terminal. Apparently, data pertaining to these "Code Pulse Devices" can be obtained there. Investigate.</briefing>
+    <enter>
+      <say>I've got some redpill signals in there; there's an active network port, too.</say>
+      <say>There's the terminal. I'm reading a data upload in progress.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Examine the terminal" type="Use" object="1">
+      <done><say>Looks like they just unloaded some data they didn't want us to find. Damn. Let's try reconstructing the network history. Hang on a sec...
+
+Okay. Grab the data dump from the computer.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Data" type="Search" object="1" item="6787" after="1">
+      <done><say>Bring that along with you. We should be able to use that data to find where they sent their precious file.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>{player}, the network history you recovered from that terminal can be used to trace the destination of the file they sent just before your arrival; however, such a trace requires familiarity with certain aspects of their network configuration. We do not have this knowledge.
+
+I have contacted Cryptos, who says that he can provide the necessary information.</briefing>
+    <enter><say>Cryptos sure is a handy guy when it comes to getting the skinny on E Pluribus Neo.</say></enter>
+    <objective goal="1" text="Give the Data to Cryptos" type="Give" npc="6" item="6787">
+      <talk><say>All right. Let's hear what he's got to tell us.</say></talk>
+      <done>
+        <say npc="6">Yes, we have built up something of a familiarity with the EPN networks, friend. Let me examine this data you've procured...
+
+Ah, indeed, this trace will lead us right to them. Why don't you take Rabbit and Yed here along with you? They'll help you steer clear of any mishaps. I'll send the routing data to your operator.</say>
+        <say>You're clear to bring those two outside. Cryptos' data feed is coming through now...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Rabbit and Yed out of the area" type="Escort" npc="7,8" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="5" neighbourhoods="Tabor Park">
+    <briefing>The trace target is marked. Terminate all hostiles and search the area.</briefing>
+    <enter><say>Somehow I get the feeling that Gray doesn't like EPNs so much...
+
+I've got a bunch of reds in there, and an active terminal. Looks like Cryptos was on the money again.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the Device from the E Pluribus Neo Crusader" type="Loot" npc="9" item="6820">
+      <done>
+        <say>That EPN has a strange piece of code on them. Haven't seen a signal quite like that before.</say>
+        <say>Oho! A suspiciously mysterious device. I think I know what that is. Get that uploaded at a hardline.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the terminal" type="Search" object="1" item="0">
+      <done><say>Hm, that machine's been wiped clean.</say></done>
+    </objective>
+    <objective goal="3" text="Terminate all hostiles" type="DefeatAll">
+      <done><say>You are EPN's new worst enemy.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the Device at a hardline" type="Upload" item="6820" after="1" />
+  </phase>
+  <finish>The program you recovered was a compiled "Code Pulse Device," {player}. A preliminary examination of its code indicates that Cryptos' assertions as to its capabilities may indeed have some basis in fact.
+
+The Cypherites thus far have proven themselves...useful. It is time to consider ways in which we can use them more effectively.</finish>
+</mission>

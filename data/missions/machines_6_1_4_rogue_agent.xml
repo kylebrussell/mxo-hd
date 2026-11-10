@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rogue Agent, Machines story mission 6.1.4. Source: research/missions/transcripts/Mach6-1-4.md (the archive replay
+     of [Machine Archive 6.1.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Agent Green line (Agent Green's second line,
+     the Unlimit Reactor's and the Tactical Security's were in chat), the names Agent Green, Unlimit Reactor and
+     Tactical Security, and the objective texts "Investigate the area" and "Search the second Computer". Gray called
+     the player "Mr. Argento" and the Operator used the player's handle; both are {player}. Ours: the description (the
+     Summary tab was never opened), the objective texts of phases 1 and 3, the sites (the second and last sites were a
+     computer room and an office of cubicles in Tabor Park: Offices there; the other two weren't shown: Normal), the
+     looks and the enemy counts. The Unlimit have no org of their own: Zion, as rogue redpills; the Tactical Security
+     programs Meillak hacked are Machine programs: Machines. Item: retail's "Caboclo Message 4" is the Letter (6793).
+     Rewards: 363,000 experience and 59,500 information, shown on completing this mission (the numbers were cut at the
+     chat panel's edge but match 6.1.1 and 6.1.3).
+     Gaps: at the first site Unlimit destroyed the simulacrum moments after the player arrived and the phase ended by
+     script; we can't destroy an NPC, so the simulacrum isn't placed, the Unlimit are there, and searching the area
+     ends the phase with the Operator's line (no kill goal, as retail had none). Gray's briefing and the Operator's line
+     at Agent Green's site each span a screenshot join where a line could be hidden. The terminated security guard and
+     the dead bystanders aren't placed: we have no dead bodies. Agent Green "freaking out" after his message is only his
+     second line; he stays friendly. Retail's last site listed no kill goal, so the hacked programs are there but need
+     not be killed; the Operator's "Damn, more hacked programs" is said on arrival. The computers' screens (Meillak's
+     note at the second site, his farewell letter on the last site's first terminal) can't be shown. The Operator
+     uploaded the Caboclo message on leaving; here searching the second computer gives it. -->
+<mission id="206104" title="Rogue Agent" description="Follow Meillak's trail of messages as Unlimit close in on him." plot="1"
+         order="6104" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Unlimit Reactor" type="HOSTILE" at="1" rsi="c9020058" weapon="2568">
+    <say>Deleted!</say>
+  </npc>
+  <npc id="2" handle="Agent Green" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say>You are not auth--auth--auth--auth--</say>
+  </npc>
+  <npc id="3" handle="Tactical Security" type="HOSTILE" at="4" rsi="8f080058" weapon="2568">
+    <say>Ca-bo-clo...</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>{player}, operatives in the field have extracted a code sample directly from Anome himself. Engineering of a kill code to terminate him is now underway.
+
+There is some question, however, of how it may be applied; Anome's appearances are highly unpredictable, and he is prone to unleashing his power upon anyone who comes within range. We project that the resources necessary to compile a copy of his kill code will be significant; in order not to place a dangerous drain on the System, a sure method of hitting the target with the kill code is required.
+
+If the statements of Anome's past written by Caboclo and released by the renegade Unlimit, Meillak, can be counted on, they may be leading up to some revelation that will suggest a delivery method. Meillak's latest bulletin board post has just appeared. Proceed now to the coordinates it contained.</briefing>
+    <enter><say>Man, this is getting down to the wire. I just hope Caboclo's story has a real twist ending.
+
+Let's see... I'm reading a simulacrum in there; it appears to be the same type as delivered the decryption key for Meillak's last message.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="0">
+      <done><say>Crap! Unlimit just fried the sim! Get out of there; we need to go to plan B... Uh... Whatever that is.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Operative, what Meillak has been carefully trying to avoid has obviously transpired: Unlimit has learned that he is providing us with the results of Caboclo's forbidden research into Anome's past. They will surely attempt to terminate him in order to prevent him from providing us with whatever remaining information he has.
+
+Meillak must have been monitoring his simulacrum, as he has just posted a second encoded bulletin board message, this time encrypted with the stronger encryption that he used once before. As usual, it contained coordinates, which I have uploaded to you. Proceed and investigate.</briefing>
+    <enter><say>Ouch; Meillak's between a rock and a hard place now: he obviously doesn't trust the Machines enough to turn himself in, but with his entire organization out for his blood, where's he gonna go?
+
+I'm reading an active computer system in there, and--ew--one terminated security guard. This really is getting messy.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="0">
+      <done><say>Oh, shizzle; dude sounds in a bad way. I don't know where that is, but I bet Gray does. Get outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, with the increased Unlimit attacks across the city, and the diversion of significant System cycles for compilation of the Anome kill code, our resources are considerably strained at this time. You will have to proceed with whatever forces you can muster on your own. I have uploaded the given coordinates for you.</briefing>
+    <enter>
+      <say>Okay, that's the place Gray said that Meillak said. What in--? I'm reading an Agent in there! Didn't Gray just say available resources were low?</say>
+      <say>Holy cow! What happened in there? It must have been an Unlimit attack... All those people...
+
+Check with Agent Green, {player}. He must know what's going on.</say>
+    </enter>
+    <objective goal="1" text="Talk to Agent Green" type="Talk" npc="2">
+      <talk><say npc="2">Op-er-at-ive... This...is...Meil-lak... Go... Sec-tor 8...J... Zone A...C... Hur-ry...</say></talk>
+      <done><say>Oh my god! He hacked an Agent!
+
+It's freaking out! Get the hell out of there! That son of a---!</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>I am...directing you to the specified location, operative. I-- Excuse me...
+
+Proceed, {player}.</briefing>
+    <enter>
+      <say>He hacked an Agent--a freakin' Agent! I can't believe it! An Agent, man!</say>
+      <say>Damn, more hacked programs. Meillak...</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="0">
+      <done><say>Sounds like he's writing his last will and testament. Can't say I feel too sorry for him--I mean, a friggin' Agent!
+
+Another terminal in there just came online. That must be the message he was talking about.</say></done>
+    </objective>
+    <objective goal="2" text="Search the second Computer" type="Search" object="2" item="6793" after="1">
+      <done>
+        <say>So Anome's getting back at Mommy, huh? How Freudian.
+
+I'm going to upload a copy of that message to you. Make sure you have some free inventory space before you leave the area, or you won't get it.</say>
+        <say>Free up some inventory space for this upload, {player}. If your inventory is full when you leave the area, you'll miss getting the copy of Caboclo's message.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Meillak's reprogramming of an Agent was...unexpected. Apparently, it served its purpose, and prevented Unlimit from following you to the final destination.
+
+However, he underestimated our Agent program's redundancy routines: it saved a record of the hack session, and its source. We now know where to find Meillak. He has many...questions to answer.
+
+Finally, I am satisfied to announce that our Anome kill code is complete. This latest segment of Caboclo's research suggests that Anome's weakness is his memory of his mother; an operation is being formulated to take advantage of this in delivering the kill code to its target. All that remains is to locate Anome.</finish>
+</mission>

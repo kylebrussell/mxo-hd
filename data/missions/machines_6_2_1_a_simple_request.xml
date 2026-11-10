@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Simple Request, Machines story mission 6.2.1. Source: research/missions/transcripts/Mach6-2-1.md (the archive
+     replay of [Machine Archive 6.2.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, and every Agent Gray, Operator, Agent Pace, Agent Wong and Ghost line,
+     and those names. Gray called the player "Mr. Argento" and Pace used the player's handle; both are {player}. Ours:
+     the description (the Summary tab was never opened), every objective text (the Objectives tab was never opened),
+     the sites (no location is described: Normal; the last two are meeting rooms where Agents wait, so Normal too),
+     the looks and the enemy count. Anome's Unlimit survivors are redpills mutated by his stolen cheat codes; they have
+     no org of their own, so they are the nearest, Zion, as rogue redpills. No mission items.
+     Rewards: 363,000 experience and 59,500 information, shown on completing this mission.
+     Gaps: the end of Gray's first briefing was hidden at a screenshot join; "You have been assigned to terminate
+     them." is the reading used. The Operator's line about Anome's followers came about 20 seconds after that
+     briefing, before arrival; we have no slot for that, so it is said on arrival with the code corruption line. The
+     start of the code corruption line may be cut off in the log. Agent Pace and Agent Wong stand in three places in
+     retail; each place has its own Pace (and Wong), since an NPC is placed in one phase only. In phase 3 retail
+     played Pace's request, the Operator's comment and Ghost's answer together; here talking to Pace plays her request
+     and then Ghost is talked to for his answer. Pace's "verbal analysis" in phase 4 may have been a dialogue choice in
+     retail (not visible in the log); it is a plain Talk. -->
+<mission id="206201" title="A Simple Request" description="Wipe out the last Unlimit survivors, then accompany Agent Pace to her first meeting with Zion." plot="1"
+         order="6201" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Agent Wong" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Let Agent Pace handle the communication with Zion, operative. She has been programmed for this duty.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say>These meetings will be di reguardo, {player}--very important! I am glad that you will be there to help me.</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say after="2">There, you see, {player}? I knew that Zion would be reasonable.</say>
+  </npc>
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say after="2">We deplore Anome's rampage as much as you do. Like I said, Zion Command will be informed of the Agent's request.</say>
+  </npc>
+  <npc id="5" handle="Agent Wong" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>Agent Pace is waiting for you in the next room, operative. We expect your report to be...constructive.</say>
+  </npc>
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>I am certain that Zion will cooperate with us in this matter, {player}. Ghost said that they very much regretted the trouble their ex-controller, Anome, caused to the System. Surely they will see that we can help them by analyzing the population data in their mainframe!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>{player}, with the death of Anome, and the recapture of the remaining cheat codes, Unlimit's threat to the System has ended. We must now consider the initial source of this, and other recent threats: Zion.
+
+Terrorist groups of all stripes continue to spawn from the chaos of their unmonitored population. As recent events have shown, this situation is becoming untenable. We have requested a meeting with Zion representatives to discuss the matter; we expect you to be available for this occasion.
+
+Our studies of the cheat code mutations indicate that without further exposure to the codes, the remaining Unlimit soldiers will rapidly diminish in power, and that the side effects of their mutations will soon prove fatal. However, at the moment, a desperate group of Unlimit survivors is marauding across the city. You have been assigned to terminate them.</briefing>
+    <enter>
+      <say>You know, I feel for those people who swallowed Anome's story, but it sounds like we'll be doing them a favor by putting them out of their misery--not to mention saving some bluepill lives in the process.</say>
+      <say>I've got Unlimit code corruption in there. Maybe I should save a copy of this readout--might be the last time we see it.</say>
+    </enter>
+    <objective goal="1" text="Eliminate the Unlimit survivors" type="DefeatAll">
+      <done><say>Code corruption's clearing up; looks like you got 'em. Nice knowing you, Unlimit.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You display admirable celerity in fulfilling your tasks, operative. Now that you have dealt with that...loose end, we have another function for you. Proceed to the indicated location and interface with Agent Pace. She has details pertaining to a preliminary meeting with Zion.</briefing>
+    <enter><say>Interface... He said "interface"...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ciao, tesoro! I have been chosen to engage in an initial meeting with a Zion representative, and I'm happy to have learned that you'll accompany me to assist in my contact with them. I still have much to learn of human interactions.
+
+Because of all the problems we've been having with terrorist groups from Zion, we're going to ask them to help us prevent these problems by giving us access to some information from their mainframe. This seems like a very reasonable proposition to me. I am sure that Zion will be happy to assist us in protecting the System in this way, will they not?</say></talk>
+      <done><say>Yuh, sounds perfectly reasonable to me, Agent Pace.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Agent Pace will meet you at the location with Zion's representative, Ghost. We rely on you to monitor her activity for proper human communication protocols.</briefing>
+    <enter><say>Hurry up, {player}! Don't let that old crank Ghost hog all the Pace action!</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Ah, it is very simple, officer Ghost. We merely request facilitated access to necessary information in the Zion mainframe. This will help us detect and eliminate any problems, such as we have seen with Anome, and E Pluribus Neo, for instance, much more efficiently, before they threaten the safety of all humans inside the simulation. We will be very happy to offer you our unparalleled data processing capabilities for this service.</say></talk>
+      <done><say>Looks like she did okay to me. Um, I mean...I think I need to study her code up close to make sure it's completely bug-free.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Ghost" type="Talk" npc="4" after="1">
+      <talk><say npc="4">I'll...pass that request along, Agent. I'm sure that Niobe will have a succinct answer for your organization.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It appears that this initial meeting went according to plan, {player}. Agent Pace has asked you to provide her with your verbal analysis of her performance.</briefing>
+    <enter><say>I think this is the start of a beautiful relationship...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="6">
+      <talk><say npc="6">Grazie, {player}! I am very grateful to you for your feedback. I am glad that I performed adequately on this occasion, and I will continue to try to improve!
+
+Officer Ghost seemed very reasonable. He is much more reserved than most of the Zionites I have met. I could not tell, but I hope that I made a favorable impression on him. If things go well, perhaps we will be working with him again!</say></talk>
+      <done><say>You could probably hang out there for a while if you want. I'm just running a few scans...</say></done>
+    </objective>
+  </phase>
+  <finish>Agent Pace has great potential in human relations, operative. However, I anticipate that I will be required to take an active role in the higher-level negotiations with Zion that will follow their reception of our request.</finish>
+</mission>

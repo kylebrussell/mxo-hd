@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outside the System, Machines story mission 6.3.2. Source: research/missions/transcripts/Mach6-3-2.md (the archive
+     replay of [Machine Archive 6.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Owl Bangheart, Sister
+     Margaret, Thallia, Anti M. and 88 Eightball. Sister Margaret's "Beati pacifici." and Anti M.'s "there" were in
+     italics; they are plain here. Gray's closing line began with "..." on a line of its own; that is left out. Ours:
+     the description (the Summary tab was never opened), every objective text (the Objectives tab was never opened),
+     the sites (Sister Margaret in Mara, Thallia in Magog and Anti M. in the Mannsdale Housing Projects, as the lines
+     say; Anti M.'s is an apartment building's hallway in the screenshots; Owl's neighbourhood isn't clear and is left
+     open), the looks (Exiles) and the enemy counts. The Operator warned that Owl's Blackwoods "aren't always
+     cooperative", so his phase has a few hostile Exiles (Merovingian); the log shows no fight, and Thallia's Blackwood
+     signals are left out. No mission items. Rewards: 363,000 experience and 59,500 information, shown on completing
+     this mission.
+     Gaps: the Operator's line after Owl's mumbling was cut off; it is taken to be the automatic "Goals for this area
+     are complete" line and isn't written. 88 Eightball said three lines on three talks; we can give a bystander only
+     one, so they are one line here. -->
+<mission id="206302" title="Outside the System" description="Question the Exiles of Mara and the nearby neighborhoods about where the General is holding Sati." plot="1"
+         order="6302" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Owl Bangheart" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Sister Margaret" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say>The General brings death and war to this place. If you truly seek to stop him, you have my blessing. Beati pacifici.</say>
+  </npc>
+  <npc id="3" handle="Thallia" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568">
+    <say>The Frenchman already cleaned me out. Go blame him if the Blackwoods are running around looting; I haven't got enough dough left to pay them.</say>
+  </npc>
+  <npc id="4" handle="Anti M." type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say>Oh, they haven't told you what he was? Please excuse me, operative. I wouldn't want to be indiscreet with information your employers don't see fit to give you.</say>
+  </npc>
+  <npc id="5" handle="88 Eightball" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say display="5">I've got nothing to say to you.
+
+The Merovingian already took his compensation for the work we did for the General.
+
+If your masters had managed to delete the General when he stole those damn cheat codes of yours, none of this would have happened, would it?</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Our scans so far have failed to detect Sati's signal either within the Matrix or within any of the public constructs associated with the main simulation. The logical conclusion is that her program has either been terminated, or taken by the General into a private construct. There is some precedent for this latter theory, as the General held the cheat codes in a private construct for some time after he stole them.
+
+If Sati has been terminated, a new intuitive program will be necessary to create aesthetically pleasing weather effects. This effort is already underway. You, operative, are to act on the assumption that her program has not been terminated, and is being held in a private construct.
+
+It remains to locate this construct. Our sources indicated that various Exiles in Richland were identified by Merovingian operatives as working for the General to distract operatives from his true target in Mara. You will interrogate one of these Exiles: the Blackwood leader, Owl Bangheart.</briefing>
+    <enter><say>Machine intel says Owl should be there. I'm reading some Exile programs in the area; they match the usual Blackwood gang profile. They aren't always cooperative, so you'd better be ready for trouble.
+
+Owl himself hasn't been seen on the street since he was captured and questioned by the Merovingian over a month ago.</say></enter>
+    <objective goal="1" text="Talk to Owl Bangheart" type="Talk" npc="1">
+      <talk><say npc="1">Buh... Nnn... Uah...</say></talk>
+      <done><say>Oh...kay. His neural patterns are all over the place. Whatever the Merv did to that guy, I don't want to know about.
+
+I don't think we're going to get anything useful out of him for a while.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>There is another Exile leader in Mara: Sister Margaret. Our records show no indication of the Merovingian contacting her concerning recent events, so perhaps she will be somewhat more...fluent.</briefing>
+    <enter><say>So she's kind of like a nun or something? Does that mean Exiles believe in a god beyond, oh, the Architect?</say></enter>
+    <objective goal="1" text="Talk to Sister Margaret" type="Talk" npc="2">
+      <talk><say npc="2">I cannot aid you, follower of the Machine. The General's activity in Mara was entirely unknown to me, aside from the agitations among the poor Blackwoods, which were visible to all. It was the unhappy, quarrelsome Elements family who were involved--or so I have heard.</say></talk>
+      <done><say>Boy, no wonder the Merv didn't bother with her...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Magog">
+    <briefing>Operative, the Exile Thallia, a member of the "Elements" family, has been active among the Blackwood gang in Mara, and her home neighborhood of Magog, of late. Question her concerning the General.</briefing>
+    <enter><say>I've got some more Blackwood-style signals in there. Thallia should be around.</say></enter>
+    <objective goal="1" text="Talk to Thallia" type="Talk" npc="3">
+      <talk><say npc="3">Hah! You're a little late, toaster. And no, I have no idea where the General goes when he wants to hide from you--though I wish I did.
+
+He never came to me directly; he worked through Anti M. You should probably go talk to her. I'm sure she knows all kinds of things she shouldn't.</say></talk>
+      <done><say>Anti M.'s another of the Elements--based out of Mannsdale.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0" neighbourhoods="Mannsdale Housing Projects">
+    <briefing>You will find the Exile called Anti M. in Mannsdale Housing Projects, operative. Find out what she knows about the General.</briefing>
+    <enter><say>Time for some of your patented Exile smooth-talkin'.</say></enter>
+    <objective goal="1" text="Talk to Anti M." type="Talk" npc="4">
+      <talk><say npc="4">So you'd like to know about the General... I'm afraid there isn't much I can tell you. He sent me instructions, and money--neither could be traced.
+
+It seemed to me that he wasn't in the System at all. Given what they say about who he actually is, I would think he might have some sort of base out there.</say></talk>
+      <done>
+        <say>"Who he is"? Who say? What?</say>
+        <say npc="4">Oh, they haven't told you what he was? Please excuse me, operative. I wouldn't want to be indiscreet with information your employers don't see fit to give you.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Thank you operative. We appreciate your ability to carry out your duties efficiently. The information you acquired from the Exile will serve to inform our next action. You may return to your regular duties at this time.</finish>
+</mission>

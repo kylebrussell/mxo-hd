@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Messages in the Void, Machines story mission 6.1.1. Source: research/missions/transcripts/Mach6-1-1.md (the archive
+     replay of [Machine Archive 6.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Robert Failing line, the name Robert Failing and
+     the objective text "Investigate the area" (seen at the last site). Gray called the player "Mr. Argento" and the
+     Operator used the player's handle; both are {player}. Ours: the description (the Summary tab was never opened), the
+     other objective texts, the sites (the cybercafe, a room of cubicles and computers, is an Office; the target's
+     building is unnamed: Normal; Meillak's flat is an apartment; the call's origin, a small room with a computer and
+     filing cabinets, is Normal), the neighbourhoods (the cafe's map said Tabor Park and the last site's Achan; the other
+     two weren't shown) and the looks. No hostiles anywhere. Item: retail's "Caboclo Message 1" is the Letter (6793).
+     Rewards: 363,000 experience and 59,500 information, shown on completing this mission.
+     Gaps: retail ended the second site once the player had looked around; here two pieces of furniture are searched,
+     the first giving the Operator's "Keep looking" line. Gray's line about Meillak's name came on arriving at the
+     apartment and is said on arrival, before the ringing phone. The phone is answered by standing beside it. The
+     Operator uploaded the Caboclo message on leaving the last site; here searching the computer gives it, and the
+     message's own text (the computer screen and the item's details) can't be shown. The cafe's computers showed flavour
+     web pages and its bluepills said nothing; neither is placed. -->
+<mission id="206101" title="Messages in the Void" description="Trace an anonymous message about Caboclo back to the redpill who posted it." plot="1"
+         order="6101" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Robert Failing" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>I don't get too many people here who overpay, you know? So I tend to remember a thing like that.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Caboclo. Does this name mean anything to you, operative? Then listen closely. Caboclo was the name of one of Anome's highest-ranking officers in Zion. From what we can gather, he disappeared when Anome stole the vials, and had not been heard of since.
+
+Until now. Our network spiders found the following message posted on a public internet bulletin board: "His suffering must not go unpunished. Caboclo knew too much. He knew the truth."
+
+This message was posted from a local cybercafe. You will proceed to the cafe, and ask the proprietor, Robert Failing, to identify the individual who used his network at 23:44 on the night of the 27th.</briefing>
+    <enter><say>That's the spot. Don't touch the mice.</say></enter>
+    <objective goal="1" text="Talk to Robert Failing" type="Talk" npc="1">
+      <talk><say npc="1">'Course I'd like to help, officer, but I get a lotta weirdies in here. Let me see... Hm... I do remember there was a fella in here late that night in a pretty weird get-up--some kind of orange jumpsuit. He was real nervous, and he only stayed a few minutes. I remember him because he'd paid for a lot longer.
+
+What else about him? Well... His jumpsuit was sleeveless, and his head was shaved clean. Hope that helps you.</say></talk>
+      <done><say>Sounds like an Unlimit to me! The plot thickens...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, we are matching that description against surveillance data now. One moment.
+
+...
+
+An individual matching that description was seen entering a certain building after leaving the cafe. Our record has no indication that he left this second building. Proceed there and investigate.</briefing>
+    <enter><say>That's the place. Nothing on the scope so far.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="0">
+      <done><say>Hm, nothing so far. Keep looking.</say></done>
+    </objective>
+    <objective goal="2" text="Search the rest of the area" type="Search" object="2" item="0" after="1">
+      <done><say>All right, I'm pretty sure there's nothing there. Unlimit who drank vials can't jack out, so I'll be darned if I can figure how this guy could have disappeared without a trace.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Your operator is correct, {player}; however, he has not considered that this Unlimit may not be one of those who has consumed a cheat code vial. The others can jack out, though not as quickly and painlessly as a standard redpill.
+
+However, this is mere idle speculation. We have reversed the surveillance query, and have traced the target's movements before they arrived at the cafe; they departed from an apartment building nearby. You will proceed there now.</briefing>
+    <enter>
+      <say contact="1">Data indicates that the name under which this apartment was rented corresponds to the bluepill name of a former Zion operative known as "Meillak." There is no known data for this redpill after Anome's theft of the vials. We are currently cross-referencing for more information. Proceed carefully, operative.</say>
+      <say>Hey! Phone in there is ringing. Grab it, {player}, and I'll run a trace.</say>
+    </enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Answer the phone" type="Use" object="1">
+      <done><say>Huh! Hung up--that was enough time to get a trace, though. Hit the street and we'll update Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Achan">
+    <briefing>Proceed to the origin of the phone call, operative. We find it likely that the caller knows something concerning this operation, as it is not normal human behavior to hang up without saying anything; indeed, few humans can remain silent with an active telephone in their hands.</briefing>
+    <enter><say>That's where the call came from. Nobody there... But I am picking up some electronic activity.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="6793">
+      <done>
+        <say>Whoa! What the frick is that? Someone's been rooting around in Anome's past... Could this be for real? Is this from Meillak? Or Caboclo?
+
+I pulled that message down. I'm going to upload you a copy when you get out of there; I think this might be important. Make sure you have some space in your inventory to receive the item before you leave the area.</say>
+        <say>I repeat, make sure you've got some inventory space free before you leave the area. I'm going to upload a copy of that message to you.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>{player}, that message, a copy of which has been sent to your inventory, is most intriguing. We cannot, however, verify its authenticity.
+
+We have been able to confirm, based on a comparison with old visual records, that Meillak was indeed the redpill who went from the apartment to the cybercafe. We have also confirmed that Meillak was a former crewmate of Caboclo's in Zion. It appears that Meillak seeks to distribute certain information, perhaps without his colleagues in Unlimit being aware of his activity.
+
+The message you found raises many questions, operative. It will be necessary to locate Meillak and interrogate him closely. You will hear from me again in due time.</finish>
+</mission>

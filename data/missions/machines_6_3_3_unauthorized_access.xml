@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unauthorized Access, Machines story mission 6.3.3. Source: research/missions/transcripts/Mach6-3-3.md (the archive
+     replay of [Machine Archive 6.3.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective text "Search the area",
+     and the names The Oracle and Commando. Gray called the player "Mr. Argento"; that is {player}. The Oracle's "her"
+     was in italics; it is plain here. Retail's typo "have something do with" in Gray's closing line is kept. The
+     Operator's "I'd say try saluting them..." fell on a screenshot join with no header of its own and is joined to the
+     line before it; his "Man. looks like" is read as "Man, looks like". Ours: the description (the Summary tab was
+     never opened), the kill goal's text, the sites (the Oracle's apartment; the deactivated terminal in an office in
+     Mara and the active system in an office in Achan, as the map showed; the commando site Normal), the looks and the
+     enemy counts. The General's commandos and Elite Commandos are Exile programs: Merovingian. No mission items.
+     Rewards: 363,000 experience and 59,500 information, shown on completing this mission.
+     Gaps: Zion's guards around the Oracle said nothing and aren't placed. Retail had the Elite Commandos at the active
+     system turn up after it went dead; we can't spawn hostiles on a goal, so they are there from the start, and as in
+     retail the phase's only goal is the search (the Operator's line about the fight is said when the phase is done).
+     The commandos' two lines are given to two named Commandos. An Operator line between the commando site and the
+     deactivated terminal was cut off and isn't written. -->
+<mission id="206303" title="Unauthorized Access" description="Consult the Oracle about Sati, then find out how the General's commandos move in and out of the Matrix." plot="1"
+         order="6303" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="The Oracle" type="FRIENDLY" at="1" rsi="3c000040" weapon="0">
+    <say>Don't look at me! You're the hero of the story. I'm sure you'll figure it out sooner or later. You usually do.</say>
+  </npc>
+  <npc id="2" handle="Commando" type="HOSTILE" at="2" rsi="c6020058" weapon="2568">
+    <say>Breaker one-niner! Go!</say>
+  </npc>
+  <npc id="3" handle="Commando" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568">
+    <say>Roger, responding with lethal force!</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Operative, we consider that the time has come to consult the Oracle regarding her missing ward, who we have determined is most likely being held in a private construct. The Oracle is known to have access to otherwise unavailable sources of information. We trust that you will ask her the correct question.</briefing>
+    <enter><say>Zion has guards around the Oracle, but they've been notified not to stop you.</say></enter>
+    <objective goal="1" text="Talk to the Oracle" type="Talk" npc="1">
+      <talk><say npc="1">What you see depends mainly on what you're looking for.
+
+The Machines' thinking is too narrow. You want to find Sati, but you won't find her just by looking for her, the General has her hidden too well. You've got to look for where she went. Get it, kiddo?</say></talk>
+      <done><say>So, look for where she went, but not for her.
+
+... Huh?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>As usual, the Oracle's remark was less than explicit.
+
+However, the suggestion that we pursue other avenues in locating Sati may be a valid one. We still have no data on how the General's commandos have been entering and exiting the simulation. We have established that his helicopters themselves do not leave the Matrix, so the commandos must have some other means of egress.
+
+You will proceed to the indicated location, where we have a report of commando activity. Remain alert for any means they may be using to move in and out of the Matrix.</briefing>
+    <enter><say>My scan shows Exile programs in the area. Probably commandos.
+
+I'd say try saluting them, then kicking them in the nether regions while their automatic salute reflex freezes them in place for a second.</say></enter>
+    <objective goal="1" text="Kill all of the Commandos" type="DefeatAll">
+      <done><say>That was satisfying, but I'm not picking up anything else in there. Maybe they just stopped in for a minute to use the little soldier's room.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>We have another reported activity site, {player}. Investigate.</briefing>
+    <enter><say>I'm not reading any Exile signals in there. There is something funny in the code stream... Doesn't look active, though.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Hey, now I remember scanning a deactivated terminal like that when we were tracking that helicopter a couple weeks ago.
+
+They must be up to something with those. We'd better tell Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Achan">
+    <briefing>A scan of the region has picked up a signal similar to that of the deactivated machine, operative. This one, however, appears to be active. Investigate promptly.</briefing>
+    <enter><say>I'm reading an active system in there... All clear otherwise. Man, looks like we caught the general with his pants down!
+
+By the way, didja ever notice he never tucks his shirt in?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Whoops, the system in there just went dead. Cruddlesticks... You didn't trip over the power cord, did you?</say></done>
+    </objective>
+    <complete><say>Yep, it's dead all right. I can't pull anything off it.
+
+Hey, what were you doing in there, anyway? I mean, first the system goes dead, then I see your signal jumping all over the room. What's the deal? Have you been chugging Peg's Diner coffee again? You know what that stuff does to your nerves--not to mention your digestion. Ugh.</say></complete>
+  </phase>
+  <finish>A cross-reference of those two system locations against recent commando activity indicates a direct physical correlation. The systems may have something do with how the commandos are able to access the simulation. This bears further investigation.
+
+Oh, and I must concur with your operator's concern, {player}. Long-term consumption of the coffee-like substance retailed at the Peg's Diner restaurant chain has proven to have a detrimental effect on operative efficiency, with extreme cases sometimes culminating in hallucinations and/or irritable bowel syndrome. You would do well to avoid it. Substance counseling services are available to you, should you require them.</finish>
+</mission>

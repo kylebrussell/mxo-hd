@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Price of Betrayal, Machines story mission 6.1.2. Source: research/missions/transcripts/Mach6-1-2.md (the
+     archive replay of [Machine Archive 6.1.2], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator, Edmee and Richie Watson line, the names Edmee,
+     Richie Watson and Merovingian Martial Arts Initiate (cut off at the chat panel's edge after "Initi"), and the
+     objective text "Investigate the area" (seen at the last site). Gray called the player "Mr. Argento"; that is
+     {player}. Edmee's "$info" is as retail's log showed it. Ours: the description (the Summary tab was never opened),
+     the other objective texts, the sites (none was named or shown but the last, an apartment-like room in Achan; the
+     rest are Normal), Edmee's look (a spy of no known side: an Exile's), the looks and the enemy counts. The programs
+     at sector JA-274 were Merovingian Martial Arts Initiates and Elite Guards: Merovingian. Item: retail's "Caboclo
+     Message 2" is the Letter (6793). Rewards: 275,865 experience and 45,203 information, shown on completing this
+     mission.
+     Gaps: the Operator's arrival line at Richie Watson's spans a screenshot join where a word or line is hidden ("one
+     ... program"); it is read as one line. At sector JA-274 retail let the player start the fight, then a kill code
+     transmission terminated every Exile program at once; we have no scripted deaths, so the player kills them all, and
+     the Operator's line about the transmission comes when they are dead. The next room's search is a piece of
+     furniture. The Initiate's "A meatbag!" was team chat. The Operator uploaded the Caboclo message on leaving the last
+     site; here searching the computer gives it, and the message's text can't be shown. The Tactic Booster 2.0 the
+     player received at the last site wasn't a mission item. -->
+<mission id="206102" title="The Price of Betrayal" description="Buy a spy's information on the Merovingian's synthesized cheat codes, and follow where it leads." plot="1"
+         order="6102" org="2" contact="Agent Gray" exp="275865" info="45203">
+  <npc id="1" handle="Edmee" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+    <say>Ah, ah, ah--no $info, no deal. This is hot information I'm selling, operative. You just run along and tell Gray about it; he'll know what to do.</say>
+  </npc>
+  <npc id="2" handle="Richie Watson" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>I wish I could see the look on his face when he finds his stupid codes stolen from right under his huge hooked nose! Hahaha!</say>
+  </npc>
+  <npc id="3" handle="Merovingian Martial Arts Initiate" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568">
+    <say>A meatbag!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, as you know, it is imperative that we produce a kill code that will eliminate the rogue Zion operator, and Unlimit terrorist leader, Anome.
+
+However, we still have very little data on Anome himself. We had hoped to gain further information from an apparent Unlimit informant, Meillak, but he has eluded the operatives sent to bring him in for questioning.
+
+It has come to our attention, however, that another organization may have acquired data that could be useful in manufacturing a kill code to terminate Anome. You will question the spy Edmee, and find out what information she has to offer.</briefing>
+    <enter><say>She's in there. It's always hard to tell whose side these spies are really on. Is she just a double-agent? Or could she be a triple-agent?
+
+Do they have quadruple-agents?</say></enter>
+    <objective goal="1" text="Talk to Edmee" type="Talk" npc="1">
+      <talk><say npc="1">There you are; I was starting to think the Machines weren't interested.
+
+Here it is: the Merv is working on making a cheat code of his own. He caught a live Unlimit somehow and has used the poor bastard's corrupt blood to decompile the cheat code data. Apparently he's already been running some tests with initial batches.
+
+If you want some of this juice, I can hook you up with one of the brains behind it. Have Gray send the $info to the usual place, and I'll upload the information you need.</say></talk>
+      <done><say>The Merv trying to make his own cheat codes? Sounds fishy... But Gray might want to know. All right, get out of there before she steals your wallet.
+
+You do still have it on you, right?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It does seem unlikely that the Merovingian would be able to manufacture a cheat code of his own, even with a live Unlimit in his possession; but we consider the trifling sum Edmee required an acceptable risk.
+
+The location marked out for you now is where she claims we can find a program who was helping write the Merovingian's own brand of the cheat codes. The program's name is Richie Watson. Extract whatever useful information you can from him.</briefing>
+    <enter><say>That's the spot. I'm reading one program, and nothin' else.</say></enter>
+    <objective goal="1" text="Talk to Richie Watson" type="Talk" npc="2">
+      <talk><say npc="2">He humiliated me in front of my colleagues--claimed I had made too many coding errors! Bah! As if it was my fault that we were working from corrupt data! It is a stupid plan! It will never succeed. Of course I did not tell the Frenchman so to his face... But he will pay for this affront! He fancies himself such a programming genius--hah!
+
+He has foolishly entrusted a batch of his imitation cheat codes to a cadre of his programs for "testing" purposes. You will find them at sector JA-274. I'm sure you can take care of the rest, eh? Haha! Ah, this will be sweet revenge...</say></talk>
+      <done><say>And that's what you get for treating people like dirt--they try to stab you in the back. Oh well, the Merv's arrogance seems to be helping us out nicely. I'll get that location punched up for you.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Although our data indicates that the Merovingian habitually mistreats his low-level workers, there are relatively few rebellions--so far as information is available--within his ranks; his notorious ruthlessness holds most in check.
+
+Richie Watson's enthusiastic defiance of the Merovingian indicates that he may not be the most reliable informant; however, there do appear to be Exile programs at the indicated location. You are authorized to use whatever means are necessary to obtain useful data.</briefing>
+    <enter><say>Man, it's been a little while since Gray had us bash some Mervs. It's like the good old times are here again!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill all of the Merovingian programs" type="DefeatAll">
+      <done><say>What th--? Some kind of transmission... Whoa. I'm reading nothing but terminated programs in there now. It's like they all got hit with a kill code...
+
+Maybe they left some of their synthesized cheat code behind. Check the next room.</say></done>
+    </objective>
+    <objective goal="2" text="Search the next room" type="Search" object="1" item="0" after="1">
+      <done><say>Dang, nothing there. Well, this is just great. I don't usually complain about enemies dying too easily, but this is ridiculous!</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0" neighbourhoods="Achan">
+    <briefing>We have confirmed that those Exile programs were terminated by a kill code transmission, operative. Our readings indicate that Richie Watson ceased function at the same time. It would seem that the Merovingian learned of Richie Watson's scheme for revenge. This constitutes something of a setback for us.
+
+However, I have one further task for you before your regular sleep session. We detected another message posted to a public bulletin board with "Caboclo" in the text. The message was encrypted with the name "Meillak." Decrypted, it gives coordinates. I am sending you to those coordinates now.</briefing>
+    <enter><say>That place is dead. Hm, maybe that was a bad choice of words.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Investigate the area" type="Search" object="1" item="6793">
+      <done>
+        <say>Man, this Caboclo or whoever it was really went through Anome's sock drawer, didn't he?
+
+I'm gonna upload a copy of that message to you. Make sure you have some free space in your inventory before you leave the area.</say>
+        <say>Like I said, make sure you have some free inventory space before you leave the area--I'm gonna upload a copy of that message to you.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The encrypted message that led to that location originated from a public terminal in a busy mall. We are unable to trace it further; evidence suggests, however, that this is another transmission from our mysterious Unlimit informant, Meillak, transmitting what he represents as the research of his friend Caboclo. These supposed insights into Anome's past carry a certain sense of drama, but their purpose is not yet clear.
+
+Let us not forget that we still must obtain sufficient data to construct a kill code with which to terminate Anome. The Merovingian guards whatever data he thinks he has extracted quite jealously; but we have been able to infiltrate his organization on several previous occasions. His synthesized codes must be investigated. You will receive further instructions shortly.</finish>
+</mission>
