@@ -240,6 +240,14 @@ public class TimedEffectsTests
         immunity.RecordId = 0x506;
         Assert.Equal("80bc01000605" + "00de020000" + "a902" + "00000000" + "00" + "00008040", Hex(PlayerEffects.Record(immunity, false)));
 
+        // MezzingTerm's addTempMod(MezAbility, MovementSpeedAbility, 0, 2) (tempmods.py 862) as retail sent it (Rajko
+        // MaraCThenTimeDOut 63411), and DeflectVirus1's 0.2 s PlayFX with FX_VIRUSCAST_SPLIT_DEFLECT_VIRUS_DEFLECTVIRUS1
+        // (virii.py 31; crashover2k proxy_024 13034)
+        var mezSpeed = new TimedEffects.Active { Parent = TempMods.MezAbility, Kind = TempMods.KindPlain, Target = TempMods.MovementSpeedAbility, Seconds = 2, RecordId = 0xdc };
+        Assert.Equal("80bc0100dc0000550000007300000000000000000040", Hex(PlayerEffects.Record(mezSpeed, false)));
+        var deflect = new TimedEffects.Active { Parent = 378, Kind = TempMods.KindFx, Target = 378, Value = 0x28000820, Seconds = 0.2f, RecordId = 0xd8 };
+        Assert.Equal("80bc0900d800007a0100007a0120080028" + "00cdcc4c3e", Hex(PlayerEffects.Record(deflect, false)));
+
         // Pistol Whip's blind and Blind's own CombatTactics -30 (proxy_020 143154): 80 bc 1d 00 2c 02 00 5a 00 00 00 a3 00 e2 ff ff ff
         var blind = new TimedEffects.Active { Parent = 501, Kind = TempMods.KindState, Target = TempMods.BlindAbility, Seconds = 10.08f, LinkedRecordId = 0x22c };
         Assert.Equal("80bc1d002c02" + "005a000000" + "a300" + "e2ffffff" + "00" + "00000000", Hex(PlayerEffects.LinkedRecord(blind, false)));

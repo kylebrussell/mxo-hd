@@ -11,9 +11,9 @@ namespace hds
     /// <para>A tempmod is the 80 bc record (see <see cref="AbilityBuffs.BuildModifier"/>): <c>&lt;kind&gt; &lt;record id&gt;
     /// &lt;parent ability&gt; &lt;target ability&gt; &lt;value&gt; &lt;off&gt; &lt;seconds&gt;</c>. The "stat" field is the
     /// tempmod's TargetAbility: MezzingTerm's <c>addTempMod(MezAbility, MovementSpeedAbility, 0, 2)</c>
-    /// (tempmods.py 862) is retail's <c>80 bc 01 .. 55 00 00 00 73 00 .. 00 00 00 40</c> (Rajko MaraCThenTimeDOut
+    /// (tempmods.py 862) is retail's <c>80 bc 01 00 dc 00 00 55 00 00 00 73 00 00 00 00 00 00 00 00 00 40</c> (Rajko MaraCThenTimeDOut
     /// 63411: parent 85, target 115, 2 s), and DeflectVirus1's <c>addTempModProcs(.., 0.2, .., FX)</c> (virii.py 31) is
-    /// <c>80 bc 09 .. 7a 01 .. 7a 01 20 02 00 28 .. cd cc 4c 3e</c> (crashover2k proxy_024 13034: parent and target
+    /// <c>80 bc 09 00 d8 00 00 7a 01 00 00 7a 01 20 08 00 28 00 cd cc 4c 3e</c> (crashover2k proxy_024 13034: parent and target
     /// 378, the effect id as the value, 0.2 s).</para>
     ///
     /// <para>The captures show these records on the player they hit (the victim's log), e.g. Code Infection 4 on
