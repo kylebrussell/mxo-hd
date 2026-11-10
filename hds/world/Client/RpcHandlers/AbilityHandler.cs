@@ -405,7 +405,16 @@ namespace hds
             yDest = reader.ReadDouble(1);
             zDest = reader.ReadDouble(1);
             
-            byte[] unknownJumpBytes = reader.ReadBytes(6);
+            // The landing spot's nav place as the client sees it: sector, region, polygon (u16 each; retail's matched the
+            // nav mesh). Logged next to ours: 0xffff or a different place means the client has lost its nav location.
+            byte[] landingPlace = reader.ReadBytes(6);
+            UInt16 clientSector = BitConverter.ToUInt16(landingPlace, 0), clientRegion = BitConverter.ToUInt16(landingPlace, 2),
+                clientPolygon = BitConverter.ToUInt16(landingPlace, 4);
+            string ours = NavMesh.Locate((UInt16)Store.currentClient.playerData.getDistrictId(), xDest, yDest, zDest, out NavLocation server)
+                ? server.sector + "/" + server.region + "/" + server.polygon
+                : "none";
+            Output.WriteDebugLog("[NAV] Jump to " + (int)xDest + "," + (int)yDest + "," + (int)zDest + ": client " + clientSector + "/" +
+                                 clientRegion + "/" + clientPolygon + ", server " + ours);
             UInt32 peakHeight = reader.ReadUInt32(1);
             uint maybeFlag = reader.ReadUint8(); // is it everytime 01 ? maybe must check 
             
