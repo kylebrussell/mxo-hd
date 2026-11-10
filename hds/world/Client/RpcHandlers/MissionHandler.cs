@@ -43,9 +43,7 @@ namespace hds
 
         public void processMissionList(ref byte[] packet)
         {
-            
             WorldClient client = Store.currentClient;
-            SocialHandler.EnsureTeam(client);
             PacketReader reader = new PacketReader(packet);
 
             // Retail: the first u16 is a per-session request number the server copies back into every
@@ -53,18 +51,10 @@ namespace hds
             UInt16 txn = reader.ReadUInt16(1);
             uint orgID = reader.ReadUint8();
 
-            ClientData data = client.playerData;
-            if (data.completedMissions == null)
-            {
-                data.completedMissions = Store.dbManager.WorldDbHandler.GetCompletedMissions(data.getCharID());
-            }
-
-            List<Mission> list = DataLoader.getInstance().FindMissions(orgID, data.completedMissions);
-            data.currentMissionList = list;
-            data.selectedMissionIndex = -1;
-
-            new ServerPackets().sendMissionList(txn, orgID, list, client);
-            Output.WriteDebugLog("[MISSION] Listed " + list.Count + " missions");
+            // Org contacts only: retail's neighbourhood lists came from using the contact (MissionContactNpcs.OnUse), and no
+            // capture has a request naming one.
+            MissionContact contact = MissionContacts.ForOrg(orgID, MissionContacts.Reputation(client, orgID));
+            MissionContactNpcs.SendList(client, contact, txn);
         }
 
         public void processLoadMissionInfo(ref byte[] packet)

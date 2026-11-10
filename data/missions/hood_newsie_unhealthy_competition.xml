@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unhealthy Competition, a mission of The Newsie (Downtown, Park East). From one retail capture (template 1760), left
+     after the briefing: the title, description, briefing, goal and the target's name (Avarice) are retail's. Avarice's
+     look and guards weren't captured and are ours. Retail's site was a door in Downtown; ours is generated. -->
+<mission id="1760" title="Unhealthy Competition" description="Kill one of the Newsie's rivals." plot="1" order="1"
+         org="0" contact="The Newsie" district="2" districtName="dt" exp="22000" info="31500">
+  <npc id="1" handle="Avarice" type="HOSTILE" at="1" rsi="c5020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="2">
+    <briefing>I'm glad to see you're back, {player}. I'm really taking a shine to you.
+
+There's a fella who's been messing with my regular sales. I want him taken out of the headlines. Kill him.</briefing>
+    <objective goal="1" text="Kill Avarice" type="Defeat" npc="1" />
+  </phase>
+</mission>

@@ -121,21 +121,21 @@ namespace hds
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repZion", reputation);
-                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationZionMilitary);
                             break;
                         case "machine":
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repMachine", reputation);
-                            Store.currentClient.playerInstance.ReputationMachines.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationMachines);
                             break;
                         case "mero":
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repMero", reputation);
-                            Store.currentClient.playerInstance.ReputationMerovingian.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationMerovingian);
                             break;
                         default:
@@ -151,11 +151,39 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?contact") && commands.Length <= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?contact goes to the nearest neighbourhood contact in this district, ?contact <id> to that one
+                    double px = 0, py = 0, pz = 0;
+                    NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+                    ushort district = (ushort)Store.currentClient.playerData.getDistrictId();
+                    MissionContactSpot spot = commands.Length == 2
+                        ? (uint.TryParse(commands[1], out uint contactId) ? MissionContactNpcs.SpotOf(contactId) : null)
+                        : MissionContactNpcs.Nearest(district, px, pz);
+                    string reply = spot == null ? "No such contact" : spot.metrId != district
+                        ? spot.Contact?.name + " is in district " + spot.metrId + " (" + spot.neighbourhood + ")"
+                        : spot.Contact?.name + ", " + spot.neighbourhood;
+                    if (spot != null && spot.metrId == district)
+                    {
+                        var at = MissionContactNpcs.InFrontOf(spot);
+                        // World units: PlayerHelper.teleport takes ?gotopos units (x100)
+                        Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(at.x, at.y, at.z));
+                        Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)at.x, (float)at.y, (float)at.z), false);
+                    }
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                }
+
                 if (command.Equals("?missionobject") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: ?missionobject <id>: the current phase's object, spawned again at the player's feet
                     bool moved = MissionStaging.MoveObjectToPlayer(Store.currentClient, int.Parse(commands[1]));
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, moved ? "Object moved" : "No such object", "BROADCAST");
+                }
+
+                if (command.Equals("?objstate") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: an object in a state from the client's data, and what the data says it offers (docs/OBJECT-STATES.md)
+                    ObjectStates.DevCommand(Store.currentClient, commands);
                 }
 
                 if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")

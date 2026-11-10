@@ -18,8 +18,8 @@ namespace hds
         /// 0x625d8610). The base adds 100 x k^2 per level up to 10 and 1000 x k after that; the result is
         /// base x ((XPConstantMultiplier x (level - 1) - 1) x XPKnob + 1), with the client's defaults 5 and 1.
         /// Retail agrees: Recursion reached level 3 between 4,318 and 9,818 (5,000), level 4 between 11,665 and 22,665
-        /// (21,000) and level 5 between 30,274 and 63,274 (60,000). rshooks.level_exp_reqs (4,500, 16,000, 39,000...) is
-        /// not this table: the client still showed level 4 at 40,000.
+        /// (21,000) and level 5 between 30,274 and 63,274 (60,000). rshooks.level_exp_reqs (500, 4,500, 16,000, 39,000...) is
+        /// the same table as steps from one level to the next: 500 + 4,500 = 5,000, + 16,000 = 21,000, + 39,000 = 60,000.
         /// </summary>
         public static long ExperienceForLevel(int level)
         {
