@@ -300,13 +300,17 @@ namespace hds
             }
 
             // Objects the server follows (ObjectStates.Track) move to the state retail's script gives the use
-            if (interactedView != null)
-            {
-                ObjectStates.OnUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID);
-            }
+            bool followed = interactedView != null &&
+                            ObjectStates.OnUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID);
 
             if (interactedView != null && MissionRuntime.OnViewUse(Store.currentClient, interactedView.entityId))
             {
+                return;
+            }
+
+            if (followed)
+            {
+                Store.currentClient.FlushQueue();
                 return;
             }
 

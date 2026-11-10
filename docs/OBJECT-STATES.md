@@ -89,7 +89,7 @@ Pick Lock goes to `0x835`, which is why the tutorial's retail update to `0x835` 
 
 - `DoorLifecycle` takes each door's open and closing times from the data (20 s and 1 s, or 5 s for AttributeClass365).
 - When a mission container's loot is taken, `MissionRuntime.OnTakeAll` sends it its OpenedState (`0x834`). Retail's script went there as soon as Open succeeded; here it waits until the loot is taken, so a player who closes the loot window can open it again.
-- `ObjectStates.Track` makes the server follow an object; then each use (`80 c7`) moves it to the state the data gives and sends it (`ObjectStates.OnUse`). Only `?objstate` objects are followed for now.
+- `ObjectStates.Track` makes the server follow an object; then each use (`80 c7`) moves it to the state the data gives and sends it (`ObjectStates.OnUse`). A followed object that isn't a mission object stops there, so its uses don't reach the old generic handlers (which answered use 5 with a test loot window). Only `?objstate` objects are followed for now.
 - For `MissionStaging` (not changed here): `ObjectStates.StateOffering(goid, "Take")` gives `0x961`, `"Hack"` `0x963`, `"Put"` `0x962`, `("Hack", "Take")` `0x964`, and `DefaultState(goid)` `0x960`, for class 19 computers too. `UseNumber(goid, "Hack")` gives the use number, `StateAfterUse(goid, state, use)` where a use leads, and `BuildStateUpdate(goid, state)` the view update with the class's own mask (computer `01 08`, wardrobe `01 20`, door `01 80 02`).
 
 ## The files

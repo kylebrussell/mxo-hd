@@ -386,13 +386,13 @@ namespace hds
 
         /// <summary>
         /// A use (80 c7) of a followed object: logs what the data says it was and moves the object to the state retail's
-        /// script moves it to on success. Does nothing for objects nobody follows. Returns the new state, or 0.
+        /// script moves it to on success. False (and nothing done) for objects nobody follows.
         /// </summary>
-        public static UInt32 OnUse(WorldClient client, UInt64 entity, byte use)
+        public static bool OnUse(WorldClient client, UInt64 entity, byte use)
         {
             if (!tracked.TryGetValue(client, out Dictionary<UInt64, (UInt16, UInt32)> map))
             {
-                return 0;
+                return false;
             }
 
             (UInt16 goid, UInt32 state) o;
@@ -400,7 +400,7 @@ namespace hds
             {
                 if (!map.TryGetValue(entity, out o))
                 {
-                    return 0;
+                    return false;
                 }
             }
 
@@ -411,10 +411,9 @@ namespace hds
             if (to != 0 && to != o.state)
             {
                 SetState(client, entity, to);
-                return to;
             }
 
-            return 0;
+            return true;
         }
 
         /// <summary>The state a successful Open moves this object to (a container's OpenedState, 0x834), or 0.</summary>
