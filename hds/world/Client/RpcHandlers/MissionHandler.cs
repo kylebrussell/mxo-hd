@@ -59,12 +59,13 @@ namespace hds
                 data.completedMissions = Store.dbManager.WorldDbHandler.GetCompletedMissions(data.getCharID());
             }
 
-            List<Mission> list = DataLoader.getInstance().FindMissions(orgID, data.completedMissions);
+            MissionContact contact = MissionContacts.ForOrg(orgID, MissionContacts.Reputation(client, orgID));
+            List<Mission> list = DataLoader.getInstance().FindMissions(contact, data.completedMissions);
             data.currentMissionList = list;
             data.selectedMissionIndex = -1;
 
-            new ServerPackets().sendMissionList(txn, orgID, list, client);
-            Output.WriteDebugLog("[MISSION] Listed " + list.Count + " missions");
+            new ServerPackets().sendMissionList(txn, contact, list, client);
+            Output.WriteDebugLog("[MISSION] " + contact.name + " listed " + list.Count + " missions");
         }
 
         public void processLoadMissionInfo(ref byte[] packet)

@@ -121,21 +121,21 @@ namespace hds
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repZion", reputation);
-                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationZionMilitary);
                             break;
                         case "machine":
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repMachine", reputation);
-                            Store.currentClient.playerInstance.ReputationMachines.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationMachines);
                             break;
                         case "mero":
                             changedReputation = true;
                             Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
                                 "repMero", reputation);
-                            Store.currentClient.playerInstance.ReputationMerovingian.setValue(reputation);
+                            Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
                             updateAttributes.Add(Store.currentClient.playerInstance.ReputationMerovingian);
                             break;
                         default:
