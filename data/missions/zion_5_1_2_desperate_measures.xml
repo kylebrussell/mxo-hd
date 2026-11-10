@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Desperate Measures, Zion story mission 5.1.2. Source: research/missions/transcripts/Zion5-1-2.md (the archive replay
+     of [Zion Archive 5.1.2], contact [Archived]Tyndall; 16 screenshots of the Mission window only, no chat panel).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and the names Durer and Flood. Ours: the
+     description (the Summary tab was never opened), the objective texts (the Objectives tab was never opened), the
+     name "Exile Leader" (the Exile group's spokesman was never logged), the sites (the analysis center is a Zion
+     facility, so ZionOutpost; the rest Normal), the looks and the enemy counts. No item was shown. Rewards: the
+     screenshots show no chat, so none were seen; the 352,000 experience and 115,500 information are those of Zion
+     4.3, the nearest chapter whose transcripts show them.
+     Gaps: nothing was logged inside the analysis center (no NPC line in its 34 seconds), so its goal is using the
+     lab's computer to check the results, and the Operator's reaction is said when that is done. Nothing the Exile
+     group said was logged either: talking to their leader just completes the goal, with no line of his. The
+     Operator warns they "might be more interested in fighting than talking", but the visit took 29 seconds and
+     ended well, so the Exiles there are friendly and the phase has no enemies; the other Exile programs at Flood's
+     meeting (no lines) aren't placed. -->
+<mission id="105102" title="Desperate Measures" description="Ask the Merovingian for help in finding Niobe." plot="1"
+         order="5102" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Durer" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say>We've got to find out what happened. There may still be a chance to save them.</say>
+  </npc>
+  <npc id="2" handle="Exile Leader" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Flood" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say>Yes, you've done very well, operative. Now, go run along back to Tyndall, and get your treat for being a good little soldier. We'll be in touch.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Warrior, there's some more disturbing news regarding Niobe's situation. I'm sending you to our contact, Durer. She'll fill you in.</briefing>
+    <enter><say>Durer is in there.</say></enter>
+    <objective goal="1" text="Talk to Durer" type="Talk" npc="1">
+      <talk><say npc="1">Tyndall sent you? Okay... Well, we've found that the guards who were in the meeting room with Niobe--Camas, Gulf, Banquo, and Tslal--have not jacked out since Anome's ambush. If they were shot down at the meeting, their emergency jackout systems should have kicked in and pulled them out. But that hasn't happened, they haven't reported in inside the Matrix, and there's no activity on their carrier signals. I'm not sure what could have happened to them, or to Niobe, but it isn't looking good.</say></talk>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>This is very odd. They can't be reached physically, the Machines can't find them, and they can't jack out. It's almost as though they're no longer in the Matrix. But does that mean Niobe is...gone? No! There's got to be an answer to this.&#10;&#10;Warrior, our lab has come up with results from the data analysis of the area in Ueno where Niobe was ambushed. Go see what they've got.</briefing>
+    <enter><say>That's the analysis center. I'm getting some activity in there. Maybe they found something good?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Check the analysis results on the computer" type="Use" object="1">
+      <done><say>Oh man, that's heavy. What if they just deleted Niobe?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, based on the analysis you reported, intel thinks that the sector Niobe was in might have been partitioned off into a separate construct simulation. We've never heard of anyone being capable of doing something like that, but...it's the only explanation we've been able to come up with. I won't accept that Niobe has been deleted.&#10;&#10;Unfortunately, Zion still has little knowledge of how foreign constructs can be accessed, much less located. We know of one program with expertise in this field: the Merovingian's program known as "The Effectuator."&#10;&#10;We're going to have to ask the Merovingian for help. Considering the hostilities we've experienced with his organization recently, this could be...awkward. I'm sending you the location of a Merovingian group. Just try to tell them that Zion requests a meeting with the Merovingian.</briefing>
+    <enter><say>I've got Exile programs in there. You ready? They might be more interested in fighting than talking.</say></enter>
+    <objective goal="1" text="Tell the Exile Leader that Zion requests a meeting with the Merovingian" type="Talk" npc="2">
+      <done><say>I guess that's promising, sort of. Get out of there and let's see what Tyndall thinks.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It looks like you piqued their interest, {player}. We've been invited to meet a Merovingian representative and state our intentions. I'm sending you the coordinates they gave me.&#10;&#10;If they want to know what we'll give them in exchange for their assistance in locating Niobe, tell them that we're open to negotiations on that topic. We don't want to give them carte blanche, but we also aren't sure what will interest them that we can afford to give.</briefing>
+    <enter><say>I've got some Exile programs in there. Presumably they'll be lovers, not fighters, but you can never tell with these guys.</say></enter>
+    <objective goal="1" text="Talk to Flood" type="Talk" npc="3">
+      <talk><say npc="3">Oh dear, look what the code dragged in. Tyndall sent you, I suppose? Mm, yes. Perhaps you'd like to tell me what this is about, then.&#10;&#10;Niobe? Ah, of course--dear Niobe. She's one of our very favorite Zionites, you know. Terrible if anything happened to her, just terrible. My, my...&#10;&#10;I tell you what, human. We'll look into your little problem, and see if we fancy it. We may require some data from you--but you'll be ever so happy to cooperate, won't you? Of course you will. Wonderful.</say></talk>
+    </objective>
+  </phase>
+  <finish>I suppose that was as much as we could expect out of the Merovingian's followers, operative. They'll try to get as much as they can out of this deal. We must be very firm with them.&#10;&#10;I just hope Niobe is still out there somewhere.</finish>
+</mission>

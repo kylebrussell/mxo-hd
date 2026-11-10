@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Namuci, Zion story mission 9.3.3. Source: research/missions/transcripts/Zion9-3-3.md (the archive replay of
+     [Zion Archive 9.3.3]; 16 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Tyndall himself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. Tyndall's "we still
+     haven't been to reach her" and the rest are kept as shown. Ours: the description (the Summary tab was empty), the
+     objective texts (the Objectives tab was never opened), the sites (all Normal), the looks and the enemy counts. The
+     mission is placed in Mara, where Tyndall's briefing puts the override programs. Halborn and Carlyne are wireframed
+     men with override powers, neither Machine nor Exile: Halborn has the Machine program look, Carlyne an Exile look,
+     both an Exile weapon. Genaro Blair's sex isn't in the log; he is a male bluepill by his name. Rewards: the 374,000
+     experience and 63,000 information shown right after this mission completed.
+     Gaps: the Machinists are awakened humans working with the Machines; they have no organisation here and are Zion's
+     (rogue redpills), so phase 3's overridden programs aren't mixed in with them. Whether phase 2 had a fight isn't in
+     the log; it has none. The Operator's "Two big override signals, but one of them just dropped" came on the way to
+     Carlyne and is said on arrival. Genaro Blair is a Talk goal rather than someone to protect (he spoke his first line
+     while the fight was on); his "I'm not dead?" waits for the fight to end. Halborn is too powerful to engage, so he is
+     friendly and only talked to; his leaving the area isn't shown. A screenshot row is clipped inside Tyndall's
+     closing line ("despite his vast power, he" / "can be foiled."); it is joined as the best reading. -->
+<mission id="109303" title="Namuci" description="Cut down Halborn's overridden programs before he can locate the Oracle." plot="1"
+         order="9303" org="1" contact="Tyndall" neighbourhoods="Mara" exp="374000" info="63000">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say>I have been trying to find him, but I think he knows I'm here, and is being careful to avoid me. I've also been getting some interference from awakened humans, although they don't appear to be ones that work for Zion.</say>
+  </npc>
+  <npc id="2" handle="Genaro Blair" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say after="2">I'm... I'm not dead?</say>
+  </npc>
+  <npc id="3" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say>And just what do you imagine you're going to do about it?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Halborn is making his move against the Oracle, operative. We've begun picking up override programs in the vicinity of Mara, and we think we may have caught Halborn's there, briefly. Seraph told us that the Oracle anticipated something like this, but we still haven't been to reach her.&#10;&#10;I'm sending you after some of those override readings. We need to make sure that Halborn doesn't locate the Oracle!</briefing>
+    <enter><say>Didn't exactly take an Oracle to see this one coming. I just don't know what we'll be able to do if we run into Halborn himself. Looks like all you've got to worry about in there are overridden programs, though.</say></enter>
+    <objective goal="1" text="Kill the overridden programs" type="DefeatAll">
+      <done><say>All clear. Get outside; I've got Tyndall buzzing in my ear already.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We're starting to pick up larger readings in the area, Warrior. If you do encounter Halborn, I don't advise trying to engage him, as he is simply too powerful. Intel is working on formulating some sort of plan to deal with him, but we know that our options are going to be limited.</briefing>
+    <enter>
+      <say>Damn, we've got some big override signals in there, all right. This could get hairy.</say>
+      <say>Two big override signals, but one of them just dropped. I'm not sure what--&#10;&#10;Huh? Carlyne's there? Hm. We'd better see what he's doing.</say>
+    </enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="1">
+      <talk><say npc="1">Yes, he is putting a lot of effort into this. However, if we can keep the survival rate of his programs down, I believe that he will become frustrated, and desist from this line of attack.</say></talk>
+      <done><say>He sounds pretty upbeat about this mess. I just hope he's right.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Carlyne told us he'd be involved. He could serve as an invaluable check against Halborn, if he sticks to what he says. In any case, we can only keep trying to cut down Halborn's overrides.&#10;&#10;Be advised that we've also been receiving scattered reports of Machinist activity in the area.</briefing>
+    <enter><say>I've got override *and* redpill activity in there. They don't look like our people, either.</say></enter>
+    <objective goal="1" text="Talk to Genaro Blair" type="Talk" npc="2">
+      <talk><say npc="2">Aaa! Oh my God, I'm so dead...</say></talk>
+    </objective>
+    <objective goal="2" text="Kill the Machinists" type="DefeatAll">
+      <done><say>Oy, Machinists in there, too? This is turning into a real headache. Heck, we don't even know for sure that those programs weren't overridden by Carlyne himself.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>That confirms it, then: the Machines have gotten involved as well.&#10;&#10;Override signals in the area appear to be tapering off, but I've just lost contact with a team of ours in the area. I need you to--&#10;&#10;Wait, one of them is reconstructing now. They must have run into trouble. Please be careful, {player}.</briefing>
+    <enter><say>Uh-oh, I've got a big override signal in there. Um... Maybe it's Carlyne?</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="3">
+      <talk><say npc="3">You idiots. I told you to keep out of my way.&#10;&#10;You think you can stop me from finding her? Hmh! So she's snuck off somewhere... It doesn't matter. This won't go on much longer.</say></talk>
+    </objective>
+  </phase>
+  <finish>Warrior, despite his defiant words, Halborn *has* vacated the area, without locating the Oracle. He may continue his search elsewhere, but we know that despite his vast power, he can be foiled.&#10;&#10;Even if the Machines have decided to throw the Oracle to the wolves, we cannot give up on her, {player}. She has done too much for Zion, and for all of mankind, for us to abandon her now.</finish>
+</mission>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Perplexity, Zion story mission 5.1.1. Source: research/missions/transcripts/Zion5-1-1.md (the archive replay of
+     [Zion Archive 5.1.1], contact [Archived]Tyndall; 17 screenshots of the Mission window only, no chat panel).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and the NPC names. Agent Miller calls the
+     player by surname ("Mr.... DeNiro"): here {player}. Ours: the description (the Summary tab was never opened), the
+     objective texts (the Objectives tab was never opened), the sites (the scanning outpost and the analysis center
+     are Zion facilities, so ZionOutpost; the rest Normal), the looks and the enemy counts. No fighting was logged in
+     the whole five minute run, so no phase has enemies; Tyndall's mention of attacks by "Niobe's Group" redpills is
+     only in his briefing. Item stand-in: the scan data Kurtis Jelinek lets the player take from the outpost computer
+     (name never shown) is Data (6787); it is fed into the analysis center's computer in phase 3 (a Put, done with
+     Hack). Rewards: the screenshots show no chat, so none were seen; the 352,000 experience and 115,500 information
+     are those of Zion 4.3, the nearest chapter whose transcripts show them.
+     Gaps: the analysis center's staff and whatever they said, and the Operator's line when the data went in (7:45,
+     header only), were not captured, so phase 3 ends on the automatic lines. Agent Miller is a friendly, non-combat
+     Agent. -->
+<mission id="105101" title="Perplexity" description="Find out what has happened to Niobe since Anome's ambush in Ueno." plot="1"
+         order="5101" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Bulgakov" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Kurtis Jelinek" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564" />
+  <npc id="3" handle="Agent Miller" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Your cooperation is appreciated, operative.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Warrior, of course you know about the tragedy that has struck Zion. Who could have foreseen that Anome would turn on Niobe herself? We have indications that Niobe survived his treachery, but remains in critical condition. We must reach her!&#10;&#10;Unfortunately, something is preventing us from accessing the area of the building where she was struck down. We're still trying to determine what's going on there. We've located Bulgakov, an operative who was on guard outside the meeting place. Talk to him and see what you can find out.</briefing>
+    <enter><say>Bulgakov is in there.</say></enter>
+    <objective goal="1" text="Talk to Bulgakov" type="Talk" npc="1">
+      <talk><say npc="1">Hey. Yeah, I was there--well, I was stationed on the ground floor. Anome and his buddies shot their way out of the other side of the skyscraper with the case. They were already out of sight by the time I got over there. The other guards were dead... I jumped in the elevator to get to the meeting room, and find Niobe, but the elevator wouldn't go to her floor. I tried the stairs, and they just...ended. It's totally bizarre--like the building swallowed her up!</say></talk>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>Bulgakov's report is very worrisome, {player}. It doesn't seem to make sense...&#10;&#10;I'm directing you to one of our scanning outposts. They've been monitoring the area in Ueno where the meeting occurred. See if they have any useful data yet.</briefing>
+    <enter><say>The outpost is in that building. There should be some scan technicians in there you can talk to.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Kurtis Jelinek" type="Talk" npc="2">
+      <talk><say npc="2">Ah, yes, Tyndall notified us that you were coming. We've got some data from the Ueno site, but it's...garbled. I was about to recalibrate our scanners to make sure the problem isn't on our end, but we've never had a problem with this equipment. If you want the data we've picked up before, go ahead and get it from the computer over there. I've given you access.</say></talk>
+      <done><say>You've got permission to grab files off the computer in that room.</say></done>
+    </objective>
+    <objective goal="2" text="Get the scan data from the computer" type="Search" object="1" item="6787" after="1" />
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>Warrior, by now you've noticed attacks from redpills calling themselves part of "Niobe's Group." These are operatives who have always been closely affiliated with Niobe and Anome's group in Zion in particular, and who are now following Anome, perhaps lured by promises of being rewarded with cheat codes.&#10;&#10;Get the data you collected over to our analysis center ASAP. We've got to get to the bottom of the Ueno situation.</briefing>
+    <enter><say>The analysis center is in there. They'll probably have a computer you can feed that data into.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Feed the scan data into the analysis computer" type="Put" object="1" item="6787" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I'm afraid that things aren't looking good, Warrior. The data readings have our analysts baffled for now.&#10;&#10;I've arranged for you to touch base with a Machine representative. Commander Lock thinks that they should be willing to help us with this problem, since they won't want to see Zion destabilized by Niobe's loss. See if they've been able to find out anything about her situation.</briefing>
+    <enter><say>The Machine representative, Agent Miller, is in there. See if he's got anything to share with us about Niobe.</say></enter>
+    <objective goal="1" text="Talk to Agent Miller" type="Talk" npc="3">
+      <talk><say npc="3">Mr.... {player}, I believe? We are still analyzing the data from the Ueno incident. Several floors of the building in which the incident occurred are still inaccessible to our sensors, which is...unusual. It is as if they have been removed from the simulation.&#10;&#10;However, speculation is inefficient. We will inform you if we learn more. Our primary objective at this juncture is the neutralization of your rogue controller, Anome.</say></talk>
+      <done><say>That wasn't too encouraging...</say></done>
+    </objective>
+  </phase>
+  <finish>From what you've told me, it sounds as though even the Agent was perplexed by what's happened at the meeting place. This is a grave situation for Zion, Warrior. Rest assured that Commander Lock and the Council will put every effort into formulating a solution. I'll get back to you as soon as we have something. Thank you, {player}.</finish>
+</mission>

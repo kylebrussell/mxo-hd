@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Senseless, Zion story mission 9.3.2. Source: research/missions/transcripts/Zion9-3-2.md (the archive replay of
+     [Zion Archive 9.3.2]; 22 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Tyndall himself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. Ours: the description
+     (the Summary tab was empty), the objective texts (the Objectives tab was never opened), the sites (all Normal), the
+     looks and the enemy count. Halborn and Carlyne are wireframed men with override powers, neither Machine nor Exile:
+     Halborn has the Machine program look, Carlyne an Exile look, both an Exile weapon. Glen Cheng's sex isn't in the
+     log; he is a male bluepill by his name. The two Accelerated Exiles were only targeted (no lines): they stand with
+     Carlyne. Rewards: the 374,000 experience and 63,000 information shown right after this mission completed.
+     Gaps: the Operator's arrival line in phase 1 is split across two screenshots ("Looks like" / "they're both in
+     there."); it is joined as the best reading. Halborn leaves the area in retail after his outburst: here he stays.
+     Phase 2's arrival line and the start of the fight fall in a gap in the screenshots, so the phase has no enter
+     line. The overridden police are four Machine hostiles (city programs under override); the murdered bluepill
+     Svetlana isn't placed (dead NPCs aren't spawned). -->
+<mission id="109302" title="Senseless" description="Find out why Halborn is hunting for the Oracle." plot="1"
+         order="9302" org="1" contact="Tyndall" exp="374000" info="63000">
+  <npc id="1" handle="Colt" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="2">Don't worry, I think I've got him fooled.</say>
+  </npc>
+  <npc id="2" handle="Halborn" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say after="2">This place isn't as big as it looks. There are only so many places she can hide from me...</say>
+  </npc>
+  <npc id="3" handle="Glen Cheng" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>Why Svetlana? This doesn't make any sense. It just doesn't make any sense...</say>
+  </npc>
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say>Uncorroborated reports suggest that Halborn met with the Machines just before he tracked down Colt. We don't know what they talked about, but it's conceivable that it has something to do with the Oracle.</say>
+  </npc>
+  <npc id="5" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say>Oh, it won't be easy, but it can be done, I assure you. I know Halborn very well; in fact, I've made something of a career out of staying one step ahead of him. I'd say we have a few days before we have to start worrying. I'm going to spend them familiarizing myself with the lay of the land.&#10;&#10;It's been quite a pleasure meeting you. I'll be in touch again shortly.</say>
+  </npc>
+  <npc id="6" handle="Accelerated Exile" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="Accelerated Exile" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, Halborn has appeared, asking questions about the Oracle. He won't say why he wants to know about her all of a sudden, but he's very insistent. We're concerned that he may have decided to make the Oracle a target.&#10;&#10;I'm also a little worried, because he's tracked down Captain Colt, and I don't know what the captain may have told him already...</briefing>
+    <enter><say>Jeez, Colt better have kept his big mouth shut this time. Looks like they're both in there.</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="1">
+      <talk><say npc="1">What? She's an old lady who hangs out in the park sometimes and reads fortunes. Other than that, she's a real recluse. How'm I supposed to know where she is?</say></talk>
+      <done><say>Hm. Might have got there just in the nick of time.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="2" after="1">
+      <talk><say npc="2">So, you don't know either, huh? Bah! Don't play dumb! I know she's behind all this; the old bag's had what I wanted this whole time.&#10;&#10;Won't talk, huh? Fine, have it your way. I'll find her without your help, and you'll stay clear, if you know what's good for you.</say></talk>
+      <done><say>You know, I don't think I'd just stand around there if I was you. He doesn't look too happy.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>{player}, we were tracking Halborn as he left the area, and now we're detecting program override activity along his path. Since he didn't get the information he wanted from us, he may have decided to start looking for the Oracle on his own. I need you to investigate, and report on his activity.</briefing>
+    <objective goal="1" text="Talk to Glen Cheng" type="Talk" npc="3">
+      <talk><say npc="3">This...thing was here, screaming at her, demanding to know about some...some fortune-teller. I called the police, but when they got here, they just started firing indiscriminately. He hit her...&#10;&#10;I couldn't... There just wasn't anything I could do.</say></talk>
+      <done><say>Great... But is he just striking out randomly, or does he already know some of her other connections? We always knew that the Oracle contacts a lot of people. What if he's on to them somehow, and just starts killing off her whole network until she surrenders?</say></done>
+    </objective>
+    <objective goal="2" text="Kill the overridden police" type="DefeatAll">
+      <done><say>No more override code in the area. Looks like you got 'em all.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, our sensor programs were disrupted, and that was as far as we were able to follow him. Since you report that he's already killed a bluepill, I think we have to assume that his motives in seeking the Oracle are hardly friendly.&#10;&#10;I'm sending you to meet with Ghost. He has information that appears to be related to this situation.</briefing>
+    <enter><say>I dunno. If there was one person in the Matrix he shouldn't try messing with, it'd probably be the Oracle.&#10;&#10;Okay. I'm reading Ghost in there.</say></enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="4">
+      <talk><say npc="4">We haven't turned up any connection between the Oracle and the woman Halborn murdered. It's too early to tell if he's following some kind of information trail. We've been trying to get a message out to the Oracle, but there still hasn't been any confirmed contact with her so far.&#10;&#10;That isn't why I called you here, though. The other wireframed man, Carlyne, just contacted us. Says he wants to help us out. We still don't know very much about this guy, so I'm sending you in to get some details.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The location Carlyne gave us is marked for you, {player}. When he met with operatives recently, he hinted that he might be interested in what Halborn is after, so it's possible that he's looking for the Oracle now, too. You should not, of course, give him any information about her.</briefing>
+    <enter><say>I figure the Oracle can probably handle a super-powered homicidal maniac coming after her, but two could be pushing it...&#10;&#10;Got override codes and a big reading in there... Profile matches what we've got on Carlyne.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="5">
+      <talk><say npc="5">Welcome, welcome. I appreciate you taking the time to come see me, I really do.&#10;&#10;I've been keeping up on our large friend's activities, and naturally I'm concerned about this latest turn of events. Halborn is a good deal less clever than he would like to think, but the code overrides he commands make him more than a match for any Machine-created program, even one as exceptional as the Oracle. To save her, you'll need someone who can stop him. I can, and I want to help you.</say></talk>
+      <done><say>He seems awfully sure of himself, doesn't he?</say></done>
+    </objective>
+  </phase>
+  <finish>I see. Thank you, {player}. I will relay that message immediately. I don't think anyone in Zion trusts that man, but if Halborn really is going after the Oracle, we're going to need all the help we can get.</finish>
+</mission>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Blip, Zion story mission 10.2.5. Source: research/missions/transcripts/Zion10-2-5.md (the archive replay of
+     [Zion Archive 10.2.5], given by [Archived]Tyndall; 24 screenshots, one during phase 3, the rest of the log after
+     it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Operator, Niobe, Colt, Shimada and E Pluribus Neo Crusader line, the
+     NPC names, and the objective text "Search the area" (shown in the Objectives window in phase 3). Ours: the
+     description (the Summary tab was never opened), the other objective texts, the sites (the Gracy Heights
+     residence is a SlumApt, the Guinness Lake building a Derelict, the meeting places Normal), the looks and the enemy
+     counts. Retail's places were in Westview; the phases ask for the same neighbourhood names in the Slums file
+     (Gracy Heights, Guinness Lake, Rogers Way). The phase 2 gang has no organisation and is Merovingian here; the
+     Cypherites of phase 3 (Cypherite Duelist, Crusher Jackhammer) are Zion's (rogue redpills). Shimada's sex isn't
+     shown; he has a male look. Rewards: the 525,000 information shown right after this mission completed; the
+     player was level 50, so the experience is The Spider's (11.1.5, 352,000), the nearest mission with one.
+     Gaps: the briefing may continue past the captured part (a gap in the screenshots). Colt's lines were said when
+     clicked after Niobe's talk: here talking to him is an optional goal and his second line his repeat line. The
+     four E Pluribus Neo Crusader lines are four bystanders here, one line each. The dead
+     phone on the old coppertop line is a Phone used by standing beside it; the Operator's line about spotting it is
+     said on arrival. No goal-complete line was seen in phase 2; it ends on the phone. In phase 3 the door the
+     Cypherites locked, which unlocks itself once they are dead, isn't there: the computer behind it is searchable
+     once they are dead, and the Operator's "Say wha-?" and "That's it? But... And who unlocked that door, anyway?"
+     (unplaced in the log) are said when it is searched. The computer's readout (">Follow her eyes in the dark binary
+     of the golden prime._") can't be shown, so the search just completes; no item was given in retail. Two places in
+     the text had a line hidden between screenshots; they are joined as the build notes read them. -->
+<mission id="110205" title="Blip" description="Investigate sightings of the Morpheus simulacrum in Westview." plot="1"
+         order="10205" org="1" contact="Tyndall" exp="352000" info="525000">
+  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Either one of them has a lot of questions to answer.</say>
+  </npc>
+  <npc id="2" handle="Colt" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="2">Hell if I can tell what he's doing. He never did anything like this before.&#10;&#10;Hah, you know, I think he even swiped something from the Merv. I ran into Ookami and a pack of their operatives who sounded like they were pretty PO'd about something he'd done. ... Put up a pretty good fight, too.</say>
+  </npc>
+  <npc id="3" handle="Shimada" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say after="1">No, we aren't sure what the object was, but our readings showed that it was no larger than a mid-sized hovercraft. It was moving at approximately standard hovercraft speed, but the tunnels didn't allow us to approach it directly. We were fortunate to have picked it up at all.&#10;&#10;Yes, we will keep you informed of progress on the data in the recovered terminal. It is a known encryption type, so we expect to be able to crack it.</say>
+  </npc>
+  <npc id="4" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
+    <say display="5">I hope you've got that old hardline system of yours under control now.</say>
+  </npc>
+  <npc id="5" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say display="5">Good to hear you got Lock back to your city after we handed him off to you.</say>
+  </npc>
+  <npc id="6" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">The Machines tried capturing information from our scanners around the old city a few weeks ago. They'd disabled our security, and, well, we thought we were screwed...but then the security routines kicked back in somehow, and we were able to secure the data. Some kind of glitch, I guess. It was a close one.</say>
+  </npc>
+  <npc id="7" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say display="5">Hm... The Machines may have captured some data about the site where we rescued Commander Lock after the Machines wiped out the old city. We had a security incident a few weeks ago.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Warrior, there have been multiple developments in the Mauser case in the past week. Captain Niobe will brief you on the details.&#10;&#10;I believe Captain Colt is there as well.</briefing>
+    <enter><say>What's the deal with the Merv making the surface storm around Machine city worse, anyway? Not that we'd be sane to fly around there anyway, but still...</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="1">
+      <talk><say npc="1">Here's the situation: we had people checking reports of someone generally matching Mauser's description in Westview. They didn't find him, but they ran across Joshua Maston, and he swore it wasn't Mauser who'd been over there, but the simulacrum of Morpheus. That thing's been AWOL since the Oracle was killed, so who knows...but something's over there, and we need to find out what.</say></talk>
+      <done><say>Sounds like it's quality time in the Barrens for us.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Colt" type="Talk" npc="2" optional="1">
+      <talk><say npc="2">They're saying Mauser's outside now; I heard the Machines sent out hunting parties right into that big-ass storm the Merv brewed up. It's close to where he was supposed to have been killed when he was with Lock, too; I knew there was something going on with that.</say></talk>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="3" neighbourhoods="Gracy Heights">
+    <briefing>We're going to have you check areas the Morpheus simulacrum has been seen in before in Westview. First up is a location in Gracy Heights.</briefing>
+    <enter>
+      <say>How bizarre would it be if the Morph sim and Mauser were in cahoots somehow?&#10;&#10;Hey, I'm just throwing ideas out...&#10;&#10;Let's see... I'm reading some gang activity in there; not much else.</say>
+      <say>Hey, there's a phone in there. But I didn't pick up a line connection... Check that thing.</say>
+    </enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Check the phone" type="Use" object="1">
+      <done><say>Yeah, it's dead. That's what I thought. It must be on an old coppertop network... A lot of areas in Westview haven't had service in years--or ever, I suppose, depending on whose theory of time and simulation you subscribe to.&#10;&#10;Weird that someone would keep a phone hooked up to a dead line. Hm... I'm gonna see if I can look up the old phone connections. Who knows, maybe it goes somewhere.</say></done>
+    </objective>
+    <complete><say>Those guys are real bundles of joy, huh?</say></complete>
+  </phase>
+  <phase site="Derelict" enemy="Zion" enemies="4" neighbourhoods="Guinness Lake">
+    <briefing>An out of service residential line? Well... All right, keep me informed of your progress, operative.</briefing>
+    <enter>
+      <say>It's a shame about Guinness--could be real nice with that bay and all, if it weren't for the total decrepitude and all-around air of misery and despair. Different strokes for different folks, sure, but still, the Architect's gotta have a few bolts loose in the ol' cranial chamber to have come up with that place.</say>
+      <say>The city utility records I pulled up showed that the line used to connect--fictitiously or otherwise...if it even matters--to a switch box in that building. Looks like it's inhabited... Hey, some of those are redpill signals.</say>
+      <say>Cypherites!&#10;&#10;Hey, it looks like they've got the door on the other side of that room locked. Now what would they be trying to hide in a place like that?</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill the Cypherites" type="DefeatAll">
+      <done><say>No keys on those banditos. I wonder if we can pick that--&#10;&#10;Hey! That's funny... That door's unlocked now. ... Did you do that?</say></done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0" after="1">
+      <done>
+        <say>Say wha-?</say>
+        <say>That's it? But... And who unlocked that door, anyway?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Rogers Way">
+    <briefing>"Follow her eyes in the dark--"&#10;&#10;Are you sure you read that message accurately, operative?&#10;&#10;No, I... Well, it just seems very strange.&#10;&#10;Ah... If you have nothing else to check there, I need you to speak with EPN. They say they've found something.</briefing>
+    <enter><say>What, they found Morpheus? That would figure.&#10;&#10;Okay... Pluribus Neo's officer Shimada is supposed to be meeting you in there.</say></enter>
+    <objective goal="1" text="Talk to Shimada" type="Talk" npc="3">
+      <talk><say npc="3">Hello. We thought you should know that we detected a blip heading north from a deep tunnel system near the old city. It left scan range before we were able to pursue it, but when we backtracked along its flight path, we found an area at the end of an old maintenance tunnel, strewn with pieces from Sentinels and hovercraft.&#10;&#10;Some of the pieces showed signs of heavy damage, but a terminal from one of the hovercraft sections was actually functional. It contained encrypted data that we're working on decoding now.</say></talk>
+      <done><say>North? But that would mean whatever it is is heading right into the storm.</say></done>
+    </objective>
+  </phase>
+  <finish>Thank you, operative. I'll see to it that intel gets this report right away.</finish>
+</mission>

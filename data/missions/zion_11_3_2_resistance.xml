@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Resistance, Zion story mission 11.3.2. Source: research/missions/transcripts/Zion11-3-2.md (a live retail run,
+     not an archive replay, given by Tyndall; 9 screenshots, all of the log after it ended). Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Operator and closing line, and the hostiles' names (Machine Karate
+     Grandmaster, Machine Kung Fu Grandmaster, Wright Accelerated Program). Ours: the description (the Summary tab was
+     never opened), every objective text (no Objectives tab was captured), the goals (the log only has the Operator's
+     reactions), the sites (two override sites around Hampton, Downtown: Normal), the looks and the enemy counts. The
+     Machinists are Machines; the accelerated programs are overridden programs and Machines here, with a Machine
+     program look; the Cypherite with them has no organisation and is Zion's (a rogue redpill), with no name in the
+     log. Rewards: the 525,000 information shown right after this mission completed; the player was level 50, so the
+     experience is The Spider's (11.1.5, 352,000), the nearest mission with one.
+     Gaps: the enemies "resisting" the override slow-down is flavour only. The Machinists' barks ("Hey! Damn, Zion is
+     trying to get in on this." and "Got you!") were said in combat and can't be. Two pauses in the log may hide
+     lines between screenshots. The emphasis on "have" (italics) in Tyndall's second briefing is dropped. -->
+<mission id="111302" title="Resistance" description="Search the Hampton area for the interface program's trail." plot="1"
+         order="11302" org="1" contact="Tyndall" exp="352000" info="525000">
+  <npc id="1" handle="Machine Karate Grandmaster" type="HOSTILE" at="1" rsi="050100b4" weapon="2568" />
+  <npc id="2" handle="Machine Kung Fu Grandmaster" type="HOSTILE" at="1" rsi="ec020058" weapon="2568" />
+  <npc id="3" handle="Wright Accelerated Program" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Cypherite" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>{player}, Machines and Merovingian operatives have been confirmed in the Hampton area. Danielle Wright, and presumably the interface program, are still in the vicinity. It's going to be difficult, but we have to try getting through to the program. It has almost seemed to be trying to contact us...</briefing>
+    <enter><say>They were hoping we'd find the interface program's trail in there, but the big fat override signal I'm picking up there might just have shot that plan to hell.</say></enter>
+    <objective goal="1" text="Kill the Machine operatives" type="DefeatAll">
+      <done><say>Crud! Well, that spot is a wash.&#10;&#10;Hey, why weren't those Machinists getting slowed down by that override program?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>We have been hearing about operatives apparently resisting override use, {player}, as well as rumors of a new type of accelerated program.&#10;&#10;From the encounter you just had, it sounds like the Machines are intent on preventing us from locating the interface program. That wasn't unexpected, of course; we'll just have to do what we can.&#10;&#10;I'm routing you to another area where override use has been detected. Look for any unusual activity that could be due to the interface program.</briefing>
+    <enter>
+      <say>Did you see that thing? I'm getting some weird readings. I guess it's overridden code, but it looks a little different than what we've seen before.</say>
+      <say>Whoa! What the hell are those?</say>
+    </enter>
+    <objective goal="1" text="Kill the accelerated programs" type="DefeatAll">
+      <done><say>I'd say we can confirm the new type of accelerated program Tyndall mentioned. I wonder what that Cypherite was doing there.</say></done>
+    </objective>
+  </phase>
+  <finish>Hm... We've had reports of something to do with Cypherites in Morrell. I wonder if it could be related to program overrides somehow.&#10;&#10;{player}, I think we're making some progress in terms of understanding what's going on around Hampton, but we still need to find the interface program. Contact our operative in Hampton Green again when you're able.</finish>
+</mission>

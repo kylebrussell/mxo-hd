@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mistrust, Zion story mission 9.3.1. Source: research/missions/transcripts/Zion9-3-1.md (the archive replay of
+     [Zion Archive 9.3.1]; 17 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Tyndall himself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. The Zion Gunman's line
+     was only in team chat; it's his flavour line beside Niobe. Ours: the description (the Summary tab was empty), the
+     objective texts (the Objectives tab was never opened), the sites (all Normal), the looks, and the enemy count. The
+     intruder (Halborn) and Carlyne are wireframed men with override powers, neither Machine nor Exile: Halborn has the
+     Machine program look and an Exile weapon. Rewards: the 363,000 experience and 63,000 information shown right after
+     this mission completed.
+     Gaps: what was killed at the override site isn't in the log (the screenshots skip from the Operator's arrival line
+     to the site's all-clear 3 minutes later); the overridden programs are a DefeatAll of four Machine hostiles. Shelton
+     Pryes spoke only after the site was clear, so he is a bystander there. The Operator's arrival line at the override
+     site is cut off at the bottom of a screenshot; it is kept as far as it was shown. -->
+<mission id="109301" title="Mistrust" description="Find out who the second wireframed man fighting the intruder is." plot="1"
+         order="9301" org="1" contact="Tyndall" exp="363000" info="63000">
+  <npc id="1" handle="Colt" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say>What? That's all I got. Jeez.</say>
+  </npc>
+  <npc id="2" handle="Shelton Pryes" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">My god! What's wrong with those people? They just went crazy!</say>
+  </npc>
+  <npc id="3" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say>Pah. I can handle him.&#10;&#10;Is he going to be a problem? Not if you do as I say. Don't trust him. Don't believe a damn thing he says.</say>
+  </npc>
+  <npc id="4" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say>"Don't trust him," huh? You know, that's the first thing he's said that I might actually take into consideration.</say>
+  </npc>
+  <npc id="5" handle="Zion Gunman" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+    <say display="5">Yeah, well... I'd still rather be us than the Machines right about now.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, the situation may have just gotten worse. A second wireframed man has been reported in combat with the intruder. Colt will have more details for you.</briefing>
+    <enter><say>Another one? Oh, great. Like we didn't have enough to worry about with the first guy.</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="1">
+      <talk><say npc="1">Okay, here's what we've got so far. This new guy and the intruder supposedly fought, then split up. We're not sure what that was about, but it's looking like they don't like each other much.&#10;&#10;Now we're getting reports of override programs being used nearby. We were able to get in touch with the intruder, and it doesn't seem to be him that's doing it, so money's on the new guy. You've been tabbed to go into the danger zone and see if you can turn anything up on him.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Overridden programs have been reported at the indicated location, {player}. Be careful.</briefing>
+    <enter><say>Let me get a peeper on this... Huh. Override codes, all right. While you're in there, I'll see if I can compare them with the codes we've seen before.</say></enter>
+    <objective goal="1" text="Kill the overridden programs" type="DefeatAll">
+      <done><say>Okay, I'm not picking up anything else remarkable in there.&#10;&#10;I've been checking how the codes compare, and they look like the intruder's codes--exactly like the intruder's codes, in fact. If those were from the new guy, then the two of them are sharing the same code base.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We've been able to get a reading on the intruder's location, operative. He should be able to give us some information on the newcomer. We need to know if this new man is going to help or hinder our fight against the Machines.</briefing>
+    <enter><say>The intruder should be in there. Something tells me he's going to have grumpy face on today.</say></enter>
+    <objective goal="1" text="Talk to the intruder" type="Talk" npc="3">
+      <talk><say npc="3">Annoying, is what it is. He's just trying to slow me down. But if he's come here now, then I must be close...&#10;&#10;Hmh. He'll tell you sooner or later himself. His name is Carlyne. He'll call me Halborn. I've known him for a long time...long enough to know that he's a deceitful bastard who won't stop at anything to get what he wants. Lies with a smile--that's Carlyne all over. Only, I know him too well for that to work...so he's had to resort to this.</say></talk>
+      <done><say>"Halborn," huh? Gee, and here I was kind of getting used to "intruder." "Halborn" is so...blah.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, Captain Niobe wants to talk to you about this development. I'm routing you to her location now.</briefing>
+    <enter><say>You know, that whole "don't trust him" line was pretty ironic, considering whose wired lips it came from.&#10;&#10;Captain's waiting for you in there.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="4">
+      <talk><say npc="4">Hm. Thanks for the information, {player}. I can see this turning into a real pain in the ass. If this Carlyne guy really is out to get the intruder--Halborn--then chances are that's going to keep Halborn so busy that he won't be much help against the Machines; and in the mean time, those two could be doing who knows what to the whole damn place.&#10;&#10;We're going to have to get them sorted out, and fast, or we'll have two real big problems on our hands, and the Machines right behind them.</say></talk>
+    </objective>
+  </phase>
+  <finish>I think we all share the Captain's concerns, {player}. We also have to be cognizant of the fact that we have only Halborn's own word on this new arrival. If they are indeed rivals, then we can't assume that either of them will tell us the truth about the other.</finish>
+</mission>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Evacuation, Zion story mission 8.3.4. Source: research/missions/transcripts/Zion8-3-4.md (the archive replay of
+     [Zion Archive 8.3.4], contact [Archived]Tyndall; 20 screenshots of the Mission window only, no chat panel).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and the names Niobe, Ghost, Colt and
+     Cherryl Lochead. Colt's "back his ship" and "names of my list" are kept as shown. Ours: the description (the
+     Summary tab was never opened), the objective texts (the Objectives tab was never opened), the names of the two
+     operatives evacuated in phase 3, Ivo Brandt and Lena Sorel (nothing about them was logged: no names, no lines),
+     the sites (all Normal: no location was named), the looks and the enemy counts. Phase 4's hostiles are Machines
+     ("They're on to you..."). No item was shown. Rewards: the screenshots show no chat, so none were seen; the
+     363,000 experience and 63,000 information are those of Zion 9.2, the nearest chapter whose transcripts show
+     them.
+     Gaps: the Operator's "If you're all done with the goodbyes..." followed Ghost's farewell, which came after
+     Niobe's; here the two talks are open together and his line is said when both are done. In retail the Machines
+     showed up only once Cherryl Lochead was found ("No sign of trouble in there", then "I've got signals, man,
+     all over the place"); here the phase's hostiles are on the floor from the start and attack on sight. Her line
+     and the Operator's alarm are said when she is found, followed at once by his "Keep them moving" (a minute later
+     in retail). "Do not let Cherryl Lochead die" is ours: the objectives weren't shown, but she is led out through
+     the Machines. The signal locking and tracing, and any time pressure, have no mechanic here. -->
+<mission id="108304" title="Evacuation" description="Lead veteran operatives whose signals the Machines can trace to safety through hardlines." plot="1"
+         order="8304" org="1" contact="Tyndall" exp="363000" info="63000">
+  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say>I'll be back as soon as I can. Keep cool and don't take crap from anyone--especially the Machines!</say>
+  </npc>
+  <npc id="2" handle="Ghost" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>A lot of people are going to be counting on you. To help them, you'll have to learn to count on yourself.</say>
+  </npc>
+  <npc id="3" handle="Colt" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say>Me? Nah. Roland made us all get our signals reconfigured as soon as we got a new ship--after Bane. Hurt like a son of a-- Anyway, it wasn't fun, but right about now I'm glad he put us through the pain.</say>
+  </npc>
+  <npc id="4" handle="Ivo Brandt" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Lena Sorel" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
+  <npc id="6" handle="Cherryl Lochead" type="FRIENDLY" at="4" rsi="58010058" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, despite our best efforts, the Morpheus simulacrum did not listen to our entreaties. I've just received confirmation that it has unlocked our RSI signature archive for the Machines. This places many of our veteran operatives in immediate danger of having their signals locked and traced by the Machines.&#10;&#10;Ghost and Captain Niobe are among those at risk. They are leaving final instructions now before they have to jack out from the Matrix.</briefing>
+    <enter><say>Oh man. Anyone who was an operative when that archive was made three years ago could find the Machines knocking on their hovercraft door at any minute...unless they've had their RSI signature changed since then, but that's a real pain in the jack--literally.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="1">
+      <talk><say npc="1">I need you to keep it together while I'm out of action, {player}. A lot of key operatives are going to have some downtime while we get their RSI signatures reconfigured, and the rest of you are going to have to pick up the slack in the meantime.&#10;&#10;Hey. You can do it. I know you can.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Ghost" type="Talk" npc="2">
+      <talk><say npc="2">The last five times the Machines destroyed Zion, that was the end: game over. This time, we don't get a reset; the past is still with us, and the future isn't following anyone's efficient plan.&#10;&#10;That's a secret I've discovered about leadership: everyone assumes you know what you're doing. The truth is that in a crisis, everyone's just winging it. The real test is how you handle yourself when you don't know the answers.</say></talk>
+    </objective>
+    <complete><say>If you're all done with the goodbyes, I've got Tyndall buzzing in my ear.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We have many veteran operatives who require immediate escort to a hardline.&#10;&#10;Colt is near your location, and has already received a detailed briefing from Commander Roland. I'm routing you to him now.</briefing>
+    <enter><say>You know, maybe this won't be so bad. Maybe this will be our time to shine. Hell, we could end up getting a promotion out of this--and I don't just mean posthumously!&#10;&#10;Okay, Colt should be in there.</say></enter>
+    <objective goal="1" text="Talk to Colt" type="Talk" npc="3">
+      <talk><say npc="3">The Machines sure aren't wasting any goddamn time; they already tracked this poor bastard's signal back his ship. His crew blew their EMP... Might have saved their bacon, but he's done.&#10;&#10;We've got people dying while we're here jawing, {player}. I'll have my operator give you some of the names of my list. These operatives need to get out, pronto.</say></talk>
+      <done><say>Okay, I'm receiving the list of names from Colt's operator now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>There are two operatives who need to be evacuated from the indicated location, operative. Lead them to a hardline as quickly and as safely as possible. With their signals compromised, and possibly being tracked or locked by the Machines at any second, it's too risky to have them leave the simulation by any other means.</briefing>
+    <enter><say>I'm picking up their signals in there. Nothing unusual on my screen, and their signals are steady.</say></enter>
+    <objective goal="1" text="Lead Ivo Brandt to a hardline" type="Escort" npc="4" to="hardline" />
+    <objective goal="2" text="Lead Lena Sorel to a hardline" type="Escort" npc="5" to="hardline" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>I have just one more evacuee for you to handle now, {player}. Most are out or on their way, but there are some we haven't been able to contact yet.</briefing>
+    <enter><say>Okay, Lochead's signal looks fine. No sign of trouble in there.</say></enter>
+    <objective goal="1" text="Find Cherryl Lochead" type="Talk" npc="6">
+      <talk><say npc="6">Jeezus! You just walk in here dressed like that? They'll be on us faster than--</say></talk>
+      <done>
+        <say>Holy--! I've got signals, man--all over the place. They're on to you...</say>
+        <say>Keep them moving, {player}. I think you can make it.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Cherryl Lochead to a hardline" type="Escort" npc="6" to="hardline" after="1" />
+    <objective goal="3" text="Do not let Cherryl Lochead die" type="Protect" npc="6" after="1" />
+  </phase>
+  <finish>Well done, {player}. All three of those operatives are safely on their way back to New Zion now, thanks to you.&#10;&#10;It will be difficult not having many of our most experienced operatives in the field while their signatures are being reconfigured, but we all have to do what we can. This threat is not limited to operative signal traces, however; the signatures the Machines have obtained will give them access to some of our areas inside the Matrix. Do not let your guard down even for a second while you are jacked-in, operative.</finish>
+</mission>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ring 149, Zion story mission 11.2.4. Source: research/missions/transcripts/Zion11-2-4.md (a live retail run, not
+     an archive replay, given by Tyndall; 21 screenshots, one during phase 3, the rest of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Operator, Danielle Wright, Patch Daemon, Agent Stewart, Agent West,
+     Machine Aikido Grandmaster and Machine Howitzer line, and the NPC names. Ours: the description (the Summary tab
+     was never opened), every objective text (only "Leave the area now!" was shown), the goals of phases 1, 2 and 4
+     (the log only has the lines), the sites (the two residential areas are SlumApt, the Zion lab an Office in Manssen
+     Park, the last bluepill's place Normal in Stamos, where the log was read after the end), the looks and the enemy
+     counts (no fight is seen). Patch Daemon's sex isn't shown; he has a male look. The Agents call the player "Mr.
+     DeNiro" (the player's surname); here it is "Mr. {player}". Rewards: none were shown; the information is Mara's
+     (11.2.3, 175,000) and the experience The Spider's (11.1.5, 352,000).
+     Gaps: Wright (shown friendly) zaps from site to site: here she stands at the first victim, and finding her says
+     her lines; the victim isn't there. In phase 2 she is already gone; the Operator's lines about losing her signal
+     are said on searching the place, which turns up nothing. The goal-complete lines of phases 1 and 2 were only
+     partly visible. The corpse transferred to the Zion lab isn't spawned (dead NPCs aren't). The lab computer's
+     readout ("Target locked." / "Trace routine running...") can't be shown; searching it just completes, after
+     Patch Daemon's talk. The Agents and Machinists of phase 4 only warn the player off: they are friendly here, and
+     Agent Stewart's warning is a Talk goal. The real-world pod trace and the Sentinel attack are narration. A line of
+     Patch Daemon's talk and of the Operator's reply to Agent Stewart was hidden between screenshots; the visible
+     parts are joined. "though the pods" is as retail wrote it. -->
+<mission id="111204" title="Ring 149" description="Find out why bluepills are turning up dead wherever Danielle Wright uses her overrides." plot="1"
+         order="11204" org="1" contact="Tyndall" exp="352000" info="175000">
+  <npc id="1" handle="Danielle Wright" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Hm?&#10;&#10;...&#10;&#10;I suggest you find something constructive to do.</say>
+  </npc>
+  <npc id="2" handle="Patch Daemon" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say after="1">We've never seen anything like this before, so I really can't say. A single pod tower can hold thousands of people. If the interface program really is there, and Wright keeps chasing it from host to host through the pods in the tower...we're looking at tens of thousands of people at risk.</say>
+  </npc>
+  <npc id="3" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <npc id="4" handle="Agent West" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>You should do as Agent Stewart advised, Mr. {player}.</say>
+  </npc>
+  <npc id="5" handle="Machine Aikido Grandmaster" type="FRIENDLY" at="4" rsi="050100b4" weapon="2568">
+    <say display="5">Get the hell out of here. This is your goddamn fault, you know.</say>
+  </npc>
+  <npc id="6" handle="Machine Howitzer" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
+    <say display="5">If you were really concerned about the safety of these people, you'd have joined the System when Agent Gray offered you a place with us.</say>
+  </npc>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>{player}, we have a new problem: bluepills are turning up dead across the city. We don't know exactly what's causing it, but override use has been detected in the vicinity of a few of the victims, so Wright seems like a prime suspect.&#10;&#10;I'm calling you now because we've just picked up an override signal not far from your location. Please get there as quickly as you can.</briefing>
+    <enter><say>Dang, this looks like a big one. Watch yourself in there.</say></enter>
+    <objective goal="1" text="Find Danielle Wright" type="Talk" npc="1">
+      <talk><say npc="1">Well, pod 0026:05:0149:032, let's see if you're the one that program's chosen to call home...&#10;&#10;Hmh. Unfortunately not. Someone else in 149, then.</say></talk>
+      <done><say>Did she think the interface program was in that bluepill? If she's going after bluepills now...this is bad.&#10;&#10;Look, you'd better get outside and get ready to move. It sounds like she's going to go after more people; maybe we can follow her and prevent more deaths.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>Your operator's hunch may have been right, operative; Wright has changed her position to another residential area. I'm putting it up for you now.</briefing>
+    <enter><say>Damn, we can't beat her to the punch when she can just zap herself from spot to spot. Maybe she'll still be in the middle of some supervillainesque rant...</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>Damn it, I've lost Wright's signal. Damn, damn, damn!</say>
+        <say>...&#10;&#10;She's gonna pay for this...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0" neighbourhoods="Manssen Park">
+    <briefing>Operative, we haven't been able to establish a connection between those two victims. However, Wright referred to the first as a "pod" number, and we think this could be significant: maybe she is looking for the program inside the Machine pod system in the Real, rather than just inside simulated RSIs.&#10;&#10;We're going to try locating the last victim's pod. This requires alterations to the usual red pill procedure, since the subject is deceased... But if the Machines haven't flushed the body from its pod yet, it may work. Check in with operative Patch Daemon at our lab for an update. We've already had the corpse transferred there.</briefing>
+    <enter><say>Oh man... This is gruesome. It makes a sick kind of sense, though. We know Wright's an expert on the pod systems; she's the one who re-wrote our red pill extraction routine when the Machines cracked the original. If anyone would be able to follow the interface program though the pods, it'd be her. Now we've got to try to beat her at it, or she'll go on killing everyone in the whole pod cluster until she corners the program.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Patch Daemon" type="Talk" npc="2">
+      <talk><say npc="2">Ah, {player}. It seems to have worked; we're getting real-world coordinate information back from the pill trace now. Fortunately, their pod cluster appears to be relatively close to the Machine city. We've got a ship approaching it now.&#10;&#10;Once the ship arrives, they'll be able to start running back-traces on the people in nearby pods. In theory, that gives us a chance to find them in the simulation before Wright does. That's where you'll come in.</say></talk>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Stamos">
+    <briefing>{player}, our crew at the tower says that it's just pods in the same horizontal pod ring that are...empty. For now, at least, that narrows our search down significantly. They've begun running traces back on the remaining people in that ring of pods. The location you see marked on your HUD should correspond to one of those bluepills.</briefing>
+    <enter><say>Great, no override activity in sight. Our bluepill should be in...&#10;&#10;Hold on... Those are Machine and redpill signals. Damn it, what now?</say></enter>
+    <objective goal="1" text="Talk to Agent Stewart" type="Talk" npc="3">
+      <talk><say npc="3">This location has been secured...operative. Your continued presence here will result only in your arrest or termination, which would hardly be...efficient for anyone, would it?</say></talk>
+      <done><say>Damn it, they got to the bluepill already. And they think they're going to be able to protect them inside the pod system? Fat chance.&#10;&#10;... Come on. Hanging around there isn't going to help any.</say></done>
+    </objective>
+  </phase>
+  <finish>{player}, we've lost contact with the hovercraft at the tower! Another ship in the vicinity is telling us they're picking up heavy Sentinel activity... It looks like the Machines have made their move.&#10;&#10;We have no way to track those bluepills before Wright finds them, now. If Machines can't stop her, she could continue killing the rest of the people plugged into that tower; but if they can stop her, they may be able to trap the interface program there.&#10;&#10;I'm afraid I have no more information for you now. I'll update you as soon as I have something.</finish>
+</mission>

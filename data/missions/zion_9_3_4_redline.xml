@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redline, Zion story mission 9.3.4. Source: research/missions/transcripts/Zion9-3-4.md (the archive replay of
+     [Zion Archive 9.3.4]; 19 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Tyndall himself. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. Tyndall's "It looks
+     Carlyne's moving" is kept as shown. Ours: the description (the Summary tab was empty), the objective texts (the
+     Objectives tab was never opened), the sites (all Normal), the looks and the enemy count. Halborn and Carlyne are
+     wireframed men with override powers, neither Machine nor Exile: Halborn has the Machine program look, Carlyne an
+     Exile look, both an Exile weapon. Each is placed again for the showdown (Carlyne from phase 1, Halborn from phase
+     3), since neither follows the player. Rewards: the 374,000 experience and 63,000 information shown right after this
+     mission completed.
+     Gaps: several Operator lines run across two screenshots with no header on the second; each is joined as one line.
+     The Operator's "Oh, I'd say that's definitely him" came as the player reached Halborn and is said with his line.
+     The showdown is a scripted code clash that nearly blows the hovercraft's dampers: here Carlyne and Halborn stand on
+     one floor, each says his line when talked to, and the Operator's feedback line comes when both are done. Phase 4's
+     arrival line falls in a gap in the screenshots; the Operator's first line there is used. Tyndall passing the
+     sighting on to Carlyne and the EJP joke are only words. -->
+<mission id="109304" title="Redline" description="Hear Carlyne's request, and confirm Halborn's location for him." plot="1"
+         order="9304" org="1" contact="Tyndall" exp="374000" info="63000">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say>Yes, I will contact your broadcaster with a code path they can use to reach me. Thank you very much for your consideration.</say>
+  </npc>
+  <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>There has been fighting across Richland as Halborn continues his hunt of the Oracle, with Carlyne in pursuit. The Machines do appear to be supporting Halborn, or at least opposing Carlyne, and leaving Halborn free to operate. While we've heard reports of Machine and Merovingian operatives encountering the Oracle briefly, it doesn't appear that Halborn has located her.&#10;&#10;Carlyne has contacted us again, no doubt in order to communicate something about Halborn. Be careful, operative. It is difficult to track all of the factors involved in this conflict, and it's still possible that Carlyne may attempt to mislead us somehow.</briefing>
+    <enter><say>Jeez, it sounds like the Machines are just letting Halborn tear after her, huh? That is messed up. I don't know if they figure this is the best way to get him out of their hair, but man...&#10;&#10;Okay, anyway... The other one should be in there. I've got a big fat override reading on my screen that's almost gotta be him.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="1">
+      <talk><say npc="1">Ah, it's you again. Very glad to see you.&#10;&#10;Halborn's been able to keep just out of my grasp so far. But I've noticed that he is less skittish of encounters with Zionite operatives. Therefore, I have a very small request to make that I believe will advance our efforts to save the Oracle. If I could just receive notification if and when you encounter him, I would stand a much better chance of catching him. Would this be possible?</say></talk>
+      <done><say>Hm. Well, I don't see what would be wrong with that; not like we stand much chance of finishing Halborn off solo. Anyway, I'll check with Tyndall.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Hm... I'll see what the Commander thinks, operative. It is true that we don't have a reliable means of stopping Halborn in a direct confrontation.&#10;&#10;Still, we've got to try--with or without Carlyne, as the case may be. We've detected a new burst of override activity in the area. If these are hostile programs, I'll need you to take them out, {player}.</briefing>
+    <enter><say>Mm-kay... Looks like your standard everyday overridden programs, all right.</say></enter>
+    <objective goal="1" text="Kill the overridden programs" type="DefeatAll">
+      <done><say>Okay, that should--&#10;&#10;Whoops! Code override! A big one just popped up right in that area. Hm... This could mean that Halborn's close by. Let's leave it for now and see if Tyndall can run an area scan for us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Yes, running a scan now...&#10;&#10;I think we may have something, operative. The location is marked.&#10;&#10;If it does turn out to be Halborn, I have authorization to notify Carlyne. Let me know as soon as you can confirm the target.</briefing>
+    <enter><say>Definitely a lot of activity in there. Could be Halborn, all right.</say></enter>
+    <objective goal="1" text="Find Halborn" type="Talk" npc="2">
+      <talk>
+        <say>Oh, I'd say that's definitely him, all right. I'm calling in the big guns. You'd probably better get out of there before you scare him off...or something.</say>
+        <say npc="2">You know what I've told you.&#10;&#10;Get out of here. Now.</say>
+      </talk>
+      <done><say>Yo, should I just go ahead and trigger your EJP now, or do you want me to wait a few seconds?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It looks Carlyne's moving to intercept Halborn, operative. I'm plotting their projected trajectory on your map. We're--&#10;&#10;Hm. I'm getting some scan disruption. {player}, I need you to move in and let me know what's going on down there.</briefing>
+    <enter><say>I'm getting some crazy readings in there, {player}. Some of these spikes are close to maxing out my bandwidth. Don't stay in there any longer than you have to.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="3">
+      <talk><say npc="3">Be a sport, and don't run off, hm? It's been getting a little tiresome.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="4">
+      <talk><say npc="4">I see you still haven't learned. I won't let you off as easily this time.</say></talk>
+    </objective>
+    <complete><say>Uh... Yeah... Code activity readings are through the roof. What th-- Jeez!&#10;&#10;I'm getting serious feedback here... I don't know if the dampers can-- Ah! Okay, you need to get out of there, or we're gonna need a new hovercraft...</say></complete>
+  </phase>
+  <finish>Oh, I'm glad to hear from you, {player}. Our scan routine for that area went down. We're trying to bring another one online now, but we're getting interference across the entire sector.&#10;&#10;It looked as though Carlyne was true to his word about taking on Halborn, at least. I just wish we could get a reading; the Oracle's life could depend on what's happening in there.&#10;&#10;Still no signal... I've got to go see if I can help them, {player}. I'll let you know if we pick anything up.</finish>
+</mission>
