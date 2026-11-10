@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using hds.shared;
 
 namespace hds{
 
@@ -151,7 +152,29 @@ namespace hds{
 			return din.getBytes();
 		}
 
+		/// <summary>
+		/// Own-view teleport for this client: names the sector, region and nav polygon it lands in (NavMesh), as retail
+		/// did. Without them the client doesn't steer the player along its nav mesh: players walked straight and through
+		/// some walls. Where there's no nav polygon (off the mesh) it falls back to the old fixed record.
+		/// </summary>
+		public static byte[] createTeleportPacket(WorldClient client, float x, float y, float z)
+		{
+			if (client?.playerData != null && client.playerInstance != null &&
+			    NavMesh.Locate((UInt16)client.playerData.getDistrictId(), x, y, z, out NavLocation at))
+			{
+				byte yaw = client.playerInstance.YawInterval.getValue()[0];
+				return createTeleportPacket(x, y, z, at.sector, at.region, at.polygon, 0, yaw);
+			}
+
+			return createFixedTeleportPacket(x, y, z);
+		}
+
 		public static byte[] createTeleportPacket(float x, float y, float z){
+			return createTeleportPacket(Store.currentClient, x, y, z);
+		}
+
+		/// <summary>The old record: the place bytes copied from one retail capture (Slums 759, region 0x5c, polygon 3).</summary>
+		private static byte[] createFixedTeleportPacket(float x, float y, float z){
 
 			byte[] xHex = NumericalUtils.floatToByteArray(x,1);
 			byte[] yHex = NumericalUtils.floatToByteArray(y,1);

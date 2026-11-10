@@ -305,7 +305,7 @@ namespace hds
             // Retail's 81 99 came with a position update on the player's own view, 75 above the element (the player's feet)
             client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(element[0], element[1] + 75, element[2]));
             client.messageQueue.addRpcMessage(ServerPackets.BuildMissionTeleport(element));
-            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)element[0], (float)element[1] + 75, (float)element[2]), false);
+            client.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket(client, (float)element[0], (float)element[1] + 75, (float)element[2]), false);
             haveLast = false;
 
             // Who's waiting in the room just reached
