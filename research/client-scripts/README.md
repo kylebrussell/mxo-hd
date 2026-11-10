@@ -47,7 +47,7 @@ from the ability data, not from these scripts.
 | `combat_defines` | Prone-state bit masks. | both | No (no prone states). |
 | `combatvalidate` | `CanFight`: neither side dead, `CharMvt.isEnemy`, distance under 700 units (7 m), `physics.clearLine`. Also used by `ability/utility` to pick area-effect targets. | both | Ranged: dead and gun-range checks (`CombatHandler.ProcessRangeCombatRequest`). Close combat: only that the NPC exists. No line of sight. |
 | `generic_free_attacks` | Rolls for abilities that are free attacks (melee, ranged, thrown, viral): attacker's tactics stat x tactic mod, `getTacticRoll(.., 100)`, against the defender's defense stat x mod, `getTacticRoll(.., 69)`; a loss is `DEFLECTED`. `AbilityOutOfCombat` refuses non-combat abilities while in a fight. | server | No: abilities always land (`AbilityTargets`). |
-| `interlock/combat_resolution` | The round: `determineAttacker` (withdrawal, prone, opportunity attack, preferred tactic, multi-on-one, ability level, coin), `getCTandDTotals` (hit when the tactic roll beats the other's defense roll), special moves, Block, finishing and killing moves, withdrawal rolls, the unused vulnerability system. | server | Yes for rolls, special moves and Block: `CombatInterlock.RollHit`, `CombatHandler.ResolveCloseCombatRound`. Withdrawal, finishing moves, multi-on-one: no. |
+| `interlock/combat_resolution` | The round: `determineAttacker` (withdrawal, prone, opportunity attack, preferred tactic, multi-on-one, ability level, coin), `getCTandDTotals` (hit when the tactic roll beats the other's defense roll), special moves, Block, finishing and killing moves, withdrawal rolls, the unused vulnerability system. | server | Rolls, special moves and Block: `CombatInterlock.RollHit`, `CombatHandler.ResolveCloseCombatRound`. Who wins, the opening attack, finishing moves and withdrawal: the combat-rules PR (`CombatRules.cs`). Multi-on-one: no. |
 | `interlock/combat_free_attacks` | `PerformWeaponFreeAttack`: a gunshot hits when the attack roll beats the defense roll, damage from `GetFreeAttackDamage`, less `GetDamageReductionValue` with ranged toughness, at least 1. Picks the shot animation by gun class. `PerformMeleeFreeAttack`: the same with fists (switched off by `consolevar.MeleeFreeFire`). | server | The free-attacks PR (`FreeAttacks.cs`). On master, guns use an invented roll and damage. |
 | `interlock/combat_modifiers` | Roll modifiers: multi-on-one (-5 per opponent fought), gun against fists (+5 pistols, +10 SMGs, +15 rifles at range, the same as a penalty at short range), firing into a melee (-15). Abilities can switch each off. `getTacticSpecificArmorPiercingPercent` gives Power 0.5. No script calls these functions, so the engine did, if anything. | server | The free-attacks PR has them, but this server's fights are one on one with fists, so they don't apply yet. |
 | `interlock/combat_innerstrength` | Inner Strength per round by tactic: Power -20, Speed -10, Grab -10 (-5 with a martial art), Block +10. No script calls it, and retail captures show no IS spent in fights (`docs/COMBAT-SYSTEM-ROADMAP.md`), so it is an older design or unused. | dead | Not ported, on purpose. |
@@ -58,8 +58,8 @@ from the ability data, not from these scripts.
 
 | Module | What it computes | Runs on | mxo-hd |
 |---|---|---|---|
-| `experience` | Kill XP: rank multiplier x 3^((1 + NPC level - player level) / 7, floored) x share of the damage, then x 5 x (level - 1). Team bonus 1.0, 1.2, 1.5, 1.6, 1.75, 2.1 for 1-6 players. The same shape for decompiling and writing code (/10). The rank multipliers are console variables, so unknown. | server | No: a kill gives NPC level x 100 (`CombatHandler.HandleCombatEnd`). The level table is from client.dll (`PlayerProgression.ExperienceForLevel`). |
-| `rshooks` | Server hooks: `GoUpALevel` (health and IS grow, modal messages at levels 3, 8, 9, 10, 15), vendor buyback (VendorPrice / 10, ability codes (i+1)^2 x 200 per level), recycle (/20), pocket change (level x 5 x 0-99 x a scale), golden tickets, mission-map download rolls, data-node sequences, `level_exp_reqs`. | server | Buyback, recycle, level-up stats: `VendorPricing.cs`, `PlayerProgression.cs`. `level_exp_reqs` is the XP from one level to the next and matches `ExperienceForLevel` (4,500 = 5,000 - 500). Pocket change, golden tickets, map download, data nodes, level-up modals: no. |
+| `experience` | Kill XP: rank multiplier x 3^((1 + NPC level - player level) / 7, floored) x share of the damage, then x 5 x (level - 1). Team bonus 1.0, 1.2, 1.5, 1.6, 1.75, 2.1 for 1-6 players. The same shape for decompiling and writing code (/10). The rank multipliers are console variables, so unknown. | server | The kill-XP PR (`KillExperience.cs`); on master a kill gives NPC level x 100. The level table is from client.dll (`PlayerProgression.ExperienceForLevel`). |
+| `rshooks` | Server hooks: `GoUpALevel` (health and IS grow, modal messages at levels 3, 8, 9, 10, 15), vendor buyback (VendorPrice / 10, ability codes (i+1)^2 x 200 per level), recycle (/20), pocket change (level x 5 x 0-99 x a scale), golden tickets, mission-map download rolls, data-node sequences, `level_exp_reqs`. | server | Buyback, recycle, level-up stats: `VendorPricing.cs`, `PlayerProgression.cs`. `level_exp_reqs` is the XP from one level to the next and matches `ExperienceForLevel` (4,500 = 5,000 - 500). Pocket change: the kill-XP PR. Level-up windows: their own PR. Golden tickets, map download, data nodes: no. |
 | `crafting_server` | Crafting rolls on a Gaussian d100 (mean 50, sd 16): compile succeeds when 4 x (skill + 10% of the category ability) + roll > 4 x complexity + 50; info costs; decompile with purity and stability; the Coder buff. | server | No: `CraftingHandler` always succeeds (see `docs/CRAFTING.md`: the cost multiplier and complexity aren't in the client). |
 | `recipes` | An old 2006 cookbook with two recipes. | dev tool | `Crafting.cs` uses `data/recipes.csv`. |
 | `gameFeatures` | Account features: 200 Mobius Code, 201 hyper-jump beta, 202/203 recapture items by gender; free trials can't have 200, 202, 203. | both | No. |
@@ -111,9 +111,40 @@ from the ability data, not from these scripts.
 
 ## Ported from here
 
-- **Free attacks (gunfights), in its own PR:** `hds/world/Structures/FreeAttacks.cs`, from
-  `interlock/combat_free_attacks`, `combat_calculations.GetFreeAttackDamage`, `interlock/combat_modifiers` and
-  `combat_utility.isPreferredTactical`.
+Each in its own PR:
+
+- **Close-combat rounds:** `hds/world/Structures/CombatRules.cs`, from `interlock/combat_resolution` and
+  `combat_utility`. Covers who wins a round, the opening opportunity attack, finishing moves and withdrawal.
+- **Gunshots:** `hds/world/Structures/FreeAttacks.cs`, from `interlock/combat_free_attacks`,
+  `combat_calculations.GetFreeAttackDamage` and `interlock/combat_modifiers`.
+- **Kill XP and corpse info:** `hds/world/Structures/KillExperience.cs`, from `experience.ComputeExperience` and
+  `rshooks.RunPocketChange`.
+- **Level-up advice windows:** `PlayerProgression.LevelUpAdvice`, from `rshooks.GoUpALevel`.
+
+## What the captures add to the scripts
+
+The scripts leave console variables, engine constants and character stats unset. These were recovered by checking
+the scripts against the retail packets in `research/packet-dumps`. The checks were run with throwaway scripts, not
+kept.
+
+- **RPC 45 outcome flags** (`constants.combat`): 0x01 one side hit, 0x04 nobody, 0x08 both, 0x20 draw, 0x40
+  finishing move, 0x100 special move, 0x200 withdraw, 0x800 opportunity attack. Each value appears only in the case
+  the script gives it, among 1,299 retail RPC 45s.
+- **The "won" byte is `winnerSlot`:** `determineAttacker` and `determineResultForStandardCombat` give it in 664 of
+  665 decidable rounds. Kills where both hit show the script's swapped damage fields (0 damage with 1 absorbed, or
+  -1).
+- **Move records:** the move's value is the attack roll (`tacticalValue`) and its first number the defense roll
+  (692 of 725 rounds). RPC 45 byte 26 is the NPC move's has-ability byte, and the u32 after the result is
+  `combatResult`, the withdrawal margin (46 of 46 withdrawal rounds).
+- **Withdrawal:** succeeds exactly when the withdrawer's roll beats the other's, in every capture.
+- **NPCs used special moves and withdrew:** 102 of 1,299 rounds, mostly ZombieVirus2Bite (1236) and Spinning
+  Flower (870). Not ported: which NPC has which move isn't in our data.
+- **Kill XP:** `WeaklingKillMultiplier` = 67 and `ToughKillMultiplier` = 135. All 15 kill rewards fit exactly, and
+  the exponent isn't floored (the engine passed levels as floats).
+- **Pocket change:** `AI_PocketChangeScale` = 1. All 99 loot-window amounts are multiples of 5, and 11 are 0.
+- **Gun damage:** `GetFreeAttackDamage`'s weapon speed is Tool/ReuseTimer rounded down. All 423 hits before absorption
+  are whole multiples of it. A new character's Redpill Special did 12 (Speed and Power) or 8 (Grab), which fits a
+  damage bonus of 2.
 
 ## Not ported, and what it would take
 
@@ -131,5 +162,5 @@ from the ability data, not from these scripts.
   lacks (`addTempAbility`, `sealDoor`, `unlockDoor`, `setExclusiveWaypoint`, `killNPC`, `getDoorZoneIDs`,
   `activateStage`) and the `OnStartOfStage` and `OnPlayerEnterZone` hooks, and its panel ids predate 7.6005. Running
   it would mean building a new mission on `tutorial_v2`'s rooms, not reusing the tutorial.
-- **Kill XP (`experience`):** the shape is known but the rank multipliers aren't; they could be fitted to the kill
-  XP in the captures.
+- **Team XP:** `experience.ComputeGroupBonus` (1.2-2.1 for 2-6 players) and damage shares need the server to
+  track who hurt an NPC; the killer gets the whole reward for now.
