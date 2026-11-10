@@ -213,6 +213,20 @@ public class CombatRulesTests
         Assert.Contains("0100000201010f", hex);
     }
 
+    [Fact]
+    public void WithdrawalRoundCarriesTheMargin()
+    {
+        // Retail's withdrawal rounds put the withdrawer's roll minus the other's in the u32 after the result: 52 on the
+        // 0x200 round (0x53 - 0x1f), -23 on a failed one (104 - 127); 46 of 46 such rounds in the captures
+        var move = new CombatInterlock.Move { Seq = 0x0e, Tactic = CombatTactic.Power, Withdraw = true, Value = 104 };
+        var npc = new CombatInterlock.Move { Seq = 0x09, Tactic = CombatTactic.Power, Value = 127 };
+        byte[] built = CombatInterlock.BuildRoundResult(4, false, move, npc, 0x00f00007, CombatRules.AttackerHits, 30, 0, 0, 0, 0, -23);
+        Assert.Equal(89, built.Length);
+        Assert.Equal(2, built[7]);                                     // the player's move: withdrawing
+        Assert.Equal(-23, BitConverter.ToInt32(built, 65));
+        Assert.Equal(0, BitConverter.ToInt32(CombatInterlock.BuildRoundResult(4, false, move, npc, 0x00f00007, 1, 30, 0, 0, 0, 0), 65));
+    }
+
     [Theory]
     [InlineData(1, 1, false, 1, 0)]
     [InlineData(2, 2, false, 1, -10)]

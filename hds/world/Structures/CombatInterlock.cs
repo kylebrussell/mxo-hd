@@ -90,13 +90,14 @@ namespace hds
 
         /// <summary>
         /// RPC 45 (89 bytes): <c>45 &lt;round u16&gt; &lt;round+1 u16&gt; &lt;won u8&gt; 00 &lt;has ability&gt; &lt;tactic&gt; &lt;move&gt;
-        /// 00 00 &lt;NPC tactic&gt; &lt;NPC move&gt; 00000000 01 &lt;target u32&gt; &lt;target u32&gt; 00000000 &lt;result u32&gt; 00000000
+        /// 00 00 &lt;NPC tactic&gt; &lt;NPC move&gt; 00000000 01 &lt;target u32&gt; &lt;target u32&gt; 00000000 &lt;result u32&gt; &lt;combatResult i32&gt;
         /// &lt;damage to the player u16&gt; &lt;modifier i16&gt; &lt;damage to the target u16&gt; &lt;modifier i16&gt; &lt;sim ms u32&gt; 8 x 00</c>.
         /// The damage slots follow the health updates: the tutorial's <c>04 00 00 00 15 00 fb ff</c> took 4 off the player
         /// and 21 off the NPC. <c>won</c> is retail's winnerSlot: 1 when the player wins the round by <see cref="CombatRules.Resolve"/>.
         /// </summary>
         public static byte[] BuildRoundResult(UInt16 round, bool won, Move player, Move npc, UInt32 target, UInt32 result,
-            UInt16 damageToPlayer, Int16 playerModifier, UInt16 damageToTarget, Int16 targetModifier, UInt32 simMs)
+            UInt16 damageToPlayer, Int16 playerModifier, UInt16 damageToTarget, Int16 targetModifier, UInt32 simMs,
+            Int32 combatResult = 0)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x45);
@@ -115,7 +116,7 @@ namespace hds
             pak.AddUint32(target, 1);
             pak.AddUint32(0, 1);
             pak.AddUint32(result, 1);
-            pak.AddUint32(0, 1);
+            pak.AddUint32(unchecked((UInt32)combatResult), 1);
             pak.AddUint16(damageToPlayer, 1);
             pak.AddInt16(playerModifier, 1);
             pak.AddUint16(damageToTarget, 1);

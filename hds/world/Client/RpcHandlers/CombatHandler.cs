@@ -287,7 +287,8 @@ namespace hds
 
             player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, outcome.PlayerWins, decided, session.NpcMove,
                 session.TargetViewSpawnId, outcome.Flags, (UInt16)outcome.DamageToPlayer, (Int16)outcome.PlayerAbsorbed,
-                (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime()));
+                (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime(),
+                withdrawing && !opening ? playerAttack - npcAttack : 0));
             session.RoundRecord++;
 
             if (outcome.Withdrew)
