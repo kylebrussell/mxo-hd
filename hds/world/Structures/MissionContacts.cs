@@ -120,10 +120,13 @@ namespace hds
 
         public static MissionContact ById(UInt32 id) => All.FirstOrDefault(c => c.id == id);
 
-        /// <summary>A contact by name, as mission files name them ("Tyndall", "Flood"); null if there's none.</summary>
+        /// <summary>
+        /// A contact by name, as mission files name them ("Tyndall", "Flood", "The Newsie"); null if there's none. Of two with
+        /// one name (The Bartender is 5 and 40), the later: 40 is the one standing in the world.
+        /// </summary>
         public static MissionContact Named(string name)
         {
-            return All.FirstOrDefault(c => string.Equals(c.name, name, StringComparison.OrdinalIgnoreCase));
+            return All.LastOrDefault(c => string.Equals(c.name, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -145,15 +148,36 @@ namespace hds
             return ofOrg.FirstOrDefault(c => c.Serves(reputation)) ?? ofOrg.LastOrDefault();
         }
 
-        /// <summary>Whether this contact gives the mission: its own org's, and Tyndall the introduction (org 0).</summary>
+        /// <summary>
+        /// Whether this contact gives the mission: an org contact its own org's, and Tyndall the introduction (org 0); a
+        /// neighbourhood contact the org-0 missions that name them as their contact.
+        /// </summary>
         public static bool Offers(MissionContact contact, Mission mission)
         {
-            if (contact == null || contact.IsNeighbourhood)
+            if (contact == null)
             {
                 return false;
             }
 
-            return mission.org == contact.org || (mission.org == 0 && contact.org == Zion);
+            MissionContact giver = Named(mission.contact);
+            if (contact.IsNeighbourhood)
+            {
+                return mission.org == 0 && giver != null && giver.id == contact.id;
+            }
+
+            return mission.org == contact.org || (mission.org == 0 && contact.org == Zion && giver?.IsNeighbourhood != true);
+        }
+
+        /// <summary>The org the mission packets carry for this mission (80 99, 80 9c): 0 for a neighbourhood contact's, else
+        /// its org, with the introduction (org 0) under Zion as before.</summary>
+        public static byte PacketOrg(Mission mission)
+        {
+            if (Named(mission.contact)?.IsNeighbourhood == true)
+            {
+                return 0;
+            }
+
+            return mission.org == 0 ? Zion : mission.org;
         }
 
         public static bool Offers(uint org, Mission mission) => Offers(ForOrg(org), mission);

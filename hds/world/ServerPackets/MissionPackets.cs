@@ -69,12 +69,16 @@ namespace hds
 
         public void sendMissionInfo(Mission mission, UInt16 txn, byte difficulty, WorldClient client)
         {
-            // 8099 00000000 <txn> 2f 00 01 00 00 00 <difficulty echoed> ... (retail)
+            // 8099 00000000 <txn> 2f00 <org u16> 0000 <difficulty echoed> ... (retail: org 01 for Tyndall's, 02 for Agent
+            // Gray's, 00 for The Newsie's)
+            byte org = MissionContacts.PacketOrg(mission);
             PacketContent pak = new PacketContent();
             pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_MISSION_INFO_RESPONSE, 0);
             pak.AddUint32(0, 1);
             pak.AddUint16(txn, 1);
-            pak.AddHexBytes("2f0001000000");
+            pak.AddUint16(0x2f, 1); // the title's offset
+            pak.AddUint16(org, 1);
+            pak.AddUint16(0, 1);
             pak.AddByte(difficulty);
 
             // Retail: how far the player is from the mission's first and last locations.
@@ -99,7 +103,18 @@ namespace hds
             pak.AddUint32(contact.id, 1);
             pak.AddUint32(contact.name, 1);
             pak.AddUint32(contact.image, 1);
-            pak.AddHexBytes("42000001000002000D001300020002030200FFFFFDFF");
+            if (org == 0)
+            {
+                // Retail, The Newsie's: the title here, then 01 00 0a 00 and no rep arrays (Unhealthy Competition)
+                pak.AddUint16((UInt16)(0x2f + 2 + mission.title.Length + 1 + 4), 1);
+                pak.AddByte(0x00);
+                pak.AddSizedTerminatedString(mission.title);
+                pak.AddHexBytes("01000A00");
+            }
+            else
+            {
+                pak.AddHexBytes("42000001000002000D001300020002030200FFFFFDFF");
+            }
             pak.AddSizedTerminatedString(mission.description);
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
             client.FlushQueue();
@@ -108,7 +123,8 @@ namespace hds
         public void sendMissionAccept(WorldClient client, UInt16 txn, UInt16 instance, Mission mission)
         {
             client.messageQueue.addObjectMessage(BuildMissionKeyUpdate(instance), false);
-            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title, mission.id, mission.contact, mission.org));
+            client.messageQueue.addRpcMessage(BuildMissionSetName(txn, instance, mission.title, mission.id, mission.contact,
+                MissionContacts.PacketOrg(mission)));
             client.FlushQueue();
         }
 
@@ -197,12 +213,14 @@ namespace hds
         /// 809c: the accepted mission's name. Layout from the retail Assassination capture, with the offsets
         /// recomputed for the title length: title at 0x2b, then an empty string, then a u32 list.
         /// </summary>
+        /// <param name="org">As the packet carries it: 1 Zion (and the introduction), 2, 3; 0 for a neighbourhood contact's
+        /// mission (retail's Unhealthy Competition: 0000).</param>
         public static byte[] BuildMissionSetName(UInt16 txn, UInt16 instance, string title, int templateId,
-            string contactName = "Tyndall", byte org = 0)
+            string contactName = "Tyndall", byte org = MissionContacts.Zion)
         {
             var contact = MissionContacts.For(contactName);
             string hex = "02" + Hex32(contact.id) + Hex32(contact.name) + Hex32(contact.image);
-            return BuildMissionSetName(txn, instance, title, (UInt16)(org == 0 ? 1 : org), hex, "010000", new[] { templateId });
+            return BuildMissionSetName(txn, instance, title, org, hex, "010000", new[] { templateId });
         }
 
         private static string Hex32(UInt32 value) => BitConverter.ToString(BitConverter.GetBytes(value)).Replace("-", "");

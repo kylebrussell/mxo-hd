@@ -32,6 +32,7 @@ public static class Scenarios
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
+        new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
     };
 
     // Where data/mob*.csv puts NPCs in the Slums, in both the Debug and Release lists
@@ -253,6 +254,45 @@ public static class Scenarios
         await player.WaitForTextAsync("We don't want hostile Agents tracking you.");
 
         // Aborting takes the NPCs away again
+        player.SendRpc("80 a6");
+        await player.WaitForRpcAsync("80 a2 08");
+    }
+
+    /// <summary>
+    /// A neighbourhood contact stands at their static as retail spawned them; using them (80 c7 ... 02 00, as retail's
+    /// client sent) gets their list under request number 0 with preview 1 and org 0; one of their generic missions accepts
+    /// with org 0 and its target goal.
+    /// </summary>
+    private static async Task NeighbourhoodContactMissions(ScenarioContext context)
+    {
+        // Two metres in front of The Chessman's static in Tabor Park (76015, 537, 15645)
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice") { X = 76015, Y = 487, Z = 15845 }))[0];
+
+        ViewCreation chessman = null!;
+        await player.WaitUntilAsync(() =>
+        {
+            chessman = player.ViewsOfGoid(6520).FirstOrDefault(v => v.Attributes.TryGetValue("ContactName", out byte[]? name) &&
+                                                                     WireFormat.ZeroTerminated(name) == "The Chessman")!;
+            return chessman != null;
+        }, "The Chessman's view", TimeSpan.FromSeconds(10));
+        Check.Equal("07000000", WireFormat.ToHex(chessman.Attributes["ContactID"]), "Contact id on the view");
+
+        player.SendRpc($"80 c7 {Le(chessman.ViewId)} {chessman.SpawnId:x2} 00 02 00");
+        RpcRecord header = await player.WaitForRpcAsync("80 95");
+        Check.Equal("8095" + "00000000" + "0000" + "0300" + "01" + "00" + "07000000", WireFormat.ToHex(header.Bytes).Substring(0, 32),
+            "List header: request 0, three missions, preview 1, org 0, The Chessman");
+        await player.WaitForRpcAsync("80 97 00 00");
+        Check.Equal(3, player.Received("80 96").Count, "Missions offered");
+
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForTextAsync("Kill one of The Chessman's rivals.");
+
+        player.SendRpc("80 9b 07 00 01");
+        RpcRecord accepted = await player.WaitForRpcAsync("80 9c");
+        Check.Equal("0000", WireFormat.ToHex(accepted.Bytes).Substring(20, 4), "Org on the accept");
+        await player.WaitForRpcAsync("80 9e 00"); // the generated site's elevator door
+        await player.WaitForTextAsync("Kill Vesper");
+
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("80 a2 08");
     }

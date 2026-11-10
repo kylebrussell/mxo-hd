@@ -314,6 +314,11 @@ namespace hds
                 return;
             }
 
+            if (MissionContactNpcs.OnUse(Store.currentClient, interactedView, (byte)objectTypeID))
+            {
+                return;
+            }
+
             if (interactedView != null && HardlineBooths.IsBooth(interactedView.GoID) && interactedView.staticObject != null)
             {
                 TeleportHandler.ProcessBoothAction(Store.currentClient, (byte)objectTypeID, interactedView.staticObject);
