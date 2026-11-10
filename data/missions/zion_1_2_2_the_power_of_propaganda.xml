@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Power of Propaganda, Zion story mission 1.2.2. Source: research/missions/transcripts/Zion1-2-2.md, the archive
+     replay ([Zion Archive 1.2.2], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's and the operator's lines, and the reward (137,500 experience,
+     91,000 information; Hosh Mangler Gauntlets, left out). Ours: the description, the objective texts (the Objectives tab
+     was never opened), the sites (Normal), and the enemy counts (more in the second building, which the Exiles had
+     turned into "a small base").
+     Gaps: retail had six posters in the first building and four in the second; a phase has at most three objects, so
+     each phase has three posters, boxes that are used (torn down). Tyndall's line about the posters appealing to the
+     Exiles came between the posters; it is the second poster's done line. The second building's "security system" has
+     nothing to stand for it. The Exiles' barks (Lupine Scrapper: "Heretics!"; Elite Guard: "Don't touch our posters!")
+     have no place in the format. -->
+<mission id="101202" title="The Power of Propaganda" description="Tear down Morpheus' posters around the City." plot="1" order="1202"
+         org="1" contact="Tyndall" exp="137500" info="91000">
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Morpheus and his followers have been putting up subversive posters around the City. We're concerned that these posters will create confusion among bluepills and possibly irritate the Machines, so we would like you to tear them down. While this may be a simple task, Warrior, it is important to Zion and has an impact on the strength of the Truce.</briefing>
+    <enter><say>Six of Morpheus' posters have been seen in that building. Find the posters and tear them down.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Box" />
+    <objective goal="1" text="Tear down Morpheus' first poster" type="Use" object="1" />
+    <objective goal="2" text="Tear down Morpheus' second poster" type="Use" object="2">
+      <done><say contact="1">It appears that Morpheus' posters are appealing to these Exiles. This could mean trouble if we allow the posters to remain visible!</say></done>
+    </objective>
+    <objective goal="3" text="Tear down Morpheus' third poster" type="Use" object="3" />
+    <complete><say>Good work. Now go outside and I'll give you the address of another site where the posters have been found.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>I'm updating your waypoint with the location of another building in which Morpheus' posters have been found. We need the posters there torn down as well.</briefing>
+    <enter><say>Supposedly there are four posters in that building. Exiles appear to have turned the area into a small base since the posters were put up, and I'm seeing indications that they've put a security system in place, so be careful.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <object id="3" kind="Box" />
+    <objective goal="1" text="Tear down Morpheus' first poster" type="Use" object="1" />
+    <objective goal="2" text="Tear down Morpheus' second poster" type="Use" object="2" />
+    <objective goal="3" text="Tear down Morpheus' third poster" type="Use" object="3" />
+    <complete><say>You've taken care of all the posters in the area, {player}! You can leave now.</say></complete>
+  </phase>
+  <finish>Removing those posters should help calm things down in the City. Our next step will be stopping Morpheus' poster crew before they can put up more of these misleading messages. Peace in the City depends upon our efforts!</finish>
+</mission>

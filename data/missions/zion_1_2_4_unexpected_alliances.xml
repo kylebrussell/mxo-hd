@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unexpected Alliances, Zion story mission 1.2.4. Source: research/missions/transcripts/Zion1-2-4.md, the archive
+     replay ([Zion Archive 1.2.4], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's lines (his second, "Dubiago and his crew are in that building", is
+     the enter line), the operator's lines, the names and lines of Dubiago, his crew and Ani, phase 2's objective
+     ("Escape from the rebellious Zion crew and talk to Ani at the safe house") and the red fail objective ("Do not kill
+     the Captain, Dubiago"), and the reward (43,875 experience, 91,000 information; Enhanced Maroon Avero Snakeskin Short
+     Boots and Captain's Log Entry from Morpheus, left out). Ours: the description, phase 1's other objective texts, the
+     sites (Normal for the crew's building, ZionOutpost for the safe house), and everyone's looks (the crew's sex isn't
+     stated; Dubiago is male, Ani female).
+     Gaps: in retail Dubiago agreed to talk in the hall, followed the player, then turned hostile and attacked outdoors
+     while the player fled to the safe house. NPCs can't switch sides, and a follower would follow into the safe house,
+     so he doesn't follow: the second talk ("Talk to Dubiago away from his crew") gives his doubting line, and its done
+     lines are Tyndall's "Oh no!" and Dubiago's outburst. He stays friendly and is protected in phase 1 only; the hostile
+     pursuit between the two buildings has nothing to stand for it, so neither phase spawns enemies. The crew are friendly
+     bystanders, each with the line they said before Dubiago's first talk and (after it) the one they said later.
+     Endymion's first line and a line just before Achernar's were unreadable and are left out. -->
+<mission id="101204" title="Unexpected Alliances" description="Talk a wayward Zion captain out of helping Morpheus." plot="1" order="1204"
+         org="1" contact="Tyndall" exp="43875" info="91000">
+  <npc id="1" handle="Dubiago" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564" />
+  <npc id="2" handle="Endymion" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say display="5">Our Captain is right, Morpheus knows what he's doing.</say>
+    <say display="5" after="1">You won't be able to convince the Captain back to Zion--'cause Morpheus is right, we've got to take the fight to the Machines!</say>
+  </npc>
+  <npc id="3" handle="Riema" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say display="5">Morpheus is right and Zion is wrong. Simple as that.</say>
+    <say display="5" after="1">The Captain knows that Morpheus will lead us to victory. You'll see.</say>
+  </npc>
+  <npc id="4" handle="Achernar" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say display="5">Go away, ya bother me.</say>
+    <say display="5" after="1">Buzz off!</say>
+  </npc>
+  <npc id="5" handle="Sofievka" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say display="5">Talk to our Captain, Dubiago. And don't try anything funny!</say>
+  </npc>
+  <npc id="6" handle="Brorfelde" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say display="5">Ha, you can try talking to the Captain, but it's not gonna do you any good!</say>
+    <say display="5" after="1">Watch out--when the Captain wants to give you a piece of his mind, he really gives it to ya!</say>
+  </npc>
+  <npc id="7" handle="Ani" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say>Dismissed!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hail, Warrior! As you know, Morpheus has been engaging in subversive activities throughout the City. Disaffected Exiles and humans, even other members of Zion, are beginning to be misled by these activities to the point where they are preparing to aid Morpheus' efforts. This will greatly endanger our tenuous truce with the Machines.
+
+A group of these disaffected humans--a wayward Zion crew, in fact--is in your vicinity. Talk to their captain and explain to him that by giving aid to Morpheus, he will endanger us all. Speak from the heart and you will surely convince him of his error!</briefing>
+    <enter><say contact="1">{player}, please handle this mission very diplomatically. The Zion Captain Dubiago and his crew are in that building. Talk to him and describe how his aligning himself with Morpheus will endanger the Truce and all of our hard work along with it. See if you can lead him out of the building and bring him to an extraction point. Whatever you do, don't engage him or any of his crew in combat. These are our own people, after all! I'm sure you'll know just what to do.</say></enter>
+    <objective goal="1" text="Talk to the Captain, Dubiago" type="Talk" npc="1">
+      <talk><say npc="1">I believe that Morpheus is doing the right thing... but you may have a point. Let's go out to the hall and talk about this away from my crew. But no tricks!</say></talk>
+      <done><say>Very good, he's willing to listen! Try to lead him away from his crew and get him to an extraction point. But be careful! His crew is really on edge.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Dubiago away from his crew" type="Talk" npc="1" after="1">
+      <talk><say npc="1">Yeah look, I don't know about this. I need time to think it out.</say></talk>
+      <done><say contact="1">Oh no! {player}, leave the area immediately and go to our safe house nearby. Whatever you do, don't hurt Dubiago or his crew!</say><say npc="1">You're trying to trick me into going back to Zion! I thought we had a deal! You dirty b--!</say></done>
+    </objective>
+    <objective goal="3" text="Do not kill the Captain, Dubiago" type="Protect" npc="1" />
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>I'm sending you the address of the safe house.</briefing>
+    <enter><say>The operative Ani is in that building--she will debrief you.</say></enter>
+    <objective goal="1" text="Escape from the rebellious Zion crew and talk to Ani at the safe house" type="Talk" npc="7">
+      <talk><say npc="7">What were you thinking, noob? Look, Tyndall doesn't know how deep Morpheus' influence runs among some of our Zion crews, especially with the old-timers who fought beside him in the War--those people would kill their own granny for him. Count yourself lucky that you made it out of there with your butt intact! Now get lost, and stay the heck away from those old hard-cases until this mess blows over.</say></talk>
+      <done><say npc="7">Dismissed!</say></done>
+    </objective>
+  </phase>
+  <finish>This did not go well... but I know you did the best you could, and I'm really glad that you made it out okay. I suppose that... well, never mind. This shows just how challenging it will be to return Morpheus and his misguided followers to our fold. We must succeed, the future of Zion depends upon it!</finish>
+</mission>

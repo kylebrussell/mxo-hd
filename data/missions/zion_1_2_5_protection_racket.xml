@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Protection Racket, Zion story mission 1.2.5. Source: research/missions/transcripts/Zion1-2-5.md, the archive replay
+     ([Zion Archive 1.2.5], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's lines (his second, "Birch ... surrounded by false Agents in that
+     building", is the enter line with the operator's), the names and lines of Birch, Jeanmarie Ferrol, the Zion Gunman
+     and the Zion Guardian Patcher, and the reward (137,375 experience, 91,000 information). Ours: the description, the
+     objective texts (the Objectives tab was never opened), the sites (Normal, then RedPillExtraction for the extraction
+     point), the enemy count, everyone's looks (Jeanmarie Ferrol is a bluepill recruit; her sex isn't stated), and the
+     named Imposter Agent, whose death gives Tyndall's first "Good work" line before the rest are dead.
+     Gaps: Birch and Jeanmarie Ferrol were locked in the far room, and a key found by searching opened it. Locked doors
+     don't exist here: the key is a Search of a piece of furniture (the Access_Card item, 6791), and talking to Birch opens
+     only once it is found. Jeanmarie Ferrol's line comes with Birch's when he is talked to; she follows once reached.
+     Retail's Tyndall "You've found them!" came as the door opened, before Birch spoke; here it follows his line. The
+     Zion Gunman's two lines had words hidden at the chat's edge; the best readings are used. One extraction team line
+     ("...to Zion. Please bring them to us.") was only a tail and is left out. The Military Report to the General, in the
+     player's inventory at the end, has no visible source and is left out. -->
+<mission id="101205" title="Protection Racket" description="Protect a recruitment team from imposter Agents." plot="1" order="1205"
+         org="1" contact="Tyndall" exp="137375" info="91000">
+  <npc id="1" handle="Birch" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Jeanmarie Ferrol" type="FRIENDLY" at="1" rsi="61000040" weapon="0" />
+  <npc id="3" handle="Imposter Agent" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" />
+  <npc id="4" handle="Zion Gunman" type="FRIENDLY" at="2" rsi="000100b4" weapon="2564">
+    <say>Extracting humans from the Matrix takes special training. We're a crack team, so no worries.</say>
+  </npc>
+  <npc id="5" handle="Zion Guardian Patcher" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say>Thank you, {player}. We'll get them to Zion safely.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Warrior, I'm sure that you already know of these imposter Agents with electronic light implants in their ears. Real Machine Agents value bluepills as power supplies, and don't harass them, but these imposters kill our redpill operatives and bluepills alike, and are causing a great deal of trouble for our brave recruitment teams. Your mission is to protect a recruitment team and their potential recruit from these false Agents--if we allow this harassment to continue, our recruitment efforts will bear no fruit and Zion itself will wither and die!</briefing>
+    <enter><say contact="1">One of our recruiters, Birch, and his potential recruit Jeanmarie Ferrol have been surrounded by false Agents in that building. {player}, I need you to defeat the imposters and then lead Birch and Jeanmarie Ferrol to a nearby extraction point. Do not let them fall at the hands of the imposter Agents!</say><say>Birch and Jeanmarie Ferrol have locked themselves in the far room to protect themselves from the marauders.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the imposter Agent" type="Defeat" npc="3">
+      <done><say contact="1">Good work, {player}. These imposter agents cannot withstand the might of Zion!</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the imposter Agents" type="DefeatAll">
+      <done><say contact="1">You've destroyed all the imposter Agents! {player}, you are a true warrior of Zion.</say></done>
+    </objective>
+    <objective goal="3" text="Find the key to the locked room" type="Search" object="1" item="6791">
+      <done><say contact="1">Your careful search has paid off, Warrior! That key should open the door to the room in which Birch and Jeanmarie Ferrol have locked themselves.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Birch" type="Talk" npc="1" after="3">
+      <talk><say npc="1">Thanks, operative! I couldn't fight all those Agents while still protecting Jeanmarie Ferrol, so I had to lock us in here. Let's get back to Zion now.</say><say npc="2">Wow, you're a real fighter from Zion. Please, take me with you! I want to learn how to fight Agents like you.</say></talk>
+      <done><say contact="1">You've found them! Great job, Warrior. Now lead them safely out of the building and to the extraction point nearby.</say></done>
+    </objective>
+    <objective goal="5" text="Lead Birch and Jeanmarie Ferrol out of the building" type="Escort" npc="1,2" to="exit" after="4" />
+    <objective goal="6" text="Do not let Birch or Jeanmarie Ferrol die" type="Protect" npc="1,2" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Machines" enemies="0">
+    <briefing>Excellent work, Warrior. The extraction point is nearby--I'm uploading the location to you now.</briefing>
+    <enter><say contact="1">The extraction point is in that building. You've almost got our people back to Zion!</say></enter>
+    <objective goal="1" text="Lead Birch and Jeanmarie Ferrol to the extraction team" type="Escort" npc="1,2" to="npc:4">
+      <done><say contact="1">Great work, operative! Your job is done here, leave it to the extraction team to get our recruiter and his new soldier to Zion.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Birch or Jeanmarie Ferrol die" type="Protect" npc="1,2" />
+    <complete><say npc="2">I can't believe I'm finally going to see Zion!</say><say npc="1">Thanks for your help, {player}.</say><say npc="4">Alrighty, thanks for bringing them in! We'll get them to Zion safe and sound.</say></complete>
+  </phase>
+  <finish>{player}, I was worried that the enemy forces might be too strong, but I can see that I worried needlessly. The imposter agents are no match for your skills.</finish>
+</mission>

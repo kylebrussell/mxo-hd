@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Confiscation, Zion story mission 1.2.3. Source: research/missions/transcripts/Zion1-2-3.md, the archive replay
+     ([Zion Archive 1.2.3], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, the operator's and Tyndall's lines, and the reward (68,750 experience, 91,000
+     information). Ours: the description, the objective texts (the Objectives tab was never opened), the site (Office, for
+     a printer terminal), and the enemy count (Exiles "operating in the vicinity"; a Lupine Scrapper barked).
+     Two computers: the security program, which is used (cracked), and the printer terminal, which gives Morpheus' Data
+     (the Data item, 6787) once the security is down; the Data is uploaded at a hardline. The operator's "Accessing that
+     system may have removed the security restriction" line was logged minutes after the data was taken, but it reads as
+     the reply to cracking the security, so it is the first done line of that goal. The Journal Entry from Morpheus, in
+     the player's inventory at the end, has no visible source and is left out. -->
+<mission id="101203" title="Confiscation" description="Retrieve Morpheus' poster data from a printer terminal." plot="1" order="1203"
+         org="1" contact="Tyndall" exp="68750" info="91000">
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>Greetings, Warrior. Morpheus has been putting up subversive posters all over the City. Because this illicit activity could endanger the Truce, it is imperative that we find Morpheus and dissuade him from this reckless course as quickly as possible. Some of our hackers have managed to trace a file used to print those posters to a certain printer terminal, but the terminal is protected by a heavy security protocol on its local network. We need you to get to the terminal, crack the protocol, and retrieve Morpheus' data. We know you can do it!</briefing>
+    <enter><say>The terminal is in that building. You'll need to crack their security program and retrieve Morpheus' data from the computer terminal. Watch out, we have indications that Exiles may be operating in the vicinity.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Crack the security program" type="Use" object="1">
+      <done><say>Interesting. Accessing that system may have removed the security restriction on the printer terminal.</say><say>Excellent work! Now you can retrieve Morpheus' Data from that terminal.</say></done>
+    </objective>
+    <objective goal="2" text="Retrieve Morpheus' Data from the printer terminal" type="Search" object="2" item="6787" after="1">
+      <done><say>You've got the Data! Now get out and upload it at the nearest hardline, and watch out for hostiles!</say></done>
+    </objective>
+    <objective goal="3" text="Upload Morpheus' Data at a hardline" type="Upload" item="6787" after="2">
+      <done><say>Data uploaded successfully!</say><say contact="1">Warrior of Zion, you have achieved a formidable victory for our cause. With the help of this data we will surely be able to locate Morpheus!</say></done>
+    </objective>
+  </phase>
+  <finish>Contact me when you are ready for your next assignment.</finish>
+</mission>

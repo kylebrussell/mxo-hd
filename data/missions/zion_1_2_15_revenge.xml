@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Revenge, Zion story mission 1.2.15. Source: research/missions/transcripts/Zion1-2-15.md (the archive replay of
+     [Zion Archive 1.2.15], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and the names Fissure and Zion Martial
+     Arts Initiate (whose two lines were only in Team chat). Ours: the description, the objective texts, the sites (the
+     first two unnamed buildings are Normal; the "extraction point" is RedPillExtraction), the looks and the enemy
+     counts. Rewards: the 243,750 experience and 91,000 information shown right after this mission completed.
+     Gaps: Fissure is barricaded behind a door she unlocks once the Exiles are dead; here she stands on the floor and
+     her Talk opens once the Exiles are dead, and the Operator's line about the far door is said on arrival. The repair
+     is an automatic event once she reaches the junction box, which an Escort can't target: the junction box is a
+     Computer the player uses ("Bring Fissure to the junction box"), and the repair lines play when it is done. The
+     ambush ("multiple hostile programs converging on your position") can't spawn on an event, so phase 2's Machine
+     hostiles are there from the start, between the player and the way out. An Operator line after Fissure's rescue
+     wasn't captured. Fissure casting Negative Condition Sweep on the player is flavour only. Fissure follows the player
+     from phase 1 to the end. -->
+<mission id="101215" title="Revenge" description="Protect a hardline repair operative while she fixes a junction box." plot="1"
+         order="1215" org="1" contact="Tyndall" exp="243750" info="91000">
+  <npc id="1" handle="Fissure" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="2" handle="Zion Martial Arts Initiate" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say>Have you seen Fissure? She's due for extraction.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Zion finally has the capability to find and repair the sabotaged junction boxes, thanks in no small part to your heroic efforts. We need you to rendezvous with one of our hardline repair operatives, escort her to a damaged junction box, and protect her while she repairs it. Zion is counting on you!</briefing>
+    <enter>
+      <say contact="1">Warrior, I've just received a signal from our junction box repair specialist, Fissure--she's under attack by Exiles in that building! She's managed to barricade herself behind a door, but there's no telling how long that will hold off her attackers. You have to locate her quickly and get her out of there!</say>
+      <say>You'll need to take care of these Exiles before Fissure will unlock the far door.</say>
+    </enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll">
+      <done><say contact="1">That was some impressive combat work, soldier. These Exiles are fools to continue trying to combat Zion.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Fissure" type="Talk" npc="1" after="1">
+      <talk>
+        <say npc="1">Oh, thank you! How could those Exiles have found me? Well never mind, let's go see that damaged junction box.</say>
+        <say>Nicely done.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Lead Fissure out of the building" type="Escort" npc="1" to="exit" after="2" />
+    <objective goal="4" text="Do not let Fissure die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>All right, I'm updating your waypoint with the damaged box's waypoint. Please see that Fissure gets there safely.</briefing>
+    <enter><say>The junction box is in that building.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Bring Fissure to the junction box" type="Use" object="1">
+      <done>
+        <say>There's the junction box.</say>
+        <say contact="1">Fissure has got the box fixed up. Please escort her out of there and... Uh-oh. Watch out, Warrior, I'm picking up multiple hostile programs converging on your position! Get Fissure out of there, now!</say>
+        <say npc="1">She's working like a champ now! Let's get out of here and to that extraction point.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Fissure out of the building" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Do not let Fissure die" type="Protect" npc="1" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Machines" enemies="0">
+    <briefing>I'm glad that you were able to get out of there safely, Warrior. Now, escort Fissure to the extraction point that I'm marking with a waypoint.</briefing>
+    <enter><say>The extraction point is in that building.</say></enter>
+    <objective goal="1" text="Lead Fissure to the extraction team" type="Escort" npc="1" to="npc:2">
+      <done>
+        <say npc="2">Thanks! Right on time.</say>
+        <say contact="1">Your job here is done, Warrior. Leave the extraction team to their work.</say>
+        <say npc="1">Thanks! You saved my bacon a couple times back there.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Well done, operative. It appears that both Exiles and imposter Agents are interested in our hardline repair operatives. We'll have to protect them more carefully in the future.</finish>
+</mission>

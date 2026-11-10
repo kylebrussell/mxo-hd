@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redpill Rescue, Zion story mission 1.1.1. Source: research/missions/transcripts/Zion1-1-1.md, the archive replay
+     ([Zion Archive 1.1.1], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's lines (his second line, on getting inside, is the enter line), the
+     operator's lines, the three operatives' names and lines, and the reward (55,200 experience, 73,500 information).
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never opened),
+     the site (Normal; the interior had shoji panels), the operatives' looks (their sex isn't stated), the enemy count,
+     and the attacker named Agent, who carries the "suspicious object". That object is retail's Military Report to the
+     General, here the Documents item (6794); the operator's "We'll need to take a look at that" line marks the loot.
+     Gaps: retail's operatives were locked in behind "some sort of field around the key"; nothing in the log shows how it
+     was opened, so they can be reached straight away. Their lines are split into one Talk goal each ("Find ...") so each
+     says their own line; talking to them also starts the escort. The escort is two goals, out of the building ("You're
+     out. Now lead them to a hardline.") and then to a hardline. Altaj's first line was unreadable and is left out (his
+     readable line is the same). The hostile barks ("Strike hard. Strike fast.") have no place in the format. Pink Reactor
+     Sunglasses, received at the end, are left out (unclear whether a reward). -->
+<mission id="101101" title="Redpill Rescue" description="Rescue a Zion team from Machine attackers." plot="1" order="1101"
+         org="1" contact="Tyndall" exp="55200" info="73500">
+  <npc id="1" handle="Duboshin" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Altaj" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564" />
+  <npc id="3" handle="Tolosa" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>One of our teams reports that they are under attack by Machine operatives. This was supposed to have ended with the Truce. Hurry to the indicated location and get our people out!</briefing>
+    <enter><say contact="1">Now that you are inside, there are a few things we need out of you. First, eliminate the attackers that have our people pinned down. When you've killed them, search their bodies for any suspicious objects that might shed more light on this. After that you'll be extracting the Zion operatives. The three that you are looking for are Duboshin, Altaj, and Tolosa. Once you've located them, get them out of the hot zone and lead them to a hardline so they can jack out. Do not let any of them die!</say></enter>
+    <objective goal="1" text="Find Duboshin" type="Talk" npc="1">
+      <talk><say npc="1">I'm so glad you've made it here. Those bastards locked us up and put some sort of field around the key. We couldn't hack our way out.</say><say npc="1">We'll follow you out of here.</say></talk>
+    </objective>
+    <objective goal="2" text="Find Altaj" type="Talk" npc="2">
+      <talk><say npc="2">I want them to pay for this!</say></talk>
+    </objective>
+    <objective goal="3" text="Find Tolosa" type="Talk" npc="3">
+      <talk><say npc="3">I can heal you if things get bad.</say></talk>
+    </objective>
+    <objective goal="4" text="Eliminate the attackers" type="DefeatAll">
+      <done><say>All programs have been eliminated. These are some of the weakest Agents I've ever seen. Something bigger must be going on here.</say></done>
+    </objective>
+    <objective goal="5" text="Search the attackers' bodies for suspicious objects" type="Loot" npc="4" item="6794">
+      <done><say>We'll need to take a look at that after the mission is over.</say></done>
+    </objective>
+    <objective goal="6" text="Lead Duboshin, Altaj and Tolosa out of the hot zone" type="Escort" npc="1,2,3" to="exit">
+      <done><say>You're out. Now lead them to a hardline.</say></done>
+    </objective>
+    <objective goal="7" text="Lead Duboshin, Altaj and Tolosa to a hardline" type="Escort" npc="1,2,3" to="hardline" after="6">
+      <done><say>Good work.</say><say>We're done here.</say></done>
+    </objective>
+    <objective goal="8" text="Do not let any of them die" type="Protect" npc="1,2,3" />
+  </phase>
+  <finish>I'm sorry to put you through that, {player}. We need to find out why the Agents attacked our men. The Truce is still in effect... Why would they do this?</finish>
+</mission>

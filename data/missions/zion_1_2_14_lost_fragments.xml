@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lost Fragments, Zion story mission 1.2.14. Source: research/missions/transcripts/Zion1-2-14.md (the archive replay
+     of [Zion Archive 1.2.14], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Tyndall line and the imposter Agents' barks, and the holders' names as
+     far as they were seen: Agent Lee spoke twice, nine minutes apart, so he is taken as two holders of one name; Agent
+     Wilson; and an "Agent" (Team chat: "Time to die, human."). Ours: the description, the objective texts, the site (an
+     unnamed building: Normal) and the looks. Rewards: the 68,750 experience and 91,000 information shown at the
+     hardline right after this mission completed.
+     Gaps: retail's four Data Fragments were one kind of item, taken from four imposter Agents and uploaded together. A
+     Loot gives a new inventory item each time and an Upload takes back one, so four holders of the same item would leave
+     three behind. Each fragment is a different item here (Frags 6785, Data 6787, Data_CD 6831, Access_Code 6782), each
+     with its own Upload; one hardline use uploads all four. The barks are on the NPCs but only play if the player talks
+     to them, since they attack on sight. Retail's upload had no area of its own; it is a second phase here so that
+     Tyndall's "that accounts for all four Frags" line can play once all four are taken (phase 1's complete). Phase 2's
+     site is only a place for its waypoint: the uploads are done at any hardline. Tyndall's generic "Contact me when you
+     are ready for your next assignment." isn't repeated. -->
+<mission id="101214" title="Lost Fragments" description="Collect the code fragments Zion needs to build its junction box repair programs." plot="1"
+         order="1214" org="1" contact="Tyndall" exp="68750" info="91000">
+  <npc id="1" handle="Agent Lee" type="HOSTILE" at="1" rsi="3600004e" weapon="2568">
+    <say>Just try and take these Frags, human!</say>
+  </npc>
+  <npc id="2" handle="Agent Wilson" type="HOSTILE" at="1" rsi="6e060040" weapon="2568">
+    <say>Very well. Fisticuffs.</say>
+  </npc>
+  <npc id="3" handle="Agent Lee" type="HOSTILE" at="1" rsi="9b000090" weapon="2568">
+    <say>Code fragments? Hah! You have more immediate problems.</say>
+  </npc>
+  <npc id="4" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568">
+    <say>Time to die, human.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>We now know how to fix the damaged junction boxes. Warrior, we need you to gather a number of specific code fragments so that we can make the box repair programs. I think you'll find that this mission will be very straightforward. But even the simplest of missions can be of vital importance to Zion!</briefing>
+    <enter><say contact="1">The Frags are in that building, but... I'm reading them in multiple locations, corresponding to what appear to be imposter Agent signatures. This could be tough, Warrior: you'll have to defeat those imposter Agents and grab the Data Fragments. There are four separate Data Fragments in all that you'll need to collect. Proceed carefully and I'm sure you'll come through fine!</say></enter>
+    <objective goal="1" text="Get the first Data Fragment from Agent Lee" type="Loot" npc="1" item="6785" />
+    <objective goal="2" text="Get the second Data Fragment from Agent Wilson" type="Loot" npc="2" item="6787" />
+    <objective goal="3" text="Get the third Data Fragment from Agent Lee" type="Loot" npc="3" item="6831" />
+    <objective goal="4" text="Get the fourth Data Fragment from the Agent" type="Loot" npc="4" item="6782" />
+    <complete><say contact="1">Excellent, Warrior, that accounts for all four Frags. Now leave the building and upload them at a hardline.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <objective goal="1" text="Upload the first Data Fragment at a hardline" type="Upload" item="6785">
+      <done><say contact="1">Receiving the Data Fragments now. Stand by for an update, {player}.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the second Data Fragment at a hardline" type="Upload" item="6787" />
+    <objective goal="3" text="Upload the third Data Fragment at a hardline" type="Upload" item="6831" />
+    <objective goal="4" text="Upload the fourth Data Fragment at a hardline" type="Upload" item="6782" />
+  </phase>
+  <finish>All four Data Fragments have come through safely, operative. Zion applauds your mighty effort!</finish>
+</mission>

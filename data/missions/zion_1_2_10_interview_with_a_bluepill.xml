@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Interview With a Bluepill, Zion story mission 1.2.10. Source: research/missions/transcripts/Zion1-2-10.md (the
+     archive replay of [Zion Archive 1.2.10], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, enter, NPC and closing line, and the NPC names (Maynard Berman, Lonny
+     Reitman, Darren Allen). Ours: the description (the Summary tab was never opened), the objective texts (the
+     Objectives tab was never opened), the sites (two unnamed buildings: Normal) and the looks. Rewards: the 137,500
+     experience and 91,000 information shown right after this mission completed.
+     Gaps: no fight is seen (one hostile street NPC, Crow Bars Blusterer, was targeted but has no part in the mission),
+     so neither phase has enemies. Phase 1 ends in retail when the player leaves the building with Maynard (the
+     waypoint is updated outside); here that is an Escort to the way out. The "insurance adjustor" guise is flavour
+     only. Maynard's follow line was logged twice; it is said once. -->
+<mission id="101210" title="Interview With a Bluepill" description="Interview a bluepill who witnessed the hardline sabotage." plot="1"
+         order="1210" org="1" contact="Tyndall" exp="137500" info="91000">
+  <npc id="1" handle="Maynard Berman" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>See? I told you he saw it.</say>
+  </npc>
+  <npc id="2" handle="Darren Allen" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">Nice pants.</say>
+  </npc>
+  <npc id="3" handle="Lonny Reitman" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>I need that phone to work, too, 'cause I use it to call my aunt Doris every day. She gets worried if she doesn't hear from me. You guys are gonna fix it, right? And don't let that blinky red light man near it again, he's bad news.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, although our forces are securing the City's hardlines against attack, the identity of the original saboteurs remains a mystery. In order to neutralize the threat completely, we must discover its real source. Fortunately, a bluepill witnessed one of the acts of hardline sabotage. We want you, in the guise of an insurance adjustor for the phone company, to interview this witness and see if he noticed anything that will help us track the saboteurs. This mission requires diplomacy, which is why Zion has chosen you for the job.</briefing>
+    <enter><say>The bluepill, Maynard Berman, is in that building. Remember, you are an insurance adjustor from the phone company, looking for any details he may remember about the phone booth sabotage that he witnessed.</say></enter>
+    <objective goal="1" text="Talk to Maynard Berman" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Man, I didn't know the phone company had such a loose dress policy for their employees. Anyway, I didn't actually see the thing go down myself--it was a friend of mine who saw it. I can take you to him if you want.</say>
+        <say>It appears as though our intelligence wasn't quite correct. Take this bluepill to his friend's location--I'll update your waypoint once you're outside.</say>
+        <say npc="1">Come on, let's go. My friend is nearby.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Maynard Berman out of the building" type="Escort" npc="1" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>All right, Warrior, you have a waypoint to the new location. Take Maynard Berman there and have him introduce you to his friend.</briefing>
+    <enter><say>The bluepill's friend, Lonny Reitman, should be in that building. Take Maynard Berman to him so that he can introduce you. Hopefully he'll have some useful information about the sabotage he witnessed.</say></enter>
+    <objective goal="1" text="Lead Maynard Berman to Lonny Reitman" type="Escort" npc="1" to="npc:3">
+      <done><say contact="1">Talk to Lonny Reitman, Warrior, and see if he has any useful information for us.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Lonny Reitman" type="Talk" npc="3" after="1">
+      <talk>
+        <say npc="3">Yeah, okay, the phone booth thing. Well, there was this guy in a suit and glasses, a real bad-looking customer, you know? He went into the phone booth with this big black box and was in there for a long time. I could see he wasn't talking into the handset, so what he was doing all that time, I don't know--messing around with the phone unit or something. Well finally he came out and I tried to use the phone, and it was all broken. Oh yeah, and I noticed that he had a device with a red blinking light on it--I wonder what the heck that was for?</say>
+        <say>Good work, operative, that's enough information for now.</say>
+      </talk>
+    </objective>
+    <complete><say>That's all we need for now.</say></complete>
+  </phase>
+  <finish>From the information that you've gathered, it appears likely that the imposter Agents are behind the hardline sabotage. Commander Lock will be very interested to hear this--it should give us a target for stopping the sabotage entirely. Warrior, today we prepare the ground for the battle that will surely come.</finish>
+</mission>
