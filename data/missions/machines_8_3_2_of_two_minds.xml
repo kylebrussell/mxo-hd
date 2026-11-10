@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Of Two Minds, Machines story mission 8.3.2. Source: research/missions/transcripts/Mach8-3-2.md (the archive
+     replay of [Machine Archive 8.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Leigh Quigley, Morpheus
+     (the General's simulacrum), Agent Clark, Agent Green, Agent Jones and Agent Pace. Gray called the player
+     "operative"; Agent Clark called him "Mr. Brando Argento" and Agent Pace "Brando"; those are {player}. Agent Green's
+     and Agent Jones's last lines were only seen in Team chat ("..."). Ours: the description (the Summary tab was never
+     opened), every objective text (the Objectives tab was never opened), the sites (none is named: Normal), the looks,
+     Leigh Quigley as a man (the log never says), and the enemy count at the first site (the redpills were E Pluribus
+     Neo: enemy Zion). No mission items. Rewards: 385,000 experience and 63,000 information, shown on completing this
+     mission (the same as 8.3.1).
+     Gaps: at the first site the Operator saw nothing at first and the redpills' signals showed up half a minute
+     later; ours are there from the start and both lines are said on arrival. The simulacrum appeared behind the
+     player in the room just passed through once Leigh Quigley had been talked to; ours stands on the floor from the
+     start, and the talk to him opens after Leigh's. Agents Green and Jones followed the player as support; they are
+     led out of Clark's site and then to Agent Pace, and the talk to Pace waits for them. They don't fight. -->
+<mission id="208302" title="Of Two Minds" description="Find the General's Morpheus simulacrum and win its cooperation." plot="1"
+         order="8302" org="2" contact="Agent Gray" exp="385000" info="63000">
+  <npc id="1" handle="Leigh Quigley" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="1">I didn't believe 'im, but I guess he was right! Heh.
+
+He causin' some kind of trouble?
+
+Well, I don't believe it. He's a good boy.</say>
+  </npc>
+  <npc id="2" handle="Morpheus" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="2">Oh? Have you asked them?
+
+More importantly: did you believe?</say>
+  </npc>
+  <npc id="3" handle="Agent Clark" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say after="1">They are valuable combat resources. Please use them efficiently.</say>
+  </npc>
+  <npc id="4" handle="Agent Green" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say after="3">...</say>
+  </npc>
+  <npc id="5" handle="Agent Jones" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say after="3">...</say>
+  </npc>
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="3">... I dislike failing to achieve my objective. Unfortunate that we are unable to fall back on more direct methods with this one...
+
+We will have to report our failure to Agent Gray.</say>
+  </npc>
+  <npc id="7" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say after="3">I wish to do what I believe to be right...but along which path right may lie, I do not know.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Operative, the simulacrum we compiled from data on Morpheus proved insufficiently accurate to unlock the neural encryption on the captured Zion RSI database archive, and has been terminated.
+
+We do not currently have access to additional Morpheus data that would allow us to compile a more accurate simulacrum. Most remaining data is likely to have been either destroyed along with Zion's mainframe, or smuggled to Zion's new city.
+
+We are left with one remaining option: the simulacrum constructed by the General. It was sufficiently accurate to fool many Zionites for some time. Where the General obtained the data necessary for such accuracy is not known; the simulacrum's movements, on the other hand, are well known to us. Search the indicated location.</briefing>
+    <enter>
+      <say>Hm, I guess this means we really have been keeping tabs on the thing. I wonder what it's been up to, though?
+
+Looks pretty quiet in there.</say>
+      <say>I don't think there's anything there. It must have... Whoops! Got signals now--redpills!</say>
+    </enter>
+    <objective goal="1" text="Kill all of the redpills" type="DefeatAll">
+      <done><say>Looks clear. EPN seems to be sticking their nose in, huh? Well, I bet we've got a better handle on lil' Morphy's location than they do.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The simulacrum has proven unusually adept at evading sensors, but nevertheless, we are able to determine its general whereabouts. It is not far from you, operative. Please search the next location.</briefing>
+    <enter><say>Hmph. If this keeps up much longer, I say we heckle Gray into running a full sector scan for us.
+
+I'm still not picking up anything definite, except for one bluepill signal. Look around, I guess. I'll try to keep an extra eye out in case those punks are still around.</say></enter>
+    <objective goal="1" text="Talk to Leigh Quigley" type="Talk" npc="1">
+      <talk><say npc="1">Hey-err thar... Oh? Ha, so it is you. He thought it would be. He's right behind you.</say></talk>
+      <done><say>Wha-? Behind... Whoa. There's a signal in the room you just came through now.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Morpheus" type="Talk" npc="2" after="1">
+      <talk><say npc="2">You seek me, therefore you seek something from me. If it was something to be obtained by force, you would have been directed to take it; yet, you have made no move against me.
+
+A favor, then? I warn you, I have reservations about the methods of the Machines. These methods lead me to question their ultimate purpose--a purpose I cannot be sure that they have disclosed to you, or, had they done so, that you would disclose to me. But without knowing the purpose...can I in conscience offer you my assistance?</say></talk>
+      <done><say>Uh... Okay, obviously he wants answers from someone upstairs. We'd better check in with Gray.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>There's that bluepill I saw on the scan. Darn vagrants.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, please see Agent Clark for support units. We cannot allow outside interference, or a misconception of the resources available to the System, to endanger our mission to obtain the simulacrum's cooperation.</briefing>
+    <enter><say>Hm, looks like Gray's upping the ante. Is he calling the sim's bluff?</say></enter>
+    <objective goal="1" text="Talk to Agent Clark" type="Talk" npc="3">
+      <talk><say npc="3">{player}...these Agents will accompany you to the target.</say></talk>
+      <done>
+        <say npc="4">The target...</say>
+        <say npc="5">...will not escape.</say>
+        <say npc="3">They are valuable combat resources. Please use them efficiently.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Agent Green and Agent Jones out of the area" type="Escort" npc="4,5" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Agent Pace has already been dispatched to present our request to the simulacrum, operative. You will be present to ensure that they are not interrupted during negotiations. You will provide Agent Pace with whatever assistance she requires to obtain the simulacrum's cooperation.</briefing>
+    <enter><say>So he sicked Pace on the sim, huh? Yeah... Okay, I see the two of them in there. No unidentified signals in the area.</say></enter>
+    <objective goal="1" text="Lead Agent Green and Agent Jones to Agent Pace" type="Escort" npc="4,5" to="npc:6" />
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="6" after="1">
+      <talk><say npc="6">Ah, {player}. No, it won't agree... I've tried everything. Now that you are here, and we have an additional show of strength--could you talk to it? It has shown some willingness to talk to humans.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Morpheus" type="Talk" npc="7" after="2">
+      <talk><say npc="7">She was most compelling--in ways that surprised me, coming from an Agent.
+
+However, I am not at peace in my mind on this subject. Despite the Agent's assurances, I suspect that giving the Machines access to the information will only accelerate the spread of chaos, strife, and...misunderstanding. You tell me that it will allow you to bring the suffering of this war to a swift conclusion, but the future...is not so clear to me. I--that is, others--have tried to anticipate the outcome of such conflict before, and have fallen into error.</say></talk>
+      <done><say>Well that's just great... Are we supposed to twiddle our thumbs and let armed nuts run around the Matrix while that thing goes on its own personal spirit journey?</say></done>
+    </objective>
+  </phase>
+  <finish>This is indeed a difficult issue, operative. We require the simulacrum's willing cooperation to match the required neural pattern, yet it is not willing to be convinced--possibly not even capable of the comprehension required. It displays certain aspects of Morpheus' much-vaunted strength of conviction, yet appears utterly incapable of applying them to action. An additional concern is that this may indicate a difference in their brainwave patterns of such a fundamental nature as to prevent the simulacrum from breaking the database encryption, even were it to decide to make the attempt.
+
+However, success in this project would significantly hasten the termination of the Zion conflict. We will continue until every feasible possibility has been exhausted.</finish>
+</mission>

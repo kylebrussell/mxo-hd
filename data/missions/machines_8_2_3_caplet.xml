@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Caplet, Machines story mission 8.2.3. Source: research/missions/transcripts/Mach8-2-3.md (the archive replay of
+     [Machine Archive 8.2.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective text "Search the area",
+     and the names Cryptos, Denise Hoyos, Austin Uris, Carlie Jobst, Agent West, Danilo Miller, Chet Cupar and
+     Holographic Projection. Gray and Agent West called the player "Mr. Argento"; that is {player}. Chet Cupar's
+     "obtain if" is read as "obtain it", and the Projection's password "touche" is written without its accent (plain
+     ASCII). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the Wright
+     fabrication facility and the Machine lab are Office; the others are unnamed: Normal), Tabor Park for the second
+     phase (the map at the Wright computer), the looks and the enemy counts. Wright Research Security are bluepill
+     guards with no org; Wright works with Zion, so they are enemy Zion. The Zionite who carries the red pill isn't
+     named in the log; he is "Zionite" here. Item stand-ins: retail's "Access Code" is Access_Code (6782); the red pill
+     (its name never shown) is Medicine (6808). Rewards: 385,175 experience and 63,000 information, shown on completing
+     this mission.
+     Gaps: at the Wright facility the computer took the access code and showed D. Wright's order to destroy the extra
+     samples; here the code is put into the computer ("Search the area"), and the alarm that followed ("Leave the area
+     now!") is only the Operator's line when the phase's goals are done. The red pill came from a dead Zionite; here it
+     is looted from the named Zionite, and the Operator's "red pill code" line is said on nearing him, with Austin
+     Uris's outburst after it. The lab's analysis was the Put and then a readout; the readout is a Use on the same
+     computer. The Holographic Projection appeared at the lab only after the analysis; here it stands there from the
+     start and its talk opens after the readout. Lines that NPCs said when talked to again in retail are their own
+     lines here, switched by the lab's goals where the order matters. -->
+<mission id="208203" title="Caplet" description="Obtain a sample of Zion's new red pill for analysis." plot="1"
+         order="8203" org="2" contact="Agent Gray" exp="385175" info="63000">
+  <npc id="1" handle="Cryptos" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say>Blue and red, operative; and, if you mix them, a sickly purple.
+
+Good night.</say>
+  </npc>
+  <npc id="2" handle="Denise Hoyos" type="FRIENDLY" at="2" rsi="e4050024" weapon="0">
+    <say>I... I don't...</say>
+  </npc>
+  <npc id="3" handle="Zionite" type="HOSTILE" at="3" rsi="050100b4" weapon="2568" />
+  <npc id="4" handle="Austin Uris" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say>Goddamn pigs! Damn you!</say>
+  </npc>
+  <npc id="5" handle="Carlie Jobst" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say display="5">Oh my god oh my god oh my god...</say>
+  </npc>
+  <npc id="6" handle="Agent West" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Must I do this for you?</say>
+    <say after="3">That is not in my instructions...</say>
+  </npc>
+  <npc id="7" handle="Danilo Miller" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">I could tell you what to do, but the Agent seems to like giving orders.</say>
+    <say after="4">It's nothing I care about.</say>
+  </npc>
+  <npc id="8" handle="Chet Cupar" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say display="5">Danielle Wright is eccentric, but undeniably capable. We've monitored her closely since she left Zion, not only to watch for threats, but also to...examine any potentially worthwhile program she may develop. We've obtained a number of useful codes from her. The emergency jack-out system you use is the most widespread, I suppose, although that one she developed while still in Zion, and we had to obtain it from Zionite defectors.</say>
+    <say after="3">What else? Oh, well, mostly just component subroutines for various technical uses in networks and so on... There was a certain one of her interface subroutines that I suspect may have been...studied for the Agent Pace project, but of course I didn't have access to that.</say>
+  </npc>
+  <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we have found that the Vauxton corporation known as "Wright Research" has been assisting Zion in developing a new red pill trace program that is immune to the exploit we used to gain data on their mainframe. Reports indicate that Danielle Wright, head of the corporation and a former Zion operative, has been carrying out the work personally. There are indications that this work continues, despite direct intervention by System forces against the Wright Research facility.
+
+The Cypherites have contacted us, claiming to have further information regarding this matter. As you know, they are particularly interested--one might say "obsessed"--with the status of individual humans in the pod system. I am delegating you to meet with their leader, Cryptos.</briefing>
+    <enter><say>Been a while since we had a chat with old Cryptos. I wonder if he's got his head straightened out yet? Gray seems to think he's okay...or, at least he doesn't worry about him being in charge as much as he does Veil.
+
+I've got some redpill readings in there, and...yeah, there's Cryptos' scrambled signal.</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="1">
+      <talk><say npc="1">Our sources within Zion bring word that Wright has already completed the code of the new red pill--even that limited quantities have started making their way to Zion extraction teams.
+
+We have yet to encounter these teams in the field; they are still relatively quiet, as they have been for weeks. But this blissful respite may be coming to an end.</say></talk>
+      <done><say>The new pills could already be hitting the street? Oh boy. Gray's gonna need to know about this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Tabor Park">
+    <briefing>If these new pills indeed exist, {player}, it is imperative that we obtain a sample for analysis.
+
+The location indicated is a Wright fabrication facility, with higher than usual activity over the last twenty-four hours. Search the facility thoroughly.</briefing>
+    <enter><say>I've got some bluepill signals in there. Could be security, so keep an eye out.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the access code from Denise Hoyos" type="Get" npc="2" item="6782">
+      <talk><say npc="2">I... I don't...</say></talk>
+      <done>
+        <say>A computer access code--could be useful.</say>
+        <say>You should be able to access that terminal now.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Put" object="1" item="6782" after="1">
+      <done><say>Oh, super.
+
+She's thorough; I'll give her that.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Hey, finally someone who doesn't look like an ex-cop with a chip on their shoulder. Maybe there's something worthwhile in there.</say>
+    </near>
+    <complete><say>Uh-oh, there goes the alarm.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>We raised our monitoring level of known Zion "potential" extraction candidates as soon as we received your operator's report, operative.
+
+Already we have indications of Zionites approaching one of these citizens: Austin Uris.
+
+You are to eliminate the Zionite team, and confiscate any red pills they may be carrying.</briefing>
+    <enter><say>We'd been ahead of Zion for a while, but that Wright chick pulled a pretty fast one. Time to catch back up.
+
+I've got unregistered operative signals in there, and not one, but two bluepill signals.
+
+That's weird. Usually they like to try getting them when they're alone.</say></enter>
+    <objective goal="1" text="Kill the Zionite extraction team" type="DefeatAll" />
+    <objective goal="2" text="Get the red pill from the Zionite" type="Loot" npc="3" item="6808">
+      <done><say>Okay. Let's call Gray and see what he wants us to do with it.
+
+I'm sure he'll have someone else handy to take care of the...uh...mess there.</say></done>
+    </objective>
+    <near npc="3" radius="800">
+      <say>I'm reading a red pill code on that one. Can't tell for sure if it's one of the new type.</say>
+      <say npc="4">Goddamn pigs! Damn you!</say>
+      <say>...
+
+I'm sure he'll be fine. Yeah...</say>
+    </near>
+    <complete><say>Huh. There's the extraction team's blue pill. We won't be needing that.
+
+The Machines have their own way to calm people back down after they've gone through something like this. Zion just uses it to cover their tracks if an extraction doesn't go right--like this one.</say></complete>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Yes, a cleanup team will attend to that situation, operative.
+
+Bring the pill to our lab for analysis. The coordinating officer is Agent West.</briefing>
+    <enter><say>That's the lab. No sign of trouble.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Agent West" type="Talk" npc="6">
+      <talk><say npc="6">You're slow, {player}. Insert the pill into the lab computer's analysis tray.</say></talk>
+      <done><say>That's the nice thing about Agents: they're all so cheerful.</say></done>
+    </objective>
+    <objective goal="2" text="Insert the red pill into the lab computer's analysis tray" type="Put" object="1" item="6808" after="1">
+      <done>
+        <say>Check the readout on that thing. Was it one of the new pill codes?</say>
+        <say npc="7">This will take a while.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Check the lab computer's readout" type="Use" object="1" after="2">
+      <done><say>Ah, must have been one of the new ones, then. Good.
+
+Hey-oh. You've got familiar company. I guess there's yet another Merv transmitter to find and shut down...</say></done>
+    </objective>
+    <objective goal="4" text="Talk to the Holographic Projection" type="Talk" npc="9" after="3">
+      <talk><say npc="9">You may be interested to know, operative, that E Pluribus Neo plans to sabotage certain power lines running into the Machine city in the very near future. Full details can be found at data cluster 28090275.HNW.091, password "touche."
+
+I would use my own Sentinels to deal with them, but I thought your masters might prefer to do it themselves.</say></talk>
+      <done>
+        <say>Why, that old son of a--
+
+We'll just see what Gray thinks about this.</say>
+        <say npc="9">End transmission.</say>
+        <say npc="6">...projection is not subject to ballistic damage.
+
+...
+
+Please advise.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Preliminary analysis of the pill code structure suggests that the author utilized data from the Zion mainframe to find, test, and fix our exploit. It is not usual for Zion to allow such access to their own operatives, much less a third party such as Danielle Wright. It is possible that Ms. Wright has her own means of accessing their mainframe. This...would be significant.
+
+Ah... The other matter. Yes, the data reported by the General will be examined. It should not be difficult to determine whether or not it is merely another Merovingian ploy.</finish>
+</mission>

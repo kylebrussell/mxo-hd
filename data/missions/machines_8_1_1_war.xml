@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- War, Machines story mission 8.1.1. Source: research/missions/transcripts/Mach8-1-1.md (the archive replay of
+     [Machine Archive 8.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Eliminate the
+     hostiles" and "Search the Computer", the names Agent Pace, Agent Marks, Agent Clark, Agent Gray (the Agent met in
+     the field in the last phase, a friendly NPC of that name), Zion Scattershot, Zion Artillerist, Zion Kung Fu Master
+     and Zion Doctor, and their barks. The lines called the player "Mr. Argento" and "Evol"; that is {player}. Pace's
+     "Tesoro" is an endearment and stays. The Operator's line on reaching the last site had a line hidden at an image
+     join; the best reading (nothing missing) is used. Ours: the description (the Summary tab was never opened), the
+     objective texts "Talk to Agent Pace" and "Talk to Agent Gray", the sites (the network hub is in Eshean Projects,
+     as the minimap showed, building unnamed: Normal; the activity center was an office; Pace's and Gray's meeting
+     places are not shown: Normal), the looks and the enemy counts. Which Zion redpill was at which site isn't certain;
+     the Scattershot, Artillerist and Kung Fu Master are at the hub and the Doctor at the activity center. Rewards: none
+     was shown for this mission; 374,000 experience and 63,000 information are 8.1.2's, the next mission.
+     Gaps: the hub had a second computer with a message from Commander Lock (a decoy); it has no goal and isn't built.
+     Gray promised "System reinforcements" at the activity center; we have no allies that fight, so none are placed.
+     In the last phase Pace's "Thank you" can be heard before she is talked to, since her goal opens after Gray's. -->
+<mission id="208101" title="War" description="Strike at Zion's network in the Matrix now that Zion has broken the Truce." plot="1"
+         order="8101" org="2" contact="Agent Gray" exp="374000" info="63000">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say>Execution of your instructions is your only priority, operative. We must protect the System against all threats.</say>
+  </npc>
+  <npc id="2" handle="Agent Marks" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">Do you hesitate, {player}? Regulations will guide your actions.</say>
+  </npc>
+  <npc id="3" handle="Zion Scattershot" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
+    <say>It's the Machines!</say>
+  </npc>
+  <npc id="4" handle="Zion Artillerist" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+    <say>Lock down the terminal!</say>
+  </npc>
+  <npc id="5" handle="Zion Kung Fu Master" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>Too late!</say>
+  </npc>
+  <npc id="6" handle="Zion Doctor" type="HOSTILE" at="3" rsi="58010058" weapon="2568">
+    <say>Damn you!</say>
+  </npc>
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>Thank you, {player}.</say>
+  </npc>
+  <npc id="8" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Thank you, {player}.</say>
+  </npc>
+  <npc id="9" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">We are pleased to see that your efficiency remains unimpaired by Zion's aggression, {player}.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, Cypherite spies have confirmed the existence of a new base built by Zion, intended to protect them from the threat of extermination by our Sentinels should they break the Truce.
+
+This action itself directly undermines the function of the Truce. We have been directed to prevent Zion from extracting more humans from the pods. The use of force against Zion operatives has already begun.
+
+Agent Pace will provide further details on the current situation.</briefing>
+    <enter><say>Zion broke the Truce? We're already fighting them? Holy--</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="1">
+      <talk><say npc="1">Welcome, {player}. So, we have finally discovered where the supplies leaving Zion have been going for these many months. They have attempted to escape from the Truce by retreating to a more remote base--a place some of them apparently call "New Zion." They seem to hope that a combination of natural strata layers and EMP charges will allow them to disrupt the System with impunity. They will find that they are mistaken.
+
+Zion underestimates our knowledge of their network interfaces within the simulation. Most of their secrets here are already known to us. As they have chosen to violate the law they agreed to follow, they will be punished, and their operations disrupted. Agent Gray will give you your first target.</say></talk>
+      <done><say>I can't believe Zion would do that! Are they crazy? Didn't they know what it would mean?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3" neighbourhoods="Eshean Projects">
+    <briefing>The indicated location is a Zion network hub whose existence has long been known to us. Remove any Zionites in the area, and access the hub terminal to locate further enemy strongholds.</briefing>
+    <enter><say>I'm reading a computer network in there, and a bunch of unidentified redpill signals.
+
+Well... Looks like this is it.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Okay... We'll get those network locations tracked down.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>The third network connection has been identified as a Zion activity center. Proceed to that location, and eliminate resistance. System reinforcements will be on hand.</briefing>
+    <enter><say>Got more unidentified reds in there. A few support units are supposed to be on their way now.</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Area's clear. We'll have a scanner team in there in a minute; you can come out and report to Gray.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, as I am aware that this turn of events concerning Zion carries a certain significance for you, I thought it best that we should meet face to face at this time. You will find me at the indicated location.</briefing>
+    <enter><say>Got some Machine programs in there. No sign of trouble.
+
+Zion better wise up fast, that's all I'm gonna say.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="7">
+      <talk><say npc="7">Operative, it is not unexpected that you may have certain feelings or sentiments relating to Zion, and the humans therein. I want to make it clear that we do not engage in the unnecessary termination of life; neither do we take hostilities against Zion lightly. However, Zion's action in constructing a new fortified base reveals a clear intention to resume their past activities of attempting to damage the System, and in this circumstance, the lives of the vast majority of mankind reliant on the continued operation of the Matrix, not to mention the existence of the many programs whose existence depends upon the simulation, must take priority.</say></talk>
+      <done><say>Looks like Agent Pace wants to add something.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="8" after="1">
+      <talk><say npc="8">Tesoro, although we may not often say so, I want you to know that we very much appreciate your efforts on behalf of the System. Many humans do not have your...understanding of the simulation's true importance. We know that you will do your utmost to ensure the continued stability of this world. If only the others had your insight, such terrible conflicts as this one would not exist.</say></talk>
+    </objective>
+  </phase>
+  <finish>With your continued assistance, {player}, we trust that this state of conflict with Zion will be brought to a rapid conclusion.</finish>
+</mission>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Potential, Machines story mission 8.1.4. Source: research/missions/transcripts/Mach8-1-4.md (the archive replay
+     of [Machine Archive 8.1.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Search the
+     area", "Get the Disk from the Computer" and "Put the Disk in the Computer", the names Chant, Wong The
+     Exterminator, Zion Guardian Patcher, Zion Pathogenist, Machine Mechanic and Veil, and the Zionites' barks. Gray
+     called the player "Mr. Argento"; that is {player}. Ours: the description (the Summary tab was never opened), the
+     objective texts "Subdue Chant", "Get the Disk from Wong The Exterminator", "Talk to Veil" and the decoy computer's
+     search, the sites (the recruiting center in Kedemoth and the upload site in Zia were offices, as the minimap and
+     the screenshots showed; Chant's residence and Veil's place aren't shown: Normal), the looks and the enemy
+     counts. Veil is a Cypherite: a redpill look. Item stand-in: the Data Disk is Data_CD (6831); it is the same disk
+     all through (put in the recruiting computer empty and taken back with the data). Rewards: 374,340 experience and
+     63,000 information, shown on completing this mission.
+     Gaps: the data extraction team "doing their thing" on Chant isn't shown; the phase ends once the disk is taken.
+     At the recruiting center the Operator's "a hefty amount of data on the machine in that room" came after the
+     player had hacked a computer with a message from Captain Niobe; so "Search the area" is that first computer, and
+     the disk goes into a second. In Zia the pursuing Zionites came after the upload; we can't spawn hostiles
+     mid-phase, so they are on the floor from the start (no kill goal was shown). A hostile "Furies Tormentor" fought
+     on the street before Zia is likely unrelated and isn't placed. -->
+<mission id="208104" title="Potential" description="Subdue the Zion recruiter Chant and steal the data of Zion's recruiting teams." plot="1"
+         order="8104" org="2" contact="Agent Gray" exp="374340" info="63000">
+  <npc id="1" handle="Chant" type="HOSTILE" at="1" rsi="d8040058" weapon="2568">
+    <say>What is it? Who are you?</say>
+  </npc>
+  <npc id="2" handle="Wong The Exterminator" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say after="2">We'll take care of this, sir.</say>
+  </npc>
+  <npc id="3" handle="Zion Guardian Patcher" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>It's a tool!</say>
+  </npc>
+  <npc id="4" handle="Zion Pathogenist" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+    <say>How'd they find us?</say>
+  </npc>
+  <npc id="5" handle="Machine Mechanic" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say display="5">You can send the data from the terminal in the next room.</say>
+  </npc>
+  <npc id="6" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say>Oh, you hadn't heard? I'm sure it just slipped Gray's mind. Give him a big hug for me, won't you? There's a dear.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>As you are no doubt intimately aware, {player}, Zion's foremost weapon in their so-called "war" against the System is their capability of unplugging humans from the security of our growth pods--what they call "recruiting."
+
+Thanks to the overzealous approach of one of Zion's recruiting operatives, we have learned from a human they considered unplugging--one of their "potentials"--that their operative named Chant has high-level access to their recruiting operation.
+
+I am sending you to the location that passes for Chant's private residence. You are to subdue him quickly. A data extraction team will then be employed to acquire the necessary information from him.</briefing>
+    <enter><say>That's the address, and I'm picking up a redpill signal in there. Should be Chant. I wouldn't like to be in his shoes about ten minutes from now. You know how those "data extraction" teams work on redpills? Br-rrr...</say></enter>
+    <objective goal="1" text="Subdue Chant" type="Defeat" npc="1">
+      <done><say>Oh, almost forgot: Wong The Exterminator has a disk you'll be needing.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Disk from Wong The Exterminator" type="Get" npc="2" item="6831" after="1">
+      <talk><say npc="2">I've got a data storage disk with your name on it, sir.</say></talk>
+      <done><say>All right, get out of there, and let them do their thing. You don't want to stick around to watch that, believe me.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Kedemoth">
+    <briefing>As our initial information suggested, Chant did indeed possess useful knowledge. According to what we have learned from him, the location you see marked out for you is a Zion recruiting center where data for many of their recruiting teams is stored. This is precisely the data we wish to obtain. Locate the data, and copy it to disk.</briefing>
+    <enter><say>I'm seeing multiple reds in there, computer systems... Should be the recruiting center.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>I'm reading a hefty amount of data on the machine in that room. I think that's what we're after. You'll need to copy it to that disk you're carrying.</say></done>
+    </objective>
+    <objective goal="2" text="Put the Disk in the Computer" type="Put" object="2" item="6831" after="1">
+      <done><say>Okay, now dump the recruiting data to the disk.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Disk from the Computer" type="Search" object="2" item="6831" after="2">
+      <done><say>Good. Grab the disk, and hit the streets!</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Zia">
+    <briefing>Well done, operative. Proceed to the indicated location, and upload the data at the terminal you find there.</briefing>
+    <enter>
+      <say>Almost there...</say>
+      <say>There's the upload system.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Put the Disk in the Computer" type="Put" object="1" item="6831">
+      <done><say>Badda-bing, badda-boom--file uploaded.
+
+Wuzzah... Ooh, heads up. Looks like you've got some Zionites on your tail. I'm guessing they aren't too happy with you right about now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>That data should be very useful, operative. You will see it put to use shortly, once it has been thoroughly evaluated.
+
+I have one final task for you today: a brief conference with the Cypherite controller, Veil. She appears to have some information she wishes to share.</briefing>
+    <enter><say>I'm seeing only one signal in there; looks like it's just gonna be you and Veil. Better keep an eye on your...uh...wallet.</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="6">
+      <talk><say npc="6">Congratulations on a deft bit of thievery, dearie. It's so nice to see the Machines finally cracking down on Zion waking up every Tom, Dick, and bluepill. We Cypherites have been fighting that battle on our own for oh-so-long.
+
+Speaking of that... Those pesky E Pluribus Neonites have got some idea in their head about bombing the Machines' city. Silly--just the kind of thing they might latch onto. I thought I'd pass it along... Let us know if you're interested, and I'm sure we can find out more for you, hm?
+
+Sorry to hear about the squiddies from Stalingrad biting it outside New Zion, by the way. If you want to get in there, you know who to call...</say></talk>
+      <done><say>Sentinels attacking New Zion? What's she on about?</say></done>
+    </objective>
+  </phase>
+  <finish>Yes, it is true that some Sentinels returning from the assault on Stalingrad were diverted to probe the defenses of Zion's new fortification. They appear to have been disabled, likely by concealed EMP charges; precise information was not obtained in all cases, due to broadcast interference. We will continue to test Zion's defenses by every available means. No human construction can withstand us indefinitely.</finish>
+</mission>

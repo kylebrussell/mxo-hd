@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Hunt, Machines story mission 8.3.4. Source: research/missions/transcripts/Mach8-3-4.md (the archive replay of
+     [Machine Archive 8.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md. Retail's
+     text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Johns, Agent Long, Heather
+     Uris, Valda Zhang, Morpheus, Agent Gray (met in person, a field NPC with that handle), Cryptos, Agent Brown, Agent
+     Wong, Zion Selective Phage, Shedar and Vindemiatrix. Gray and Agent Johns called the player "Mr. Argento"; that
+     is {player}. The crew-mate's cut-off "Flatlined! Those bast..." was only seen in Team chat, from a "Zion Selective Phage"
+     of Vindemiatrix's crew. Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (the decryption site is an office; the others are unnamed: Normal),
+     the looks, Heather Uris and Valda Zhang as women and Shedar as a woman (the log never says), and the size of
+     Vindemiatrix's crew (Zion Martial Arts Initiates and Selective Phages fought there). Item stand-ins: the sealed
+     archive is Data_CD (6831) and the decrypted archive Data (6787). Rewards: 384,650 experience and 63,000
+     information, shown on completing this mission.
+     Gaps: retail's decryption ran by itself within seconds of the archive going in; ours is Get from Agent Long, Put
+     into the computer, then take the decrypted data from it. Valda Zhang and Heather Uris are led out of the
+     decryption site and come along; they don't fight. Agent Brown's first line was never captured and is left out.
+     NPC lines can't wait for a goal of a later phase whose number an earlier phase already used, so in the second
+     phase Cryptos' and Gray's repeat lines are said whenever they are talked to outside a goal, and the lines after
+     the hand-over are said when it is done. The targets' signal lock (they can't jack out) and the destruction of
+     Vindemiatrix's ship are told, not played; his crew need not all die. -->
+<mission id="208304" title="The Hunt" description="Oversee the decryption of the captured Zion RSI archive and hunt down the Zionites it exposes." plot="1"
+         order="8304" org="2" contact="Agent Gray" exp="384650" info="63000">
+  <npc id="1" handle="Agent Johns" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>Decryption process proceeding as planned.</say>
+  </npc>
+  <npc id="2" handle="Agent Long" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say after="2">We will be monitoring your progress closely, operative.</say>
+  </npc>
+  <npc id="3" handle="Heather Uris" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say>Hm.</say>
+  </npc>
+  <npc id="4" handle="Valda Zhang" type="FRIENDLY" at="1" rsi="3c000040" weapon="0">
+    <say>Yeah?</say>
+  </npc>
+  <npc id="5" handle="Morpheus" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say>...
+
+Hm? No, it is all right. I am prepared for the scan.</say>
+    <say after="2">So I am close...to the mind of a madman. And yet, I am pleased to know it.
+
+But...how different are the things we have done. Were the reasons similar? I wished to believe...
+
+No. No, it eludes me.</say>
+  </npc>
+  <npc id="6" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say>You will give him the data, operative--now.</say>
+  </npc>
+  <npc id="7" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say>You should talk to the Agent, operative. You do have a...chain of command.</say>
+  </npc>
+  <npc id="8" handle="Agent Brown" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="9" handle="Agent Wong" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="10" handle="Zion Selective Phage" type="HOSTILE" at="3" rsi="d8040058" weapon="2568">
+    <say>What's that, operator? What do you mean?</say>
+  </npc>
+  <npc id="11" handle="Shedar" type="HOSTILE" at="3" rsi="60010058" weapon="2568">
+    <say>A red!</say>
+  </npc>
+  <npc id="12" handle="Vindemiatrix" type="HOSTILE" at="4" rsi="c9020058" weapon="2568">
+    <say>Crap!</say>
+  </npc>
+  <npc id="13" handle="Zion Selective Phage" type="HOSTILE" at="4" rsi="050100b4" weapon="2568">
+    <say>Flatlined! Those bast--</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>Operative, the Cypherite leader, Cryptos, has persuaded the Morpheus simulacrum to attempt to unlock the captured Zion RSI signature database.
+
+You are to oversee this attempt. The simulacrum is ready to proceed.</briefing>
+    <enter><say>Word is that Cryptos got the sim to agree by promising to tell him why old Morpheus was so obsessed with finding Neo's remains. Nobody knows what he actually told the sim about it, if anything. I wouldn't put it past Cryptos just to make something up...but whatever he said, it seems to have convinced the sim.
+
+Okay, the sim and our security forces are in there. One of the Agents should have the sealed archive.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the sealed archive from Agent Long" type="Get" npc="2" item="6831">
+      <talk><say npc="2">Proceed, operative. The data has not been tampered with.</say></talk>
+      <done><say>Okay, the computer there is set up with the decryption scheme. Put the data in, and Machine sensors will scan the Morpheus sim's neural patterns for the key. Hopefully it'll match, and we'll have the decrypted data.</say></done>
+    </objective>
+    <objective goal="2" text="Put the sealed archive into the decryption computer" type="Put" object="1" item="6831" after="1">
+      <done><say>They're scanning him... Trying his brainwave pattern against the encryption... Hey! It went through! Zion's RSI signature data is decrypted!</say></done>
+    </objective>
+    <objective goal="3" text="Get the decrypted archive from the computer" type="Search" object="1" item="6787" after="2">
+      <done>
+        <say npc="1">{player} has obtained the decrypted data.</say>
+        <say>Okay, they're giving you an escort for this. Take Valda Zhang and Heather Uris outside with you.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Lead Valda Zhang and Heather Uris out of the area" type="Escort" npc="4,3" to="exit" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Bring the decrypted archive to my location, operative. We have promised to allow Cryptos to remove any entries containing the RSI signatures of his operatives.</briefing>
+    <enter><say>I didn't think the old RSI signatures would apply for operatives who weren't still jacking in through Zion equipment. I guess Cryptos doesn't want to take chances.
+
+No hostiles in sight so far.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+      <talk><say npc="6">Give the archive to Cryptos, {player}. We gave our word in exchange for his assistance, and it will be fulfilled.</say></talk>
+      <done><say>I don't like it either, but orders are orders...</say></done>
+    </objective>
+    <objective goal="2" text="Give the decrypted archive to Cryptos" type="Give" npc="7" item="6787" after="1">
+      <talk>
+        <say npc="7">I am ready.</say>
+        <say>He'd better not try anything...</say>
+      </talk>
+      <done>
+        <say npc="7">Mm... Simple enough...
+
+Yes, I have finished.</say>
+        <say npc="6">The behavior of any logical being is predictable once the parameters are known. The Cypherites pride themselves on unpredictability, but Cryptos knows what our reaction will be if this data is damaged.</say>
+        <say npc="6">Thank you, operative. This data will be uploaded and put to use immediately. Prepare yourself for target interception.</say>
+        <say npc="7">Do not worry; I have only removed the entries I said I would remove. After all, I could hardly wish to inhibit your pursuit of Zion.
+
+I can foresee the ruthless efficiency with which the Zionites on that list will be hunted down. It has been years since so many among the awoken will have faced true death here. The bits of data in that archive will make mortal once again those would-be gods.</say>
+        <say npc="9">Transfer complete.</say>
+        <say npc="8">No problem.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Operative, our pursuit of the Zionites whose RSI signatures we now possess must be as swift as possible. Once Zion learns that we have obtained the data, they will doubtless begin to evacuate the endangered operatives, and the opportunity to deal a crippling blow to their most senior personnel will be lost.
+
+Two of the signatures found in close proximity provide an efficient target. Their signals have been locked. Terminate their RSIs immediately.</briefing>
+    <enter><say>"Signal lock" means they can only jack out safely at a hardline. If their RSI is killed while their signal is locked, their emergency jack-out procedure won't work, and they'll be dead--both there and in the Real.
+
+I've got them on my screen. They're all alone in there.</say></enter>
+    <objective goal="1" text="Kill Zion Selective Phage" type="Defeat" npc="10">
+      <done><say contact="1">Termination of target Zion Selective Phage confirmed.</say></done>
+    </objective>
+    <objective goal="2" text="Kill Shedar" type="Defeat" npc="11">
+      <done><say>Termination of target Shedar confirmed.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Well done, {player}.
+
+Your next target is jacked in with a crew. His crew-mates are more recently awoken; we do not have their RSI signatures on file, and thus cannot lock their signals as we have the primary target's.</briefing>
+    <enter><say>The rest of the crew being there could make this tricky. Remember, we're only after one target: Vindemiatrix.</say></enter>
+    <objective goal="1" text="Kill Vindemiatrix" type="Defeat" npc="12">
+      <done><say contact="1">Termination of target Vindemiatrix confirmed.</say></done>
+    </objective>
+    <complete><say>Whoa! Their whole crew just went offline.</say></complete>
+  </phase>
+  <finish>Signal traceback to Vindemiatrix's ship was successful, and Sentinels caught the hovercraft off-guard. The vessel, and its entire Zionite crew, has been destroyed.
+
+Your activity today has been most productive, {player}. It is...satisfying to know that we are permanently removing long-standing terrorist operatives. Designation of target signatures for termination will continue.</finish>
+</mission>

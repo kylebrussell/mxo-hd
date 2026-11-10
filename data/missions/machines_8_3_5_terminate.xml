@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Terminate, Machines story mission 8.3.5. Source: research/missions/transcripts/Mach8-3-5.md (the archive replay of
+     [Machine Archive 8.3.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md. Retail's
+     text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Ponomarev, Rickie Failing,
+     Genevieve Blair, Zion Martial Arts Initiate, Zion Pathogenist and Chant ("flaunt System protocols" is as retail
+     wrote it). Gray called the player "Mr. Argento"; that is {player}. The barks "Lock this!", "Killer!" and the
+     Initiate's "I don't know... Maybe another fifteen minutes..." were only seen in Team chat. Ours: the description
+     (the Summary tab was never opened), every objective text (only "Leave the area now!" was seen), the sites
+     (Dalasi's place, a derelict room in Mara, is a derelict; the extraction point in Achan is a redpill extraction
+     point; the first is unnamed: Normal), the looks, Rickie Failing as a man and Chant as a man (the log never says),
+     and the enemy counts ("a few other redpill signals"). Rickie Failing and Genevieve Blair showed red in the log
+     but are the "couple bluepills" the Operator warned not to hit; they are friendly here. No mission items (the
+     Ensign Disguise and Code Bit 3 found on a body were loot). Rewards: 385,000 experience and 63,000 information,
+     shown on completing this mission.
+     Gaps: Dalasi's signal was lost on arrival and he was never found; the phase is a search of the place that turns
+     up nothing, and the Operator's two lines about it are said when it is searched and when the phase is done. The
+     computer there held a mail from Roland to Colt; we can't show its text, so searching it (optional) gives only
+     the Operator's lines about it. Chant was friendly to look at until reached, then fought; Chant is a hostile who
+     waits to be attacked, reaching Chant is the (optional) talk, and the kill ends the phase. Chant's lines were
+     spoken to the Initiate, not to the player. The extraction point's computer held Dalasi's goodbye message and had
+     no goal; it isn't built. Retail's fourth phase was called off at once: Gray sent the player to a next target,
+     then ordered "Stand down" and told him to leave; retail let the player go in anyway (Reblin and an Elite Guard
+     were there). Ours ends the mission after the extraction point: Gray's three lines are said when its goals are
+     done, and his thanks for obeying is the closing line. Reblin, the Elite Guard and the Operator's "You heard what
+     Gray said" aren't built. -->
+<mission id="208305" title="Terminate" description="Hunt down the Zion veterans whose captured RSI signatures still turn up in the simulation." plot="1"
+         order="8305" org="2" contact="Agent Gray" exp="385000" info="63000">
+  <npc id="1" handle="Ponomarev" type="HOSTILE" at="1" rsi="60010058" weapon="2568">
+    <say>No! Rickie, Genevieve... Get out of here!</say>
+  </npc>
+  <npc id="2" handle="Rickie Failing" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>But...</say>
+    <say after="1">Oh my god!</say>
+  </npc>
+  <npc id="3" handle="Genevieve Blair" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>What's going on?!</say>
+    <say after="1">No!</say>
+  </npc>
+  <npc id="4" handle="Zion Martial Arts Initiate" type="HOSTILE" at="2" rsi="050100b4" weapon="2568">
+    <say>Lock this!</say>
+  </npc>
+  <npc id="5" handle="Zion Pathogenist" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+    <say>Killer!</say>
+  </npc>
+  <npc id="6" handle="Chant" type="HOSTILE" attacksOnSight="0" at="3" rsi="c9020058" weapon="2568" />
+  <npc id="7" handle="Zion Martial Arts Initiate" type="HOSTILE" at="3" rsi="000100b4" weapon="2568">
+    <say>I don't know... Maybe another fifteen minutes, if you guys stop arguing and help out.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>{player}, although most of Zion's veteran operatives whose RSI signatures we captured have left the Matrix, some of these signatures are still being detected occasionally within the simulation. Their continued presence defies logic; possibly Zion underestimates our ability to pinpoint and execute them.
+
+I have a number of these targets for you to find and eliminate today. The first holds high rank in Zion's recruiting program; the desperate straits in which their recruiting efforts have been placed by our recent successes may be responsible for her risking her life by remaining.</briefing>
+    <enter><say>Okay, Ponomarev is in there. I'm seeing a few other redpill signals--probably other Zionites--and a couple bluepills. Better be careful you don't wing the blues.</say></enter>
+    <objective goal="1" text="Kill Ponomarev" type="Defeat" npc="1">
+      <done>
+        <say contact="1">Termination of target Ponomarev confirmed.</say>
+        <say npc="3">No!</say>
+        <say npc="2">Oh my god!</say>
+        <say>Hey, don't waste time on the others. We've got real targets to take care of.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Derelict" enemy="Zion" enemies="3" neighbourhoods="Mara">
+    <briefing>The deadly efficiency of your attacks appears to be putting Zion increasingly on the alert. They know now that they cannot flaunt System protocols.
+
+Continue to your next target, {player}.</briefing>
+    <enter><say>Okay. Dalasi is supposed to be a tough fighter so-- Whoopsie.
+
+Ehm... I just lost their signal. I've got other redpills in there, but not the one we had locked. Maybe they've found a way to cloak the signal, or something.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the area for Dalasi" type="Search" object="1" item="0">
+      <done><say>Hm... No... This isn't looking promising. Must'a snuck out to a hardline, I guess.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="2" item="0" optional="1">
+      <done>
+        <say>Whatcha doin'?</say>
+        <say>Ooh, anger. "Roland" sounds familiar... I think he was some old hard-ass Zion captain.
+
+Oh! Now I remember where I heard the name--he's the guy who got promoted to Commander, since Lock's been missing ever since Zion got sacked.
+
+Don't remember hearing about this "Colt," though. Some nubcake, most likely.</say>
+      </done>
+    </objective>
+    <complete><say>Yeah, Dalasi definitely isn't there anymore. We'd better just skip it and check back in with Gray.</say></complete>
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="3" neighbourhoods="Achan">
+    <briefing>Unfortunate, but not unexpected.
+
+Even if the operatives do escape, they will have to wait until their RSI signature can be reconfigured in order to be able to enter the Matrix without fear of immediate deletion. We project that it will take Zion at least several weeks to reconfigure a significant number of their veteran operatives, during which time their efforts in the Matrix will be at a near standstill, particularly as the RSI signatures of their senior field commanders, Niobe and Ghost, are among those captured from the Zion mainframe.
+
+Your next target is located at one of the "extraction point" facilities Zion uses to assist in removal of newly recruited terrorists from the simulation.</briefing>
+    <enter><say>I've got Chant's signal in there, and a few other redpills. No bluepills, though. I wonder why the operatives are hanging around the extraction point? Oh well, their loss.</say></enter>
+    <objective goal="1" text="Find Chant" type="Talk" npc="6" optional="1">
+      <done>
+        <say npc="6">No. I told you, they're watching those. We just rig this thing up, and I can get out with no risk. How much longer to switch it over?</say>
+        <say npc="7">I don't know... Maybe another fifteen minutes, if you guys stop arguing and help out.</say>
+        <say npc="6">I think I'm gonna need you to hurry it the hell up!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Chant" type="Defeat" npc="6">
+      <done><say contact="1">Termination of target Chant confirmed.</say></done>
+    </objective>
+    <complete>
+      <say contact="1">Good. Your next target can be found at the indicated location. It is not clear why they have remained in the simulation.</say>
+      <say contact="1">Disregard the last orders, operative. Stand down. Do not pursue the target.</say>
+      <say contact="1">I repeat: stand down, {player}. Disengage and leave the area immediately.</say>
+    </complete>
+  </phase>
+  <finish>Thank you, operative. Your ability to obey orders is exemplary.
+
+That will be all at this time.</finish>
+</mission>

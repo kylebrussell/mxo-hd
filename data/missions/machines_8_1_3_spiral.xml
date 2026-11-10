@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spiral, Machines story mission 8.1.3. Source: research/missions/transcripts/Mach8-1-3.md (the archive replay of
+     [Machine Archive 8.1.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the names Elizabeth Salcedo, Gertha
+     Williams, Arnita Gajan and Bluepill, and the bluepills' chatter. Gray called the player "Mr. Argento"; that is
+     {player}. A word of the Operator's search line was hidden at an image join ("The ID in that ... says"); "The ID
+     in there says" is used. Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (the robbed apartment: SlumApt; the others aren't described:
+     Normal), the looks and the enemy counts ("lots of redpills": 5). Item stand-in: Arnita Gajan's ID is Access_Card
+     (6791). Rewards: 373,830 experience and 63,000 information, shown on completing this mission.
+     Gaps: what the player searched in the apartment isn't shown; it is a piece of furniture that turns up the ID.
+     The broadcast center's computer had its net log wiped and the database was gone, so its search turns up nothing.
+     A partly cut bluepill line ("...slob working late, too...") is left out. At the uplink the Operator spoke of
+     dead programs, dead redpills and a dead Agent; dead NPCs aren't spawned, so the Agent's body is a box to search
+     (it turns up nothing) beside the dead terminal, and the Operator's line on coming close to the terminal is said
+     on arrival. -->
+<mission id="208103" title="Spiral" description="Investigate a break-in for signs of Zionite involvement, then hit Zion's broadcast signal control center." plot="1"
+         order="8103" org="2" contact="Agent Gray" exp="373830" info="63000">
+  <npc id="1" handle="Elizabeth Salcedo" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>If you really want to help, how about putting money into education instead of...of more guns and bombs? What are those doing for anyone?</say>
+  </npc>
+  <npc id="2" handle="Gertha Williams" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say>Do you think this is a big bust? Was it something on our computer--secret codes or something? I haven't been able to sleep just thinking about it! I keep seeing numbers in my head...
+
+Oh! What if they, like, planted a code in my head, and hypnotized me into forgetting it until they release it with a secret command? I saw that on TV once. Wow!</say>
+  </npc>
+  <npc id="3" handle="Arnita Gajan" type="FRIENDLY" at="1" rsi="61000040" weapon="0" />
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">Hey, you wouldn't happen to have a spare coffee filter on you, would you?</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say display="5">Just sweeping up. I'm not in your way, am I?</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>{player}, our effort to neutralize Zion's aggression goes well. However, we must not underestimate the damage they can cause as they become increasingly desperate. Every possible precaution must be taken.
+
+Police reports indicate a suspicious break-in at a nearby apartment. It is your task to search the area thoroughly for signs of Zionite involvement.</briefing>
+    <enter><say>That's the apartment complex. The police report says there are three witnesses in the apartment that was robbed.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Elizabeth Salcedo" type="Talk" npc="1">
+      <talk><say npc="1">Some creeps dressed in leather--like we told the cops--just went right out with our computer. One of them shouted something about a "blue pill" when Gertha nailed him with a shoe. I'd say they were on drugs; probably traded our computer for a quick hit.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Gertha Williams" type="Talk" npc="2">
+      <talk><say npc="2">They were, like, tall, and really mean-looking. Arnita Gajan was afraid, but not me. One of them was kind of cute, but not really my type. I think they might have been sailors, or...hm...smugglers!</say></talk>
+    </objective>
+    <objective goal="3" text="Search the apartment" type="Search" object="1" item="6791">
+      <done><say>Scanning...
+
+Nah, nothing there. Uh... The ID in there says it belongs to Arnita Gajan. You'd better give it back.</say></done>
+    </objective>
+    <objective goal="4" text="Give the ID to Arnita Gajan" type="Give" npc="3" item="6791" after="3">
+      <talk><say npc="3">Hmh!</say></talk>
+      <done><say>You know what? I say we just put all that down in our report, and let the Agents bust their heads over it. I guess it could have been Zionites, but I don't know if I'd call those three reliable witnesses, exactly.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>I...see. It suggests a possibility of desperate Zion operatives scavenging computer parts. I will flag this case for further investigation.
+
+At this time, however, I have a more pressing assignment for you. Viral routines planted in Zion's network have revealed the location of their broadcast signal control center. The destruction of this center, and its database, will severely impair Zion's ability to coordinate their operatives when jacked into the Matrix. You are to eliminate all resistance, and confiscate any available data.</briefing>
+    <enter><say>I'm reading lots of redpills in there, and a networked computer system.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That's it for the hostiles in the area.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>Someone just cleaned the net log off that system. They wouldn't do that unless they were trying to cover their tracks after sending some data...and since I don't see the broadcast database we were looking for in there, I'm gonna go ahead and guess that they transferred it somewhere else just before you got there. We'll have to see if Gray can pull some record of the transaction.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Report received. A backtrack scan is running...
+
+Yes. The data was transferred to a previously unmapped system, not far from your present location.</briefing>
+    <enter><say>Let's see what we've got there... A computer...and a couple bluepills. No hostiles in sight.</say></enter>
+    <near npc="4" radius="600">
+      <say npc="4">Okay...logic--I can solve this logically. Now, if I was a coffee filter, where would I be?</say>
+    </near>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>That's the system Gray was talking about, but there's nothing on it.</say></done>
+    </objective>
+    <complete><say>All right, there's no data there, and it sounds like Zion's already been through. We're gonna need Gray to get another scan run.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Operative, one of our Agents sent to shut down a newly detected unregistered network uplink has abruptly ceased function. Subprograms in the area returned feedback indicating the presence of Zionite hostiles before they were terminated. That this has taken place simultaneously with your pursuit of the missing broadcast data is unlikely to be mere coincidence. You are being routed to the uplink to investigate further.</briefing>
+    <enter>
+      <say>I'm reading some carnage in there: dead programs, redpills--heck, even a dead terminal.</say>
+      <say>You're getting close to that dead system.
+
+Hm, speaking of dead...</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Box" />
+    <objective goal="1" text="Search the uplink terminal" type="Search" object="1" item="0" />
+    <objective goal="2" text="Search the dead Agent" type="Search" object="2" item="0" />
+    <complete><say>Ho-kay. One dead Agent, plus one dead illegal uplink terminal, plus one batch of missing network data... I'd say this is adding up to Zion managing to smuggle that broadcast control database out from under our noses.
+
+But what the heck took out that Agent?</say></complete>
+  </phase>
+  <finish>The failure to capture Zion's broadcast control data is...unfortunate. However, the destruction of their control center will impair the efficiency of their operative signal capabilities, even if we assume that they bring a backup system online.
+
+The sudden termination of the Special Agent assigned to investigate Zion's emergency data uplink suggests the interference of a powerful third party. The list of suspects capable of such an action is a short one. This will be investigated. It serves to remind us, {player}, that the longer a chaotic situation is allowed to persist, the less predictable will be its consequences. This is why we must work to bring a quick resolution to the present conflict.</finish>
+</mission>
