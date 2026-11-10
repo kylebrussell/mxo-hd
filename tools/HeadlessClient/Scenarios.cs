@@ -8,7 +8,7 @@ namespace HeadlessClient;
 /// and the handlers' comments, not built with the server's classes. A pass shows the server does what we believe the
 /// protocol is; it can't show the real client accepts it.
 /// </summary>
-public static class Scenarios
+public static partial class Scenarios
 {
     private static readonly IReadOnlyDictionary<string, string> StillNpcs = new Dictionary<string, string>
     {
@@ -27,6 +27,7 @@ public static class Scenarios
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("marketplace-purchase", MarketplacePurchase),
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
+        new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),
         new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),

@@ -258,6 +258,29 @@ namespace hds
                         "Elevator region: " + commands[1], "BROADCAST");
                 }
 
+                if (command.Equals("?sector") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: the client's sector properties where the player stands, and the nearest hardline
+                    double sx = 0, sy = 0, sz = 0;
+                    NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref sx, ref sy, ref sz);
+                    UInt16 metr = (UInt16)Store.currentClient.playerData.getDistrictId();
+                    SectorInfo here = SectorProperties.At(metr, sx, sz);
+                    UInt16 hl = TeleportHandler.NearestHardline(metr, sx, sz);
+                    Hardline line = HardlineNetwork.Get(metr, hl);
+                    string text = here == null
+                        ? "No sector at " + (int)sx + "," + (int)sz + " in district " + metr
+                        : "Sector " + metr + "/" + here.sector + " " + here.file + ": " + here.NeighbourhoodOrName + ", level " + here.level +
+                          (here.contactId > 0 ? ", contact " + here.contact + " (" + here.contactId + ")" : "") +
+                          (here.gangType != 0 ? ", gang " + here.gangType : "") + (here.pvpZone ? ", PvP" : "") +
+                          (here.missionAreas ? ", missions" : ", no missions") + ", music " + here.musicGroup;
+                    if (hl != 0)
+                    {
+                        text += ". Hardline " + hl + (line != null ? " " + line.name + " at " + (int)line.spotX + "," + (int)line.spotY + "," + (int)line.spotZ : "");
+                    }
+
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, text, "BROADCAST");
+                }
+
                 if (command.Equals("?gotopos") && commands.Length == 4)
                 {
                     // parse the coord parameters parameters as int

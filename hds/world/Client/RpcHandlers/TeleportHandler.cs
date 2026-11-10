@@ -22,9 +22,31 @@ namespace hds
             UInt16 district = (UInt16)(packet[0] | (packet[1] << 8));
             List<UInt16> hardlines = Store.worldConfig.HardlineUploadRequired
                 ? Store.dbManager.WorldDbHandler.GetUploadedHardlines(Store.currentClient.playerData.getCharID(), district)
-                : Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
+                : HardlineNetwork.Covers(district)
+                    ? HardlineNetwork.Ids(district)
+                    : Store.dbManager.WorldDbHandler.GetHardlineIdsForDistrict(district);
             Output.WriteDebugLog("[HARDLINE] Status for district " + district + ": " + hardlines.Count + " hardlines");
             new ServerPackets().SendHardlineStatus(Store.currentClient, district, hardlines);
+        }
+
+        /// <summary>
+        /// Puts the player at a hardline: the client's own network (HardlineNetwork) for the three cities, data_hardlines
+        /// for the rest (the constructs).
+        /// </summary>
+        public static void MoveToHardline(WorldClient client, UInt16 district, UInt16 hardline)
+        {
+            if (!HardlineNetwork.MoveTo(client, district, hardline))
+            {
+                Store.dbManager.WorldDbHandler.updateLocationByHL(district, hardline);
+            }
+        }
+
+        /// <summary>The hardline whose booth is nearest to (x, z): from the network in the cities, else data_hardlines.</summary>
+        public static UInt16 NearestHardline(UInt16 district, double x, double z)
+        {
+            return HardlineNetwork.Covers(district)
+                ? HardlineNetwork.Nearest(district, x, z)
+                : Store.dbManager.WorldDbHandler.GetNearestHardline(district, x, z);
         }
 
         public void processTeleportReset(ref byte[] packet)
@@ -74,7 +96,7 @@ namespace hds
             UInt16 destDIS = NumericalUtils.ByteArrayToUint16(destDistrict, 1);
 
             // This should do the magic - we just catch
-            Store.dbManager.WorldDbHandler.updateLocationByHL(destDIS, destHL);
+            MoveToHardline(Store.currentClient, destDIS, destHL);
             Store.dbManager.WorldDbHandler.updateSourceHlForObjectTracking(sourceDIS, sourceHL,
                 Store.currentClient.playerData.lastClickedObjectId);
 
@@ -143,7 +165,7 @@ namespace hds
         public static void ProcessBoothAction(WorldClient client, byte action, StaticWorldObject booth)
         {
             UInt16 district = (UInt16)client.playerData.getDistrictId();
-            UInt16 hardline = Store.dbManager.WorldDbHandler.GetNearestHardline(district, booth.pos_x, booth.pos_z);
+            UInt16 hardline = NearestHardline(district, booth.pos_x, booth.pos_z);
             Output.WriteDebugLog("[HARDLINE] Booth " + booth.mxoStaticId + " action " + action + " -> hardline " + hardline +
                                  " in district " + district);
             MissionRuntime.OnHardline(client, action == HardlineBooths.ActionUpload);
@@ -235,12 +257,12 @@ namespace hds
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
             UInt16 district = (UInt16)client.playerData.getDistrictId();
-            UInt16 hardline = Store.dbManager.WorldDbHandler.GetNearestHardline(district, x, z);
+            UInt16 hardline = NearestHardline(district, x, z);
             Output.WriteDebugLog("[LA] Fallback location: hardline " + hardline + " in district " + district);
 
             if (hardline != 0)
             {
-                Store.dbManager.WorldDbHandler.updateLocationByHL(district, hardline);
+                MoveToHardline(client, district, hardline);
             }
         }
 
@@ -281,7 +303,7 @@ namespace hds
             UInt16 hardline = (UInt16)reader.ReadUInt32(1);
             Output.WriteDebugLog("[LA] Leaving the Loading Area for district " + district + " hardline " + hardline);
 
-            Store.dbManager.WorldDbHandler.updateLocationByHL(district, hardline);
+            MoveToHardline(Store.currentClient, district, hardline);
             if (Store.currentClient.playerData.DistrictIsLA())
             {
                 // Unknown hardline: updateLocationByHL found no row. Go back to the saved location instead of
