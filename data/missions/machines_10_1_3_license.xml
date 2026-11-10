@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License, Machines story mission 10.1.3. Source: research/missions/transcripts/Mach10-1-3.md (the archive replay
+     of [Machine Archive 10.1.3], given by [Archived]Agent Gray; two shots during play, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, the objective texts "Search the Computer" and
+     "Talk to Halborn" (seen in the second area), and the names Halborn, Agent Pace, Veil, Cypherite Karate Grandmaster
+     and Cypherite Network Hacker. Gray called the player "Ms. Napilitano" and Pace called her "Marie"; both are
+     {player}. The Grandmaster's italic "real" is plain text.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the first two are
+     offices in Tabor Park, as the map and screenshots show; the others are not described: Normal), the looks and the
+     enemy counts. The "unregistered sentient programs" and "unknown programs" guarding the two servers were
+     Merovingian (a Merovingian Martial Arts Initiate and an Elite Guard were seen): Merovingian.
+     Rewards: 363,000 experience and 63,000 information, shown on completing this mission.
+     Gaps: a partial line may hide at the join in Gray's first briefing, and Pace's "unable to give him" and the
+     Operator's "piracy or something" cross joins; they read whole and are used as such. Lines between 10:58:01 and
+     10:58:35 and between 10:59:19 and 11:01:32 may be missing, and Halborn's second line at the meeting (11:05:14)
+     wasn't captured. The computers' readouts (connection lists, a netlog) were client windows and aren't sent; the
+     searches turn up nothing. Halborn appears at the file server from the start rather than when the data goes
+     strange. Retail had Halborn go with the player to Veil (his lines came in Team chat); here he is led out of the
+     meeting area and then to Veil, and the meeting's goals are done only when he is led out. Pace's "Agent Gray will
+     have further instructions" and Halborn's "Goddamn runaround..." came after her talk and are said when it is
+     done; Veil's "We have all kinds of interesting places" likewise after hers. Halborn's repeated "Are you sure this
+     woman's a qualified pilot?" is said once, on arriving. The Cypherites at Veil's place seem to have joined the
+     player's team at the end; they are bystanders with their lines. -->
+<mission id="210103" title="License" description="Trace data stolen by the Merovingian, then take Halborn to Veil when the System cannot help him itself." plot="1"
+         order="10103" org="2" contact="Agent Gray" exp="363000" info="63000">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="2">Didn't you hear me?</say>
+  </npc>
+  <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="4" handle="Veil" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <npc id="5" handle="Cypherite Karate Grandmaster" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say display="5">We'll show him some real action.</say>
+  </npc>
+  <npc id="6" handle="Cypherite Network Hacker" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">I heard he has quite a ship...</say>
+  </npc>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>Our investigation of E Pluribus Neo at the old Zion site revealed that they have indeed reinforced the city's defense structure, but they do not appear to use it to house a central database. If they are storing the encrypted data that the Oracle gave them there, it would require an extraordinarily adept spy, or a full-scale assault on the city, to locate and retrieve it. Neither of these projects can be executed immediately.
+
+Let us therefore turn to another topic: the Merovingian has stolen data concerning the planet's topography. We have ascertained that the information passed through a certain hub server under his control, but the data trail from that server is blocked. You are to proceed to the server's location, and investigate.</briefing>
+    <enter><say>Lots of network activity in there, and unregistered sentient programs. Let's look for some answers.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Let's see... Second one goes to some kind of low-security file server--standard stuff... That first one... Damn, I'm not getting through.
+
+Looks like someone's been cooking up their own protocol... Wait a sec, that address--that's the format the General used to use on his Matrix network--you know, the one we completely demolished.
+
+Hm... I'm not getting in there any time soon. Gonna need to call Gray in on this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>Check the connected file server's site, operative. An investigation of the other network will take some time.</briefing>
+    <enter><say>Got heavy network traffic in there, some unknown programs... Doesn't look like anything we can't handle.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Hey, the data just went all--
+
+Ah, crap. Not that guy.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="1" after="1">
+      <talk><say npc="1">I need information. Set it up.</say></talk>
+      <done><say>Guh... All right, we'd better tell Gray...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The direct conflict between Halborn and Carlyne has been escalating. Carlyne coordinated an attack on Halborn with Zion that proved to be a failure. Whether or not that has something to do with Halborn's request for a meeting remains to be seen.
+
+The arrangements have been made. You will find Agent Pace ready to receive Halborn at the location indicated.</briefing>
+    <enter><say>Gray's kinda been avoiding Halborn, hasn't he? And we haven't seen the Colonel--uh...the Architect--coming out to meet and greet either. Hm.
+
+Well, Pace is showing up in there. Let's see what the big H wants this time.</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="2">
+      <talk><say npc="2">Cypherites? Rrr... Funny little system you've got here. You claim the rules don't allow you to tell me where his ship is yourselves, but your little under-the-table spies are allowed to do it, as long as it's much more of a pain in the rear for everyone involved? Phah! That's some real "efficiency," all right!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Yes, I've informed him that he should consult Veil about obtaining the location of Carlyne's ship. Our own ability to give out such information is restricted.
+
+I would like you to accompany Halborn at the meeting. You must tell Veil that unfortunately, we were unable to give him the information ourselves, and that we rely upon her to treat him as he deserves. This will ensure that there is no...misunderstanding between the two sides.</say></talk>
+      <done>
+        <say npc="3">Agent Gray will have further instructions for you, {player}. Please listen to them very carefully.</say>
+        <say npc="2">Goddamn runaround...</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Lead Halborn out of the area" type="Escort" npc="2" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>When you deliver Agent Pace's message to Veil, operative, make no mention of the Cypherite leader, Cryptos, within Halborn's presence. We prefer that Halborn deal with Veil.</briefing>
+    <enter><say>Ugh, Cypherites. Maybe we'll get lucky, and Veil will hijack Halborn's ship, and then we can put her and the Cyphs away for...uh...piracy or something.</say></enter>
+    <objective goal="1" text="Take Halborn to Veil" type="Escort" npc="2" to="npc:4">
+      <done>
+        <say npc="2">Are you sure this woman's a qualified pilot?</say>
+        <say>Oh, they'll make quite the pair.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Veil" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Of course, sweetie! We'll take care of him. Don't you worry!</say></talk>
+      <done>
+        <say>Bleh; I don't like it when she laughs. You're not gonna be hanging around in there, are you?</say>
+        <say npc="4">We have all kinds of interesting places we can take him. Oh, and where that other guy has his ship, of course.
+
+Why don't you come along, honey? It'll be a gas!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The arrangement appears to have been satisfactory. Thank you, {player}. You may return to your other duties.</finish>
+</mission>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Jurisdiction, Machines story mission 10.1.2. Source: research/missions/transcripts/Mach10-1-2.md (crops of the
+     Mission window from a live run given by Agent Gray; the bar shows only the title). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Carlyne, Agent Pace and Veil. The
+     player's name was blacked out in Gray's first briefing, and Pace called the player "Vincent" (as she used the
+     player's first name in 10.1.3); both are {player}. Veil's italic "did" is plain text.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (none is described: Normal), the looks, the enemy count, and the EPN Operative's handle: the
+     EPN reaction the player overheard in the stronghold isn't in the log, so he stands for it. EPN are redpills:
+     Zion. A Computer popup with Shimada's (false) message about the fragment stolen from an EPN hovercraft was
+     captured; it is the planted message and isn't game text we can send, so it isn't used.
+     Rewards: none were shown for this mission; these are Mach10-1-3's (363,000 experience and 63,000 information),
+     the only mission of sub-chapter 10.1 whose rewards were shown, used for all five.
+     Gaps: the joins in Gray's first briefing and Carlyne's two lines read whole ("the difficulty", "I do apologize")
+     and are used as such; Carlyne's second line came eight seconds after his first, so it is his line when talked to
+     again. At least one line of Veil's offer was lost at a screenshot join ("...if you wanted to make it worth my [lost]
+     something. Interested?"); it is used as "...if you wanted to make it worth my while... Interested?". Her offer
+     was a yes/no choice the player turned down; we have no choices, so her talk is a plain Talk and "Aw, too bad" is
+     her line when talked to again. Gray's briefing for the false message is one log entry too long for one line: its
+     first paragraph is said when Veil's area is done, and the rest is the next briefing. Planting the message is a
+     Use at a computer. In the stronghold the player overheard EPN's reaction; we have no overheard chatter, so
+     reaching the EPN Operative (who waits to be attacked) is the eavesdropping, and his guards are spawned as
+     hostiles. Anything said between 6:38:02 and 6:41:15 and between 6:44:46 and 6:47:31 wasn't captured. -->
+<mission id="210102" title="Jurisdiction" description="Attend Carlyne's conference, question Veil about the Oracle's code fragment, and plant a false report to learn where EPN keeps theirs." plot="1"
+         order="10102" org="2" contact="Agent Gray" exp="363000" info="63000">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="1">You've had more than enough trouble on your hands already, and I do apologize for that. Nobody wants the simulation to have operating difficulties.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="2">The situation will be monitored. Thank you, operative.</say>
+  </npc>
+  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say after="1">Aw, too bad. Good luck then, honey. You've got my number if you want a little professional help.</say>
+  </npc>
+  <npc id="4" handle="EPN Operative" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, just a few days ago, Halborn attacked Carlyne in the Matrix, possibly in an attempt to hack into his RSI. It is known to us that Carlyne is working with Zion to defeat Halborn; now, he has requested a brief conference. Please join Agent Pace at the indicated location.</briefing>
+    <enter><say>That's where you're meeting Pace. Looks like Carlyne is right on time.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="1">
+      <talk><say npc="1">Yes, well... I quite understand the difficulty. Not to worry. Once Halborn has been removed, I'll see to it that the Oligarchs restrict his access. That should be sufficient, I think; oh, and I'll keep an eye on him personally, of course.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="2" after="1">
+      <talk><say npc="2">The Halborn situation may be on its way to being solved, {player}, but we will continue monitoring the proceedings carefully. Any intelligence you obtain relating to Halborn should be reported at the highest priority.
+
+We are now enabled to turn our attention to other matters that have been too long postponed. Agent Gray will have updated directives for you.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Several weeks before she was killed, the Oracle distributed what is reported to have been an encrypted code fragment to both Shimada of E Pluribus Neo, and Veil of the Cypherites. In light of her subsequent termination, it is likely that these codes held some sort of unusual significance; the situation also highlights the strengthening of Pluribus Neo, who, since Zion's breaking of the Truce, can no longer be the primary focus of our anti-terrorist efforts.
+
+While the Cypherites have given us some general information about the data fragment they received from the Oracle, they have not followed that initial report with a detailed analysis. It is time to obtain further information from Veil.</briefing>
+    <enter><say>Veil should be expecting you. I guess we're not supposed to club her over the head and take the darn thing from her, since the Machines still use the Cyphs for spying once in a while. Sure seems like it would simplify things, though...</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="3">
+      <talk><say npc="3">Ooh, I'd just love to help, dearie, but we still haven't been able to make any headway in decrypting that silly little thing. Thanks for offering to take a look and all, but you see, the Oracle did say that it could be dangerous to lose it, and we wouldn't want to do anything dangerous, now would we? So we'll just keep it nice and safe outside of the Matrix for now.
+
+If you want to do something, you could go make sure E Pluribus Neo is taking care of theirs; you know how irresponsible they can be. Gee, I guess I don't happen to have a suggestion about where to start, but if you wanted to make it worth my while... Interested?</say></talk>
+      <done><say>Yeah... I don't find it so hard to believe that they haven't been able to crack it.</say></done>
+    </objective>
+    <complete><say contact="1">Part of the Oracle's purpose in presenting unique data to the Cypherites may have been to give them cause to withhold information from us, inspiring them to...test the limits of our indulgence.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Nevertheless, we can form several hypotheses from Veil's comments: first, that EPN is unlikely to have decrypted their fragment, and second, that EPN has also stored their fragment outside of the simulation. Shimada was heard to say she meant to do as much when she jacked out with the fragment at the Moriah East hardline, and EPN's habitual transparency of purpose suggests that this was her true intent. Furthermore, no trace of the fragment has been detected within the Matrix.
+
+If we accept these hypotheses, the pertinent question becomes: where has EPN stored the encrypted code? The two likely options are: on a hovercraft, or at the base they have established within the ruins of Zion.
+
+To determine which of these is correct, we will incite EPN to reveal the answer.</briefing>
+    <enter><say>All right, since we don't have any inside man at Zion--think the Machines have been trying to avoid employing the Cyphs?--we've got to tease the information out of the Neonates. The Machines figure that if we plant a fake message about the fragment in an EPN server, we can see how they react to it, and maybe figure something out from that. So what you're gonna do is find a computer in there, and plant a message saying that someone's swiped the fragment from an EPN hovercraft.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Plant the false message on the EPN computer" type="Use" object="1">
+      <done><say>That should do it. It won't fool them for long, but it should cause a stir as it propagates across their messaging system.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Operative, you must now infiltrate the indicated EPN stronghold, and attempt to gauge their reaction to the false report.</briefing>
+    <enter><say>Okay, I've got redpill readings in there, and network activity. If they check their messages every 7.3 seconds like most net addicts, this might just work out.</say></enter>
+    <objective goal="1" text="Listen in on the EPN operatives" type="Talk" npc="4">
+      <done><say>Aha, did you hear that? Sounded like they were surprised to hear it was on a hovercraft. That might have been the clue we needed.</say></done>
+    </objective>
+  </phase>
+  <finish>Yes, this suggests that the actual fragment is likely to be held at their fortification in Zion, rather than on one of their hovercraft. Intercepted transmissions seem to indicate that Pluribus Neo's development of the ruined site has been substantial. We are also aware that they are holding Zion's ex-Commander, Jason Lock, somewhere in the vicinity of the old city. Clearly we will have to obtain direct intelligence on the base that has been established there.</finish>
+</mission>

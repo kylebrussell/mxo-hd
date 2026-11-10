@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pirate Broadcast, Machines story mission 10.2.3. Source: research/missions/transcripts/Mach10-2-3.md (a live run,
+     not an archive replay, given by Agent Gray; 23 screenshots, four during phase 2, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the Bluepill, Zion Network Hacker and
+     Zion Selective Phage lines (popups and Team chat), the names North The Mechanic, Agent Jones, Agent Pace, Zion
+     Network Hacker and Zion Selective Phage, and the objective text "Talk to a Zionite" (seen in the Objectives
+     window). The asterisks around "Ciao, tesoro." are retail's italics (retail had a stray period after them, dropped).
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the bluepill
+     building is an Office, the others aren't described: Normal), the looks and the enemy counts.
+     Rewards: the log shows 24,000 experience and 87,500 information for this mission (a near-cap player in a group), so
+     this has 10.1's 363,000 experience with the 87,500 information.
+     Gaps: retail's phones on the restricted line are Phones used by standing beside them. The Operator's "Zionites!"
+     came during the first fight and is said on arrival after the first line. In phase 2 the player blended in as a
+     bluepill so the Zionites wouldn't attack; we have no disguise, so the two Zionites there are friendly NPCs, and
+     talking to the Zion Network Hacker is the snoop. The Operator's "Hey, don't mess with that while they're
+     watching!" came when the player used a computer there (its readout, "Your daily forecast: Mild, subtly
+     depressing.", can't be shown); here it comes with an optional use of the computer. The phase 1 hostiles included a
+     Zion hacker named Spark Match; they are generated Zionites here. The phase 3 fight is inferred from six minutes
+     between using the phone and the goals completing. In the last phase Agent Jones's line is his repeated bark,
+     North The Mechanic's his, and Agent Pace's second line is his line when talked to again. -->
+<mission id="210203" title="Pirate Broadcast" description="Investigate the restricted phone line system Mauser has been using." plot="1"
+         order="10203" org="2" contact="Agent Gray" exp="363000" info="87500">
+  <npc id="1" handle="Zion Network Hacker" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Zion Selective Phage" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say display="5">A Machinist? Where?</say>
+  </npc>
+  <npc id="3" handle="Bluepill" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">Do I get paid to talk to you? No. All right then.</say>
+  </npc>
+  <npc id="4" handle="Bluepill" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say display="5">No, I haven't seen anyone else using that phone. It's some kind of old dial-up data line or something, I think. We don't really use it now.</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">Uh... I think you might want the modeling agency on the other floor.</say>
+  </npc>
+  <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="1">Yes, I think we may find Mauser there. This unusual signal could be part of what has enabled him to access the Matrix, in spite of having been grown outside the safety of the pod system.</say>
+  </npc>
+  <npc id="7" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">The line has been severed. If the terrorists succeed in locating this place, they will be dealt with.</say>
+  </npc>
+  <npc id="8" handle="North The Mechanic" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say display="5">The line would have been run through the walls here... Yes... Right along here...</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Although we conducted an operation that temporarily seized control of hardlines across the city, the individual known as Mauser has continued to traverse its confines. Much Zionite activity of late has centered around alternative phone lines; investigation has revealed that many of these lines were hacked or installed by terrorists some time ago, and had fallen into disuse. Mauser seems to have begun using them.
+
+Archives we acquired from Zion's old mainframe have yielded fragmentary information on this line system. According to their records, the marked location contains, or contained, a telephone connected to the system.</briefing>
+    <enter>
+      <say>Whoa, I've got pirate signals in there. Someone's beat us to the phone.</say>
+      <say>Zionites!</say>
+    </enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Kill the Zionites" type="DefeatAll" />
+    <objective goal="2" text="Check the phone" type="Use" object="1">
+      <done><say>The line seems to be active...but I can't navigate these protocols. Hm. Tracking Mauser on these things could be harder than I'd thought.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>The information contained in the archives retrieved from Zion's old mainframe indicated that Zion reserved access to this line system for extraordinary use only. Although some data on the system's security measures was included in the captured archives, we do not currently have all the information necessary to access it. Zion appears to be having difficulty following Mauser through the system, so it is possible that the information they have is incomplete as well.
+
+It is obvious that they possess information we do not, however, as their teams have been found investigating phone systems in multiple neighborhoods. Monitoring communications between these teams may yield useful information. You are to activate a snoop program on one of the Zionites.</briefing>
+    <enter><say>Some of the phones they've been checking out have been in areas used by bluepills. If you can blend in and look like a bluepill just going about your business, you should be able to get close to one of the Zionites long enough for me to hook a Machine eavesdropping routine into their comm.
+
+Just try not to run any obvious hack programs and you should do fine...as long as it isn't a Zionite you've run into before.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to a Zionite" type="Talk" npc="1">
+      <talk><say npc="1">How about you? Notice anyone messing with that phone lately? We just noticed some unusual activity on our records for this past billing cycle.</say></talk>
+      <done><say>Wow, you actually found a Zionite who didn't recognize us. I guess it's mostly the ones with white hair that we're running into all the time.
+
+What? Oh, well...never mind. Anyway, I've got that snoop routine going.</say></done>
+    </objective>
+    <objective goal="2" text="Use the computer" type="Use" object="1" optional="1">
+      <done><say>Hey, don't mess with that while they're watching!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>The Zionites are very communicative... We have already monitored a transmission from another team who believes they are not far from Mauser's current position on the restricted line system. The indicated telephone must be secured and analyzed.</briefing>
+    <enter><say>Looks like Zion's been moving in on the line already. Better get in there.</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Analyze the phone" type="Use" object="1">
+      <done><say>Mm-kay. Readings look pretty similar to what we saw before... The Machines were gonna try some voodoo on it.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Zionites" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Full simulation scans of the phone's vicinity revealed the recent presence of an unusual broadcast signal. Scans along projected connecting lines obtained a signal match. You may wish to join our personnel at the location now.</briefing>
+    <enter><say>Hm... I don't know for sure, but I think this means we rule.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="6">
+      <talk><say npc="6">*Ciao, tesoro.* Your information was very useful. We did not find the interloper, Mauser, but we obtained a better reading of the unusual broadcast signal detected earlier. Exterior spectral analysis has found that the signal is originating from the vicinity of the destroyed Zionite city. Now it is merely a matter of narrowing down the signal to its source.</say></talk>
+    </objective>
+  </phase>
+  <finish>Isolation of the signal's broadcast point has already begun. An increase in storm activity north of our city, triggered by the Merovingian, is anticipated to complicate the procedure in some sectors. If you have not already done so, please ensure that you have loaded the updated meteorological profile into your ship's navigation system.</finish>
+</mission>

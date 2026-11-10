@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Help Desk, Machines story mission 10.3.2. Source: research/missions/transcripts/Mach10-3-2.md (the archive replay
+     of [Machine Archive 10.3.2], given by Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective texts "Eliminate
+     the hostiles", "Search the area" and "Answer the Phone", and the names Club Guard, Club Tough, Veil, Cryptos,
+     Agent Pace, Agent Marks, Michale Plemmons (as shown), Stanley Johansen and Lupine Scrapper. Gray called the
+     player "Mr. Argento"; that is {player}. Pace's "tesoro" is retail's and is kept.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 2 to 4, the sites (none is
+     described closely: Normal; Pace waits in an Office), the looks and the enemy counts (retail's club showed
+     "Eliminate the hostiles (2/3)"; ours has 3 generated Exiles besides the named Club Guard and Club Tough). The
+     club's Exiles and the Merovingian forces at Ouroboros are enemy Merovingian. Plemmons and Johansen are Pace's
+     "reinforcement units" for law and order; they have civilian looks with guns.
+     Rewards: 274,875 experience and 91,000 information, shown right after this mission completed.
+     Gaps: the club computer's virus and error screens were Details popups we can't show; its search gives no item. Veil
+     spoke only through the desk phone's Details popup; her message is said when the phone is answered, under her name,
+     and so that she has a place in the mission she stands with Cryptos at the Cypherite meeting (she has no line
+     there). The phone ringing ("What's that, the phone?") is said when the hostiles are dead, and the phone opens then.
+     Pace's second speech came after her first; it is her line when talked to again. Retail's phase 3 ended about two
+     minutes after Pace, and Plemmons and Johansen were with the player at Ouroboros (Johansen's closing line), so
+     leading them out of Pace's site is a goal here and they follow the player into phase 4. Agent Marks' refusal is
+     his line when talked to. The Ouroboros guard the Operator saw, and Gray's "refrain from attacking Ouroboros
+     security personnel" and "prevent any theft", have no goal (retail's guard even hit the player); the guard isn't
+     placed. -->
+<mission id="210302" title="Help Desk" description="Investigate increased Merovingian activity and defend the Ouroboros Corporation from his forces." plot="1"
+         order="10302" org="2" contact="Agent Gray" exp="274875" info="91000">
+  <npc id="1" handle="Club Guard" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568">
+    <say>Did you get the bunny ears upgrade? That will make you faster, and then you can ju--
+
+Did you hear something?</say>
+  </npc>
+  <npc id="2" handle="Club Tough" type="HOSTILE" at="1" rsi="c6020058" weapon="2568">
+    <say>You're a little...overdressed.</say>
+  </npc>
+  <npc id="3" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="1">Those who cannot bear the awful power of knowledge must be protected from those who have proven themselves unworthy of it.</say>
+  </npc>
+  <npc id="4" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="5" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say after="1">The Merovingian has a long history of offenses against public and...System resources. His function is one of commanding a degree of order among programs who have rebelled against us; it could also be argued that he presents an important check against the spread of Zionite influence in the less-patrolled areas of the simulation. But when he makes a direct attack against government forces, public institutions, or legally held private entities, he must be brought to heel...and I do not think I say this only because of his attack against me.
+
+I admit, of course, that due to my experience, my view may be unavoidably biased.</say>
+  </npc>
+  <npc id="6" handle="Agent Marks" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">No, I am not going with you.</say>
+  </npc>
+  <npc id="7" handle="Michale Plemmons" type="FRIENDLY" at="3" rsi="35000024" weapon="2568" />
+  <npc id="8" handle="Stanley Johansen" type="FRIENDLY" at="3" rsi="38000024" weapon="2568" />
+  <npc id="9" handle="Lupine Scrapper" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Ech. You'd look better with one of those helmets.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Operative, we are initiating operations against the Merovingian. His programs have increased their activity since his field commander, the Exile known as "The General," abandoned a forward position he had briefly established on the planet's surface.
+
+We would like to know the purpose behind this increased activity. The Merovingian's loose organization presents many possible starting points for an investigation, but also many possible dead ends. All possible leads must be checked, however, so it is best to begin immediately. You will neutralize the Exiles at the indicated location, and conduct a search of their data.</briefing>
+    <enter><say>People are always thinking some Exile's gonna come along to fight the Merv for top spot in the Matrix' underworld, but it's been a while since a major contender took a real stab at it. I guess in a sense we've sort of helped him stay top dog, since we tend not to bother shutting down his operations as long as he's minding his Ps and Qs. But if we did do something about him, then I wonder what--
+
+Well, for now you've got some Exiles to deal with in there. Scan doesn't show anything too out of the ordinary... I think we've got the drop on them.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Phone" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>What's that--the phone? Better answer it; maybe there's a free pizza outside.</say></done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Ew! That thing is swarming with viruses. Yeeg... Does Gray really need us to pick through it?</say></done>
+    </objective>
+    <objective goal="3" text="Answer the Phone" type="Use" object="2" after="1">
+      <done>
+        <say npc="4">Mm... There's a delicious party tomorrow night and I've got absolutely nothing to wear. Have you got something with lots of straps and--
+
+Oh! It's you, dearie. Isn't this a nice surprise? Well, it just happens that Cryptos has some news for you. Wouldn't you like to hear it? Oh, don't be a party-pooper. Do say you'll come!</say>
+        <say>Ugh, Veil. Why's she trying to waste our time? We've got actual work to do.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The Cypherites have been conducting their own investigation of Merovingian activities. Please take their report, {player}. It is possible that they have found something useful.</briefing>
+    <enter><say>Redpill signals in there--should be the Cyphs.
+
+Just remember not to let any of them stand behind you, and I'm sure you'll be fine.</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="3">
+      <talk><say npc="3">We have seen with the evidence of our own eyes that the Merovingian seeks information hidden within the network of the Ouroboros Corporation--information which he believes to be related to the intruders whose override programs caused so much damage to this world.
+
+I tell you this in order that information of that kind should not fall into the hands of a man whose ambition knows no boundaries--a man who thinks of his fellow beings only as chattel to be used to further his own ends, to satisfy his own desires.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>The Ouroboros Corporation? Very well, operative. I will make inquiries to confirm the Cypherite report. For your part, please see Agent Pace for reinforcement units.</briefing>
+    <enter><say>Ouroboros? I think I had one of their toasters once. Worked pretty well, except it had that problem where the bottom would fill up with crumbs that just sit in there getting all...
+
+Anyway, looks like the Pacer is waiting for you in there.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="5">
+      <talk><say npc="5">The Ouroboros Corporation is an electronics manufacturer, tesoro, and one of the city's largest corporations; they make their headquarters in Creston Heights, and maintain offices and other facilities across the city. Given his hunger for power, it is not surprising that the Merovingian should seek to acquire their assets.
+
+Whatever illegal data he may claim they have, it is no excuse for making war against a corporation that is protected by laws established in the public interest. Michale Plemmons and Stanley Johansen are available to assist you in your mission to preserve law and order.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Michale Plemmons and Stanley Johansen out of the area" type="Escort" npc="7,8" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>We have located Merovingian forces attacking Ouroboros. We note that Ouroboros has failed to report this; they may have felt that their large private security force was up to the task of fending off the Merovingian, but even so, standard procedures for notifying the appropriate government agencies should have been followed. It is...unfortunate that the larger corporations sometimes seem to consider themselves outside of the usual legal considerations.
+
+Your task is to eliminate the Merovingian elements, and prevent any theft of Ouroboros property. Please refrain from attacking Ouroboros security personnel.</briefing>
+    <enter><say>Got some active readings in there: a bunch of unregistered signals, and...ah, that one looks like an Ouroboros guard.</say></enter>
+    <objective goal="1" text="Eliminate the Merovingian forces" type="DefeatAll">
+      <done><say>That should cover it. Send in the Ouroboros carpet cleaning team.</say></done>
+    </objective>
+    <complete><say npc="8">I'll handle the report to Ms. Pace.</say></complete>
+  </phase>
+  <finish>Well done, {player}. With proper cooperation from the Ouroboros Corporation, this will be a short-lived insurrection by the Merovingian.</finish>
+</mission>

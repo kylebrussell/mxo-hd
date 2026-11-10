@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Police Escort, Machines story mission 10.2.2. Source: research/missions/transcripts/Mach10-2-2.md (a live run, not
+     an archive replay, given by Agent Gray; 23 screenshots, four during the mission, the rest of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the Tactical Security lines (said in
+     Team chat), the names Gonzalo Feliz, Jenna Gilbert, Daniel Giddings, Alexander Arundel, Tactical Security, Jeneva
+     Basset, Captain Park and Lon Jefferies, and the objective texts "Escort Officer Gilbert to the end of their beat"
+     and "Don't let Officer Gilbert die" (seen in the Objectives window). Gray called the player "Mr. Argento" and Feliz
+     "Argento": {player}. The asterisks are retail's italics.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the police HQ and
+     the last site Office, the Lucero Point apartment SlumApt, the first crime scene Normal), the looks and the enemy
+     counts. Jenna Gilbert is called "them" in retail; she has a female look by her name.
+     Rewards: the log shows 33,120 experience and 87,500 information for this mission (a near-cap player in a group), so
+     this has 10.1's 363,000 experience with the 87,500 information.
+     Gaps: Feliz, Gilbert and Feliz again spoke one after another when Feliz was talked to; here all of it comes with
+     Feliz's talk, and Gilbert's own line with hers. Retail's "Leave the area now!" with Gilbert to protect was a walk
+     with her into phase 2; here she is led out of the first site and then to Daniel Giddings at the HQ, the end of her
+     beat. Her "It was right around here somewhere" line is said on nearing the HQ's officers. A hostile (Crow Bars Pin
+     Feathers, a gang) was killed on the way in retail; the HQ has three hostiles here, Merovingian since gangs have no
+     organisation. Six Tactical Security lines were Team chat with no place; four are said by the special weapons unit
+     at the first scene and two by officers at the last site. The computers' readouts in phases 1 and 2 ("Hello.",
+     "Input error.") are left out; the apartment computer's netlog readout can't be shown, so searching it just
+     completes the goal (retail gave no item: the Operator scanned the prints). A line is hidden in the Operator's
+     line about the prints; it is used as the build notes read it. The body in the apartment isn't placed. The log
+     file from the last site's computer is a File. At least one line before Gray's closing words is hidden. -->
+<mission id="210202" title="Police Escort" description="Investigate reported sightings of the Zionite Mauser alongside the city police." plot="1"
+         order="10202" org="2" contact="Agent Gray" exp="363000" info="87500">
+  <npc id="1" handle="Gonzalo Feliz" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="1">Hey, hit the road, Sherlock! I got enough to do without you sniffing around my crime scene.</say>
+  </npc>
+  <npc id="2" handle="Jenna Gilbert" type="FRIENDLY" at="1" rsi="34050040" weapon="0" />
+  <npc id="3" handle="Tactical Security" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Jesus, I need to wash this helmet.</say>
+  </npc>
+  <npc id="4" handle="Tactical Security" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">I think we can handle this. Why don't you go shuffle some papers around in your big fancy office?</say>
+  </npc>
+  <npc id="5" handle="Tactical Security" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Nothing's getting in or out of here, sir.</say>
+  </npc>
+  <npc id="6" handle="Tactical Security" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">What do you think we're dealing with here, sir? Why would they break in but not take any money? Is it serial cyber crime, like they're saying down at the station?</say>
+  </npc>
+  <npc id="7" handle="Daniel Giddings" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">*Retire in ten days... I don't need this terrorist bullcrap...*</say>
+  </npc>
+  <npc id="8" handle="Alexander Arundel" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">Lunch break.</say>
+  </npc>
+  <npc id="9" handle="Jeneva Basset" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say after="1">Shouldn't you do something about the...you know...body?</say>
+  </npc>
+  <npc id="10" handle="Captain Park" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">*Copy, Control. Keep me posted.*</say>
+  </npc>
+  <npc id="11" handle="Lon Jefferies" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="12" handle="Tactical Security" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say display="5">Gotta have good shoes for this kind of thing.</say>
+  </npc>
+  <npc id="13" handle="Tactical Security" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">That little program I wrote should be keeping them pretty busy back at HQ!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Information intercepted from Zion over the past week indicates that they believe their crewman "Mauser" has been entering the Matrix, despite his lack of the usual interface jacks, and their previous belief that he was killed on the surface shortly after the fall of Zion.
+
+While this information is dubious, city law enforcement has received a number of reports of a man matching Mauser's description. Obviously, if this is in fact Mauser, we would like to know how he has been able to jack in to the simulation.
+
+You are assigned to investigate one of these reports now. A special weapons unit has already secured the scene.</briefing>
+    <enter><say>Looks like we missed the action.</say></enter>
+    <objective goal="1" text="Talk to Gonzalo Feliz" type="Talk" npc="1">
+      <talk>
+        <say npc="1">You're who now? I'm gonna need to see some credentials. ...
+
+*Sonova feds crawlin' up my--* Gilbert! Get your ass over here!
+
+Look...{player}...we got this place covered. Now, Gilbert here thinks they may've spotted the perp on their beat. So why don't you just go take a jog with them and see what you two can turn up? Awright, get lost, Gilbert.</say>
+        <say>Oh, man.</say>
+        <say npc="2">Yeah, cap?</say>
+        <say npc="1">Hey, hit the road, Sherlock! I got enough to do without you sniffing around my crime scene.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Officer Gilbert" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Great, let's go!
+
+Yeah, I'm sure I spotted this guy. Tall, bald, dark skin, looking like a terrorist... No two ways about it, it must've been him!</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Officer Gilbert out of the area" type="Escort" npc="2" to="exit" after="2" />
+    <objective goal="4" text="Don't let Officer Gilbert die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>Work with the local officials as necessary, operative.</briefing>
+    <enter><say>Man, life on the beat sucks.
+
+That should be their HQ. You can drop them off there.</say></enter>
+    <objective goal="1" text="Escort Officer Gilbert to the end of their beat" type="Escort" npc="2" to="npc:7">
+      <done><say>Okay... Can we call Gray and get on with this, please?</say></done>
+    </objective>
+    <objective goal="2" text="Don't let Officer Gilbert die" type="Protect" npc="2" />
+    <near npc="7" radius="1000">
+      <say npc="2">Hm... It was right around here somewhere that I saw him... I think... Or maybe down there...</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Yes, we have another report matching the same description. Local officials have yet to reach the scene.</briefing>
+    <enter><say>Right, I've got one signal in there...probably a civilian. Some kind of computer system, too.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Jeneva Basset" type="Talk" npc="9">
+      <talk><say npc="9">God, I don't know! I found them like that. Of course I called you right away! The operator said to leave the apartment, but what if *he's* waiting outside?
+
+Did you see anyone? There was a strange man going out of the building as I came in. I've never seen him here before--he certainly doesn't live here! Oh, but I told all that to the operator.</say></talk>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>I scanned some prints off that keyboard. I'll send them to Gray.
+
+Hrm... Activity log's been wiped. Great.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>The fingerprints you found match partial prints retrieved by police at the previous location. We've correlated them with another incident reported recently. The reporting officials have...assured me that the data record at this site has been left undisturbed.</briefing>
+    <enter><say>That's the spot. The officials have been notified to let you through.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Lon Jefferies" type="Talk" npc="11">
+      <talk><say npc="11">Yes, this is the system that was tampered with. It looks like there was an attempt to delete activity records, but they were restored automatically from our backup server.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the log file from the computer" type="Search" object="1" item="6800" after="1" />
+    <objective goal="3" text="Upload the log file at a hardline" type="Upload" item="6800" after="2" />
+    <near npc="11" radius="1000">
+      <say>Finally, solid data! Get the information and upload it at the nearest hardline.</say>
+    </near>
+  </phase>
+  <finish>Analysis of surveillance data from areas around the crime scenes has yielded minimal additional information on the individual; he is not travelling by standard means.
+
+The log file you returned from the hacked terminal shows connection to a remote system via network tunneling. The connection protocol is both unfamiliar and encrypted; we are unable to determine what he connected to, and what intercommunication may have taken place.
+
+This case is presenting unusual challenges. The individual's techniques could be dangerous if made available to Zion as a whole. I have raised the priority of the target, temporary designation "Mauser." Your contribution today has been appreciated, {player}.</finish>
+</mission>

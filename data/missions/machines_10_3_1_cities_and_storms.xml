@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cities and Storms, Machines story mission 10.3.1. Source: research/missions/transcripts/Mach10-3-1.md (the archive
+     replay of [Machine Archive 10.3.1], given by Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the objective texts "Search the
+     area" and "Talk to meteorologist Reeves", and the names E Pluribus Neo Fighter, Sammie Reeves, Dallas Sharma,
+     Deandrea Post, Agent North and Agent Gray. Gray called the player "Mr. Argento"; that is {player}. Besides the
+     contact on the datalink, a field NPC named Agent Gray waits in the last phase; he is a friendly NPC with that
+     handle.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 2 and 4, the sites (the
+     weather office is an Office, the Agents' meeting room in Lucero Point an Office, the others are not described:
+     Normal), the looks and the enemy counts ("some reds" in phase 1). The E Pluribus Neo Fighters and the operatives
+     fighting for the old phone network are redpills: enemy Zion. The Machine crew "in some distress" had no name or
+     line in the log; it is one Machine Mechanic (the handle of the Machine crews in 8.2.2) with a Protect goal, as
+     Gray sent the player to its aid.
+     Rewards: 275,000 experience and 91,000 information, shown right after this mission completed.
+     Gaps: retail's first phase listed only "Search the area" (the fighters were fought but no kill goal was shown), so
+     the search of the laptop is its one goal and the fighters are its hostiles; the laptop's text ("small craft heading
+     north from a deep tunnel system") was a Details popup we can't show, and the search gives no item. Phase 2's
+     Objectives were never shown; a kill goal and the Protect are ours. "Code Bit 1" and "Code Bit 7" were received
+     during play but may be ordinary loot; they aren't given. The weather office's computer ("Running analysis...") had
+     only a popup and no goal; it isn't placed. Dallas Sharma and Deandrea Post's joke exchange is said on nearing them.
+     Agent North's line, which came before the
+     field Gray's, is his line when talked to; only Gray's talk is a goal. -->
+<mission id="210301" title="Cities and Storms" description="Tie up loose ends: disrupt an EPN search team, aid a Machine crew, and gather an analysis of the storm." plot="1"
+         order="10301" org="2" contact="Agent Gray" exp="275000" info="91000">
+  <npc id="1" handle="E Pluribus Neo Fighter" type="HOSTILE" at="1" rsi="050100b4" weapon="2568">
+    <say>Damn!</say>
+  </npc>
+  <npc id="2" handle="Machine Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Sammie Reeves" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say after="1">Well, no, but when you get right down to it, the whole thing's a puzzle. With that kind of cloud cover, it should have frozen over entirely in a very short time. So, you're lucky--relatively speaking.</say>
+  </npc>
+  <npc id="4" handle="Dallas Sharma" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
+  <npc id="5" handle="Deandrea Post" type="FRIENDLY" at="3" rsi="61000040" weapon="0" />
+  <npc id="6" handle="Agent North" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>All possible threats to the Matrix are recorded and tracked. We do not enumerate all of them to you, as it would be...impractical for you to attempt to assimilate that quantity of information. Rest assured that you are utilized in the most efficient manner possible.</say>
+  </npc>
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="1">Yes, I had not mentioned Carlyne and Halborn--the "intruders," as you call them. Their existence and abilities are known factors. Certain initiatives are underway to...reduce the impact they might have, should they return to the Matrix. Their return is not expected and, in any event, the project is a long-term one.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Operative, it may occur to you that at present there are a number of "loose ends" which, left unresolved, could potentially come back to trouble the simulation again. Pluribus Neo, arming in Zion's old city, constitutes one of these lingering issues, as does the simulacrum of the Zionite Morpheus, which just weeks ago reappeared in the simulation, disrupting our search for the terrorist Mauser at a critical juncture.
+
+At this time we know of an EPN team searching for the simulacrum. It would be to our benefit to disrupt the team, and find what they may know about the simulacrum's whereabouts.</briefing>
+    <enter><say>Got some reds in there. Should be pretty straightforward.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>No sim, but there was a certain satisfaction in that anyway.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Yes, we had heard of the reading obtained by Pluribus Neo's scanners at the old city. It was supposed to have been taken shortly after Mauser's last known appearance in the simulation, several weeks ago. And no, Mauser still has not been located in the Real--another loose end.
+
+And then there is the restricted phone line system whose existence Mauser's movements in the Matrix brought to our attention. Thanks to his untrammeled and much-observed use of this old Zionite network, and partial records of its layout found among the data captured with Zion's old mainframe, we have made significant progress in unearthing and deactivating this remnant of the pre-Truce conflict. This loose end, at least, may soon be cut. However, whether it be out of a sense of nostalgia, or a desperate attempt to hold on to anything they can, some operatives continue to fight for this network, harassing our removal efforts. One of our mechanical crews appears to be in some distress now.</briefing>
+    <enter><say>You know, he could'a just said that to start with and saved the details until later...
+
+Looks like listening to that speech might've made us miss most of the action. I've got a few active signals showing; one of them's ours.</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="2" text="Do not let the Machine Mechanic die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>The Zionites themselves are a threat that we have not been able to control adequately since the emergency jackout technology that saves them from permanent death became widespread shortly after the Truce was established. This problem is somewhat offset by their current lack of a "savior" capable of manipulating or rebooting the simulation; nevertheless, their second city, heavily protected by geologic formations and electromagnetic fields, remains our primary military objective.
+
+Sentinel activity had been reduced to a minimum while the intruders, with their ability to override and terminate our programs, were in our city's vicinity. Since their removal, preparations to resume the conquest of Zion have begun, but currently these are hampered significantly by the massive increase in storm activity triggered by the Merovingian. I would like you to collect an updated "intuitive" analysis of the storm from technical resources in the simulation.</briefing>
+    <enter><say>I used to think I wanted to be a meteorologist. Just have to do a song and dance a couple times a day, and you can pretty much mail in the actual prediction part--sounded like a pretty sweet job to me.
+
+Come to think of it, the real weather is even easier to predict than the simulated weather--or at least, it used to be.</say></enter>
+    <objective goal="1" text="Talk to meteorologist Reeves" type="Talk" npc="3">
+      <talk><say npc="3">Given the scenario, I'd say you can expect the storm nucleus to persist for some time--even expand. You had a high energy system in relative stasis, but this activity is creating new fronts. Without knowing the force that sustains it, I can't say for sure, but my feeling is that it's going to get worse before it gets better.</say></talk>
+      <done><say>Pff. Come back tomorrow, and they'll probably tell you the opposite.</say></done>
+    </objective>
+    <near npc="4" radius="600">
+      <say npc="4" display="5">--so then I said to him, "That's about the most mediocris nimbus I've ever seen!"</say>
+      <say npc="5" display="5">Haha! What a nimbostratus!</say>
+      <say npc="5" display="5">That's it, I'm starting a stand-up weather show!</say>
+      <say npc="4" display="5">Nimbostratus... Hoo! Oh, man. If only we could make jokes like this on air.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Hm. I believe this leaves us with a fairly clear course of action at present. I would prefer not to discuss it over the simulated phone system.</briefing>
+    <enter><say>There's a thought: is a simulated phone system vulnerable to the same hacks--simulated--as a regular phone system would have been? I mean, I guess that's one drawback of creating a really detailed level of simulation, right?</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="7">
+      <talk><say npc="7">Mauser and the simulacrum have not been located, and the storm and the two cities will take a substantial investment of time and resources to resolve. Much more readily approached are the machinations of the Merovingian, who in recent weeks has put considerable effort into stealing data, disrupting Sentinel systems, and violating restricted areas.
+
+Although his forces have retreated from the area they had encroached upon on the Earth's surface, we have reason to believe that while there they may have obtained information that will tempt the Frenchman to encroach further upon the boundaries within which his existence is tolerated. He will have to be monitored carefully.</say></talk>
+    </objective>
+  </phase>
+  <finish>Thank you, {player}. I trust that you will keep in mind the topics we have touched upon today. The responsibility we bear to protect the simulation is an unending and complex one.</finish>
+</mission>
