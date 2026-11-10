@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gathering Evidence, Machines story mission 1.2.6. Source: research/missions/transcripts/Mach1-2-6.md (the archive
+     replay of [Machine Archive 1.2.6], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, the NPC names and the imposter's
+     bark. Ours: the description, the objective texts (the Objectives tab was never opened), the sites (unnamed
+     buildings: Normal), the looks and the enemy count. Item stand-in: the PDA device is Device (6820). Rewards: the
+     57,920 experience and 59,500 information shown right after this mission completed.
+     Gaps: Spencer Durden had locked himself in the next room; doors can't be locked, so talking to him waits for
+     Tamera Piel. A few words of Spencer's line were cut off at the screenshot's edge; the line reads whole without
+     them. The PDA is carried by one named imposter ("Agent", as the Team chat names them), whose bark only plays if
+     the player talks to him, since he attacks on sight; the other barks ("Die!", "Death to the humans!") have no
+     place. The PDA's upload is a goal of the second phase, as retail had no area change before it. Phase 2's goals
+     are numbered so that Deloris Hentzel's thanks follow the fight (goal 3) and not phase 1's goals. The Detailed
+     Surveillance Report in the player's inventory has no visible source and is left out. -->
+<mission id="201206" title="Gathering Evidence" description="Track down a band of imposter Agents and recover one of their PDAs." plot="1"
+         order="1206" org="2" contact="Agent Gray" exp="57920" info="59500">
+  <npc id="1" handle="Andres Babcock" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Spencer Durden said that they looked like government guys, you know in suits and stuff, except that they started attacking people for no reason. Isn't that illegal or something?</say>
+  </npc>
+  <npc id="2" handle="Tamera Piel" type="FRIENDLY" at="1" rsi="34050040" weapon="0" />
+  <npc id="3" handle="Spencer Durden" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">"Gridspace 347 dot 832"--what could that mean?</say>
+  </npc>
+  <npc id="4" handle="Agent" type="HOSTILE" at="2" rsi="3600004e" weapon="2568">
+    <say>The Machines will destroy Zion.</say>
+  </npc>
+  <npc id="5" handle="Deloris Hentzel" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>Who are these guys?</say>
+    <say after="3">Oh, thank you! We need more people like you around the City!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>By now you are familiar with the unknown imposter programs who are attempting to impersonate our agents and, by attacking Zion operatives in that guise, disrupt our Truce with the humans. This must not be allowed. A group has been located in your vicinity. Destroy them all, and retrieve one of their PDA devices for analysis.</briefing>
+    <enter><say>I'm picking up very little foreign program activity inside--the imposter programs were supposed to be here, but the sensors don't indicate their signature in the area. Investigate and see if you can find any clues to their whereabouts.</say></enter>
+    <objective goal="1" text="Talk to Tamera Piel" type="Talk" npc="2">
+      <talk><say npc="2">We weren't here when those thugs broke in. But Spencer Durden was--he's locked himself in the next room.</say></talk>
+      <done><say>Looks like those imposter Agents have come and gone. You'll have to get into Spencer Durden's room and find out if he knows anything.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Spencer Durden" type="Talk" npc="3" after="1">
+      <talk><say npc="3">They just busted in here, started ransacking the place. I don't know what they wanted. I ran in here and hid. They were moving around out there for a while, then I heard someone say something about looking at "gridspace 347 dot 832," and then they left. It was really weird.</say></talk>
+      <done><say contact="1">It appears that the imposters left shortly before your arrival. Fortunately, this witness overheard a valuable clue--we should be able to locate that gridspace position. Leave the area and I'll update you further.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>We have tracked those gridspace coordinates referred to by the imposter programs. Your waypoint is being updated now. Proceed to that location and destroy them.</briefing>
+    <enter><say>This time there are strong program signals in the area--the imposter team should be here. Take them out, recover a PDA device from one of their bodies, and upload it at a hardline.</say></enter>
+    <objective goal="1" text="Get the PDA from the imposter Agent" type="Loot" npc="4" item="6820">
+      <done><say contact="1">That is the item we seek. Upload it at a hardline.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the PDA at a hardline" type="Upload" item="6820" after="1">
+      <done><say contact="1">PDA code received.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the imposter programs" type="DefeatAll">
+      <done><say>All imposter programs eliminated.</say></done>
+    </objective>
+  </phase>
+  <finish>This PDA should yield some clue as to the identity of these malefactors. Whoever they are, they will not last very long.</finish>
+</mission>

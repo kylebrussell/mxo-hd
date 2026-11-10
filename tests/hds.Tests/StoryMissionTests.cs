@@ -264,7 +264,7 @@ public class StoryMissionTests
             while (!progress.AllDone)
             {
                 MissionObjective? next = progress.OpenObjectives()
-                    .FirstOrDefault(o => o.type != MissionGoalType.Protect && CanDo(o, held));
+                    .FirstOrDefault(o => o.type != MissionGoalType.Protect && CanDo(o, held, progress));
                 Assert.True(next != null, where + ": stuck with " +
                                           string.Join(", ", progress.Phase!.missionObjectives.Where(o => !progress.IsDone(o.goal))
                                               .Select(o => o.goal + " " + o.description)));
@@ -273,7 +273,7 @@ public class StoryMissionTests
             }
 
             // Optional goals the player may still do before leaving
-            foreach (MissionObjective optional in progress.OpenObjectives().Where(o => o.optional && CanDo(o, held)).ToList())
+            foreach (MissionObjective optional in progress.OpenObjectives().Where(o => o.optional && CanDo(o, held, progress)).ToList())
             {
                 Do(optional, held);
                 progress.Complete(optional);
@@ -281,10 +281,15 @@ public class StoryMissionTests
         } while (progress.NextPhase());
     }
 
-    private static bool CanDo(MissionObjective goal, HashSet<uint> held)
+    private static bool CanDo(MissionObjective goal, HashSet<uint> held, MissionProgress? progress = null)
     {
         switch (goal.type)
         {
+            case MissionGoalType.Talk:
+                // Talking to a friendly NPC settles the first open goal that names it (MissionRuntime.OnTalk), so a
+                // Talk listed after that NPC's Protect never completes
+                MissionNpc? npc = progress?.mission.npcs.Find(n => n.id == goal.npcId);
+                return npc == null || !npc.friendly || progress!.FindOpenFor(goal.npcId) == goal;
             case MissionGoalType.Give:
             case MissionGoalType.Put:
             case MissionGoalType.Upload:

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Interference, Machines story mission 1.1.1. Source: research/missions/screenshots-pilot-Mach1-1-1.md (the archive
+     replay of [Machine Archive 1.1.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, and the NPC names. Ours: the
+     description, the objective texts (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the
+     looks and the enemy count (phase 2's operative was "surrounded by imposter Agent patrols"; phase 1 had no fight
+     logged, and the operator said to keep a low profile). Rewards: none were visible for this mission, so these are
+     the 88,000 experience and 59,500 information of 1.1.2 Redpill Redux, the next mission of the sub-chapter.
+     Gaps: the Objectives tab wasn't seen, so Mrkos is met (her first line) and led out in phase 1, and in phase 2 led
+     to Bulgey; the "Do not let Mrkos die" goal is ours. Delivering the medication is reaching Bulgey with Mrkos. Mrkos'
+     parting line and Bulgey's second "I'll be okay now" came after the phase was done, when talked to, so they are
+     their lines once the delivery is done. "Brick Swamper", seen only in a combat line, was most likely a street
+     hostile and is left out. The Journal Entry from Morpheus in the player's inventory has no visible source and is
+     left out. -->
+<mission id="201101" title="Interference" description="Escort a medical courier to a wounded Zion operative." plot="1"
+         order="1101" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Mrkos" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="3">Well, you did as you said you would... maybe I misjudged you, {player}. I still think you're playing for the wrong team, though. The future of all humanity lies with Zion, not with some heartless machines! Think it over.</say>
+  </npc>
+  <npc id="2" handle="Bulgey" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
+    <say>I don't think... I'm gonna... make it...</say>
+    <say after="3">I--I think I'll be okay now. You saved my life. You ever need help, you come see me.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The humans still do not trust us. To show them our good will, we intend to send operatives along to offer "protection." You will escort a medical courier, Mrkos, to a wounded Zion operative.</briefing>
+    <enter><say>You'll find the courier somewhere in that building. Keep a low profile.</say></enter>
+    <objective goal="1" text="Talk to Mrkos" type="Talk" npc="1">
+      <talk><say npc="1">Unbelievable. I never thought I'd see the day that a fellow redpill was actually working for those damned Machines... Well, we don't have any time to waste. If our operative Bulgey doesn't get these special pills soon, he's a dead man. Let's go.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Mrkos out of the building" type="Escort" npc="1" to="exit" after="1">
+      <talk><say npc="1">I'm keeping one eye on you, {player}.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Your waypoint is updated with the location of the damaged Zion operative. Get there quickly--the operative is surrounded by imposter Agent patrols.</briefing>
+    <enter><say contact="1">The badly wounded human operative Bulgey is somewhere in that building. Take Mrkos to him so that she can aid him with her medical supplies. Destroy any hostiles that you encounter.</say></enter>
+    <objective goal="1" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say>Good work, you've taken care of all the imposter Agents in this area.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Mrkos die" type="Protect" npc="1" />
+    <objective goal="3" text="Lead Mrkos to Bulgey" type="Escort" npc="1" to="npc:2">
+      <done>
+        <say>Mrkos has delivered the medication to Bulgey. Bulgey's life signs are stabilizing.</say>
+        <say npc="2">I--I think I'll be okay now. You saved my life. You ever need help, you come see me.</say>
+      </done>
+    </objective>
+    <complete><say contact="1">You have completed all necessary tasks in the area, operative. You may leave now.</say></complete>
+  </phase>
+  <finish>This distrust from the humans is a regrettable obstacle that we must continue to work against. How... comforting that we have an ally such as you to spread the word, {player}.</finish>
+</mission>

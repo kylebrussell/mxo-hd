@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Witness Protection, Machine story mission 1.2.10. Source: research/missions/transcripts/Mach1-2-10.md (the archive
+     replay of [Machine Archive 1.2.10], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and witness line, and the witnesses' names
+     (Rudolph Clark, Vennie Yeager). Ours: the description, the objective texts (the Objectives tab wasn't shown), the
+     sites (unnamed buildings: Normal), the looks and the enemy counts. The kidnappers are the phases' generated
+     Machine hostiles (imposter programs named "Agent"; their Team chat taunts aren't said). Item stand-in: the
+     envelope with the van's license number is Letter (6793). Rewards: the 88,000 experience and 59,500 information
+     shown right after this mission completed.
+     Gaps: retail's phase 1 closed two minutes after the envelope was handed over; here it closes on the hand-over,
+     with the Operator's "fewer programs than usual" line. Keeping the witnesses alive isn't shown in the log but
+     follows from "save the witness"; it is a Protect goal in each phase. -->
+<mission id="201210" title="Witness Protection" description="Rescue two sabotage witnesses kidnapped by the imposter programs." plot="1"
+         order="1210" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Rudolph Clark" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Please rescue Vennie Yeager!</say>
+  </npc>
+  <npc id="2" handle="Vennie Yeager" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>These thugs are a menace to society!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The mysterious imposter programs have kidnapped some of the human civilians who witnessed the recent hardline sabotage. Rescue one of these civilians and find out what they saw when the sabotage occurred.</briefing>
+    <enter><say>The sabotage witness, Rudolph Clark, is being held by the imposters inside that building. Wipe them out, save the witness, and find out what he saw when the hardline was sabotaged.</say></enter>
+    <objective goal="1" text="Kill all of the imposters" type="DefeatAll">
+      <done><say>Now interrogate the witness regarding the hardline sabotage.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Rudolph Clark" type="Talk" npc="1" after="1">
+      <talk>
+        <say npc="1">You have to hurry and rescue my friend, Vennie Yeager! I didn't see this phone booth sabotage you're asking about, but I know that she did. They took her away to another location, but I managed to copy down the license number of their van as they drove off. Maybe you can trace it or something?</say>
+        <say>A second hostage? This bears investigating. Get the license number from him.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Get the license number from Rudolph Clark" type="Get" npc="1" item="6793" after="2">
+      <done>
+        <say npc="1">Here, I wrote the license number of the kidnappers on this envelope. Maybe you can use it to track them down?</say>
+        <say>We should be able to track the renegades by that license number.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Do not let Rudolph Clark die" type="Protect" npc="1" />
+    <complete>
+      <say>Weird. The renegades left fewer programs than usual to guard that civilian.</say>
+      <say contact="1">Leave the building and wait for another update from me.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>We have located the second set of kidnappers. I am uploading their waypoint to you. Pursue and destroy them.</briefing>
+    <enter><say contact="1">We tracked the van used by the second group of kidnappers to that building; the kidnappers should be holding the second hostage, Vennie Yeager, inside. Rescue her, destroy the kidnappers, and find out what she knows about their hardline sabotage.</say></enter>
+    <objective goal="1" text="Kill all of the kidnappers" type="DefeatAll">
+      <done><say>You've demolished all of the renegades in the area.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Vennie Yeager" type="Talk" npc="2" after="1">
+      <talk>
+        <say npc="2">Yeah, these same jerks were at the phone booth the other day, and they were doing something to it with these weird black box things.</say>
+        <say>That was the information we were after.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Do not let Vennie Yeager die" type="Protect" npc="2" />
+    <complete><say>That's it -- you can get out of there now.</say></complete>
+  </phase>
+  <finish>You did well to pursue this second set of kidnappers, {player}. This is not the first time that we've heard of these mysterious "black boxes" carried by the imposter programs during their sabotage attempts. This bears further investigation.</finish>
+</mission>

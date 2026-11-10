@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Asset Assessment, Machine story mission 1.2.13. Source: research/missions/transcripts/Mach1-2-13.md (the archive
+     replay of [Machine Archive 1.2.13], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and NPC line (the closing line's "we will able
+     to" is retail's), and every NPC name (Stewart The Mechanic, Agents Wilson, Long, Stewart, Marks and Park). Ours:
+     the description, the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal),
+     the looks and the enemy count. The ambushers are the phase's generated Exiles. Rewards: the 88,000 experience and
+     59,500 information shown right after this mission completed.
+     Gaps: Stewart The Mechanic calls an Exile ambush on being questioned; here the Exiles are on the floor from the
+     start, and his lines are said when he is first talked to. He turns on the player but stays a friendly program who
+     must be led away alive. At the interrogation center his and Agent Wilson's lines on delivery are said when he
+     reaches Agent Wilson, and Agent Stewart's and Agent Marks's later lines when the phase's goals are done. -->
+<mission id="201213" title="Asset Assessment" description="Question a maintenance program suspected of aiding the hardline saboteurs." plot="1"
+         order="1213" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Stewart The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Agent Wilson" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Agent Long" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say display="5">Take him over to Agent Wilson.</say>
+  </npc>
+  <npc id="4" handle="Agent Stewart" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">Agent Wilson will want to talk to that piece of vaporware.</say>
+  </npc>
+  <npc id="5" handle="Agent Marks" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Take that obsolete piece of code to Agent Wilson.</say>
+  </npc>
+  <npc id="6" handle="Agent Park" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say display="5">You want to talk to Agent Wilson.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Operative, we suspect that one of our hardline junction box maintenance programs may have betrayed us, and is now assisting an unknown group in sabotaging junction boxes. Interrogate this program and learn the truth of the matter.</briefing>
+    <enter><say contact="1">The hardline maintenance program, named Stewart The Mechanic, will be found inside that building. Question him closely about the hardline sabotage, but do not cause him any irreparable damage.</say></enter>
+    <objective goal="1" text="Talk to Stewart The Mechanic" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Junction box sabotage? Now would I do a thing like that? Oh wait... yes, I would! Too bad you won't live to tell anyone about it!</say>
+        <say contact="1">Prepare to defend yourself, {player}--it appears as though Stewart The Mechanic had an ambush ready for us. You will have to remove Stewart The Mechanic from this area for further questioning.</say>
+        <say npc="1">Exiles, attack!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say contact="1">Excellent. Now bring the traitorous program known as Stewart The Mechanic to us for interrogation and reprogramming. I will give you an updated waypoint once you get him outside.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Stewart The Mechanic out of the area" type="Escort" npc="1" to="exit" after="2">
+      <talk><say npc="1">Bah! You can't make me talk!</say></talk>
+    </objective>
+    <objective goal="4" text="Do not let Stewart The Mechanic die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>A waypoint showing the interrogation center's location is uploading to you now. Take Stewart The Mechanic there... alive.</briefing>
+    <enter><say>Take Stewart The Mechanic to Agent Wilson, who you will find in that building.</say></enter>
+    <objective goal="1" text="Take Stewart The Mechanic to Agent Wilson" type="Escort" npc="1" to="npc:2">
+      <talk><say npc="1">Hey! Where are you taking me?</say></talk>
+      <done>
+        <say>You can get out of there now... boy, I wouldn't want to be in Stewart The Mechanic's shoes right now.</say>
+        <say npc="1">I... I didn't do it. I was set up! You have to believe me!</say>
+        <say npc="2">Thank you, human. Oh, don't worry about Stewart The Mechanic. We will be taking very good... care of him.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Do not let Stewart The Mechanic die" type="Protect" npc="1" />
+    <complete>
+      <say npc="4">Give our regards to Agent Gray.</say>
+      <say npc="5">The Machines do not tolerate traitors.</say>
+    </complete>
+  </phase>
+  <finish>Our thanks for helping to root out that traitor in our midst, operative. I have no doubt that we will able to convince him of the error of his ways... permanently.</finish>
+</mission>

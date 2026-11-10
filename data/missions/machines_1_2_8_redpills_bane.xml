@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redpill's Bane, Machine story mission 1.2.8. Source: research/missions/transcripts/Mach1-2-8.md (the archive
+     replay of [Machine Archive 1.2.8], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal; the
+     "Zion extraction point" is a RedPillExtraction site), the looks and the enemy counts. The masked humans have no
+     org; as rogue redpills they are the phases' generated Zion hostiles. Rewards: the 116,560 experience and 59,500
+     information shown right after this mission completed; the Code Bit 6 in the same block isn't given.
+     Gaps: in phase 1 retail ended the phase on talking to both recruiters; here they are led out, so that they follow
+     into the next areas. Phase 2's first step, leading the recruiters to a waiting room by the recruit, can't target a
+     room and is left out; Agent Gray's orders for it are said on arrival. The masked humans and the recruit share
+     one floor instead of two rooms, and the kill of every hostile also waits for Hayden Allen, who is a hostile that
+     waits to be attacked (talking to him is reaching him). The recruiters' lines after the fight are their lines in
+     phase 2 until the recruit is dead. At the extraction point the arrival and farewell lines are said when the
+     recruiters are delivered to Sijthoff; the Zion Network Hacker's line was only in Team chat. -->
+<mission id="201208" title="Redpill's Bane" description="Escort a Zion recruitment team, and see that their recruit never reaches Zion." plot="1"
+         order="1208" org="2" contact="Agent Gray" exp="116560" info="59500">
+  <npc id="1" handle="Gaffey" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>That's a good plan: you get Hayden Allen while we stand guard out here.</say>
+  </npc>
+  <npc id="2" handle="Butterfly" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say>Well, okay, we can hold them off while you get the recruit. Just hurry.</say>
+  </npc>
+  <npc id="3" handle="Hayden Allen" type="HOSTILE" attacksOnSight="0" at="2" rsi="35000024" weapon="0" />
+  <npc id="4" handle="Sijthoff" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Fulchignoni" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="6" handle="Zion Network Hacker" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>A new human group of masked ruffians has begun harassing Zion's recruitment teams. We have decided to allow this group to disrupt some of Zion's recruitment operations. Under the terms of the Truce, you are detailed to escort one of the recruitment teams--but if the masked humans attack, you are not to interfere.</briefing>
+    <enter><say>The Zion recruitment operatives Butterfly and Gaffey are inside that building. Get them outside.</say></enter>
+    <objective goal="1" text="Talk to Gaffey" type="Talk" npc="1">
+      <talk><say npc="1">Be prepared for trouble--we've had a lot of teams hit by those masked thugs lately.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Butterfly" type="Talk" npc="2">
+      <talk><say npc="2">We're ready to roll.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Butterfly and Gaffey out of the building" type="Escort" npc="2,1" to="exit" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Now you will take the two humans to meet their potential recruit. The waypoint will show you the recruit's location.</briefing>
+    <enter>
+      <say contact="1">The Zion recruit Hayden Allen is in that building. The masked humans have already entered the area, and it looks like they're terrorizing the bluepills inside. Lead Butterfly and Gaffey to Mr. Allen's vicinity and await further orders.</say>
+      <say>Bring Butterfly and Gaffey to that room.</say>
+      <say contact="1">Listen carefully. Leave the Zion operatives there and go through the far door. In the next two rooms you will find one or more masked humans, and the Zion recruit. Destroy them all.</say>
+      <say contact="1">Delete any masked humans that you find in that room. Make the fight noisy. We want the recruiting agents to overhear it.</say>
+    </enter>
+    <objective goal="1" text="Find Hayden Allen" type="Talk" npc="3">
+      <talk>
+        <say contact="1">Here is the human recruit, Mr. Allen. Eliminate him.</say>
+        <say npc="3">What's going on?</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Hayden Allen" type="Defeat" npc="3">
+      <done>
+        <say contact="1">Good. It is in our interests to keep the growth of Zion within tolerable... limits. Of course, you will blame his deletion on the masked humans.</say>
+        <say contact="1">Now lead the recruiters Butterfly and Gaffey out of the building. Watch out for more masked humans--you may slay them if they annoy you.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill all of the masked humans" type="DefeatAll">
+      <done><say contact="1">Well done. The Zion recruiters will have heard you fighting off thugs--who were about to eliminate the recruit, of course. At least, that is what you will tell them.</say></done>
+    </objective>
+    <objective goal="4" text="Lead Butterfly and Gaffey out of the building" type="Escort" npc="2,1" to="exit" after="2" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="0">
+    <briefing>Good. Now lead the two recruitment operatives to the extraction point nearby. Check the waypoint for the location.</briefing>
+    <enter><say>The Zion extraction point is inside that building.</say></enter>
+    <objective goal="1" text="Lead Butterfly and Gaffey to Sijthoff" type="Escort" npc="2,1" to="npc:4">
+      <done>
+        <say npc="4">Wait. Where's Allen?</say>
+        <say npc="5">Where are Allen and our two recruitment operatives?</say>
+        <say contact="1">Leave the area now, operative. Those humans appear to be a bit... touchy.</say>
+      </done>
+    </objective>
+    <complete>
+      <say npc="4">Oh great. How can Zion maintain itself if we can't get any new people from the Matrix? Those masked men have become a serious problem.</say>
+      <say npc="2">Those stupid thugs and their twisted dream-world! They're killing their only real hope for survival!</say>
+      <say npc="1">Things are getting bad. We can't go on losing recruits like this.</say>
+      <say npc="6">Damn! I wish I had been there to help.</say>
+      <say npc="5">This is a sad day. Hayden Allen will be remembered in Zion.</say>
+    </complete>
+  </phase>
+  <finish>That was an excellent piece of work, {player}. Zion is poorer by one recruit and not only do they blame the masked humans for it, but the masked humans don't even suspect that you aided them in their own objective. It is almost a pity that our foes are so easily manipulated.</finish>
+</mission>

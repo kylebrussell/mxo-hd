@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No Allies Here, Machines story mission 1.2.4. Source: research/missions/transcripts/Mach1-2-4.md (the archive
+     replay of [Machine Archive 1.2.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, and the NPC names. Ours: the
+     description, the objective texts (the Objectives tab was never opened), the bodyguard's name ("Sheldon's
+     Bodyguard": retail's name wasn't seen), the sites (the Exile stronghold, an unnamed building: Normal; the
+     operations center: Office), the looks and the enemy count. Rewards: the 88,000 experience and 59,500 information
+     shown right after this mission completed.
+     Gaps: retail's Sheldon was hostile (red) until captured; NPCs can't switch sides, so he is friendly from the
+     start: finding him is a Talk goal that carries his taunt, and he follows the player once found. Killing his
+     bodyguard is a goal of its own. "Don't let him get hurt!" is a Protect goal in both phases. The friendly Agents'
+     second lines (and Agent West's "You may go.") came right after the hand-over, so they are said when it is done; an
+     entry or two between the operator's "Keep an eye out for Agent West" and the Agents' barks weren't captured. The
+     Captain's Log Entry from Morpheus in the player's inventory has no visible source and is left out. -->
+<mission id="201204" title="No Allies Here" description="Capture an Exile leader who has been helping Morpheus." plot="1"
+         order="1204" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Sheldon" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Sheldon's Bodyguard" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Agent West" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Where is the Exile leader?</say>
+  </npc>
+  <npc id="4" handle="Agent Johns" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say display="5">Where do you humans get such ridiculous clothes?</say>
+  </npc>
+  <npc id="5" handle="Agent Wong" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say display="5">Don't disappoint us, operative.</say>
+  </npc>
+  <npc id="6" handle="Agent Lee" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Don't dawdle, human.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Morpheus' subversive activities have been gaining him support amongst the chaotic Exiles. This must be nipped in the bud. We've located an Exile stronghold near your location--go there, capture their leader, and bring him to us for... questioning.</briefing>
+    <enter><say>The Exile gang is in this building. Capture Sheldon and bring him outside -- and remember, don't let him get hurt!</say></enter>
+    <objective goal="1" text="Find Sheldon" type="Talk" npc="1">
+      <talk><say npc="1">Hah, you don't scare me! You're no match for my bodyguard!</say></talk>
+    </objective>
+    <objective goal="2" text="Kill Sheldon's bodyguard" type="Defeat" npc="2">
+      <done><say>That should make an impression on their so-called "leader."</say></done>
+    </objective>
+    <objective goal="3" text="Lead Sheldon out of the building" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="4" text="Do not let Sheldon die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Human, you are to escort Sheldon to our operations center nearby. Follow the waypoint to the location. Take care that you don't let the Exile escape.</briefing>
+    <enter><say>Keep an eye out for Agent West. You'll be dropping Sheldon with him.</say></enter>
+    <objective goal="1" text="Lead Sheldon to Agent West" type="Escort" npc="1" to="npc:3">
+      <done>
+        <say>That's it, you can get out of there now.</say>
+        <say npc="3">You may go.</say>
+        <say npc="5">I hope that this Exile holds up longer than the last one.</say>
+        <say npc="4">This Exile will serve as an example for the others to avoid.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Do not let Sheldon die" type="Protect" npc="1" />
+  </phase>
+  <finish>Good. I think I can safely say that Sheldon will not soon be forgetting his stay with us.</finish>
+</mission>

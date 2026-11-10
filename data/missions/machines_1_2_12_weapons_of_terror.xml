@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Weapons of Terror, Machine story mission 1.2.12. Source: research/missions/transcripts/Mach1-2-12.md (the archive
+     replay of [Machine Archive 1.2.12], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Agent Gray, Operator and NPC line, and every NPC name (Ismael
+     Rutkowski, Reinaldo Miller, Dallas Shimansky, Stephan Runnels, Hang Kempner, Kurt Miller, Lupine Scrapper). Ours:
+     the description, the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal), the
+     looks and the enemy counts. The guards at the statue's building aren't named or described; they are Exiles here,
+     like the gang. Which Exile carried the black box isn't shown; here it is the Lupine Scrapper, who taunted over it
+     in Team chat. Item stand-ins: Ismael's map disk is Map_Disk (6783), the master key Access_Card (6791), the statue
+     Statue_Wrapped (6815), the map to the Exile gang Map_Folder (6792), the black box LED_Black_Box (6835). Rewards:
+     not shown for this mission; these are Asset Assessment's (1.2.13), 88,000 experience and 59,500 information.
+     Gaps: Ismael Rutkowski meets the player in phases 1 and 3 in two different buildings, so he is two NPCs. Agent
+     Gray's line about the locked door past the guards came after the master key in the log and is said with it; the
+     door isn't locked here. Dallas Shimansky's "persuading" (a minute of refusals) is his line until the guards are
+     dead; then talking to him opens the safe. Kurt Miller's first line wasn't captured; his "G'wan." is his line. Hang
+     Kempner's "Stay in touch!" and Ismael's farewell are said with the map's hand-over. The Exiles' Team chat
+     taunts ("It's ours!", "You won't get it!") aren't said. -->
+<mission id="201212" title="Weapons of Terror" description="Recover one of the imposters' black box devices." plot="1"
+         order="1212" org="2" contact="Agent Gray" exp="88000" info="59500">
+  <npc id="1" handle="Ismael Rutkowski" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Get me that statue, then we'll talk about that precious black box of yours.</say>
+  </npc>
+  <npc id="2" handle="Reinaldo Miller" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>I already gave you the key. I got nothin' else to give. You need to just leave me alone.</say>
+  </npc>
+  <npc id="3" handle="Dallas Shimansky" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>Y-you can't come in here!</say>
+    <say after="5">Thanks! Enjoy the statue! Come again! Oh... err, no, no need to come again. Uh, we'll call you!</say>
+  </npc>
+  <npc id="4" handle="Ismael Rutkowski" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say>Well, took ya long enough. Got the statue? If so, give it to Stephan Runnels over there.</say>
+  </npc>
+  <npc id="5" handle="Stephan Runnels" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="6" handle="Hang Kempner" type="FRIENDLY" at="3" rsi="e4050024" weapon="0">
+    <say display="5">He's waiting for you. Go right in.</say>
+  </npc>
+  <npc id="7" handle="Kurt Miller" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say display="5">G'wan.</say>
+  </npc>
+  <npc id="8" handle="Lupine Scrapper" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Surveillance reports indicate that the imposters have been using "black box" devices to assist in their sabotage operations. You will recover one of these portable devices for analysis.</briefing>
+    <enter><say contact="1">Reliable reports indicate that the renegades may have left one of their black box devices in that building. Investigate.</say></enter>
+    <objective goal="1" text="Talk to Ismael Rutkowski" type="Talk" npc="1">
+      <talk>
+        <say npc="1">A black box, you say? Er, well yeah, I seen it. Actually, I sold it to a bunch of Exiles who happened by. They seemed to be in the market for mysterious devices. A lucrative coincidence for both parties involved, you might say.</say>
+        <say contact="1">This human appears to have disposed of the box carelessly. Interrogate him further--perhaps he can provide a clue as to its whereabouts.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the map disk from Ismael Rutkowski" type="Get" npc="1" item="6783" after="1">
+      <done>
+        <say npc="1">Well... I might know where you could find those Exiles. But what's in it for me? Hm. Tell you what--take this map disk. Some boys at that location have a certain statue of mine that I want back--let's just say that I'm a collector of fine merchandise. Bring me that statue and we'll talk some more about the black box. Your controller will know how to reach me.</say>
+        <say contact="1">I recommend that you deal with this... individual. If you try to obtain the box's location by force, he might give you false information. Upload that map disk to us at a hardline.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Upload the map disk at a hardline" type="Upload" item="6783" after="2">
+      <done><say contact="1">Receiving the map data now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I am uploading the new map data to your waypoint now. If that human's information was legitimate, you should find a certain "statue" at that location.</briefing>
+    <enter><say contact="1">That is the building indicated by the human's map data. Obtain the statue and leave the area with it.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Reinaldo Miller" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Hey hey, I'm just the janitor. I don't know nothin' about it.</say>
+        <say contact="1">What an oddly stubborn human.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the master key from Reinaldo Miller" type="Get" npc="2" item="6791" after="1">
+      <done>
+        <say npc="2">Okay, alright, hands off the threads. I'm just trying to make a living here. Anyway fine, here's the master key. I don't get paid enough to take a bullet for the company.</say>
+        <say contact="1">The door past those guards is locked. Perhaps someone in the area could be... persuaded to help you obtain entry.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill the guards" type="DefeatAll">
+      <done><say contact="1">That locked safe is a likely spot in which to find the statue. Perhaps one of those humans there could be of some... assistance.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Dallas Shimansky" type="Talk" npc="3" after="3">
+      <talk><say npc="3">Okay, okay! Take it easy, I thought you was someone else. The statue? Oh sure, sure, we got that in our safe. H-here, I'll open it for you.</say></talk>
+      <done>
+        <say contact="1">That human has unlocked the safe. The statue should be inside.</say>
+        <say npc="3">T-there you is! Just take the statue outta the safe--my compliments!</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Get the statue from the safe" type="Search" object="1" item="6815" after="4">
+      <done><say>That seems to be the statue that Ismael Rutkowski wants. Get out of there and I'll give you a waypoint to his current location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Your display interface has been updated with Ismael Rutkowski's location. Take the statue to him.</briefing>
+    <enter><say>Ismael Rutkowski should be in that building. Give him the statue and then get the whereabouts of the Exile gang he sold the black box to.</say></enter>
+    <objective goal="1" text="Talk to Ismael Rutkowski" type="Talk" npc="4">
+      <talk><say npc="4">Well, took ya long enough. Got the statue? If so, give it to Stephan Runnels over there.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the statue to Stephan Runnels" type="Give" npc="5" item="6815" after="1">
+      <talk><say npc="5">Yah, give it to me.</say></talk>
+      <done>
+        <say npc="5">'Tanks.</say>
+        <say contact="1">If this human holds true to his bargain, he should now provide you with the location of the Exile gang to whom he sold the black box.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the map from Ismael Rutkowski" type="Get" npc="4" item="6792" after="2">
+      <done>
+        <say npc="4">Well now, I can see that you know how to do business like a true professional. Here's a map with the location of the Exile gang you were interested in. Take it--you've earned it.</say>
+        <say contact="1">Good. Upload that map data to us at a hardline.</say>
+        <say npc="4">Pleasure doin' business with ya! Remember ta look up ol' Ismael Rutkowski if ya ever need any exotic goods or other choice rarities.</say>
+        <say npc="6">Stay in touch!</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the map at a hardline" type="Upload" item="6792" after="3">
+      <done><say contact="1">Receiving the map data now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I am updating your waypoint with the location of the Exile gang as provided by Ismael Rutkowski. Go there now.</briefing>
+    <enter><say contact="1">According to Ismael Rutkowski's data, the Exiles to whom he sold the black box should be in that building. Obtain the black box from them. You need not be... gentle.</say></enter>
+    <objective goal="1" text="Get the black box from the Lupine Scrapper" type="Loot" npc="8" item="6835">
+      <done><say contact="1">Ah, finally. Please upload the device at a nearby hardline.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the black box at a hardline" type="Upload" item="6835" after="1">
+      <done><say contact="1">Our routers are receiving the device data now...</say></done>
+    </objective>
+  </phase>
+  <finish>The activity that humans refer to as "business" is something of an enigma to us. However, you seem to have handled it nicely. Our thanks. Analysis of that black box should provide useful information.</finish>
+</mission>

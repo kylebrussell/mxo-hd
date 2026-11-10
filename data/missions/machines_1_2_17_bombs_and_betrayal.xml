@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bombs and Betrayal, Machine story mission 1.2.17. Source: research/missions/transcripts/Mach1-2-17.md (three
+     archive replays of [Machine Archive 1.2.17], given by [Archived]Agent Gray; Morpheus takes the bomb in the last
+     phase). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the description (the Status tab of run B), every briefing, Agent Gray, Operator and NPC
+     line, and the objective texts run B's Objectives panel showed ("Find evidence of bomb-making activity", "Lead
+     Agent X and Agent Y out of the area", "Don't let Agent X die", "Give the defunct Large Bomb to the Zion contact").
+     Retail drew the Exile's, the two Agents' and the six Zion guards' names from a random pool in each run; these are
+     run A's throughout (Connor Higley, Agent Brown, Agent West, Draw, Apollo, Locust, Rat, Fabre), put into the lines
+     and objectives that name them. Agent West says the lines run B's Agent Wong said and Agent Brown Agent Stewart's.
+     Ours: the other objective texts, the sites (unnamed buildings: Normal), the looks and the enemy counts. The
+     hideout's Exiles and the imposter Agents are the phases' generated hostiles; their Team chat taunts aren't said.
+     Item stand-ins: the notes about the bomb factory are Document_Location_Notes (6855), the Map Disk is Map_Disk
+     (6783), the bomb is Large_Bomb (6818). Rewards: the 357,760 experience and 94,500 information shown right after
+     run C completed (at level 27); the Invisibility Belt and Code Bit 6 seen in run B aren't given.
+     Gaps: the Exile hands over the bomb and the Map Disk as two Gets. Agent Gray's line on finding evidence of the
+     imposters in the bomb factory is said on arrival. In phase 3 the Agents are first talked to (which carries their
+     lines and starts the escort) and then led out; they follow into phases 4 and 5, where they aren't protected, and
+     their lines after the fight in phase 4 are said when its goals are done. Phase 4's far door is sealed by a
+     computer-controlled lock: the Operator's line about it is said on arrival and the lock is a Use of a Computer.
+     Phase 5's six guards are five here, to keep the floor to six NPCs: Quail ("Why are you working for the Machines?
+     Crazy.") is left out. Agent Gray's line on first seeing Morpheus is said on talking to him. -->
+<mission id="201217" title="Bombs and Betrayal" description="Information decoded from captured PDA devices has uncovered a plot by the imposter Agents to detonate a large bomb somewhere in the City, most likely at an important target such as a hardline junction or subway station. You will follow one of our leads in an attempt to foil this plot." plot="1"
+         order="1217" org="2" contact="Agent Gray" exp="357760" info="94500">
+  <npc id="1" handle="Connor Higley" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say>I can't talk with these imposter Agents around!</say>
+    <say after="4">I hope you can take those imposters out, 'cause if you don't they'll be coming back for me.</say>
+  </npc>
+  <npc id="2" handle="Agent Brown" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Agent West" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="4" handle="Morpheus" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say>You have my thanks. I must say, it is refreshing to see humans working hand-in-hand with the Machines. I'm too old to overcome a certain...prejudice against them, but perhaps a new generation... Perhaps you can humanize them, even if you can't trust them. After all, did not Neo implant some of his personality in their Agent Smith? Well, enough history; I wish you well. As for myself, I have some building and exploring to do. Perhaps we'll meet again some day.</say>
+  </npc>
+  <npc id="5" handle="Draw" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">
+    <say display="5">You certainly trashed a whole lot of those imposter Agents back there. I was rooting for you.</say>
+  </npc>
+  <npc id="6" handle="Apollo" type="FRIENDLY" at="5" rsi="ec020058" weapon="2564">
+    <say display="5">You've been cleared to go through... but if it was up to me, we wouldn't give clearance to anyone working for those damn Machines.</say>
+  </npc>
+  <npc id="7" handle="Locust" type="FRIENDLY" at="5" rsi="60010058" weapon="2564">
+    <say display="5">We know that bomb isn't armed, but that's fine--we don't mean to use it as a weapon, anyway.</say>
+  </npc>
+  <npc id="8" handle="Rat" type="FRIENDLY" at="5" rsi="c9020058" weapon="2564">
+    <say display="5">Don't you worry--we'll be out of here long before your Machine buddies can break through our local defenses.</say>
+  </npc>
+  <npc id="9" handle="Fabre" type="FRIENDLY" at="5" rsi="58010058" weapon="2564">
+    <say display="5">Morpheus doesn't talk to just anyone, so consider yourself lucky.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Information decoded from captured PDA devices has uncovered a plot by the imposter Agents to detonate a large bomb somewhere in the City, most likely at an important target such as a hardline junction or subway station. You will follow one of our leads in an attempt to foil this plot.</briefing>
+    <enter>
+      <say contact="1">The Exile gang at this location has had access to complex high explosives in the past and has recently been gathering materials that could be used to manufacture a substantial bomb. Additionally, surveillance cameras have recorded members of the gang conversing with imposter agents on several occasions. Investigate the gang's hideout and look for evidence of bomb-manufacturing activity that could lead us to the imposters.</say>
+      <say>There's an alarm system in this room... must be something important in here.</say>
+    </enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Find evidence of bomb-making activity" type="Search" object="1" item="6855">
+      <done><say contact="1">Ah, notes about a bomb manufacturing facility. That could be what we're looking for. Leave the area and upload the notes at a hardline, operative.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the notes at a hardline" type="Upload" item="6855" after="1">
+      <done><say contact="1">Receiving the uploaded notes now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>The notes describe an illicit bomb factory nearby. Proceed to the area and investigate.</briefing>
+    <enter>
+      <say>The Exiles' bomb factory should be in that building. Look for a large explosive device, and keep an eye out for any evidence linking it to the imposter Agents.</say>
+      <say contact="1">Ah. I think you have found evidence of imposter Agent involvement, operative.</say>
+    </enter>
+    <objective goal="1" text="Talk to Connor Higley" type="Talk" npc="1">
+      <talk>
+        <say npc="1">I can't talk with these imposter Agents around!</say>
+        <say contact="1">Hm. That Exile may know where the bomb is located. Destroy all of the imposters in the area, then question Connor Higley again.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Destroy all of the imposters in the area" type="DefeatAll">
+      <done><say contact="1">You have destroyed all of the imposter Agents in the area, operative. Now question Connor Higley about the bomb.</say></done>
+    </objective>
+    <objective goal="3" text="Get the Large Bomb from Connor Higley" type="Get" npc="1" item="6818" after="2">
+      <talk><say npc="1">Okay, now that there are no imposters around to overhear... They were forcing me to make a large bomb for them. I've got the bomb and a map disk showing where it was going to be delivered. You seem like you're an enemy of the imposters, so why don't you take them?</say></talk>
+    </objective>
+    <objective goal="4" text="Get the Map Disk from Connor Higley" type="Get" npc="1" item="6783" after="3">
+      <done><say>Good. Now upload that Map Disk at a hardline so that we can trace the bomb's delivery site.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the Map Disk at a hardline" type="Upload" item="6783" after="4">
+      <done><say contact="1">Receiving the map data now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>This appears to be a very large scale operation by the imposters. We will give you some additional combat assistance before we send you to the bomb delivery location. Report to the waypoint location.</briefing>
+    <enter><say contact="1">You will find two of our Agents here: Agent Brown and Agent West. They have been assigned to assist you. Lead them out of the area and await further orders.</say></enter>
+    <objective goal="1" text="Find Agent West" type="Talk" npc="3">
+      <talk><say npc="3">We do not usually take orders from... humans.</say></talk>
+    </objective>
+    <objective goal="2" text="Find Agent Brown" type="Talk" npc="2">
+      <talk><say npc="2">The imposters will be deleted.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Agent Brown and Agent West out of the area" type="Escort" npc="2,3" to="exit" />
+    <objective goal="4" text="Don't let Agent Brown die" type="Protect" npc="2" />
+    <objective goal="5" text="Don't let Agent West die" type="Protect" npc="3" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Good. I am uploading the bomb delivery address to you now. Take Agent Brown and Agent West there with you.</briefing>
+    <enter>
+      <say contact="1">Sensors indicate a very large number of imposter Agents inside that building. This is probably the group that was going to carry out the bombing. Eliminate all of them.</say>
+      <say>The far door is sealed by a computer-controlled electromagnetic lock. Maybe some of the computers in the area can control it.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate all of the imposter Agents" type="DefeatAll" />
+    <objective goal="2" text="Disable the electromagnetic door lock" type="Use" object="1">
+      <done><say>Looks like you disabled the electromagnetic door lock.</say></done>
+    </objective>
+    <complete>
+      <say contact="1">Impressive work, {player}. Now, leave the area and prepare for further orders. Something... interesting has come up.</say>
+      <say npc="3">Well fought, operative.</say>
+      <say npc="2">Perhaps this will convince the imposters that their current course is a foolish one.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We have received a coded transmission over a secure channel that was established for high-level communications with the Zion leadership at the time of the Truce. Whoever is behind the transmission requests that you take the imposter's bomb to them. This is not a significant security risk as Connor Higley did not complete or arm the bomb before he gave it to you. We are willing to risk the relatively useless bomb in order to find out who is using this channel, and what it is that they want. Proceed.</briefing>
+    <enter><say contact="1">The coded transmission directed you to deliver the bomb to operatives in that building. Viral jamming is preventing our sensors from scanning the building, so stay alert and find out who they are and what they want.</say></enter>
+    <objective goal="1" text="Talk to Morpheus" type="Talk" npc="4">
+      <talk>
+        <say contact="1">Well, well, well. Morpheus, at last. Watch yourself, human--his unpredictability makes him somewhat dangerous. And yet it is fascinating to watch his reactions to stimuli.</say>
+        <say npc="4">Your arrival is very welcome. I am Morpheus, once a Captain of Zion, and now...well, perhaps you could think of me as unemployed. Although you have allied yourself with the Machines--and I must warn you, you can only trust a machine so far--I believe that we share common...hopes for this world: peace in the City, for instance. Speaking of which, we monitored your battle against the imposter programs, and I must commend you on your victory. Do you have their bomb with you?</say>
+        <say contact="1">Give him the bomb, operative. He is hardly likely to use it against the City, as that would harm his precious humans. We are interested to see what he does with it.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the defunct Large Bomb to the Zion contact" type="Give" npc="4" item="6818" after="1">
+      <done>
+        <say npc="4">You would be wise to respect my experience, and give the imposters' bomb into my keeping. I promise you, I will not use it as a weapon. I have certain other uses for its component code.</say>
+        <say contact="1">Your mission is complete, operative. However, you may wish to goad Morpheus into talking further. Perhaps he will reveal more of his plans.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>That was an interesting conversation, to say the least. It is tempting to capture Morpheus now, but perhaps the time is not yet ripe. I think that he inadvertently revealed more about his plans than he meant to--we shall see. Thank you for your efforts today, {player}; you have impressed us.</finish>
+</mission>
