@@ -251,9 +251,9 @@ namespace hds
                     }
 
                     text += NavMesh.Locate(metr, sx, sy, sz, out NavLocation nav)
-                        ? ". Nav: region " + nav.region + " polygon " + nav.polygon + " floor " + (int)nav.floorY + " (record " +
+                        ? ". Nav: " + (nav.indoors ? "indoor" : "outdoor") + " region " + nav.region + " polygon " + nav.polygon + " floor " + (int)nav.floorY + " (record " +
                           BitConverter.ToString(nav.RecordBytes()).Replace("-", " ").ToLowerInvariant() + ")"
-                        : ". Nav: no outdoor polygon (indoors?)";
+                        : ". Nav: no polygon";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, text, "BROADCAST");
                 }
 

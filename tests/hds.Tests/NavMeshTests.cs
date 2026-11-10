@@ -2,7 +2,7 @@ using hds;
 
 namespace hds.Tests;
 
-/// <summary>The client's outdoor nav meshes (data/navmesh) against retail's own-view position records 03 02 00 01 1c.</summary>
+/// <summary>The client's nav meshes (data/navmesh) against retail's own-view position records 03 02 00 01 1c.</summary>
 public class NavMeshTests
 {
     private static void Load()
@@ -43,6 +43,7 @@ public class NavMeshTests
     {
         Load();
         Assert.True(NavMesh.Locate(district, x, y, z, out NavLocation at));
+        Assert.False(at.indoors);
         Assert.Equal(sector, at.sector);
         Assert.Equal(region, at.region);
         Assert.Equal(polygon, at.polygon);
@@ -50,15 +51,70 @@ public class NavMeshTests
     }
 
     [Theory]
-    // Retail had these in interior spaces (elevator floors, a lobby): no outdoor polygon may claim them
-    [InlineData(1, 60216.1, 2495.0, 32968.4)]  // 405 region 25
-    [InlineData(1, 60174.4, 95.0, 32944.5)]    // 405 region 31 (a lobby)
-    [InlineData(1, -63710.6, 495.0, 23043.8)]  // 759 region 92
-    [InlineData(2, -31074.2, -6505.0, -6660.0)] // 265 region 120
-    public void InsideABuildingIsNotOutdoors(ushort district, double x, double y, double z)
+    // Every interior record in research/packet-dumps: elevator rides (Downtown 265, Slums 759, 405, 1214), building floors,
+    // the tutorial (district 0, sectors 0 and 1)
+    [InlineData(0, 6700.0, 1595.0, -12300.0, 0, 40, 32)]
+    [InlineData(0, 7600.0, 3995.0, -16150.0, 0, 41, 82)]
+    [InlineData(0, 6950.0, 295.0, -11100.0, 0, 42, 38)]
+    [InlineData(0, 5757.9, -1105.0, -9750.9, 0, 43, 14)]
+    [InlineData(0, 5800.0, -1105.0, -13700.0, 0, 43, 116)]
+    [InlineData(0, 5100.0, 495.0, -16700.0, 0, 44, 58)]
+    [InlineData(0, -25300.0, 1595.0, 51700.0, 1, 40, 32)]
+    [InlineData(0, -24400.0, 3995.0, 47850.0, 1, 41, 82)]
+    [InlineData(0, -26582.2, -1105.0, 54096.4, 1, 43, 4)]
+    [InlineData(0, -25307.2, -1105.0, 54445.7, 1, 43, 88)]
+    [InlineData(0, -26200.0, -1105.0, 50300.0, 1, 43, 116)]
+    [InlineData(0, -26900.0, 495.0, 47300.0, 1, 44, 58)]
+    [InlineData(1, 45140.2, 2095.0, 6288.6, 35, 78, 4)]
+    [InlineData(1, 45092.1, 95.0, 6129.0, 35, 84, 9)]
+    [InlineData(3, 46846.1, 1695.0, -7563.5, 62, 79, 5)]
+    [InlineData(3, 44387.0, 2495.0, -3707.1, 62, 87, 4)]
+    [InlineData(3, 44320.5, -1105.0, -3840.1, 62, 96, 2)]
+    [InlineData(1, 23540.7, 1295.0, 15548.3, 209, 76, 16)]
+    [InlineData(1, 23828.3, 1295.0, 13984.9, 209, 82, 3)]
+    [InlineData(1, 3789.2, 1695.0, 13413.7, 258, 19, 3)]
+    [InlineData(1, 3797.6, 95.0, 13544.3, 258, 24, 4)]
+    [InlineData(2, -31074.2, -105.0, -6660.0, 265, 116, 6)]
+    [InlineData(2, -31145.0, -4905.0, -6884.1, 265, 119, 7)]
+    [InlineData(2, -31074.2, -6505.0, -6660.0, 265, 120, 6)]
+    [InlineData(2, -31074.2, -8105.0, -6660.0, 265, 121, 6)]
+    [InlineData(2, -31074.2, -9705.0, -6660.0, 265, 122, 6)]
+    [InlineData(2, -31074.2, -11305.0, -6660.0, 265, 123, 6)]
+    [InlineData(2, -31074.2, -12905.0, -6660.0, 265, 124, 6)]
+    [InlineData(2, -31074.2, -14505.0, -6660.0, 265, 125, 6)]
+    [InlineData(2, -31074.2, -16105.0, -6660.0, 265, 126, 6)]
+    [InlineData(2, -31074.2, -17705.0, -6660.0, 265, 127, 6)]
+    [InlineData(2, -31132.9, -17705.0, -6871.9, 265, 127, 7)]
+    [InlineData(2, -31074.2, -19305.0, -6660.0, 265, 128, 6)]
+    [InlineData(2, -31074.2, -20905.0, -6660.0, 265, 129, 6)]
+    [InlineData(2, -31074.2, -22505.0, -6660.0, 265, 130, 6)]
+    [InlineData(2, -31074.2, -24105.0, -6660.0, 265, 131, 6)]
+    [InlineData(2, -33577.9, 1095.0, -2557.4, 265, 133, 7)]
+    [InlineData(1, 10806.5, 2095.0, -8929.1, 328, 38, 9)]
+    [InlineData(1, 10682.4, 1695.0, -8798.3, 328, 39, 7)]
+    [InlineData(1, 10682.4, 95.0, -8798.3, 328, 44, 7)]
+    [InlineData(1, 60216.1, 2495.0, 32968.4, 405, 25, 7)]
+    [InlineData(1, 60174.4, 95.0, 32944.5, 405, 31, 5)]
+    [InlineData(1, -63710.6, 2095.0, 23043.8, 759, 87, 3)]
+    [InlineData(1, -63710.6, 1695.0, 23043.8, 759, 88, 3)]
+    [InlineData(1, -63710.6, 1295.0, 23043.8, 759, 89, 3)]
+    [InlineData(1, -63710.6, 895.0, 23043.8, 759, 90, 3)]
+    [InlineData(1, -63710.6, 495.0, 23043.8, 759, 92, 3)]
+    [InlineData(1, -63710.6, 95.0, 23043.8, 759, 93, 3)]
+    [InlineData(1, 18532.7, 1695.0, 3169.6, 915, 25, 54)]
+    [InlineData(1, 8307.3, 895.0, 13099.6, 1214, 45, 48)]
+    [InlineData(1, 9842.2, 895.0, 13694.8, 1214, 55, 9)]
+    [InlineData(1, 9830.9, 95.0, 13498.0, 1214, 57, 3)]
+    [InlineData(1, 46639.1, 2095.0, 22197.5, 1334, 92, 4)]
+    [InlineData(1, 59640.5, -105.0, 11482.5, 1349, 114, 3)]
+    public void IndoorsIsRetailsPolygon(ushort district, double x, double y, double z, int sector, int region, int polygon)
     {
         Load();
-        Assert.False(NavMesh.Locate(district, x, y, z, out _));
+        Assert.True(NavMesh.Locate(district, x, y, z, out NavLocation at));
+        Assert.True(at.indoors);
+        Assert.Equal(sector, at.sector);
+        Assert.Equal(region, at.region);
+        Assert.Equal(polygon, at.polygon);
     }
 
     [Fact]
