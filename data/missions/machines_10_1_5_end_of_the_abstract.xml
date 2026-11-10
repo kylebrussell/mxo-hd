@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- End of the Abstract, Machines story mission 10.1.5. Source: research/missions/transcripts/Mach10-1-5.md (crops of
+     the Mission window from a live run given by Agent Gray; the bar shows only the title). Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Carlyne, Agent Gray, Agent Pace,
+     Agent Green, Agent North and Cryptos. The player's name was blacked out where Carlyne and Gray said it; that is
+     {player}. Pace's italic "tesoro" and Cryptos's italic last line are plain text; Pace's "indispensible" is
+     retail's spelling and is kept. Besides the contact on the datalink, a field NPC named Agent Gray stands at the
+     meeting; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (none is described: Normal), the looks and the enemy counts. Halborn's override programs are
+     Machines. There are only three Agent looks, so Agent North shares Agent Green's.
+     Rewards: none were shown for this mission; these are Mach10-1-3's (363,000 experience and 63,000 information),
+     the only mission of sub-chapter 10.1 whose rewards were shown, used for all five.
+     Gaps: lines between 5:27:36 and 5:28:03, after Carlyne's first line, between 5:30:05 and 5:30:22 and between
+     5:33:07 and 5:43:28 may be missing, and one line after Cryptos's first (5:50:3x) wasn't captured. In the first
+     area Carlyne was clearing out the programs himself; we have no allies who fight, so the player clears them, and
+     the Operator's "Don't tell me they can't stand on their own two feet" and "I guess that explains it" are said on
+     nearing Carlyne. Agent Green's "The operative has arrived." is said on nearing him. The meeting's repeated lines
+     (Gray, North, Green) were said when talked to again and are used once each. Pace's talk doesn't wait for Gray's,
+     so her line when talked to again can't come too early. The third area was a three-way fight between the override
+     programs, the Merovingian's redpills and the player ("you're the last one standing"); a phase has one enemy
+     organisation, so the Merovingian's redpills are spawned and the programs aren't, and the Operator's line about the
+     Mervs, said during the fight, comes with "Congrats" when they are all down. In the last area the override signals
+     "fade" and the redpills there are Cryptos's; nobody is spawned to fight, and none of the Cypherites spoke, so only
+     Cryptos is placed. The Operator's "I had to ask..." is said on nearing him. -->
+<mission id="210105" title="End of the Abstract" description="Sweep up the last of Halborn's override programs, and hear the System's new priorities." plot="1"
+         order="10105" org="2" contact="Agent Gray" exp="363000" info="63000">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say after="2">Ah, well... What's past is past. Here's to the future, eh? I know that I'm leaving this place in very good hands. You shouldn't have to worry about me getting in your hair again.
+
+Take care, {player}.</say>
+  </npc>
+  <npc id="2" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say after="1">We anticipate that this announcement will be satisfactory to the majority of our operatives.</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="2">You...know that there is some information we cannot disclose, tesoro. Responsible control of information is indispensible to the security of the System. Even our own programs are told only what is necessary to ensure successful execution of their assigned tasks. It cannot be otherwise.</say>
+  </npc>
+  <npc id="4" handle="Agent Green" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Your contributions have been appreciated.</say>
+  </npc>
+  <npc id="5" handle="Agent North" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">The removal of the override programs means that we no longer need to rely on human operatives for vital security operations.</say>
+  </npc>
+  <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
+    <say after="1">There is no truth that does not rest ultimately upon what is evident to us in our own experience.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Although we warned him that his hovercraft was likely compromised as a result of the encounter he had with Zion and E Pluribus Neo hovercraft while under Veil's guidance, Halborn has been struck down by a terrorist armed with a program provided by Carlyne. The program appears to have been designed to disrupt systems in Halborn's ship, preventing him from making further broadcasts into the Matrix. As far as we can ascertain, the program fulfilled its function; we do not expect Halborn to reappear at any time in the near future.
+
+Nevertheless, override programs from his most recent bursts of violence remain in the System. You will eliminate one such group of programs now.</briefing>
+    <enter><say>Why is it we always pull cleanup duty? And we didn't even get to take him out ourselves. Talk about a rip-off...
+
+I'm reading accelerated signals in there; yes, indeedy.</say></enter>
+    <objective goal="1" text="Destroy the override programs" type="DefeatAll" />
+    <objective goal="2" text="Talk to Carlyne" type="Talk" npc="1">
+      <talk><say npc="1">Oh! My apologies. The last thing I want to do is put you out of work!
+
+I thought I'd better just do a little tidying up before I go, you see. I really did mean it when I told your employers that I'd be leaving the Matrix as soon as Halborn was gone.
+
+I know we ended up on opposite sides of the fence there for a little while, but I'd just like to say that I understand that you were doing what you felt you had to do, and I completely respect that. No hard feelings, I hope?</say></talk>
+      <done><say>...
+
+Huh.</say></done>
+    </objective>
+    <near npc="1" radius="1500">
+      <say>Hey! Don't tell me they can't stand on their own two feet without Halborn around.</say>
+    </near>
+    <near npc="1" radius="600">
+      <say>Oh. I guess that explains it.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I see. In that case, I believe a brief meeting would be appropriate. With both Carlyne and Halborn out of the simulation, our priorities will necessarily change.</briefing>
+    <enter><say>Hm... Maybe we all get raises?</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="2">
+      <talk><say npc="2">As you know, the stand-down order given to our Sentinels on the surface, and the reduced presence of our enforcement programs within the simulation, were measures taken in consideration of the threat posed by the override routines in Halborn's possession; as a result, it became impractical to conduct large-scale operations against terrorist forces. With the override routines removed, we will once again have our full operational strength available to combat terrorist threats.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Several new issues have come to light recently: Pluribus Neo took advantage of the absence of Sentinel patrols to rebuild and reinforce part of the old Zion base, and, most recently, the Merovingian has been disrupting some of our systems from within the simulation, possibly as part of a scheme involving Sentinel forces commanded by the General.
+
+Now that our programs are once again free to operate, we will be able to deal with these offenses as they deserve.</say></talk>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">The operative has arrived.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>It is still necessary to ensure that any lingering override programs are terminated. Continue your sweep, {player}.</briefing>
+    <enter><say>Gee, and it might be the last time we see these things... And here they said saying goodbye is hard.
+
+Got some overridden programs in there. Hang on... I'm also seeing some unknown redpill signals.</say></enter>
+    <objective goal="1" text="Kill all of the Merovingian's redpills" type="DefeatAll">
+      <done>
+        <say>Pace wasn't kidding when she said the Mervs have been making nuisances of themselves...</say>
+        <say>Congrats, you're the last one standing.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Hm. That trick will not be available to them for much longer. Proceed to the next location, {player}.</briefing>
+    <enter><say>Third time's the charm, right? Who could possibly butt in this ti--
+
+Wha-? Override signals in there are pulling a quick fade. I've got redpills...again. Can't people mind their own business?</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="6">
+      <talk><say npc="6">Some might like to...believe that the danger of override codes fades with the departure of the two wireframed men. I am not so sure... The overrides tapped into something fundamental within this world--how else do you explain their shocking effect? Surely this vulnerability will not vanish overnight.
+
+It has occurred to me that although the Cryptos you see before you is a fusion of Machine code with a human organism, the intruder's overrides had no effect on me; possibly the human factor protected the Machine. I mean to dedicate myself to formulating an algorithm that can resist the override programs, using my own operating code as a starting point.</say></talk>
+    </objective>
+    <near npc="6" radius="1500">
+      <say>I had to ask...</say>
+    </near>
+  </phase>
+  <finish>There are many avenues available to us, operative. See to it that you are fully prepared for whatever task may fall to you.</finish>
+</mission>

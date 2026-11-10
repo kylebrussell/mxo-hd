@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static, Machines story mission 10.2.5. Source: research/missions/transcripts/Mach10-2-5.md (a live run, not an
+     archive replay, given by Agent Gray; 23 screenshots, three during phases 1 to 3, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the Zion Gunman and Machine Captain
+     lines (Team chat), the names Mauser, Agent Miller, Anibal Cleveland, Machine Captain, Agent Gray, Agent Pace,
+     Agent Norris and Zion Gunman, and the objective texts "Search the area", "Disable the Phone" and "Talk to
+     Technician Cleveland" (seen in the Objectives window). Gray and Agent Pace called the player "Mr. Argento":
+     {player}. Besides the contact on the datalink, a field NPC named Agent Gray meets the player in the last phase; he
+     is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (phase 1 and the
+     operations room are offices, the others aren't described: Normal), the looks and the enemy counts. Phase 2's
+     hostiles were a gang (Crow Bars Blusterer) and Zionites (Zion Martial Arts Initiate); a phase has one enemy
+     organisation, so they are Zionites. Anibal Cleveland, a Machine technician, has a civilian look.
+     Rewards: the log shows 24,120 experience and 87,500 information for this mission (a near-cap player in a group), so
+     this has 10.1's 363,000 experience with the 87,500 information.
+     Gaps: "Search the area" in phase 1 was done at a Desk Phone on another restricted line; it is a Phone used by
+     standing beside it, and the Zionites there needn't be killed (retail's goals were done while they lived). The
+     proximity scan of Mauser ("Stay close to him") and its interference have no mechanic: after the phone, the player
+     reaches Mauser, who mustn't die, and Gray's abort comes with that; Mauser's second line is his line when talked to
+     again. The Operator's "Cut that line before he gets away!" is said on nearing Mauser. In the operations room the
+     Morpheus broadcast was a scripted event: the Operator's and Agent Miller's lines about it are said on nearing
+     Cleveland. The operations computer's alerts can't be shown and the computer isn't placed. A word may be missing in
+     Gray's "the possibility of a serious threat to the simulation emerges", read as shown. Agent Pace's two lines are
+     one, said when he is talked to. -->
+<mission id="210205" title="Static" description="Track Mauser's signal for a proximity scan to pinpoint his broadcast source." plot="1"
+         order="10205" org="2" contact="Agent Gray" exp="363000" info="87500">
+  <npc id="1" handle="Zion Gunman" type="HOSTILE" at="1" rsi="050100b4" weapon="2564">
+    <say>Goddammit! Can we get a trace?</say>
+  </npc>
+  <npc id="2" handle="Mauser" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="2">There are factors beyond your control.</say>
+  </npc>
+  <npc id="3" handle="Anibal Cleveland" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say after="1">Have to try to deal with this interference somehow... Re-establish contact...</say>
+  </npc>
+  <npc id="4" handle="Agent Miller" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">Security breach! Please take cover, Mr. Cleveland.</say>
+  </npc>
+  <npc id="5" handle="Machine Captain" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say display="5">Right through there, sir.</say>
+  </npc>
+  <npc id="6" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="1">You can be sure that we will be investigating these avenues with all due diligence.</say>
+  </npc>
+  <npc id="7" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Our opponents were able to benefit from the element of surprise. This will not work a second time. If Mauser attempts to re-enter the simulation, he will be detected, isolated, and terminated.
+
+If you are fortunate, you will be assigned to that duty, {player}. You would relish that distinction, yes?</say>
+  </npc>
+  <npc id="8" handle="Agent Norris" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say display="5">Nothing to report.</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>Despite increased storm activity caused by a Merovingian seeding operation, operative teams working on foot, and other data sources, have enabled us to narrow the search for Mauser's broadcast source to a relatively small area. A close range scan of his simulated self-image should provide us with the data we require to pinpoint his broadcast point.
+
+Proceed to the point where his signal has been detected in the Matrix, and search for the target. You are to maintain position for a proximity scan. You are not to damage him; his signal must remain intact until we have locked its source.</briefing>
+    <enter><say>Got a hint of his signal in there, but it looks to me like it's only residual... I'm picking up other signals, probably redpills.</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Search the area" type="Use" object="1">
+      <done><say>Another restricted line. Nothing's working on it... Maybe the Machines can pick up something.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>We have achieved a correlation between a signal reading and a suspected pirate phone terminal. Pursue the signal, {player}.</briefing>
+    <enter><say>Got something... Hold on. Yeah... Yeah, it's the signal! Get in there!</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="1" text="Disable the Phone" type="Use" object="1">
+      <done><say>That should do it. I'm starting the scan... Stay close to him.</say></done>
+    </objective>
+    <objective goal="2" text="Stay close to Mauser" type="Talk" npc="2" after="1">
+      <talk>
+        <say npc="2">So...</say>
+        <say contact="1">Operative, scan control reports a problem. Abort and proceed immediately to the operations room.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Do not let Mauser die" type="Protect" npc="2" />
+    <near npc="2" radius="1000">
+      <say>Cut that line before he gets away!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Hm. You've moved away, but the problem remains.
+
+Report to the operations room, operative. There has been interference with the scan of Mauser. We will need to run a diagnostic on your instantiation.</briefing>
+    <enter><say>Man, everything's checking out here. I don't think the problem was on our end.</say></enter>
+    <objective goal="1" text="Talk to Technician Cleveland" type="Talk" npc="3">
+      <talk><say npc="3">My word! This must have been the source of the interference. Yes... Broadcast from inside the simulation... We've seen this pattern before. It was thought to have been removed!
+
+The interference has climbed too rapidly... We're losing the target signal!</say></talk>
+      <done><say>Definitely not on our end!</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>What th-- Some kind of broadcast coming through! What... Is that what I think it is?</say>
+      <say npc="4">Security breach! Please take cover, Mr. Cleveland.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I am told now that the interference has ceased, but no sign remains of Mauser's signal. His broadcast location cannot be pinpointed.
+
+This merits further discussion. Please meet me at the location shown, operative.</briefing>
+    <enter><say>Well...this sucks.
+
+So wha-- Was that the Morpheus simulacrum, or what?</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+      <talk><say npc="6">Our data indicates that the source of the interference was a broadcast type identical to that used in the past by the Morpheus simulacrum.
+
+This is the first known connection between the simulacrum and Mauser. The simulacrum had been completely inactive within the simulation since the Oracle's termination. When we consider that Mauser is likely to have access to technology developed by Danielle Wright, and that the Morpheus simulacrum's activity prior to its disappearance was linked to that of the Oracle, and that all four of these parties have provided significant assistance to Zion in the past, the possibility of a serious threat to the simulation emerges.</say></talk>
+    </objective>
+  </phase>
+  <finish>Detection of threats is the first step in their elimination. Your efforts in this direction have continued to ensure the simulation's uninterrupted operation, {player}. The System appreciates your service.</finish>
+</mission>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Five Are Fallen, Machines story mission 10.2.4. Source: research/missions/transcripts/Mach10-2-4.md (a live run,
+     not an archive replay, given by Agent Gray; 30 screenshots, five during the mission, the rest of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the E Pluribus Neo Fighter line (Team
+     chat), the names Agent Pace, Agent Norris, Aubrey Casca, Ash and E Pluribus Neo Fighter, and the objective texts
+     "Eliminate the hostiles" and "Search the Computer" (seen in the Objectives window). Gray called the player
+     "Mr. Argento": {player}. The asterisks around "Prima" and "Secondo" are retail's italics.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the EPN playpen is
+     a Derelict, Casca's apartment a SlumApt, the others aren't described: Normal), the looks and the enemy counts.
+     The EPN cultists have no organisation and are Zion's here (Zion-aligned humans). The seller's data is a Data, as
+     retail's "You received Data."; the account with funds Gray provides is Money, given when phase 4 starts.
+     Rewards: the log shows 24,120 experience and 87,500 information for this mission (a near-cap player in a group), so
+     this has 10.1's 363,000 experience with the 87,500 information.
+     Gaps: the computers' readouts (the subsim control proxy's "Type mismatch", the black-market site's listings, cart
+     and purchase contract) can't be shown, so searching them just completes the goals; neither gave an item in
+     retail. In phase 2 Agent Pace presented "a recording" of an EPN account of Mauser's death; it isn't shown, and his
+     talk carries his account of it, with his second line as his line when talked to again. The lone EPN there
+     ("Gah! An EPN!") is one named hostile, said on nearing him; killing him is optional. Aubrey Casca pleads and is
+     killed: he waits to be attacked, finding him is optional, and the Operator's "Let's help ourselves to his
+     computer." comes with his death. Gray's "silencer" suggestion has no mechanic. Ash checks the account and points
+     at the terminal: here the money is given to him, then the computer gives the Data. One or two lines hidden between
+     screenshots in phases 1, 2 and 4 are left out, as is the line before Gray's closing words. -->
+<mission id="210204" title="Five Are Fallen" description="Find the site where E Pluribus Neo rescued Lock, through EPN systems and the black market." plot="1"
+         order="10204" org="2" contact="Agent Gray" exp="363000" info="87500">
+  <npc id="1" handle="E Pluribus Neo Fighter" type="HOSTILE" at="1" rsi="c9020058" weapon="2564">
+    <say>Oh crap! It was the Machines in our system!</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="1">No, we did not contradict the terrorist story of Sentinels at the site earlier, as there was no need. The less they know of our actual movements, the better, yes? The transfer of Lock to New Zion has in all likelihood helped to spread this misinformation among the Zionites.</say>
+  </npc>
+  <npc id="3" handle="Agent Norris" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">"Emotion" and "hope" are frequent excuses among humans for failure to observe facts.</say>
+  </npc>
+  <npc id="4" handle="E Pluribus Neo Fighter" type="HOSTILE" at="2" rsi="050100b4" weapon="2564" />
+  <npc id="5" handle="Aubrey Casca" type="HOSTILE" attacksOnSight="0" at="3" rsi="35000024" weapon="0" />
+  <npc id="6" handle="Ash" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say after="1">What I tell you, hm?</say>
+    <say after="2">Watch out for Babylon, Iya.</say>
+  </npc>
+  <phase site="Derelict" enemy="Zion" enemies="4">
+    <briefing>Operative, we were on the verge of taking over E Pluribus Neo scanning systems around Zion's old city which, in conjunction with our own scans, would have allowed us to triangulate the suspected Mauser's transmission source quickly, but the circumvented EPN security systems inexplicably reactivated, using a variant of their previous algorithm, which resisted all attempts to break it.
+
+While this endeavor on the surface of the planet has not been successful, it is possible that we can penetrate those scanning systems from EPN computers within the Matrix. Such computers have been isolated at the location you see indicated.</briefing>
+    <enter><say>Since this is supposed to be an EPN playpen, those signals I'm reading in there are probably the cultists and their computers.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>What the hey? Mismatch? It's their own damn system! Did we hijack EPN's reject squad?
+
+Gonna have to talk to Gray about this...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>That issue is beyond my capacity to handle. It has been referred to the appropriate parties.
+
+Hm... There is a related problem that may be more appropriate to our particular capabilities, {player}. I will have Agent Pace present the pertinent data to you.</briefing>
+    <enter><say>Some of our programs in there...and no EPN, at least.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">That is a recording of a typical Pluribus Neo account of Mauser's demise. You have noted the obvious shortcomings in the story, yes? *Prima*, Lock did not see the Sentinels himself, and we certainly have no record of our Sentinels killing Mauser. *Secondo*, Lock did not actually claim to see Mauser killed.
+
+Later accounts by EPN described the building in which they found Lock as roughly above Zion, with Sentinel claw marks around an opening torn in the outer wall; but they found no Sentinel wreckage, and only blood and fingerprints--no body--of Mauser: curious details and omissions. You see that it has become important for us to inspect this building for ourselves.</say></talk>
+    </objective>
+    <objective goal="2" text="Kill the E Pluribus Neo Fighter" type="Defeat" npc="4" optional="1" />
+    <near npc="4" radius="1000">
+      <say>Gah! An EPN!</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>As accessing data from Pluribus Neo systems has proven momentarily...inefficient, we will seek data on their recorded location of Lock's rescue point from another source.
+
+In this case, the information in question--the coordinates of a derelict and wrecked facility on the Earth's surface--although possibly a topic of some interest to pro-Zionite humans, would likely not have been marked as highly classified. It is almost certain to have made its way into the realm of black-market information dealers. This is an area that we monitor but do not usually interfere with directly, as, left undisturbed, it constitutes a useful source of information on illicit activities.
+
+For this reason, we will have you access this loose network via a third party.</briefing>
+    <enter><say>Aubrey Casca is an addict of the net's back channels. He's spent a fortune on access to just about every site your mom would have told you not to go to, if she'd known about them. The Machines have enough cyber crime evidence on him to put him away for life, but it looks like they've opted for a solution that won't place another burden on the simulation's prison system.
+
+Uh... Oh, yeah. Gray suggested to me that we use a silencer for this, just in case Casca has nosy neighbors.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find Aubrey Casca" type="Talk" npc="5" optional="1">
+      <talk><say npc="5">Aah! No no-- I didn't... Yes, all right, I did claim mail fraud on the newsgroup just to throw a smokescreen up in front of the credit fraud...but...look... I'll-- I'll make it up to you! Do you need another account? I've got dozens! Clean records, great ratings--everything you could want!</say></talk>
+    </objective>
+    <objective goal="2" text="Kill Aubrey Casca" type="Defeat" npc="5">
+      <done><say>Let's help ourselves to his computer.</say></done>
+    </objective>
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0" after="2">
+      <done><say>Ew. I feel so dirty...
+
+If that seller was legit...relatively speaking...then all we gotta do is make the pickup.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The seller insisted on a face-to-face transaction. You will be provided with an account containing the necessary funds.</briefing>
+    <enter><say>You're supposed to meet the seller's courier in there. As far as they know, you're Casca's courier. Should be an uneventful hand-off; never know with these types though.
+
+I'm...not getting much in there. I think they've got scan suppression running. Figures.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Give the money to Ash" type="Give" npc="6" item="6790">
+      <talk><say npc="6">I'll just be takin' a minute to check that.
+
+... All right, mon. I tink we can do business. Check the computa there.</say></talk>
+      <done><say>I just got an activity reading from the terminal in there.</say></done>
+    </objective>
+    <objective goal="2" text="Get the data from the computer" type="Search" object="1" item="6787" after="1">
+      <done><say>Looks like our cash was good. No problem found with that data. Get it to a hardline and we'll see what the Machines make of it.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <finish>The data identified, via images and positional data, the building in which Lock was found as the same lab where, previously, the renegade scientist Danielle Wright was terminated by our Sentinels. The terrorists had not known this lab's location, thus, it is unlikely that this coincidence is a fabrication.
+
+It could explain some of Mauser's demonstrated capabilities. Wright specialized in biological interfaces and broadcast technology. We had thought all data and equipment in the lab destroyed at the time of Wright's termination, but it is possible that Mauser, who records indicate was a highly skilled technician, could have located or salvaged some of her technology.
+
+Thank you, {player}. Based on this information, we are modifying our search for his broadcast source to cover the area between the lab and the general area to which his signal was traced previously.</finish>
+</mission>

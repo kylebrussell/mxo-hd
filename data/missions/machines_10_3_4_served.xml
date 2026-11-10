@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Served, Machines story mission 10.3.4. Source: research/missions/transcripts/Mach10-3-4.md (the archive replay of
+     [Machine Archive 10.3.4], given by Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Adam Hirsch, Agent
+     Pace, Agent Gray, Agent Johns, Lanny Broman, Marcellus Escarin, Brenda Utley, Kalt, Horacio Jurney and Corporate
+     Security Sergeant. Gray and Pace called the player "Mr. Argento"; that is {player}. Utley's "Mr. ..." trails off in
+     retail (she doesn't know the name) and is kept. Besides the contact on the datalink, a field NPC named Agent Gray
+     hands over the subpoena in the second phase; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (all meetings and Pendhurst-Amaranth's offices: Office), the looks and the enemy count. The
+     Zionites in Pendhurst-Amaranth's office are enemy Zion. Kalt has the Exile look Kalt has in 3.3.2. The subpoena
+     (no inventory name was shown) is Documents (6794).
+     Rewards: 275,000 experience and 91,000 information, shown right after this mission completed.
+     Gaps: no in-play screenshots were taken, so the goals are read from the log. The Operator's "Mm-hm. Doing fine." on
+     reaching the field Gray seems to answer something unseen; it is said on arrival as it was logged. Gray's longer
+     second speech in the field is his line when talked to again, and his next datalink entry, which came without a
+     "Goals ... complete" line, is the third phase's briefing. Lanny Broman's "Y-you can't go in there" and the
+     Operator's "Hey! Zionites!" are said on nearing Lanny; the talk with Marcellus Escarin is open from the start,
+     and the Operator's "Now, where the heck is Utley?" comes when the Zionites are dead. Kalt's "What the devil?" is
+     said on nearing him; his later "She might have warned me about this.", Horacio Jurney's and the Corporate Security
+     Sergeant's lines (the Sergeant's was seen only in Team chat) are their lines when talked to. -->
+<mission id="210304" title="Served" description="Take control of the dispute between Wright Research and Pendhurst-Amaranth by serving a subpoena." plot="1"
+         order="10304" org="2" contact="Agent Gray" exp="275000" info="91000">
+  <npc id="1" handle="Adam Hirsch" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">Hm!</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say after="2">Wright is adamant in insisting on going public with information about Mauser and Zion if the case against Pendhurst-Amaranth is not brought to a satisfactory conclusion. We do not know exactly what information they have, which makes it difficult to deflect or anticipate their claims. Considering their founder's history, we cannot take this lightly.</say>
+  </npc>
+  <npc id="3" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say after="1">You may have heard of a recent scandal making the rounds in the city's lesser periodicals: rumors of improprieties at Wright Research, even implicating Pendhurst-Amaranth. It is short on facts and high on speculation: perfect fodder for the public's already primed interest in the current corporate feud. The timing is more than suspect, and there are indications that the Merovingian was involved in the scandal's spread.
+
+I should also inform you that we have sources indicating the Merovingian notified the Ouroboros Corporation of our...interest in that corporation's affairs. This may have had something to do with the override program you encountered at their facility last week.</say>
+  </npc>
+  <npc id="4" handle="Agent Johns" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Don't think this makes you an authority on the law. Let others handle that. We have something better than the law: we have orders.</say>
+  </npc>
+  <npc id="5" handle="Lanny Broman" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="6" handle="Marcellus Escarin" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say after="2">I hope they don't revoke my mail privileges because of this. Maybe if I flag it as low-priority...</say>
+  </npc>
+  <npc id="7" handle="Brenda Utley" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="1">Pendhurst-Amaranth and its employees follow the laws of this country, Mr. ...</say>
+  </npc>
+  <npc id="8" handle="Kalt" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say display="5">Hmph. She might have warned me about this.</say>
+  </npc>
+  <npc id="9" handle="Horacio Jurney" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">Oh! No, thank you.</say>
+  </npc>
+  <npc id="10" handle="Corporate Security Sergeant" type="FRIENDLY" at="4" rsi="35000024" weapon="2568">
+    <say display="5">I got no comment.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Operative, Cypherite elimination of the Ouroboros security chief charged with warning the Oligarchs has taken some stress off the security situation there. This gives us a moment to deal with other pressing matters that have been somewhat neglected. Among these is the ongoing legal quarrel between Wright Research and Pendhurst-Amaranth. Wright vigorously alleges theft of corporate data by Mauser at Pendhurst-Amaranth's instigation. The high profile of both of these companies is causing too much attention to be drawn to matters that are not safe for the public.
+
+In short, it is time for us to take control of the dispute. Please join Agent Pace in meeting with a Wright Research representative, Dr. Adam Hirsch.</briefing>
+    <enter><say>The Signorina's in there with Wright's representative. What I really wanna know is: what's Mauser supposed to have stolen from Wright Research?</say></enter>
+    <objective goal="1" text="Talk to Adam Hirsch" type="Talk" npc="1">
+      <talk><say npc="1">We can provide footage of Mauser trespassing in our facility, and we possess information demonstrating that Mauser has direct ties to the Zion mercenary group. It is a matter of public record that Pendhurst-Amaranth has employed Zion to do their dirty work before, and we know that they've been in heavy contact with Zion in recent weeks. The connection is clear. We have a case, and we will pursue it.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="2" after="1">
+      <talk><say npc="2">{player}, I am convinced that Wright Research has enough evidence to initiate legal proceedings against Pendhurst-Amaranth. Because the case involves a highly dangerous terrorist group, it must be handled with the greatest possible degree of federal oversight. Agent Gray must be notified immediately.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>The Wright attitude, and the involvement of other dangerous parties, leave us little alternative in our course of action. I have an important document for you to deliver, {player}. Please come see me.</briefing>
+    <enter><say>Mm-hm. Doing fine.</say></enter>
+    <objective goal="1" text="Get the subpoena from Agent Gray" type="Get" npc="3" item="6794">
+      <talk><say npc="3">I have here a subpoena, which you are to deliver to Pendhurst-Amaranth's chairwoman, Brenda Utley. It calls her to a federal hearing to answer questions pertaining to Pendhurst-Amaranth's involvement with Zion, and the alleged theft of property from Wright Research. You must deliver it to her hands personally.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>We do not claim, as Wright Research does, to possess complete data on Mauser's motives and actions within the Matrix, but since he was last detected over a month ago, Zionite intrusions in Wright Research and Ouroboros, and contact with Pendhurst-Amaranth, have been obvious. Wright Research's suit will be a useful tool for curtailing Pendhurst-Amaranth's support of Zion's activities, which appear to be based around seeking information on Mauser.</briefing>
+    <enter><say>Mauser, Mauser, Mauser...
+
+Pendhurst-Amaranth's Ms. Utley is supposed to be in that office. I'm reading a bunch of signals in there. Hm... I guess those are probably P-A security.</say></enter>
+    <objective goal="1" text="Eliminate the Zionites" type="DefeatAll">
+      <done><say>Now, where the heck is Utley?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Marcellus Escarin" type="Talk" npc="6">
+      <talk><say npc="6">S-she isn't here! I don't know... I...uh... I could send out a company-wide email?</say></talk>
+      <done><say>Unless she's planning on going underground, she can't be that hard to track down.
+
+Would be nice if she did, though; then we'd really have an excuse for kicking P-A to the curb. Dunno what made them think helping Zion was sound business strategy, anyway...</say></done>
+    </objective>
+    <near npc="5" radius="600">
+      <say npc="5">Y-you can't go in there--</say>
+      <say>Hey! Zionites!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Pendhurst-Amaranth has been so kind as to contact us and provide Ms. Utley's location.
+
+Hm. Catching her unprepared might have had a useful psychological impact.</briefing>
+    <enter><say>Couldn't they just squirt some kind of happy juice into her pod if they really wanted a useful psychological impact? Assuming she is in a pod. Maybe we should ask Gray.
+
+Eh... Maybe Pace.</say></enter>
+    <objective goal="1" text="Give the subpoena to Brenda Utley" type="Give" npc="7" item="6794">
+      <talk><say npc="7">"By authority of the federal government you are hereby commanded to appear..."
+
+Mm-hm...
+
+Well. That seems to be in order.</say></talk>
+      <done><say>... So there.</say></done>
+    </objective>
+    <near npc="8" radius="600">
+      <say npc="8">What the devil--?</say>
+    </near>
+  </phase>
+  <finish>Thank you, operative, that will be sufficient. I think we can count on Ms. Utley to keep her court date.</finish>
+</mission>

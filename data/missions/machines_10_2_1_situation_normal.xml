@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Situation Normal, Machines story mission 10.2.1. Source: research/missions/transcripts/Mach10-2-1.md (a live run,
+     not an archive replay, given by Agent Gray; 19 screenshots: six NPC and computer popups and the log). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Zion Pathogenist, Evan
+     Quicksey, Agent Johns, Agent Pace, Lyndon Plunkett, Shelby Aldridge and Niobe. Gray called the player "Mr. Argento",
+     Niobe "Evol" and Agent Pace "Brando" (the player's first name, as Gray's "Argento" is the surname): all are {player}.
+     The asterisks around "Ciao, agente.", "Si" and "lot" are retail's italics.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (the extraction site is a RedPillExtraction, the others aren't described: Normal), the looks and
+     the enemy counts. The phase 2 hostiles are ours: the log there has a gap of three minutes, and an extraction site
+     would be guarded.
+     Rewards: not shown for this mission. The other missions of 10.2 show 87,500 information but only 24,000 to 33,000
+     experience (a near-cap player in a group), so this has 10.1's 363,000 experience and 87,500 information.
+     Gaps: the Zion Pathogenist, the spy who tipped the Machines off, asks to be killed to make it look good; he is a
+     hostile who waits to be attacked, found (optional) and then killed. The two computer readouts ("I/O overflow in
+     block B3710C02" and "Disabling firewall... System shutdown initiated") and the tracking computer's vitals and
+     "Subject Quicksey, Evan" readout can't be shown, so using the computers just completes the goals. Retail may have
+     had more than one computer in phase 1; here there is one. Gray's phase 3 briefing may continue past the captured
+     part, and an Operator line at the end of phase 3 is hidden (only "Ce" is readable); it is left out. Lyndon Plunkett
+     and Shelby Aldridge, the programs Agent Pace put at the player's disposal, can't fight beside the player: they
+     follow the player out of phase 3 and into the last site. Niobe ended retail's last phase by speaking to the player;
+     here she is a friendly NPC to talk to among the Zionites, and the Zionites needn't be killed (retail's goals were
+     done 30 seconds after arriving). -->
+<mission id="210201" title="Situation Normal" description="Use old intelligence to strike at Zion's operations in the city." plot="1"
+         order="10201" org="2" contact="Agent Gray" exp="363000" info="87500">
+  <npc id="1" handle="Zion Pathogenist" type="HOSTILE" attacksOnSight="0" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Evan Quicksey" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="2">Light... There's a pathway...</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say after="1">*Si*, {player}, I am very glad that the override routines are gone. Now we can operate most efficiently, yes?</say>
+  </npc>
+  <npc id="4" handle="Agent Johns" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say display="5">The System is far more than an assembly of programs.</say>
+  </npc>
+  <npc id="5" handle="Lyndon Plunkett" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="6" handle="Shelby Aldridge" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="7" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Operative, now that Halborn and Carlyne are no longer within the simulation, we are free to employ our programs without risk of losing them to programmatic overrides. Thus, we can move forward with anti-terrorist operations.
+
+One small benefit of our prolonged downtime is that some Zionites appear to have grown lax in their security, possibly having been under the mistaken impression that because we were not actively pursuing them, we had also stepped down our intelligence-gathering functions. This was not the case, and the time has come to utilize information we have had for some time now.
+
+The location you see was disclosed to us by a spy months ago. Remove the Zionites and disable their computer systems.</briefing>
+    <enter><say>Redpills and computer systems in there. Looks like the old intel is still good.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to the Zion Pathogenist" type="Talk" npc="1" optional="1">
+      <talk><say npc="1">Hey, I'm the one who tipped you guys off. Better take me out too, just to make it look good. Just make it pretty quick, right?</say></talk>
+    </objective>
+    <objective goal="2" text="Kill the Zion Pathogenist" type="Defeat" npc="1" />
+    <objective goal="3" text="Remove the Zionites" type="DefeatAll" />
+    <objective goal="4" text="Disable the computer systems" type="Use" object="1" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="3">
+    <briefing>Good. Information at that site has revealed the presence of one of the locations where they bolster their numbers by extracting other humans from the simulation.</briefing>
+    <enter><say>Looks like we're on a roll. Over to you.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Find the bluepill being extracted" type="Talk" npc="2">
+      <talk><say npc="2">What... What's happening? Your face... It's glowing... So beautiful...</say></talk>
+      <done><say>Hm, that means their ship should be closing in on that guy's pod to pick him up. Maybe we can get Sentinels on that.</say></done>
+    </objective>
+    <objective goal="2" text="Trace Evan Quicksey's signal at the computer" type="Use" object="1" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Sources indicate a larger than usual Zion group at the next location.</briefing>
+    <enter><say>Just like old times...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">*Ciao, agente.* Lyndon Plunkett and Shelby Aldridge are at your disposal.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Lyndon Plunkett and Shelby Aldridge out of the area" type="Escort" npc="5,6" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Proceed to the target, operative.</briefing>
+    <enter><say>Right, I've got more redpill signals in there.
+
+Uh...a *lot* more.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="7">
+      <talk><say npc="7">Hi. {player}... Mm-hm. I thought I'd let you know that we're not going to make this easy for you--just in case you had the wrong impression.
+
+You'll need to bring more programs next time.</say></talk>
+      <done><say>Yeah... I think we should probably just go ahead and report this.</say></done>
+    </objective>
+  </phase>
+  <finish>Your report has been received. Thank you, {player}.</finish>
+</mission>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Out of Touch, Machines story mission 10.3.5. Source: research/missions/transcripts/Mach10-3-5.md (the archive
+     replay of [Machine Archive 10.3.5], given by Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line (the intercepted broadcast is
+     part of Gray's briefing), and the names Ouroboros Security, Merovingian Selective Phage, Merovingian Network
+     Hacker, Merovingian Guardian Patcher and Seraph. Gray called the player "Mr. Argento"; that is {player}.
+     Ours: the description (the Summary tab was never opened), every objective text (retail's Objectives tab only showed
+     "Leave the area now!"), the sites (the security branch office and the sub-network's facilities: Office; the
+     facility of the broadcast isn't described: Normal), the looks and the enemy counts. The Ouroboros security guards
+     are corporate security with no organisation; as in 1.2.16, where the city's security force is Machines, the first
+     phase's guards are enemy Machines. The Mervs' code hacks are enemy Merovingian. The guard's headset had no name in
+     the log (no "You received" line), so it is the stand-in Device (6820) and the objective just says "the headset".
+     Rewards: 275,000 experience and 91,000 information, shown right after this mission completed. The "Sea Green
+     Razorgirl Motorcycle Suit" received just before them may have been a reward too; it isn't given.
+     Gaps: the headset was taken from "some Ouro security dweeb"; here it is looted from one named Ouroboros Security
+     guard among the phase's hostiles. The dead guards of the second site (Hudson among them) aren't placed. In the
+     third phase the Ouroboros guards fired on the player alongside the Mervs ("override friendly fire"); a phase has
+     one enemy organisation, so the Mervs are its generated hostiles and one Ouroboros Security guard is a named
+     hostile, and the Operator's "Gotta love override friendly fire" is said on nearing him. The Merovingian programs'
+     "You're not special enough." is given to one named program in each Merv phase. In the last phase the guard calling
+     "Control, do you copy?!" is a friendly bystander; the Operator's "Seraph?!" is said on nearing Seraph, and his
+     second line is his line when talked to again. The office computer ("The message has timed out. Check your network
+     connection.") showed only a Details popup with no goal listed; it isn't placed. -->
+<mission id="210305" title="Out of Touch" description="Follow the Merovingian through the Ouroboros network by listening in on its security reports." plot="1"
+         order="10305" org="2" contact="Agent Gray" exp="275000" info="91000">
+  <npc id="1" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="38000024" weapon="2568">
+    <say>Tastee Wheat, hot and good, Tastee Wheat, you know you sh-OOT!</say>
+  </npc>
+  <npc id="2" handle="Merovingian Selective Phage" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568">
+    <say>You're not special enough.</say>
+  </npc>
+  <npc id="3" handle="Merovingian Network Hacker" type="HOSTILE" at="3" rsi="c6020058" weapon="2568">
+    <say>You're not special enough.</say>
+  </npc>
+  <npc id="4" handle="Ouroboros Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" />
+  <npc id="5" handle="Merovingian Guardian Patcher" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568">
+    <say>You're not special enough.</say>
+  </npc>
+  <npc id="6" handle="Ouroboros Security" type="FRIENDLY" at="4" rsi="38000024" weapon="2568">
+    <say display="5">Control, do you copy?!</say>
+  </npc>
+  <npc id="7" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2564">
+    <say after="1">Unwitting agents are often the most reliable.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>The Merovingian has persisted in his attacks on the Ouroboros network. We believe that we have taken what precautions we can to prevent the Oligarchs from being called into the Matrix by Ouroboros security, but now sources close to the Merovingian report that the Frenchman thinks he is closing in on data of a new and unknown nature in a sub-network connected only by indirect reference to the main Ouroboros complex.
+
+Override programs have already been found throughout the Ouroboros system. There is no telling what new danger the code the Merovingian seeks could have for the simulation. He must be stopped.</briefing>
+    <enter><say>What you've got there is your standard Ouroboros security branch office. We don't have whatever info the Merv has on where to go inside the network he found, so we're going to have to play tag-along by listening in on Ouroboros security reports. That means we have to hack into one of their headsets, and the best place to find one is on the dome of some Ouro security dweeb.</say></enter>
+    <objective goal="1" text="Get the headset from Ouroboros Security" type="Loot" npc="1" item="6820">
+      <done><say>Okay, except for the earwax and drool, I can work with that. Just gimme a minute or so...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I believe we have picked up Ouroboros security reports of a Merovingian intrusion. Listen to this:
+
+"They killed Hudson with knives. There's blood everywhere! We couldn't hit squat. I don't know! It's like freakin' ninjas, man! There's nothing on the camerAAAAA--"
+
+That broadcast came from the Ouroboros facility you see indicated on your HUD.</briefing>
+    <enter><say>Got some signals in there. Code hacks... That's gotta be the Mervs.</say></enter>
+    <objective goal="1" text="Eliminate the Merovingian intruders" type="DefeatAll">
+      <done><say>Got 'em! Doesn't help those guards much, but hey.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="5">
+    <briefing>Damage to Ouroboros security personnel is not our object, but Ouroboros' reluctance to accept our assistance has been a primary factor in the persistence of the Merovingian incursion. Concentrate on the main objective.</briefing>
+    <enter><say>The Mervs must think they're really on to something; they're going all-out on this.</say></enter>
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>I'd almost think these Ouroboros guys don't want to be friends anymore.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>Great. Gotta love override "friendly" fire.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="3">
+    <briefing>No, operative, we do not know what the Merovingian hopes to find. That entire sub-network is unfamiliar to us. Based on what you have encountered so far, we could speculate that it has something to do with override programs.</briefing>
+    <enter><say>Uh-oh, the Ouroboros security channel just went dead. Probably not a good sign, and it's gonna make it hard to track the Merv in there... I've got some active signals on my monitor, at least.</say></enter>
+    <objective goal="1" text="Talk to Seraph" type="Talk" npc="7">
+      <talk><say npc="7">Your path...ends here. If they find what they seek, you are not to blame.</say></talk>
+      <done><say>Wuh... Did he have something to do with their security channel going down, or is he just trying to make us feel better?</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say>Seraph?!</say>
+    </near>
+  </phase>
+  <finish>I have no further targets for you, {player}; with the Ouroboros security communication system offline, we can obtain no immediate information on the whereabouts of any remaining Merovingian attackers.
+
+That was likely the purpose behind the shutdown of the communication channel, but it is impossible to determine from your report whether it was done by Ouroboros, the Merovingian, or Seraph; the latter's sudden appearance there strongly suggests that he has a more than passing familiarity with the situation, even though we had not detected any sign of his presence in the Matrix since the Oracle was killed, months ago. The Morpheus simulacrum returned recently at a similarly inopportune juncture.</finish>
+</mission>

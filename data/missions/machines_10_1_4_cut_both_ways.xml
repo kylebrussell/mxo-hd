@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cut Both Ways, Machines story mission 10.1.4. Source: research/missions/transcripts/Mach10-1-4.md (crops of the
+     Mission window from a live run given by Agent Gray; the bar shows only the title). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, and the names Halborn, Agent Pace and Bilkis.
+     The player's name was blacked out where Pace and Gray said it; that is {player}. The italics in Pace's "Ciao,
+     tesoro." and "Fortunatamente" and the Operator's "still" and "so" are plain text.
+     Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was never
+     opened), the sites (none is described beyond "a Cypherite installation": Normal), the looks and the enemy counts.
+     Halborn's override programs are Machines. Bilkis is a Cypherite redpill whose sex the log doesn't give; she has a
+     female look (the name is a woman's). The other Cypherites at the installation said nothing and aren't placed.
+     Rewards: none were shown for this mission; these are Mach10-1-3's (363,000 experience and 63,000 information),
+     the only mission of sub-chapter 10.1 whose rewards were shown, used for all five.
+     Gaps: lines between 10:42:25 and 10:58:34 and between 11:01:36 and 11:09:03 may be missing (they look like
+     fights). The first area's 16 minutes before Halborn spoke suggest a fight, so Halborn's talk opens once his
+     programs are down. The Operator's "Huh? No guards?" and "I still don't see any sign of Halborn" are said on
+     nearing Pace. The joins in Pace's "a separate target for his anger" and the Operator's "except for Halborn" read
+     whole and are used as such. Gray's "You are permitted to assist the Cypherites" is said when Bilkis is talked to,
+     as in the log; assisting them is clearing the programs while Bilkis must not die (we have no allies who fight).
+     Bilkis's second line came during the last fight; she is placed again there and says it when talked to. In the
+     last area Halborn showed as hostile (red), yet Gray forbade engaging him; he is a friendly NPC here, talked to
+     once his programs are down, and his "It's all just a damn conspiracy" (said when he was talked to again) comes
+     when that talk is done. -->
+<mission id="210104" title="Cut Both Ways" description="Answer Halborn's latest disruptions, and contain his override programs when he turns on the Cypherites." plot="1"
+         order="10104" org="2" contact="Agent Gray" exp="363000" info="63000">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="2">Next time I see Veil's ship, she'll get a shiny new missile cluster to play with...</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="1">Fortunatamente, a separate target for his anger over this incident has already been arranged.</say>
+  </npc>
+  <npc id="3" handle="Bilkis" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Bilkis" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say>Huh! Maybe they had a deal with Veil--ever think about that? Maybe that's why you're here right now.
+
+Anyway, you better just follow your orders. It's what you're good at.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Halborn, following the Cypherites toward what they told him was Carlyne's ship, encountered a large fleet of Zion and EPN hovercraft attempting to conduct a transfer of Zion's ex-commander, Jason Lock, to New Zion.
+
+While the outcome of this battle is still unclear, what is clear is that Halborn did not locate Carlyne's ship. Since that time, he has created several disruptions within the simulation, of the type he has used in the past as means to attract our attention. You will investigate, and find out what he wants.</briefing>
+    <enter><say>Halborn sure likes to do things the hard way... I suppose he thinks throwing a tantrum helps get his message across.
+
+I sure as hell want to know more about that hovercraft encounter. With all those Cyphs there, it must've turned into a battle. Hm... Maybe we can check with one of the liaison officers later for an update.
+
+Okay, override codes galore in there. Might be time to do a little hand-holding.</say></enter>
+    <objective goal="1" text="Destroy the override programs" type="DefeatAll" />
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="1" after="1">
+      <talk><say npc="1">Your Cypherite pals almost got me killed! I don't think they knew squat about Carlyne's location.
+
+Get me the suits. We need to talk.</say></talk>
+      <done><say>Gah, this guy is needy. All right, all right, I'm dialing up Mr. Gray...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Dissemination of confidential information on an individual basis must be scrutinized carefully. You may speak to Agent Pace at the indicated location.</briefing>
+    <enter><say>Hey, that's weird... Pace is there, but I don't see an override signal on the screen. Halborn late to his own meeting?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ciao, tesoro. Halborn won't be joining us. We have already told him that we cannot answer his question about the location of Carlyne's vessel, so it seemed...pointless to try to respond to the same question again, especially now that he is particularly upset.
+
+What we told him was the truth, as he knows. He has reaped the rewards of the established order, but he has no respect for it. He is a very dangerous man, {player}.</say></talk>
+      <done><say>But...won't this just tick him off even more?</say></done>
+    </objective>
+    <near npc="2" radius="1500">
+      <say>Huh? No guards?</say>
+    </near>
+    <near npc="2" radius="600">
+      <say>I still don't see any sign of Halborn anywhere nearby. Someone give him the wrong address?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>An outbreak of override programs has been detected at what we believe to have been a Cypherite installation. We would like this investigated.</briefing>
+    <enter><say>I've got override signals in there, all right--some redpills, too.</say></enter>
+    <objective goal="1" text="Talk to Bilkis" type="Talk" npc="3">
+      <talk><say npc="3">Halborn's been tearing right through us! He chased off some of the others, but we were trapped in here by his programs.
+
+You'd better give us a hand; I bet this is all because Veil agreed to show him around when you guys didn't want to handle it yourselves.</say></talk>
+      <done><say contact="1">You are permitted to assist the Cypherites in this case, operative. You are still not to engage Halborn himself under any circumstances.</say></done>
+    </objective>
+    <objective goal="2" text="Destroy the override programs" type="DefeatAll" />
+    <objective goal="3" text="Do not let Bilkis die" type="Protect" npc="3" after="1" />
+    <near npc="3" radius="1000">
+      <say>There are the redpills I was picking up.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>His programs should be contained, if possible.</briefing>
+    <enter><say>Override signals lighting up my screen... He's really going to town on the Cypherites.</say></enter>
+    <objective goal="1" text="Destroy Halborn's programs" type="DefeatAll">
+      <done><say>I think that's all of them, except for Halborn. Uh... Do we really want to see what he's up to?</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Yeah?! Come on. You people made a big mistake when you tried putting one over on me. You're not going to be able to cover this up!</say></talk>
+      <done>
+        <say>Paranoid people are so fun to tease.</say>
+        <say npc="4">It's all just a damn conspiracy... You're being manipulated by someone who knows the program exists--knows exactly what it is. You idiots!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>This outlet seems to have cooled his temper, at least at present. Unfortunately, the necessity of indulging some of his previous requests has made him ever more difficult to deal with; like a spoiled child, he angers all the more rapidly when his slightest demand is not met. But the rules and regulations that he has relied upon do not exist solely for his own benefit.
+
+That will be all for now, {player}.</finish>
+</mission>
