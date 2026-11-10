@@ -828,9 +828,9 @@ namespace hds
                 MissionRuntime.OnMobDefeated(session.Attacker, session.DefenderMob);
                 UInt32 missionItem = MissionRuntime.LootItemFor(session.Attacker.playerData, session.DefenderMob);
 
-                // Calculate loot money based on mob level (50-150 per level)
+                // Retail's pocket change (rshooks.RunPocketChange): level x 5 x 0..99 info, none in the tutorial
                 Random rand = new Random();
-                UInt32 lootMoney = inTutorial ? 0 : (UInt32)(mobLevel * (50 + rand.Next(100)));
+                UInt32 lootMoney = inTutorial ? 0 : KillExperience.PocketChange(rand, mobLevel);
 
                 // Store pending loot for when player accepts
                 session.Attacker.playerData.pendingLootMoney = lootMoney;

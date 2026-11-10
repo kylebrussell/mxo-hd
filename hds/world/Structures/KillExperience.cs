@@ -31,6 +31,18 @@ namespace hds
             return (UInt32)Math.Max(0, Math.Min(UInt32.MaxValue, experience));
         }
 
+        /// <summary>
+        /// The info on a corpse: rshooks.RunPocketChange, int(level x 5 x randrange(100) x AI_PocketChangeScale). The scale
+        /// is a console variable; 1 is inferred from the 99 corpse amounts in the captures' loot windows (81 19; some captures
+        /// overlap): all are multiples of 5, 11 are 0, and where the NPC is known they fit 5 x its level times 0..99 (the
+        /// Corrupted: every amount a multiple of 260 = 5 x 52, up to 24,700 = 260 x 95; level 1 NPCs: 25 to 445). Retail also gave nothing for kills by a much higher ("grey") player when
+        /// GreysGiveNoLoot was set; whether it was is unknown, so that isn't done.
+        /// </summary>
+        public static UInt32 PocketChange(Random rng, int npcLevel)
+        {
+            return npcLevel > 0 ? (UInt32)(npcLevel * 5 * rng.Next(100)) : 0;
+        }
+
         /// <summary>experience.ComputeGroupBonus: a team of 2 to 6 gets 1.2, 1.5, 1.6, 1.75 or 2.1 times as much each.</summary>
         public static double GroupBonus(int players)
         {

@@ -34,6 +34,23 @@ public class KillExperienceTests
         Assert.InRange(KillExperience.ForKill(50, 50, damageShare: 0.5), KillExperience.ForKill(50, 50) / 2 - 1, KillExperience.ForKill(50, 50) / 2 + 1);
     }
 
+    [Fact]
+    public void PocketChangeIsFiveTimesTheLevelTimesAHundredSidedRoll()
+    {
+        var rng = new Random(4);
+        bool sawZero = false, sawTop = false;
+        for (int i = 0; i < 5000; i++)
+        {
+            uint info = KillExperience.PocketChange(rng, 52);
+            Assert.Equal(0u, info % 260); // retail's Corrupted: 780, 1040, ... 24,700
+            Assert.InRange(info, 0u, 260u * 99);
+            sawZero |= info == 0;
+            sawTop |= info == 260u * 99;
+        }
+        Assert.True(sawZero && sawTop);
+        Assert.Equal(0u, KillExperience.PocketChange(rng, 0));
+    }
+
     [Theory]
     [InlineData(1, 1.0)]
     [InlineData(2, 1.2)]
