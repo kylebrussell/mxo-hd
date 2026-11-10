@@ -178,6 +178,19 @@ public class GeneratedMissionTests
         Assert.Null(MissionSites.Choose(sites, "Any", 0, 0, 3, 1, rng, exclude: new List<MissionSite> { sites[0] }));
     }
 
+    [Fact]
+    public void ASafeNeedsAPlaceOnTheFloor()
+    {
+        // A spawned kind (Safe) counts: a floor with no furniture and no spawner was picked for it, and it was never placed
+        MissionPhase phase = new MissionPhase();
+        phase.objects.Add(new MissionObjectDef { id = 1, kind = "Safe" });
+        Assert.Equal(1, MissionStaging.PlacesNeeded(phase));
+
+        MissionSite bare = SiteAt(0, 0, "Pearlridge");
+        Assert.Null(MissionSites.Choose(new[] { bare }, "Any", 0, 0, 1, MissionStaging.PlacesNeeded(phase), new Random(1)));
+        Assert.Same(bare, MissionSites.Choose(new[] { bare }, "Any", 0, 0, 1, 0, new Random(1)));
+    }
+
     private static MissionSite SiteAt(double x, double z, string hood)
     {
         MissionSite site = new MissionSite
