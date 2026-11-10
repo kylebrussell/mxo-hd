@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bells and Bullets, Machines story mission 4.3.2. Source: research/missions/transcripts/Mach4-3-2.md (the archive
+     replay of [Machine Archive 4.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Agent Pace line, and the name Agent Pace. Gray
+     addressed the player as "Ms. Donna"; that is {player}. Ours: the description (the Summary tab wasn't shown), the
+     objective texts (the Objectives tab wasn't shown), the sites (the sweeps are in Achan and Camon Heights as the
+     briefings say; all Normal), the looks, the enemy counts. The Bells and the Bullets are street gangs with no org,
+     and the strange programs at the last address are Exiles: all Merovingian. Item stand-ins: the tracking device is
+     Tracer (6825), the key to the locked door is Access_Card (6791). Rewards: the screenshots are crops of the Mission
+     window with no chat panel, so no reward was shown; 352,000 experience and 115,500 information are Zion chapter
+     4.3's values.
+     Gaps: retail's sweeps were "check the rooms until the tracker picks up the key's code trail"; here each sweep is
+     Use goals on furniture in different rooms, and the Operator's "the tracker's picked something up" lines are said
+     when they are done. The gangs were only activity in the area, so killing them isn't a goal. Camon Heights had a
+     locked door; we have no locked doors, so the key is searched for in a box first and the room behind the door is
+     swept only after it. At the last address the key's trail vanished in a scripted moment; here sweeping one room
+     ends the phase with the Operator's line about it, and her "What? Who are these guys?" is said on arrival, after
+     her arrival line. -->
+<mission id="204302" title="Bells and Bullets" description="Track the stolen key through Achan and Camon Heights with a new tracking device." plot="1"
+         order="4302" org="2" contact="Agent Gray" exp="352000" info="115500">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The data you provided, {player}, has enabled us to construct a device capable of tracking the stolen key anywhere in the Matrix. Agent Pace will supply you with the device.</briefing>
+    <enter><say>My scan is showing Agent Pace in there. Hm... I wonder if I can enhance the resolution...</say></enter>
+    <objective goal="1" text="Get the tracking device from Agent Pace" type="Get" npc="1" item="6825">
+      <talk><say npc="1">Benvenuto, rosapillore. I have the tracking device we were able to construct from the data you provided. Please, take it from me.</say></talk>
+      <done><say npc="1">No need to thank me, tesoro. Find our missing key, and we will all be very grateful.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Achan">
+    <briefing>{player}, you will begin your sweep with the tracking device in Achan, the last verified location of the stolen key.</briefing>
+    <enter><say>All right, search through the area, and we'll see what the tracking device tells us. Make sure you don't skip any rooms until we get the data we need.
+
+I'm picking up Bells activity in the area. I'm betting they aren't too happy about what happened in the last encounter.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Sweep the first room with the tracker" type="Use" object="1" />
+    <objective goal="2" text="Sweep the second room with the tracker" type="Use" object="2" />
+    <complete><say>Okey-doke, Gray tells me the tracker's picked something up. Get out to the street while I get him on the mike.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>{player}, your tracker has detected the key's trail, and it points in the direction of Camon Heights. Proceed to that neighborhood and initiate a second sweep.</briefing>
+    <enter><say>You know the drill: check the rooms until the tracker picks up the key's code trail. The code scan shows a locked door in there, so you might have to find a key to it first.
+
+And, uh, this probably doesn't come as a big surprise, but the local gang, the Bullets, seem to be homing in on you. You're not wearing that "Just say No to gangs!" T-shirt again, are you?</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Furniture" />
+    <objective goal="1" text="Find the key to the locked door" type="Search" object="1" item="6791" />
+    <objective goal="2" text="Sweep the first room with the tracker" type="Use" object="2" />
+    <objective goal="3" text="Sweep the locked room with the tracker" type="Use" object="3" after="1" />
+    <complete><say>Your tracker's picked up the key's trail again. You can get out of there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>You're closing in on the key's location, {player}. Now it is only a matter of time.</briefing>
+    <enter>
+      <say>The device tracked the key's signal to that address. Scan's showing Exile programs infesting the area--but they aren't Bullet gang members, and they don't scan like normal Merv programs, either. Is someone else on the key's trail?</say>
+      <say>What? Who are these guys?</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Follow the key's trail with the tracker" type="Use" object="1">
+      <done><say>Uh-oh, something just happened with the data we're getting from your tracker. Gray sounds pissed--relatively speaking, I mean. We'd better go see what the deal is.</say></done>
+    </objective>
+  </phase>
+  <finish>The key's code signature has disappeared from the tracker. This new development must be analyzed before we can continue with the retrieval operation. We have insufficient data at this time.
+
+We will contact you when we have further need of you, {player}. That is all.</finish>
+</mission>

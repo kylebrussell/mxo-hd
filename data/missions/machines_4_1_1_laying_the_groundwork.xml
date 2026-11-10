@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Laying the Groundwork, Machines story mission 4.1.1. Source: research/missions/transcripts/Mach4-1-1.md (the
+     archive replay of [Machine Archive 4.1.1], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md. Retail's text: the title, every briefing, Agent Gray and Operator line. Gray addressed the player
+     as "Mr. Andrews" and the Operator as "Tygrius"; both are {player}. Ours: the description (the Summary tab wasn't
+     shown), the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal), the enemy
+     counts. Fanale's security and the Exiles of the first site are Merovingian. Rewards: the screenshots are crops of
+     the Mission window with no chat panel, so no reward was shown; 341,000 experience and 112,000 information are
+     Zion chapter 4.1's values. The log has a gap of about seven minutes in the first site (the fighting).
+     Gaps: Fanale and Ashbrook both escape before they are reached (the Effectuator's doing), and we can't make a
+     target vanish. Fanale isn't spawned: his security is the phase's hostiles, and once they are dead an empty search
+     of a piece of furniture in his room is the moment he is found gone. Ashbrook's site emptied itself about 25
+     seconds after arrival ("Looks like plenty of bad guys in here", then "The entire place is empty!"); here the site
+     has no hostiles and Ashbrook isn't spawned, and an empty search is finding the place deserted. -->
+<mission id="204101" title="Laying the Groundwork" description="Attack the Merovingian's holdings and hunt down his lieutenants." plot="1"
+         order="4101" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>The pace of events is picking up, {player}. We are beginning to make real progress in our efforts to remove the Merovingian's presence from the Matrix.
+
+Your job today is to apply pressure. With enough of his assets under attack, he will lose... focus; his pathetic empire will begin to crumble around him.
+
+Proceed to the location indicated, and deal with any Exiles present.</briefing>
+    <enter><say>Expect some resistance in here, {player}.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>That's the last hostile on site.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Well done. I am now sending you to the location of one of the Merovingian's lieutenants, Fanale. Terminate him.</briefing>
+    <enter><say>My readings show Fanale in here, with some security.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill Fanale's security" type="DefeatAll">
+      <done><say>I'm reading his signal... plus some sort of fluctuation... get through that next door, now!</say></done>
+    </objective>
+    <objective goal="2" text="Find Fanale" type="Search" object="1" item="0" after="1">
+      <done><say>Dammit! He's gone... and I suppose you know what kind of signals I'm getting, too. The Effectuator.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The escape of Fanale certainly is disappointing. However, our goals proceed as scheduled. Continue your attacks against the Merovingian's holdings.
+
+At the location indicated, you will find a certain Ashbrook. She is one of the Merovingian's security captains. Her deletion would prove very... detrimental to the Merovingian's operations.</briefing>
+    <enter><say>Looks like plenty of bad guys in here.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Find Ashbrook" type="Search" object="1" item="0">
+      <done><say>Gone! The entire place is empty! This is such... aw, just get out of there.</say></done>
+    </objective>
+  </phase>
+  <finish>It would appear that the Effectuator's "talents" are becoming a bit too... inconvenient. Would you not agree, {player}?</finish>
+</mission>

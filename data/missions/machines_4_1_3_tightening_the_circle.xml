@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tightening the Circle, Machines story mission 4.1.3. Source: research/missions/transcripts/Mach4-1-3.md (the
+     archive replay of [Machine Archive 4.1.3], given by [Archived]Agent Gray). Placement is generated: see
+     docs/MISSIONS.md. Retail's text: the title, every briefing, Agent Gray, Operator and Miguel Zappa line, and Miguel
+     Zappa's name. The player was addressed as "Mr. Andrews"; that is {player}. Ours: the description (the Summary tab
+     wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (Dr. Zappa's building and unnamed
+     buildings: Normal), Dr. Zappa's look (a Machine program), the enemy counts. The "party" at the last site is the
+     Effectuator's Exiles: Merovingian. Item stand-in: the bug is Bug (6824). Rewards: the screenshots are crops of the
+     Mission window with no chat panel, so no reward was shown; 341,000 experience and 112,000 information are Zion
+     chapter 4.1's values. The log has a gap of about ten minutes at the last site (the fighting).
+     Gaps: the Effectuator vanishes before he is reached at both of his sites, so the bug is never planted. We can't
+     make a target vanish, so he isn't spawned: an empty search of a piece of furniture is the moment he is found gone
+     (at the last site once the Exiles are dead, whose deaths bring the "far door" line). The player keeps the bug. -->
+<mission id="204103" title="Tightening the Circle" description="Get a tracking bug from Dr. Zappa and plant it on the Effectuator." plot="1"
+         order="4103" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Miguel Zappa" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our scientists have been working on a little project. We now have a bug capable of locking down the Effectuator's RSI, and triangulating the location of what you might term his physical body. In fact, he possesses no physical body, but the explanation would most likely be beyond your comprehension.
+
+Proceed to Dr. Zappa and obtain the bug from him.</briefing>
+    <enter><say>Dr. Zappa is somewhere in this building.</say></enter>
+    <objective goal="1" text="Get the bug from Dr. Zappa" type="Get" npc="1" item="6824">
+      <talk><say npc="1">Your reputation for punctuality precedes you, {player}. I have the bug for you here.</say></talk>
+      <done><say>Bug in hand; you can head on over to good old Effy now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Proceed to the location indicated. Place the bug on the Effectuator's person.</briefing>
+    <enter><say>This place looks kind of empty.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search for the Effectuator" type="Search" object="1" item="0">
+      <done><say>Nothing. You can head out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Do not be discouraged. We will track down the Effectuator, and apprehend him. There is a high probability that he will be at the next location.</briefing>
+    <enter><say>Okay, I'm reading some signals this time. Looks like a party going on in there! Time to go to work.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>His signal's just through there. Aw, crap... those fluctuations are starting to power up. Get through the far door!</say></done>
+    </objective>
+    <objective goal="2" text="Plant the bug on the Effectuator" type="Search" object="1" item="0" after="1">
+      <done><say>This is insane! How can we plant a bug on someone who vanishes before we get there?</say></done>
+    </objective>
+  </phase>
+  <finish>New strategies seem to be required. We will be in contact, {player}.</finish>
+</mission>

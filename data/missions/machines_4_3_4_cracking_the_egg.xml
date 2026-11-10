@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cracking the Egg, Machines story mission 4.3.4. Source: research/missions/transcripts/Mach4-3-4.md (the archive
+     replay of [Machine Archive 4.3.4], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Wezen and Poutanen.
+     Gray addressed the player as "Mr. Argento" and the others by the handle "Evol"; both are {player}. Ours: the
+     description (the Summary tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (the
+     two key sightings are in Camon Heights as Gray says; all Normal), the looks (Wezen as a Machine program, Poutanen
+     as a redpill), the enemy counts. The General's commandos are Zion, Silver's operatives Exiles. Item stand-ins:
+     none (the key is never found). Rewards: the screenshots are crops of the Mission window with no chat panel, so no
+     reward was shown; 352,000 experience and 115,500 information are Zion chapter 4.3's values.
+     Gaps: Gray's briefing spans a screenshot join where a line could be hidden. In the technical installation Gray cut
+     Wezen off mid-sentence; here Gray's interruption is said when talking to Wezen is done. The empty site is a
+     search of one piece of furniture that turns up nothing. Wezen's team fought beside the player at the last site;
+     here Wezen and Poutanen are led out of the rendezvous and follow into it, but allies don't fight, and either of
+     them dying fails the mission. A phase has one enemy org, so the last site's crowd is generated Exiles plus two
+     placed commandos (named Commando, our fit) who count for "Kill all hostiles". Wezen's ready line was logged twice;
+     here it is said once. -->
+<mission id="204304" title="Cracking the Egg" description="Lead an assault team to recover the key from Silver's construct." plot="1"
+         order="4304" org="2" contact="Agent Gray" exp="352000" info="115500">
+  <npc id="1" handle="Wezen" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Poutanen" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say display="5">Get that key, {player}!</say>
+  </npc>
+  <npc id="3" handle="Wezen" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Poutanen" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="5" handle="Commando" type="HOSTILE" at="5" rsi="d8040058" weapon="2564" />
+  <npc id="6" handle="Commando" type="HOSTILE" at="5" rsi="050100b4" weapon="2564" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>This Exile, Silver, believes that he can hide the key from us in a construct. He should know better. As you and I speak, our technicians are working to break the security code protecting this construct.
+
+Please proceed to the technical installation. You will be there when the construct is... broken, and lead the assault team to recover the key.</briefing>
+    <enter><say>Okay, you'd better find Wezen. He's the contact for the team you'll be leading.</say></enter>
+    <objective goal="1" text="Talk to Wezen" type="Talk" npc="1">
+      <talk><say npc="1">{player}! Soon as the eggheads finish up, we'll be ready to--</say></talk>
+      <done><say contact="1">Operative, I am receiving an urgent communication. The key has been detected back in the Matrix.
+
+Your presence is needed elsewhere. Leave Wezen's team there; they will only slow you down.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Camon Heights">
+    <briefing>The key's code signature is being picked up somewhere in Camon Heights. It must have just exited the construct.
+
+End this chase now, {player}. Proceed to the indicated location and intercept the key before it moves on.</briefing>
+    <enter><say>Hm, looks pretty quiet. Still better keep your eyes open, but don't get your expectations up.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area for the key" type="Search" object="1" item="0">
+      <done><say>Just like I thought, empty. You can get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>Our tracking device has picked up the key again nearby. Proceed there as quickly as possible to intercept the key before... outside elements can interfere.</briefing>
+    <enter>
+      <say>Hey, looks like we got a live one! Get in there and nab the key, quick!</say>
+      <say>Commandos?! So the General wants to tangle with us? Take 'em out, {player}.</say>
+    </enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll">
+      <done><say>No key on site, of course. Might as well clear out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are facing strong resistance much earlier than expected. Wezen and his team will meet you at the indicated rendezvous point.</briefing>
+    <enter><say>Pick up the team and get out of there, fast. We need to punch through this resistance and get to the key!</say></enter>
+    <objective goal="1" text="Talk to Wezen" type="Talk" npc="3">
+      <talk><say npc="3">We're ready, {player}. Ready to take out some of those paramilitary freaks!</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Wezen's team out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Bring your team to the indicated location. The key's signal has been detected there, and our surveillance indicates recent activity of both Silver's operatives and the General's men.
+
+Kill all hostiles, both Exiles and commandos. Recover the key. It is of the utmost importance to keep it out of the wrong hands.</briefing>
+    <enter><say>I'm reading a whole crowd of bad guys in there, {player}. Take care in there!</say></enter>
+    <objective goal="1" text="Kill all hostiles" type="DefeatAll">
+      <done><say>No key... better get out of there and face the music.</say></done>
+    </objective>
+  </phase>
+  <finish>Intelligence indicates that the key is now in Zion's possession.
+
+This interference by the General is unacceptable; however, the Truce and cooperation with the redpills of Zion is important to us.
+
+Remain in contact, {player}. This situation warrants extensive analysis and threat evaluation. A decision will be forthcoming.</finish>
+</mission>

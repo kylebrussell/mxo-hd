@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Laying the Trap, Machines story mission 4.1.2. Source: research/missions/transcripts/Mach4-1-2.md (the archive
+     replay of [Machine Archive 4.1.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Horis Chyu line, and Horis Chyu's name. The
+     player was addressed as "Mr. Andrews"; that is {player}. Ours: the description (the Summary tab wasn't shown), the
+     objective texts (the Objectives tab wasn't shown), the sites (a Machine laboratory and unnamed buildings: Normal),
+     Dr. Chyu's look and sex (a Machine program; the log doesn't say he or she), the enemy counts. Item stand-in: the
+     recording device is Recorder (6821). Rewards: the screenshots are crops of the Mission window with no chat panel,
+     so no reward was shown; 341,000 experience and 112,000 information are Zion chapter 4.1's values. Gray's third
+     briefing has a line at a screenshot join that may hold a few more words; what is readable is used.
+     Gaps: the recording device captured the Effectuator's data by coming close to him, and he warped out each time
+     before he was reached. We can't make a target vanish or record by distance, so he isn't spawned: at each site an
+     empty search of a piece of furniture is the moment he is found gone. The second and third sites had no fighting
+     in the log. The last site (seven minutes, "a bunch of signals", several doors) gets guards, whose deaths bring the
+     "Straight through the next door" line, and the warp-out lines come with the search. -->
+<mission id="204102" title="Laying the Trap" description="Use a recording device to capture data on the Effectuator." plot="1"
+         order="4102" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Horis Chyu" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Your assistance is required, {player}. We need to obtain some data on the Effectuator.
+
+Proceed to one of our laboratories. Dr. Chyu will give you a recording device.</briefing>
+    <enter><say>Dr. Chyu should be here somewhere.</say></enter>
+    <objective goal="1" text="Get the recording device from Dr. Chyu" type="Get" npc="1" item="6821">
+      <talk><say npc="1">There you are, {player}. Please take this device from me.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We are now sending you to a likely location of the Effectuator, or more... precisely, one of his projections. By coming within a certain distance of him, you will be able to capture data using the recording device.</briefing>
+    <enter><say>Hmm... seems pretty quiet here.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search for the Effectuator" type="Search" object="1" item="0">
+      <done><say>Not a soul in sight. I think we're going to need something better to go on.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Clearly, the Effectuator's ability to project his RSI within the Matrix is going to make this a little... difficult. Through perseverance and dedication, you will accomplish your goals.
+
+Proceed to the next location. According to our calculations, it is likely that your target will be there.</briefing>
+    <enter><say>Okay, I'm reading some signals this time... and those damn fluctuations. Get in there, fast!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search for the Effectuator" type="Search" object="1" item="0">
+      <done><say>Gone again! This is getting a little ridiculous.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Although your efforts may seem futile, they are not, {player}. You have already been close enough to the Effectuator's residual fluctuations that we have collected some data.
+
+Now we must continue.
+
+You are under the same orders at the next location. Presumably it is not necessary to repeat them.</briefing>
+    <enter><say>Okay, I've got a bunch of signals... I've definitely got the Effectuator in there... and it looks like he isn't headed anywhere yet. Get in there, quick!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the Effectuator's guards" type="DefeatAll">
+      <done><say>Something's powering up... get a move on! Straight through the next door.</say></done>
+    </objective>
+    <objective goal="2" text="Get close to the Effectuator" type="Search" object="1" item="0" after="1">
+      <done><say>He's warping out of here. Get through the next door as fast as you can!</say></done>
+    </objective>
+    <complete><say>He's gone. I hope Gray got what he needed.</say></complete>
+  </phase>
+  <finish>Quite satisfactory, {player}. We were able to collect some very useful data thanks to your efforts.
+
+We will be in contact soon regarding this assignment.</finish>
+</mission>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Praeparet Bellum, Machines story mission 4.3.5. Source: research/missions/transcripts/Mach4-3-5.md (the archive
+     replay of [Machine Archive 4.3.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and Gerbil line, and the name Gerbil. Gray
+     addressed the player as "Ms. Donna" and Gerbil by her handle; both are {player}. Ours: the description (the
+     Summary tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the sites (none is described:
+     all Normal, the General's base too), the looks (Gerbil as a Machine program), the enemy counts. The General's
+     commandos are Zion. Item stand-in: Gerbil's Virus is Virus (6786). Rewards: the screenshots are crops of the
+     Mission window with no chat panel, so no reward was shown; 352,000 experience and 115,500 information are Zion
+     chapter 4.3's values.
+     Gaps: the third commando site's closing line, if it had one, wasn't captured. At the General's base the Operator's
+     "Nice! But what does the virus do?" came 27 seconds before the goals were done, so it is the arrival line; the
+     planting itself had no line. Opposition there was "or not, as you see fit", so killing it isn't a goal. The
+     computer's popup texts ("Processing... 73% complete", "You were not there", ...) may be the planting's, but their
+     context wasn't shown, so they aren't used. -->
+<mission id="204305" title="Praeparet Bellum" description="Strike at the General's commandos and plant a virus in one of his bases." plot="1"
+         order="4305" org="2" contact="Agent Gray" exp="352000" info="115500">
+  <npc id="1" handle="Gerbil" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>The General's interference in our business has reached an unacceptable level. Up to this point, we have refrained from... outright hostilities due to the Truce. Our newfound cooperation with Zion is very important to us, and until now, we have limited our aggression. There are also other... reasons we have not attacked. Suffice it to say that there has been an artificial peace in place, constantly strained by the General's behavior.
+
+This peace has come to an end.
+
+The General has pressed this issue beyond acceptable limits. While we are still bound by the Truce, and still value Zion's cooperation with us, the General is now targeted for deletion.
+
+Our campaign against the General begins immediately. Proceed to the indicated location and eliminate any of his troops found there.</briefing>
+    <enter><say>Wow. Sounds like the Machines are really gearing up to make a move against the General!
+
+Anyhow, you heard him. Take these commandos out.</say></enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Proceed to the next location indicated. Eradicate any trace of the General's programs you encounter.</briefing>
+    <enter><say>Sounds like another killing floor. Have at it!</say></enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll">
+      <done><say>Is this it? We're just going to run around all day killing commandos? I'd think that Gray would have something a little more interesting up his sleeve.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Excellent work, operative. Proceed to the next location and dispatch the commandos you encounter there.</briefing>
+    <enter><say>This seems so unguided... I don't get it. But by all means, take care of these guys.</say></enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Very satisfactory, {player}. The first stage of your mission is now complete.
+
+Proceed to the next location and obtain a Virus from Gerbil.</briefing>
+    <enter><say>A virus? I wonder what Gray's up to? At least it's getting a little more interesting.</say></enter>
+    <objective goal="1" text="Get the Virus from Gerbil" type="Get" npc="1" item="6786">
+      <talk><say npc="1">Hey, {player}. I've got the virus here. Nice little piece of work, too. Very quiet about what it does.</say></talk>
+      <done><say npc="1">Good luck planting that thing!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>While you were fighting the General's programs, we were obtaining data through your RSI and running it through various simulations and logical predictors. The result is that we have pinpointed a likely base of operations of the General, shown now on your HUD.
+
+Proceed to the target location. Plant the virus on a computer you will find there. Eliminate any opposition, or not, as you see fit. The only issue of importance is that the virus is planted.</briefing>
+    <enter><say>Nice! But what does the virus do? Times like this I wish Gray was a little more vocal...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Plant the virus on the computer" type="Put" object="1" item="6786" />
+  </phase>
+  <finish>Your work here today has been highly satisfactory, {player}. The virus you planted will not damage the General's systems, at least not exactly. Such overt measures would surely be detected and countered.
+
+The virus will self-replicate, as with any true virus, and spread silently through the General's systems. Very slowly, it will begin using his own communications systems to send us information. After a sufficient amount of time has elapsed for the virus to perform its function, the General will have no secrets from us.</finish>
+</mission>

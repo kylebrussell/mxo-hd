@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cross-Analysis, Machines story mission 4.3.1. Source: research/missions/transcripts/Mach4-3-1.md (the archive
+     replay of [Machine Archive 4.3.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Kalt and Agent Pace.
+     Gray addressed the player as "Ms. Donna"; that is {player}. Ours: the description (the Summary tab wasn't shown),
+     the objective texts (the Objectives tab wasn't shown), the sites (Kalt Chemicals in Kedemoth is an Office there,
+     the scan area is in Achan as the briefing says, the rest Normal), the looks (Kalt as the Exile woman of 3.3.x, Pace
+     as a female Agent), the enemy counts. The Bells are a street gang with no org: Merovingian, as in Zion 4.3.1.
+     Item stand-ins: the code sample is Data (6787), Pace's code scanner is Device (6820). Rewards: the screenshots are
+     crops of the Mission window with no chat panel, so no reward was shown; 352,000 experience and 115,500 information
+     are Zion chapter 4.3's values.
+     Gaps: retail's scan was "visit each room" with the scanner; here it is three Use goals on furniture in different
+     rooms of the floor, and the Operator's "collected the data it needs" is said when all three are done. The Bells
+     were only "activity" to watch for, so they aren't a goal. Pace is met twice at sites the log doesn't describe;
+     the second meeting is her again, placed in phase 4. Pace logged her scanner line twice; here it is said once, when
+     the scanner is asked for. -->
+<mission id="204301" title="Cross-Analysis" description="Obtain a sample of the key's code from Kalt and scan the area where Zion lost the key." plot="1"
+         order="4301" org="2" contact="Agent Gray" exp="352000" info="115500">
+  <npc id="1" handle="Kalt" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>{player}, listen carefully. The case of valuables stolen from us by the General has reappeared in the Matrix. The case itself is in the possession of Zion forces. Sources inform us, however, that the key to the case has been misplaced by Zion somewhere in the Achan neighborhood.
+
+Zion must be prevented from recovering this key. Proceed to Kalt Chemicals in Kedemoth, and obtain a sample of the code used to construct the key. We will use this code for tracking purposes. Kalt manufactured the case and its contents for us, and will cooperate with this investigation.</briefing>
+    <enter><say>Gee, it's always so nice visiting Kalt HQ. Not a speck of dust to be found! Their cleaning bill must be outrageous.</say></enter>
+    <objective goal="1" text="Get the code sample from Kalt" type="Get" npc="1" item="6787">
+      <talk>
+        <say npc="1">You're Gray's courier. Yes, I have the data. It's all yours.</say>
+        <say npc="1">Time is money. Take this data from me or get out of my building.</say>
+      </talk>
+      <done><say npc="1">Tell Gray he can send my payment to the usual account.
+
+I'd wish you luck getting the key back, but...I really don't care. If Gray wants a replacement key, or more of what's in that case, he knows where to reach me.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You will deliver that code sample to Agent Pace, {player}, and collect a scanning device from her.</briefing>
+    <enter><say>Ooh, Pace. I gotta make a recording of this for...er...reference use.</say></enter>
+    <objective goal="1" text="Give the code sample to Agent Pace" type="Give" npc="2" item="6787">
+      <talk><say npc="2">Ah, tesoro, I'm so glad you've come. Do you have the data for me?</say></talk>
+      <done><say>All right, now see what this thingy she has for us is.</say></done>
+    </objective>
+    <objective goal="2" text="Get the code scanner from Agent Pace" type="Get" npc="2" item="6820" after="1">
+      <talk><say npc="2">Eccellente! This is just the data we needed. I knew I could count on you, rosapillore.
+
+Now, I have a gift for you. This device is a special code scanner. Take it from me. Agent Gray will explain its use to you.</say></talk>
+      <done><say npc="2">Arrivederci, tesoro. I wish you buona fortuna on your mission!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3" neighbourhoods="Achan">
+    <briefing>{player}, the device you obtained from Agent Pace is a code scanner. It is capable of gathering even the slightest trace of a particular type of code from an area for later analysis.
+
+You will use this scanner to collect data from the approximate area where Zion is understood to have lost the key. This is necessary because there is a possibility that in the process of porting the key in and out of the Matrix simulation, the General may have altered its code slightly. The scan will enable us to detect any code variation that has occurred, so that we can track the key itself.</briefing>
+    <enter><say>That's the spot. Make sure you visit each room to get a full scan.
+
+Oh, I'm picking up some activity from the local gang, the Bells, in that area, so keep an eye out. They're probably sniffing after the key.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Furniture" />
+    <objective goal="1" text="Scan the first room" type="Use" object="1" />
+    <objective goal="2" text="Scan the second room" type="Use" object="2" />
+    <objective goal="3" text="Scan the third room" type="Use" object="3" />
+    <complete><say>All right, I think the scanner's collected the data it needs. You're all done in there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Return the scanning device to Agent Pace, {player}. She will see to the efficient processing of the data it has recorded.</briefing>
+    <enter><say>Press "Record" and... Yes! All set here.</say></enter>
+    <objective goal="1" text="Give the code scanner to Agent Pace" type="Give" npc="3" item="6820">
+      <talk><say npc="3">That was very fast work, rosapillore! Do you have the device for me?</say></talk>
+      <done><say npc="3">Grazie, tesoro. I will see to the processing of the data you recorded right away. Your mission is my top priority.</say></done>
+    </objective>
+  </phase>
+  <finish>Commendable, {player}. Once we complete a cross-analysis of the two sets of code you provided, we will have another assignment for you.</finish>
+</mission>

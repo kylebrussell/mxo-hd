@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Distractions, Machines story mission 4.2.5. Source: research/missions/transcripts/Mach4-2-5.md (the archive replay
+     of [Machine Archive 4.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPC names The Effectuator
+     and Captain Wilson. The player was addressed as "Ms. Donna"; that is {player}. Ours: the description (the Summary
+     tab wasn't shown), the objective texts (the Objectives tab wasn't shown), the handle "Merovingian Operative" for
+     the raider carrying data (not named in the log), the sites (unnamed facilities: Normal; the last is "the facility
+     in Tabor Park"), the looks, the enemy counts (the second raid took about eleven minutes and its redpills were
+     "stirred up": 5). The raiders are redpill operatives working for the Merovingian and the facility's attackers are
+     Merovingian forces: Merovingian. Item stand-in: the raider's data is Recording (6784); in retail it was probably
+     the audio recording screenshotted in this mission ("E Pluribus Neo is just a bunch of poor misguided kids
+     worshiping a rock star who died tragically."), which we can't play. "83.46%" is read from "83.46*." on screen,
+     and Gray's "a 83.46%" is kept as said. Rewards: the screenshots are crops of the Mission window with no chat
+     panel, so no reward was shown; 341,000 experience and 112,000 information are Zion chapter 4.2's values.
+     Gaps: this is a scripted failure. The Effectuator escapes: he stays a friendly NPC who taunts the player and the
+     mission completes with the lines that tell it, as retail's did. The holding program computer's screen ("Holding
+     program terminated... Prisoner released. Have a nice day. haha in your face Gray!! :pppp") can't be shown;
+     checking it is a Use goal. Retail's operator said the data line with the second area's completion, so getting the
+     data is optional. The squad of security programs is Captain Wilson, who follows the player out of the third site
+     into the fourth (retail didn't show how they were collected; that phase took 37 seconds); we have no allies who
+     fight, so he only follows and has his last line. The operator's "Merovingian signals" line came 45 seconds after
+     arriving at the facility; both are said on arrival. -->
+<mission id="204205" title="Distractions" description="Stop the Merovingian's raids on Machine facilities and secure the Effectuator." plot="1"
+         order="4205" org="2" contact="Agent Gray" exp="341000" info="112000">
+  <npc id="1" handle="Merovingian Operative" type="HOSTILE" at="2" rsi="ec020058" weapon="2568" />
+  <npc id="2" handle="Captain Wilson" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="3">I am not certain that this operation was a success.</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="3">Hoohoo! Who's the man? Me! Capture this, you silly sod!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>{player}, redpill operatives working for the Merovingian have abruptly increased acts of sabotage against our facilities. The overall goal of these acts is still being determined. However, putting a halt to this sabotage will no doubt be to our advantage.
+
+A silent alarm has just alerted us to a raid by one of these Merovingian groups. Intercept them.</briefing>
+    <enter><say>I've got redpill signals in there. No Machine readings--they must have taken out the guards already.</say></enter>
+    <objective goal="1" text="Kill all of the raiders" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Your efficiency prevented significant sabotage at that site. We have another group for you to intercept.</briefing>
+    <enter><say>More redpills in there. They seem a little stirred up, too.</say></enter>
+    <objective goal="1" text="Kill all of the raiders" type="DefeatAll" />
+    <objective goal="2" text="Get the data from the Merovingian Operative" type="Loot" npc="1" item="6784" optional="1" />
+    <complete><say>That one's carrying some kind of data.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>An analysis of these Merovingian attacks has indicated a 83.46% probability that they are a distraction from the Merovingian's main goal: the liberation of his subordinate known as "The Effectuator," who we recently captured. The Effectuator lacks a tangible RSI, and can only be retained while subjected to the influence of a special holding program.
+
+The facility where the Effectuator is held already has a sizable security team, but considering the scale of this offensive by the Merovingian, it is likely that they will require reinforcements. You will collect a squad of additional security programs.</briefing>
+    <enter><say>The programs are in there.</say></enter>
+    <objective goal="1" text="Lead Captain Wilson out of the area" type="Escort" npc="2" to="exit" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Tabor Park">
+    <briefing>Proceed to the facility in Tabor Park. Reports indicate that it is under attack by Merovingian forces.</briefing>
+    <enter>
+      <say>That's got to be the Effectuator in there.</say>
+      <say>I've got Merovingian signals in there. I'm not reading the holding program... Maybe it's hidden or something...</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the attackers" type="DefeatAll">
+      <done><say>All the attackers are down.</say></done>
+    </objective>
+    <objective goal="2" text="Check the holding program" type="Use" object="1" after="1" />
+    <objective goal="3" text="Talk to the Effectuator" type="Talk" npc="3" after="2">
+      <talk><say npc="3">Why hello! Wouldn't you just love to report back to your Agent Gray that you've saved the day by preventing my escape? Unfortunately, you're just a wee bit too late. My Merovingian friends already shut down the holding program, which leaves me free to...do whatever I like!</say></talk>
+      <done>
+        <say>Oh no. He didn't just... Okay, I really hate that guy now. Gray is not going to be pleased.</say>
+        <say npc="3">You want some of this? Huh? Yeah, that's right! You had your chance, and you blew it!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>This is...unfortunate, operative. I am somewhat...displeased. The Merovingian's effort showed a higher degree of coordination than we anticipated; clearly, we allocated too many of our better programs elsewhere. The sabotage by his redpill operatives, as well as recent developments concerning newly hostile groups--the humans known as "E Pluribus Neo," and the Exile programs of the General--have evidently served as successful distractions from our efforts to hold the Effectuator.
+
+In any event, holding that unstable program proved highly inefficient. We will consider a more...tangible target for future operations.</finish>
+</mission>
