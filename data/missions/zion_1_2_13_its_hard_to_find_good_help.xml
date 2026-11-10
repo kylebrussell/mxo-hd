@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- It's Hard To Find Good Help, Zion story mission 1.2.13. Source: research/missions/transcripts/Zion1-2-13.md (the
+     archive replay of [Zion Archive 1.2.13], given by [Archived]Tyndall; retail's sites were in Stamos). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and the names Antilope, Bornmann and
+     Mauricio Reitman. Ours: the description, the objective texts, the sites (unnamed buildings: Normal), the looks, and
+     the handle of the imposter Agent who carries the black box (retail only says the bigger group had one): "Imposter
+     Agent". The two imposter groups are the phases' generated Machine hostiles, 3 for the small decoy group and 5 for
+     the bigger one. Item stand-ins: the black box is LED_Black_Box (6835), Antilope's CD is Data_CD (6831).
+     Rewards: none were visible for this mission; exp and info are those of 1.2.12, the nearest mission of chapter 1.2
+     that shows them.
+     Gaps: Antilope is met twice, in phases 1 and 4, so he has two NPC entries (one per site). Phase 1 has no hostiles
+     ("I am not picking up any hostile signals"). The CD's upload had no area of its own in retail, so it is a goal of
+     phase 4. Tyndall's generic "Contact me when you are ready for your next assignment." isn't repeated. -->
+<mission id="101213" title="It's Hard To Find Good Help" description="Get an Exile program to tell Zion how to repair the junction boxes." plot="1"
+         order="1213" org="1" contact="Tyndall" exp="68750" info="91000">
+  <npc id="1" handle="Antilope" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say>You better find me one of them black box thingies if you want me to help. Your controller'll know how to find me once you've got one.</say>
+  </npc>
+  <npc id="2" handle="Imposter Agent" type="HOSTILE" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Antilope" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say>Awright now don't forget, you guys owe me big! Right?</say>
+  </npc>
+  <npc id="4" handle="Bornmann" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Ssss!</say>
+  </npc>
+  <npc id="5" handle="Mauricio Reitman" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say display="5">What?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Thanks in part to your recent efforts, the Zion Council now knows how to locate broken or sabotaged hardline junction boxes. While we don't yet know how to repair these boxes, we've located an Exile program who specializes in that field. We need you to contact this program and get him to provide us with information on how to repair the boxes. I'm sure that he will cooperate once he knows that our cause is a noble one.</briefing>
+    <enter><say>The junction box repair program, Antilope, is in that building. I am not picking up any hostile signals in the area.</say></enter>
+    <objective goal="1" text="Talk to Antilope" type="Talk" npc="1">
+      <talk>
+        <say npc="1">From Zion, eh? Well... I might be able ta help ya. I'd need one'a them black boxes though. Let me guess, you didn't bring one, didja? Sheesh, I knew it.</say>
+        <say contact="1">Oh dear. I'm afraid that our copy of the black box code is currently under security lock-down, otherwise I could upload one to you. Um... okay, go outside and I'll get back to you.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I'm sorry about this, operative. I can't upload a black box to you yet, but I've located an imposter Agent group nearby who may have one. Your waypoint is updated to lead you to their location.</briefing>
+    <enter><say>The imposter Agent group is in that building. It's a smaller group than most, but perhaps they'll have a black box with them.</say></enter>
+    <objective goal="1" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say contact="1">None of them have a black box. This isn't going well at all. I'm sorry, Warrior. Leave the area and I'll contact you again once you're outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Okay, that was my mistake about that last bunch. But now we've located a larger imposter Agent group in the vicinity, and it appears quite likely that they really do have a black box with them. Operative, I won't let you down this time, I promise. Follow the waypoint to the group's location.</briefing>
+    <enter><say contact="1">The imposter Agent group is in that building. It's a bigger group than the last one, so be careful. I'm nearly 100% sure that they have a black box with them, though!</say></enter>
+    <objective goal="1" text="Kill the imposter Agents" type="DefeatAll" />
+    <objective goal="2" text="Get the black box from the imposter Agents" type="Loot" npc="2" item="6835">
+      <done><say contact="1">You've found a black box! Oh, well done, Warrior. Now leave the area and I'll update you with Antilope's current location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Antilope's position is updated on your waypoint. Take him the black box and he should provide us with the information that we need.</briefing>
+    <enter><say>Antilope is in that building. You'll need to give him that black box that you got from the imposter Agents.</say></enter>
+    <objective goal="1" text="Talk to Antilope" type="Talk" npc="3">
+      <talk><say npc="3">Yo! You got the box? Give it to my man Bornmann over there. Don't be scared, he don't bite... usually.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the black box to Bornmann" type="Give" npc="4" item="6835" after="1">
+      <talk><say npc="4">Give! Give!</say></talk>
+      <done><say>Good. Now get the junction box information from Antilope.</say></done>
+    </objective>
+    <objective goal="3" text="Get the CD from Antilope" type="Get" npc="3" item="6831" after="2">
+      <done>
+        <say npc="3">Sa-weet! Lessee now... Yeah, yeah okay, that's what I thought. Here, take this CD: it's got the info your techs will need. Basically, you guys'll hafta build your own hardline repair kit from specific, rare code fragments.</say>
+        <say contact="1">That could be the data we need! Go outside and upload it to us from a hardline.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the CD at a hardline" type="Upload" item="6831" after="3">
+      <done><say contact="1">Receiving your data now, Warrior.</say></done>
+    </objective>
+  </phase>
+  <finish>Great work, soldier! This data appears to be precisely the information that we required. I'm sorry for sending you on a bit of a goose chase back there, but it all worked out in the end, didn't it? This demonstrates that if we just persevere in our struggles, Zion will one day triumph over all obstacles!</finish>
+</mission>

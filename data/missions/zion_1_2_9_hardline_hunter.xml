@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hardline Hunter, Zion story mission 1.2.9. Source: research/missions/transcripts/Zion1-2-9.md, the archive replay
+     ([Zion Archive 1.2.9], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's and the operator's lines, Dick Lange's name and line, and the
+     reward (90,750 experience, 91,000 information; Enhanced Turquoise Sif corset and Overheard Transmission, left out).
+     Ours: the description, the objective texts (the Objectives tab was never opened), the sites (Normal), the enemy
+     count, Dick Lange's look, and the junction boxes, which are boxes that are used (found).
+     The first building had "no hostiles in sight", so phase 1 spawns none. Dick Lange had a red (hostile) icon in the
+     log but speaks as a frightened bystander, so he is a friendly bluepill here. A body was searched in retail (the
+     Overheard Transmission may have come from it), but no line ties it to a goal, so there is no Loot. The imposters'
+     barks ("This is our box, human!", "Prepare yourself, human!") have no place in the format. -->
+<mission id="101209" title="Hardline Hunter" description="Find and secure two hardline junction boxes." plot="1" order="1209"
+         org="1" contact="Tyndall" exp="90750" info="91000">
+  <npc id="1" handle="Dick Lange" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">Yikes! Oh, you scared me. Something weird is going on. Who are all these weird dudes in suits?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Thanks to the information that you gathered earlier, we now know that nexus points called "junction boxes" control the City's hardlines. If we can protect these boxes, we'll eliminate the threat of sabotage that has been hampering our recent operations in the Matrix.
+
+Commander Lock believes that we have located one of these "junction boxes" near your position. Please search the indicated building and pinpoint the location of the junction box. Once you find the box, secure the area against any potential saboteurs. Zion is counting on you, Warrior!</briefing>
+    <enter><say>The junction box should be in that building. I'm picking up some powerful readings there--probably from the box.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the junction box" type="Use" object="1">
+      <done><say contact="1">You've located the box, and no hostiles in sight--good work, operative! In fact, you've done so well that I have another assignment for you. I'll contact you again once you're outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>All right. Our analysts have located another junction box near your location. Proceed to the building indicated by your waypoint and find this second box.</briefing>
+    <enter><say>You've reached the building, operative; now find the second box. I hope that those imposter Agents haven't managed to follow you there.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find the second junction box" type="Use" object="1">
+      <done><say>There's the junction box.</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the imposter Agents" type="DefeatAll">
+      <done><say contact="1">Well done, Warrior. You've secured the location against hostiles.</say><say contact="1">You may exit the area, Warrior.</say></done>
+    </objective>
+  </phase>
+  <finish>Excellent work, {player}. At this rate we will soon have all the hardlines in the city secured against sabotage. Our enemies will realize that they cannot stop the progress of Zion!</finish>
+</mission>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bombs and Betrayal, Zion story mission 1.2.17. Source: research/missions/transcripts/Zion1-2-17.md (the archive
+     replay of [Zion Archive 1.2.17], given by [Archived]Tyndall; Morpheus takes the bomb in the last phase). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the sites (unnamed buildings: Normal), the looks and the enemy counts. Item
+     stand-ins: the Tracking Device is Tracer (6825), the bomb is Large_Bomb (6818). Rewards: the 281,500 experience and
+     91,000 information shown right after this mission completed; the Black Bandana retail gave isn't.
+     Gaps: phase 3's friendly Agents fight the imposters in retail; here they stand by and the player kills the
+     phase's generated imposters. An imposter sharing Agent Long's name barked "Destruction to you all!"; it isn't
+     said. Agent Brown and Agent Park are led out in phase 3 and follow the player into phase 4, where retail had them
+     fight alongside; here they only follow. Phase 4's far door is sealed by a computer-controlled lock: a Use of a
+     Computer opens the Search of the box that holds the bomb, and the Operator's line about the door is said on
+     arrival. Phase 5's group had seven speakers; Tugela ("Don't worry, you're among friends here.") is left out to keep
+     the floor to six NPCs. Tyndall's line on first seeing the fight and on first seeing Morpheus are said on arrival and
+     on talking to Morpheus. -->
+<mission id="101217" title="Bombs and Betrayal" description="Stop the imposter Agents' bomb plot." plot="1"
+         order="1217" org="1" contact="Tyndall" exp="281500" info="91000">
+  <npc id="1" handle="Crane" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">You fit the description Tyndall gave us. All right, go on in.</say>
+  </npc>
+  <npc id="2" handle="Chrysothemis" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say display="5">I heard something big is going down. I wonder what it could be?</say>
+  </npc>
+  <npc id="3" handle="Fatyanov" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>I don't want to know where you're going or what you're going to do with that.</say>
+  </npc>
+  <npc id="4" handle="Ismael Swadling" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
+    <say>I can't talk to you while these Agents are here!</say>
+    <say after="3">All right, I'll put the Tracking Device in with the bomb. Just remember--you weren't here. You don't know me!</say>
+  </npc>
+  <npc id="5" handle="Agent Long" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say>Your arrival was somewhat opportune, human. These imposters have been particularly troublesome.</say>
+  </npc>
+  <npc id="6" handle="Agent North" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>It is time to show the imposters the error of their ways.</say>
+  </npc>
+  <npc id="7" handle="Agent Park" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say>Your assistance is appreciated, human.</say>
+  </npc>
+  <npc id="8" handle="Agent Brown" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" />
+  <npc id="9" handle="Morpheus" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
+    <say>Excellent; thank you for bringing this. I won't forget your name; we need more people like you in this struggle for freedom. You've achieved a great victory today, but be wary: even though they may aid you in the fight against the imposter Agents, the Machines are still mortal enemies of the human race. But who knows? With the continuing efforts of warriors such as yourself, we might convince them to change their program. Until that day, may Neo watch over you. Go in peace.</say>
+  </npc>
+  <npc id="10" handle="Propus" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">
+    <say display="5">We can't be certain what the imposters intended to target with that bomb, but it was most likely a vital part of the City's infrastructure--probably a bridge, subway tunnel, or computer nexus.</say>
+  </npc>
+  <npc id="11" handle="Aoluta" type="FRIENDLY" at="5" rsi="58010058" weapon="2564">
+    <say display="5">Don't worry about that bomb: we will be able to disarm it for you.</say>
+  </npc>
+  <npc id="12" handle="Birch" type="FRIENDLY" at="5" rsi="c9020058" weapon="2564">
+    <say display="5">You've done well to aid the Agents against the imposters, but don't forget that you can never trust a Machine.</say>
+  </npc>
+  <npc id="13" handle="Endymion" type="FRIENDLY" at="5" rsi="000100b4" weapon="2564">
+    <say display="5">The Machines and the imposter Agents may both be our enemies, but at least the Machines honor the terms of the Truce.</say>
+  </npc>
+  <npc id="14" handle="Wolfiana" type="FRIENDLY" at="5" rsi="60010058" weapon="2564">
+    <say display="5">I have never seen Agents agree to take directions from a human before. They must really want those imposter Agents eliminated--and they seem to respect your skill.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Warrior, information decoded from captured PDA devices indicates a high likelihood of a large-scale attack by the imposter Agents, possibly directed at disrupting the subway system. In addition to inflicting high civilian casualties, this attack could significantly hinder our access to vital resources within the City. You must stop the imposters before they have a chance to launch this attack.</briefing>
+    <enter><say>The contact Fatyanov will give you a special tracking device. Get the device, leave the area, and await further orders.</say></enter>
+    <objective goal="1" text="Talk to Fatyanov" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Yeah, I have a tracking device for you. I don't wanna know what you're doing with it--not my business.</say>
+        <say>Get the Tracking Device from Fatyanov.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the Tracking Device from Fatyanov" type="Get" npc="3" item="6825" after="1">
+      <done>
+        <say npc="3">You'll need this Tracking Device.</say>
+        <say>Leave the building and await further orders.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Good. Your next destination is the abode of an Exile bomb-maker named Ismael Swadling.</briefing>
+    <enter><say contact="1">In that building you will find the Exile known as Ismael Swadling. He is very adept at constructing high-yield explosive devices. Although he has cooperated with us in the past, he has not made contact recently, and he has been seen in close proximity to imposter Agents. We suspect that he is helping them construct an explosive device. Find Ismael Swadling and interrogate him.</say></enter>
+    <objective goal="1" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say>There are no more imposter Agents in the area. Talk to Ismael Swadling and give him the Tracking Device.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Ismael Swadling" type="Talk" npc="4" after="1">
+      <talk><say npc="4">Those Agents have been forcing me to make a large bomb for them. I don't know what they're going to do with it, but they'll be able to cause a lot of damage. It's pretty much done and they're due to pick it up today. What? Okay, sure, I can put that Tracking Device in with the bomb for you.</say></talk>
+    </objective>
+    <objective goal="3" text="Give the Tracking Device to Ismael Swadling" type="Give" npc="4" item="6825" after="2">
+      <done><say>You can leave now. When the imposter Agents arrive and pick up the bomb, we'll be able to track it thanks to that Tracking Device.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>It may be some time before the imposter Agents arrive to carry off their bomb. In the meantime, we have located a group of the imposters nearby. I want you to see if you can find out what they're up to. I'm uploading their location to you now.</briefing>
+    <enter>
+      <say>The imposter Agents should be in that building. I'm also detecting standard Machine Agents in the area. Could they be working together? Be careful, operative.</say>
+      <say contact="1">What's this? Imposters and Agents fighting each other? Clearly, the Truce directs us to side with the Agents.</say>
+    </enter>
+    <objective goal="1" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say>That accounts for all of the imposters. Try talking to Agent Brown. He seems to be the leader of the Agents here.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Agent Brown" type="Talk" npc="8" after="1">
+      <talk>
+        <say npc="8">We are trying to defuse a plot by these imposters that threatens widespread destruction in the City. Since you say that you have already found a means of locating them, we will follow you. Lead on.</say>
+        <say contact="1">Incredible! These Agents are willing to assist you in defeating the imposters' plot. This is the first time we've seen them actively pursuing the imposters. Lead Agent Brown and Agent Park out of the building, Warrior.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Lead Agent Brown and Agent Park out of the building" type="Escort" npc="8,7" to="exit" after="2">
+      <talk><say npc="7">Lead us to the imposters, human.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>{player}, the imposter agents have taken Ismael Swadling's bomb. I'm updating you with the Tracking Device's new location. Go there and wipe out the imposter group with the help of Agent Brown and Agent Park.</briefing>
+    <enter>
+      <say contact="1">Our Tracking Device signal is coming from that building. Kill any imposter agents you encounter and recover the bomb. Don't forget to take Agent Brown and Agent Park with you for assistance--it's clear now that they and the rest of the Machines are at war with the imposters.</say>
+      <say>The far door is sealed by a computer-controlled security lock. Perhaps a computer in the area can be used to deactivate the lock.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Box" />
+    <objective goal="1" text="Use the computer to unlock the far door" type="Use" object="1">
+      <done><say>Accessing that computer has disabled a security lock somewhere nearby.</say></done>
+    </objective>
+    <objective goal="2" text="Recover the bomb" type="Search" object="2" item="6818" after="1">
+      <done>
+        <say>There's the bomb you're looking for.</say>
+        <say contact="1">Good, that is the bomb we wanted to confiscate from the imposters. I'm not sure how we're going to defuse it, but at least we've got it out of their hands.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill the imposter Agents" type="DefeatAll">
+      <done><say>You've destroyed all of the imposters in the area.</say></done>
+    </objective>
+    <complete>
+      <say>Excellent work, {player}. Now, bring the bomb out of the building. Something... interesting has come up.</say>
+      <say npc="8">Thank you for your assistance, human. We have a mutual foe in these imposters.</say>
+      <say npc="7">Your skills are truly remarkable... for a human.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We've received a transmission over a high-level Zion access frequency--a frequency reserved for only the highest-ranking members of our organization. They want to see that bomb you've confiscated, so I guess you'd better take it to them. I'm not sure who it is, but I have my suspicions... You should be receiving their location now.</briefing>
+    <enter><say>The command transmission directed us to that building. You should find them inside--whoever it is.</say></enter>
+    <objective goal="1" text="Talk to Morpheus" type="Talk" npc="9">
+      <talk>
+        <say contact="1">Morpheus! I suspected as much. Exercise caution in dealing with him, operative: although he seems willing to help, he remains unpredictable.</say>
+        <say npc="9">I'm glad you're here, my friend. We monitored your battle against the imposters--that was very impressive work. I'm sure you realize by now that the imposters and the Machines are bitter enemies. Did you bring the bomb that you captured from the imposter group?</say>
+        <say contact="1">Give Morpheus the Large Bomb that you captured from the imposters.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the Large Bomb to Morpheus" type="Give" npc="9" item="6818" after="1">
+      <talk><say npc="9">We must all be willing to help one another, if we are to survive. Give me the bomb you confiscated from the imposter group. I will see that it does no harm to any humans.</say></talk>
+      <done><say contact="1">You are finished there, Warrior. But I encourage you to take this opportunity to talk with Morpheus further. Perhaps we can learn what his goals are.</say></done>
+    </objective>
+  </phase>
+  <finish>So it was Morpheus! I've directed our forces to surround the building surreptitiously, but I'm sure that Morpheus and his group will be long gone by then. It seems clear that he suspects the Machines of being up to something--perhaps he is trying to find out what that could be. I'm a little suspicious of his seeming familiarity with the imposter Agents but, as he said, there's little doubt now that the imposters are at odds with the Machines.</finish>
+</mission>

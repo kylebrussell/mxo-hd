@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redpill Rescue Revisited, Zion story mission 1.2.6. Source: research/missions/transcripts/Zion1-2-6.md, the archive
+     replay ([Zion Archive 1.2.6], contact [Archived]Tyndall), played by a level 50 character. Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's and the operator's lines, the team's and the Zion Upgrade Master's
+     names and lines, and the information reward (525,000, a level 50 character's; no experience line was shown, so exp
+     is 1.2.5's 137,375). Ours: the description, the objective texts (the Objectives tab was never opened), the sites
+     (Normal, then RedPillExtraction for the extraction point), the enemy count and everyone's looks (no one's sex is
+     stated).
+     The team's names were randomised per run (another run had Alfreda, Rat and Stone with the same lines); this run's
+     Adele, Enceladus and Brest are used. The attackers were masked men in bandannas talking about "sleep" (Tyndall's
+     finish names them with the false Agents); they have no organisation, so they are the nearest, Zion. Their lines
+     weren't captured. Retail's team presumably went with the player from the first building to the extraction point:
+     each is found with a Talk goal (their first lines; the operator's "It's the Zion team" comes with Adele's), the
+     team is led out of the building (the operator's "Excellent work getting the team out of danger"), and they follow
+     into phase 2. Their lines on arrival are phase 2's complete lines. The Zion Upgrade Master's other line ("...seriously.
+     Please don't touch the equipment.") was only a tail and is left out. Nothing was captured between 11:38:44 and
+     11:41:07. -->
+<mission id="101206" title="Redpill Rescue Revisited" description="Save a Zion team from attackers and get them to an extraction point." plot="1" order="1206"
+         org="1" contact="Tyndall" exp="137375" info="525000">
+  <npc id="1" handle="Adele" type="FRIENDLY" at="1" rsi="58010058" weapon="2564" />
+  <npc id="2" handle="Enceladus" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Brest" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564" />
+  <npc id="4" handle="Zion Upgrade Master" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+    <say>Did you bring Adele, Enceladus and Brest? They're due for extraction back to Zion.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Warrior, the marauding imposter Agents are harassing our operatives with increased frequency. One of our teams near your location is under attack by unidentified assailants--Commander Lock believes that there may be more of these fake Agents. We need you to get in there, destroy the attackers and get our Zion team to safety!</briefing>
+    <enter><say>The team is in that building. Help them fight off the attackers, then get them to an extraction point.</say></enter>
+    <objective goal="1" text="Find Adele" type="Talk" npc="1">
+      <talk><say npc="1">Who the heck are those guys with the bandannas on their faces?</say></talk>
+      <done><say>Ah! It's the Zion team. Looks like you got there in time!</say></done>
+    </objective>
+    <objective goal="2" text="Find Enceladus" type="Talk" npc="2">
+      <talk><say npc="2">These masked nuts showed up out of nowhere! Now that you're here, we should be able to take them out.</say></talk>
+    </objective>
+    <objective goal="3" text="Find Brest" type="Talk" npc="3">
+      <talk><say npc="3">Ah, the smell of danger. Invigorating, isn't it?</say></talk>
+    </objective>
+    <objective goal="4" text="Kill all of the attackers" type="DefeatAll">
+      <done><say contact="1">Who could those masked thugs be? And what's this "sleep" they're talking about?</say></done>
+    </objective>
+    <objective goal="5" text="Lead Adele, Enceladus and Brest out of the building" type="Escort" npc="1,2,3" to="exit">
+      <done><say>Excellent work getting the team out of danger. I knew you could do it!</say></done>
+    </objective>
+    <objective goal="6" text="Do not let Adele, Enceladus or Brest die" type="Protect" npc="1,2,3" />
+  </phase>
+  <phase site="RedPillExtraction" enemy="Zion" enemies="0">
+    <briefing>I'm updating your waypoint with the location of the extraction point. You're doing well so far, but stay alert! Zion's enemies may attack at any time.</briefing>
+    <enter><say>You're in the extraction point's building now.</say></enter>
+    <objective goal="1" text="Lead Adele, Enceladus and Brest to the Zion Upgrade Master" type="Escort" npc="1,2,3" to="npc:4">
+      <done><say>You can leave the area, the extraction team will get them back to Zion.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Adele, Enceladus or Brest die" type="Protect" npc="1,2,3" />
+    <complete><say npc="1">Thanks!</say><say npc="3">Ugh, there's nothing to do in Zion except sleep and eat. Boring!</say><say npc="2">Come look us up when you get back to Zion. We'll see about forming a mission team together.</say></complete>
+  </phase>
+  <finish>Great work, Warrior. Between those crazy masked men and false Agents, Zion really has its hands full these days. We're fortunate to have operatives like you championing our cause.
+
+Contact me when you are ready for your next assignment.</finish>
+</mission>

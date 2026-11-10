@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Monkey Wrench Roundup, Zion story mission 1.2.12. Source: research/missions/transcripts/Zion1-2-12.md (the archive
+     replay of [Zion Archive 1.2.12], given by [Archived]Tyndall; retail's site was in Bathary Row). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Tyndall, Operator and Burdette line, and Burdette's name. Ours: the
+     description, the objective texts, the site (an unnamed building: Normal) and the looks. Burdette's Elite Guards are
+     the phase's generated Exile hostiles; their two barks ("Get 'em!", "Come out, come out, little human...") were only
+     in Team chat and aren't said. The black box is the LED_Black_Box item (6835). Rewards: the 68,750 experience and
+     91,000 information shown right after this mission completed.
+     Gaps: Burdette greets the player and then turns hostile. Here he waits for the player to start the fight
+     (attacksOnSight="0"): finding him is a Talk that plays his lines, then he is killed and the box looted from his
+     body. Retail's upload had no separate area, so it is a goal of the same phase. -->
+<mission id="101212" title="Monkey Wrench Roundup" description="Intercept one of the imposter Agents' black boxes." plot="1"
+         order="1212" org="1" contact="Tyndall" exp="68750" info="91000">
+  <npc id="1" handle="Burdette" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, with the help of recent intelligence, Commander Lock has determined that the imposter Agents are behind the recent hardline sabotage. However, their motives and methods remain obscure. We want you to intercept one of those mysterious "black boxes" that they've been lugging around the sabotage sites--the Commander thinks that these boxes may hold the key to the imposter Agents' activities.</briefing>
+    <enter><say>Intel spotted a band of those imposter Agents lugging one of their "black boxes" into that building. The Agents left without the box, so it should still be on the premises.</say></enter>
+    <objective goal="1" text="Find the black box" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Too late, human. The box is mine now! Take 'em, boys!</say>
+        <say>Watch out! It seems that they're willing to fight for that black box.</say>
+        <say npc="1">The box is mine!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Burdette" type="Defeat" npc="1">
+      <done><say>The Exile group leader that you just defeated should have the black box somewhere on his person.</say></done>
+    </objective>
+    <objective goal="3" text="Get the black box from Burdette" type="Loot" npc="1" item="6835" after="2">
+      <done><say contact="1">That's the black box that we're looking for, Warrior. Find a hardline and upload it to us.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the black box at a hardline" type="Upload" item="6835" after="3">
+      <done><say contact="1">Good. Receiving your uploaded data now.</say></done>
+    </objective>
+  </phase>
+  <finish>You've done well, operative. Thanks to you, Zion's engineers will be able to start decompiling that black box right away. The mystery of the imposter Agents will finally be solved!</finish>
+</mission>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sympathy From a Friend, Zion story mission 1.2.1. Source: research/missions/screenshots-pilot-Zion1-2-1.md, the
+     archive replay ([Zion Archive 1.2.1], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's lines (his second, "you will find Malik Lu in that building", is
+     the enter line), the four NPCs' names and lines, and the reward (21,875 experience, 91,000 information). Ours: the
+     description, the objective text (the Objectives tab was never opened), the site (Normal; Tyndall calls it "an
+     unlikely location"), and everyone's looks.
+     The goal is talking to Malik Lu: the area's goals completed right after his line and Tyndall's reply. George Izuna
+     and Jaime Typpo were hostile in retail but only told the player to leave; Tyndall says to leave rather than fight
+     our own people, so they are hostile but wait (attacksOnSight="0") and the phase spawns no other enemies. Winston is
+     a friendly bystander. Nothing in the gap between 11:32:12 and 11:33:32 was captured. -->
+<mission id="101201" title="Sympathy From a Friend" description="Find out where Morpheus is from one of his friends." plot="1" order="1201"
+         org="1" contact="Tyndall" exp="21875" info="91000">
+  <npc id="1" handle="Malik Lu" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say>Morpheus will free The One and save us all!</say>
+  </npc>
+  <npc id="2" handle="Winston" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564">
+    <say display="5">Morpheus? Hahaha! Oh, you can't help him. Not now.</say>
+  </npc>
+  <npc id="3" handle="George Izuna" type="HOSTILE" at="1" rsi="c9020058" weapon="2568" attacksOnSight="0">
+    <say>Leave us alone!</say>
+  </npc>
+  <npc id="4" handle="Jaime Typpo" type="HOSTILE" at="1" rsi="58010058" weapon="2568" attacksOnSight="0">
+    <say>Get out of here!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Greetings, Warrior. We have a very important mission for you today. The Council fears that Morpheus' recent sabotage of the Matrix will endanger the Truce with the Machines. For the greater good of our cause, you must find Morpheus and dissuade him from this rash course of action. We've located one of our operatives who may know of Morpheus' current whereabouts. Please attempt to get some useful information from this person. Morpheus must be found, and quickly!</briefing>
+    <enter><say contact="1">I know that it seems like an unlikely location, but you will find Malik Lu in that building: a Zion operative and one of Morpheus' friends. Be careful not to offend him or he won't help you. If he becomes hostile, leave immediately--we must not brew dissent among our own people.</say></enter>
+    <objective goal="1" text="Talk to Malik Lu" type="Talk" npc="1">
+      <talk><say npc="1">You wanna know about Morpheus? Well lissen up and I'll let you in on a little secret. Morpheus knows the truth! The truth, you know? The Machines have Neo and they're torturing him in horrible ways! Tentacles and needles and stuff, get it? Morpheus wants The One freed!</say></talk>
+      <done><say contact="1">This man's wits have left him. What could have done this to one of our operatives? You'd better leave him in peace.</say></done>
+    </objective>
+  </phase>
+  <finish>{player}, pay no heed to the ravings of lunatics. Morpheus is out there, and we can, and will, find him and bring him back to Zion!</finish>
+</mission>

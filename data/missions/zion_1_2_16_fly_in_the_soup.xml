@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fly in the Soup, Zion story mission 1.2.16. Source: research/missions/transcripts/Zion1-2-16.md (the archive replay
+     of [Zion Archive 1.2.16], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the sites (the team's last position and Armor's hangout are Normal, the wine
+     dealer's office is Office, Armor's apartment is SlumApt), the looks and the enemy count. Item stand-ins: the bottle
+     of Montagne Verte '75 is Liquor (6801), Ja Myers' map disk is Map_Disk (6783), the letter in the desk is Letter
+     (6793). Rewards: the 149,875 experience and 91,000 information shown right after this mission completed; the
+     reward items retail gave (Shielded Violet Barrelhead Shorts, Code Bit 3, Forum Post from: The_Kid) aren't given.
+     Gaps: the masked men are Cypherites, who have no organisation here: phase 4's hostiles are Zion's (rogue
+     redpills); their barks were only in Team chat and aren't said. Armor turns on the player when found: he waits for
+     the player to start the fight (attacksOnSight="0"), so finding him is a Talk, then he is killed. The murdered team's
+     three bodies aren't spawned: searching them is a Search of a box that turns up nothing. The Operator's lines on
+     first seeing the masked men are said on arrival (one of the two similar lines). Rufus Hentzel's and Angelo
+     O'Nanski's remarks drew Operator replies, so they are optional Talk goals. One line of Rufus Hentzel's was cut off
+     and isn't said. -->
+<mission id="101216" title="Fly in the Soup" description="Find out what happened to a missing Zion recruitment team." plot="1"
+         order="1216" org="1" contact="Tyndall" exp="149875" info="91000">
+  <npc id="1" handle="Rufus Hentzel" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Adalberto Giggleman" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">Must've been a prank call, there's nothing here. Darn those punk kids!</say>
+  </npc>
+  <npc id="3" handle="Angelo O'Nanski" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Yeah, we're supposed to be investigating a murder or something, but this place looks pretty dead.</say>
+  </npc>
+  <npc id="4" handle="Evita Bailie" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>Ah, yes, this is one of ours. Normally I wouldn't disclose our sales information but since you are investigators... The case was sold recently to a fellow named Armor. You can get his address from my secretary, Ja Myers, who is wandering around the office here. I hope Armor isn't in some kind of trouble, he's been a good client recently.</say>
+  </npc>
+  <npc id="5" handle="Ja Myers" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
+    <say>Oh, you want Evita Bailie. She's right over... oh. Well, she's around here somewhere.</say>
+  </npc>
+  <npc id="6" handle="Henry Bender" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say display="5">Exotic wine sales are on the rise. People really want to live in style.</say>
+  </npc>
+  <npc id="7" handle="Jada Yeung" type="FRIENDLY" at="2" rsi="61000040" weapon="0">
+    <say display="5">I feel unfulfilled. Maybe I should start running around the streets at night, like those masked people. "Live for the moment" and all that.</say>
+  </npc>
+  <npc id="8" handle="Dwayne Detriech" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say display="5">Sales among young adults are on the rise.</say>
+  </npc>
+  <npc id="9" handle="Christian Kissel" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say>Maybe you can find him at the address on the letter in that desk over there. If you find him, tell him that his share of the rent is overdue.</say>
+  </npc>
+  <npc id="10" handle="Armor" type="HOSTILE" at="4" rsi="ec020058" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>One of our mission teams suddenly stopped responding to their cell phone while in the City. They were a veteran recruitment team and would not drop contact without a very good reason. We need you to go to their last known position and see if you can pick up their trail.</briefing>
+    <enter><say contact="1">The team last made contact from inside that building. Investigate thoroughly and see if you can find any trace of them. {player}, I have to admit that I'm getting a little worried about the three of them. Please be careful.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the room" type="Search" object="1" item="6801">
+      <done><say>"Montagne Verte '75." Odd to find a bottle of a rare vintage just sitting around, and half-finished at that. Bring that liquor outside and wait for further instructions.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Rufus Hentzel" type="Talk" npc="1" optional="1">
+      <talk>
+        <say npc="1">Hey, you didn't call us about three bodies lying around here, did you? Dang.</say>
+        <say>Bodies? Oh uh, I don't like the sound of that at all. But still, there's nothing there now...</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to Angelo O'Nanski" type="Talk" npc="3" optional="1">
+      <talk>
+        <say npc="3">Boy, I guess they fumigated here recently or something--just look at all these dead bugs.</say>
+        <say>Dead bugs? If it was fumigators, they would normally have cleaned up afterwards. What could this mean? Search that room carefully.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>Just as I thought--that bottle of wine you found is of a very rare vintage indeed: only one wine dealer in the area claims to stock it and it commands a very high price--yet someone just left the bottle lying around half-finished. It seems like an odd connection, but this is the only clue we have to our team's disappearance. Operative, I want you to visit the wine dealer and find out if they have sold that vintage of wine to anyone recently. I'm uploading the dealer's location to you now.</briefing>
+    <enter><say>You should find the elite wine merchant, Evita Bailie, inside that building. Interview her and try to find out who might have bought that bottle of wine recently.</say></enter>
+    <objective goal="1" text="Talk to Evita Bailie" type="Talk" npc="4">
+      <talk>
+        <say npc="4">Ah, you're the investigators--your chief spoke to me on the phone. I understand that you need a bottle of Montagne Verte '75 identified? I'll need to take a look at the bottle.</say>
+        <say>Give the wine bottle to Evita Bailie so that she can examine it.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Give the wine bottle to Evita Bailie" type="Give" npc="4" item="6801" after="1">
+      <talk><say npc="4">I'll need to see that wine bottle.</say></talk>
+      <done>
+        <say npc="4">Ah, yes, this is one of ours. Normally I wouldn't disclose our sales information but since you are investigators... The case was sold recently to a fellow named Armor. You can get his address from my secretary, Ja Myers, who is wandering around the office here. I hope Armor isn't in some kind of trouble, he's been a good client recently.</say>
+        <say>Get that map disk from Ja Myers.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the map disk from Ja Myers" type="Get" npc="5" item="6783" after="2">
+      <done>
+        <say npc="5">Armor's address? Oh yes, I have it right here on this map disk. Go ahead and take it with you.</say>
+        <say contact="1">Upload that map disk to me at a hardline, operative.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Upload the map disk at a hardline" type="Upload" item="6783" after="3">
+      <done><say>Receiving your upload now. Stand by for an update.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>Okay, I am uploading the address from that map disk to you now. Proceed to this location and interview Armor. He or someone he knows may have seen our recruitment team at their last known location. It's a long shot, but it's the only clue we have to their disappearance.</briefing>
+    <enter><say>According to Evita Bailie, Armor should be at that address. Talk to him and see if he was at the recruitment team's last known location. If so, perhaps he saw something there that will give us a clue about their disappearance.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Christian Kissel" type="Talk" npc="9">
+      <talk><say npc="9">Oh, you're looking for Armor? I'm his roommate. He isn't in right now--he hasn't been in much at all, lately. He's really been living it up--expensive clothes, fancy restaurants, pricey booze... I don't know how he can afford it. I think I know where he hangs out though--the address is on a letter in that desk over there.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the letter from the desk" type="Search" object="1" item="6793" after="1">
+      <done><say contact="1">Upload that letter to me at a hardline, Warrior.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the letter at a hardline" type="Upload" item="6793" after="2">
+      <done><say contact="1">Receiving the letter data now...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>All right, the address from the letter is being sent to you now. Proceed to the new waypoint and look for Armor. His roommate's comments were interesting--Armor seems to be acting erratically. I just hope that he can tell us something useful about our missing recruitment team.</briefing>
+    <enter>
+      <say>Armor should be in that building. Hopefully he can tell us something about the disappearance of the recruitment team.</say>
+      <say>What's this? Masked men, here? Could they be involved with Armor somehow?</say>
+    </enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Find Armor" type="Talk" npc="10">
+      <talk>
+        <say>There's Armor! So he must be the leader of this crazy bunch. What does he mean by "dream"?</say>
+        <say npc="10">No! They're our bodies! We found them fair and square! We're going to hold them up as examples of what happens to those who would spoil the dream of our City.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Armor" type="Defeat" npc="10" />
+    <objective goal="3" text="Search the bodies" type="Search" object="1" item="0" after="1">
+      <done>
+        <say contact="1">Oh no! That's our recruitment team--they've been murdered! And each by a single shot to the head. How awful!</say>
+        <say>You've found what we needed to know. You can leave the area, operative. We'll have a recovery team come and take proper care of the bodies.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>It must have been those masked men who brought the bodies here. But those pleasure-addicted dreamers wouldn't be capable of taking out one of our veteran teams like that--one bullet in each, right in the middle of the forehead. This seems like the work of a highly trained professional killer. Well, whoever it was, they're a dangerous new threat to our operatives in the Matrix.</finish>
+</mission>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hardlined Learning, Zion story mission 1.2.8. Source: research/missions/transcripts/Zion1-2-8.md, the archive
+     replay ([Zion Archive 1.2.8], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, Tyndall's lines (his second, "Diego Lagenour, is in that building", is the
+     enter line), the operator's line, Diego Lagenour's name and lines, and the reward (68,625 experience, 91,000
+     information). Ours: the description, the objective texts (the Objectives tab was never opened), the site (Normal),
+     the enemy count, Diego Lagenour's look (an Exile program, male), and the named Imposter Agent whose body holds the
+     CD (the Data_CD item, 6831).
+     Finding Diego Lagenour is a Talk goal: his "They took it..." is its talk line and the operator's "The imposter Agents
+     took the Hardline Architect's data" its done line (in retail the operator's line came first). Once the attackers are
+     dead he thanks the player when talked to. Tyndall's "the enemy may have him in their clutches" suggests protecting
+     him, but no line asks for it, so there is no Protect goal. A hostile named Spark Torch hit the player near the end,
+     probably a street hostile on the way to the hardline; he has no NPC. -->
+<mission id="101208" title="Hardlined Learning" description="Recover a hardline architect's data before the imposter Agents take it." plot="1" order="1208"
+         org="1" contact="Tyndall" exp="68625" info="91000">
+  <npc id="1" handle="Diego Lagenour" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="0">
+    <say>They took it... my precious data...</say>
+    <say after="2">Oh, thank you. You're from Zion, aren't you? Please, take the data they were trying to steal, and keep it safe. Knowledge of the inner workings of the hardline system should not be entrusted to renegade programs such as these.</say>
+  </npc>
+  <npc id="2" handle="Imposter Agent" type="HOSTILE" at="1" rsi="6e060040" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>An unknown group is sabotaging hardlines throughout the City! This could have grave repercussions for Zion's operations in the Matrix. Unfortunately, we don't know enough about the mechanics of the hardline system to be able to track the group doing the damage.
+
+A certain Exile program is known to have specialized in hardline system architecture before he was "retired" by the Machines. We've pinpointed his position, but I've just been alerted that imposter Agents have been spotted in the vicinity. Warrior, they may be after the same information that we seek. Zion must obtain this information before it falls into enemy hands!</briefing>
+    <enter><say contact="1">The Hardline Architect, Diego Lagenour, is in that building. I'm picking up multiple high-energy programs close to his location--Warrior, I fear that the enemy may have him in their clutches! You must hurry!</say></enter>
+    <objective goal="1" text="Find Diego Lagenour" type="Talk" npc="1">
+      <talk><say npc="1">They took it... my precious data...</say></talk>
+      <done><say>The imposter Agents took the Hardline Architect's data.</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the imposter Agents" type="DefeatAll">
+      <done><say contact="1">Brilliant fighting, Warrior! The information we seek should be on the body of an attacker.</say></done>
+    </objective>
+    <objective goal="3" text="Get the CD from the imposter Agent" type="Loot" npc="2" item="6831">
+      <done><say contact="1">That CD could hold the data we need, operative! Please take it to a hardline and upload it to Zion for analysis.</say></done>
+    </objective>
+    <objective goal="4" text="Upload the CD at a hardline" type="Upload" item="6831" after="3">
+      <done><say contact="1">Data received.</say></done>
+    </objective>
+  </phase>
+  <finish>The data you uploaded appears to be exactly what Commander Lock was looking for, operative! Zion will thank you warmly upon your return.
+
+Contact me when you are ready for your next assignment.</finish>
+</mission>

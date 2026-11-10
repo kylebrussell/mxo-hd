@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Witness Rescue, Zion story mission 1.2.11. Source: research/missions/transcripts/Zion1-2-11.md (the archive replay
+     of [Zion Archive 1.2.11], given by [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Tyndall, Operator and witness line, and the witnesses' names (Deja
+     Willows, Alonzo Blair). Ours: the description, the objective texts, the site (one building: Normal), the looks, and
+     the boss's handle: retail only calls it "a powerful program" in a suit and dark glasses, so it is an imposter Agent
+     named "Imposter Agent". The kidnappers are the phase's generated Machine hostiles. Rewards: the 68,625 experience
+     and 91,000 information shown right after this mission completed.
+     Gaps: retail held the two witnesses in two separate areas of the building ("activity in two separate areas"); a
+     generated site is one floor, so both chains (boss then Deja, kidnappers then Alonzo) are open together on it. The
+     DefeatAll for the kidnappers also counts the boss. A body was searched in retail (information only, no item), which
+     isn't a goal here. One line of Deja's first speech may be missing from the screenshots. -->
+<mission id="101211" title="Witness Rescue" description="Rescue two kidnapped witnesses to the hardline sabotage." plot="1"
+         order="1211" org="1" contact="Tyndall" exp="68625" info="91000">
+  <npc id="1" handle="Imposter Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="2" handle="Deja Willows" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say>First the man at the phone booth, and now these thugs! Well, at least they're nicely dressed, for criminals.</say>
+  </npc>
+  <npc id="3" handle="Alonzo Blair" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>It's weird how a guy looking just like these kidnappers here was also snooping around the sabotaged phone booth.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>The hardline saboteurs are fighting back! Since you interviewed a bluepill hardline witness, other witnesses have been abducted by unknown assailants. Warrior, Zion's scanners have traced two of these kidnapped witnesses to a building in your area. It will be your task to liberate the captive bluepills and get whatever information you can about the saboteurs and kidnappers. Are you prepared for this hazardous mission?</briefing>
+    <enter><say contact="1">I'm detecting activity in two separate areas in that building, operative. The kidnappers may have split their hostages up. Don't forget, we need these bluepills alive!</say></enter>
+    <objective goal="1" text="Kill the program guarding Deja Willows" type="Defeat" npc="1">
+      <done><say contact="1">Congratulations, Warrior--that was a powerful program that you just defeated. Now, see if the witness Deja Willows has any useful information.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Deja Willows" type="Talk" npc="2" after="1">
+      <talk>
+        <say npc="2">Hey, you're really great! How can I --oh, the phone booth? Well, I was using the phone, when this man came along and just hung up the receiver! Then he pulled me out of the booth and shut himself inside. I went to find a cop, and when I got back to the booth, the man was gone. He was dressed in dark glasses and a suit, just like these men here.</say>
+        <say>Interesting. This information should be useful to Zion.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Kill the kidnappers" type="DefeatAll">
+      <done>
+        <say contact="1">You've wiped out all of the kidnappers, Warrior. Your combat skills are improving nicely.</say>
+        <say contact="1">Nicely done, Warrior. Now let's see what Alonzo Blair can tell us about the saboteurs.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Talk to Alonzo Blair" type="Talk" npc="3" after="3">
+      <talk>
+        <say npc="3">Gosh, thanks! How can I repay you? Oh, the phone booth sabotage? Well... come to think of it, I saw a man with a blinking red device, just like these guys have, lugging a black box near the phone booth right before I got to it and found that it had been tampered with. Could that have been a coincidence?</say>
+        <say contact="1">Nice work, operative. This is useful information.</say>
+      </talk>
+    </objective>
+    <objective goal="5" text="Do not let the witnesses die" type="Protect" npc="2,3" />
+    <complete><say>All goals achieved! You can leave the mission area now, operative.</say></complete>
+  </phase>
+  <finish>Commander Lock will be most interested to hear this information that you've gathered from those witnesses. Your services have been quite valuable, operative. Don't doubt that they will be repaid in full once Zion triumphs over the Machines.</finish>
+</mission>

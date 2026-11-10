@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Recruit with Machines, Zion story mission 1.1.2. Source: research/missions/transcripts/Zion1-1-2.md, the archive
+     replay ([Zion Archive 1.1.2], contact [Archived]Tyndall). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, the operator's lines, Tyndall's closing line and the reward (30,000
+     experience, 73,500 information). Ours: the description, the objective texts (the Objectives tab was never opened),
+     the site (Normal; red carpet and wood panelling), the enemy count, and the Machine Operative who stands for the
+     "Programs" guarding Dallas Vandenberg.
+     Retail was a scripted betrayal: the Machine Operatives the player was to meet turned on the player, and Dallas Vandenberg,
+     the potential redpill to be led to the REP, was found dead, so the REP escort never happened. NPCs can't switch
+     sides, so the Machine Operative is hostile but waits for the player (attacksOnSight="0"): meeting him is a Talk
+     goal whose done line is the operator's "Have the Machines betrayed us?!", and the phase's generated imposters attack
+     on sight (the operator's enter line already doubts them). Dead NPCs aren't spawned, so finding Dallas Vandenberg's
+     body is a Search of a piece of furniture that turns up nothing. The Machine Communique re: The Plant was in the
+     player's inventory at the end with no receipt line visible; here it is looted from the Machine Operative as the
+     Recording_Coded_Message item (6836). The line just before "Something is terribly wrong..." was only a tail
+     ("...the nearest exit quickly.", the automatic goals line) and is left out. The barks ("Destroy the humans.", "You
+     will not leave, human.") have no place in the format. -->
+<mission id="101102" title="Recruit with Machines" description="Meet a Machine team and extract a potential redpill." plot="1" order="1102"
+         org="1" contact="Tyndall" exp="30000" info="73500">
+  <npc id="1" handle="Machine Operative" type="HOSTILE" at="1" rsi="6e060040" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The Machines claim they are innocent of breaking the Truce. They say they can prove it by helping us stop these so called imposters. We need you to hook up with one of their teams and protect a potential redpill contact. I don't know about you, but I think this is strange. Machines actually helping us recruit... A few Machine Operatives are guarding our man, Dallas Vandenberg, at this location. Just meet up with the Programs and Dallas Vandenberg, and then lead Dallas Vandenberg to the REP and extract him from the Matrix.</briefing>
+    <enter><say>The code that I'm seeing pass by isn't what I was expecting... The Machine Operatives may have upgraded or changed somehow. I don't know for sure if these are Machine Operatives or not, as the signatures that I'm seeing are those of programs.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Meet up with the Machine Operatives" type="Talk" npc="1">
+      <done><say>What the...?! Have the Machines betrayed us?! Show them that Zion will not go quietly!</say></done>
+    </objective>
+    <objective goal="2" text="Kill all of the imposter programs" type="DefeatAll" />
+    <objective goal="3" text="Get the communique from the Machine Operative" type="Loot" npc="1" item="6836" after="1" />
+    <objective goal="4" text="Find Dallas Vandenberg" type="Search" object="1" item="0">
+      <done><say>Oh no... That must be Dallas Vandenberg! Those bastards killed him! Get out of there before more show up and they kill you as well!</say></done>
+    </objective>
+    <complete><say>Something is terribly wrong...</say></complete>
+  </phase>
+  <finish>Maybe we'll have better luck next time, {player}.</finish>
+</mission>
