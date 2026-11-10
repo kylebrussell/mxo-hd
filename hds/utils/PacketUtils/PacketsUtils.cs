@@ -129,6 +129,28 @@ namespace hds{
 			return createTeleportPacket(x*100.0f, y*100.0f, z*100.0f);
 		}
 
+		/// <summary>
+		/// Own-view teleport with the place it lands in. Retail's own-view record <c>01 1c &lt;yaw&gt; &lt;sector u16&gt;
+		/// &lt;region u16&gt; &lt;index u16&gt; &lt;u8&gt; &lt;x y z f32&gt;</c> named the sector and region (the pair the elevator
+		/// panel's 81 3f carries; region 1 outdoors) and an index that looks like the nav polygon (client.dll:
+		/// NavPolyID(prefabID, iNavPoly), DestinationNavPoly). The last byte is unknown.
+		/// </summary>
+		public static byte[] createTeleportPacket(float x, float y, float z, UInt16 sector, UInt16 region, UInt16 index, byte last, byte yaw)
+		{
+			DynamicArray din = new DynamicArray();
+			din.append(StringUtils.hexStringToBytes("0200011c"));
+			din.append(yaw);
+			din.append(BitConverter.GetBytes(sector));
+			din.append(BitConverter.GetBytes(region));
+			din.append(BitConverter.GetBytes(index));
+			din.append(last);
+			din.append(NumericalUtils.floatToByteArray(x, 1));
+			din.append(NumericalUtils.floatToByteArray(y, 1));
+			din.append(NumericalUtils.floatToByteArray(z, 1));
+			din.append(StringUtils.hexStringToBytes("0000"));
+			return din.getBytes();
+		}
+
 		public static byte[] createTeleportPacket(float x, float y, float z){
 
 			byte[] xHex = NumericalUtils.floatToByteArray(x,1);
