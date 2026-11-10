@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Sheeted Dead, Machines story mission 9.3.5. Source: research/missions/transcripts/Mach9-3-5.md (the archive
+     replay of [Machine Archive 9.3.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the Tactical Security barks
+     from Team chat, the objective texts "Talk to Agent Pace" and "Give the Frags to Technician Underson", and the
+     names Hyman Franguiadakis, Agent Pace, Charmaine Underson, Tomi Overend, Chere Trowe and Tactical Security.
+     Gray called the player "Ms. Napilitano", Pace "Marie" and Tomi Overend "Operative TiAmo"; all are {player}.
+     Gray's "what appears to be small collection" is retail's wording and is kept.
+     Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the data lab is
+     an office in Tabor Park, the minimap there: Office; the others are not described: Normal), the looks (Tomi
+     Overend's and Chere Trowe's sex isn't known; the guards, seen in SWAT gear, have a civilian look) and the enemy
+     counts. The overridden programs and the overridden Furies gang members are rogue programs: Machines. Gray placed
+     the first three phases in Richland, another district; the mission plays in the Slums, so they ask for no
+     neighbourhood. Item stand-in: the code fragments are Frags (6785), retail's own objective word.
+     Rewards: 396,360 experience and 129,500 information, shown on completing this mission.
+     Gaps: the first site had a civilian to evacuate who was found dead; dead NPCs aren't spawned, so there is no
+     evacuation, and the Operator's line about her is said when the phase is done. The "big floating ball" in the
+     Furies' site was to be left alone and isn't built; a line during that fight wasn't readable and is left out.
+     Where the fragments lay isn't logged: they are searched for in a cabinet or desk. Hyman Franguiadakis's "I'm
+     fine. Fine." and the Operator's "Think I should call one of our shrinks in?" make an optional talk with him, and
+     his "No, really, I'm fine." is his line once the fragments are found. Tomi Overend was "in the next room"; we
+     can't choose rooms, so all of the lab's NPCs stand on one floor. Chere Trowe's "A kill code?!" is said with the
+     Operator's when Tomi is done, and her "Oh... Nothing." and Tomi's mocha line are their lines after that. A Team
+     chat line about a "Ventrilo harrassment collection" had no readable speaker and isn't used. -->
+<mission id="209305" title="The Sheeted Dead" description="Cleanse the overridden programs left by Carlyne and Halborn's battle, and bring the untouched code fragments to Agent Pace." plot="1"
+         order="9305" org="2" contact="Agent Gray" exp="396360" info="129500">
+  <npc id="1" handle="Hyman Franguiadakis" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say>I'm fine. Fine.</say>
+    <say after="2">No, really, I'm fine. She wouldn't let them.
+
+I'm fine.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Charmaine Underson" type="FRIENDLY" at="4" rsi="5a000040" weapon="0" />
+  <npc id="4" handle="Tomi Overend" type="FRIENDLY" at="4" rsi="61000040" weapon="0">
+    <say after="3">Ooh, darn. Where'd I leave my mocha?</say>
+  </npc>
+  <npc id="5" handle="Chere Trowe" type="FRIENDLY" at="4" rsi="3c000040" weapon="0">
+    <say after="3">Oh... Nothing. It's just unusual... That's all.</say>
+  </npc>
+  <npc id="6" handle="Tactical Security" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say display="5">Don't touch anything.
+
+That goes for the technicians, too!</say>
+  </npc>
+  <npc id="7" handle="Tactical Security" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say display="5">These nerds are creeping me out.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>The battle between Carlyne and Halborn has left large areas of Richland suffering from a massive influx of code overrides. System programs are unable to approach the area. This has made it difficult to examine the battle site, but long range scans have failed to detect any trace of the combatants. Until we are able to obtain confirmation to the contrary, we must assume that both survived the encounter.
+
+In their absence, our most pressing problem is the code override situation in Richland. Your first task is to cleanse the indicated area of overridden programs, and to evacuate any surviving civilians you find there. Even after removal of the overridden programs, it will take some time to restore full functionality to the simulation in the affected areas.</briefing>
+    <enter><say>Man, I've got background noise from override codes clogging up all of my readings in there. From what Gray said, it sounded like you should expect a lot of hostile programs.</say></enter>
+    <objective goal="1" text="Destroy the overridden programs" type="DefeatAll">
+      <done><say>I think that's got 'em. We must have lost a ton of programs from this...</say></done>
+    </objective>
+    <complete><say>... Looks like we won't be evacuating anyone from that area. I guess it's a toss up whether it was the hostile programs that killed her, or the synaptic shock when the simulation around her freaked.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>You have done well, operative, but the task of restoring Richland is far from complete.
+
+Scan analysis has revealed unusual activity by Furies gang members at the indicated location. Override routines have been detected in the area. Any infected programs are to be eliminated.</briefing>
+    <enter><say>Uh-oh, I've got a big one in there.
+
+If it's one of those big floating balls, you can leave that alone for now. Just concentrate on the actual overridden bipeds.</say></enter>
+    <objective goal="1" text="Eliminate the infected Furies" type="DefeatAll">
+      <done><say>Nice. You're all done in there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Almost all code in the proximity of the battle zone suffered at least some degree of override damage. It is remarkable, then, that our scans have found what appears to be small collection of fragmentary code entirely unaffected by the overrides.
+
+Locate and retrieve these fragments, {player}.</briefing>
+    <enter><say>It isn't anything I can spot on my screen. You'll have to poke around. Oh, there is a bluepill in there, though. That should be...Hyman Franguiadakis, according to the Machine records.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Hyman Franguiadakis" type="Talk" npc="1" optional="1">
+      <talk><say npc="1">I'm fine. Fine.</say></talk>
+      <done><say>Think I should call one of our shrinks in? Those could be simulation rejection symptoms, right?</say></done>
+    </objective>
+    <objective goal="2" text="Search the area for the code fragments" type="Search" object="1" item="6785">
+      <done><say>Scanning for override damage... Huh, clean as a whistle. Must be what we're after.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Take the fragments to Agent Pace at the data analysis center indicated on your heads-up display, operative.</briefing>
+    <enter><say>That's the data lab. Take those babies straight to Pace.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ciao, {player}. Please hand the fragments to Ms. Underson.</say></talk>
+    </objective>
+    <objective goal="2" text="Give the Frags to Technician Underson" type="Give" npc="3" item="6785" after="1">
+      <done>
+        <say>Is that it?</say>
+        <say npc="3">Oh, I just take the data and copy it to the computer. The systems do all the work.
+
+If you want to know the results, Tomi should have them in the next room any second now.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Tomi Overend" type="Talk" npc="4" after="2">
+      <talk><say npc="4">Well, hi there! You must be Operative {player}, who found the fragments. Congrats!
+
+Let me see... Mm-hm... Well now, these appear to be part of the same code as some other fragments our operatives found several weeks ago while searching for the Oracle! How about that?
+
+Oh, there's more. Hm... My! By combining the data, the systems were able to confirm that these fragments must have been left over from the process of writing a kill code! How interesting!</say></talk>
+      <done>
+        <say>A kill code?!</say>
+        <say npc="5">A kill code?!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The Oracle's involvement in a surreptitious plot with certain Exiles has been suspected for several recent months, {player}, but if she is using her unique logic processes to craft termination codes, the nature of her activities could be much more dangerous than anticipated.
+
+In the past few days, she appears to have contacted leaders of both the Cypherites and E Pluribus Neo. Our Cypherite sources report that she delivered an encrypted code, but its nature is unknown, and the Cypherites have not delivered a formal-- Excuse me a moment.
+
+I've just been given a report that Halborn and Carlyne have been seen with Merovingian operatives. Locating them will be our top priority. You will be contacted when an assignment is prepared.</finish>
+</mission>

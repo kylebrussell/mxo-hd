@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Slowdown, Machines story mission 9.2.1. Source: research/missions/transcripts/Mach9-2-1.md (the archive replay of
+     [Machine Archive 9.2.1], given by [Archived]Agent Gray; one shot during play, the rest of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, the objective text "Talk to Agent Pace" (the
+     Objectives window in the one shot taken during play), and the names Veil, Cypherite Network Hacker, Agent Pace,
+     Agent Lee, Taylor Bonner and Lupe Chatterton. The Cypherite Network Hacker's two lines were seen only in Team chat.
+     Gray called the player "Ms. Napilitano" and Pace called her "Marie"; both are {player}. Pace's Italian is plain
+     text, as the other missions have it. Ours: the description (the Summary tab was never opened), the other
+     objective texts, the sites (the first is an office: the shot during play is an office room in Camon Heights, taken
+     while Veil's lines were the newest in Team chat, so before Pace was reached; the rest are not described: Normal),
+     the looks and the enemy counts. The overridden programs are Machine programs: Machines. Taylor Bonner and Lupe
+     Chatterton are the programs Pace hands over; one has a program look and one a civilian look, since the log does
+     not show them. Rewards: 396,000 experience and 66,500 information, shown right after this mission completed.
+     Gaps: Gray's second briefing has one line hidden at a screenshot join; the sentence reads whole without it and is
+     used as such, as is Pace's first line, which may also hide a line. Retail ended the Pace phase as soon as she had
+     spoken and the squad simply came along; a follower has to be led out of one phase to come into the next, so the
+     phase ends with leading Taylor Bonner and Lupe Chatterton out, and the next phase asks that they live. We have no
+     allies that fight, so they only walk along. In the first coordinates the Operator's "Nothing but little ones"
+     came two minutes in; Gray had said to search the area, so it is said on searching the computer. In the second
+     coordinates a big floating program (a Decelerator: the System chat shows a Decelerator hitting the player during
+     this mission) showed up, and the Operator said to leave it and kill only the regular ones; a placed hostile would
+     have to die before the area counts as cleared, so it isn't spawned and the Operator's line about it is said on
+     arrival, after the other. The office computer's sector sweep screen in the shot is flavour and isn't built.
+     Whatever was said between 2:13:47 and 2:15:38 wasn't captured. -->
+<mission id="209201" title="Slowdown" description="Terminate programs overridden by the intruder, then take a squad from Agent Pace and sweep the sites where his codes are active." plot="1"
+         order="9201" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Veil" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="2">We're not saying this for our own sakes, dear--but the citizens you're supposed to be protecting are having an awfully hard time getting their forty winks with that glowing guy clonking around.</say>
+  </npc>
+  <npc id="2" handle="Cypherite Network Hacker" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say display="5">Time to put up or shut up.</say>
+    <say display="5" after="2">What are your priorities, anyway?</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="4" handle="Agent Lee" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say display="5">Do as you're told.</say>
+  </npc>
+  <npc id="5" handle="Taylor Bonner" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568">
+    <say display="5">...</say>
+  </npc>
+  <npc id="6" handle="Lupe Chatterton" type="FRIENDLY" at="2" rsi="34050040" weapon="2568">
+    <say display="5">Yes?</say>
+    <say display="5" after="3">Of course. Good job.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>Greetings, {player}. Programs overridden by the intruder continue to be an issue. Once under his control they are no longer responsive to System directives, and must be terminated before they can cause further damage.</briefing>
+    <enter><say>I've got signals in there, should be the poor overridden programs.
+
+Huh... I'm also seeing a few redpill signals. Don't know who that might be, so be careful.</say></enter>
+    <objective goal="1" text="Eliminate the overridden programs" type="DefeatAll" />
+    <objective goal="2" text="Talk to Veil" type="Talk" npc="1">
+      <talk><say npc="1">This just won't do, dearie. The Machines have decided to let the intruder do whatever he wants, but how long do you think you can go around cleaning up the messes he makes?
+
+If they haven't got the guts to stand up to him, then maybe they should step aside for those who can.</say></talk>
+      <done><say>Yeah, great. Why don't we just put her in charge of the simulation...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, we would like to carry on a civil discussion with the intruder, but he has not replied to our requests, and his program overrides are making it...difficult for us to contact him.
+
+We are attempting to track his movements. High concentrations of his override codes can be detected with relative facility; however, they can also be dangerous. I am sending you to receive reinforcements from Agent Pace.</briefing>
+    <enter><say>In a way, it's kind of nice that they have to rely on us more than their own programs against this intruder guy.
+
+On the other hand, Agents would come in handy sometimes...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Believe me, {player}, we would like nothing better than to have the intruder out of the System. If only it were as easy as terminating an Exile, or destroying a hovercraft...
+
+As it is, we must proceed carefully. You understand, yes?
+
+Please take these programs with you. They will help if you encounter programs turned against us by the intruder's codes.</say></talk>
+      <done><say npc="3">Buona fortuna, tesoro! We are very grateful for your help.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Taylor Bonner and Lupe Chatterton out of the area" type="Escort" npc="5,6" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Take your squad to the indicated coordinates and search the area, operative. Eliminate any hostile programs you find, but remember that your primary goal is to locate the intruder.</briefing>
+    <enter><say>Override codes are active in there--multiple readings.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostile programs" type="DefeatAll" />
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Nothing but little ones; looks like the intruder's still a step ahead of us.</say></done>
+    </objective>
+    <objective goal="3" text="Do not let Taylor Bonner and Lupe Chatterton die" type="Protect" npc="5,6" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>There is...no other way to stop this problem than by negotiating with the intruder himself. We must locate him.</briefing>
+    <enter>
+      <say>More of the code readings in there...
+
+Hm, and I think I see a big one, too. Maybe we're in luck.</say>
+      <say>Whoa! Oh, great. Not exactly the wireframed guy we were looking for.
+
+Uh... Just get the regular ones. We can probably leave that floating thing for... Well, heck, we don't get paid enough for that.</say>
+    </enter>
+    <objective goal="1" text="Eliminate the overridden programs" type="DefeatAll" />
+  </phase>
+  <finish>Hm... Thank you, {player}. Clearly, establishing contact with the target is proving more difficult than expected. We will have to bring more forces to bear on this problem.</finish>
+</mission>

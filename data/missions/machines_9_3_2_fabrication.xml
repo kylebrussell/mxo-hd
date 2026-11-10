@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fabrication, Machines story mission 9.3.2. Source: research/missions/transcripts/Mach9-3-2.md (the archive replay
+     of [Machine Archive 9.3.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, and the names Halborn,
+     Carlyne, Luther O'Rourke, Agent Gray, Agent Stewart, The Architect and Agent Pace. Gray and Carlyne called the
+     player "Ms. Napilitano"; that is {player} (Stewart's "Ms. Napilitano is entering, sir." is "{player} is
+     entering, sir."). The Operator's "pinscher" is retail's spelling and is kept. Besides the contact on the
+     datalink, a field NPC named Agent Gray waits outside the meeting room in the last phase; he is a friendly NPC
+     with that handle. Halborn is placed again for the meeting. The Architect (level 255, no organisation in retail)
+     is a friendly NPC with a civilian look.
+     Ours: the description (the Summary tab was never opened), the objective texts (retail's Objectives tab only
+     showed "Leave the area now!"), the sites (the last is the Machine offices in Magog, the minimap there: Office;
+     the others are not described: Normal), the looks and the enemy count. The first site had "redpills, unregistered
+     ones, too, plus overridden programs"; a phase has one enemy organisation, so its hostiles are the overridden
+     programs (Machines) and the unregistered redpills aren't spawned.
+     Rewards: 396,000 experience and 66,500 information, shown on completing this mission.
+     Gaps: the Operator's "One of [...] these days..." lost words at a screenshot join; it is used as "One of these
+     days...". The "red eye" Agent the Operator saw beside Halborn has no name or line in the log and isn't placed.
+     The Operator's "Oh goody, the unpleasant one." and "Well, isn't it just our lucky day." are said on nearing
+     Halborn and Carlyne. Retail had the player answer Carlyne ("Tell him that you have not seen Halborn"); we have
+     no choices, so Gray's line comes with Carlyne's talk and Carlyne's answer ("No? Ah... Hm...") is his line when
+     talked to again. Luther O'Rourke's two lines came after Carlyne's talk; here his first and the Operator's
+     "Hm... Vitals seem steady." are said on nearing him, and his second is his line when talked to. The meeting was a
+     scripted conversation: here Gray, Halborn and the Architect are talked to in turn, Stewart's announcement comes
+     when Gray is done, and the later lines of Halborn, the Architect and Pace are their lines when talked to again.
+     At least one line before Gray's closing words wasn't readable and is left out. -->
+<mission id="209302" title="Fabrication" description="Investigate an outbreak of overrides, find Halborn and Carlyne, and attend Halborn's meeting with the Architect." plot="1"
+         order="9302" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="1">You still here?</say>
+  </npc>
+  <npc id="2" handle="Carlyne" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
+    <say after="1">No? Ah... Hm...
+
+Well! That's too bad. No, no; don't let me keep you. "Appointed rounds," and all that, eh? That's wonderful. Carry on, then.</say>
+  </npc>
+  <npc id="3" handle="Luther O'Rourke" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say>Have you... Uh... I don't really know how to say this...
+
+Have you seen a guy who looks like a 3D computer graphic?
+
+No--no, seriously.</say>
+  </npc>
+  <npc id="4" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
+  <npc id="5" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say after="2">The palm reader? Yes, I've heard her mentioned... Hm...
+
+Come to think of it, those Zionites kept saying her name, and then cutting each other off. I didn't think they knew what they were jabbering about.
+
+No... They couldn't know...</say>
+  </npc>
+  <npc id="7" handle="The Architect" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say after="3">...</say>
+  </npc>
+  <npc id="8" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Full sweep. Find him.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>{player}, an outbreak of programmatic overrides has been detected. You are assigned to investigate.
+
+At this time it is unknown if this was caused by Carlyne or Halborn; both of them are capable of having executed it.</briefing>
+    <enter><say>Man, I bet they're working together. They're gonna come at us in a big override pinscher--
+
+Huh, redpills--unregistered ones, too--plus overridden programs. You've got your hands full on this one.</say></enter>
+    <objective goal="1" text="Eliminate the overridden programs" type="DefeatAll">
+      <done><say>Huh. Now all we need is for some Mervs to show up and try to steal the bodies.
+
+Hey, I'm getting a call from Gray. You'd better hit the street.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Continued scans of that area have registered a code signature matching the profile of either Halborn or Carlyne. You are to proceed to that area immediately and investigate.
+
+They have each met separately with Zion, and the Merovingian. Halborn continues to search for the program he believes exists inside the simulation, while Carlyne seems to be attempting to gain a support base with all organizations. This activity in particular could produce...complications. Additionally, Carlyne divulged to our operatives that Halborn seeks the "biological interface program" because Halborn's human body is dead.
+
+As we believe that both of them are still taking a non-hostile stance relative to our organization, you are not authorized to use force against either one, should you encounter them. Evaluate the situation, and report.</briefing>
+    <enter><say>So they're both trying to work the system, huh?
+
+Well, one of them is definitely in there. I've got some override program activity, too, and something... Huh, well, it isn't an Agent...</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="1">
+      <talk><say npc="1">Huh. What kept you?
+
+I want to talk to your boss' boss. Go make it happen.</say></talk>
+      <done><say>*Man* that guy is infuriating. One of these days...</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Oh goody, the unpleasant one.
+
+Oh, a "red eye" Agent. So that's what was on the scan. Wonder where he dug it up.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>...
+
+Thank you, operative. I will see to this.
+
+Override use apart from Halborn is still being detected in that area. He may have left other pockets of override programs. Please investigate the indicated location.</briefing>
+    <enter><say>I've got just one big override in there... Did we just go in a circle and smack into Halborn again? Or...
+
+Hey, and I'm picking up a civilian in there, too.</say></enter>
+    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Oh...hell-o there, {player}! What a pleasant surprise!
+
+Why, I'm tracking Halborn, of course. He's around here somewhere. You haven't seen him, by any chance?</say>
+        <say contact="1">Tell him that you have not seen Halborn, operative, and leave as soon as you can excuse yourself without drawing suspicion.</say>
+      </talk>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Well, isn't it just our lucky day.</say>
+    </near>
+    <near npc="3" radius="300">
+      <say npc="3">He... He shook my hand.
+
+That was...really weird.</say>
+      <say>Hm... Vitals seem steady.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Magog">
+    <briefing>The meeting with Halborn is arranged, operative. Please come to my location.</briefing>
+    <enter><say>Looks like you're hanging with the bigwigs. They're all up there. Security's tighter than--
+
+Never mind.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="4">
+      <talk><say npc="4">Halborn's request for a consultation with us at this time is likely due to concern over his pursuit by Carlyne. If he feels that he requires our help, this raises the possibility to establish control over him.
+
+You understand this, {player}? Very well; proceed into the adjoining chamber.</say></talk>
+      <done><say npc="5">{player} is entering, sir.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="6" after="1">
+      <talk><say npc="6">So, you didn't make it. Fine. I want to know who did. Don't make this more difficult than it has to be.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to the Architect" type="Talk" npc="7" after="2">
+      <talk><say npc="7">... I have every intention of expediting your departure from this simulation by every means at my disposal.
+
+The program's author is known as the Oracle.</say></talk>
+    </objective>
+  </phase>
+  <finish>This changes the situation significantly, operative. Zion and E Pluribus Neo have typically taken it upon themselves to protect the Oracle from perceived threats against her. If Halborn attempts to find her, they may intervene; also, we cannot ignore the fact that the Oracle has considerable efficiency in manipulating those around her.
+
+Halborn may intend to force her to divulge information concerning the function of the program he seeks. In any case, his obsession has now brought her to the forefront of this affair.
+
+You are dismissed to your regular duties for the time being. Expect further orders to be forthcoming within the usual period.</finish>
+</mission>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Denial of Service, Machines story mission 9.1.3. Source: research/missions/transcripts/Mach9-1-3.md (a replay of
+     9.1.3 given by Agent Gray; the bar showed only "Denial of Service", no archive prefix). Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Agent Wilson, Agent
+     Pace, Fritz Sharma, Ricardo Magnor and Veil. Gray and Agent Wilson called the player "Mr. Argento"; that is
+     {player}. Ours: the description (the Summary tab was never opened), the objective texts (the Objectives tab was
+     never opened), the sites (the two jamming stations are System installations: Office; the others aren't
+     described: Normal), the looks and the enemy counts. All three fights were against redpills (Zion, "E Pluribus
+     Neo", Zionites): enemy Zion. What Fritz Sharma and Ricardo Magnor are isn't shown; Fritz talks like a program and
+     has a program's look, Ricardo a redpill operative's. Veil has an Exile's look. Rewards: none were shown in these
+     crops, so this uses Machines 9.2's 396,000 experience and 66,500 information.
+     Gaps: Pace put Fritz Sharma and Ricardo Magnor "at your disposal" for the Zionite fight. We have no allies that
+     fight, so they are led out of the jamming station and only follow the player from then on. Ricardo Magnor's one
+     line was cut off after "Unfortunately for you, Mr. Argento," and is left out. The Operator's phase 1 line with
+     no visible header ("Hey, am I the only one who finds it pretty weird...") is said on reaching the floor, after
+     her first line there. Agent Wilson's first and repeat lines both came before Pace was talked to; here the repeat
+     is said once Pace is done. The Zionites' hacked telephone had no goal of its own and isn't built. Veil wasn't
+     known to be in danger during the attack, so there is no goal to protect her. Goals are numbered through the
+     whole mission so that the NPCs' after-lines can't be set off by a goal of an earlier phase. -->
+<mission id="209103" title="Denial of Service" description="Stop Zion's attempts to contact the intruder and defend the System's jamming stations." plot="1"
+         order="9103" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Agent Wilson" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say>Ah, {player}. Tell me, do you ever feel a...longing for your previous life as a citizen within the simulation?
+
+Mm-hm... I see...
+
+Well. Thank you for your time.</say>
+    <say after="2">Thank you. No further data is required at this time.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say after="2">Ah, yes... Agent Gray was referring to certain conversations System representatives held with the intruder before he entered the Matrix. Naturalmente, these are classified, although it is no secret that he has decided to disobey System protocols.</say>
+  </npc>
+  <npc id="3" handle="Fritz Sharma" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568">
+    <say>The operative is attempting to communicate with me. Please advise.</say>
+  </npc>
+  <npc id="4" handle="Ricardo Magnor" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say after="6">Oh, well, I haven't got all day to sit around and play phone tag, hon. I've got to get outside...
+
+You just think about what I said, hm? There's a dear.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Operative, as our attempts to remove the intruder by the direct application of force have proven singularly unsuccessful, we are designating you to occupy yourself with a more manageable target: terrorists. Hostile parties, most particularly Zion and E Pluribus Neo, have been attempting to contact the intruder, likely in an attempt to win him over to their side. Obviously, this would not be advantageous to us.
+
+Fortunately, their means of locating the intruder are much more limited than ours. They must move openly, which allows us, in turn, to locate them. Terrorist activity has been detected at the location indicated. You are to nullify all hostile parties you find there.</briefing>
+    <enter>
+      <say>I've got unauthorized redpill signals in there. They're all yours.</say>
+      <say>Hey, am I the only one who finds it pretty weird that we can't do anything to this guy? I mean, not even a signal lock or a kill code or something? What's he got that the Machines can't deal with? It's their damn simulation.</say>
+    </enter>
+    <objective goal="1" text="Kill the terrorists" type="DefeatAll">
+      <done><say>Man, that self-serving pretentiousness really gets on my nerves, you know?
+
+All right, let's see if Gray has any more terrorists that need nullifying.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Zion is making a significant effort to contact the intruder. We have detected transmissions from them on the broadcast channel he uses. He has...shown a reluctance to conduct further dialogue with us, but we certainly do not want Zion using that channel to try to speak to him themselves.
+
+We have installations equipped to jam local terrorist broadcasts. I am sending you to one of these stations now. You will contact Agent Pace, who is awaiting your arrival.</briefing>
+    <enter><say>Jeez, I'm getting a lot of static myself. The jamming station should be in there. They must be pumping a lot of power into that thing.</say></enter>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Saluti, operative. Fritz Sharma and Ricardo Magnor are at your disposal. They should be more than sufficient for the Zionite force you are expected to encounter.</say></talk>
+      <done><say>Go ahead and grab those two.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Fritz Sharma and Ricardo Magnor out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>A group of Zionites has attempted to send a message to the intruder by hacking a telephone at the location indicated. They were unsuccessful, but as a necessary precaution, we would like them forcibly removed from the simulation.</briefing>
+    <enter><say>I wonder if you can get "forcible" and "removal" tattooed on your knuckles?
+
+Let's see... Yep, I've got 'em. Go on and take away their phone privileges.</say></enter>
+    <objective goal="4" text="Kill the Zionites" type="DefeatAll">
+      <done><say>Not too shabby.
+
+Ah, I'm getting a call from Gray. You'd better head outside while I patch him through.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>One of our jamming stations has come under attack by Zionite forces. It is important that the station remains operational. Proceed to the area, and repel the attackers.</briefing>
+    <enter><say>That's the station. The jammers are making it hard to tell what's going on in there, but I think I see some unregistered signals.</say></enter>
+    <objective goal="5" text="Repel the attackers" type="DefeatAll">
+      <done><say>Looks like that's all of them. Better check on Veil.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to Veil" type="Talk" npc="5" after="5">
+      <talk><say npc="5">Looks like it was a good thing I happened to be stopping by, eh, dearie?
+
+There's quite a stir about the mystery man. The Machines are being awfully quiet about him, don't you think? Obviously, they know something... But here he is, stomping around the city, shocking people out of their PJs, and what's the System doing about it? Guarding their phones?</say></talk>
+      <done><say>Hmph. She may have a point, but she'd do better to keep her nose out of our business.</say></done>
+    </objective>
+  </phase>
+  <finish>Jamming stations across the city have been under attack. Although the attacks have been repelled, we cannot be certain that Zion has not managed to get a signal through to the intruder. They must be prevented from carrying on open communication with him.
+
+Your assistance has been appreciated, {player}. We will have further use for your services after the usual recuperation period.</finish>
+</mission>

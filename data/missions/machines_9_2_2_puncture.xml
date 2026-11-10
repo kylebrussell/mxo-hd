@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Puncture, Machines story mission 9.2.2. Source: research/missions/transcripts/Mach9-2-2.md (the archive replay of
+     [Machine Archive 9.2.2], given by [Archived]Agent Gray; one shot during the last phase, the rest of the log after
+     it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Agent Gray, Operator and NPC line, the objective texts "Eliminate the hostiles" and
+     "Search the area" (the last phase's Objectives window), the names Intruder, Agent Miller, Agent Jones and
+     Decelerator, and the Commando's bark "Enemy contact!" from Team chat (given to the Elite Commando; the Merovingian
+     programs' "More of 'em!" isn't used, as they are the generated hostiles). Gray and Agent Miller
+     called the player "Ms. Napilitano"; that is {player}. The Intruder's italic "Now" is plain text. Ours: the
+     description (the Summary tab was never opened), the other objective texts, the sites (the last is an office in Zia,
+     the shot during play; the others are not described: Normal), the looks and the enemy counts. The intruder's
+     programs are Machine programs: Machines. The last site's attackers are the Merovingian's (Merovingian
+     Pathogenist, Merovingian Martial Arts Initiate, Merovingian Guardian Patcher) and the General's Commandos:
+     Merovingian. The Elite Commando is ours, named from the Operator's "Elite commandos", so that his line has someone
+     to be said near. Rewards: 396,000 experience and 66,500 information, shown right after this mission completed.
+     Gaps: retail had the player find the intruder's big programs and "give a shout"; finding one is reaching it here
+     (a Decelerator that waits to be attacked), and the first area has no kill goal, as the Operator said to get out.
+     In the second area the Agents arrived once the Decelerators were verified; we can't spawn NPCs mid-phase, so
+     Agent Miller and Agent Jones stand on the floor from the start and the lead to the Decelerators opens after both
+     are found. Retail's Agents ran a special routine and killed the Decelerators themselves; we have no allies that
+     fight, so the player kills them once the Agents are beside them. If the first Decelerator dies before the Agents
+     reach it, the lead can't finish, so the Decelerators wait to be attacked. Each Agent's "Target sighted" and
+     "Target verified" came twice; here once when talked to and once on reaching the target. One line may hide at the
+     joins in Gray's first briefing, the Operator's "Found one" and Gray's last briefing; they read whole and are used
+     as such. The Operator's two paragraphs at 2:52:21 are one entry and are said on arrival. The last computer's
+     screen (a search for "stalingrad") isn't shown; the Operator's line about it is said when it is searched. -->
+<mission id="209202" title="Puncture" description="Locate the intruder's Decelerator programs for the Agents, carry the System's request for a meeting to the intruder, then break up a Merovingian attack." plot="1"
+         order="9202" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say after="5">Well done, {player}. You may leave the area, and report to Agent Gray for further instructions.</say>
+  </npc>
+  <npc id="5" handle="Agent Jones" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say after="5">Efficient work, operative. Agent Gray was correct to select you for this operation.</say>
+  </npc>
+  <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" />
+  <npc id="7" handle="Elite Commando" type="HOSTILE" at="4" rsi="8f080058" weapon="2568">
+    <say>Enemy contact!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Operative, the intruder's programs have presented a significant obstacle in reaching him. They are quite powerful, and moreover, it is inefficient for us to counter them directly with our own programs, as certain of the intruder's programs can...inflict high casualty rates on ours.
+
+Against operatives, however, he has fewer options. You will search him out. If you encounter resistance from his programs, notify us, and we will send in our own programs to eliminate the threat before he can react.</briefing>
+    <enter><say>Okay, we've picked up intruder override activity in there. Remember, give a shout as soon as you run into one of his big programs.</say></enter>
+    <objective goal="1" text="Find one of the intruder's big programs" type="Talk" npc="1">
+      <done><say>Found one? Okay, get out of there.
+
+Let's see if this plan of Gray's is actually going to work.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Acknowledged, operative. Sensors show a number of those "Decelerator" programs gathering in the area, possibly to impede your progress.
+
+Locate the programs, and verify that no other heavy hostile program, or the intruder himself, is in the area. At that point we will be able to send in our Agents to eliminate the Decelerator programs.</briefing>
+    <enter><say>I'm picking up some hefty readings in there. Let's see what we've got.</say></enter>
+    <objective goal="1" text="Locate the Decelerator programs" type="Talk" npc="2">
+      <done><say>There's one. Keep looking.</say></done>
+    </objective>
+    <objective goal="2" text="Locate the other Decelerator program" type="Talk" npc="3" after="1">
+      <done><say contact="1">Verification complete. Listen carefully, operative; the success of your mission depends upon you following my instructions exactly. Two Agents have been sent to your location, loaded with a special routine to help eliminate the Decelerator programs. Lead them to the Decelerator programs.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Agent Miller to the Decelerator programs" type="Escort" npc="4" to="npc:2" after="2">
+      <talk><say npc="4">Target sighted. Initiating elimination routine.</say></talk>
+      <done><say npc="4">Target sighted. Initiating elimination routine.</say></done>
+    </objective>
+    <objective goal="4" text="Lead Agent Jones to the Decelerator programs" type="Escort" npc="5" to="npc:2" after="2">
+      <talk><say npc="5">Target verified. Elimination routine initiated.</say></talk>
+      <done><say npc="5">Target verified. Elimination routine initiated.</say></done>
+    </objective>
+    <objective goal="5" text="Eliminate the Decelerator programs" type="DefeatAll">
+      <done><say>Yeah! Woohoo! Take that, you stupid...floaty ball things!</say></done>
+    </objective>
+    <near npc="2" radius="1500">
+      <say>You're getting close to some big readings...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Operative, with the Decelerator programs in the area eliminated, this is your chance to reach the intruder. Your objective is to locate him, and tell him that we desire a meeting to discuss how we can help...resolve his problem.</briefing>
+    <enter><say>Always encouraging when Gray pauses mid-sentence like that...
+
+Okay, I'm reading hefty use of program overrides in there. Hope it's wire-butt and not just more of his big ball thingies.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="6">
+      <talk><say npc="6">Hmh! How did you get past--
+
+Talk? Now they're asking to talk? And here I'd almost thought they'd grown some backbone; now I find out they're just slow!
+
+... Fine. I'll meet them. But they'd better not try screwing me this time.</say></talk>
+    </objective>
+    <near npc="6" radius="1500">
+      <say>There he is!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Zia">
+    <briefing>Your performance has been commendable, {player}. I have just one more matter for you at this time.
+
+The Merovingian has been actively courting the intruder. Some of the attempts to influence the intruder in his favor have been carried out by the General: military demonstrations with commando programs, and so forth.
+
+Recently, this has escalated into attacks on our own systems. This ill-conceived aggression must be dealt with firmly.</briefing>
+    <enter><say>You'd really think the General would know better by now. Then again, he is about as thick as they come; some people just never learn...
+
+Okay, there's a Merv attack in-progress at that location, with commando programs reported. Time for some good old-fashioned search and destroy.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>The General's not gonna like his next briefing, I can tell you that much.</say></done>
+    </objective>
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Stalingrad? That was the General's base on the Earth's surface. Why would they be hunting our files for data on it?</say></done>
+    </objective>
+    <near npc="7" radius="1500">
+      <say>What? Elite commandos? Damn, I hate those things. If this keeps up, I'll have to get Gray to start running that old detection routine again.</say>
+    </near>
+  </phase>
+  <finish>Thank you, {player}.
+
+Given the opportunity to hold a discussion with the intruder, many of these threats to System stability should cease to exist.</finish>
+</mission>

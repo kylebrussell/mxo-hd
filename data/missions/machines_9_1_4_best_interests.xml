@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Best Interests, Machines story mission 9.1.4. Source: research/missions/transcripts/Mach9-1-4.md (a replay of
+     9.1.4 given by Agent Gray; the bar showed only "Best Interests", no archive prefix). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the names Intruder and Agent
+     Pace. The player's name was blacked out in Gray's lines and Pace called him "Brando"; both are {player}. Ours: the
+     description (the Summary tab was never opened), the objective texts (the Objectives tab was never opened), the
+     sites (Pace's post is an office: Office; the others aren't described: Normal), the looks and the enemy counts.
+     Both Zionite groups were "redpill signals": enemy Zion. The intruder is a glowing, "alien" code; he has a Machine
+     program's look. Rewards: none were shown in these crops, so this uses Machines 9.2's 396,000 experience and
+     66,500 information.
+     Gaps: in the second phase the Operator broke off Gray's mission 46 seconds after the player reached the
+     Zionites' floor ("I'm changing the program. Get outside."), and the player left without a fight; what set her
+     line off isn't shown. A phase needs a goal the player can finish, so the Zionites are an optional kill goal (the
+     official target, which may be left) and the floor's computer is searched (for nothing); her line is said when it
+     is searched. A computer screen in the crops (no time; an EPN report on old Zion) may have been this computer, but
+     our Search shows nothing, so its text isn't built. Gray's "you have left the area without eliminating your
+     target" then briefs the detour to the intruder. The Operator's "You're getting closer" and Gray's "Operative,
+     report." were said on approach; they are said near the intruder. Goals are numbered through the whole mission so
+     that the NPCs' after-lines can't be set off by a goal of an earlier phase. -->
+<mission id="209104" title="Best Interests" description="Disrupt the Zionite groups trying to arrange a meeting with the intruder." plot="1"
+         order="9104" org="2" contact="Agent Gray" exp="396000" info="66500">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="4">Oh, don't worry; I'm not about to go blabbing it to Zion, either. Only, they're a little more likely to tell me what I want to know, see?
+
+Now, buzz off.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say after="5">I know that this has not answered all of your questions, operative, but vital security concerns prohibit me from disclosing further information.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Operative, we have confirmation that Zion has contacted the intruder. There are indications that they are even now attempting to arrange for some of their high-ranking officers to meet with him. Since we are able to track him to a certain extent, we have been able to correlate the motions of the intruder and detected Zionites, and can anticipate and disrupt the Zionite groups likely to be involved.
+
+One of these groups is your current target. You are to remove them from the simulation.</briefing>
+    <enter><say>Seems like we're fighting a losing battle... If we can't do anything to this guy, Zion's going to get a hold of him sooner or later. Gray said before that we know his communication channel, so why don't we...
+
+Ah, hell. Anyway, I'm picking up non-System redpill signals in there. Should be our group of Zionites.</say></enter>
+    <objective goal="1" text="Kill the Zionites" type="DefeatAll">
+      <done><say>I guess that's it. Now we'll call Gray, and end up fighting the same bunch somewhere else nearby once they've reconstructed...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Sightings of Zion's Captain Niobe and Ghost have been reported. This would seem to corroborate the theory that Zion is attempting to hold a high-level meeting with the intruder. However, some units are...experiencing difficulties, which is hampering our ability to intercept Zionite groups before they reach him. It is therefore of the utmost importance that you eliminate your next designated target quickly.</briefing>
+    <enter><say>So here we are running in circles around the intruder, shaking a stick at the Zionites. Sooner or later Niobe's going to reach him, and then what? Our Agents couldn't bust up that meeting with him there.
+
+I just don't see this going anywhere but downhill...
+
+Yeah, redpill signals in there. I swear, if I recognize any of them from the last bunch, I'm gonna scream.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Kill the Zionites" type="DefeatAll" optional="1" />
+    <objective goal="3" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>You know what? Forget it. This is stupid. It's bull that Zion's going to get answers from this guy before we do, especially when we know exactly where he is.
+
+I'm changing the program. Get outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, you have left the area without eliminating your target. Do you require assistance?
+
+Please respond, {player}.</briefing>
+    <enter><say>Yeah, he's in there, all right; no way the unidentified code with power levels like the ones I'm seeing could be anything else we know of.
+
+Time to get some answers.</say></enter>
+    <objective goal="4" text="Talk to the Intruder" type="Talk" npc="1">
+      <talk><say npc="1">So, you'd like to know what this is all about? I'm sure you would...but I'm not stupid enough to let that out. Neither are the Machines, if they know what's good for them.
+
+Hm... But if they really did know that, I wouldn't have had to come here in the first place. Blasted 'bots.</say></talk>
+      <done><say>...
+
+Then they do know, and haven't been telling us. So, what, is this guy blackmailing them? How could that be possible?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>You're getting closer. I'm starting to get some pretty erratic readings. That whole area's going to destabilize...</say>
+      <say contact="1">Operative, report.
+
+Operative, do you read me? Return to your designated target immediately.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>{player}.. It may be that a certain amount of explanation is overdue. I will-- Agent Pace will give you what information we are at liberty to discuss.</briefing>
+    <enter><say>She's in there. How much you want to bet that she's gonna give us a batty-eyed brush-off?</say></enter>
+    <objective goal="5" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Ciao, {player}. As your operator has guessed, there is, unfortunately, little that I can impart to you regarding the intruder... His presence--even his very existence--is inextricably linked with information that cannot be compromised without severe risk to the System.
+
+It is true that his manifestation within the simulation is causing localized instability. You see, the Matrix was not designed to support the...ah...override codes he is using. That is partly why he is so dangerous. Since we have not been able to prevent his presence in the Matrix, we must strive to minimize the disturbance he creates. It is therefore important that we do not aggravate him to the point of violence, if it can be avoided.</say></talk>
+      <done><say>Hrmph...</say></done>
+    </objective>
+  </phase>
+  <finish>Our...apologies if we cannot be more forthcoming, operative. I assure you that your satisfaction level is important to us, particularly in light of the difficulties caused to our programs by the intruder's codes. We look forward to a time when we will be more...at liberty to discuss these issues with you.</finish>
+</mission>
