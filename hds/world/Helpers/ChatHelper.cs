@@ -166,7 +166,9 @@ namespace hds
                     if (spot != null && spot.metrId == district)
                     {
                         var at = MissionContactNpcs.InFrontOf(spot);
-                        Store.currentClient.messageQueue.addObjectMessage(new PlayerHelper().teleport(at.x, at.y, at.z), false);
+                        // World units: PlayerHelper.teleport takes ?gotopos units (x100)
+                        Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(at.x, at.y, at.z));
+                        Store.currentClient.messageQueue.addObjectMessage(PacketsUtils.createTeleportPacket((float)at.x, (float)at.y, (float)at.z), false);
                     }
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
                 }
@@ -176,6 +178,12 @@ namespace hds
                     // Dev: ?missionobject <id>: the current phase's object, spawned again at the player's feet
                     bool moved = MissionStaging.MoveObjectToPlayer(Store.currentClient, int.Parse(commands[1]));
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, moved ? "Object moved" : "No such object", "BROADCAST");
+                }
+
+                if (command.Equals("?objstate") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: an object in a state from the client's data, and what the data says it offers (docs/OBJECT-STATES.md)
+                    ObjectStates.DevCommand(Store.currentClient, commands);
                 }
 
                 if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")

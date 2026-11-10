@@ -1,0 +1,1724 @@
+goid,object,class,state,state_name,default,next,seconds,enables,disables
+3,Computer,20,0x961,ST_Giver,0,0x960,,5,4
+3,Computer,20,0x960,ST_Normal,1,,,,5 4 8
+3,Computer,20,0x962,ST_Taker,0,0x960,,8,4
+3,Computer,20,0x963,ST_Unhacked,0,0x960,,4,
+3,Computer,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+3,Computer,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+320,Medium Cardboard Box,46,0x835,ClosedState,1,,,3,8 9
+320,Medium Cardboard Box,46,0x83a,DisarmedState,0,,,,7 6
+320,Medium Cardboard Box,46,0x836,LockedState,0,,,8 9,3
+320,Medium Cardboard Box,46,0x834,OpenedState,0,,,,3
+320,Medium Cardboard Box,46,0x839,TrappedState,0,,,7 6,
+320,Medium Cardboard Box,46,0x83b,TriggeredState,0,,,,7 6
+320,Medium Cardboard Box,46,0x841,UnlockedState,0,,,3,8 9
+321,Cash Register Modern Style,155,0x835,ClosedState,1,,,3,8 9
+321,Cash Register Modern Style,155,0x83a,DisarmedState,0,,,,7 6
+321,Cash Register Modern Style,155,0x836,LockedState,0,,,8 9,3
+321,Cash Register Modern Style,155,0x834,OpenedState,0,,,,3
+321,Cash Register Modern Style,155,0x839,TrappedState,0,,,7 6,
+321,Cash Register Modern Style,155,0x83b,TriggeredState,0,,,,7 6
+321,Cash Register Modern Style,155,0x841,UnlockedState,0,,,3,8 9
+323,Classroom Style Desk,46,0x835,ClosedState,1,,,3,8 9
+323,Classroom Style Desk,46,0x83a,DisarmedState,0,,,,7 6
+323,Classroom Style Desk,46,0x836,LockedState,0,,,8 9,3
+323,Classroom Style Desk,46,0x834,OpenedState,0,,,,3
+323,Classroom Style Desk,46,0x839,TrappedState,0,,,7 6,
+323,Classroom Style Desk,46,0x83b,TriggeredState,0,,,,7 6
+323,Classroom Style Desk,46,0x841,UnlockedState,0,,,3,8 9
+324,Receptionist Style Desk,4036,0x835,ClosedState,1,,,3,8 9
+324,Receptionist Style Desk,4036,0x83a,DisarmedState,0,,,,7 6
+324,Receptionist Style Desk,4036,0x836,LockedState,0,,,8 9,3
+324,Receptionist Style Desk,4036,0x834,OpenedState,0,,,,3
+324,Receptionist Style Desk,4036,0x839,TrappedState,0,,,7 6,
+324,Receptionist Style Desk,4036,0x83b,TriggeredState,0,,,,7 6
+324,Receptionist Style Desk,4036,0x841,UnlockedState,0,,,3,8 9
+326,Filing Cabinet,46,0x835,ClosedState,1,,,3,8 9
+326,Filing Cabinet,46,0x83a,DisarmedState,0,,,,7 6
+326,Filing Cabinet,46,0x836,LockedState,0,,,8 9,3
+326,Filing Cabinet,46,0x834,OpenedState,0,,,,3
+326,Filing Cabinet,46,0x839,TrappedState,0,,,7 6,
+326,Filing Cabinet,46,0x83b,TriggeredState,0,,,,7 6
+326,Filing Cabinet,46,0x841,UnlockedState,0,,,3,8 9
+327,Refrigerator Modern Style,46,0x835,ClosedState,1,,,3,8 9
+327,Refrigerator Modern Style,46,0x83a,DisarmedState,0,,,,7 6
+327,Refrigerator Modern Style,46,0x836,LockedState,0,,,8 9,3
+327,Refrigerator Modern Style,46,0x834,OpenedState,0,,,,3
+327,Refrigerator Modern Style,46,0x839,TrappedState,0,,,7 6,
+327,Refrigerator Modern Style,46,0x83b,TriggeredState,0,,,,7 6
+327,Refrigerator Modern Style,46,0x841,UnlockedState,0,,,3,8 9
+328,Refrigerator Classic Style,46,0x835,ClosedState,1,,,3,8 9
+328,Refrigerator Classic Style,46,0x83a,DisarmedState,0,,,,7 6
+328,Refrigerator Classic Style,46,0x836,LockedState,0,,,8 9,3
+328,Refrigerator Classic Style,46,0x834,OpenedState,0,,,,3
+328,Refrigerator Classic Style,46,0x839,TrappedState,0,,,7 6,
+328,Refrigerator Classic Style,46,0x83b,TriggeredState,0,,,,7 6
+328,Refrigerator Classic Style,46,0x841,UnlockedState,0,,,3,8 9
+341,Door DT 2Push Handle LtWood,363,0x835,ClosedState,1,,,3,4 8
+341,Door DT 2Push Handle LtWood,363,0x838,ClosingState,0,0x835,1,3,4 8
+341,Door DT 2Push Handle LtWood,363,0x83a,DisarmedState,0,,,,11 12
+341,Door DT 2Push Handle LtWood,363,0x836,LockedState,0,,,4 8,3
+341,Door DT 2Push Handle LtWood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+341,Door DT 2Push Handle LtWood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+341,Door DT 2Push Handle LtWood,363,0x839,TrappedState,0,,,11 12,
+341,Door DT 2Push Handle LtWood,363,0x83b,TriggeredState,0,,,,11 12
+342,Door DT 2Push Knob LtWood,363,0x835,ClosedState,1,,,3,4 8
+342,Door DT 2Push Knob LtWood,363,0x838,ClosingState,0,0x835,1,3,4 8
+342,Door DT 2Push Knob LtWood,363,0x83a,DisarmedState,0,,,,11 12
+342,Door DT 2Push Knob LtWood,363,0x836,LockedState,0,,,4 8,3
+342,Door DT 2Push Knob LtWood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+342,Door DT 2Push Knob LtWood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+342,Door DT 2Push Knob LtWood,363,0x839,TrappedState,0,,,11 12,
+342,Door DT 2Push Knob LtWood,363,0x83b,TriggeredState,0,,,,11 12
+343,Door DT Pull Handle LtWood,364,0x835,ClosedState,1,,,3,4 8
+343,Door DT Pull Handle LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+343,Door DT Pull Handle LtWood,364,0x83a,DisarmedState,0,,,,11 12
+343,Door DT Pull Handle LtWood,364,0x836,LockedState,0,,,4 8,3
+343,Door DT Pull Handle LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+343,Door DT Pull Handle LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+343,Door DT Pull Handle LtWood,364,0x839,TrappedState,0,,,11 12,
+343,Door DT Pull Handle LtWood,364,0x83b,TriggeredState,0,,,,11 12
+344,Door DT Push Knob Redwood,364,0x835,ClosedState,1,,,3,4 8
+344,Door DT Push Knob Redwood,364,0x838,ClosingState,0,0x835,1,3,4 8
+344,Door DT Push Knob Redwood,364,0x83a,DisarmedState,0,,,,11 12
+344,Door DT Push Knob Redwood,364,0x836,LockedState,0,,,4 8,3
+344,Door DT Push Knob Redwood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+344,Door DT Push Knob Redwood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+344,Door DT Push Knob Redwood,364,0x839,TrappedState,0,,,11 12,
+344,Door DT Push Knob Redwood,364,0x83b,TriggeredState,0,,,,11 12
+346,Door DT Push Knob LtWood,364,0x835,ClosedState,1,,,3,4 8
+346,Door DT Push Knob LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+346,Door DT Push Knob LtWood,364,0x83a,DisarmedState,0,,,,11 12
+346,Door DT Push Knob LtWood,364,0x836,LockedState,0,,,4 8,3
+346,Door DT Push Knob LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+346,Door DT Push Knob LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+346,Door DT Push Knob LtWood,364,0x839,TrappedState,0,,,11 12,
+346,Door DT Push Knob LtWood,364,0x83b,TriggeredState,0,,,,11 12
+347,Door DT Push Handle Redwood,364,0x835,ClosedState,1,,,3,4 8
+347,Door DT Push Handle Redwood,364,0x838,ClosingState,0,0x835,1,3,4 8
+347,Door DT Push Handle Redwood,364,0x83a,DisarmedState,0,,,,11 12
+347,Door DT Push Handle Redwood,364,0x836,LockedState,0,,,4 8,3
+347,Door DT Push Handle Redwood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+347,Door DT Push Handle Redwood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+347,Door DT Push Handle Redwood,364,0x839,TrappedState,0,,,11 12,
+347,Door DT Push Handle Redwood,364,0x83b,TriggeredState,0,,,,11 12
+348,Door DT Pull Knob LtWood,364,0x835,ClosedState,1,,,3,4 8
+348,Door DT Pull Knob LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+348,Door DT Pull Knob LtWood,364,0x83a,DisarmedState,0,,,,11 12
+348,Door DT Pull Knob LtWood,364,0x836,LockedState,0,,,4 8,3
+348,Door DT Pull Knob LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+348,Door DT Pull Knob LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+348,Door DT Pull Knob LtWood,364,0x839,TrappedState,0,,,11 12,
+348,Door DT Pull Knob LtWood,364,0x83b,TriggeredState,0,,,,11 12
+349,Door zz Push Handle Screen1,364,0x835,ClosedState,1,,,3,4 8
+349,Door zz Push Handle Screen1,364,0x838,ClosingState,0,0x835,1,3,4 8
+349,Door zz Push Handle Screen1,364,0x83a,DisarmedState,0,,,,11 12
+349,Door zz Push Handle Screen1,364,0x836,LockedState,0,,,4 8,3
+349,Door zz Push Handle Screen1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+349,Door zz Push Handle Screen1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+349,Door zz Push Handle Screen1,364,0x839,TrappedState,0,,,11 12,
+349,Door zz Push Handle Screen1,364,0x83b,TriggeredState,0,,,,11 12
+350,Door zz Push Handle Ornate1,364,0x835,ClosedState,1,,,3,4 8
+350,Door zz Push Handle Ornate1,364,0x838,ClosingState,0,0x835,1,3,4 8
+350,Door zz Push Handle Ornate1,364,0x83a,DisarmedState,0,,,,11 12
+350,Door zz Push Handle Ornate1,364,0x836,LockedState,0,,,4 8,3
+350,Door zz Push Handle Ornate1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+350,Door zz Push Handle Ornate1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+350,Door zz Push Handle Ornate1,364,0x839,TrappedState,0,,,11 12,
+350,Door zz Push Handle Ornate1,364,0x83b,TriggeredState,0,,,,11 12
+351,Door zz Push Handle Glass1,364,0x835,ClosedState,1,,,3,4 8
+351,Door zz Push Handle Glass1,364,0x838,ClosingState,0,0x835,1,3,4 8
+351,Door zz Push Handle Glass1,364,0x83a,DisarmedState,0,,,,11 12
+351,Door zz Push Handle Glass1,364,0x836,LockedState,0,,,4 8,3
+351,Door zz Push Handle Glass1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+351,Door zz Push Handle Glass1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+351,Door zz Push Handle Glass1,364,0x839,TrappedState,0,,,11 12,
+351,Door zz Push Handle Glass1,364,0x83b,TriggeredState,0,,,,11 12
+352,Door zz Pull Prisonbars,364,0x835,ClosedState,1,,,3,4 8
+352,Door zz Pull Prisonbars,364,0x838,ClosingState,0,0x835,1,3,4 8
+352,Door zz Pull Prisonbars,364,0x83a,DisarmedState,0,,,,11 12
+352,Door zz Pull Prisonbars,364,0x836,LockedState,0,,,4 8,3
+352,Door zz Pull Prisonbars,364,0x834,OpenedState,0,0x838,20,,3 4 8
+352,Door zz Pull Prisonbars,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+352,Door zz Pull Prisonbars,364,0x839,TrappedState,0,,,11 12,
+352,Door zz Pull Prisonbars,364,0x83b,TriggeredState,0,,,,11 12
+354,Door zz Pull Handle Screen1,364,0x835,ClosedState,1,,,3,4 8
+354,Door zz Pull Handle Screen1,364,0x838,ClosingState,0,0x835,1,3,4 8
+354,Door zz Pull Handle Screen1,364,0x83a,DisarmedState,0,,,,11 12
+354,Door zz Pull Handle Screen1,364,0x836,LockedState,0,,,4 8,3
+354,Door zz Pull Handle Screen1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+354,Door zz Pull Handle Screen1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+354,Door zz Pull Handle Screen1,364,0x839,TrappedState,0,,,11 12,
+354,Door zz Pull Handle Screen1,364,0x83b,TriggeredState,0,,,,11 12
+355,Door zz Push Knob Metal1,364,0x835,ClosedState,1,,,3,4 8
+355,Door zz Push Knob Metal1,364,0x838,ClosingState,0,0x835,1,3,4 8
+355,Door zz Push Knob Metal1,364,0x83a,DisarmedState,0,,,,11 12
+355,Door zz Push Knob Metal1,364,0x836,LockedState,0,,,4 8,3
+355,Door zz Push Knob Metal1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+355,Door zz Push Knob Metal1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+355,Door zz Push Knob Metal1,364,0x839,TrappedState,0,,,11 12,
+355,Door zz Push Knob Metal1,364,0x83b,TriggeredState,0,,,,11 12
+356,Door zz Push Prisonbars,364,0x835,ClosedState,1,,,3,4 8
+356,Door zz Push Prisonbars,364,0x838,ClosingState,0,0x835,1,3,4 8
+356,Door zz Push Prisonbars,364,0x83a,DisarmedState,0,,,,11 12
+356,Door zz Push Prisonbars,364,0x836,LockedState,0,,,4 8,3
+356,Door zz Push Prisonbars,364,0x834,OpenedState,0,0x838,20,,3 4 8
+356,Door zz Push Prisonbars,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+356,Door zz Push Prisonbars,364,0x839,TrappedState,0,,,11 12,
+356,Door zz Push Prisonbars,364,0x83b,TriggeredState,0,,,,11 12
+357,MainFrame_Computer,20,0x961,ST_Giver,0,0x960,,5,4
+357,MainFrame_Computer,20,0x960,ST_Normal,1,,,,5 4 8
+357,MainFrame_Computer,20,0x962,ST_Taker,0,0x960,,8,4
+357,MainFrame_Computer,20,0x963,ST_Unhacked,0,0x960,,4,
+357,MainFrame_Computer,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+357,MainFrame_Computer,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+359,Door zz Push Knob Greenmetal01,364,0x835,ClosedState,1,,,3,4 8
+359,Door zz Push Knob Greenmetal01,364,0x838,ClosingState,0,0x835,1,3,4 8
+359,Door zz Push Knob Greenmetal01,364,0x83a,DisarmedState,0,,,,11 12
+359,Door zz Push Knob Greenmetal01,364,0x836,LockedState,0,,,4 8,3
+359,Door zz Push Knob Greenmetal01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+359,Door zz Push Knob Greenmetal01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+359,Door zz Push Knob Greenmetal01,364,0x839,TrappedState,0,,,11 12,
+359,Door zz Push Knob Greenmetal01,364,0x83b,TriggeredState,0,,,,11 12
+360,Door zz Push Handle Woodglass,364,0x835,ClosedState,1,,,3,4 8
+360,Door zz Push Handle Woodglass,364,0x838,ClosingState,0,0x835,1,3,4 8
+360,Door zz Push Handle Woodglass,364,0x83a,DisarmedState,0,,,,11 12
+360,Door zz Push Handle Woodglass,364,0x836,LockedState,0,,,4 8,3
+360,Door zz Push Handle Woodglass,364,0x834,OpenedState,0,0x838,20,,3 4 8
+360,Door zz Push Handle Woodglass,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+360,Door zz Push Handle Woodglass,364,0x839,TrappedState,0,,,11 12,
+360,Door zz Push Handle Woodglass,364,0x83b,TriggeredState,0,,,,11 12
+362,Door DT Push Knob Graywood01,364,0x835,ClosedState,1,,,3,4 8
+362,Door DT Push Knob Graywood01,364,0x838,ClosingState,0,0x835,1,3,4 8
+362,Door DT Push Knob Graywood01,364,0x83a,DisarmedState,0,,,,11 12
+362,Door DT Push Knob Graywood01,364,0x836,LockedState,0,,,4 8,3
+362,Door DT Push Knob Graywood01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+362,Door DT Push Knob Graywood01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+362,Door DT Push Knob Graywood01,364,0x839,TrappedState,0,,,11 12,
+362,Door DT Push Knob Graywood01,364,0x83b,TriggeredState,0,,,,11 12
+364,Door DT Push Knob Graymetal01,364,0x835,ClosedState,1,,,3,4 8
+364,Door DT Push Knob Graymetal01,364,0x838,ClosingState,0,0x835,1,3,4 8
+364,Door DT Push Knob Graymetal01,364,0x83a,DisarmedState,0,,,,11 12
+364,Door DT Push Knob Graymetal01,364,0x836,LockedState,0,,,4 8,3
+364,Door DT Push Knob Graymetal01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+364,Door DT Push Knob Graymetal01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+364,Door DT Push Knob Graymetal01,364,0x839,TrappedState,0,,,11 12,
+364,Door DT Push Knob Graymetal01,364,0x83b,TriggeredState,0,,,,11 12
+365,Door DT Push Knob Darkwood01,364,0x835,ClosedState,1,,,3,4 8
+365,Door DT Push Knob Darkwood01,364,0x838,ClosingState,0,0x835,1,3,4 8
+365,Door DT Push Knob Darkwood01,364,0x83a,DisarmedState,0,,,,11 12
+365,Door DT Push Knob Darkwood01,364,0x836,LockedState,0,,,4 8,3
+365,Door DT Push Knob Darkwood01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+365,Door DT Push Knob Darkwood01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+365,Door DT Push Knob Darkwood01,364,0x839,TrappedState,0,,,11 12,
+365,Door DT Push Knob Darkwood01,364,0x83b,TriggeredState,0,,,,11 12
+377,Security_Desk,4094,0x83b,Alarming,0,,,,1
+377,Security_Desk,4094,0x839,Armed,1,,,1,
+377,Security_Desk,4094,0x83a,Disabled,0,,,,1
+412,Door DT Push Knob Wood03,364,0x835,ClosedState,1,,,3,4 8
+412,Door DT Push Knob Wood03,364,0x838,ClosingState,0,0x835,1,3,4 8
+412,Door DT Push Knob Wood03,364,0x83a,DisarmedState,0,,,,11 12
+412,Door DT Push Knob Wood03,364,0x836,LockedState,0,,,4 8,3
+412,Door DT Push Knob Wood03,364,0x834,OpenedState,0,0x838,20,,3 4 8
+412,Door DT Push Knob Wood03,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+412,Door DT Push Knob Wood03,364,0x839,TrappedState,0,,,11 12,
+412,Door DT Push Knob Wood03,364,0x83b,TriggeredState,0,,,,11 12
+413,Door SL Push Handle Screentexvar,364,0x835,ClosedState,1,,,3,4 8
+413,Door SL Push Handle Screentexvar,364,0x838,ClosingState,0,0x835,1,3,4 8
+413,Door SL Push Handle Screentexvar,364,0x83a,DisarmedState,0,,,,11 12
+413,Door SL Push Handle Screentexvar,364,0x836,LockedState,0,,,4 8,3
+413,Door SL Push Handle Screentexvar,364,0x834,OpenedState,0,0x838,20,,3 4 8
+413,Door SL Push Handle Screentexvar,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+413,Door SL Push Handle Screentexvar,364,0x839,TrappedState,0,,,11 12,
+413,Door SL Push Handle Screentexvar,364,0x83b,TriggeredState,0,,,,11 12
+414,Door SL Push Knob Graymetal01texvar,364,0x835,ClosedState,1,,,3,4 8
+414,Door SL Push Knob Graymetal01texvar,364,0x838,ClosingState,0,0x835,1,3,4 8
+414,Door SL Push Knob Graymetal01texvar,364,0x83a,DisarmedState,0,,,,11 12
+414,Door SL Push Knob Graymetal01texvar,364,0x836,LockedState,0,,,4 8,3
+414,Door SL Push Knob Graymetal01texvar,364,0x834,OpenedState,0,0x838,20,,3 4 8
+414,Door SL Push Knob Graymetal01texvar,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+414,Door SL Push Knob Graymetal01texvar,364,0x839,TrappedState,0,,,11 12,
+414,Door SL Push Knob Graymetal01texvar,364,0x83b,TriggeredState,0,,,,11 12
+415,Door SL Push Knob Greenmetal01texvar,364,0x835,ClosedState,1,,,3,4 8
+415,Door SL Push Knob Greenmetal01texvar,364,0x838,ClosingState,0,0x835,1,3,4 8
+415,Door SL Push Knob Greenmetal01texvar,364,0x83a,DisarmedState,0,,,,11 12
+415,Door SL Push Knob Greenmetal01texvar,364,0x836,LockedState,0,,,4 8,3
+415,Door SL Push Knob Greenmetal01texvar,364,0x834,OpenedState,0,0x838,20,,3 4 8
+415,Door SL Push Knob Greenmetal01texvar,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+415,Door SL Push Knob Greenmetal01texvar,364,0x839,TrappedState,0,,,11 12,
+415,Door SL Push Knob Greenmetal01texvar,364,0x83b,TriggeredState,0,,,,11 12
+416,Door SL Push Knob Metal1texvar,364,0x835,ClosedState,1,,,3,4 8
+416,Door SL Push Knob Metal1texvar,364,0x838,ClosingState,0,0x835,1,3,4 8
+416,Door SL Push Knob Metal1texvar,364,0x83a,DisarmedState,0,,,,11 12
+416,Door SL Push Knob Metal1texvar,364,0x836,LockedState,0,,,4 8,3
+416,Door SL Push Knob Metal1texvar,364,0x834,OpenedState,0,0x838,20,,3 4 8
+416,Door SL Push Knob Metal1texvar,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+416,Door SL Push Knob Metal1texvar,364,0x839,TrappedState,0,,,11 12,
+416,Door SL Push Knob Metal1texvar,364,0x83b,TriggeredState,0,,,,11 12
+417,Door ZZ Elevator01,363,0x835,ClosedState,1,,,3,4 8
+417,Door ZZ Elevator01,363,0x838,ClosingState,0,0x835,1,3,4 8
+417,Door ZZ Elevator01,363,0x83a,DisarmedState,0,,,,11 12
+417,Door ZZ Elevator01,363,0x836,LockedState,0,,,4 8,3
+417,Door ZZ Elevator01,363,0x834,OpenedState,0,0x838,20,,3 4 8
+417,Door ZZ Elevator01,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+417,Door ZZ Elevator01,363,0x839,TrappedState,0,,,11 12,
+417,Door ZZ Elevator01,363,0x83b,TriggeredState,0,,,,11 12
+419,Door ZZ Elevator02,363,0x835,ClosedState,1,,,3,4 8
+419,Door ZZ Elevator02,363,0x838,ClosingState,0,0x835,1,3,4 8
+419,Door ZZ Elevator02,363,0x83a,DisarmedState,0,,,,11 12
+419,Door ZZ Elevator02,363,0x836,LockedState,0,,,4 8,3
+419,Door ZZ Elevator02,363,0x834,OpenedState,0,0x838,20,,3 4 8
+419,Door ZZ Elevator02,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+419,Door ZZ Elevator02,363,0x839,TrappedState,0,,,11 12,
+419,Door ZZ Elevator02,363,0x83b,TriggeredState,0,,,,11 12
+461,Door SL Push Knob Fadedred01,364,0x835,ClosedState,1,,,3,4 8
+461,Door SL Push Knob Fadedred01,364,0x838,ClosingState,0,0x835,1,3,4 8
+461,Door SL Push Knob Fadedred01,364,0x83a,DisarmedState,0,,,,11 12
+461,Door SL Push Knob Fadedred01,364,0x836,LockedState,0,,,4 8,3
+461,Door SL Push Knob Fadedred01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+461,Door SL Push Knob Fadedred01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+461,Door SL Push Knob Fadedred01,364,0x839,TrappedState,0,,,11 12,
+461,Door SL Push Knob Fadedred01,364,0x83b,TriggeredState,0,,,,11 12
+466,Security_Panel,4095,0x83b,Alarming,0,,,,1
+466,Security_Panel,4095,0x839,Armed,1,,,1,
+466,Security_Panel,4095,0x83a,Disabled,0,,,,1
+486,Door DT Mensroom LtWood,364,0x835,ClosedState,1,,,3,4 8
+486,Door DT Mensroom LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+486,Door DT Mensroom LtWood,364,0x83a,DisarmedState,0,,,,11 12
+486,Door DT Mensroom LtWood,364,0x836,LockedState,0,,,4 8,3
+486,Door DT Mensroom LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+486,Door DT Mensroom LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+486,Door DT Mensroom LtWood,364,0x839,TrappedState,0,,,11 12,
+486,Door DT Mensroom LtWood,364,0x83b,TriggeredState,0,,,,11 12
+489,Security_Camera,4092,0x839,Armed,1,,,2,4
+489,Security_Camera,4092,0x83a,Disarmed,0,,,4,2
+489,Security_Camera,4092,0x83b,Triggered,0,,,,2 4
+524,Security_Alarm,4091,0x837,ST_Off,1,,,,
+524,Security_Alarm,4091,0x83b,ST_On,0,,,,
+548,Large Cardboard Box,46,0x835,ClosedState,1,,,3,8 9
+548,Large Cardboard Box,46,0x83a,DisarmedState,0,,,,7 6
+548,Large Cardboard Box,46,0x836,LockedState,0,,,8 9,3
+548,Large Cardboard Box,46,0x834,OpenedState,0,,,,3
+548,Large Cardboard Box,46,0x839,TrappedState,0,,,7 6,
+548,Large Cardboard Box,46,0x83b,TriggeredState,0,,,,7 6
+548,Large Cardboard Box,46,0x841,UnlockedState,0,,,3,8 9
+552,Safe_Large,46,0x835,ClosedState,1,,,3,8 9
+552,Safe_Large,46,0x83a,DisarmedState,0,,,,7 6
+552,Safe_Large,46,0x836,LockedState,0,,,8 9,3
+552,Safe_Large,46,0x834,OpenedState,0,,,,3
+552,Safe_Large,46,0x839,TrappedState,0,,,7 6,
+552,Safe_Large,46,0x83b,TriggeredState,0,,,,7 6
+552,Safe_Large,46,0x841,UnlockedState,0,,,3,8 9
+553,RoomLightSwitch,4065,0x835,Off,0,0x834,1800,3,1
+553,RoomLightSwitch,4065,0x834,On,1,,,1,3
+567,Control_Node,254,0x902,ClaimConstructState,0,0x900,30,7,10 1 2 3 4 5 6
+567,Control_Node,254,0x8fc,DisableStage1State,1,,,10 1,7 2 3 4 5 6
+567,Control_Node,254,0x8fe,DisableStage2State,0,0x8fc,30,2,7 10 1 3 4 5 6
+567,Control_Node,254,0x900,DisableStage3State,0,0x8fe,30,3,7 10 1 2 4 5 6
+567,Control_Node,254,0x8fd,EnableStage1State,0,0x8fe,10,,7 10 1 2 3 4 5 6
+567,Control_Node,254,0x8ff,EnableStage2State,0,0x900,10,,7 10 1 2 3 4 5 6
+567,Control_Node,254,0x901,EnableStage3State,0,0x902,10,,7 10 1 2 3 4 5 6
+567,Control_Node,254,0x836,LockedState,0,0x8fc,30,,7 10 1 2 3 4 5 6
+573,Bedroom Dresser,46,0x835,ClosedState,1,,,3,8 9
+573,Bedroom Dresser,46,0x83a,DisarmedState,0,,,,7 6
+573,Bedroom Dresser,46,0x836,LockedState,0,,,8 9,3
+573,Bedroom Dresser,46,0x834,OpenedState,0,,,,3
+573,Bedroom Dresser,46,0x839,TrappedState,0,,,7 6,
+573,Bedroom Dresser,46,0x83b,TriggeredState,0,,,,7 6
+573,Bedroom Dresser,46,0x841,UnlockedState,0,,,3,8 9
+574,Cash Register Classic Style,155,0x835,ClosedState,1,,,3,8 9
+574,Cash Register Classic Style,155,0x83a,DisarmedState,0,,,,7 6
+574,Cash Register Classic Style,155,0x836,LockedState,0,,,8 9,3
+574,Cash Register Classic Style,155,0x834,OpenedState,0,,,,3
+574,Cash Register Classic Style,155,0x839,TrappedState,0,,,7 6,
+574,Cash Register Classic Style,155,0x83b,TriggeredState,0,,,,7 6
+574,Cash Register Classic Style,155,0x841,UnlockedState,0,,,3,8 9
+576,Door DT Push Handle LtWood,364,0x835,ClosedState,1,,,3,4 8
+576,Door DT Push Handle LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+576,Door DT Push Handle LtWood,364,0x83a,DisarmedState,0,,,,11 12
+576,Door DT Push Handle LtWood,364,0x836,LockedState,0,,,4 8,3
+576,Door DT Push Handle LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+576,Door DT Push Handle LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+576,Door DT Push Handle LtWood,364,0x839,TrappedState,0,,,11 12,
+576,Door DT Push Handle LtWood,364,0x83b,TriggeredState,0,,,,11 12
+577,Door zz Pull Knob Metal1,364,0x835,ClosedState,1,,,3,4 8
+577,Door zz Pull Knob Metal1,364,0x838,ClosingState,0,0x835,1,3,4 8
+577,Door zz Pull Knob Metal1,364,0x83a,DisarmedState,0,,,,11 12
+577,Door zz Pull Knob Metal1,364,0x836,LockedState,0,,,4 8,3
+577,Door zz Pull Knob Metal1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+577,Door zz Pull Knob Metal1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+577,Door zz Pull Knob Metal1,364,0x839,TrappedState,0,,,11 12,
+577,Door zz Pull Knob Metal1,364,0x83b,TriggeredState,0,,,,11 12
+578,Door zz Push Handle Graywood Glass,364,0x835,ClosedState,1,,,3,4 8
+578,Door zz Push Handle Graywood Glass,364,0x838,ClosingState,0,0x835,1,3,4 8
+578,Door zz Push Handle Graywood Glass,364,0x83a,DisarmedState,0,,,,11 12
+578,Door zz Push Handle Graywood Glass,364,0x836,LockedState,0,,,4 8,3
+578,Door zz Push Handle Graywood Glass,364,0x834,OpenedState,0,0x838,20,,3 4 8
+578,Door zz Push Handle Graywood Glass,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+578,Door zz Push Handle Graywood Glass,364,0x839,TrappedState,0,,,11 12,
+578,Door zz Push Handle Graywood Glass,364,0x83b,TriggeredState,0,,,,11 12
+579,Door DT Push Knob Graymetal02,364,0x835,ClosedState,1,,,3,4 8
+579,Door DT Push Knob Graymetal02,364,0x838,ClosingState,0,0x835,1,3,4 8
+579,Door DT Push Knob Graymetal02,364,0x83a,DisarmedState,0,,,,11 12
+579,Door DT Push Knob Graymetal02,364,0x836,LockedState,0,,,4 8,3
+579,Door DT Push Knob Graymetal02,364,0x834,OpenedState,0,0x838,20,,3 4 8
+579,Door DT Push Knob Graymetal02,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+579,Door DT Push Knob Graymetal02,364,0x839,TrappedState,0,,,11 12,
+579,Door DT Push Knob Graymetal02,364,0x83b,TriggeredState,0,,,,11 12
+580,Door SL Push Knob Fadedgreen02,364,0x835,ClosedState,1,,,3,4 8
+580,Door SL Push Knob Fadedgreen02,364,0x838,ClosingState,0,0x835,1,3,4 8
+580,Door SL Push Knob Fadedgreen02,364,0x83a,DisarmedState,0,,,,11 12
+580,Door SL Push Knob Fadedgreen02,364,0x836,LockedState,0,,,4 8,3
+580,Door SL Push Knob Fadedgreen02,364,0x834,OpenedState,0,0x838,20,,3 4 8
+580,Door SL Push Knob Fadedgreen02,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+580,Door SL Push Knob Fadedgreen02,364,0x839,TrappedState,0,,,11 12,
+580,Door SL Push Knob Fadedgreen02,364,0x83b,TriggeredState,0,,,,11 12
+581,Door DT Ladiesroom LtWood,364,0x835,ClosedState,1,,,3,4 8
+581,Door DT Ladiesroom LtWood,364,0x838,ClosingState,0,0x835,1,3,4 8
+581,Door DT Ladiesroom LtWood,364,0x83a,DisarmedState,0,,,,11 12
+581,Door DT Ladiesroom LtWood,364,0x836,LockedState,0,,,4 8,3
+581,Door DT Ladiesroom LtWood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+581,Door DT Ladiesroom LtWood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+581,Door DT Ladiesroom LtWood,364,0x839,TrappedState,0,,,11 12,
+581,Door DT Ladiesroom LtWood,364,0x83b,TriggeredState,0,,,,11 12
+638,TestLockedDoor,4228,0x835,ClosedState,0,,,4,5 9
+638,TestLockedDoor,4228,0x838,ClosingState,0,0x835,1,4,5 9
+638,TestLockedDoor,4228,0x83a,DisarmedState,0,,,,12 13
+638,TestLockedDoor,4228,0x836,LockedState,1,,,5 9,4
+638,TestLockedDoor,4228,0x834,OpenedState,0,0x838,20,,4 5 9
+638,TestLockedDoor,4228,0x842,ReopenedState,0,0x838,20,,4 5 9
+638,TestLockedDoor,4228,0x839,TrappedState,0,,,12 13,
+638,TestLockedDoor,4228,0x83b,TriggeredState,0,,,,12 13
+640,Door EX ZZ Knob Brown,364,0x835,ClosedState,1,,,3,4 8
+640,Door EX ZZ Knob Brown,364,0x838,ClosingState,0,0x835,1,3,4 8
+640,Door EX ZZ Knob Brown,364,0x83a,DisarmedState,0,,,,11 12
+640,Door EX ZZ Knob Brown,364,0x836,LockedState,0,,,4 8,3
+640,Door EX ZZ Knob Brown,364,0x834,OpenedState,0,0x838,20,,3 4 8
+640,Door EX ZZ Knob Brown,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+640,Door EX ZZ Knob Brown,364,0x839,TrappedState,0,,,11 12,
+640,Door EX ZZ Knob Brown,364,0x83b,TriggeredState,0,,,,11 12
+641,Door EX ZZ Knob Gray,364,0x835,ClosedState,1,,,3,4 8
+641,Door EX ZZ Knob Gray,364,0x838,ClosingState,0,0x835,1,3,4 8
+641,Door EX ZZ Knob Gray,364,0x83a,DisarmedState,0,,,,11 12
+641,Door EX ZZ Knob Gray,364,0x836,LockedState,0,,,4 8,3
+641,Door EX ZZ Knob Gray,364,0x834,OpenedState,0,0x838,20,,3 4 8
+641,Door EX ZZ Knob Gray,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+641,Door EX ZZ Knob Gray,364,0x839,TrappedState,0,,,11 12,
+641,Door EX ZZ Knob Gray,364,0x83b,TriggeredState,0,,,,11 12
+642,Door EX ZZ Knob Green,364,0x835,ClosedState,1,,,3,4 8
+642,Door EX ZZ Knob Green,364,0x838,ClosingState,0,0x835,1,3,4 8
+642,Door EX ZZ Knob Green,364,0x83a,DisarmedState,0,,,,11 12
+642,Door EX ZZ Knob Green,364,0x836,LockedState,0,,,4 8,3
+642,Door EX ZZ Knob Green,364,0x834,OpenedState,0,0x838,20,,3 4 8
+642,Door EX ZZ Knob Green,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+642,Door EX ZZ Knob Green,364,0x839,TrappedState,0,,,11 12,
+642,Door EX ZZ Knob Green,364,0x83b,TriggeredState,0,,,,11 12
+643,Door EX ZZ Knob Green2,364,0x835,ClosedState,1,,,3,4 8
+643,Door EX ZZ Knob Green2,364,0x838,ClosingState,0,0x835,1,3,4 8
+643,Door EX ZZ Knob Green2,364,0x83a,DisarmedState,0,,,,11 12
+643,Door EX ZZ Knob Green2,364,0x836,LockedState,0,,,4 8,3
+643,Door EX ZZ Knob Green2,364,0x834,OpenedState,0,0x838,20,,3 4 8
+643,Door EX ZZ Knob Green2,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+643,Door EX ZZ Knob Green2,364,0x839,TrappedState,0,,,11 12,
+643,Door EX ZZ Knob Green2,364,0x83b,TriggeredState,0,,,,11 12
+644,Door EX ZZ Knob Red,364,0x835,ClosedState,1,,,3,4 8
+644,Door EX ZZ Knob Red,364,0x838,ClosingState,0,0x835,1,3,4 8
+644,Door EX ZZ Knob Red,364,0x83a,DisarmedState,0,,,,11 12
+644,Door EX ZZ Knob Red,364,0x836,LockedState,0,,,4 8,3
+644,Door EX ZZ Knob Red,364,0x834,OpenedState,0,0x838,20,,3 4 8
+644,Door EX ZZ Knob Red,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+644,Door EX ZZ Knob Red,364,0x839,TrappedState,0,,,11 12,
+644,Door EX ZZ Knob Red,364,0x83b,TriggeredState,0,,,,11 12
+645,Door EX SL Knob Metalgreen,364,0x835,ClosedState,1,,,3,4 8
+645,Door EX SL Knob Metalgreen,364,0x838,ClosingState,0,0x835,1,3,4 8
+645,Door EX SL Knob Metalgreen,364,0x83a,DisarmedState,0,,,,11 12
+645,Door EX SL Knob Metalgreen,364,0x836,LockedState,0,,,4 8,3
+645,Door EX SL Knob Metalgreen,364,0x834,OpenedState,0,0x838,20,,3 4 8
+645,Door EX SL Knob Metalgreen,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+645,Door EX SL Knob Metalgreen,364,0x839,TrappedState,0,,,11 12,
+645,Door EX SL Knob Metalgreen,364,0x83b,TriggeredState,0,,,,11 12
+646,Door EX SL Knob Metalpurple,364,0x835,ClosedState,1,,,3,4 8
+646,Door EX SL Knob Metalpurple,364,0x838,ClosingState,0,0x835,1,3,4 8
+646,Door EX SL Knob Metalpurple,364,0x83a,DisarmedState,0,,,,11 12
+646,Door EX SL Knob Metalpurple,364,0x836,LockedState,0,,,4 8,3
+646,Door EX SL Knob Metalpurple,364,0x834,OpenedState,0,0x838,20,,3 4 8
+646,Door EX SL Knob Metalpurple,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+646,Door EX SL Knob Metalpurple,364,0x839,TrappedState,0,,,11 12,
+646,Door EX SL Knob Metalpurple,364,0x83b,TriggeredState,0,,,,11 12
+1265,Laptop,20,0x961,ST_Giver,0,0x960,,5,4
+1265,Laptop,20,0x960,ST_Normal,1,,,,5 4 8
+1265,Laptop,20,0x962,ST_Taker,0,0x960,,8,4
+1265,Laptop,20,0x963,ST_Unhacked,0,0x960,,4,
+1265,Laptop,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+1265,Laptop,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+1416,Wall Safe,46,0x835,ClosedState,1,,,3,8 9
+1416,Wall Safe,46,0x83a,DisarmedState,0,,,,7 6
+1416,Wall Safe,46,0x836,LockedState,0,,,8 9,3
+1416,Wall Safe,46,0x834,OpenedState,0,,,,3
+1416,Wall Safe,46,0x839,TrappedState,0,,,7 6,
+1416,Wall Safe,46,0x83b,TriggeredState,0,,,,7 6
+1416,Wall Safe,46,0x841,UnlockedState,0,,,3,8 9
+1417,Active_ComputerBlack,19,0x961,ST_Giver,0,0x960,,6,5
+1417,Active_ComputerBlack,19,0x960,ST_Normal,1,,,,6 5 9
+1417,Active_ComputerBlack,19,0x962,ST_Taker,0,0x960,,9,5
+1417,Active_ComputerBlack,19,0x963,ST_Unhacked,0,0x960,,5,
+1417,Active_ComputerBlack,19,0x964,ST_UnhackedGiver,0,0x961,,5,
+1417,Active_ComputerBlack,19,0x965,ST_UnhackedTaker,0,0x962,,5,
+1418,Active_ComputerWhite,19,0x961,ST_Giver,0,0x960,,6,5
+1418,Active_ComputerWhite,19,0x960,ST_Normal,1,,,,6 5 9
+1418,Active_ComputerWhite,19,0x962,ST_Taker,0,0x960,,9,5
+1418,Active_ComputerWhite,19,0x963,ST_Unhacked,0,0x960,,5,
+1418,Active_ComputerWhite,19,0x964,ST_UnhackedGiver,0,0x961,,5,
+1418,Active_ComputerWhite,19,0x965,ST_UnhackedTaker,0,0x962,,5,
+1419,Active_Laptop,20,0x961,ST_Giver,0,0x960,,5,4
+1419,Active_Laptop,20,0x960,ST_Normal,1,,,,5 4 8
+1419,Active_Laptop,20,0x962,ST_Taker,0,0x960,,8,4
+1419,Active_Laptop,20,0x963,ST_Unhacked,0,0x960,,4,
+1419,Active_Laptop,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+1419,Active_Laptop,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+1420,Special Medium Cardboard Box,46,0x835,ClosedState,1,,,3,8 9
+1420,Special Medium Cardboard Box,46,0x83a,DisarmedState,0,,,,7 6
+1420,Special Medium Cardboard Box,46,0x836,LockedState,0,,,8 9,3
+1420,Special Medium Cardboard Box,46,0x834,OpenedState,0,,,,3
+1420,Special Medium Cardboard Box,46,0x839,TrappedState,0,,,7 6,
+1420,Special Medium Cardboard Box,46,0x83b,TriggeredState,0,,,,7 6
+1420,Special Medium Cardboard Box,46,0x841,UnlockedState,0,,,3,8 9
+1421,Special Large Cardboard Box,46,0x835,ClosedState,1,,,3,8 9
+1421,Special Large Cardboard Box,46,0x83a,DisarmedState,0,,,,7 6
+1421,Special Large Cardboard Box,46,0x836,LockedState,0,,,8 9,3
+1421,Special Large Cardboard Box,46,0x834,OpenedState,0,,,,3
+1421,Special Large Cardboard Box,46,0x839,TrappedState,0,,,7 6,
+1421,Special Large Cardboard Box,46,0x83b,TriggeredState,0,,,,7 6
+1421,Special Large Cardboard Box,46,0x841,UnlockedState,0,,,3,8 9
+1425,LabDesk1,46,0x835,ClosedState,1,,,3,8 9
+1425,LabDesk1,46,0x83a,DisarmedState,0,,,,7 6
+1425,LabDesk1,46,0x836,LockedState,0,,,8 9,3
+1425,LabDesk1,46,0x834,OpenedState,0,,,,3
+1425,LabDesk1,46,0x839,TrappedState,0,,,7 6,
+1425,LabDesk1,46,0x83b,TriggeredState,0,,,,7 6
+1425,LabDesk1,46,0x841,UnlockedState,0,,,3,8 9
+1426,LabDesk2,46,0x835,ClosedState,1,,,3,8 9
+1426,LabDesk2,46,0x83a,DisarmedState,0,,,,7 6
+1426,LabDesk2,46,0x836,LockedState,0,,,8 9,3
+1426,LabDesk2,46,0x834,OpenedState,0,,,,3
+1426,LabDesk2,46,0x839,TrappedState,0,,,7 6,
+1426,LabDesk2,46,0x83b,TriggeredState,0,,,,7 6
+1426,LabDesk2,46,0x841,UnlockedState,0,,,3,8 9
+1427,LabDesk3,46,0x835,ClosedState,1,,,3,8 9
+1427,LabDesk3,46,0x83a,DisarmedState,0,,,,7 6
+1427,LabDesk3,46,0x836,LockedState,0,,,8 9,3
+1427,LabDesk3,46,0x834,OpenedState,0,,,,3
+1427,LabDesk3,46,0x839,TrappedState,0,,,7 6,
+1427,LabDesk3,46,0x83b,TriggeredState,0,,,,7 6
+1427,LabDesk3,46,0x841,UnlockedState,0,,,3,8 9
+1428,LabDesk4,46,0x835,ClosedState,1,,,3,8 9
+1428,LabDesk4,46,0x83a,DisarmedState,0,,,,7 6
+1428,LabDesk4,46,0x836,LockedState,0,,,8 9,3
+1428,LabDesk4,46,0x834,OpenedState,0,,,,3
+1428,LabDesk4,46,0x839,TrappedState,0,,,7 6,
+1428,LabDesk4,46,0x83b,TriggeredState,0,,,,7 6
+1428,LabDesk4,46,0x841,UnlockedState,0,,,3,8 9
+1429,LabDesk5,46,0x835,ClosedState,1,,,3,8 9
+1429,LabDesk5,46,0x83a,DisarmedState,0,,,,7 6
+1429,LabDesk5,46,0x836,LockedState,0,,,8 9,3
+1429,LabDesk5,46,0x834,OpenedState,0,,,,3
+1429,LabDesk5,46,0x839,TrappedState,0,,,7 6,
+1429,LabDesk5,46,0x83b,TriggeredState,0,,,,7 6
+1429,LabDesk5,46,0x841,UnlockedState,0,,,3,8 9
+1430,LabDesk6,46,0x835,ClosedState,1,,,3,8 9
+1430,LabDesk6,46,0x83a,DisarmedState,0,,,,7 6
+1430,LabDesk6,46,0x836,LockedState,0,,,8 9,3
+1430,LabDesk6,46,0x834,OpenedState,0,,,,3
+1430,LabDesk6,46,0x839,TrappedState,0,,,7 6,
+1430,LabDesk6,46,0x83b,TriggeredState,0,,,,7 6
+1430,LabDesk6,46,0x841,UnlockedState,0,,,3,8 9
+1431,MediumDesk1,369,0x835,ClosedState,1,,,3,8 9
+1431,MediumDesk1,369,0x83a,DisarmedState,0,,,,7 6
+1431,MediumDesk1,369,0x836,LockedState,0,,,8 9,3
+1431,MediumDesk1,369,0x834,OpenedState,0,,,,3
+1431,MediumDesk1,369,0x839,TrappedState,0,,,7 6,
+1431,MediumDesk1,369,0x83b,TriggeredState,0,,,,7 6
+1431,MediumDesk1,369,0x841,UnlockedState,0,,,3,8 9
+1432,MediumDesk2,3788,0x835,ClosedState,1,,,3,8 9
+1432,MediumDesk2,3788,0x83a,DisarmedState,0,,,,7 6
+1432,MediumDesk2,3788,0x836,LockedState,0,,,8 9,3
+1432,MediumDesk2,3788,0x834,OpenedState,0,,,,3
+1432,MediumDesk2,3788,0x839,TrappedState,0,,,7 6,
+1432,MediumDesk2,3788,0x83b,TriggeredState,0,,,,7 6
+1432,MediumDesk2,3788,0x841,UnlockedState,0,,,3,8 9
+1433,MediumDesk3,369,0x835,ClosedState,1,,,3,8 9
+1433,MediumDesk3,369,0x83a,DisarmedState,0,,,,7 6
+1433,MediumDesk3,369,0x836,LockedState,0,,,8 9,3
+1433,MediumDesk3,369,0x834,OpenedState,0,,,,3
+1433,MediumDesk3,369,0x839,TrappedState,0,,,7 6,
+1433,MediumDesk3,369,0x83b,TriggeredState,0,,,,7 6
+1433,MediumDesk3,369,0x841,UnlockedState,0,,,3,8 9
+1434,MediumDesk4,369,0x835,ClosedState,1,,,3,8 9
+1434,MediumDesk4,369,0x83a,DisarmedState,0,,,,7 6
+1434,MediumDesk4,369,0x836,LockedState,0,,,8 9,3
+1434,MediumDesk4,369,0x834,OpenedState,0,,,,3
+1434,MediumDesk4,369,0x839,TrappedState,0,,,7 6,
+1434,MediumDesk4,369,0x83b,TriggeredState,0,,,,7 6
+1434,MediumDesk4,369,0x841,UnlockedState,0,,,3,8 9
+1435,MediumDesk5,369,0x835,ClosedState,1,,,3,8 9
+1435,MediumDesk5,369,0x83a,DisarmedState,0,,,,7 6
+1435,MediumDesk5,369,0x836,LockedState,0,,,8 9,3
+1435,MediumDesk5,369,0x834,OpenedState,0,,,,3
+1435,MediumDesk5,369,0x839,TrappedState,0,,,7 6,
+1435,MediumDesk5,369,0x83b,TriggeredState,0,,,,7 6
+1435,MediumDesk5,369,0x841,UnlockedState,0,,,3,8 9
+1436,MediumSlumDesk1,369,0x835,ClosedState,1,,,3,8 9
+1436,MediumSlumDesk1,369,0x83a,DisarmedState,0,,,,7 6
+1436,MediumSlumDesk1,369,0x836,LockedState,0,,,8 9,3
+1436,MediumSlumDesk1,369,0x834,OpenedState,0,,,,3
+1436,MediumSlumDesk1,369,0x839,TrappedState,0,,,7 6,
+1436,MediumSlumDesk1,369,0x83b,TriggeredState,0,,,,7 6
+1436,MediumSlumDesk1,369,0x841,UnlockedState,0,,,3,8 9
+1437,MediumSlumDesk2,369,0x835,ClosedState,1,,,3,8 9
+1437,MediumSlumDesk2,369,0x83a,DisarmedState,0,,,,7 6
+1437,MediumSlumDesk2,369,0x836,LockedState,0,,,8 9,3
+1437,MediumSlumDesk2,369,0x834,OpenedState,0,,,,3
+1437,MediumSlumDesk2,369,0x839,TrappedState,0,,,7 6,
+1437,MediumSlumDesk2,369,0x83b,TriggeredState,0,,,,7 6
+1437,MediumSlumDesk2,369,0x841,UnlockedState,0,,,3,8 9
+1438,LargeDesk1,369,0x835,ClosedState,1,,,3,8 9
+1438,LargeDesk1,369,0x83a,DisarmedState,0,,,,7 6
+1438,LargeDesk1,369,0x836,LockedState,0,,,8 9,3
+1438,LargeDesk1,369,0x834,OpenedState,0,,,,3
+1438,LargeDesk1,369,0x839,TrappedState,0,,,7 6,
+1438,LargeDesk1,369,0x83b,TriggeredState,0,,,,7 6
+1438,LargeDesk1,369,0x841,UnlockedState,0,,,3,8 9
+1439,LargeDesk2,369,0x835,ClosedState,1,,,3,8 9
+1439,LargeDesk2,369,0x83a,DisarmedState,0,,,,7 6
+1439,LargeDesk2,369,0x836,LockedState,0,,,8 9,3
+1439,LargeDesk2,369,0x834,OpenedState,0,,,,3
+1439,LargeDesk2,369,0x839,TrappedState,0,,,7 6,
+1439,LargeDesk2,369,0x83b,TriggeredState,0,,,,7 6
+1439,LargeDesk2,369,0x841,UnlockedState,0,,,3,8 9
+1440,DeskComponentLeft,46,0x835,ClosedState,1,,,3,8 9
+1440,DeskComponentLeft,46,0x83a,DisarmedState,0,,,,7 6
+1440,DeskComponentLeft,46,0x836,LockedState,0,,,8 9,3
+1440,DeskComponentLeft,46,0x834,OpenedState,0,,,,3
+1440,DeskComponentLeft,46,0x839,TrappedState,0,,,7 6,
+1440,DeskComponentLeft,46,0x83b,TriggeredState,0,,,,7 6
+1440,DeskComponentLeft,46,0x841,UnlockedState,0,,,3,8 9
+1441,DeskComponentRight,46,0x835,ClosedState,1,,,3,8 9
+1441,DeskComponentRight,46,0x83a,DisarmedState,0,,,,7 6
+1441,DeskComponentRight,46,0x836,LockedState,0,,,8 9,3
+1441,DeskComponentRight,46,0x834,OpenedState,0,,,,3
+1441,DeskComponentRight,46,0x839,TrappedState,0,,,7 6,
+1441,DeskComponentRight,46,0x83b,TriggeredState,0,,,,7 6
+1441,DeskComponentRight,46,0x841,UnlockedState,0,,,3,8 9
+1442,DeskComponentCorner,46,0x835,ClosedState,1,,,3,8 9
+1442,DeskComponentCorner,46,0x83a,DisarmedState,0,,,,7 6
+1442,DeskComponentCorner,46,0x836,LockedState,0,,,8 9,3
+1442,DeskComponentCorner,46,0x834,OpenedState,0,,,,3
+1442,DeskComponentCorner,46,0x839,TrappedState,0,,,7 6,
+1442,DeskComponentCorner,46,0x83b,TriggeredState,0,,,,7 6
+1442,DeskComponentCorner,46,0x841,UnlockedState,0,,,3,8 9
+1443,DresserLarge,46,0x835,ClosedState,1,,,3,8 9
+1443,DresserLarge,46,0x83a,DisarmedState,0,,,,7 6
+1443,DresserLarge,46,0x836,LockedState,0,,,8 9,3
+1443,DresserLarge,46,0x834,OpenedState,0,,,,3
+1443,DresserLarge,46,0x839,TrappedState,0,,,7 6,
+1443,DresserLarge,46,0x83b,TriggeredState,0,,,,7 6
+1443,DresserLarge,46,0x841,UnlockedState,0,,,3,8 9
+1444,DresserMedium,46,0x835,ClosedState,1,,,3,8 9
+1444,DresserMedium,46,0x83a,DisarmedState,0,,,,7 6
+1444,DresserMedium,46,0x836,LockedState,0,,,8 9,3
+1444,DresserMedium,46,0x834,OpenedState,0,,,,3
+1444,DresserMedium,46,0x839,TrappedState,0,,,7 6,
+1444,DresserMedium,46,0x83b,TriggeredState,0,,,,7 6
+1444,DresserMedium,46,0x841,UnlockedState,0,,,3,8 9
+1445,DresserWide,46,0x835,ClosedState,1,,,3,8 9
+1445,DresserWide,46,0x83a,DisarmedState,0,,,,7 6
+1445,DresserWide,46,0x836,LockedState,0,,,8 9,3
+1445,DresserWide,46,0x834,OpenedState,0,,,,3
+1445,DresserWide,46,0x839,TrappedState,0,,,7 6,
+1445,DresserWide,46,0x83b,TriggeredState,0,,,,7 6
+1445,DresserWide,46,0x841,UnlockedState,0,,,3,8 9
+1446,DresserSlumLarge1,369,0x835,ClosedState,1,,,3,8 9
+1446,DresserSlumLarge1,369,0x83a,DisarmedState,0,,,,7 6
+1446,DresserSlumLarge1,369,0x836,LockedState,0,,,8 9,3
+1446,DresserSlumLarge1,369,0x834,OpenedState,0,,,,3
+1446,DresserSlumLarge1,369,0x839,TrappedState,0,,,7 6,
+1446,DresserSlumLarge1,369,0x83b,TriggeredState,0,,,,7 6
+1446,DresserSlumLarge1,369,0x841,UnlockedState,0,,,3,8 9
+1447,DresserSlumLarge2,369,0x835,ClosedState,1,,,3,8 9
+1447,DresserSlumLarge2,369,0x83a,DisarmedState,0,,,,7 6
+1447,DresserSlumLarge2,369,0x836,LockedState,0,,,8 9,3
+1447,DresserSlumLarge2,369,0x834,OpenedState,0,,,,3
+1447,DresserSlumLarge2,369,0x839,TrappedState,0,,,7 6,
+1447,DresserSlumLarge2,369,0x83b,TriggeredState,0,,,,7 6
+1447,DresserSlumLarge2,369,0x841,UnlockedState,0,,,3,8 9
+1448,DresserSlumMedium1,369,0x835,ClosedState,1,,,3,8 9
+1448,DresserSlumMedium1,369,0x83a,DisarmedState,0,,,,7 6
+1448,DresserSlumMedium1,369,0x836,LockedState,0,,,8 9,3
+1448,DresserSlumMedium1,369,0x834,OpenedState,0,,,,3
+1448,DresserSlumMedium1,369,0x839,TrappedState,0,,,7 6,
+1448,DresserSlumMedium1,369,0x83b,TriggeredState,0,,,,7 6
+1448,DresserSlumMedium1,369,0x841,UnlockedState,0,,,3,8 9
+1449,DresserSlumMedium2,369,0x835,ClosedState,1,,,3,8 9
+1449,DresserSlumMedium2,369,0x83a,DisarmedState,0,,,,7 6
+1449,DresserSlumMedium2,369,0x836,LockedState,0,,,8 9,3
+1449,DresserSlumMedium2,369,0x834,OpenedState,0,,,,3
+1449,DresserSlumMedium2,369,0x839,TrappedState,0,,,7 6,
+1449,DresserSlumMedium2,369,0x83b,TriggeredState,0,,,,7 6
+1449,DresserSlumMedium2,369,0x841,UnlockedState,0,,,3,8 9
+1450,DresserSlumWide1,369,0x835,ClosedState,1,,,3,8 9
+1450,DresserSlumWide1,369,0x83a,DisarmedState,0,,,,7 6
+1450,DresserSlumWide1,369,0x836,LockedState,0,,,8 9,3
+1450,DresserSlumWide1,369,0x834,OpenedState,0,,,,3
+1450,DresserSlumWide1,369,0x839,TrappedState,0,,,7 6,
+1450,DresserSlumWide1,369,0x83b,TriggeredState,0,,,,7 6
+1450,DresserSlumWide1,369,0x841,UnlockedState,0,,,3,8 9
+1451,DresserSlumWide2,369,0x835,ClosedState,1,,,3,8 9
+1451,DresserSlumWide2,369,0x83a,DisarmedState,0,,,,7 6
+1451,DresserSlumWide2,369,0x836,LockedState,0,,,8 9,3
+1451,DresserSlumWide2,369,0x834,OpenedState,0,,,,3
+1451,DresserSlumWide2,369,0x839,TrappedState,0,,,7 6,
+1451,DresserSlumWide2,369,0x83b,TriggeredState,0,,,,7 6
+1451,DresserSlumWide2,369,0x841,UnlockedState,0,,,3,8 9
+2421,Corpse1,155,0x835,ClosedState,1,,,3,8 9
+2421,Corpse1,155,0x83a,DisarmedState,0,,,,7 6
+2421,Corpse1,155,0x836,LockedState,0,,,8 9,3
+2421,Corpse1,155,0x834,OpenedState,0,,,,3
+2421,Corpse1,155,0x839,TrappedState,0,,,7 6,
+2421,Corpse1,155,0x83b,TriggeredState,0,,,,7 6
+2421,Corpse1,155,0x841,UnlockedState,0,,,3,8 9
+2422,Corpse2,155,0x835,ClosedState,1,,,3,8 9
+2422,Corpse2,155,0x83a,DisarmedState,0,,,,7 6
+2422,Corpse2,155,0x836,LockedState,0,,,8 9,3
+2422,Corpse2,155,0x834,OpenedState,0,,,,3
+2422,Corpse2,155,0x839,TrappedState,0,,,7 6,
+2422,Corpse2,155,0x83b,TriggeredState,0,,,,7 6
+2422,Corpse2,155,0x841,UnlockedState,0,,,3,8 9
+2423,Corpse3,155,0x835,ClosedState,1,,,3,8 9
+2423,Corpse3,155,0x83a,DisarmedState,0,,,,7 6
+2423,Corpse3,155,0x836,LockedState,0,,,8 9,3
+2423,Corpse3,155,0x834,OpenedState,0,,,,3
+2423,Corpse3,155,0x839,TrappedState,0,,,7 6,
+2423,Corpse3,155,0x83b,TriggeredState,0,,,,7 6
+2423,Corpse3,155,0x841,UnlockedState,0,,,3,8 9
+2424,Corpse4,155,0x835,ClosedState,1,,,3,8 9
+2424,Corpse4,155,0x83a,DisarmedState,0,,,,7 6
+2424,Corpse4,155,0x836,LockedState,0,,,8 9,3
+2424,Corpse4,155,0x834,OpenedState,0,,,,3
+2424,Corpse4,155,0x839,TrappedState,0,,,7 6,
+2424,Corpse4,155,0x83b,TriggeredState,0,,,,7 6
+2424,Corpse4,155,0x841,UnlockedState,0,,,3,8 9
+2425,Corpse5,155,0x835,ClosedState,1,,,3,8 9
+2425,Corpse5,155,0x83a,DisarmedState,0,,,,7 6
+2425,Corpse5,155,0x836,LockedState,0,,,8 9,3
+2425,Corpse5,155,0x834,OpenedState,0,,,,3
+2425,Corpse5,155,0x839,TrappedState,0,,,7 6,
+2425,Corpse5,155,0x83b,TriggeredState,0,,,,7 6
+2425,Corpse5,155,0x841,UnlockedState,0,,,3,8 9
+2426,Corpse6,155,0x835,ClosedState,1,,,3,8 9
+2426,Corpse6,155,0x83a,DisarmedState,0,,,,7 6
+2426,Corpse6,155,0x836,LockedState,0,,,8 9,3
+2426,Corpse6,155,0x834,OpenedState,0,,,,3
+2426,Corpse6,155,0x839,TrappedState,0,,,7 6,
+2426,Corpse6,155,0x83b,TriggeredState,0,,,,7 6
+2426,Corpse6,155,0x841,UnlockedState,0,,,3,8 9
+2427,Corpse7,155,0x835,ClosedState,1,,,3,8 9
+2427,Corpse7,155,0x83a,DisarmedState,0,,,,7 6
+2427,Corpse7,155,0x836,LockedState,0,,,8 9,3
+2427,Corpse7,155,0x834,OpenedState,0,,,,3
+2427,Corpse7,155,0x839,TrappedState,0,,,7 6,
+2427,Corpse7,155,0x83b,TriggeredState,0,,,,7 6
+2427,Corpse7,155,0x841,UnlockedState,0,,,3,8 9
+2428,Corpse8,155,0x835,ClosedState,1,,,3,8 9
+2428,Corpse8,155,0x83a,DisarmedState,0,,,,7 6
+2428,Corpse8,155,0x836,LockedState,0,,,8 9,3
+2428,Corpse8,155,0x834,OpenedState,0,,,,3
+2428,Corpse8,155,0x839,TrappedState,0,,,7 6,
+2428,Corpse8,155,0x83b,TriggeredState,0,,,,7 6
+2428,Corpse8,155,0x841,UnlockedState,0,,,3,8 9
+2430,Door Tutorial Greendoor,364,0x835,ClosedState,1,,,3,4 8
+2430,Door Tutorial Greendoor,364,0x838,ClosingState,0,0x835,1,3,4 8
+2430,Door Tutorial Greendoor,364,0x83a,DisarmedState,0,,,,11 12
+2430,Door Tutorial Greendoor,364,0x836,LockedState,0,,,4 8,3
+2430,Door Tutorial Greendoor,364,0x834,OpenedState,0,0x838,20,,3 4 8
+2430,Door Tutorial Greendoor,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+2430,Door Tutorial Greendoor,364,0x839,TrappedState,0,,,11 12,
+2430,Door Tutorial Greendoor,364,0x83b,TriggeredState,0,,,,11 12
+2431,Door Tutorial Greendoor Dojo,364,0x835,ClosedState,1,,,3,4 8
+2431,Door Tutorial Greendoor Dojo,364,0x838,ClosingState,0,0x835,1,3,4 8
+2431,Door Tutorial Greendoor Dojo,364,0x83a,DisarmedState,0,,,,11 12
+2431,Door Tutorial Greendoor Dojo,364,0x836,LockedState,0,,,4 8,3
+2431,Door Tutorial Greendoor Dojo,364,0x834,OpenedState,0,0x838,20,,3 4 8
+2431,Door Tutorial Greendoor Dojo,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+2431,Door Tutorial Greendoor Dojo,364,0x839,TrappedState,0,,,11 12,
+2431,Door Tutorial Greendoor Dojo,364,0x83b,TriggeredState,0,,,,11 12
+2432,Door Tutorial Greendoor Warehouse,364,0x835,ClosedState,1,,,3,4 8
+2432,Door Tutorial Greendoor Warehouse,364,0x838,ClosingState,0,0x835,1,3,4 8
+2432,Door Tutorial Greendoor Warehouse,364,0x83a,DisarmedState,0,,,,11 12
+2432,Door Tutorial Greendoor Warehouse,364,0x836,LockedState,0,,,4 8,3
+2432,Door Tutorial Greendoor Warehouse,364,0x834,OpenedState,0,0x838,20,,3 4 8
+2432,Door Tutorial Greendoor Warehouse,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+2432,Door Tutorial Greendoor Warehouse,364,0x839,TrappedState,0,,,11 12,
+2432,Door Tutorial Greendoor Warehouse,364,0x83b,TriggeredState,0,,,,11 12
+2550,Door IT Sliding Door 1,363,0x835,ClosedState,1,,,3,4 8
+2550,Door IT Sliding Door 1,363,0x838,ClosingState,0,0x835,1,3,4 8
+2550,Door IT Sliding Door 1,363,0x83a,DisarmedState,0,,,,11 12
+2550,Door IT Sliding Door 1,363,0x836,LockedState,0,,,4 8,3
+2550,Door IT Sliding Door 1,363,0x834,OpenedState,0,0x838,20,,3 4 8
+2550,Door IT Sliding Door 1,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+2550,Door IT Sliding Door 1,363,0x839,TrappedState,0,,,11 12,
+2550,Door IT Sliding Door 1,363,0x83b,TriggeredState,0,,,,11 12
+6516,Door Bank Vault,363,0x835,ClosedState,1,,,3,4 8
+6516,Door Bank Vault,363,0x838,ClosingState,0,0x835,1,3,4 8
+6516,Door Bank Vault,363,0x83a,DisarmedState,0,,,,11 12
+6516,Door Bank Vault,363,0x836,LockedState,0,,,4 8,3
+6516,Door Bank Vault,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6516,Door Bank Vault,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6516,Door Bank Vault,363,0x839,TrappedState,0,,,11 12,
+6516,Door Bank Vault,363,0x83b,TriggeredState,0,,,,11 12
+6584,Door Rotating Green Metal Handle,363,0x835,ClosedState,1,,,3,4 8
+6584,Door Rotating Green Metal Handle,363,0x838,ClosingState,0,0x835,1,3,4 8
+6584,Door Rotating Green Metal Handle,363,0x83a,DisarmedState,0,,,,11 12
+6584,Door Rotating Green Metal Handle,363,0x836,LockedState,0,,,4 8,3
+6584,Door Rotating Green Metal Handle,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6584,Door Rotating Green Metal Handle,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6584,Door Rotating Green Metal Handle,363,0x839,TrappedState,0,,,11 12,
+6584,Door Rotating Green Metal Handle,363,0x83b,TriggeredState,0,,,,11 12
+6585,Door Rotating Gray Metal,363,0x835,ClosedState,1,,,3,4 8
+6585,Door Rotating Gray Metal,363,0x838,ClosingState,0,0x835,1,3,4 8
+6585,Door Rotating Gray Metal,363,0x83a,DisarmedState,0,,,,11 12
+6585,Door Rotating Gray Metal,363,0x836,LockedState,0,,,4 8,3
+6585,Door Rotating Gray Metal,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6585,Door Rotating Gray Metal,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6585,Door Rotating Gray Metal,363,0x839,TrappedState,0,,,11 12,
+6585,Door Rotating Gray Metal,363,0x83b,TriggeredState,0,,,,11 12
+6586,Door Rotating Plywood,363,0x835,ClosedState,1,,,3,4 8
+6586,Door Rotating Plywood,363,0x838,ClosingState,0,0x835,1,3,4 8
+6586,Door Rotating Plywood,363,0x83a,DisarmedState,0,,,,11 12
+6586,Door Rotating Plywood,363,0x836,LockedState,0,,,4 8,3
+6586,Door Rotating Plywood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6586,Door Rotating Plywood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6586,Door Rotating Plywood,363,0x839,TrappedState,0,,,11 12,
+6586,Door Rotating Plywood,363,0x83b,TriggeredState,0,,,,11 12
+6587,Door Rotating Red Metal,363,0x835,ClosedState,1,,,3,4 8
+6587,Door Rotating Red Metal,363,0x838,ClosingState,0,0x835,1,3,4 8
+6587,Door Rotating Red Metal,363,0x83a,DisarmedState,0,,,,11 12
+6587,Door Rotating Red Metal,363,0x836,LockedState,0,,,4 8,3
+6587,Door Rotating Red Metal,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6587,Door Rotating Red Metal,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6587,Door Rotating Red Metal,363,0x839,TrappedState,0,,,11 12,
+6587,Door Rotating Red Metal,363,0x83b,TriggeredState,0,,,,11 12
+6588,Door Rotating Wood 1,363,0x835,ClosedState,1,,,3,4 8
+6588,Door Rotating Wood 1,363,0x838,ClosingState,0,0x835,1,3,4 8
+6588,Door Rotating Wood 1,363,0x83a,DisarmedState,0,,,,11 12
+6588,Door Rotating Wood 1,363,0x836,LockedState,0,,,4 8,3
+6588,Door Rotating Wood 1,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6588,Door Rotating Wood 1,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6588,Door Rotating Wood 1,363,0x839,TrappedState,0,,,11 12,
+6588,Door Rotating Wood 1,363,0x83b,TriggeredState,0,,,,11 12
+6589,Door Rotating Wood 2,363,0x835,ClosedState,1,,,3,4 8
+6589,Door Rotating Wood 2,363,0x838,ClosingState,0,0x835,1,3,4 8
+6589,Door Rotating Wood 2,363,0x83a,DisarmedState,0,,,,11 12
+6589,Door Rotating Wood 2,363,0x836,LockedState,0,,,4 8,3
+6589,Door Rotating Wood 2,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6589,Door Rotating Wood 2,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6589,Door Rotating Wood 2,363,0x839,TrappedState,0,,,11 12,
+6589,Door Rotating Wood 2,363,0x83b,TriggeredState,0,,,,11 12
+6590,Door Rotating Yellow Metal,363,0x835,ClosedState,1,,,3,4 8
+6590,Door Rotating Yellow Metal,363,0x838,ClosingState,0,0x835,1,3,4 8
+6590,Door Rotating Yellow Metal,363,0x83a,DisarmedState,0,,,,11 12
+6590,Door Rotating Yellow Metal,363,0x836,LockedState,0,,,4 8,3
+6590,Door Rotating Yellow Metal,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6590,Door Rotating Yellow Metal,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6590,Door Rotating Yellow Metal,363,0x839,TrappedState,0,,,11 12,
+6590,Door Rotating Yellow Metal,363,0x83b,TriggeredState,0,,,,11 12
+6591,Door Rotating Faded Green,363,0x835,ClosedState,1,,,3,4 8
+6591,Door Rotating Faded Green,363,0x838,ClosingState,0,0x835,1,3,4 8
+6591,Door Rotating Faded Green,363,0x83a,DisarmedState,0,,,,11 12
+6591,Door Rotating Faded Green,363,0x836,LockedState,0,,,4 8,3
+6591,Door Rotating Faded Green,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6591,Door Rotating Faded Green,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6591,Door Rotating Faded Green,363,0x839,TrappedState,0,,,11 12,
+6591,Door Rotating Faded Green,363,0x83b,TriggeredState,0,,,,11 12
+6592,Door Rotating Faded Red,363,0x835,ClosedState,1,,,3,4 8
+6592,Door Rotating Faded Red,363,0x838,ClosingState,0,0x835,1,3,4 8
+6592,Door Rotating Faded Red,363,0x83a,DisarmedState,0,,,,11 12
+6592,Door Rotating Faded Red,363,0x836,LockedState,0,,,4 8,3
+6592,Door Rotating Faded Red,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6592,Door Rotating Faded Red,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6592,Door Rotating Faded Red,363,0x839,TrappedState,0,,,11 12,
+6592,Door Rotating Faded Red,363,0x83b,TriggeredState,0,,,,11 12
+6593,Door Rotating Gray Flat,363,0x835,ClosedState,1,,,3,4 8
+6593,Door Rotating Gray Flat,363,0x838,ClosingState,0,0x835,1,3,4 8
+6593,Door Rotating Gray Flat,363,0x83a,DisarmedState,0,,,,11 12
+6593,Door Rotating Gray Flat,363,0x836,LockedState,0,,,4 8,3
+6593,Door Rotating Gray Flat,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6593,Door Rotating Gray Flat,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6593,Door Rotating Gray Flat,363,0x839,TrappedState,0,,,11 12,
+6593,Door Rotating Gray Flat,363,0x83b,TriggeredState,0,,,,11 12
+6594,Door Rotating Gray Vents,363,0x835,ClosedState,1,,,3,4 8
+6594,Door Rotating Gray Vents,363,0x838,ClosingState,0,0x835,1,3,4 8
+6594,Door Rotating Gray Vents,363,0x83a,DisarmedState,0,,,,11 12
+6594,Door Rotating Gray Vents,363,0x836,LockedState,0,,,4 8,3
+6594,Door Rotating Gray Vents,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6594,Door Rotating Gray Vents,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6594,Door Rotating Gray Vents,363,0x839,TrappedState,0,,,11 12,
+6594,Door Rotating Gray Vents,363,0x83b,TriggeredState,0,,,,11 12
+6595,Door Rotating Gray Wood,363,0x835,ClosedState,1,,,3,4 8
+6595,Door Rotating Gray Wood,363,0x838,ClosingState,0,0x835,1,3,4 8
+6595,Door Rotating Gray Wood,363,0x83a,DisarmedState,0,,,,11 12
+6595,Door Rotating Gray Wood,363,0x836,LockedState,0,,,4 8,3
+6595,Door Rotating Gray Wood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6595,Door Rotating Gray Wood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6595,Door Rotating Gray Wood,363,0x839,TrappedState,0,,,11 12,
+6595,Door Rotating Gray Wood,363,0x83b,TriggeredState,0,,,,11 12
+6596,Door Rotating Green Metal Knob,363,0x835,ClosedState,1,,,3,4 8
+6596,Door Rotating Green Metal Knob,363,0x838,ClosingState,0,0x835,1,3,4 8
+6596,Door Rotating Green Metal Knob,363,0x83a,DisarmedState,0,,,,11 12
+6596,Door Rotating Green Metal Knob,363,0x836,LockedState,0,,,4 8,3
+6596,Door Rotating Green Metal Knob,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6596,Door Rotating Green Metal Knob,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6596,Door Rotating Green Metal Knob,363,0x839,TrappedState,0,,,11 12,
+6596,Door Rotating Green Metal Knob,363,0x83b,TriggeredState,0,,,,11 12
+6597,Door Rotating Purple Metal,363,0x835,ClosedState,1,,,3,4 8
+6597,Door Rotating Purple Metal,363,0x838,ClosingState,0,0x835,1,3,4 8
+6597,Door Rotating Purple Metal,363,0x83a,DisarmedState,0,,,,11 12
+6597,Door Rotating Purple Metal,363,0x836,LockedState,0,,,4 8,3
+6597,Door Rotating Purple Metal,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6597,Door Rotating Purple Metal,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6597,Door Rotating Purple Metal,363,0x839,TrappedState,0,,,11 12,
+6597,Door Rotating Purple Metal,363,0x83b,TriggeredState,0,,,,11 12
+6598,Door Rotating Painted Wood,363,0x835,ClosedState,1,,,3,4 8
+6598,Door Rotating Painted Wood,363,0x838,ClosingState,0,0x835,1,3,4 8
+6598,Door Rotating Painted Wood,363,0x83a,DisarmedState,0,,,,11 12
+6598,Door Rotating Painted Wood,363,0x836,LockedState,0,,,4 8,3
+6598,Door Rotating Painted Wood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6598,Door Rotating Painted Wood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6598,Door Rotating Painted Wood,363,0x839,TrappedState,0,,,11 12,
+6598,Door Rotating Painted Wood,363,0x83b,TriggeredState,0,,,,11 12
+6599,Door Rotating Painted Yellow,363,0x835,ClosedState,1,,,3,4 8
+6599,Door Rotating Painted Yellow,363,0x838,ClosingState,0,0x835,1,3,4 8
+6599,Door Rotating Painted Yellow,363,0x83a,DisarmedState,0,,,,11 12
+6599,Door Rotating Painted Yellow,363,0x836,LockedState,0,,,4 8,3
+6599,Door Rotating Painted Yellow,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6599,Door Rotating Painted Yellow,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6599,Door Rotating Painted Yellow,363,0x839,TrappedState,0,,,11 12,
+6599,Door Rotating Painted Yellow,363,0x83b,TriggeredState,0,,,,11 12
+6600,Door Rotating Ornate,363,0x835,ClosedState,1,,,3,4 8
+6600,Door Rotating Ornate,363,0x838,ClosingState,0,0x835,1,3,4 8
+6600,Door Rotating Ornate,363,0x83a,DisarmedState,0,,,,11 12
+6600,Door Rotating Ornate,363,0x836,LockedState,0,,,4 8,3
+6600,Door Rotating Ornate,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6600,Door Rotating Ornate,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6600,Door Rotating Ornate,363,0x839,TrappedState,0,,,11 12,
+6600,Door Rotating Ornate,363,0x83b,TriggeredState,0,,,,11 12
+6601,Door Rotating Metal,363,0x835,ClosedState,1,,,3,4 8
+6601,Door Rotating Metal,363,0x838,ClosingState,0,0x835,1,3,4 8
+6601,Door Rotating Metal,363,0x83a,DisarmedState,0,,,,11 12
+6601,Door Rotating Metal,363,0x836,LockedState,0,,,4 8,3
+6601,Door Rotating Metal,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6601,Door Rotating Metal,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6601,Door Rotating Metal,363,0x839,TrappedState,0,,,11 12,
+6601,Door Rotating Metal,363,0x83b,TriggeredState,0,,,,11 12
+6616,WH Mission Door,4295,0x835,ClosedState,1,,,3,4 8
+6616,WH Mission Door,4295,0x838,ClosingState,0,0x835,5,3,4 8
+6616,WH Mission Door,4295,0x83a,DisarmedState,0,,,,11 12
+6616,WH Mission Door,4295,0x836,LockedState,0,,,4 8,3
+6616,WH Mission Door,4295,0x834,OpenedState,0,0x838,20,,3 4 8
+6616,WH Mission Door,4295,0x839,TrappedState,0,,,11 12,
+6616,WH Mission Door,4295,0x83b,TriggeredState,0,,,,11 12
+6617,WH World Door,365,0x835,ClosedState,1,,,3,4 8
+6617,WH World Door,365,0x838,ClosingState,0,0x835,5,3,4 8
+6617,WH World Door,365,0x83a,DisarmedState,0,,,,11 12
+6617,WH World Door,365,0x836,LockedState,0,,,4 8,3
+6617,WH World Door,365,0x834,OpenedState,0,0x838,20,,3 4 8
+6617,WH World Door,365,0x839,TrappedState,0,,,11 12,
+6617,WH World Door,365,0x83b,TriggeredState,0,,,,11 12
+6618,WH Door,4295,0x835,ClosedState,1,,,3,4 8
+6618,WH Door,4295,0x838,ClosingState,0,0x835,5,3,4 8
+6618,WH Door,4295,0x83a,DisarmedState,0,,,,11 12
+6618,WH Door,4295,0x836,LockedState,0,,,4 8,3
+6618,WH Door,4295,0x834,OpenedState,0,0x838,20,,3 4 8
+6618,WH Door,4295,0x839,TrappedState,0,,,11 12,
+6618,WH Door,4295,0x83b,TriggeredState,0,,,,11 12
+6637,Door Hidden Bookcase,363,0x835,ClosedState,1,,,3,4 8
+6637,Door Hidden Bookcase,363,0x838,ClosingState,0,0x835,1,3,4 8
+6637,Door Hidden Bookcase,363,0x83a,DisarmedState,0,,,,11 12
+6637,Door Hidden Bookcase,363,0x836,LockedState,0,,,4 8,3
+6637,Door Hidden Bookcase,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6637,Door Hidden Bookcase,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6637,Door Hidden Bookcase,363,0x839,TrappedState,0,,,11 12,
+6637,Door Hidden Bookcase,363,0x83b,TriggeredState,0,,,,11 12
+6951,Door Revolving,364,0x835,ClosedState,1,,,3,4 8
+6951,Door Revolving,364,0x838,ClosingState,0,0x835,1,3,4 8
+6951,Door Revolving,364,0x83a,DisarmedState,0,,,,11 12
+6951,Door Revolving,364,0x836,LockedState,0,,,4 8,3
+6951,Door Revolving,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6951,Door Revolving,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6951,Door Revolving,364,0x839,TrappedState,0,,,11 12,
+6951,Door Revolving,364,0x83b,TriggeredState,0,,,,11 12
+6953,Door IT Sliding Door 3,363,0x835,ClosedState,1,,,3,4 8
+6953,Door IT Sliding Door 3,363,0x838,ClosingState,0,0x835,1,3,4 8
+6953,Door IT Sliding Door 3,363,0x83a,DisarmedState,0,,,,11 12
+6953,Door IT Sliding Door 3,363,0x836,LockedState,0,,,4 8,3
+6953,Door IT Sliding Door 3,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6953,Door IT Sliding Door 3,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6953,Door IT Sliding Door 3,363,0x839,TrappedState,0,,,11 12,
+6953,Door IT Sliding Door 3,363,0x83b,TriggeredState,0,,,,11 12
+6954,Door SL Push Handle Grnmetal,364,0x835,ClosedState,1,,,3,4 8
+6954,Door SL Push Handle Grnmetal,364,0x838,ClosingState,0,0x835,1,3,4 8
+6954,Door SL Push Handle Grnmetal,364,0x83a,DisarmedState,0,,,,11 12
+6954,Door SL Push Handle Grnmetal,364,0x836,LockedState,0,,,4 8,3
+6954,Door SL Push Handle Grnmetal,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6954,Door SL Push Handle Grnmetal,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6954,Door SL Push Handle Grnmetal,364,0x839,TrappedState,0,,,11 12,
+6954,Door SL Push Handle Grnmetal,364,0x83b,TriggeredState,0,,,,11 12
+6955,Door SL Push Handle Grymetal,364,0x835,ClosedState,1,,,3,4 8
+6955,Door SL Push Handle Grymetal,364,0x838,ClosingState,0,0x835,1,3,4 8
+6955,Door SL Push Handle Grymetal,364,0x83a,DisarmedState,0,,,,11 12
+6955,Door SL Push Handle Grymetal,364,0x836,LockedState,0,,,4 8,3
+6955,Door SL Push Handle Grymetal,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6955,Door SL Push Handle Grymetal,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6955,Door SL Push Handle Grymetal,364,0x839,TrappedState,0,,,11 12,
+6955,Door SL Push Handle Grymetal,364,0x83b,TriggeredState,0,,,,11 12
+6956,Door SL Push Handle Pwood,364,0x835,ClosedState,1,,,3,4 8
+6956,Door SL Push Handle Pwood,364,0x838,ClosingState,0,0x835,1,3,4 8
+6956,Door SL Push Handle Pwood,364,0x83a,DisarmedState,0,,,,11 12
+6956,Door SL Push Handle Pwood,364,0x836,LockedState,0,,,4 8,3
+6956,Door SL Push Handle Pwood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6956,Door SL Push Handle Pwood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6956,Door SL Push Handle Pwood,364,0x839,TrappedState,0,,,11 12,
+6956,Door SL Push Handle Pwood,364,0x83b,TriggeredState,0,,,,11 12
+6957,Door SL Push Handle Rdnmetal,364,0x835,ClosedState,1,,,3,4 8
+6957,Door SL Push Handle Rdnmetal,364,0x838,ClosingState,0,0x835,1,3,4 8
+6957,Door SL Push Handle Rdnmetal,364,0x83a,DisarmedState,0,,,,11 12
+6957,Door SL Push Handle Rdnmetal,364,0x836,LockedState,0,,,4 8,3
+6957,Door SL Push Handle Rdnmetal,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6957,Door SL Push Handle Rdnmetal,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6957,Door SL Push Handle Rdnmetal,364,0x839,TrappedState,0,,,11 12,
+6957,Door SL Push Handle Rdnmetal,364,0x83b,TriggeredState,0,,,,11 12
+6958,Door SL Push Handle Wood 1,364,0x835,ClosedState,1,,,3,4 8
+6958,Door SL Push Handle Wood 1,364,0x838,ClosingState,0,0x835,1,3,4 8
+6958,Door SL Push Handle Wood 1,364,0x83a,DisarmedState,0,,,,11 12
+6958,Door SL Push Handle Wood 1,364,0x836,LockedState,0,,,4 8,3
+6958,Door SL Push Handle Wood 1,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6958,Door SL Push Handle Wood 1,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6958,Door SL Push Handle Wood 1,364,0x839,TrappedState,0,,,11 12,
+6958,Door SL Push Handle Wood 1,364,0x83b,TriggeredState,0,,,,11 12
+6959,Door SL Push Handle Wood 2,364,0x835,ClosedState,1,,,3,4 8
+6959,Door SL Push Handle Wood 2,364,0x838,ClosingState,0,0x835,1,3,4 8
+6959,Door SL Push Handle Wood 2,364,0x83a,DisarmedState,0,,,,11 12
+6959,Door SL Push Handle Wood 2,364,0x836,LockedState,0,,,4 8,3
+6959,Door SL Push Handle Wood 2,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6959,Door SL Push Handle Wood 2,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6959,Door SL Push Handle Wood 2,364,0x839,TrappedState,0,,,11 12,
+6959,Door SL Push Handle Wood 2,364,0x83b,TriggeredState,0,,,,11 12
+6960,Door SL Push Handle Ylmetal,364,0x835,ClosedState,1,,,3,4 8
+6960,Door SL Push Handle Ylmetal,364,0x838,ClosingState,0,0x835,1,3,4 8
+6960,Door SL Push Handle Ylmetal,364,0x83a,DisarmedState,0,,,,11 12
+6960,Door SL Push Handle Ylmetal,364,0x836,LockedState,0,,,4 8,3
+6960,Door SL Push Handle Ylmetal,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6960,Door SL Push Handle Ylmetal,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6960,Door SL Push Handle Ylmetal,364,0x839,TrappedState,0,,,11 12,
+6960,Door SL Push Handle Ylmetal,364,0x83b,TriggeredState,0,,,,11 12
+6963,SL Push Knob Grayflat03,364,0x835,ClosedState,1,,,3,4 8
+6963,SL Push Knob Grayflat03,364,0x838,ClosingState,0,0x835,1,3,4 8
+6963,SL Push Knob Grayflat03,364,0x83a,DisarmedState,0,,,,11 12
+6963,SL Push Knob Grayflat03,364,0x836,LockedState,0,,,4 8,3
+6963,SL Push Knob Grayflat03,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6963,SL Push Knob Grayflat03,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6963,SL Push Knob Grayflat03,364,0x839,TrappedState,0,,,11 12,
+6963,SL Push Knob Grayflat03,364,0x83b,TriggeredState,0,,,,11 12
+6964,SL Push Knob Grayflat02,364,0x835,ClosedState,1,,,3,4 8
+6964,SL Push Knob Grayflat02,364,0x838,ClosingState,0,0x835,1,3,4 8
+6964,SL Push Knob Grayflat02,364,0x83a,DisarmedState,0,,,,11 12
+6964,SL Push Knob Grayflat02,364,0x836,LockedState,0,,,4 8,3
+6964,SL Push Knob Grayflat02,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6964,SL Push Knob Grayflat02,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6964,SL Push Knob Grayflat02,364,0x839,TrappedState,0,,,11 12,
+6964,SL Push Knob Grayflat02,364,0x83b,TriggeredState,0,,,,11 12
+6965,SL Push Knob Grayflat01,364,0x835,ClosedState,1,,,3,4 8
+6965,SL Push Knob Grayflat01,364,0x838,ClosingState,0,0x835,1,3,4 8
+6965,SL Push Knob Grayflat01,364,0x83a,DisarmedState,0,,,,11 12
+6965,SL Push Knob Grayflat01,364,0x836,LockedState,0,,,4 8,3
+6965,SL Push Knob Grayflat01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6965,SL Push Knob Grayflat01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6965,SL Push Knob Grayflat01,364,0x839,TrappedState,0,,,11 12,
+6965,SL Push Knob Grayflat01,364,0x83b,TriggeredState,0,,,,11 12
+6966,Door_ZZ_sky03_var2_ext,364,0x835,ClosedState,1,,,3,4 8
+6966,Door_ZZ_sky03_var2_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6966,Door_ZZ_sky03_var2_ext,364,0x83a,DisarmedState,0,,,,11 12
+6966,Door_ZZ_sky03_var2_ext,364,0x836,LockedState,0,,,4 8,3
+6966,Door_ZZ_sky03_var2_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6966,Door_ZZ_sky03_var2_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6966,Door_ZZ_sky03_var2_ext,364,0x839,TrappedState,0,,,11 12,
+6966,Door_ZZ_sky03_var2_ext,364,0x83b,TriggeredState,0,,,,11 12
+6967,Door_ZZ_sky04_ext,364,0x835,ClosedState,1,,,3,4 8
+6967,Door_ZZ_sky04_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6967,Door_ZZ_sky04_ext,364,0x83a,DisarmedState,0,,,,11 12
+6967,Door_ZZ_sky04_ext,364,0x836,LockedState,0,,,4 8,3
+6967,Door_ZZ_sky04_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6967,Door_ZZ_sky04_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6967,Door_ZZ_sky04_ext,364,0x839,TrappedState,0,,,11 12,
+6967,Door_ZZ_sky04_ext,364,0x83b,TriggeredState,0,,,,11 12
+6968,Door_DT_sky05_ext,364,0x835,ClosedState,1,,,3,4 8
+6968,Door_DT_sky05_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6968,Door_DT_sky05_ext,364,0x83a,DisarmedState,0,,,,11 12
+6968,Door_DT_sky05_ext,364,0x836,LockedState,0,,,4 8,3
+6968,Door_DT_sky05_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6968,Door_DT_sky05_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6968,Door_DT_sky05_ext,364,0x839,TrappedState,0,,,11 12,
+6968,Door_DT_sky05_ext,364,0x83b,TriggeredState,0,,,,11 12
+6969,Door_ZZ_sky02_ext,364,0x835,ClosedState,1,,,3,4 8
+6969,Door_ZZ_sky02_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6969,Door_ZZ_sky02_ext,364,0x83a,DisarmedState,0,,,,11 12
+6969,Door_ZZ_sky02_ext,364,0x836,LockedState,0,,,4 8,3
+6969,Door_ZZ_sky02_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6969,Door_ZZ_sky02_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6969,Door_ZZ_sky02_ext,364,0x839,TrappedState,0,,,11 12,
+6969,Door_ZZ_sky02_ext,364,0x83b,TriggeredState,0,,,,11 12
+6970,Door_IT_hotel_01_ext,364,0x835,ClosedState,1,,,3,4 8
+6970,Door_IT_hotel_01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6970,Door_IT_hotel_01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6970,Door_IT_hotel_01_ext,364,0x836,LockedState,0,,,4 8,3
+6970,Door_IT_hotel_01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6970,Door_IT_hotel_01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6970,Door_IT_hotel_01_ext,364,0x839,TrappedState,0,,,11 12,
+6970,Door_IT_hotel_01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6971,Door_ZZ_sky03_var1_ext,364,0x835,ClosedState,1,,,3,4 8
+6971,Door_ZZ_sky03_var1_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6971,Door_ZZ_sky03_var1_ext,364,0x83a,DisarmedState,0,,,,11 12
+6971,Door_ZZ_sky03_var1_ext,364,0x836,LockedState,0,,,4 8,3
+6971,Door_ZZ_sky03_var1_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6971,Door_ZZ_sky03_var1_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6971,Door_ZZ_sky03_var1_ext,364,0x839,TrappedState,0,,,11 12,
+6971,Door_ZZ_sky03_var1_ext,364,0x83b,TriggeredState,0,,,,11 12
+6972,Door_IT_aprt_03_ext,364,0x835,ClosedState,1,,,3,4 8
+6972,Door_IT_aprt_03_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6972,Door_IT_aprt_03_ext,364,0x83a,DisarmedState,0,,,,11 12
+6972,Door_IT_aprt_03_ext,364,0x836,LockedState,0,,,4 8,3
+6972,Door_IT_aprt_03_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6972,Door_IT_aprt_03_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6972,Door_IT_aprt_03_ext,364,0x839,TrappedState,0,,,11 12,
+6972,Door_IT_aprt_03_ext,364,0x83b,TriggeredState,0,,,,11 12
+6973,Door_ZZ_sky01_ext,364,0x835,ClosedState,1,,,3,4 8
+6973,Door_ZZ_sky01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6973,Door_ZZ_sky01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6973,Door_ZZ_sky01_ext,364,0x836,LockedState,0,,,4 8,3
+6973,Door_ZZ_sky01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6973,Door_ZZ_sky01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6973,Door_ZZ_sky01_ext,364,0x839,TrappedState,0,,,11 12,
+6973,Door_ZZ_sky01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6974,Door_DT_sky01_ext,364,0x835,ClosedState,1,,,3,4 8
+6974,Door_DT_sky01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6974,Door_DT_sky01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6974,Door_DT_sky01_ext,364,0x836,LockedState,0,,,4 8,3
+6974,Door_DT_sky01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6974,Door_DT_sky01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6974,Door_DT_sky01_ext,364,0x839,TrappedState,0,,,11 12,
+6974,Door_DT_sky01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6975,Door_DT_sky02_ext,364,0x835,ClosedState,1,,,3,4 8
+6975,Door_DT_sky02_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6975,Door_DT_sky02_ext,364,0x83a,DisarmedState,0,,,,11 12
+6975,Door_DT_sky02_ext,364,0x836,LockedState,0,,,4 8,3
+6975,Door_DT_sky02_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6975,Door_DT_sky02_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6975,Door_DT_sky02_ext,364,0x839,TrappedState,0,,,11 12,
+6975,Door_DT_sky02_ext,364,0x83b,TriggeredState,0,,,,11 12
+6976,Door_DT_sky03_ext,364,0x835,ClosedState,1,,,3,4 8
+6976,Door_DT_sky03_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6976,Door_DT_sky03_ext,364,0x83a,DisarmedState,0,,,,11 12
+6976,Door_DT_sky03_ext,364,0x836,LockedState,0,,,4 8,3
+6976,Door_DT_sky03_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6976,Door_DT_sky03_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6976,Door_DT_sky03_ext,364,0x839,TrappedState,0,,,11 12,
+6976,Door_DT_sky03_ext,364,0x83b,TriggeredState,0,,,,11 12
+6977,Door_DT_sky04_ext,364,0x835,ClosedState,1,,,3,4 8
+6977,Door_DT_sky04_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6977,Door_DT_sky04_ext,364,0x83a,DisarmedState,0,,,,11 12
+6977,Door_DT_sky04_ext,364,0x836,LockedState,0,,,4 8,3
+6977,Door_DT_sky04_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6977,Door_DT_sky04_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6977,Door_DT_sky04_ext,364,0x839,TrappedState,0,,,11 12,
+6977,Door_DT_sky04_ext,364,0x83b,TriggeredState,0,,,,11 12
+6978,Door_DT_sky06_ext,364,0x835,ClosedState,1,,,3,4 8
+6978,Door_DT_sky06_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6978,Door_DT_sky06_ext,364,0x83a,DisarmedState,0,,,,11 12
+6978,Door_DT_sky06_ext,364,0x836,LockedState,0,,,4 8,3
+6978,Door_DT_sky06_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6978,Door_DT_sky06_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6978,Door_DT_sky06_ext,364,0x839,TrappedState,0,,,11 12,
+6978,Door_DT_sky06_ext,364,0x83b,TriggeredState,0,,,,11 12
+6979,Door_IT_Factory_01_ext,364,0x835,ClosedState,1,,,3,4 8
+6979,Door_IT_Factory_01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6979,Door_IT_Factory_01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6979,Door_IT_Factory_01_ext,364,0x836,LockedState,0,,,4 8,3
+6979,Door_IT_Factory_01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6979,Door_IT_Factory_01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6979,Door_IT_Factory_01_ext,364,0x839,TrappedState,0,,,11 12,
+6979,Door_IT_Factory_01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6980,Door_IT_Dojo_01_ext,364,0x835,ClosedState,1,,,3,4 8
+6980,Door_IT_Dojo_01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6980,Door_IT_Dojo_01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6980,Door_IT_Dojo_01_ext,364,0x836,LockedState,0,,,4 8,3
+6980,Door_IT_Dojo_01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6980,Door_IT_Dojo_01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6980,Door_IT_Dojo_01_ext,364,0x839,TrappedState,0,,,11 12,
+6980,Door_IT_Dojo_01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6981,Door_IT_Rest_01_ext,364,0x835,ClosedState,1,,,3,4 8
+6981,Door_IT_Rest_01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6981,Door_IT_Rest_01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6981,Door_IT_Rest_01_ext,364,0x836,LockedState,0,,,4 8,3
+6981,Door_IT_Rest_01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6981,Door_IT_Rest_01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6981,Door_IT_Rest_01_ext,364,0x839,TrappedState,0,,,11 12,
+6981,Door_IT_Rest_01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6982,Door_IT_aprt_01_ext,364,0x835,ClosedState,1,,,3,4 8
+6982,Door_IT_aprt_01_ext,364,0x838,ClosingState,0,0x835,1,3,4 8
+6982,Door_IT_aprt_01_ext,364,0x83a,DisarmedState,0,,,,11 12
+6982,Door_IT_aprt_01_ext,364,0x836,LockedState,0,,,4 8,3
+6982,Door_IT_aprt_01_ext,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6982,Door_IT_aprt_01_ext,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6982,Door_IT_aprt_01_ext,364,0x839,TrappedState,0,,,11 12,
+6982,Door_IT_aprt_01_ext,364,0x83b,TriggeredState,0,,,,11 12
+6983,Door SL Church,364,0x835,ClosedState,1,,,3,4 8
+6983,Door SL Church,364,0x838,ClosingState,0,0x835,1,3,4 8
+6983,Door SL Church,364,0x83a,DisarmedState,0,,,,11 12
+6983,Door SL Church,364,0x836,LockedState,0,,,4 8,3
+6983,Door SL Church,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6983,Door SL Church,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6983,Door SL Church,364,0x839,TrappedState,0,,,11 12,
+6983,Door SL Church,364,0x83b,TriggeredState,0,,,,11 12
+6984,Door SL Push Knob GrayVent01,364,0x835,ClosedState,1,,,3,4 8
+6984,Door SL Push Knob GrayVent01,364,0x838,ClosingState,0,0x835,1,3,4 8
+6984,Door SL Push Knob GrayVent01,364,0x83a,DisarmedState,0,,,,11 12
+6984,Door SL Push Knob GrayVent01,364,0x836,LockedState,0,,,4 8,3
+6984,Door SL Push Knob GrayVent01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6984,Door SL Push Knob GrayVent01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6984,Door SL Push Knob GrayVent01,364,0x839,TrappedState,0,,,11 12,
+6984,Door SL Push Knob GrayVent01,364,0x83b,TriggeredState,0,,,,11 12
+6985,SL Push Knob Glass,364,0x835,ClosedState,1,,,3,4 8
+6985,SL Push Knob Glass,364,0x838,ClosingState,0,0x835,1,3,4 8
+6985,SL Push Knob Glass,364,0x83a,DisarmedState,0,,,,11 12
+6985,SL Push Knob Glass,364,0x836,LockedState,0,,,4 8,3
+6985,SL Push Knob Glass,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6985,SL Push Knob Glass,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6985,SL Push Knob Glass,364,0x839,TrappedState,0,,,11 12,
+6985,SL Push Knob Glass,364,0x83b,TriggeredState,0,,,,11 12
+6986,Door SL Push Knob Fadedgreen01,364,0x835,ClosedState,1,,,3,4 8
+6986,Door SL Push Knob Fadedgreen01,364,0x838,ClosingState,0,0x835,1,3,4 8
+6986,Door SL Push Knob Fadedgreen01,364,0x83a,DisarmedState,0,,,,11 12
+6986,Door SL Push Knob Fadedgreen01,364,0x836,LockedState,0,,,4 8,3
+6986,Door SL Push Knob Fadedgreen01,364,0x834,OpenedState,0,0x838,20,,3 4 8
+6986,Door SL Push Knob Fadedgreen01,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+6986,Door SL Push Knob Fadedgreen01,364,0x839,TrappedState,0,,,11 12,
+6986,Door SL Push Knob Fadedgreen01,364,0x83b,TriggeredState,0,,,,11 12
+6987,LargeDeskMetal,369,0x835,ClosedState,1,,,3,8 9
+6987,LargeDeskMetal,369,0x83a,DisarmedState,0,,,,7 6
+6987,LargeDeskMetal,369,0x836,LockedState,0,,,8 9,3
+6987,LargeDeskMetal,369,0x834,OpenedState,0,,,,3
+6987,LargeDeskMetal,369,0x839,TrappedState,0,,,7 6,
+6987,LargeDeskMetal,369,0x83b,TriggeredState,0,,,,7 6
+6987,LargeDeskMetal,369,0x841,UnlockedState,0,,,3,8 9
+6993,Door DT 2Push Knob Redwood,363,0x835,ClosedState,1,,,3,4 8
+6993,Door DT 2Push Knob Redwood,363,0x838,ClosingState,0,0x835,1,3,4 8
+6993,Door DT 2Push Knob Redwood,363,0x83a,DisarmedState,0,,,,11 12
+6993,Door DT 2Push Knob Redwood,363,0x836,LockedState,0,,,4 8,3
+6993,Door DT 2Push Knob Redwood,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6993,Door DT 2Push Knob Redwood,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6993,Door DT 2Push Knob Redwood,363,0x839,TrappedState,0,,,11 12,
+6993,Door DT 2Push Knob Redwood,363,0x83b,TriggeredState,0,,,,11 12
+6994,Door DT 2Push Knob darkwood01,363,0x835,ClosedState,1,,,3,4 8
+6994,Door DT 2Push Knob darkwood01,363,0x838,ClosingState,0,0x835,1,3,4 8
+6994,Door DT 2Push Knob darkwood01,363,0x83a,DisarmedState,0,,,,11 12
+6994,Door DT 2Push Knob darkwood01,363,0x836,LockedState,0,,,4 8,3
+6994,Door DT 2Push Knob darkwood01,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6994,Door DT 2Push Knob darkwood01,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6994,Door DT 2Push Knob darkwood01,363,0x839,TrappedState,0,,,11 12,
+6994,Door DT 2Push Knob darkwood01,363,0x83b,TriggeredState,0,,,,11 12
+6995,Door DT 2Push Knob graymetal01,363,0x835,ClosedState,1,,,3,4 8
+6995,Door DT 2Push Knob graymetal01,363,0x838,ClosingState,0,0x835,1,3,4 8
+6995,Door DT 2Push Knob graymetal01,363,0x83a,DisarmedState,0,,,,11 12
+6995,Door DT 2Push Knob graymetal01,363,0x836,LockedState,0,,,4 8,3
+6995,Door DT 2Push Knob graymetal01,363,0x834,OpenedState,0,0x838,20,,3 4 8
+6995,Door DT 2Push Knob graymetal01,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+6995,Door DT 2Push Knob graymetal01,363,0x839,TrappedState,0,,,11 12,
+6995,Door DT 2Push Knob graymetal01,363,0x83b,TriggeredState,0,,,,11 12
+7282,Door Hell Club Elevator,363,0x835,ClosedState,1,,,3,4 8
+7282,Door Hell Club Elevator,363,0x838,ClosingState,0,0x835,1,3,4 8
+7282,Door Hell Club Elevator,363,0x83a,DisarmedState,0,,,,11 12
+7282,Door Hell Club Elevator,363,0x836,LockedState,0,,,4 8,3
+7282,Door Hell Club Elevator,363,0x834,OpenedState,0,0x838,20,,3 4 8
+7282,Door Hell Club Elevator,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+7282,Door Hell Club Elevator,363,0x839,TrappedState,0,,,11 12,
+7282,Door Hell Club Elevator,363,0x83b,TriggeredState,0,,,,11 12
+7286,Door DT Pull Handle LtWood_WH,365,0x835,ClosedState,1,,,3,4 8
+7286,Door DT Pull Handle LtWood_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7286,Door DT Pull Handle LtWood_WH,365,0x83a,DisarmedState,0,,,,11 12
+7286,Door DT Pull Handle LtWood_WH,365,0x836,LockedState,0,,,4 8,3
+7286,Door DT Pull Handle LtWood_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7286,Door DT Pull Handle LtWood_WH,365,0x839,TrappedState,0,,,11 12,
+7286,Door DT Pull Handle LtWood_WH,365,0x83b,TriggeredState,0,,,,11 12
+7287,Door DT Pull Knob LtWood_WH,365,0x835,ClosedState,1,,,3,4 8
+7287,Door DT Pull Knob LtWood_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7287,Door DT Pull Knob LtWood_WH,365,0x83a,DisarmedState,0,,,,11 12
+7287,Door DT Pull Knob LtWood_WH,365,0x836,LockedState,0,,,4 8,3
+7287,Door DT Pull Knob LtWood_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7287,Door DT Pull Knob LtWood_WH,365,0x839,TrappedState,0,,,11 12,
+7287,Door DT Pull Knob LtWood_WH,365,0x83b,TriggeredState,0,,,,11 12
+7288,Door DT Push Handle LtWood_WH,365,0x835,ClosedState,1,,,3,4 8
+7288,Door DT Push Handle LtWood_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7288,Door DT Push Handle LtWood_WH,365,0x83a,DisarmedState,0,,,,11 12
+7288,Door DT Push Handle LtWood_WH,365,0x836,LockedState,0,,,4 8,3
+7288,Door DT Push Handle LtWood_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7288,Door DT Push Handle LtWood_WH,365,0x839,TrappedState,0,,,11 12,
+7288,Door DT Push Handle LtWood_WH,365,0x83b,TriggeredState,0,,,,11 12
+7289,Door DT Push Knob LtWood_WH,365,0x835,ClosedState,1,,,3,4 8
+7289,Door DT Push Knob LtWood_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7289,Door DT Push Knob LtWood_WH,365,0x83a,DisarmedState,0,,,,11 12
+7289,Door DT Push Knob LtWood_WH,365,0x836,LockedState,0,,,4 8,3
+7289,Door DT Push Knob LtWood_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7289,Door DT Push Knob LtWood_WH,365,0x839,TrappedState,0,,,11 12,
+7289,Door DT Push Knob LtWood_WH,365,0x83b,TriggeredState,0,,,,11 12
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x835,ClosedState,1,,,3,4 8
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x83a,DisarmedState,0,,,,11 12
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x836,LockedState,0,,,4 8,3
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x839,TrappedState,0,,,11 12,
+7290,Door SL Push Knob Greenmetal01texvar_WH,365,0x83b,TriggeredState,0,,,,11 12
+7291,Door SL Push Knob Metal1texvar_WH,365,0x835,ClosedState,1,,,3,4 8
+7291,Door SL Push Knob Metal1texvar_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7291,Door SL Push Knob Metal1texvar_WH,365,0x83a,DisarmedState,0,,,,11 12
+7291,Door SL Push Knob Metal1texvar_WH,365,0x836,LockedState,0,,,4 8,3
+7291,Door SL Push Knob Metal1texvar_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7291,Door SL Push Knob Metal1texvar_WH,365,0x839,TrappedState,0,,,11 12,
+7291,Door SL Push Knob Metal1texvar_WH,365,0x83b,TriggeredState,0,,,,11 12
+7292,Door zz Pull Knob Metal1_WH,365,0x835,ClosedState,1,,,3,4 8
+7292,Door zz Pull Knob Metal1_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7292,Door zz Pull Knob Metal1_WH,365,0x83a,DisarmedState,0,,,,11 12
+7292,Door zz Pull Knob Metal1_WH,365,0x836,LockedState,0,,,4 8,3
+7292,Door zz Pull Knob Metal1_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7292,Door zz Pull Knob Metal1_WH,365,0x839,TrappedState,0,,,11 12,
+7292,Door zz Pull Knob Metal1_WH,365,0x83b,TriggeredState,0,,,,11 12
+7293,Door DT Push Knob Graymetal01_WH,365,0x835,ClosedState,1,,,3,4 8
+7293,Door DT Push Knob Graymetal01_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7293,Door DT Push Knob Graymetal01_WH,365,0x83a,DisarmedState,0,,,,11 12
+7293,Door DT Push Knob Graymetal01_WH,365,0x836,LockedState,0,,,4 8,3
+7293,Door DT Push Knob Graymetal01_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7293,Door DT Push Knob Graymetal01_WH,365,0x839,TrappedState,0,,,11 12,
+7293,Door DT Push Knob Graymetal01_WH,365,0x83b,TriggeredState,0,,,,11 12
+7294,Door SL Push Handle Grnmetal_WH,365,0x835,ClosedState,1,,,3,4 8
+7294,Door SL Push Handle Grnmetal_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7294,Door SL Push Handle Grnmetal_WH,365,0x83a,DisarmedState,0,,,,11 12
+7294,Door SL Push Handle Grnmetal_WH,365,0x836,LockedState,0,,,4 8,3
+7294,Door SL Push Handle Grnmetal_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7294,Door SL Push Handle Grnmetal_WH,365,0x839,TrappedState,0,,,11 12,
+7294,Door SL Push Handle Grnmetal_WH,365,0x83b,TriggeredState,0,,,,11 12
+7295,Door SL Push Handle Wood 1_WH,365,0x835,ClosedState,1,,,3,4 8
+7295,Door SL Push Handle Wood 1_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7295,Door SL Push Handle Wood 1_WH,365,0x83a,DisarmedState,0,,,,11 12
+7295,Door SL Push Handle Wood 1_WH,365,0x836,LockedState,0,,,4 8,3
+7295,Door SL Push Handle Wood 1_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7295,Door SL Push Handle Wood 1_WH,365,0x839,TrappedState,0,,,11 12,
+7295,Door SL Push Handle Wood 1_WH,365,0x83b,TriggeredState,0,,,,11 12
+7296,Door SL Push Handle Wood 2_WH,365,0x835,ClosedState,1,,,3,4 8
+7296,Door SL Push Handle Wood 2_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7296,Door SL Push Handle Wood 2_WH,365,0x83a,DisarmedState,0,,,,11 12
+7296,Door SL Push Handle Wood 2_WH,365,0x836,LockedState,0,,,4 8,3
+7296,Door SL Push Handle Wood 2_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7296,Door SL Push Handle Wood 2_WH,365,0x839,TrappedState,0,,,11 12,
+7296,Door SL Push Handle Wood 2_WH,365,0x83b,TriggeredState,0,,,,11 12
+7297,Door DT Push Handle Redwood_WH,365,0x835,ClosedState,1,,,3,4 8
+7297,Door DT Push Handle Redwood_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7297,Door DT Push Handle Redwood_WH,365,0x83a,DisarmedState,0,,,,11 12
+7297,Door DT Push Handle Redwood_WH,365,0x836,LockedState,0,,,4 8,3
+7297,Door DT Push Handle Redwood_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7297,Door DT Push Handle Redwood_WH,365,0x839,TrappedState,0,,,11 12,
+7297,Door DT Push Handle Redwood_WH,365,0x83b,TriggeredState,0,,,,11 12
+7298,Door DT Push Knob Darkwood01_WH,365,0x835,ClosedState,1,,,3,4 8
+7298,Door DT Push Knob Darkwood01_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7298,Door DT Push Knob Darkwood01_WH,365,0x83a,DisarmedState,0,,,,11 12
+7298,Door DT Push Knob Darkwood01_WH,365,0x836,LockedState,0,,,4 8,3
+7298,Door DT Push Knob Darkwood01_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7298,Door DT Push Knob Darkwood01_WH,365,0x839,TrappedState,0,,,11 12,
+7298,Door DT Push Knob Darkwood01_WH,365,0x83b,TriggeredState,0,,,,11 12
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x835,ClosedState,1,,,3,4 8
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x838,ClosingState,0,0x835,5,3,4 8
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x83a,DisarmedState,0,,,,11 12
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x836,LockedState,0,,,4 8,3
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x834,OpenedState,0,0x838,20,,3 4 8
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x839,TrappedState,0,,,11 12,
+7299,Door SL Push Knob Fadedgreen02_WH,365,0x83b,TriggeredState,0,,,,11 12
+7456,HardlineJunctionBox,3634,0x83d,BrokenState,0,0x834,1,3,2 7 4
+7456,HardlineJunctionBox,3634,0x835,ClosedState,1,,,2,8 7 3 4
+7456,HardlineJunctionBox,3634,0x838,ClosingState,0,0x835,1,,
+7456,HardlineJunctionBox,3634,0x836,LockedState,0,,,7 4,2
+7456,HardlineJunctionBox,3634,0x834,OpenedState,0,,,8,2 7 4
+7456,HardlineJunctionBox,3634,0x83c,OpeningState,0,0x834,1,,
+7456,HardlineJunctionBox,3634,0x83e,RepairedState,0,,,,3
+7462,Door Hidden Bookcase Left,363,0x835,ClosedState,1,,,3,4 8
+7462,Door Hidden Bookcase Left,363,0x838,ClosingState,0,0x835,1,3,4 8
+7462,Door Hidden Bookcase Left,363,0x83a,DisarmedState,0,,,,11 12
+7462,Door Hidden Bookcase Left,363,0x836,LockedState,0,,,4 8,3
+7462,Door Hidden Bookcase Left,363,0x834,OpenedState,0,0x838,20,,3 4 8
+7462,Door Hidden Bookcase Left,363,0x842,ReopenedState,0,0x838,20,,3 4 8
+7462,Door Hidden Bookcase Left,363,0x839,TrappedState,0,,,11 12,
+7462,Door Hidden Bookcase Left,363,0x83b,TriggeredState,0,,,,11 12
+7491,Door Cell Door,364,0x835,ClosedState,1,,,3,4 8
+7491,Door Cell Door,364,0x838,ClosingState,0,0x835,1,3,4 8
+7491,Door Cell Door,364,0x83a,DisarmedState,0,,,,11 12
+7491,Door Cell Door,364,0x836,LockedState,0,,,4 8,3
+7491,Door Cell Door,364,0x834,OpenedState,0,0x838,20,,3 4 8
+7491,Door Cell Door,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+7491,Door Cell Door,364,0x839,TrappedState,0,,,11 12,
+7491,Door Cell Door,364,0x83b,TriggeredState,0,,,,11 12
+7538,Wardrobe,369,0x835,ClosedState,1,,,3,8 9
+7538,Wardrobe,369,0x83a,DisarmedState,0,,,,7 6
+7538,Wardrobe,369,0x836,LockedState,0,,,8 9,3
+7538,Wardrobe,369,0x834,OpenedState,0,,,,3
+7538,Wardrobe,369,0x839,TrappedState,0,,,7 6,
+7538,Wardrobe,369,0x83b,TriggeredState,0,,,,7 6
+7538,Wardrobe,369,0x841,UnlockedState,0,,,3,8 9
+7914,PropagandaPoster,175,0x83f,IntactState,1,,,2,
+7914,PropagandaPoster,175,0x840,TornState,0,,,,2
+7915,ClubPoster,175,0x83f,IntactState,1,,,2,
+7915,ClubPoster,175,0x840,TornState,0,,,,2
+8734,Active_ComputerAlienware,19,0x961,ST_Giver,0,0x960,,6,5
+8734,Active_ComputerAlienware,19,0x960,ST_Normal,1,,,,6 5 9
+8734,Active_ComputerAlienware,19,0x962,ST_Taker,0,0x960,,9,5
+8734,Active_ComputerAlienware,19,0x963,ST_Unhacked,0,0x960,,5,
+8734,Active_ComputerAlienware,19,0x964,ST_UnhackedGiver,0,0x961,,5,
+8734,Active_ComputerAlienware,19,0x965,ST_UnhackedTaker,0,0x962,,5,
+9990,Door Merovingian Push,364,0x835,ClosedState,1,,,3,4 8
+9990,Door Merovingian Push,364,0x838,ClosingState,0,0x835,1,3,4 8
+9990,Door Merovingian Push,364,0x83a,DisarmedState,0,,,,11 12
+9990,Door Merovingian Push,364,0x836,LockedState,0,,,4 8,3
+9990,Door Merovingian Push,364,0x834,OpenedState,0,0x838,20,,3 4 8
+9990,Door Merovingian Push,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+9990,Door Merovingian Push,364,0x839,TrappedState,0,,,11 12,
+9990,Door Merovingian Push,364,0x83b,TriggeredState,0,,,,11 12
+37908,Door Tutorial Greendoor Merovingian,364,0x835,ClosedState,1,,,3,4 8
+37908,Door Tutorial Greendoor Merovingian,364,0x838,ClosingState,0,0x835,1,3,4 8
+37908,Door Tutorial Greendoor Merovingian,364,0x83a,DisarmedState,0,,,,11 12
+37908,Door Tutorial Greendoor Merovingian,364,0x836,LockedState,0,,,4 8,3
+37908,Door Tutorial Greendoor Merovingian,364,0x834,OpenedState,0,0x838,20,,3 4 8
+37908,Door Tutorial Greendoor Merovingian,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+37908,Door Tutorial Greendoor Merovingian,364,0x839,TrappedState,0,,,11 12,
+37908,Door Tutorial Greendoor Merovingian,364,0x83b,TriggeredState,0,,,,11 12
+37909,Door Tutorial Greendoor Graywood,364,0x835,ClosedState,1,,,3,4 8
+37909,Door Tutorial Greendoor Graywood,364,0x838,ClosingState,0,0x835,1,3,4 8
+37909,Door Tutorial Greendoor Graywood,364,0x83a,DisarmedState,0,,,,11 12
+37909,Door Tutorial Greendoor Graywood,364,0x836,LockedState,0,,,4 8,3
+37909,Door Tutorial Greendoor Graywood,364,0x834,OpenedState,0,0x838,20,,3 4 8
+37909,Door Tutorial Greendoor Graywood,364,0x842,ReopenedState,0,0x838,20,,3 4 8
+37909,Door Tutorial Greendoor Graywood,364,0x839,TrappedState,0,,,11 12,
+37909,Door Tutorial Greendoor Graywood,364,0x83b,TriggeredState,0,,,,11 12
+37911,Deposit Box,46,0x835,ClosedState,1,,,3,8 9
+37911,Deposit Box,46,0x83a,DisarmedState,0,,,,7 6
+37911,Deposit Box,46,0x836,LockedState,0,,,8 9,3
+37911,Deposit Box,46,0x834,OpenedState,0,,,,3
+37911,Deposit Box,46,0x839,TrappedState,0,,,7 6,
+37911,Deposit Box,46,0x83b,TriggeredState,0,,,,7 6
+37911,Deposit Box,46,0x841,UnlockedState,0,,,3,8 9
+37912,Ammo Case,46,0x835,ClosedState,1,,,3,8 9
+37912,Ammo Case,46,0x83a,DisarmedState,0,,,,7 6
+37912,Ammo Case,46,0x836,LockedState,0,,,8 9,3
+37912,Ammo Case,46,0x834,OpenedState,0,,,,3
+37912,Ammo Case,46,0x839,TrappedState,0,,,7 6,
+37912,Ammo Case,46,0x83b,TriggeredState,0,,,,7 6
+37912,Ammo Case,46,0x841,UnlockedState,0,,,3,8 9
+37913,Supply Cabinet,46,0x835,ClosedState,1,,,3,8 9
+37913,Supply Cabinet,46,0x83a,DisarmedState,0,,,,7 6
+37913,Supply Cabinet,46,0x836,LockedState,0,,,8 9,3
+37913,Supply Cabinet,46,0x834,OpenedState,0,,,,3
+37913,Supply Cabinet,46,0x839,TrappedState,0,,,7 6,
+37913,Supply Cabinet,46,0x83b,TriggeredState,0,,,,7 6
+37913,Supply Cabinet,46,0x841,UnlockedState,0,,,3,8 9
+38270,ArchivistBase_Sender_Default,76,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38270,ArchivistBase_Sender_Default,76,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38270,ArchivistBase_Sender_Default,76,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38270,ArchivistBase_Sender_Default,76,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38270,ArchivistBase_Sender_Default,76,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38270,ArchivistBase_Sender_Default,76,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38277,Cypherites_ArchivistBase_Sender,293,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38278,Machine_ArchivistBase_Sender,3760,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38278,Machine_ArchivistBase_Sender,3760,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38278,Machine_ArchivistBase_Sender,3760,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38278,Machine_ArchivistBase_Sender,3760,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38278,Machine_ArchivistBase_Sender,3760,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38278,Machine_ArchivistBase_Sender,3760,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38279,Merovingian_ArchivistBase_Sender,3789,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38280,Niobe_ArchivistBase_Sender,3824,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38281,PluribusNeo_ArchivistBase_Sender,3991,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38282,Zion_ArchivistBase_Sender,4327,0xc1d,ST_ARCHIVIST_GATHERING,0,0xc20,11,,
+38282,Zion_ArchivistBase_Sender,4327,0xc20,ST_ARCHIVIST_GOAWAY,0,0xc22,2,,
+38282,Zion_ArchivistBase_Sender,4327,0xc21,ST_ARCHIVIST_PREGATHER,0,0xc1d,45,,
+38282,Zion_ArchivistBase_Sender,4327,0xc22,ST_ARCHIVIST_PRETELEPORT,0,0xc1e,2,,
+38282,Zion_ArchivistBase_Sender,4327,0xc1e,ST_ARCHIVIST_TELEPORTING,0,0xc1f,2,,
+38282,Zion_ArchivistBase_Sender,4327,0xc1f,ST_ARCHIVIST_WAITING,1,0xc21,118,,
+38484,Supply Cabinet Alternate Texture,369,0x835,ClosedState,1,,,3,8 9
+38484,Supply Cabinet Alternate Texture,369,0x83a,DisarmedState,0,,,,7 6
+38484,Supply Cabinet Alternate Texture,369,0x836,LockedState,0,,,8 9,3
+38484,Supply Cabinet Alternate Texture,369,0x834,OpenedState,0,,,,3
+38484,Supply Cabinet Alternate Texture,369,0x839,TrappedState,0,,,7 6,
+38484,Supply Cabinet Alternate Texture,369,0x83b,TriggeredState,0,,,,7 6
+38484,Supply Cabinet Alternate Texture,369,0x841,UnlockedState,0,,,3,8 9
+38540,Active_LaptopWhite,20,0x961,ST_Giver,0,0x960,,5,4
+38540,Active_LaptopWhite,20,0x960,ST_Normal,1,,,,5 4 8
+38540,Active_LaptopWhite,20,0x962,ST_Taker,0,0x960,,8,4
+38540,Active_LaptopWhite,20,0x963,ST_Unhacked,0,0x960,,4,
+38540,Active_LaptopWhite,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+38540,Active_LaptopWhite,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+40448,Bomb5Stage10MDefuse,137,0xfa4,BombCleanup,0,,,,
+40448,Bomb5Stage10MDefuse,137,0xfc5,BombCountdown0S,0,,,,0
+40448,Bomb5Stage10MDefuse,137,0xfbf,BombCountdown10M,0,0xfbe,60,,
+40448,Bomb5Stage10MDefuse,137,0xfae,BombCountdown10S,0,0xfad,1,,
+40448,Bomb5Stage10MDefuse,137,0xfb3,BombCountdown1M,0,0xfb2,10,,
+40448,Bomb5Stage10MDefuse,137,0xfa5,BombCountdown1S,0,0xfc5,1,,
+40448,Bomb5Stage10MDefuse,137,0xfc0,BombCountdown20M,0,0xfbf,600,,
+40448,Bomb5Stage10MDefuse,137,0xfaf,BombCountdown20S,0,0xfae,10,,
+40448,Bomb5Stage10MDefuse,137,0xfb4,BombCountdown2M,0,0xfb3,60,,
+40448,Bomb5Stage10MDefuse,137,0xfa6,BombCountdown2S,0,0xfa5,1,,
+40448,Bomb5Stage10MDefuse,137,0xfc1,BombCountdown30M,0,0xfc0,600,,
+40448,Bomb5Stage10MDefuse,137,0xfb0,BombCountdown30S,0,0xfaf,10,,
+40448,Bomb5Stage10MDefuse,137,0xfb5,BombCountdown3M,0,0xfb4,60,,
+40448,Bomb5Stage10MDefuse,137,0xfa7,BombCountdown3S,0,0xfa6,1,,
+40448,Bomb5Stage10MDefuse,137,0xfc2,BombCountdown40M,0,0xfc1,600,,
+40448,Bomb5Stage10MDefuse,137,0xfb1,BombCountdown40S,0,0xfb0,10,,
+40448,Bomb5Stage10MDefuse,137,0xfb6,BombCountdown4M,0,0xfb5,60,,
+40448,Bomb5Stage10MDefuse,137,0xfa8,BombCountdown4S,0,0xfa7,1,,
+40448,Bomb5Stage10MDefuse,137,0xfc3,BombCountdown50M,0,0xfc2,600,,
+40448,Bomb5Stage10MDefuse,137,0xfb2,BombCountdown50S,0,0xfb1,10,,
+40448,Bomb5Stage10MDefuse,137,0xfb7,BombCountdown5M,0,0xfb6,60,,
+40448,Bomb5Stage10MDefuse,137,0xfa9,BombCountdown5S,0,0xfa8,1,,
+40448,Bomb5Stage10MDefuse,137,0xfc4,BombCountdown60M,0,0xfc3,600,,
+40448,Bomb5Stage10MDefuse,137,0xfb8,BombCountdown6M,0,0xfb7,60,,
+40448,Bomb5Stage10MDefuse,137,0xfaa,BombCountdown6S,0,0xfa9,1,,
+40448,Bomb5Stage10MDefuse,137,0xfb9,BombCountdown7M,0,0xfb8,60,,
+40448,Bomb5Stage10MDefuse,137,0xfab,BombCountdown7S,0,0xfaa,1,,
+40448,Bomb5Stage10MDefuse,137,0xfbd,BombCountdown8M,0,0xfb9,60,,
+40448,Bomb5Stage10MDefuse,137,0xfac,BombCountdown8S,0,0xfab,1,,
+40448,Bomb5Stage10MDefuse,137,0xfbe,BombCountdown9M,0,0xfbd,60,,
+40448,Bomb5Stage10MDefuse,137,0xfad,BombCountdown9S,0,0xfac,1,,
+40448,Bomb5Stage10MDefuse,137,0x1004,BombDefuse,0,0xfa4,7,,8
+40448,Bomb5Stage10MDefuse,137,0x1000,BombDefuseStep2,0,,,,
+40448,Bomb5Stage10MDefuse,137,0x1001,BombDefuseStep3,0,,,,
+40448,Bomb5Stage10MDefuse,137,0x1002,BombDefuseStep4,0,,,,
+40448,Bomb5Stage10MDefuse,137,0xfa3,BombDetonate,0,0xfa4,2,,8
+40448,Bomb5Stage10MDefuse,137,0xfa1,BombInitialState,0,,,,
+40448,Bomb5Stage10MDefuse,137,0xfa0,BombSetup,1,0xfa1,1,,
+40448,Bomb5Stage10MDefuse,137,0xffa,BombTamperingDetected,0,,,,
+40551,Bomb5Stage5MDefuse,137,0xfa4,BombCleanup,0,,,,
+40551,Bomb5Stage5MDefuse,137,0xfc5,BombCountdown0S,0,,,,0
+40551,Bomb5Stage5MDefuse,137,0xfbf,BombCountdown10M,0,0xfbe,60,,
+40551,Bomb5Stage5MDefuse,137,0xfae,BombCountdown10S,0,0xfad,1,,
+40551,Bomb5Stage5MDefuse,137,0xfb3,BombCountdown1M,0,0xfb2,10,,
+40551,Bomb5Stage5MDefuse,137,0xfa5,BombCountdown1S,0,0xfc5,1,,
+40551,Bomb5Stage5MDefuse,137,0xfc0,BombCountdown20M,0,0xfbf,600,,
+40551,Bomb5Stage5MDefuse,137,0xfaf,BombCountdown20S,0,0xfae,10,,
+40551,Bomb5Stage5MDefuse,137,0xfb4,BombCountdown2M,0,0xfb3,60,,
+40551,Bomb5Stage5MDefuse,137,0xfa6,BombCountdown2S,0,0xfa5,1,,
+40551,Bomb5Stage5MDefuse,137,0xfc1,BombCountdown30M,0,0xfc0,600,,
+40551,Bomb5Stage5MDefuse,137,0xfb0,BombCountdown30S,0,0xfaf,10,,
+40551,Bomb5Stage5MDefuse,137,0xfb5,BombCountdown3M,0,0xfb4,60,,
+40551,Bomb5Stage5MDefuse,137,0xfa7,BombCountdown3S,0,0xfa6,1,,
+40551,Bomb5Stage5MDefuse,137,0xfc2,BombCountdown40M,0,0xfc1,600,,
+40551,Bomb5Stage5MDefuse,137,0xfb1,BombCountdown40S,0,0xfb0,10,,
+40551,Bomb5Stage5MDefuse,137,0xfb6,BombCountdown4M,0,0xfb5,60,,
+40551,Bomb5Stage5MDefuse,137,0xfa8,BombCountdown4S,0,0xfa7,1,,
+40551,Bomb5Stage5MDefuse,137,0xfc3,BombCountdown50M,0,0xfc2,600,,
+40551,Bomb5Stage5MDefuse,137,0xfb2,BombCountdown50S,0,0xfb1,10,,
+40551,Bomb5Stage5MDefuse,137,0xfb7,BombCountdown5M,0,0xfb6,60,,
+40551,Bomb5Stage5MDefuse,137,0xfa9,BombCountdown5S,0,0xfa8,1,,
+40551,Bomb5Stage5MDefuse,137,0xfc4,BombCountdown60M,0,0xfc3,600,,
+40551,Bomb5Stage5MDefuse,137,0xfb8,BombCountdown6M,0,0xfb7,60,,
+40551,Bomb5Stage5MDefuse,137,0xfaa,BombCountdown6S,0,0xfa9,1,,
+40551,Bomb5Stage5MDefuse,137,0xfb9,BombCountdown7M,0,0xfb8,60,,
+40551,Bomb5Stage5MDefuse,137,0xfab,BombCountdown7S,0,0xfaa,1,,
+40551,Bomb5Stage5MDefuse,137,0xfbd,BombCountdown8M,0,0xfb9,60,,
+40551,Bomb5Stage5MDefuse,137,0xfac,BombCountdown8S,0,0xfab,1,,
+40551,Bomb5Stage5MDefuse,137,0xfbe,BombCountdown9M,0,0xfbd,60,,
+40551,Bomb5Stage5MDefuse,137,0xfad,BombCountdown9S,0,0xfac,1,,
+40551,Bomb5Stage5MDefuse,137,0x1004,BombDefuse,0,0xfa4,7,,8
+40551,Bomb5Stage5MDefuse,137,0x1000,BombDefuseStep2,0,,,,
+40551,Bomb5Stage5MDefuse,137,0x1001,BombDefuseStep3,0,,,,
+40551,Bomb5Stage5MDefuse,137,0x1002,BombDefuseStep4,0,,,,
+40551,Bomb5Stage5MDefuse,137,0xfa3,BombDetonate,0,0xfa4,2,,8
+40551,Bomb5Stage5MDefuse,137,0xfa1,BombInitialState,0,,,,
+40551,Bomb5Stage5MDefuse,137,0xfa0,BombSetup,1,0xfa1,1,,
+40551,Bomb5Stage5MDefuse,137,0xffa,BombTamperingDetected,0,,,,
+40553,Bomb5Stage2MDefuse,137,0xfa4,BombCleanup,0,,,,
+40553,Bomb5Stage2MDefuse,137,0xfc5,BombCountdown0S,0,,,,0
+40553,Bomb5Stage2MDefuse,137,0xfbf,BombCountdown10M,0,0xfbe,60,,
+40553,Bomb5Stage2MDefuse,137,0xfae,BombCountdown10S,0,0xfad,1,,
+40553,Bomb5Stage2MDefuse,137,0xfb3,BombCountdown1M,0,0xfb2,10,,
+40553,Bomb5Stage2MDefuse,137,0xfa5,BombCountdown1S,0,0xfc5,1,,
+40553,Bomb5Stage2MDefuse,137,0xfc0,BombCountdown20M,0,0xfbf,600,,
+40553,Bomb5Stage2MDefuse,137,0xfaf,BombCountdown20S,0,0xfae,10,,
+40553,Bomb5Stage2MDefuse,137,0xfb4,BombCountdown2M,0,0xfb3,60,,
+40553,Bomb5Stage2MDefuse,137,0xfa6,BombCountdown2S,0,0xfa5,1,,
+40553,Bomb5Stage2MDefuse,137,0xfc1,BombCountdown30M,0,0xfc0,600,,
+40553,Bomb5Stage2MDefuse,137,0xfb0,BombCountdown30S,0,0xfaf,10,,
+40553,Bomb5Stage2MDefuse,137,0xfb5,BombCountdown3M,0,0xfb4,60,,
+40553,Bomb5Stage2MDefuse,137,0xfa7,BombCountdown3S,0,0xfa6,1,,
+40553,Bomb5Stage2MDefuse,137,0xfc2,BombCountdown40M,0,0xfc1,600,,
+40553,Bomb5Stage2MDefuse,137,0xfb1,BombCountdown40S,0,0xfb0,10,,
+40553,Bomb5Stage2MDefuse,137,0xfb6,BombCountdown4M,0,0xfb5,60,,
+40553,Bomb5Stage2MDefuse,137,0xfa8,BombCountdown4S,0,0xfa7,1,,
+40553,Bomb5Stage2MDefuse,137,0xfc3,BombCountdown50M,0,0xfc2,600,,
+40553,Bomb5Stage2MDefuse,137,0xfb2,BombCountdown50S,0,0xfb1,10,,
+40553,Bomb5Stage2MDefuse,137,0xfb7,BombCountdown5M,0,0xfb6,60,,
+40553,Bomb5Stage2MDefuse,137,0xfa9,BombCountdown5S,0,0xfa8,1,,
+40553,Bomb5Stage2MDefuse,137,0xfc4,BombCountdown60M,0,0xfc3,600,,
+40553,Bomb5Stage2MDefuse,137,0xfb8,BombCountdown6M,0,0xfb7,60,,
+40553,Bomb5Stage2MDefuse,137,0xfaa,BombCountdown6S,0,0xfa9,1,,
+40553,Bomb5Stage2MDefuse,137,0xfb9,BombCountdown7M,0,0xfb8,60,,
+40553,Bomb5Stage2MDefuse,137,0xfab,BombCountdown7S,0,0xfaa,1,,
+40553,Bomb5Stage2MDefuse,137,0xfbd,BombCountdown8M,0,0xfb9,60,,
+40553,Bomb5Stage2MDefuse,137,0xfac,BombCountdown8S,0,0xfab,1,,
+40553,Bomb5Stage2MDefuse,137,0xfbe,BombCountdown9M,0,0xfbd,60,,
+40553,Bomb5Stage2MDefuse,137,0xfad,BombCountdown9S,0,0xfac,1,,
+40553,Bomb5Stage2MDefuse,137,0x1004,BombDefuse,0,0xfa4,7,,8
+40553,Bomb5Stage2MDefuse,137,0x1000,BombDefuseStep2,0,,,,
+40553,Bomb5Stage2MDefuse,137,0x1001,BombDefuseStep3,0,,,,
+40553,Bomb5Stage2MDefuse,137,0x1002,BombDefuseStep4,0,,,,
+40553,Bomb5Stage2MDefuse,137,0xfa3,BombDetonate,0,0xfa4,2,,8
+40553,Bomb5Stage2MDefuse,137,0xfa1,BombInitialState,0,,,,
+40553,Bomb5Stage2MDefuse,137,0xfa0,BombSetup,1,0xfa1,1,,
+40553,Bomb5Stage2MDefuse,137,0xffa,BombTamperingDetected,0,,,,
+42748,PandoraRewardContainer,3955,0xfa4,BoxCleanupState,0,,,,
+42748,PandoraRewardContainer,3955,0xfa1,BoxInitialState,0,0xfa4,5400,,
+42748,PandoraRewardContainer,3955,0xfa0,BoxSetupState,0,0xfa1,20,,
+42748,PandoraRewardContainer,3955,0x835,ClosedState,1,,,4,
+42748,PandoraRewardContainer,3955,0x834,OpenedState,0,,,,4
+42856,HalloweenJOL,3623,0x839,JOLActivated,0,0x83a,4,,1
+42856,HalloweenJOL,3623,0x83a,JOLDisabled,0,0x837,300,,1
+42856,HalloweenJOL,3623,0x837,JOLEnabled,1,,,1,
+42870,CryptosBox,285,0x838,BoxClosing,0,0x835,3,,
+42870,CryptosBox,285,0x83a,BoxInit,1,0x835,1,,
+42870,CryptosBox,285,0x834,BoxOpen,0,,,,
+42870,CryptosBox,285,0x83c,BoxOpening,0,0x834,8,,
+42870,CryptosBox,285,0x835,BoxResting,0,,,,
+46418,CypheriteSpotlightBlueOriginal,295,0xfa4,SLightCleanup,0,,,,
+46418,CypheriteSpotlightBlueOriginal,295,0xfa1,SLightInitialState,0,,,1,2 3 4 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0xfa0,SLightSetup,1,0xfa1,5,,1 2 3 4 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0xfff,SLightStep1,0,,,2 2,1 1 3 4 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0x1000,SLightStep2,0,,,3,1 2 4 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0x1001,SLightStep3,0,,,4,1 2 3 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0x1002,SLightStep4,0,,,5,1 2 3 4 10
+46418,CypheriteSpotlightBlueOriginal,295,0x1003,SLightStep5,0,,,10,1 2 3 4 5
+46418,CypheriteSpotlightBlueOriginal,295,0x1004,SLightStep6,0,,,1,2 3 4 5 10
+46418,CypheriteSpotlightBlueOriginal,295,0xffa,SLightTrigger,0,0xfff,40,,1 2 3 4 5 10
+46432,CodePulse,189,0xfa4,BombCleanup,0,,,,
+46432,CodePulse,189,0xfc5,BombCountdown0S,0,,,,0
+46432,CodePulse,189,0xfbf,BombCountdown10M,0,0xfbe,60,,
+46432,CodePulse,189,0xfae,BombCountdown10S,0,0xfad,1,,
+46432,CodePulse,189,0xfb3,BombCountdown1M,0,0xfb2,10,,
+46432,CodePulse,189,0xfa5,BombCountdown1S,0,0xfc5,1,,
+46432,CodePulse,189,0xfc0,BombCountdown20M,0,0xfbf,600,,
+46432,CodePulse,189,0xfaf,BombCountdown20S,0,0xfae,10,,
+46432,CodePulse,189,0xfb4,BombCountdown2M,0,0xfb3,60,,
+46432,CodePulse,189,0xfa6,BombCountdown2S,0,0xfa5,1,,
+46432,CodePulse,189,0xfc1,BombCountdown30M,0,0xfc0,600,,
+46432,CodePulse,189,0xfb0,BombCountdown30S,0,0xfaf,10,,
+46432,CodePulse,189,0xfb5,BombCountdown3M,0,0xfb4,60,,
+46432,CodePulse,189,0xfa7,BombCountdown3S,0,0xfa6,1,,
+46432,CodePulse,189,0xfc2,BombCountdown40M,0,0xfc1,600,,
+46432,CodePulse,189,0xfb1,BombCountdown40S,0,0xfb0,10,,
+46432,CodePulse,189,0xfb6,BombCountdown4M,0,0xfb5,60,,
+46432,CodePulse,189,0xfa8,BombCountdown4S,0,0xfa7,1,,
+46432,CodePulse,189,0xfc3,BombCountdown50M,0,0xfc2,600,,
+46432,CodePulse,189,0xfb2,BombCountdown50S,0,0xfb1,10,,
+46432,CodePulse,189,0xfb7,BombCountdown5M,0,0xfb6,60,,
+46432,CodePulse,189,0xfa9,BombCountdown5S,0,0xfa8,1,,
+46432,CodePulse,189,0xfc4,BombCountdown60M,0,0xfc3,600,,
+46432,CodePulse,189,0xfb8,BombCountdown6M,0,0xfb7,60,,
+46432,CodePulse,189,0xfaa,BombCountdown6S,0,0xfa9,1,,
+46432,CodePulse,189,0xfb9,BombCountdown7M,0,0xfb8,60,,
+46432,CodePulse,189,0xfab,BombCountdown7S,0,0xfaa,1,,
+46432,CodePulse,189,0xfbd,BombCountdown8M,0,0xfb9,60,,
+46432,CodePulse,189,0xfac,BombCountdown8S,0,0xfab,1,,
+46432,CodePulse,189,0xfbe,BombCountdown9M,0,0xfbd,60,,
+46432,CodePulse,189,0xfad,BombCountdown9S,0,0xfac,1,,
+46432,CodePulse,189,0x1004,BombDefuse,0,0xfa4,7,,9
+46432,CodePulse,189,0x1000,BombDefuseStep2,0,,,,
+46432,CodePulse,189,0x1001,BombDefuseStep3,0,,,,
+46432,CodePulse,189,0x1002,BombDefuseStep4,0,,,,
+46432,CodePulse,189,0xfa3,BombDetonate,0,0xfa4,2,,9
+46432,CodePulse,189,0xfa1,BombInitialState,0,,,,
+46432,CodePulse,189,0xfa0,BombSetup,1,0xfa1,1,,
+46432,CodePulse,189,0xffa,BombTamperingDetected,0,,,,
+46433,PVPPulse20,3929,0xfa4,BombCleanup,0,,,,
+46433,PVPPulse20,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46433,PVPPulse20,3929,0xfa1,BombInitialState,0,,,,
+46433,PVPPulse20,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46434,PVPPulse10,3929,0xfa4,BombCleanup,0,,,,
+46434,PVPPulse10,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46434,PVPPulse10,3929,0xfa1,BombInitialState,0,,,,
+46434,PVPPulse10,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46435,PVPPulse40,3929,0xfa4,BombCleanup,0,,,,
+46435,PVPPulse40,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46435,PVPPulse40,3929,0xfa1,BombInitialState,0,,,,
+46435,PVPPulse40,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46573,WH World Door2,4295,0x835,ClosedState,1,,,3,4 8
+46573,WH World Door2,4295,0x838,ClosingState,0,0x835,5,3,4 8
+46573,WH World Door2,4295,0x83a,DisarmedState,0,,,,11 12
+46573,WH World Door2,4295,0x836,LockedState,0,,,4 8,3
+46573,WH World Door2,4295,0x834,OpenedState,0,0x838,20,,3 4 8
+46573,WH World Door2,4295,0x839,TrappedState,0,,,11 12,
+46573,WH World Door2,4295,0x83b,TriggeredState,0,,,,11 12
+46638,Active_LaptopGreen,20,0x961,ST_Giver,0,0x960,,5,4
+46638,Active_LaptopGreen,20,0x960,ST_Normal,1,,,,5 4 8
+46638,Active_LaptopGreen,20,0x962,ST_Taker,0,0x960,,8,4
+46638,Active_LaptopGreen,20,0x963,ST_Unhacked,0,0x960,,4,
+46638,Active_LaptopGreen,20,0x964,ST_UnhackedGiver,0,0x961,,4,
+46638,Active_LaptopGreen,20,0x965,ST_UnhackedTaker,0,0x962,,4,
+46644,PacZone10,3929,0xfa4,BombCleanup,0,,,,
+46644,PacZone10,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46644,PacZone10,3929,0xfa1,BombInitialState,0,,,,
+46644,PacZone10,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46645,PacZone20,3929,0xfa4,BombCleanup,0,,,,
+46645,PacZone20,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46645,PacZone20,3929,0xfa1,BombInitialState,0,,,,
+46645,PacZone20,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46646,PacZone40,3929,0xfa4,BombCleanup,0,,,,
+46646,PacZone40,3929,0x1004,BombDefuse,0,0xfa4,1,,4
+46646,PacZone40,3929,0xfa1,BombInitialState,0,,,,
+46646,PacZone40,3929,0xfa0,BombSetup,1,0xfa1,1,,
+46677,PacZone10i,3930,0xfa4,BombCleanup,0,,,,
+46677,PacZone10i,3930,0x1004,BombDefuse,0,0xfa4,1,,
+46677,PacZone10i,3930,0xfa1,BombInitialState,0,,,,
+46677,PacZone10i,3930,0xfa0,BombSetup,1,0xfa1,1,,
+46678,PacZone20i,3930,0xfa4,BombCleanup,0,,,,
+46678,PacZone20i,3930,0x1004,BombDefuse,0,0xfa4,1,,
+46678,PacZone20i,3930,0xfa1,BombInitialState,0,,,,
+46678,PacZone20i,3930,0xfa0,BombSetup,1,0xfa1,1,,
+46679,PacZone40i,3930,0xfa4,BombCleanup,0,,,,
+46679,PacZone40i,3930,0x1004,BombDefuse,0,0xfa4,1,,
+46679,PacZone40i,3930,0xfa1,BombInitialState,0,,,,
+46679,PacZone40i,3930,0xfa0,BombSetup,1,0xfa1,1,,
+47080,DataNodeContainer,305,0xfa4,BoxCleanupState,0,,,,
+47080,DataNodeContainer,305,0xfa1,BoxInitialState,0,0xfa4,5400,,
+47080,DataNodeContainer,305,0xfa0,BoxSetupState,0,0xfa1,20,,
+47080,DataNodeContainer,305,0x835,ClosedState,1,,,3,
+47080,DataNodeContainer,305,0x834,OpenedState,0,,,,3
