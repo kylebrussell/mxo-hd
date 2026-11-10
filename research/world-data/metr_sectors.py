@@ -125,7 +125,7 @@ def read_metr(path):
         r.p = dshd
         items, types = read_schema(r)
         vals, rest = read_values(r, items, types)
-        out.append(dict(sector=idx, path=spath, name=spath.split('/')[-1], grid=list(grid),
+        out.append(dict(sector=idx, path=spath, name=spath.replace(chr(92), '/').split('/')[-1], grid=list(grid),
                         min=[round(v, 1) for v in box[0:3]], max=[round(v, 1) for v in box[3:6]],
                         props=vals, types={items[i & 0xffff][i >> 16]: t for i, t in types.items()},
                         tail=rest.hex() if rest else ''))
