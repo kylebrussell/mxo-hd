@@ -158,6 +158,12 @@ namespace hds
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, moved ? "Object moved" : "No such object", "BROADCAST");
                 }
 
+                if (command.Equals("?objstate") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: an object in a state from the client's data, and what the data says it offers (docs/OBJECT-STATES.md)
+                    ObjectStates.DevCommand(Store.currentClient, commands);
+                }
+
                 if (command.Equals("?objtest") && commands.Length >= 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev: ?objtest <goid> [key element hex] [use count] [state hex], each "-" to leave it out. A mission-style

@@ -10,6 +10,8 @@ namespace hds
     {
         public UInt16 ViewId;
         public UInt64 EntityId;
+        /// <summary>The door's goid, for its timing in the client's data (0: retail's 20 s + 1 s).</summary>
+        public UInt16 GoId;
         public double OpenedAt;
         public DoorStage Stage;
     }
@@ -26,6 +28,8 @@ namespace hds
     /// the door spawns open (CurrentState 0x0834), turns to closing (0x0838) after 20 s and closed (0x0835)
     /// a second later, then at 26 s its state attributes are reset and its view deleted.
     /// AttributeClass363, 364 and 365 all put CurrentState at update index 8, so one layout fits every door.
+    /// The client's data (data/object_states.csv) has the same timing per door: OpenedState goes to ClosingState after 20 s,
+    /// ClosingState to ClosedState after 1 s, or 5 s for AttributeClass365 doors.
     /// </summary>
     public static class DoorLifecycle
     {
@@ -62,7 +66,7 @@ namespace hds
         }
 
         /// <summary>Records that the client sees this door open, re-opening it if it was already closing.</summary>
-        public static void Opened(WorldClient client, UInt16 viewId, UInt64 entityId)
+        public static void Opened(WorldClient client, UInt16 viewId, UInt64 entityId, UInt16 goid = 0)
         {
             double now = TimeUtils.GetSimTimeSeconds();
             bool reopen = false;
@@ -72,7 +76,7 @@ namespace hds
                 if (door == null)
                 {
                     client.playerData.openDoors.Add(new OpenDoor
-                        { ViewId = viewId, EntityId = entityId, OpenedAt = now, Stage = DoorStage.Open });
+                        { ViewId = viewId, EntityId = entityId, GoId = goid, OpenedAt = now, Stage = DoorStage.Open });
                 }
                 else
                 {
@@ -95,11 +99,12 @@ namespace hds
         public static DoorStage? NextStage(OpenDoor door, double now)
         {
             double age = now - door.OpenedAt;
+            (double closing, double closed, double _) = Timing(door);
             switch (door.Stage)
             {
-                case DoorStage.Open when age >= ClosingAfterSeconds:
+                case DoorStage.Open when age >= closing:
                     return DoorStage.Closing;
-                case DoorStage.Closing when age >= ClosedAfterSeconds:
+                case DoorStage.Closing when age >= closed:
                     return DoorStage.Closed;
                 default:
                     return null;
@@ -108,7 +113,20 @@ namespace hds
 
         public static bool ShouldRemove(OpenDoor door, double now)
         {
-            return door.Stage == DoorStage.Closed && now - door.OpenedAt >= RemoveAfterSeconds;
+            return door.Stage == DoorStage.Closed && now - door.OpenedAt >= Timing(door).remove;
+        }
+
+        /// <summary>Seconds after opening that the door starts closing, is closed, and is removed (5 s after closing, as retail).</summary>
+        public static (double closing, double closed, double remove) Timing(OpenDoor door)
+        {
+            (UInt32 open, UInt32 closing)? data = door.GoId == 0 ? null : ObjectStates.DoorTiming(door.GoId);
+            if (data == null)
+            {
+                return (ClosingAfterSeconds, ClosedAfterSeconds, RemoveAfterSeconds);
+            }
+
+            double closed = data.Value.open + data.Value.closing;
+            return (data.Value.open, closed, closed + (RemoveAfterSeconds - ClosedAfterSeconds));
         }
 
         private static void EnsureTimer()

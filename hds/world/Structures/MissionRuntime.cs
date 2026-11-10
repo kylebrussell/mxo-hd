@@ -387,6 +387,9 @@ namespace hds
                     }
                 }
 
+                // Emptied: the container goes to the state retail's Open leads to (OpenedState, 0x834), which plays its
+                // opening and takes Open off its menu
+                ObjectStates.ShowOpened(client, state.entity, state.goid);
                 new ServerPackets().SendLootAccepted(client);
                 client.FlushQueue();
                 return true;
