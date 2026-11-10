@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Whispers of Ones and Zeroes, Machines story mission 6.2.3. Source:
+     research/missions/transcripts/Mach6-2-3.md (the archive replay of [Machine Archive 6.2.3], given by
+     [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the Cypherite Karate
+     Grandmaster's two Team chat lines, phase 3's objective texts ("Search the first Computer", "Search the second
+     Computer", "Talk to the Morpheus simulacrum", "Talk to the Niobe simulacrum", "Eliminate the hostiles") and the
+     names Agent Johns, Agent Pace, Veil, Morpheus, Niobe and Cypherite Karate Grandmaster. Gray called the player
+     "Mr. Argento" and Pace used the player's handle; both are {player}. Ours: the description (the Summary tab was
+     never opened), the other objective texts, the sites (phase 3 is a shabby apartment in Moriah Projects; the rest
+     are not described: Normal), the looks and the enemy count. E Pluribus Neo are redpill terrorists from Zion: Zion.
+     The Cypherites are friendly. No mission items.
+     Rewards: 363,330 experience and 59,500 information, shown on completing this mission.
+     Gaps: Agent Pace and Agent Johns stand in three places; each place has its own NPC, since an NPC is placed in one
+     phase only. At the meeting the Operator counted "three redpill signals"; only Veil spoke, so only she is placed.
+     In retail the Morpheus and Niobe simulacra appeared when their computer was searched (the computer showed
+     "Running simulacrum program 7AH..." and "42KA..."), and the E Pluribus Neo attackers arrived after the second
+     computer ("unknown redpills heading your way, fast!"); we can't spawn NPCs or hostiles on a goal, and the
+     computer's screen can't be shown, so the simulacra stand there from the start with their Talk goals waiting on
+     the searches, and the attackers and the kill goal are there from the start. A Cypherite Network Hacker stood in
+     the apartment but said nothing and isn't placed. The Grandmaster's two chat lines are one line here. Lines
+     hidden at screenshot joins (Pace's "very happy to examine", the Operator's "and they got her new hairstyle",
+     Pace's "This may prove to be a difficulty") read whole and are used as such. -->
+<mission id="206203" title="Whispers of Ones and Zeroes" description="Monitor Agent Pace's meeting with the Cypherite Veil and examine the Zion data the Cypherites offer." plot="1"
+         order="6203" org="2" contact="Agent Gray" exp="363330" info="59500">
+  <npc id="1" handle="Agent Johns" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say>You must monitor Agent Pace very carefully at the meeting. She is known to be...overly credulous.</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say>Veil is deceptive, tesoro, but as long as you are there with me, I know that we will not be fooled!</say>
+  </npc>
+  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say>Oh, you'll be examining our data? Marvelous, darling. I'm sure you'll get quite a kick out of it.</say>
+  </npc>
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say>That was very easy, {player}! They seem very sincere in wanting to provide us with the information we require.</say>
+  </npc>
+  <npc id="5" handle="Agent Johns" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Situation nominal.</say>
+  </npc>
+  <npc id="6" handle="Cypherite Karate Grandmaster" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say>Hello, friend. The programs on these two computers were compiled with data from Zion's mainframe. I think you'll find them...colorful.
+
+Go ahead, check them out.</say>
+  </npc>
+  <npc id="7" handle="Morpheus" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say after="3">If you are working for the Machines, then your mind was never truly free.</say>
+  </npc>
+  <npc id="8" handle="Niobe" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say after="4">You killed the Assassin! I can only think of a handful of people who could have pulled that off...and one of them was Morpheus.</say>
+  </npc>
+  <npc id="9" handle="Agent Johns" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Stick to the most pertinent facts, operative.</say>
+  </npc>
+  <npc id="10" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>It must have been a surprise to see a replica of Morpheus like that, tesoro! I would have liked to have met him. He was very dangerous, but before he left Zion to begin sabotaging the System, he was an inspiring leader for many people! It is a shame that his obsession with Neo's physical remains got the better of his reason. Still, we tried to honor his memory by placing his partial RSI reconstruction of Neo in Westview.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, as you are aware, Zion countered our request for access to their mainframe with a demand for information from our databases. This demand has been...rejected.
+
+Even in the event that Zion proves intractable, there may be other solutions to the problem of our lack of information on Zion's unsecured population. The Cypherites have contacted us, claiming to be able to access such information themselves. You will be meeting with one of their representatives. Agent Pace will brief you on your role.</briefing>
+    <enter><say>Man, how many people can say they've been briefed by Agent Pace?</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Saluti, {player}! I am very glad that Agent Gray has allowed me to work with you again.
+
+We still know very little about the Cypherites. Like many recent troublesome groups, they came from Zion, and appear to have maintained some secretive ties in Zion's caverns. They claim to want to return the System to a peaceful state, but we cannot be sure that they are trustworthy. Their representative with whom we will be meeting, Veil, has a particularly shady record. She is notorious in Zion for having allegedly betrayed and killed her hovercraft captain, but as the killer carried a different name and appearance at the time, this rumor cannot be confirmed. Still, we must be very careful when dealing with her.</say></talk>
+      <done><say>A face-off between Pace and Veil? This is gonna be sick!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Agent Pace will precede you to the meeting, held at a neutral location.
+
+You are to monitor the participants, particularly Veil.</briefing>
+    <enter><say>I've got Pace, another Agent, and three redpill signals in there.</say></enter>
+    <objective goal="1" text="Talk to Veil" type="Talk" npc="3">
+      <talk>
+        <say npc="3">Of course, dearie. We don't expect you simply to take our word for it. We've arranged a few treats for you, straight from the Zion mainframe. We'll upload all the details to you immediately.</say>
+        <say npc="4">Oh! Grazie. We will be very happy to examine this sample of your resourcefulness.</say>
+      </talk>
+      <done><say>Hm! Can they actually be getting along?</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="4" neighbourhoods="Moriah Projects">
+    <briefing>It is time to test the Cypherite claims. Proceed to the indicated location. You will find some of their people there. Examine their data.</briefing>
+    <enter><say>I'm reading some redpills in there, and a secure network.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the first Computer" type="Search" object="1" item="0">
+      <done>
+        <say>Let's see what's behind computer number one...</say>
+        <say>Is that...a Morpheus simulacrum?</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Search the second Computer" type="Search" object="2" item="0">
+      <done>
+        <say>A Niobe simulacrum? Hey, and they got her new hairstyle and everything.</say>
+        <say>Uh-oh, I've got unknown redpills heading your way, fast!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to the Morpheus simulacrum" type="Talk" npc="7" after="1">
+      <talk><say npc="7">The Machines are hiding something--something to do with Neo--and I will not rest until he is with us again.</say></talk>
+      <done><say>So ol' Morph was talking about us behind our backs, was he?</say></done>
+    </objective>
+    <objective goal="4" text="Talk to the Niobe simulacrum" type="Talk" npc="8" after="2">
+      <talk><say npc="8">I'll be damned if I'll see his good works ruined because the Council is too busy trying to please the Machines.</say></talk>
+      <done><say>Ah, vintage Niobe. I wonder if she'd have that same attitude these days?</say></done>
+    </objective>
+    <objective goal="5" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That's all the hostiles I had on my screen. Man, those EPN can be a pain.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Agent Pace is awaiting your report on the Cypherite data, operative. Additionally, she will provide you with further information regarding our dealings with them.</briefing>
+    <enter><say>Maybe we should just ask Pace for her cell phone number. Then we wouldn't have to go through papa Gray every time we wanted to hook up with her.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="10">
+      <talk><say npc="10">The data the Cypherites showed you was very interesting, {player}! It seems very likely that it could have come from the Zion mainframe. Their claims of being able to provide us with further Zion mainframe data, then, could be true.
+
+We have been aware that the E Pluribus Neo terrorists target Cypherites particularly. This may prove to be a difficulty when attempting to deal with data from the Cypherites. We will have to get further proof that they can provide the required information to us reliably.</say></talk>
+    </objective>
+  </phase>
+  <finish>As Agent Pace indicated, {player}, we must take a guarded approach with the Cypherites. They appear to have access to some restricted Zion data; the full reach of their data-gathering capabilities must be evaluated. Furthermore, we must ensure that interference by E Pluribus Neo terrorists will not make attempting to deal with the Cypherites unduly...inefficient.</finish>
+</mission>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Remote Control, Machines story mission 6.3.1. Source: research/missions/transcripts/Mach6-3-1.md (the archive
+     replay of [Machine Archive 6.3.1], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective texts "Search the area",
+     "Put the Virus in the Computer" and "Search the Computer", and the names Agent Pace, Royce Warnock, Louis Ocampo
+     and Commando. Gray called the player "Mr. Argento" and the Operator and Pace used the player's handle; all are
+     {player}. Pace's Italian words were in italics; they are plain here. The Operator's "Looking good so far." and
+     "Did that... Oh, never mind." fell on screenshot joins with no header of their own; each is joined to the Operator
+     line before it. Ours: the description (the Summary tab was never opened), the objective texts of phase 3 and the
+     kill goal, the sites (the run-down room with the dead terminal is an apartment, the last area an office, both in
+     Kedemoth as the map showed; the rest Normal), the looks (Pace as a female Agent, the two helper programs as a
+     program and an Agent so they don't look alike), and the enemy counts. The General's commandos are Exile programs:
+     Merovingian. Item stand-in: Pace's virus is Virus (6786). Rewards: 362,670 experience and 59,500 information, shown
+     on completing this mission.
+     Gaps: retail's scans (phases 1 and 2) were "walk around the area until the scan is done"; here each is one Search
+     that turns up nothing, a piece of furniture in phase 1 and the deactivated terminal (ERROR / TRM) in phase 2.
+     Gray's "Do not waste time, operative." was a nag during the first scan; it is said on arrival. Retail's virus goals
+     came with a new Gray line once the commandos were dead, in the same area; here they are one phase, the virus goals
+     open after the kill goal and Gray's line is said when it is done. The helper programs fought beside the player;
+     ours only follow, and as followers their death fails the mission. The commandos' "Mayday" line is given to one
+     named Commando. -->
+<mission id="206301" title="Remote Control" description="Trace the helicopter that carried off the Exile program Sati, and take control of it." plot="1"
+         order="6301" org="2" contact="Agent Gray" exp="362670" info="59500">
+  <npc id="1" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>Ah, Sati is very valuable to the System, tesoro! Her spectacular sunrises and sunsets are pleasing to the humans, and help maintain satisfaction levels!</say>
+  </npc>
+  <npc id="2" handle="Royce Warnock" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Louis Ocampo" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="4" handle="Commando" type="HOSTILE" at="4" rsi="c6020058" weapon="2568">
+    <say>Mayday, mayday! We have hostile contact!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, the Oracle's ward, the Exile program known as "Sati," has been abducted by the General's commandos by means of a helicopter.
+
+The helicopter disappeared from our scanners with Sati aboard. It has since reappeared over the city, without Sati. Sati's signal is no longer detected within the Matrix.
+
+We are sending you to the ground position closest to the point of the helicopter's flight where Sati was last confirmed on board. You will conduct a detailed scan of the area.</briefing>
+    <enter>
+      <say>All right, they're pumping scan sweeps through your RSI. Just move around the area until I let you know you've covered enough ground for them to have a full scan.
+
+And stop scratching yourself. It makes the scan come out funny.</say>
+      <say contact="1">Do not waste time, operative.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Right, they say they've got enough data. The sensor relay has been switched off, so you're no longer a walking radar dish. Any residual tingling sensations you feel are purely a bonus.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>The scan data obtained contains traces of an unknown transmission. A relay point has been identified. Proceed there and search the area.</briefing>
+    <enter><say>Looks like you ain't done playing lightning rod yet. Just keep moving around in there. I'll let you know when they've got the data they need.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Looks like they got something, {player}. You can get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>A subsequent relay point has been found, {player}. Commando programs have been detected. You will receive additional support from Agent Pace.</briefing>
+    <enter><say>I'm scanning Agent Pace...
+
+Looking good so far.</say></enter>
+    <objective goal="1" text="Get the Virus from Agent Pace" type="Get" npc="1" item="6786">
+      <talk>
+        <say npc="1">Saluti, {player}! Please take this virus from me. You will need it for your next task.</say>
+        <say>Okay, you're going to get a virus from Agent Pace.
+
+Did that... Oh, never mind.</say>
+      </talk>
+      <done>
+        <say npc="1">I have the virus you will need. Additionally, these two programs here have been assigned to assist you. Buona fortuna--good luck--in this mission!</say>
+        <say>You're cleared to lead those two out of there.
+
+One of these days Agent Pace is gonna let us take her somewhere. I know just the place...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Royce Warnock" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Affirmative. We are en-route.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Louis Ocampo" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Proceed.</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Royce Warnock and Louis Ocampo out of the area" type="Escort" npc="2,3" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Kedemoth">
+    <briefing>Proceed to the target location and eliminate all opposition.</briefing>
+    <enter><say>It's a bad day to be a commando.
+
+I've got multiple contacts in there, {player}. Go give 'em the business.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Commandos" type="DefeatAll">
+      <done><say contact="1">You will find a computer system nearby, {player}. Insert the virus into the system.</say></done>
+    </objective>
+    <objective goal="2" text="Put the Virus in the Computer" type="Put" object="1" item="6786" after="1">
+      <done><say>Okay, now check the computer to execute the virus, and see what happens.</say></done>
+    </objective>
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0" after="2">
+      <done><say>Huh, wonder what that did. Looks like it worked, whatever it was.</say></done>
+    </objective>
+    <complete>
+      <say npc="2">Targets eliminated.</say>
+      <say npc="3">Our task has been completed.</say>
+    </complete>
+  </phase>
+  <finish>I see you have questions, operative. The signal you detected earlier indicated that the helicopter was being controlled remotely. The virus you activated in their control system re-routed the helicopter to one of our helipads. The vehicle has now been thoroughly inspected. No trace of Sati, or indication of how she vanished from our scanners, has been found.
+
+The data available to us at this point indicates a high probability that Sati has been removed from the main simulation. As she controls certain routines beneficial to the maintenance of the System, this removal could have detrimental consequences if not soon corrected.
+
+You will be contacted when we have another task for you. Good day.</finish>
+</mission>

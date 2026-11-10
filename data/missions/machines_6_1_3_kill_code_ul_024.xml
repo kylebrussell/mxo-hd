@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kill Code UL.024, Machines story mission 6.1.3. Source: research/missions/transcripts/Mach6-1-3.md (the archive
+     replay of [Machine Archive 6.1.3], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator, Agent Wong, Michel Sheldon and Handgun Simulacrum
+     line (the simulacrum's two lines and the Unlimit Reactors' were in chat), the names Agent Wong, Michel Sheldon,
+     Unlimit Reactor and Handgun Simulacrum, and the objective texts "Search the Computer", "Eliminate the Unlimit
+     soldiers" and "Search the correct computer". Gray and Agent Wong called the player "Mr. Argento" and an Unlimit
+     Reactor used the player's handle; all are {player}. Ours: the description (the Summary tab was never opened), the
+     objective text at the simulacrum, the sites (the lab is an Office in Moriah Projects; the Unlimit were in apartment
+     rooms in Moriah Projects; the simulacrum's site wasn't shown: Normal; the computer room in Tabor Park is an
+     Office), the looks (Michel Sheldon's sex isn't stated) and the enemy counts. Anome's Unlimit soldiers have no org
+     of their own: Zion, as rogue redpills. Item: retail's "Caboclo Message 3" is the Letter (6793). Rewards: 363,000
+     experience and 59,500 information, shown on completing this mission.
+     Gaps: the kill code buff applied at the lab's computer did nothing in retail either, so the computer is a plain
+     goal. Retail's fight had eight Unlimit soldiers; here five plus the two named Reactors. The Operator's mid fight
+     line ("Doesn't look like you're having an easier time than usual") has no trigger and isn't said. The simulacrum
+     shut itself down after speaking; here it stays. In the computer room retail failed the mission if the player
+     searched either wrong computer ("Don't search wrong computer 1" and "2"); we can't fail on a search, so those two
+     goals are left out, and the two wrong computers are placed with no goal (they can't be selected). The Operator
+     uploaded the Caboclo message on leaving; here searching the correct computer gives it, and the message's text and
+     the lab computer's screen can't be shown. The lab's bluepills said nothing and aren't placed. -->
+<mission id="206103" title="Kill Code UL.024" description="Field test a kill code compiled from the Merovingian's synthesized cheat code." plot="1"
+         order="6103" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Michel Sheldon" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>Yes, Agent Gray informed me. We've compiled a kill code based on the code synthesized by the Merovingian; this code is not specific to an individual, but if the Merovingian's code has any merit, this kill code should have at least some deleterious effect on any Unlimit.
+
+If you run the program on that computer over there, it will apply the kill code executable to your RSI; for a short time, any attack you make will execute the kill code on your target.</say>
+    <say after="2">The code will be active on your RSI for some time. I believe Agent Gray will have further instructions.</say>
+  </npc>
+  <npc id="2" handle="Agent Wong" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
+    <say display="5">A kill code is a serious matter, operative. Do not treat it as if it is a toy.</say>
+  </npc>
+  <npc id="3" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
+    <say>You saved us the trouble of tracking you down, {player}!</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+    <say>Hah, this is way more fun than Southard security detail.</say>
+  </npc>
+  <npc id="5" handle="Handgun Simulacrum" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Moriah Projects">
+    <briefing>{player}, our operatives have succeeded in securing one of the "cheat codes" synthesized by the Merovingian. It is possible that it may be useful as a base component of a kill code for Anome himself, but due to the known difficulty in decompiling the cheat codes, and their apparent mutation over time, this cannot yet be regarded as a probable outcome. We require a field test. Proceed to our lab, and check in with the lead technician, Michel Sheldon.</briefing>
+    <enter>
+      <say>Oh boy, we get to be Gray's guinea pigs! This reminds me how much he loves us.</say>
+      <say npc="2">{player} has arrived.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Michel Sheldon" type="Talk" npc="1">
+      <talk><say npc="1">Yes, Agent Gray informed me. We've compiled a kill code based on the code synthesized by the Merovingian; this code is not specific to an individual, but if the Merovingian's code has any merit, this kill code should have at least some deleterious effect on any Unlimit.
+
+If you run the program on that computer over there, it will apply the kill code executable to your RSI; for a short time, any attack you make will execute the kill code on your target.</say></talk>
+      <done><say>Here's the fun part...</say></done>
+    </objective>
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0" after="1">
+      <done><say>Vital stats are stable... The code modification is running in your RSI. I'll keep a close eye on you to make sure you don't start growing a tail or something, but so far you look all right. Now to see what Gray wants us to test this on.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="5" neighbourhoods="Moriah Projects">
+    <briefing>The kill code executable is currently running in your RSI. Proceed to the indicated location and combat the Unlimit found there. We will be monitoring the battle data to note the effect of the kill code on the targets.</briefing>
+    <enter><say>There's a fresh batch of Unlimit in there, all right. I betcha this fight is either gonna be really easy, or really hard. I'm not gonna tell you which one I'm betting on.</say></enter>
+    <objective goal="1" text="Eliminate the Unlimit soldiers" type="DefeatAll">
+      <done><say>You pass the test...but I don't know if that so-called "kill code" they gave you did; I didn't see it doin' jack against those guys. Let's go see if Gray got any better results.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We are processing the data now, operative. Initial results are not promising, but there may have been a more subtle effect; the results of the detailed analysis will be available shortly.
+
+In the mean time, I have another task for you. Meillak--or someone posing as him--has posted a third "Caboclo" message on an electronic bulletin board in their usual anonymous way.
+
+This message again consisted of encrypted coordinates. It also contained a second section, but encrypted using a more complicated algorithm, which we are still in the process of decoding. You will proceed to the coordinates now, and investigate the area.</briefing>
+    <enter><say>That's the place, supposedly; but do we really want to learn more about Anome's sordid past?
+
+Okay, you got me, I actually do.
+
+Hey! I'm picking up a simulacrum program of some kind in there. Did someone just leave it there all by itself?</say></enter>
+    <objective goal="1" text="Talk to the Handgun Simulacrum" type="Talk" npc="5">
+      <talk>
+        <say npc="5">The Correct Choice Is The Color Of The Power He Stole</say>
+        <say npc="5">Shutdown function initiated.</say>
+      </talk>
+      <done><say>Looks like someone had it set to deliver a message, then terminate itself.
+
+Weird message, too. What do you make of that?</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>The phrase uttered by the simulacrum was the key to the encryption of the second part of the message posted on the bulletin board. This second part provides a second set of coordinates. Proceed to the indicated location and investigate.</briefing>
+    <enter><say>Meillak's sure playing us like a violin, isn't he? But darn it, I wanna know what happens to Anome next! Do you think his mom got sent to the loony bin, and maybe he grew up there with the kooks?
+
+Hold up... I'm scanning three active computers in there, on their own little subnet. Each one is a different type of machine, too. It looks like...let me see if I can get in... Yeah, they've got custom BIOS chips, set to shut down after any one of the terminals is accessed.
+
+You'll only be able to access one of the three machines before they all shut off, dumping any message they may have. But how do we know which one to access? What's the correct choice?</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the correct computer" type="Search" object="1" item="6793">
+      <done>
+        <say>Oh, yeah--the simulacrum said the right choice was the "color of the power he stole," and that computer's yellow-green like the Unlimit powers! Nice work!
+
+Damn, his mom killed herself--tried to kill him, too! That could mess with a kid's head.
+
+I'm gonna upload a copy of that message to your inventory, so make sure you have some space free before you leave the area, okay?</say>
+        <say>You made sure you have some inventory space free, right? I'm gonna upload a copy of that message to you, so don't leave the area without some inventory space available, otherwise you won't get it!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Our analysis of the data from your fight against the Unlimit soldiers is complete, operative: the kill code based on the Merovingian's synthesized "cheat code" was completely ineffective. This indicates that his code cannot be used as the basis for an Anome kill code.
+
+Apparently, we will have to extract a code sample directly from Anome himself.</finish>
+</mission>

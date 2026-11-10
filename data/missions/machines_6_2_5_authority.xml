@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Authority, Machines story mission 6.2.5. Source: research/missions/transcripts/Mach6-2-5.md (the archive replay of
+     [Machine Archive 6.2.5], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Agent Gray, Operator and NPC line, the E Pluribus Neo bark and the
+     Agents' one-word answers from Team chat, the objective text "Give the Device to Agent Gray", and the names Agent
+     Gray, Niobe, Ghost, Agent Pace, Cryptos, The Architect, Agent Clark, Agent Green, Agent Park, Agent Miller,
+     E Pluribus Neo Crusader and E Pluribus Neo Fighter. Gray called the player "Mr. Argento" and Pace and Cryptos used
+     the player's handle; both are {player}. Besides the contact on the datalink, a field NPC named Agent Gray stands
+     at the meeting with Zion and receives the device; he is a friendly NPC with that handle. The Architect (level
+     255, no organisation in retail) is a friendly bystander with a civilian look. Ours: the description (the Summary
+     tab was never opened), the other objective texts, the sites (the last is an apartment in Mannsdale Housing
+     Projects; the rest are not described: Normal), the looks (phase 4 has five Agents and three Agent looks, so some
+     share one) and the enemy count. E Pluribus Neo are redpill terrorists from Zion: Zion. Item stand-in: the
+     "Code Pulse" device is Device (6820), retail's own objective word.
+     Rewards: 363,000 experience and 59,500 information, shown on completing this mission.
+     Gaps: lines may be hidden at screenshot joins in Agent Gray's and Niobe's first lines and in Gray's third
+     briefing ("Proceed to the indicated location" is the reading used); they read whole and are used as such. At the
+     meeting, the field Agent Gray's line and Niobe's answer played together on reaching her; here they are said when
+     Niobe is talked to. Cryptos said "We've been holding them around here", but no fight is logged at his place, so
+     it has no enemies. At the EPN cell the Operator's "I'd say they weren't expecting us" came on first contact; it
+     is said on arrival. The device is looted from the named E Pluribus Neo Crusader. In the last room the Architect's
+     order, the Operator's reaction and Gray's "Yes, sir." came on arrival and are said then; the Agents' one-word
+     answers ("Check.", "Affirmative.", "Clear.", "Yes.", "Nominal.") were a chorus after it, here each Agent's own
+     line when talked to; Agent Marks ("Yes.") isn't placed, to keep the room to six NPCs. -->
+<mission id="206205" title="Authority" description="Attend the second meeting with Zion, then seize an E Pluribus Neo device and bring it to Agent Gray." plot="1"
+         order="6205" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Agent Gray" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
+    <say>Zion is not being as...cooperative as we would have liked. We may have to discuss other solutions for ensuring the System's security.</say>
+  </npc>
+  <npc id="2" handle="Niobe" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say>If you think we're letting you out of the truce you made with Neo that easily, you've got another think coming.</say>
+  </npc>
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say>Upon leaving office, an old leader of men, Andrew Jackson, said: "But you must remember, my fellow-citizens, that eternal vigilance by the people is the price of liberty, and that you must pay the price if you wish to secure the blessing. It behooves you, therefore, to be watchful in your States as well as in the Federal Government."
+
+He was talking about a different type of liberty, and a different government, but the spirit of his words still applies. If the Machines want Zion to handle the one percent of the population who break their equation, they have to accept the consequences of that.</say>
+  </npc>
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
+    <say>Benvenuto, {player}. I am afraid that Zion has been hesitant to embrace our suggestion of sharing information from their mainframe. It is a difficult situation, because the truce we made at the end of the war prohibits us from interfering with Zion as long as they keep their recruitment activity at acceptable levels.</say>
+  </npc>
+  <npc id="5" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say>Good luck, {player}. I look forward to meeting again under more fortuitous circumstances. I feel that despite appearances, we have much in common.</say>
+  </npc>
+  <npc id="6" handle="E Pluribus Neo Crusader" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
+    <say>Goddamn preemptive strike!</say>
+  </npc>
+  <npc id="7" handle="E Pluribus Neo Fighter" type="HOSTILE" at="3" rsi="60010058" weapon="2568">
+    <say>Goddamn preemptive strike!</say>
+  </npc>
+  <npc id="8" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>Thank you, operative. You may go.</say>
+  </npc>
+  <npc id="9" handle="The Architect" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say>Increase surveillance of Zion operatives in the simulation. Assign operatives with the requisite skills and background to infiltrate the caves. Si vis pacem para bellum.</say>
+  </npc>
+  <npc id="10" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Check.</say>
+  </npc>
+  <npc id="11" handle="Agent Green" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>Affirmative.</say>
+  </npc>
+  <npc id="12" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>Clear.</say>
+  </npc>
+  <npc id="13" handle="Agent Miller" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Nominal.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, the second meeting with Zion is underway. You are expected to attend.</briefing>
+    <enter><say>It would be nice if Gray gave us a little more of a head's up on these things. It's not like you can be jacked in 24/7.
+
+Okay, I'm reading Gray, Pace, and some redpills in there.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="2">
+      <talk>
+        <say npc="1">I take it you are aware, Captain, that you have little choice in the matter.
+
+This truce will not survive if unmonitored threats continue to spawn from Zion's chaotic population. It is not logical that you should wish to cause the renewal of a war that you would surely lose.</say>
+        <say npc="2">No, there's always a choice. That's one lesson I can't forget.
+
+War? If you weren't a Machine, I'd think that was a threat. Listen, we're keeping our part of the deal. We expect you to do the same.</say>
+      </talk>
+      <done><say>Great, so they're hiding behind the Truce, and don't feel like doing anything about these problems they've been causing.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The ramifications of the meeting must be considered carefully, operative. By remaining unmonitored, Zion's population will continue to produce threats to the System, such as the terrorist group E Pluribus Neo.
+
+EPN has been particularly active since our initial request for mainframe information from Zion. The Cypherite leader, Cryptos, has an update on their situation.</briefing>
+    <enter><say>Gray sure seems pretty buddy-buddy with Cryptos lately.
+
+I'm reading some reds in there. Should be the Cypherites.</say></enter>
+    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="5">
+      <talk><say npc="5">Welcome, friend. You can see that we have something of a situation. We've been holding them around here, but we've learned of another group in the city, and I don't have the manpower to cover them. I'll upload their coordinates to your operator, if you don't mind. We could use the help.</say></talk>
+      <done><say>I'm getting a coordinate transmission. Hard to pass up a terrorist cell there for the picking, huh?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Cryptos' information has been accurate thus far. Proceed to the indicated location, disrupt the terrorist attack, and confiscate any weapons you find.</briefing>
+    <enter>
+      <say>I've got unknown reds in there. I think we've found our targets.</say>
+      <say>I'd say they weren't expecting us.</say>
+    </enter>
+    <objective goal="1" text="Get the Device from the E Pluribus Neo Crusader" type="Loot" npc="6" item="6820">
+      <done>
+        <say>I'm picking up a heavy code reading on that one... Looks familiar.</say>
+        <say>Yep, another of their "Code Pulse" devices. But as far as we know, those things are probes, not weapons. They couldn't really have been planning an "attack" with just that. Hm...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Eliminate all hostiles" type="DefeatAll">
+      <done><say>You got 'em all.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0" neighbourhoods="Mannsdale Housing Projects">
+    <briefing>I am currently in a discussion regarding our policy toward Zion, {player}, but I want you to bring me that device. Just take care not to be disruptive.</briefing>
+    <enter>
+      <say>I'm reading Gray, some Agents, and... What the hell is that? The reading is off the scale.
+
+Damn it, am I getting data spikes again? I thought we fixed that loose receiver.</say>
+      <say npc="9">Increase surveillance of Zion operatives in the simulation. Assign operatives with the requisite skills and background to infiltrate the caves. Si vis pacem para bellum.</say>
+      <say>That's... It's him! The big cheese! The guy from the oval office! The man with two thousand cable channels!</say>
+      <say npc="8">Yes, sir.</say>
+    </enter>
+    <objective goal="1" text="Give the Device to Agent Gray" type="Give" npc="8" item="6820">
+      <done>
+        <say>This is where you bow, and shuffle out backwards.</say>
+        <say npc="8">Thank you, operative. You may go.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Appropriate measures will be taken to ensure the safety of the simulation, {player}. That is all.</finish>
+</mission>

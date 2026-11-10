@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Access Denied, Machines story mission 6.3.4. Source: research/missions/transcripts/Mach6-3-4.md (the archive
+     replay of [Machine Archive 6.3.4], given by [Archived]Agent Gray; a second player was on the mission team).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, the objective text "Search the area",
+     and the names Agent Pace, Robert Anderson, Maximo Lepine and Commando. Gray and Robert Anderson called the player
+     "Mr. Argento" and "Argento"; both are {player}. Pace's Italian words were in italics; they are plain here, and her
+     greeting is read as "rossapillola". The Operator's ""Assistance," huh?" fell on a screenshot join with no header of
+     its own and is joined to the line before it. Ours: the description (the Summary tab was never opened), the
+     objective texts of phase 3, the sites (the first access point is a tidy apartment in Camon Heights and the live one
+     a run-down apartment in the Moriah Projects, as the map showed; the rest Normal), the looks (Pace as a female
+     Agent, the helper programs as a program and an Agent so they don't look alike) and the enemy counts. The General's
+     commandos are Exile programs: Merovingian. No mission items. Rewards: 363,000 experience and 59,500 information,
+     shown on completing this mission.
+     Gaps: retail ran the shutdown program through the player's RSI on reaching each access point; here it is a Search
+     of the access point's computer that turns up nothing. The Operator's "There it is. Just get up there and check
+     it..." came on sighting the first access point; it is said on arrival. The "activity pulses" were commando
+     reinforcements while an access point was live; we have no timed waves, so the live sites have more commandos from
+     the start, and the Operator's "Another activity pulse!" and "Activity pulse! See anything?" aren't said. The last
+     site's commandos were stealthed; ours are ordinary. The helper programs fought beside the player in the last
+     area; ours only follow, and as followers their death fails the mission. The commandos' "Enemy contact!" is given
+     to one named Commando. -->
+<mission id="206304" title="Access Denied" description="Shut down the access points the General's commandos use to enter and leave the Matrix." plot="1"
+         order="6304" org="2" contact="Agent Gray" exp="363000" info="59500">
+  <npc id="1" handle="Commando" type="HOSTILE" at="2" rsi="c6020058" weapon="2568">
+    <say>Enemy contact!</say>
+  </npc>
+  <npc id="2" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="3" handle="Robert Anderson" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say>Agent Pace has your instructions, {player}.</say>
+  </npc>
+  <npc id="4" handle="Maximo Lepine" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+    <say>Online and functional.</say>
+  </npc>
+  <phase site="GenericApt" enemy="Merovingian" enemies="0" neighbourhoods="Camon Heights">
+    <briefing>{player}, scanning a live commando access point has allowed us to develop a program that will shut them down permanently, so that they cannot launch further surprise attacks on the simulation. This must be done at close range, however. We require you to make your way to the known access points. When you are within range we will execute the shutdown program through your RSI. Our tests show that you will probably not be harmed.</briefing>
+    <enter>
+      <say>"Probably not be harmed..." Well, I feel reassured, how about you?
+
+Okay, I'm reading the access point in there now. Looks like they've already shut it off. Now we'll shut it down permanently.</say>
+      <say>There it is. Just get up there and check it, then we'll have the Machines run the shutdown program.
+
+So uh if it doesn't run quite like they said it would... It's been really great working with you. Peace.
+
+Oh, and can I have your stuff?</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>They're running the access point shutdown program now...
+
+Looks like that killed it, all right. Hey, you're still in one piece. I wasn't worried.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="4" neighbourhoods="Moriah Projects">
+    <briefing>Well done, operative. The General's forces will no longer be able to enter or leave the Matrix at that location. Continue to the next access point.</briefing>
+    <enter>
+      <say>I got an activity pulse on the access point! They must still be sending commandos through it! You've got to get to that system!</say>
+      <say>Ooh, looks like we've got a live one here. I'm reading what are probably commandos in the area, too.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Ooh, got an activity pulse just as the Machines ran the shutdown program.
+
+Well, at least that access point will never bother anyone again.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Operative, it appears that the surviving access points are receiving further reinforcements. You will gather some assistance from Agent Pace before proceeding to the next access point.</briefing>
+    <enter><say>The Pacer's in there all right.
+
+"Assistance," huh? I could go for a massage...</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+      <talk><say npc="2">Benvenuto, rossapillola! I think it is wonderful that you are tracking down Sati and the General! He has caused us trouble ever since he wanted to keep attacking Zion's dock after we made the truce with Neo at the end of the war.
+
+You probably don't need assistance, but I would appreciate it if you would take these two programs here with you! I worry when you have to go off on your own. There is no telling what could happen when facing an Exile like the General!</say></talk>
+      <done>
+        <say>Wha-wa-what?! The General was... Oooh!</say>
+        <say npc="2">Ah, did you not know that the General was the leader of the Sentinel force that attacked Zion? Certamente! Up to that point he was a very good program, but for some reason he would not listen when we called off the attack. We had to remove him from command. He was given another post after the war, but then--oh! It was very shocking! He took his Sentinels and went into exile! At that time, Sentinel programs were not equipped with administrative override routines, as such a thing had never been necessary. And he has been able to cause all this trouble with them!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Robert Anderson and Maximo Lepine out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Proceed to the target location, {player}. It is probable that you will encounter significant resistance from the General's forces, although we are as yet unable to confirm their precise numbers due to the stealth routines the General has introduced.</briefing>
+    <enter><say>So, do you think the General was really the leader of the Sentinel army? Man, that is too crazy.
+
+Got an active access point in there. Gray says to expect a lot of commandos, and I don't see any on my screen here, sooo what I think this means is that you're gonna get to work over more of those silent gankers with the cute red goggles.
+
+Hey, since they only have one lens, do you think you would call them "goggles," or just "goggle"? Man, this is gonna bug me until I figure it out.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>They're running it, and... There, the access point is shut down.</say></done>
+    </objective>
+  </phase>
+  <finish>With those access points neutralized, the General will find it more difficult to disrupt our efforts to locate Sati.
+
+We anticipate being able to make use of the access points in another way as well. You will be contacted when needed.</finish>
+</mission>

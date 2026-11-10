@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Counter-Demand, Machines story mission 6.2.2. Source: research/missions/transcripts/Mach6-2-2.md (the archive
+     replay of [Machine Archive 6.2.2], given by [Archived]Agent Gray). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, and every Agent Gray, Operator and NPC line, and the names Tianjin,
+     Alwine, Agent Lee, Agent Pace, Niobe, Ghost and Agent Miller. Gray and Agent Miller called the player
+     "Mr. Argento" and the others used the player's handle; both are {player}. Besides the contact on the datalink, a
+     field NPC named Agent Gray stands at the conference and the debriefing; he is a friendly NPC with that handle.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (the Zionite hangout, the briefing room, the conference venue and the debriefing room are not
+     described: Normal; the chat once says "You have entered Moriah Projects", but not when, so no neighbourhood is
+     set), the looks (Tianjin's and Alwine's sex isn't shown: picked by name; phase 4 has four Agents and three Agent
+     looks, so Lee and Miller share one). No enemies and no mission items.
+     Rewards: 293,968 experience and 48,178 information, shown on completing this mission.
+     Gaps: Agent Pace and Agent Lee stand in several places; each place has its own NPC, since an NPC is placed in one
+     phase only. Lines hidden at screenshot joins: Niobe's "we could have used information on Pendhurst-Amaranth" and
+     Ghost's "just how dedicated are they" read whole and are used as such. Pace's second line at the conference is
+     only partly captured and isn't used. The field Agent Gray's first reply to Niobe is said with her line, as it came
+     a second after it. The Operator's line on finishing the debriefing wasn't captured, so that phase has none. -->
+<mission id="206202" title="Counter-Demand" description="Sound out ordinary Zionites, then attend the meeting where Captain Niobe answers the Machines' request." plot="1"
+         order="6202" org="2" contact="Agent Gray" exp="293968" info="48178">
+  <npc id="1" handle="Tianjin" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+    <say>We came across a Sentinel in the tunnels once. It scanned our hovercraft, then just sat there, watching. God, those things are creepy. I made sure to double-check our EMP after that.</say>
+  </npc>
+  <npc id="2" handle="Alwine" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say>If there was a Machinist handy, I'd give him the finger over this whole business. Heck, I'd give him two, just to show I really cared.</say>
+  </npc>
+  <npc id="3" handle="Agent Lee" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Pay close attention to what Agent Pace tells you. You have an important function to fulfill at the meeting.</say>
+  </npc>
+  <npc id="4" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say>I am very excited about this meeting, {player}! Finally I will have a chance to use my liaison training at a vital function, alongside Agent Gray. I must be at my best!</say>
+  </npc>
+  <npc id="5" handle="Niobe" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+    <say>That's right. We have information we'd like to get our hands on, just like you do.</say>
+  </npc>
+  <npc id="6" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say>If they really regard a lack of information on Zion as a problem, just how dedicated are they to protecting the System?</say>
+  </npc>
+  <npc id="7" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
+    <say>Zion's aggressive counter-demand was not anticipated. We will discuss this further.</say>
+  </npc>
+  <npc id="8" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+    <say>I am not sure that I understand, tesoro. Why would Zion wish to be uncooperative?</say>
+  </npc>
+  <npc id="9" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>The Zion counter-demand is impertinent. They are being unreasonable. It is sometimes difficult to comprehend you humans.</say>
+  </npc>
+  <npc id="10" handle="Agent Miller" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say>Evidently, other humans are not as intelligent as you are, {player}.</say>
+  </npc>
+  <npc id="11" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say>You will take no action against Zion, operative. We still abide by the terms of the Truce.</say>
+  </npc>
+  <npc id="12" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+    <say>I am very sorry, tesoro! You were so helpful, and I feel that I have let you down.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Zion has heard our request for access to information from their mainframe, {player}, and has agreed to send their Captain Niobe to meet with us on the issue.
+
+Prior to meeting with the captain, it would be useful to us to know how average Zionites are reacting to this request. At the marked location, you will find several Zionites. As long as you do not ask for any confidential information, they will not suspect that you are not one of them. Find out what their thoughts are on the topic.</briefing>
+    <enter><say>Got a couple reds in there. Time to poll the electorate.</say></enter>
+    <objective goal="1" text="Talk to Tianjin" type="Talk" npc="1">
+      <talk><say npc="1">Nice to meet you, {player}. We just use this place to relax when we're on extended jack-in duty.
+
+Hey, I heard about that Machine demand, too. It doesn't make sense to me. They're asking for valuable information, but what are they offering in return? This wasn't part of the deal Neo made. It's blackmail, that's what it is. They'll try to scare us with their Sentinels if we don't give them what they want.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Alwine" type="Talk" npc="2">
+      <talk><say npc="2">Oh, hey. You must be new. Come take a load off. You're just in from Zion? What's the latest word?
+
+Yeah, I heard about that. What I don't like is how the Machines figure they can just blame everything on us. I mean, they kill off most of humanity, trap the rest in this simulation, and then blame us when people don't react well to it? Nice; real nice.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The reactions you describe were not...unexpected. However, it is the decision of the Zion Council with which we must deal. Their policy has not yet been made known.
+
+Agent Pace will have some details on the upcoming conference, operative. You must be prepared for your role.</briefing>
+    <enter><say>Pace is gonna school us.</say></enter>
+    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="4">
+      <talk><say npc="4">Ah, thank you for coming, {player}.
+
+Agent Gray will receive Zion's response to our request. I will be there with him, and I would like to have you there to provide any assistance that may be necessary. We value your perspective in these matters.
+
+As I understand it, Zion will be sending their Captain Niobe, and Officer Ghost. I have just spoken to Officer Ghost at some length, and I have found him to be a very thoughtful man. I think that communication with him and his captain will go very smoothly. It would help us greatly if you could monitor their reactions.</say></talk>
+      <done><say>Okay, here's the plan for the meeting: you'll watch Niobe and Ghost, and I'll make sure that Pace is fully functional. Sound good?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>{player}, you will meet Agent Pace and myself at the conference venue.</briefing>
+    <enter><say>Remember, I've got Pace covered. You can concentrate on Ghost and Niobe.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="5">
+      <talk>
+        <say npc="5">That's wrong; we had a deal. Now you want more from us? Fine. How about you give us more access, too? I'm talking access keys, bluepill databases, police records, surveillance scans... Fair's fair, right? Example: we could have used information on Pendhurst-Amaranth when Anome was trying to take over the city.</say>
+        <say npc="7">We...do not believe that such access would be in the best interests of the System's safety. However, I will...inquire.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Ghost" type="Talk" npc="6" after="1">
+      <talk><say npc="6">Your Agents have something to think over, operative.</say></talk>
+      <done><say>Yeah, I'm sure they're thrilled.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Agent Pace and I would like to go over the results of the meeting with you, operative.</briefing>
+    <enter><say>Oh, uh, Pace seemed all right at the meeting, but my scan was a little inconclusive. Looks like I'll need to take time to, er, gather more data here.</say></enter>
+    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="11">
+      <talk>
+        <say npc="11">I see.
+
+Zion's response puts us in a difficult position. Clearly, they do not see their responsibility to the System as they should. And we are not permitted to grant them the information they have requested. I will have to discuss this with a...higher authority.</say>
+        <say npc="11">You will take no action against Zion, operative. We still abide by the terms of the Truce.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="12">
+      <talk><say npc="12">The meeting did not go well, {player}! I feel that it is all my fault. I should have explained things better to Officer Ghost when I first met with him. I hope that Agent Gray will still make use of me for some public relations duties, but I will understand if he sees fit to demote me after my poor performance.</say></talk>
+    </objective>
+  </phase>
+  <finish>An inquiry as to the possibility of meeting the Zionite demands has been submitted, {player}. However, we must anticipate the necessity of finding...alternate means of controlling Zion's outcasts.</finish>
+</mission>
