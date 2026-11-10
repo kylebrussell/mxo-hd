@@ -793,7 +793,7 @@ namespace hds
             }
 
             client.playerData.leavingTutorial = false;
-            Store.dbManager.WorldDbHandler.updateLocationByHL((UInt16)MxOLocations.SLUMS, RichlandHardline);
+            TeleportHandler.MoveToHardline(client, (UInt16)MxOLocations.SLUMS, RichlandHardline);
             client.messageQueue.addRpcMessage(new byte[] { 0x80, 0xfa, 0x01, 0x00, 0x00, 0x00, (byte)RichlandHardline, 0x00, 0x00, 0x00, 0x01 });
             client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x07 });
             client.FlushQueue();

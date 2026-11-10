@@ -53,3 +53,38 @@ All little-endian. Chunks have a 16-byte header: tag, u32 version (`0x101`), u32
 - `ISHD` holds `ISPI`, the values: u32 n, n × u32 id (as in `DSPD`), then the values in that order. Type 1 is a u32, 2 an f32, 3 a string (u16 length + text), 4 a 16-byte GUID, 6 a colour (u32).
 
 After the sectors come district-wide lists not read yet: `WdID`, `RDMP`, `AcNo`, `Hdln`, the traffic network (`CNET`, `NETS`, `NDAT`, `CORS`), then `POI1` (298 `Poi1` points of interest in the Slums: a type such as `SubW`, `Plza`, `Dung`, `Park`, `Coll`, a position and a string id) and `Vend`.
+
+## Hardline network (`.hdl`)
+
+`data/hardline_network.csv` has every hardline the client knows: 55 in the Slums (Richland and Westview), 65 in Downtown, 23 in International, and one in each combat construct. It is made by `research/world-data/hdl_network.py` from the packed `.hdl` files (extract them first with `mxo-research/tools/client-data/extract.py '\.hdl$' <dir>`). The client draws its hardline map from the same files, so these are the ids, names and places the player picks from.
+
+| Column | What it is |
+|---|---|
+| `hid` | The hardline id: what 6c lists, 80 fb prompts with, and 81 8e and 80 ff ask for |
+| `name_id`, `name` | FriendlyNameID and its text in `st_hardlinenames` ("Richland.Mara (Central)"). Empty on Slums 154 and Downtown 30 and 32 |
+| `address`, `booth_goid` | The booth in the district's `.cooked_cod` Hardline class at the same place: its own name ("96 Kaplan Course") and kind (592 Hardline_PhoneBooth, 451 Hardline_NoModel, 2400 Hardline_PhoneBooth_Newbie) |
+| `sector` | The sector the booth is in (`data/sector_properties.csv`) |
+| `x`, `y`, `z` | The booth (Position). Slums booth statics sit 145 above it |
+| `spot_x` .. `spot_z` | Position + Offset: 100 units in front of the booth and 95 up. **Retail put an arriving player exactly here in x and z** for all 62 hardlines whose arrival the repo captures show; its y was the ground, up to 10 below |
+| `yaw` | The Offset's direction, `atan2(x, z)` |
+| `flags` | 1 on Slums 153 (the newbie booth where the tutorial ends) and on Downtown 30 and 32; 0 elsewhere. A guess: the starting hardline |
+| `socket_guid` | Socket GUID. Not used |
+| `links`, `unmatched_portals` | Portals: positions of other hardlines' spots (as hids), and how many point at no hardline. The server doesn't use them; retail let a player go from any hardline to any uploaded one |
+
+The old `data_hardlines` table had players' positions near the booths (3 to 1,169 units from the spot, median 113), "Tagged By ..." for names, and lacked Slums 83, 143, 154 and Downtown 7, 30, 32, 65, 72, so picking those on the map did nothing.
+
+### File layout
+
+u32 `0x18faeb0a`, u16 1, u16 1, zero padding, then a schema: named fields with a type and a default (Next Hardline ID, Next ID, Hardline with HID, Socket GUID, Position, Offset, Portals, Type, Destination ID, Flags, FriendlyNameID). The data starts at the second `07 "Next ID"`:
+
+- a node: u8 length + name, u32 field count, then per field u32 index, u32 count, and count × (u32 type, value). Types: 1 u8, 2 u32, 4 three f32, 5 a 16-byte GUID.
+- the root node "Next ID" (field 0: the next free hid), then u32 1 + a "Hardline" node per hardline, to the end of the file.
+- Hardline fields: 0 HID, 1 Socket GUID, 2 Position, 3 Offset, 4 Portals (a list of positions), 5 Type, 6 Destination ID, 7 Flags, 8 FriendlyNameID. Type and Destination ID are 0 in every hardline.
+
+## What the server uses
+
+- **`SectorProperties`** (`hds/world/Structures/SectorProperties.cs`) loads `sector_properties.csv` on first use. `At(district, x, z)` and `Get(district, sector)` give a sector's row; `LevelAt`, `IsPvpZone`, `MissionAreasEnabled(district, sector)` and `SectorsOfContact(contactId)` are the lookups other code calls. Nothing in mission choice calls them yet.
+- **`HardlineNetwork`** (`hds/world/Structures/HardlineNetwork.cs`) loads `hardline_network.csv`. For the three cities it replaces `data_hardlines`: the 6c list (the named hardlines), the hardline a booth belongs to, and where a player lands after 81 8e, 80 ff, the tutorial and a Loading Area fallback (`TeleportHandler.MoveToHardline`). The constructs still use `data_hardlines`.
+- **World NPC levels** come from `data/mob_parsed.csv` (retail spawns, with their own levels), which already agree with the sector levels, so nothing is overridden.
+- **PvP:** the server has no PvP rules yet (`pvpflag` isn't read), so `IsPvpZone` has no caller.
+- **`?sector`** (with `MXO_DEV_COMMANDS=1`) prints the sector where the player stands and the nearest hardline.
