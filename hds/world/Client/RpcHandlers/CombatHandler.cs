@@ -261,7 +261,7 @@ namespace hds
                 new CombatRules.Fighter
                 {
                     Tactic = npcTactic, Hits = npcHit, AttackRoll = npcAttack, SpecialMove = false,
-                    Damage = npcDamage, Absorbed = absorbedByPlayer, Health = mob.getHealthC()
+                    Damage = stunned ? 0 : npcDamage, Absorbed = stunned ? 0 : absorbedByPlayer, Health = mob.getHealthC()
                 },
                 playerFirst, opening, withdrawing);
             bool abilityLands = outcome.SpecialMoveLands;
