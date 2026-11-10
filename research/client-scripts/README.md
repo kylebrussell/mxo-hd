@@ -93,20 +93,20 @@ from the ability data, not from these scripts.
 |---|---|---|---|
 | `tempmods` | 327 callbacks for timed effects, called at start, end, each tick or on health change: damage and heal over time (`Value / Duration x UpdateInterval` a tick), stun and mez (seven permissions off; stun time `Value >> 8`, immunity `Value & 255`), confuse, enrage, root, sneak, Evade's IS drain, debuff sweeps, event items. The values come from the ability data. | server | Partly: `AbilityBuffs.cs` sends stat records, `AbilityTargets.cs` has one damage over time and stuns, `Mob.Stun`. |
 | `ability/defines` | Durations (30 s to 60 min) and combat-modifier codes (`MOD_AFFECTS_*`, `MOD_*`). | both | No. |
-| `ability/effects` | Corrode an item, destroy an item (or an NPC's weapon), disable an ability and those that depend on it. | server | No. |
+| `ability/effects` | Corrode an item, destroy an item (or an NPC's weapon), disable an ability and those that depend on it. | server | `AbilityEffects.cs`: the rules, with the Crash virus's corrosion (`tempmods.GenericCrashTerm`). Not called yet: item stability and ability dependents aren't modelled. |
 | `ability/general` | Detection (d100 + Detect against 50 + 8 x Duration + 4 x the ability), event weapons (Wooden Stake, Silver Bullet, Holy Water 10, x10 or x75 against the weak), EMP 5000, Precise Blows and Energized Attacks exclude each other, jack out. | server | No. |
 | `ability/utility` | `evalContest`, sneak detection range 300 + 2000 x (1 - level/50) units in a 60-degree view, `(level - 1) x 3 + 100` health, line-of-sight helpers, auras. | server | No (NPCs read `StealthAwareness` in `MobBehaviour.cs`). |
 | `ability/hacker/crafting` | Write Code and Compile play the idle animation. | server | `CraftingHandler.cs`. |
 | `ability/hacker/health` | Five resurrects: Restore RSI (health 1, IS near 0); Revitalize, Rejuvenate, Revive, Renew (full). In PvP they add ability 1208. No heal formula. | server | No reviving others. |
 | `ability/hacker/misc` | Recall team member, Engage Foes, debuff sweep constants. | server | No. |
 | `ability/hacker/simulacra` | Pets: Logic Daemon (levels 4-7 ... 35-50), Patch Daemon (healer), Remote Proxy, decoys (60/120 s); Message Cloud (20 s, pulses every 1 s in 12 m, -80% selection range for 4 s). | server | No. |
-| `ability/hacker/virii`, `virii_defines` | Virus hit roll: 4 x (Transmit Virus + Execute Program) + d100 against 50 + 4 x (Awakened level + Resist Viruses); needs a program launcher; vaccinations deflect. Levels 1/2/3 last 10/15/25 s. Corruption destroys the weapon or hacker tool on a d100 roll. | server | No. |
+| `ability/hacker/virii`, `virii_defines` | Virus hit roll: 4 x (Transmit Virus + Execute Program) + d100 against 50 + 4 x (Awakened level + Resist Viruses); needs a program launcher; vaccinations deflect. Levels 1/2/3 last 10/15/25 s. Corruption destroys the weapon or hacker tool on a d100 roll. | server | `Virii.cs`: times, sizes, ranges, the roll, vaccination, reflection, Deflect Virus/Bullets, Corruption. The roll isn't applied (abilities still always land). The viruses' own numbers come from the captures (the timed-effects PR). |
 | `ability/npc/specialmoves` | NPC moves (Twin Razor 300, Boost Underlings), NPC detection (d100 + 4 x level), disguises, 24 event-costume captures, event viruses. | server | No. |
 | `ability/soldier/misc` | Synaptic Sweep Kick: 12-47 damage to each enemy within 4 m. | server | No. |
 | `ability/soldier/old_sm_*` | Older special moves with flat damage (Aikido 15-350, Karate 10-325, Pistol 50-350, Rifle 50-325, SMG 75-300). | dead | Not applicable. |
 | `ability/spy/misc` | Ghost Strike (80% re-stealth), Sixth Sense (15 m), Tap Info Bank, invisibility (30 s + 2 x level, -300 speed, no enemy within 8 m in view), disguise, traps, Hamstring (30 s, x0.75 speed, -25 attack), root and mez (60 s). | server | No. |
 | `ability/spy/sneaks` | Sneak, Concealment, Escape & Evasion upkeep; sneak attacks always succeed; free-attack animations. | server | No. |
-| `augments` | Ten empty augment tables. | dead | Nothing to port. |
+| `augments` | Ten empty augment tables. | dead | `Augments.cs` keeps the empty tables and the lookup. |
 | `__init__` (5) | Empty package files. | | |
 
 ## Ported from here
