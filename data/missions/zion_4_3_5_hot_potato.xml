@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hot Potato, Zion story mission 4.3.5. Source: research/missions/transcripts/Zion4-3-5.md (the archive replay of
+     [Zion Archive 4.3.5]; 19 screenshots, all of the log after the mission ended). Retail's contact was
+     [Archived]Tyndall herself; Anome is a field NPC here. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line and every NPC name. Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     sites (Niobe's place, "our troops" in there, is a ZionOutpost, the rest Normal), the looks and the enemy counts.
+     The General is the commandos' Exile leader and has an Exile look. Item stand-in: the key, handed over "in that
+     package", is Package (6817). Rewards: the 352,000 experience and 115,500 information shown right after this
+     mission completed.
+     Gaps: the General's commando programs (no lines) and the friendly troops at Niobe's place (a Zion Gunslinger, no
+     line) aren't placed. No kill line was logged for the fight on the transport route, so its goal has none. Anome
+     isn't a goal to protect during the ambush (the log doesn't show one). Niobe's "This is no time to mess around,
+     soldier. I need that key, pronto." came between her greeting and the hand-over and isn't said: handing over the
+     key completes the goal at once, so her greeting is said on reaching her and her thanks when she has it. -->
+<mission id="104305" title="Hot Potato" description="Keep the General's key out of the Merovingian's hands and get it to Niobe." plot="1"
+         order="4305" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="1">Good luck to you, soldier. In war, we can only count on chaos, but I have a feeling that we'll meet again before this is over. Dismissed.</say>
+  </npc>
+  <npc id="2" handle="Anome" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say after="2">Tell Niobe I kept it safe for her! And I want to be there when she uses it! Can't have too much security these days.</say>
+  </npc>
+  <npc id="3" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, the General requests your immediate presence. There's been an important development resulting from your retrieval of the missing key.</briefing>
+    <enter><say>Code stream shows a bunch of commando programs in there.&#10;&#10;Did you ever wonder what they do in their off hours?</say></enter>
+    <objective goal="1" text="Talk to the General" type="Talk" npc="1">
+      <talk><say npc="1">The Machines have marked my forces for extermination, no doubt due to the role we played in recovering the key. This doesn't come as a surprise to me, but I thought you should be one of the first to know. I've studied the report of the operation to retrieve the key, and I commend you for your success in that crucial mission.&#10;&#10;My commandos will be busy defending against the Machines, so Zion will have to take on more of the work against the Frenchman. In fact, his forces are right now trying desperately to capture the key. Tyndall will have more information for you.</say></talk>
+      <done><say>Uh-oh, I smell trouble. We'd better see what else Tyndall has for us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>{player}, we do have some trouble. It appears that the Merovingian has found out that we obtained the key from Silver, and is making a last bid to get it for himself. Merovingian programs and operatives are attacking our couriers throughout the city. We need you to help secure the key's transport route. I'm directing you to a cluster of the Frenchman's forces blocking the route. You've got to take them out as quickly as possible!</briefing>
+    <enter><say>I'm reading Mervs in there. Let's get to it.</say></enter>
+    <objective goal="1" text="Kill all of the Merovingian forces" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Well done, Warrior. We-- One moment.&#10;&#10;{player}, our team transporting the key is under attack! Anome has been directing them personally, but they've been ambushed by a group of Merovingians. We can't let the Frenchman get the key! Get to Anome's location and get the key out of danger!</briefing>
+    <enter><say>Anome's in there. I've got redpills and Exiles showing in my scan. This could be a little hairy--but what else is new when Anome's around?</say></enter>
+    <objective goal="1" text="Kill all of the Merovingians" type="DefeatAll">
+      <done><say>No more Mervs left showing on my scanner. Now we need to get the key from Anome.</say></done>
+    </objective>
+    <objective goal="2" text="Get the key from Anome" type="Get" npc="2" item="6817" after="1">
+      <talk><say npc="2">Took your damn time, didn't you? Those freaks nearly got me. I mean, I killed, like, thirty of 'em, but there's only so much one amazing fighter can do, you know?&#10;&#10;Oh, the key. Right. Uh... I don't suppose you'd-- No, no, never mind. Some other time... Here, go ahead and take it.</say></talk>
+      <done><say>The key's in that package. Let's get that hot potato outside before more Mervs show.</say></done>
+    </objective>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>Good work, operative. I'm so glad you managed to save the key...and Anome too, I suppose.&#10;&#10;It's up to you to get that key to Captain Niobe now, Warrior. Zion is counting on you!</briefing>
+    <enter><say>I'm scanning our troops in there... Looks quiet.</say></enter>
+    <objective goal="1" text="Give the key to Niobe" type="Give" npc="3" item="6817">
+      <talk><say npc="3">You made it! I'll be damned. Zion owes you one, operative.&#10;&#10;Now, let me see that key.</say></talk>
+      <done><say npc="3">Good. Thanks again, operative; I won't forget this.&#10;&#10;If you see Anome, tell him to get his butt over here. We're gonna have to open the General's case as soon as possible, before anything else comes along to interrupt us again.</say></done>
+    </objective>
+  </phase>
+  <finish>{player}, both the Machines and the Merovingian were after that key, but you still managed to return it to Niobe safely. It's...quite a feat, and I just want to say that I'm honored to be able to work with you.&#10;&#10;The contents of the case are still unknown, but it sounds like Niobe intends to open it shortly. I'll let you know as soon as there's a further development, Warrior.</finish>
+</mission>

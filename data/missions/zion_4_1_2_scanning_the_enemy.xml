@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scanning the Enemy, Zion story mission 4.1.2. Source: research/missions/transcripts/Zion4-1-2.md (the archive
+     replay of [Zion Archive 4.1.2]; 15 screenshots, all taken after it ended, scrolling the log). The contact was
+     [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name (Myers, Echler, The
+     General, Craven, De Bonte, Foster, and the hostiles Dire Lupine Bane and Dire Lupine Savage from the combat
+     chat). Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (all Normal), the looks and the enemy counts (the first lupine pack 4, the second "whole screen
+     of signals" 4 plus the two named lupines). The General and his commandos are Exile programs, so they have Exile
+     looks. Rewards: the 341,000 experience and 112,000 information shown right after this mission completed.
+     Gaps: the first phase's log wasn't captured (5:03:11 to 5:04:26), so it is rebuilt from Tyndall's next line ("Lead
+     Myers and Echler against the dire lupines"): the two commandos are led out of their rendezvous and follow the
+     player from then on. Echler's stay-behind line and Craven's first line were cut off in the log and aren't said.
+     NPCs don't fight here, so the commandos don't join the fights, they don't stay behind afterwards, and the mission
+     fails if one dies; their parting lines are said when the lupines are dead. The Operator's "I've got blips!" and
+     "Heads up!" came as the lupines were found and have no place to fire in a generated site, so they aren't said.
+     The Dire Lupine Savage's bark was only in team chat and isn't said. The Data Siphon 3.0 the player looted was an
+     ordinary drop, not a mission item. -->
+<mission id="104102" title="Scanning the Enemy" description="Lead the General's newly programmed commandos against the Effectuator's dire lupines." plot="1"
+         order="4102" org="1" contact="Tyndall" exp="341000" info="112000">
+  <npc id="1" handle="Myers" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Echler" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="The General" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Craven" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="De Bonte" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568" />
+  <npc id="6" handle="Foster" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="7" handle="Dire Lupine Bane" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="8" handle="Dire Lupine Savage" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Greetings, Warrior. As you know, the General is anxious to improve his force's abilities to combat the Merovingian's Exiles. They will be putting the experience they gained in studying your combat techniques to the test. Our liaison with the General's men has requested that we bring some of their newly programmed troops on a combat run. Proceed to the indicated location and rendezvous with the commando group.</briefing>
+    <enter><say>I'm picking up commando program signals in there.</say></enter>
+    <objective goal="1" text="Lead Myers and Echler out of the area" type="Escort" npc="1,2" to="exit" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>The Effectuator's dire lupines have been unusually active of late. We're not sure what's behind it, but it's a good opportunity for an anti-Exile operation. Lead Myers and Echler against the dire lupines at the location marked on your map.</briefing>
+    <enter><say>Ah, the erratic flicker of dire lupine signals. Be sure you search thoroughly, they're tricksy.</say></enter>
+    <objective goal="1" text="Kill all of the dire lupines" type="DefeatAll">
+      <done>
+        <say>That takes care of that. Let's see if Tyndall has any more tasks for us.</say>
+        <say npc="1">They were no match for us, sir. I'll stay here to complete an analysis of the Exiles.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Operative, the General has requested that you proceed to his location ASAP. It seems that he has an additional strategy in mind for combating the Merovingian.</briefing>
+    <enter><say>The General should be in there.</say></enter>
+    <objective goal="1" text="Talk to The General" type="Talk" npc="3">
+      <talk><say npc="3">Operative, after analyzing the data from these Exiles, my intel group has determined that we can design enhanced weapons capable of breaking down their code defenses. But to do that, we'll need more data. The men in the room you just came through are programmed to record the precise data structures we need. Take them with you on your next foray against the enemy.</say></talk>
+      <done><say npc="3">Good luck, soldier.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Craven, De Bonte and Foster out of the area" type="Escort" npc="4,5,6" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Warrior, I know you will do your best to get as much data as you can for the commandos. The enhanced weapons the General has proposed could help us finally crack the Merovingian's organization, and bring Morpheus' killer to justice.</briefing>
+    <enter><say>I've got a whole screen of signals in there. You could have a heck of a lot of dire lupines on your hands. Let's hope those soldiers of yours can fight as well as they salute.</say></enter>
+    <objective goal="1" text="Kill all of the dire lupines" type="DefeatAll">
+      <done>
+        <say>Okay... Okay, I think that's all of them. Man, I hate those things. I sure hope the commandos relayed some useful data.</say>
+        <say npc="4">If you can keep getting us data like this, sir, we'll have those enhanced weapons ready in no time.</say>
+        <say npc="5">Sir, that was impressive! I'm sure the General will find this data very useful!</say>
+        <say npc="6">Thank you, sir! I'm relaying my data to HQ now.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The General's liaison tells me that they are receiving some very high quality data from your operation, {player}. I knew you'd come through. If the General's engineers can use this data to design enhanced weapons as they claimed, we'll have the Merovingian's Exiles on the run very shortly.</finish>
+</mission>

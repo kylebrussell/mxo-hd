@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Combat Run, Zion story mission 4.1.5. Source: research/missions/transcripts/Zion4-1-5.md (the archive replay of
+     [Zion Archive 4.1.5]; 18 screenshots, all taken after it ended, scrolling the log). The contact was
+     [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line, and every NPC name (Rabbit, Paris,
+     Salcedo, Ezell, Niobe, Zion Kung Fu Master, Zion Gunslinger). Paris' "It's a honor" is kept as shown. Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     sites (all Normal), the looks and the enemy count (5 in the Exile nest: "Exiles. Lots of 'em."). Rabbit is a
+     redpill gone over to the Merovingian; Paris, Salcedo and Ezell are the General's commandos, Exile programs, so they
+     have Exile looks. Item stand-in: the address of the Exile nest on Rabbit's note (no item was logged; it may have
+     been words only) is Document_Location_Notes (6855). Rewards: the 341,000 experience and 112,000 information shown
+     right after this mission completed; the unnamed item retail forwarded by mail at the end isn't given.
+     Gaps: the other redpills on Rabbit's floor ("they're redpills, not Exiles") left no kill lines, so the floor has
+     no hostiles and Rabbit is simply found. In retail the second phase ended as soon as Paris and Salcedo had spoken
+     and the squad just joined; here the three are led out of the area so that they follow into the nest. NPCs don't
+     fight here, so the squad doesn't join the fight, Paris doesn't stay behind to secure the place, and the mission
+     fails if one dies; their lines after the fight are said when the last Exile dies. The Zion Kung Fu Master's and
+     the Zion Gunslinger's lines were in team chat only; they are said here when talked to. -->
+<mission id="104105" title="Combat Run" description="Take the General's enhanced weapons and his commandos on a combat run against the Merovingian's Exiles." plot="1"
+         order="4105" org="1" contact="Tyndall" exp="341000" info="112000">
+  <npc id="1" handle="Rabbit" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say after="2">I-I'll go straight! I swear! Back to Zion!</say>
+  </npc>
+  <npc id="2" handle="Paris" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Salcedo" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Ezell" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+    <say after="1">Don't worry about that Cypherite crap, or people who say we can't trust the General. We've got the people, the skills, and the firepower to win this war, and that's all that matters. Don't you forget it.</say>
+  </npc>
+  <npc id="6" handle="Zion Kung Fu Master" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say display="5">The Captain has a lot of faith in your abilities, soldier. Don't let her down.</say>
+  </npc>
+  <npc id="7" handle="Zion Gunslinger" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say display="5">Captain Niobe doesn't give out compliments like that to just anyone. Keep this up and you'll be going places.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, now that we have the General's enhanced anti-Exile weapons, it's time to ramp up the offensive against the Merovingian's organization. I hope that you have saved some of your new weapons for this important mission.&#10;&#10;Begin your combat run at the location indicated.</briefing>
+    <enter><say>I've got some signals in there--but they're redpills, not Exiles. If they're aligned with the Merovingian, maybe we can get the location of some Exiles out of them.</say></enter>
+    <objective goal="1" text="Talk to Rabbit" type="Talk" npc="1">
+      <talk><say npc="1">D-don't hurt me! I only just joined the Merovingian's organization yesterday! It was all a huge mistake! Look, you want Exiles, right? I know where you can find some. J-just go to the address on this note.</say></talk>
+      <done><say>Sounds like we can get some info out of that guy. See what he's got.</say></done>
+    </objective>
+    <objective goal="2" text="Get the note with the address from Rabbit" type="Get" npc="1" item="6855" after="1">
+      <talk><say npc="1">You want Exiles, right? I know where you can find some. J-just go to the address on this note.</say></talk>
+      <done><say>I know that address. Let's go hit it. Don't worry; if it isn't legit, we'll track that wimp down and teach him not to try lying to Zion.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Scanning that address... We have a positive ID on Exile readings at that location, operative. Procee-- Just a moment, I'm getting a priority transmission. ...&#10;&#10;{player}, that was our liaison with the General. He's been monitoring your progress against the enemy, and he's placed a squad of his commandos at your disposal for this assault. I'm uploading the squad's location to you now. Rendezvous with them before proceeding against the Exile group.</briefing>
+    <enter><say>I've got commando readings in there, all right. Looks like our boys.</say></enter>
+    <objective goal="1" text="Talk to Paris" type="Talk" npc="2">
+      <talk><say npc="2">It's a honor to have this chance to work with you, sir!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Salcedo" type="Talk" npc="3">
+      <talk><say npc="3">The Merovingian had better watch out now, sir.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Paris, Salcedo and Ezell out of the area" type="Escort" npc="2,3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>This is a significant nest of the Merovingian's Exiles, operative. Make good use of the commandos provided by the General.</briefing>
+    <enter><say>Exiles. Lots of 'em. I'm just gonna close my eyes, and you let me know when it's okay to look.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done>
+        <say>I can look now? Oh, good. Yep, all clear in there.</say>
+        <say npc="3">That was good work, sir!</say>
+        <say npc="2">Thank you, sir! My orders are to remain here and secure this location!</say>
+        <say npc="4">No Exiles remaining in the target area, sir!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Stand by, soldier. Captain Niobe is jacked in, and wants to speak with you. Uploading her location now. I wouldn't keep her waiting, {player}.</briefing>
+    <enter><say>I've got Niobe and a couple other redpill signals in there.</say></enter>
+    <objective goal="1" text="Talk to Niobe" type="Talk" npc="5">
+      <talk><say npc="5">Hey, operative. I was monitoring you, and I liked what I saw today. You've been doing a fine job of working with the General's forces and handling the Merv's Exiles. It's good to know I've got people like you I can count on in this war. I may even have a few special missions for you down the road. Keep your eyes peeled and you'll do all right.</say></talk>
+      <done><say>I think that's your cue to take off, {player}.</say></done>
+    </objective>
+  </phase>
+  <finish>Warrior, a personal commendation from Captain Niobe is one of the highest honors I can think of. Anything I can say pales by comparison, but I hope you don't mind if I add that it's a pleasure working as your controller. I just know that if we can keep up this level of success, Zion will win the freedom she is fighting for, and bring peace to the Matrix.</finish>
+</mission>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Groundwork, Zion story mission 4.2.5. Source: research/missions/transcripts/Zion4-2-5.md (the archive replay of
+     [Zion Archive 4.2.5]; 22 screenshots, all of the log after the mission ended). Retail's contact was
+     [Archived]Tyndall. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Tyndall, Operator and NPC line (the Operator's "Clear the out the guards"
+     is retail's), and every NPC name. Ours: the description (the Summary tab was never opened), every objective text
+     (the Objectives tab was never opened), the sites (the Merovingian operations center is an Office, the rest
+     Normal), the looks and the enemy counts. Aoluta's sex isn't in the log; she has a woman's look. The General's
+     commandos (Paprock, Lu, Magnor) are Machine programs, so they have Machine looks. Item stand-in: the bug is Bug
+     (6824). Rewards: the 352,000 experience and 115,500 information shown right after this mission's last target.
+     Gaps: retail had the player station the commandos in the outer room as a distraction while the bug went on the
+     computer in the inner room, with backup guards arriving once it was placed. Here the commandos just follow, the
+     guards are spawned when the phase starts (no backup wave), and placing the bug (a Put at the computer, done with
+     Hack) ends the phase; the Operator's stationing line is said once the guards are dead. The EMP devices that
+     destroy commandos are only Tyndall's warning: there's no Protect goal, so losing a commando doesn't fail the
+     mission. The commandos' lines, said when they're met in retail, are one Talk goal each before they're led out.
+     The Zion guards at the meeting (Zion Kung Fu Master, Zion Artillerist, Zion Despoiler) said their lines in team
+     chat after Niobe spoke; they say them as bystander chatter. Ghost's greeting is a Talk goal of its own, open
+     together with Niobe's. -->
+<mission id="104205" title="Groundwork" description="Plant a bug in an important Merovingian operations center." plot="1"
+         order="4205" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Aoluta" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="1">Hey! Whoa! Easy with that. Man. You're not gonna get out the door without breaking it at this rate.</say>
+  </npc>
+  <npc id="2" handle="Paprock" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="Lu" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
+  <npc id="4" handle="Magnor" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
+  <npc id="5" handle="Niobe" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
+    <say after="2">I know you won't let me down, operative. Zion and I rely on your abilities.</say>
+  </npc>
+  <npc id="6" handle="Ghost" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say after="1">Words convey meaning, operative, but it is actions by which we are judged. The time for action is approaching--the time that will define us.</say>
+  </npc>
+  <npc id="7" handle="Zion Kung Fu Master" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
+    <say display="5">Good luck, sir.</say>
+  </npc>
+  <npc id="8" handle="Zion Artillerist" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+    <say display="5">Yes, sir.</say>
+  </npc>
+  <npc id="9" handle="Zion Despoiler" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say display="5">Catch you later.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Warrior, Commander Lock tells me that the Zion Council has decided not to pursue direct hostilities against the Kid and his "E Pluribus Neo" group. Although their vow to offer freedom from the Matrix to all bluepills, not just those who first reject the Matrix on their own, strains the terms of the Truce, and could lead to serious friction with the Machines, the Kid's constant invocation of Zion's hero, Neo, makes an attack upon his group political suicide; the council fears mass protests in Zion. An increase of rumors concerning Morpheus has added to the difficulty.&#10;&#10;Of course, we hardly lack for other arenas in which to use your talents. Our efforts against the Merovingian have been proceeding better than expected. Intel has just received a tip on an important Merovingian operations center. We need you to plant a bug in this center. Information intercepted by the bug will give us advance notice of the Exile's plans. Pick up the bug from our operative, Aoluta.</briefing>
+    <enter><say>Aoluta should be in there with the bug.</say></enter>
+    <objective goal="1" text="Get the bug from Aoluta" type="Get" npc="1" item="6824">
+      <talk><say npc="1">Careful with this thing. Oh, it won't crawl up in your belly button like a Machine bug, but it's fragile, so handle it carefully. All right, go on and take it from me, gently.</say></talk>
+      <done><say npc="1">Careful! We need this thing to be fully functional!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Planting a bug in an active enemy operations center without being spotted can be difficult. Fortunately, we've got the perfect decoys: the General's commandos. A squad of them is waiting for you. Rendezvous with them and conduct them out of the building.</briefing>
+    <enter><say>I've got the commando squad in there; code scan's clean otherwise.</say></enter>
+    <objective goal="1" text="Talk to Paprock" type="Talk" npc="2">
+      <talk><say npc="2">You can count on us, sir!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Lu" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Training with Zion has been very beneficial to our strategy and combat routines, sir!</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Magnor" type="Talk" npc="4" after="2">
+      <talk><say npc="4">Ready to take down some Mervs, sir!</say></talk>
+    </objective>
+    <objective goal="4" text="Lead the commandos out of the building" type="Escort" npc="2,3,4" to="exit" after="3" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="5">
+    <briefing>Good work, {player}. Now, take the commandos with you to the target zone. You're looking for a specific computer on which you'll be planting the bug. Leave the commandos in a room nearby to create a distraction while you place the bug on the target. Your operator will instruct you further once you're inside the building.&#10;&#10;Oh, I should warn you that we've received reports of EMP-like devices being used by Merovingian operatives. Apparently they are capable of destroying any of the General's commandos in the immediate vicinity. Fortunately, these devices appear to be in short supply.</briefing>
+    <enter>
+      <say>That place is heavily wired to call in backup--too many circuits for me to disconnect from out here. You'll have heat coming down once you've placed the bug. I'll let you know where to station the commandos once you reach the right spot.</say>
+      <say>Clear the out the guards in the next two rooms.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill the guards" type="DefeatAll">
+      <done>
+        <say>The computer you need to bug is in that room.</say>
+        <say>Nice. Now leave the commandos in the outer room, and plant the bug on the computer in the inner room. The commandos will prevent any backup guards from spotting you while you're bugging the computer.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Plant the bug on the computer" type="Put" object="1" item="6824" after="1">
+      <done><say>Here comes their backup, right on schedule. Get out of that room before they spot you around the computer. We can't have them finding the bug.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>That was very well done, Warrior. Our sensors show that the bug is transmitting data at peak efficiency. Hah--there I go, sounding like Agent Gray.&#10;&#10;Since you wrapped this operation up so punctually, you're just in time for a quick briefing with our commanding officers. Something big is in the works. You'll get more from them; just follow your waypoint.</briefing>
+    <enter>
+      <say>Code stream shows redpills in there. Looks like our people.</say>
+      <say>Niobe and Ghost? This must be big.</say>
+    </enter>
+    <objective goal="1" text="Talk to Ghost" type="Talk" npc="6">
+      <talk><say npc="6">Niobe has an important message for you.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Niobe" type="Talk" npc="5">
+      <talk><say npc="5">Hey, operative. I asked for you because I've heard of the success you've had in your operations against the Merovingian. I wanted to let you know in person--and this is not to go outside this room, understand?--that we're gearing up for an all-out offensive against his remaining forces soon. I can't say when, exactly; we still have details to work out. We'll have some important work for you.&#10;&#10;Be ready for it, {player}. I'm counting on you.</say></talk>
+    </objective>
+  </phase>
+  <finish>That bug you placed was part of the plan helping to lay the groundwork for the offensive to come. Perhaps the hardest part of battle is holding ourselves in readiness: maintaining an alert, balanced state, without exhausting ourselves or losing our sense of purpose. Be ready for what comes, Warrior, whether it is tomorrow, or a year from now. Be ready, for Zion will call on you.</finish>
+</mission>

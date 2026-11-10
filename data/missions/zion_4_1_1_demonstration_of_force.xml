@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Demonstration of Force, Zion story mission 4.1.1. Source: research/missions/transcripts/Zion4-1-1.md (the archive
+     replay of [Zion Archive 4.1.1]; 15 screenshots, all taken after it ended, scrolling the log). Retail's contact for
+     this one was [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives the
+     mission list. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line, and the names The General and Yopp. Ours:
+     the description (the Summary tab was never opened), every objective text (the Objectives tab was never opened),
+     the name "Commando" for the General's three unnamed men, the sites (all Normal), the looks and the enemy counts
+     (the first Exile gang 4, the "smaller, but tougher" second one 3). The General and his men are Exile programs, so
+     they have Exile looks; Yopp is one of his programs too. Rewards: the 341,000 experience and 112,000 information
+     shown right after this mission completed.
+     Gaps: the log has holes (an entry after the Operator's first line, which may be a commando's, and whatever came
+     between 4:30:57 and 4:35:03). The commandos follow the player from the meeting place on; NPCs don't fight here, so
+     they don't join the fight with the Exiles, and the mission fails if one dies. The Operator announces Yopp in the
+     field after the first gang is dead, so he is on the first gang's floor from the start (retail: "He should be
+     showing up there in a nearby room right about now") and is found and led out after the kills; the Operator's line
+     is said when the last Exile dies. Yopp follows into the second fight and says his stay-behind line when it's won,
+     but he doesn't stay behind. The General's men at the debrief had no lines and aren't placed; the General there is
+     a second NPC of the same name. -->
+<mission id="104101" title="Demonstration of Force" description="Lead the General's commandos against the Merovingian's Exiles and show them how a Zion operative fights." plot="1"
+         order="4101" org="1" contact="Tyndall" exp="341000" info="112000">
+  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">You'll receive further mission instructions on a need-to-know basis, soldier. I'm counting on you to show those three men just how an expert takes on the Merovingian's forces.</say>
+  </npc>
+  <npc id="2" handle="Commando" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Commando" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Commando" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Yopp" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hey. Our new best buddy, the Generalissimo himself, wants to meet with us to coordinate offensive efforts against the Merovingian. Guess what, all our real operatives are out doing actual work, so you're elected. Just play nice with him and convince him to give us a lot of ordinance, okay?</briefing>
+    <enter><say>The General is supposed to be meeting you in there, and according to these readings, it looks like he's brought some of his troops along.</say></enter>
+    <objective goal="1" text="Talk to The General" type="Talk" npc="1">
+      <talk><say npc="1">At ease, men.&#10;&#10;Operative, you've come highly recommended. They tell me you're just the soldier to lead my men on a search and destroy mission against the Merovingian's forces. Looking you in the eye, I can see you've got what it takes. Consider three of these men here at your disposal. Your operator will have further instructions for you once you've led them outside.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead the General's men out of the area" type="Escort" npc="2,3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Got your own little band of goose-steppers now, don'tcha? That must be fun. Boy, the things I could do with the right programs...&#10;&#10;We've got a dandy Exile gang all scoped out for you to take down with a little help from your friends. Just don't go getting yourself slapped around too bad in front of those commandos. We can't have the General thinking that we don't know what we're doing.</briefing>
+    <enter><say>Got Exile signals in there. Don't forget to make it look good for the soldier boys.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done><say>Okay. Zion control tells me that the General is pleased with progress so far, and has sent a specialist for your next jaunt: Yopp. He should be showing up there in a nearby room right about now. Find him and lead him out of the area.</say></done>
+    </objective>
+    <objective goal="2" text="Find Yopp" type="Talk" npc="5" after="1">
+      <talk><say npc="5">Pleased to meet you. I hear you're good at this. My sensors are more refined than those of the other programs. I will study your methods very closely as we proceed.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Yopp out of the area" type="Escort" npc="5" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>A specialist assigned to study you, huh? Well, aren't you popular. All right, I think we've got just the thing: another group of Exiles, smaller, but tougher. That should give the "specialist" plenty of data for his little recording.</briefing>
+    <enter><say>Your Exile targets are in the building.</say></enter>
+    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+      <done>
+        <say>That's all of 'em. The General wants to meet you again for a debrief. I'll upload the coords once you're outside.</say>
+        <say npc="5">That was quite a show. The General will want to speak with you now. I'll stay here and upload my data for analysis.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So far, so good. Now, just smile and nod, and I think we'll have the old man sold on the deal.</briefing>
+    <enter><say>The General is inside with a few of his men.</say></enter>
+    <objective goal="1" text="Talk to The General" type="Talk" npc="6">
+      <talk><say npc="6">I'm told I should congratulate you, operative; we pulled down prime data from your combat against the Exile forces. As soon as we've got it analyzed, we'll be able to initiate superior anti-Exile combat routines. The Merovingian won't stand a chance against this battle prowess. Good work, soldier.</say></talk>
+      <done><say npc="6">You're dismissed, soldier. You can be sure I'll submit a glowing report of your performance to your Commander Lock.</say></done>
+    </objective>
+  </phase>
+  <finish>Boy, if the General is that impressed by your abilities, maybe he's not quite the formidable ally we were counting on. He'd better not be wasting our time with boot camp crap.</finish>
+</mission>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Kid, Zion story mission 4.2.4. Source: research/missions/transcripts/Zion4-2-4.md (the archive replay of
+     [Zion Archive 4.2.4]; 25 screenshots, all of the log after the mission ended). Retail's contact for this one was
+     [Archived]Anome: every contact line here is his, said under Tyndall, the Zion contact who gives the mission list.
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Anome, Operator and NPC line (Shedar's "the different between" is
+     retail's), and every NPC name. Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (all Normal), the looks and the enemy counts. Abante's sex isn't in
+     the log; he has a man's look by the name. Alois' friends are E Pluribus Neo renegades, redpills, so they are
+     Zion's. Rewards: the 352,000 experience and 115,500 information shown right after this mission's last target.
+     Retail quirks: the Kid's parting line ends "Take care, Marie." although the player was TiAmo; it says {player}
+     here. Anome's closing line had a literal, unfilled "$info" ("bet all your $info"); the "$" token marker is
+     dropped, leaving "bet all your info". Anome's italics in his last line are plain text.
+     Gaps: Alois shows as friendly in the log but is killed with his friends: he is a hostile who waits to be attacked,
+     reached first (his line), then killed. Sirona and Shedar take the player to the Kid in retail; here they are led
+     out of the area, then follow into the Kid's building, where their lines are said with the Kid's. Anome's plan to
+     take out Shedar and the Kid never happens in the log, so there is no fight there. The jammer is only the
+     Operator's line. The E Pluribus Neo follower's line ("Things make a little more sense now, yah?") was in team chat
+     after the Kid spoke; it's said as bystander chatter. -->
+<mission id="104204" title="The Kid" description="Find out who is really behind E Pluribus Neo." plot="1"
+         order="4204" org="1" contact="Tyndall" exp="352000" info="115500">
+  <npc id="1" handle="Abante" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+    <say after="1">Find the Kid, and you get rid of a lot of problems for everyone.</say>
+  </npc>
+  <npc id="2" handle="Alois" type="HOSTILE" at="2" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Sirona" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
+  <npc id="4" handle="Shedar" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="5" handle="The Kid" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
+    <say after="1">Maybe you've got a better idea of things now. Think about what Neo meant to Zion--to humanity.&#10;&#10;I have a feeling we'll meet again. Take care, {player}.</say>
+  </npc>
+  <npc id="6" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say display="5">Things make a little more sense now, yah?</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Let me just see now. We're at war with the Merovingian, who we still have to pay back for his assassination of Morpheus. We've got the Cypherites interfering with our recruitment operations. We've got the Machines, who would just as soon see us whipped naked through the streets, only they're stuck in the Truce that Neo got them to agree to. Let's not forget the General; pretending to help us, but--hell, he's still a Machine; can't trust 'em to do anything except turn on you and squish your skull into jelly.&#10;&#10;And now we've got these E Pluribus Neo jokers, who think they're gonna save the world by stealing our hovercraft and ripping everyone out of their pods, tubes and all. But you can't wash the stink of treason off with pretty speeches about birds and flowers. We're going to find out what's really behind this group of pretty little terrorists. Fortunately, one of them has had second thoughts. Go talk to this screw-up: "Abante."</briefing>
+    <enter><say>I've got a redpill signal in there. Looks clear otherwise.</say></enter>
+    <objective goal="1" text="Talk to Abante" type="Talk" npc="1">
+      <talk><say npc="1">You're from Zion, right? Okay... Look, I believe in Neo, and in what we were supposed to be doing...but frankly, our leadership is a joke! Not Shimada--she can handle it--but the guy in charge of the whole thing: The Kid. He's got plenty of mileage out of being the first known self-substantiated human, and personally rescued by Neo, and a hero of the dock battle at the end of the war...but I don't see how any of that could have happened, except by accident! He's got no clue how to direct our operations, and he's going to get a lot of well-meaning operatives killed!</say></talk>
+      <done><say>"The Kid"? I've heard of him. He was a buddy of Neo's in Zion, wasn't he? Not too surprising that he's behind all this. Let's notify Anome.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The Kid? The mewling, kiss-ass "can I carry your bags for you please Neo" Kid?! I hate that punk! I knew I should have pushed him into a crevasse when I ran into him and his moron friends at the last cave party.&#10;&#10;Well, better late than never. I say we take the Kid out. I'm talking execution-style, three shots to the back of the head: pop, pop, pop. Nice and tidy.&#10;&#10;First we gotta find him. You're lucky you got me here to help you with this. I know where one of his little buddies, Alois, likes to hang out in the City. Betcha he's there right now. Let's go see.</briefing>
+    <enter><say>I'm picking up some redpill readings in the code stream. Not too many of 'em, though.</say></enter>
+    <objective goal="1" text="Find Alois" type="Talk" npc="2">
+      <talk><say npc="2">Look, like Michael said, we've got to find out where the Cypherites are getting their information. They sure-- Hey! Who's that?</say></talk>
+      <done><say contact="1">So he isn't alone, huh? You'd better take them all out, then. I've got an idea.</say></done>
+    </objective>
+    <objective goal="2" text="Kill Alois" type="Defeat" npc="2" />
+    <objective goal="3" text="Kill all of Alois' friends" type="DefeatAll" />
+    <complete><say contact="1">Yeah, good. They're all down? Okay, get outta there; we gotta move fast.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I got a great plan here, so don't screw this up.&#10;&#10;I know another little snot-nose friend of the Kid's: Sirona. I snooped her on a hunch, and sure enough, she's turned into a traitorous Trinity look-alike. So head to her location fast, and tell her Alois sent you, and that he had urgent info about a Zion counterattack, that the Kid needs to hear, which he passed on to you right before a bunch of Zionites jumped him. He chose you because he knew the Zionites wouldn't suspect you. Tell her this info is for the Kid's ears only. Betcha she takes you straight to that loser.&#10;&#10;Got all that? So get moving already.</briefing>
+    <enter><say>A couple redpill signals showing in there.</say></enter>
+    <objective goal="1" text="Talk to Sirona" type="Talk" npc="3">
+      <talk>
+        <say npc="4">I'm a little worried about this. We don't know-- Who's there?</say>
+        <say npc="3">You're right. The Kid needs to know about this right away. I'll tell you where to find him. Actually, scratch that; Shedar and I will come with you. Let's go.</say>
+      </talk>
+      <done>
+        <say>Right. Grab those two and head out.</say>
+        <say npc="3">We need to get you to the Kid, fast. Our operator will have the waypoint uploaded for you by the time we're outside.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Shedar" type="Talk" npc="4" after="1">
+      <talk><say npc="4">We'd better get your info to the Kid right away.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Sirona and Shedar out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hah, they're taking us right to him! I'm a friggin' genius!&#10;&#10;Look, don't worry about Sirona; she punches like a drunken lemur. And the Kid--pfft, I could take him with one knee. So all you got to worry about is Shedar there. Take him out first, and the Kid is all yours.</briefing>
+    <enter>
+      <say>I've got... What the... There's a jammer in place. I can't get a clear reading. At least we know that it must be the right spot.</say>
+      <say contact="1">What?! Where did he get all those people? They can't be following him... He's just a whiny little brat!</say>
+    </enter>
+    <objective goal="1" text="Talk to the Kid" type="Talk" npc="5">
+      <talk>
+        <say npc="4">A real follower of Neo knows the different between the truth and cheap lies.</say>
+        <say npc="3">Sorry, sugar. You should have known this was a set-up. Did you really think we were that stupid?</say>
+        <say npc="5">Hi, I'm Michael. You didn't honestly think we would fall for that, did you?&#10;&#10;Look, we know what Zion is up to. But you're wrong if you think that this group is all about me, or is lacking in organization and dedication. Zion has also underestimated how many of us there are; it isn't just Zionites who've joined us. It's Merovingians, Machines, Cypherites: anyone who believes--really believes--in Neo, and what he was doing. There are more of us every single day. You go tell that to Commander Lock.</say>
+      </talk>
+      <done><say contact="1">This is intolerable! Get out of there! I'm gonna have us bomb that building to hell! Where's my... Hey! Yeah, you! Get me Commander Lock!</say></done>
+    </objective>
+  </phase>
+  <finish>Commander Lock still hasn't got back to me, but you can bet all your info that we aren't going to take this kind of thing from traitors, especially not wet-behind-the-ears brats like Mikey there! Son of a--! I don't care how many fools he's got with him, they're all going to burn! I'll teach 'em to think they're better than us! Hear me?!</finish>
+</mission>
