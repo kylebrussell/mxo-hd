@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spoofed, Merovingian story mission 5.2.1. Source: research/missions/transcripts/Merv5-2-1.md (the archive replay
+     of [Merovingian Archive 5.2.1], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and Effectuator line, the objective texts "Search the area",
+     "Talk to the Effectuator" and "Eliminate the hostiles", and the name Unlimit Reactor with its bark "Don't touch
+     that!". The Effectuator called the player by handle ("TiAmo"); that is {player}. The Operator's italic "Now" is
+     plain text. The Effectuator's leet "L0LZ P\/\/|\|7!" is kept as shown.
+     Ours: the description (the Summary tab was never opened), the objective texts of phases 1 and 3 and the second
+     Talk of phase 1, the sites (phase 4 was an apartment: SlumApt; the others aren't described: Normal), the looks and
+     the enemy counts. Anome's code-corrupted goons are redpills modified by his cheat codes; they have no org of their
+     own, so they are the nearest, Zion, as rogue redpills, as in the Machines chapter 5 missions. Only phase 4's goon
+     was named in the log (Unlimit Reactor); phase 3's named one is ours, with the same name, to carry the Operator's
+     line when they show up. No mission items.
+     Rewards: retail showed 1,056,480 experience and 514,500 information, but the log is a level-49 player's, whose
+     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
+     Deviation).
+     Gaps: the Effectuator is one NPC per phase he appears in, and phase 1's copy of himself is a second NPC with the
+     same name and look (retail's copies looked alike); the first must be talked to before the copy. In phases 2 to 4
+     he appeared only after the search or the fight; we can't spawn an NPC on a goal, so he stands there from the start
+     and his Talk opens after that goal. The Talk goals are numbered 3, 4 and 5 so that each phase's after line waits
+     for that phase's talk (an after line counts a goal done in any earlier phase). The goons zapped in after the
+     search; we can't spawn hostiles on a goal, so they are there from the start, and the kill goals are open from the
+     start too. The Operator's "Whoa! That's not the Effectuator!" is said on coming near phase 3's named goon. The Operator's
+     "Anome? Those freaks work for Anome?" came a minute before the last kill (the goons' own line about Anome wasn't
+     captured); here it is said with the kill goal's done line. Phase 3 had no computer ("not even a computer system"),
+     so its search is a filing cabinet, desk or dresser. The computer screens (the threat "NIOBE AND ALL WHO HELP HER
+     WILL DIE" in phase 2, and Maxson's connection in phase 4) can't be shown; the Operator's lines name Maxson. "Hey,
+     there's an active terminal in there." came on approach and is said on arrival. Lines at screenshot joins read whole and are used as
+     such. -->
+<mission id="305201" title="Spoofed" description="Help the Effectuator hunt down the hacker who is blocking his search for Niobe." plot="1"
+         order="5201" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say after="1">Well see, it's like this. There's this g-- No, no, sorry. I shouldn't trouble you about it. Let's talk about that other thing back in that other room.</say>
+  </npc>
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say after="2">If I had to guess, I'd say it's someone working for Anome. A hacker punk just in it for laughs would have sent me some kind of taunting "L0LZ P\/\/|\|7!" message already...</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="3">I said I'm on it! Go away and stop distracting me!</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="60010058" weapon="2568" />
+  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say after="4">Well, obviously he isn't here. Why are you hanging around?</say>
+  </npc>
+  <npc id="6" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="d8040058" weapon="2568">
+    <say>Don't touch that!</say>
+  </npc>
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="5">Don't worry, I'll be rootin' for ya! Stick it to 'im!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Wake up, {player}. I have a task for you; although why I keep giving you work after your past performances, the Source only knows...
+
+The Effectuator is having some sort of technical problem tracking that wretched Niobe. I'd go into details, but they'd be wasted on you. Just go see the Effectuator and do what he tells you, eh?</briefing>
+    <enter><say>The Effectuator should be in there. His signal's always really jumpy, but I think that's about the right spot.</say></enter>
+    <objective goal="1" text="Talk to the Effectuator" type="Talk" npc="1">
+      <talk><say npc="1">{player}! Thank goodness you're here! It's terrible! Horrible! I'm at my wit's end! My hair's gone white with worry!
+
+Oh, wait, you're here about the Niobe problem. That's not so bad. Look, just go back into the last room, and we'll talk about it there. This room is for my other problem.</say></talk>
+      <done><say>What th-? Can't this guy stay on-task?
+
+It looks like he's popped another copy of himself into the room you just came through.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Effectuator in the other room" type="Talk" npc="2" after="1">
+      <talk><say npc="2">You're on the level, right? Not one of Flood's fancy-boys? I guess you don't look like the type...
+
+Okay, so, as you know I'm supposed to be helping get Niobe out of Anome's weird construct. I'm trying to trace it over the inter-simulation network, but some phreak keeps blocking ports and spoofing addresses on me! It's either some pimple-popping wiz kid hacker with too much time on his hands, or someone working for Anome--not Anome himself; let's face it, the guy can barely type.
+
+I need you to help hunt this guy down. I can't get anywhere with this kind of harassment! I'll send your operator coordinates to the spot where I traced one of his recent signals; maybe you can find something there.</say></talk>
+      <done><say>Oh, please let this be an amateur hacker. I eat those d00dz for breakfast.
+
+I've got the coordinates. Head outside and I'll upload them to you.</say></done>
+    </objective>
+    <near npc="1" radius="2000">
+      <say>You're getting closer to him...I think. Ah, well, okay--so I can't really tell.</say>
+    </near>
+    <near npc="1" radius="800">
+      <say>Gah! Bastard almost gave me a heart attack, popping up like that.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Please, spare me the insipid details of what passes for the Effectuator's wit. Just take care of whatever it is without bothering me; I'm trying to get some real work done here.</briefing>
+    <enter><say>Man, for once Flood and I are on the same page.
+
+That's the location the Effectuator said he traced the hacker's signal to.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Yeah... That's...probably not a good sign.
+
+Ah! What's that in there with you? Oh... Him again... Now what does he want?</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the Effectuator" type="Talk" npc="3" after="1">
+      <talk><say npc="3">That son of a--! Now they've got me mad! Oooo! That does it! No more playing around!
+
+I'll find him! You just give me a minute!</say></talk>
+      <done><say>Old man's gonna have a coronary if he doesn't watch it. Can programs have heart attacks?
+
+Maybe you'd better clear out of there and give him some space.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Things not going so well? Oh, what a shock! You and the Effectuator are a perfect team.
+
+This is your assignment, so don't try to weasel out of it. As long as you're going down, see if you can take the Effectuator with you.
+
+He thinks he's got something for you at this next location, but really, who does he think he's kidding?</briefing>
+    <enter><say>The Effectuator thinks his hacker nemesis is there, or was there, or something, but I'm not picking anything up, not even a computer system...
+
+Hey, what was that? Hm, nothing, I guess. The Effectuator's starting to make me jumpy...</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Still not picking anything up, except a burst of static or two; the Effectuator must be poking around.
+
+Keep looking...</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done>
+        <say>Anome? Those freaks work for Anome?</say>
+        <say>That seems to be all of them.
+
+Weird... There was static on my screen, but it's gone now. Oh, great, but the Effectuator just appeared. I guess you'd better go talk to him.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Talk to the Effectuator" type="Talk" npc="5" after="2">
+      <talk><say npc="5">So, what, nothing? Hey, who's this dead waste of code here?
+
+Oh, that reminds me--besides this hacker jerk, there've been these big goobers with green code dripping out of them running around and interfering with my people. They seem to be a little tougher than the average redpill. But I have other people working on that, not to worry.
+
+I've got another spot we can check for traces of our hacker friend. I'm gonna nail this guy, just you wait!</say></talk>
+      <done><say>Now he tells us.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>Whoa! That's not the Effectuator!
+
+Watch it, there's two of them in that area now!</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="3">
+    <briefing>What's this? A new type of redpill attacking our operations? Are they Anome's? Why didn't that prattling fool mention this before?
+
+Just finish off whatever it is you're wasting your time on for that poltroon. I've got some important calls to make.</briefing>
+    <enter>
+      <say>Third time's the charm, right? The Effectuator said something about "skipping a couple hops" this time, but who knows what he meant by that.
+
+Hey, I'm getting some corrupt data readings here... Are those redpill signals? Not normal, though.
+
+Uh, you may have some company in there.</say>
+      <say>Hey, there's an active terminal in there.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Huh. I wonder who "Maxson" could be?
+
+Heads up! Another one of those goons just zapped in!</say></done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>That seems to be all of them... Oh, great. The Effectuator just popped up in there.</say></done>
+    </objective>
+    <objective goal="5" text="Talk to the Effectuator" type="Talk" npc="7" after="2">
+      <talk><say npc="7">Aha! We got 'im! Weeeee got 'im!
+
+"Maxson," is it? Hah! He's as good as dead. I mean, once you operatives track him down and do what you do out there, right?</say></talk>
+    </objective>
+  </phase>
+  <finish>"Maxson"? And I'm supposed to care about whoever this is, I suppose?
+
+Yes, yes, I know the Merovingian told Zion we'd help them find their little lost leader... Oh, very well. We'll just see what we can find out about this name you've come up with.
+
+And it better not be a waste of time, or you'll have to answer for it!</finish>
+</mission>
