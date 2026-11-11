@@ -74,6 +74,14 @@ public static partial class Scenarios
             ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0", ["MXO_TUTORIAL_WARP"] = "21"
         }),
         new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
+        new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
+        new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
+        new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
+        new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
+        new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
+        new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
+        new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
+        new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)
