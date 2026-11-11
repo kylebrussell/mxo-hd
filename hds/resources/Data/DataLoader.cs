@@ -45,7 +45,8 @@ namespace hds
             else
             {
                 loadMobs(DataPath("mob.csv"), true);
-                loadMobs(DataPath("mob_parsed.csv"), true);
+                foreach (NpcSpawnScope.Scope scope in Enum.GetValues(typeof(NpcSpawnScope.Scope)))
+                    if (NpcSpawnScope.LoadAmbient(scope)) loadMobs(DataPath("npc_spawns", scope + ".csv"), true);
             }
 
 
@@ -216,7 +217,7 @@ namespace hds
             foreach (string[] data in goDB)
             {
                 if (skipRepeats && linecount > 1 &&
-                    mobsSeen.IsRepeat(Convert.ToUInt16(data[0]), data[2], double.Parse(data[7]), double.Parse(data[9])))
+                    mobsSeen.IsRepeat(Convert.ToUInt16(data[0]), data[2], double.Parse(data[7]), double.Parse(data[9]), double.Parse(data[8])))
                 {
                     repeats++;
                     linecount++;

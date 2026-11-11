@@ -19,6 +19,10 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
         new Scenario("login", Login),
         new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),

@@ -28,10 +28,10 @@ namespace hds
         /// <summary>Remembers kept NPCs per district and name, and says whether a new row is one of them seen again.</summary>
         public sealed class Seen
         {
-            private readonly Dictionary<(ushort District, string Name, long X, long Z), List<(double X, double Z)>> cells =
-                new Dictionary<(ushort, string, long, long), List<(double, double)>>();
+            private readonly Dictionary<(ushort District, string Name, long X, long Z), List<(double X, double Y, double Z)>> cells =
+                new Dictionary<(ushort, string, long, long), List<(double, double, double)>>();
 
-            public bool IsRepeat(ushort district, string name, double x, double z)
+            public bool IsRepeat(ushort district, string name, double x, double z, double y = 0)
             {
                 long cx = (long)Math.Floor(x / Cell), cz = (long)Math.Floor(z / Cell);
                 for (long dx = -1; dx <= 1; dx++)
@@ -42,10 +42,10 @@ namespace hds
                         {
                             continue;
                         }
-                        foreach ((double X, double Z) p in points)
+                        foreach ((double X, double Y, double Z) p in points)
                         {
                             double ax = p.X - x, az = p.Z - z;
-                            if (ax * ax + az * az < SameNpcUnits * SameNpcUnits)
+                            if (Math.Abs(p.Y - y) < 150 && ax * ax + az * az < SameNpcUnits * SameNpcUnits)
                             {
                                 return true;
                             }
@@ -56,10 +56,10 @@ namespace hds
                 var key = (district, name, cx, cz);
                 if (!cells.TryGetValue(key, out var list))
                 {
-                    list = new List<(double, double)>();
+                    list = new List<(double, double, double)>();
                     cells[key] = list;
                 }
-                list.Add((x, z));
+                list.Add((x, y, z));
                 return false;
             }
         }
