@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Down to a Sunless Sea, Merovingian story mission 9.2.2. Source: research/missions/transcripts/Merv9-2-2.md (a live
+     run of [Merovingian Archive 9.2.2] by a level 37 player, given by [Archived]Flood; 19 screenshots, two during play
+     at phase 2's computer and phase 4's mainframe, the rest of the log after it ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Dryhurst, Kaplan and Holographic Projection line, the names
+     (Royal and Roberts from the System chat), and phase 2's objective text "Search the Computer" (the Objectives
+     window, with "Leave the area now!", which the client adds). Dryhurst's "We're ready, sir." and Kaplan's "Hup!" and
+     the Projection's second "End transmission." are from Team chat; they aren't in the captured part of the log.
+     Flood's "Don't" was in italics; here it is plain. Kaplan's "sah" is retail's. Ours: the description (the Summary
+     tab only said "Datalink established."), the other objective texts, the sites (all Normal: phase 2's computer stood
+     in a bare carpeted room in Mara, phase 4's mainframe in a carpeted office in Achan), the looks and the enemy
+     counts. Phase 2's hostiles are Machine programs (Tactical Security, four bodies searched); phase 4's "one guard"
+     is a Machine program too.
+     Joins across screenshots read as contiguous: Flood's "resourceless individual, and / won't stop bothering me",
+     the Projection's "to cut my transmission to avoid / detection" and "so I can only / conclude", and the Operator's
+     "The commandos think that we can / search Machine records".
+     Rewards: the log paid 396,000 experience and 129,500 information for a level 37 player's live run; these are
+     Zion's values for 9.2.2 (363,000 experience, 63,000 information), as the other Merovingian missions use Zion's
+     because most of their logs are level-50 players'.
+     Gaps: the Projection's lines came ten seconds after Dryhurst's with no click shown; here the Projection is talked
+     to. "Take these men": Dryhurst and Kaplan follow the player from phase 1 (an Escort to the way out), so Kaplan can
+     say his farewell when phase 2 is done; nothing sends them home, so they stay with the player to the end. Likewise
+     Royal and Roberts, the "Elite Commando programs" of phase 3 ("rally them up and bring them outside"), follow into
+     phase 4, as they did in retail. The two computers' screens ("> stalingrad ... _null Link terminated. Security
+     override." in phase 2; in phase 4 a fragment: "...prior to entering the System in the vicinity of Ascension
+     Monument, subject cited alleged remote tracking of System forces to structure code-name "Stalingrad" as the
+     event precipitating his visit...") aren't shown. Phase 2's trace being detected isn't a mechanic. The Operator's
+     "incoming transmission" lines in phase 3 are said on getting near the Projection. The swarm that arrived after
+     phase 4's mainframe (Watchman, Tactical Security, Machine Enforcer) isn't spawned: only the one guard is there.
+     An NPC entry between 11:05:10 and 11:05:34 is lost (probably the commandos' chat lines), and so is the log
+     between 11:15:55 and 11:20:35. The hostiles' Team chat barks ("Security alert, sector 57-G!", "You've made a poor
+     choice, Ms...whatever your name is.", "Oy yoy-yoy!", "Neutralizing intrusion.") are the generic hostiles' and
+     aren't set. -->
+<mission id="309202" title="Down to a Sunless Sea" description="Find out what the Machines told the intruder about the General's base, Stalingrad." plot="1"
+         order="9202" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Dryhurst" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="58010058" weapon="2568" />
+  <npc id="3" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="4" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
+  <npc id="5" handle="Royal" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568" />
+  <npc id="6" handle="Roberts" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The intruder made some sort of remark to the General that really seems to have gotten under the General's waterproof beret. The General is both an impatient and a largely resourceless individual, and won't stop bothering me about helping him follow up on this imagined slight. I have more important things to be doing than massaging the General's bruised feelings, so I'm sending you to look into it.&#10;&#10;Don't clock too many hours on this one, {player}; the General isn't worth it.</briefing>
+    <enter><say>The General may be a stubborn old cuss, but if he and Flood had a contest for the mission controller position, I think it might be a toss-up.&#10;&#10;You should find him--holographically speaking--in there.</say></enter>
+    <objective goal="1" text="Talk to Dryhurst" type="Talk" npc="1">
+      <talk><say npc="1">Good to see you, sir. I'll activate the signal.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to the Holographic Projection" type="Talk" npc="3" after="1">
+      <talk><say npc="3">I coordinated defense against Machines in a recent operation in which the intruder was involved. When I notified operatives that I would have to cut my transmission to avoid detection by nearby Sentinels, the intruder asked why I didn't use "Seekers" on them.&#10;&#10;The Seekers were anti-Sentinel missiles I deployed at my surface base, Stalingrad, nine months ago. Only the Machines, my men, and myself were there. My men would not have told him about it, so I can only conclude that he must have learned about the battle from the Machines. His interest in my base could be a vital factor. I want you to take these men and find out what the Machines discussed with him.</say></talk>
+      <done>
+        <say npc="3">End transmission.</say>
+        <say npc="1">We're ready, sir.</say>
+        <say npc="2">Hup!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Lead Dryhurst and Kaplan out of the area" type="Escort" npc="1,2" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Pah; just the General's dreams of lost glory, if you ask me. It's my understanding that the Machines didn't leave a single stone standing by the time they were done with that base of his...</briefing>
+    <enter><say>The commandos think that we can search Machine records for references to Stalingrad from that location. I suppose you'll want to find a computer or something. Scanner's picking up what look to be Machine programs inside.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Damn! They must have detected the trace. All I got was the network address of the next hub. I can probably track it down, given a little time.</say></done>
+    </objective>
+    <complete><say npc="2">Pleasure working with you sah!</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Why is the General still buzzing me, operative? If you can't find whatever it is he's looking for, just make something up. He won't know the difference...</briefing>
+    <enter><say>I guess old Blood and Guts isn't going to give up easily.&#10;&#10;Hm... His men told me he'd be sending a transmission in there, but I don't see any of them on my scan.</say></enter>
+    <objective goal="5" text="Talk to the Holographic Projection" type="Talk" npc="4">
+      <talk><say npc="4">Hrm... The Machines are even more anxious to keep their information about my base under wraps than I had thought. You'll need to penetrate their defenses quickly, and access the data before they have a chance to shut off the network feed. These stealth programs should be able to handle that for you.</say></talk>
+      <done>
+        <say>Elite Commando programs, right? Thought so. All right, rally them up and bring them outside. I think I've almost got that Machine hub pinned down.</say>
+        <say npc="4">End transmission.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Lead Royal and Roberts out of the area" type="Escort" npc="5,6" to="exit" after="5" />
+    <near npc="4" radius="2000">
+      <say>Wait... I think I'm picking up an incoming transmission. You're getting closer...</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say>You should be seeing something now.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="1">
+    <briefing>I don't care what sort of freaks you have to work with, operative; just get it taken care of.</briefing>
+    <enter><say>Okay... I'm not picking up much... Maybe one guard, and some kind of networked system.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="7" text="Search the Mainframe" type="Search" object="1" item="0">
+      <done><say>"Ascension Monument"... Is that about the intruder? He was spying on the Machines when they went after Stalingrad? But why--&#10;&#10;Uh-oh. I've got a swarm of blips on my screen, and they do not look happy.</say></done>
+    </objective>
+  </phase>
+  <finish>I can't fathom why the intruder would have been interested in the General's base--much less why he would have mentioned it to the Machines--but I fail to see what significance that could have now that his precious Xanadu is nothing more than a remarkably large crater in a barren sheet of rock. The General's obsessions with the past really are going to get him killed one of these days; I just hope someone is thoughtful enough to record it for me so that I can play it back in slow motion.</finish>
+</mission>

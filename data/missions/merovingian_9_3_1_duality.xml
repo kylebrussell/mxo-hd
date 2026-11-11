@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Duality, Merovingian story mission 9.3.1. Source: research/missions/transcripts/Merv9-3-1.md (a live run of
+     [Merovingian Archive 9.3.1] by a level 37 player, given by [Archived]Flood; 32 screenshots, one during play in
+     phase 4 with the Objectives window open, the rest of the log after the mission ended, two of them the same view).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names, and phase 4's objective
+     texts "Lead Carlyne to the Merovingian" and "Guard the Merovingian" (the Objectives window). The asterisks in
+     "*my*" and "*don't*" are retail's own; the italics of the Merovingian's French are dropped. Ours: the description
+     (the Summary tab was never opened), the other objective texts, the sites (Carlyne's place in Midian Park was an
+     office room with a desk and a computer: Office; the rest Normal), the looks (Halborn and Carlyne as the Zion 9.3
+     files have them; the Intruder is Halborn before he gives his name, so he has Halborn's look) and the enemy counts:
+     no hostile is named and no kill is logged anywhere, so no phase has any. The Merovingian and the two Twins are
+     at the meeting and again at Carlyne's place, so they are two NPCs each. Which Twin said which line isn't shown;
+     they alternate here.
+     Rewards: the log is a level-37 player's live run (395,820 experience and 66,500 information), so these are the
+     same-numbered Zion mission's, 9.3.1 Mistrust (363,000 experience, 63,000 information).
+     Gaps: phase 1's goal completed on reaching Stacey Ashford (her "Help!", the Operator's "Nope, not him." and the
+     area's completion share one second); here she is talked to. What the "strange things" Flood then mentions were
+     isn't in the log. The Operator's "Oh, goody." in phase 2 had no visible cause; it is said on getting near the
+     Intruder. In phase 3 Halborn's and the Merovingian's speeches and the Operator's order came in one second, on
+     joining the meeting; here that is talking to the Merovingian, and Halborn speaks first in that talk. The Twins'
+     four lines there are said on getting near them. Carlyne's "Lead on, lead on!" was only in Team chat; it is the
+     done line of our "Talk to Carlyne", which carries his greeting before he is led off. Lines logged after a goal
+     (Stacey Ashford's second, the Intruder's "Yeah, yeah", Halborn's "Hmh", the Merovingian's "Yes, operative" and
+     "Merci", Malphas's "Strive to", Carlyne's "I must say" and the Twins' asides) are what each says when clicked
+     afterwards. Two cut joins are read as paragraph breaks: "Oh, thank goodness you" / "Wait..." and "it's
+     "Halborn."" / "The guy's a real piece of work." -->
+<mission id="309301" title="Duality" description="Find the intruder for the Merovingian, then greet the wireframed man who is stalking him." plot="1"
+         order="9301" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Stacey Ashford" type="FRIENDLY" at="1" rsi="6e060040" weapon="0">
+    <say after="1">Oh, thank goodness you--&#10;&#10;Wait... Where are you going?</say>
+  </npc>
+  <npc id="2" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="2568">
+    <say after="2">Yeah, yeah, I'll be there. Quit bugging me.</say>
+  </npc>
+  <npc id="3" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="3">Hmh. Not that I don't appreciate the gesture, but he isn't going to be that easy to deal with--not for you, anyway.</say>
+  </npc>
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0">
+    <say after="3">Yes, operative. Tell Malphas to put all of our agencies to work on this Carlyne problem, hm?</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568">
+    <say after="4">We ought to invite them both over for a spot of tea.</say>
+  </npc>
+  <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568">
+    <say after="4">This should be interesting.</say>
+  </npc>
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say after="4">Strive to make a good first impression, operative. If it goes well, the Merovingian will arrive to greet him personally.</say>
+  </npc>
+  <npc id="8" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="6">I must say, this is very encouraging. I'd hardly dared to hope that the Merovingian would take a personal interest in my case.&#10;&#10;Yes, I do believe this marks the beginning of a very promising partnership.</say>
+  </npc>
+  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="6">Merci, {player}. You see, there was no cause for concern about my safety. We are dealing with an eminently reasonable man.</say>
+  </npc>
+  <npc id="10" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="6">Hm... Enthusiastic.</say>
+  </npc>
+  <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="6">Seems all right.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It appears that the intruder has a glow-in-the-dark stalker: he and another man made out of wires had a scrap in Westview a short time ago. It sounds like more bad news to me, but the Merovingian likes to be optimistic about life's little surprises, even the ugly ones.&#10;&#10;Since they don't seem to like each other, extracting maximum profit from the situation will require a good deal of finesse. Obviously, that isn't why I'm speaking to you. But we need to find the intruder before we can speak with him, and that, I believe, is a task for which you may be suited.&#10;&#10;He has been out of touch, but our intelligence network has procured an ample number of leads. Go look for him at the marked spot.</briefing>
+    <enter><say>I've got a hefty override signal in there; could be the man.</say></enter>
+    <objective goal="1" text="Look for the intruder" type="Talk" npc="1">
+      <talk><say npc="1">Help!</say></talk>
+      <done><say>Nope, not him.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I'm not at all surprised you're seeing strange things, operative, considering your diet.&#10;&#10;Do try to stay lucid long enough to check these locations for the intruder, hmm?</briefing>
+    <enter><say>That reminds me: we've really got to see about getting a different flavor protein mash the next time we resupply.&#10;&#10;Scan's showing me another big helping of override in there. Good luck.</say></enter>
+    <objective goal="2" text="Talk to the Intruder" type="Talk" npc="2">
+      <talk><say npc="2">Hey, I'm a little busy here. Take a powder, huh?&#10;&#10;The Merovingian? Hrm... Fine, but this better be good--and I *don't* mean any more chicks or mutants.</say></talk>
+      <done><say npc="2">Yeah, yeah, I'll be there. Quit bugging me.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Oh, goody.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I would never risk *my* shell standing around the intruder if I had a choice in the matter... He'll say that his personal presence is of great value in negotiations, but really, I think the Merovingian just enjoys taking risks.&#10;&#10;Well, operative, since someone not subject to code overrides ought to be present to witness disaster should it unfold, you get to go to the meeting. See that you keep your mouth shut.</briefing>
+    <enter><say>Hah, Flood's such a wuss. Not like the Merv hasn't done this before, anyway.&#10;&#10;No suspicious readouts on the scan... Let's see how the party's going.</say></enter>
+    <objective goal="3" text="Attend the Merovingian's meeting" type="Talk" npc="4">
+      <talk>
+        <say npc="3">His name's Carlyne. He's already going around telling people my name, so you might as well know, it's "Halborn."&#10;&#10;The guy's a real piece of work. The way I see it, he wants the same thing I do, so he's been letting me do all the grunt work until I've started getting close. Now he's making his play to beat me to the finish. Dirty moves like this aren't exactly new to him.</say>
+        <say npc="4">Mon cher ami, I fully sympathize. I assure you that I will do everything I can to help you dispose of this unwanted interloper. No one will be allowed to make off with your...ah...interface program. You have my word on that.</say>
+      </talk>
+      <done><say>Okay, Flood's telling me to have you go into the outer room and talk to Malphas.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Malphas" type="Talk" npc="7" after="3">
+      <talk><say npc="7">Our standing with the intruder--Halborn--appears on a fairly steady footing. Maintaining this stance--the appearance, at least--will become much more difficult momentarily, because the Merovingian wishes to establish a business relationship with the new man as well.&#10;&#10;This man, Carlyne, has been acting much more openly than Halborn, and will not, at least, be difficult to contact. To avoid the possibility of an unfortunate first encounter with the override codes we assume he possesses, you'll be sent in to make the initial contact. Flood will direct you.</say></talk>
+    </objective>
+    <near npc="5" radius="1000">
+      <say npc="5">Two of them--splendid! We always say the best things come in twos, don't we, brother?</say>
+      <say npc="6">That we do.</say>
+      <say npc="5">I knew a trio of triplets once. Ah, that was a lark.</say>
+      <say npc="6">Duality, you know. You're familiar with it, of course?</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>You seem to enjoy meeting new people, operative, so I wonder if I should even bother paying you for this...&#10;&#10;This "Carlyne" person has made no secret of his location, and, in another refreshing change from what we've been used to, he hasn't been overriding our people wherever he goes. At this point I'm inclined to regard anything "Halborn" says about him with a great deal of skepticism; it seems to me that Carlyne is much more the sort of man we should be dealing with.&#10;&#10;Well, stop dawdling, operative, and go greet him.</briefing>
+    <enter><say>Bad sign already: Flood likes him.&#10;&#10;Got a big override signal in there... Looks pretty much like the intru--uh, Halborn--usually looks on my screen.</say></enter>
+    <objective goal="5" text="Talk to Carlyne" type="Talk" npc="8">
+      <talk><say npc="8">Oho! A surprise visitor! And to what do I owe the pleasure?&#10;&#10;The Merovingian? Certainly! Who hasn't heard of him? Why, I'd be delighted--positively delighted--to have the chance to meet him.</say></talk>
+      <done>
+        <say>Against the advice of some, the Merovingian has decided to greet Carlyne himself. Bring the man into the outer room.</say>
+        <say npc="8">Lead on, lead on!</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Lead Carlyne to the Merovingian" type="Escort" npc="8" to="npc:9" after="5">
+      <done><say npc="9">Bonjour, monsieur. I am the Merovingian. I am aware of your difference with Halborn, and, I assure you, I am ready to do everything in my power to assist you.</say></done>
+    </objective>
+    <objective goal="7" text="Guard the Merovingian" type="Protect" npc="9" />
+  </phase>
+  <finish>I see our employer managed to survive the encounter, operative, although I'm more inclined to chalk that up to Carlyne actually possessing manners than to any exercise of skill on your part.&#10;&#10;Past experience would cause me to think otherwise, but I hope you've been paying attention to how this has been handled. You're going to have to be able to deal simultaneously with two people who don't get along. I realize this is a more advanced social situation than you're used to, but, unfortunately, the budget I'm given forces me to rely upon your services.&#10;&#10;When in doubt, just keep quiet, and try to look like you understand what's happening. I suggest you practice that between now and your next assignment.</finish>
+</mission>

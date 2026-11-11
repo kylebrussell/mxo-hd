@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Man of One Dimension, Merovingian story mission 9.3.4. Source: research/missions/transcripts/Merv9-3-4.md (the
+     archive replay of [Merovingian Archive 9.3.4], given by [Archived]Flood; 22 screenshots of the log taken after the
+     mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the NPC names. The Commando's and the
+     Elite Guard's lines are from Team chat (they aren't in the log). The quotes around "team player," are retail's
+     own; the Operator's broken-up lines in phase 4 have their gaps in the log. Ours: the description (the Summary tab
+     was never opened), every objective text (the Objectives tab was never opened), the sites (none is described: all
+     Normal), the looks (Halborn, Malphas and the Holographic Projection as the other Merovingian files have them) and
+     the enemy counts. Phase 3's party crashers are Zionites ("Scared off by Zionites"), so its enemy is Zion; the
+     other phases have none: no kill is logged in them.
+     Item stand-ins: none (the two searches find nothing).
+     Joins between shots read as contiguous: "without" / "more than a token amount of", "No more" / "reds on the
+     monitor", "I say nothing about the General's" / "record as a strategist", "He may" / "have been concerned",
+     "prolonged fear" / "of an outside power" (Team chat has the whole line), "and it's" / "been getting heavier".
+     Read as paragraph breaks: "business." / "That Carlyne fellow" and "rational people." / "I don't know why".
+     Rewards: the log is a level-37 player's live run (395,820 experience and 66,500 information), so these are Zion's
+     values for 9.3.4 (374,000 experience, 63,000 information).
+     Gaps: phase 1's area completed 9 seconds after arriving with no fight logged: reaching the place was the goal, so
+     here the place is searched for Halborn (a Furniture object, item 0). Who was there (a pack of code overrides and
+     redpills: Carlyne's crowd, from Flood's next line) isn't shown, so no one is placed. The Operator's "Phew." in
+     phase 2 is said on getting near Halborn. In phase 3 talking to the Holographic Projection set off the Zionites'
+     attack; here they are there from the start (a kill goal can't wait for the talk). Malphas's second line, 4 seconds
+     after his first, is his follow-up when the Talk completes. Phase 4's area completed on reaching the centre of the
+     override storm, the Operator breaking up on the way ("You're ... hotter" 13 seconds in, "... abort ..." 7 seconds
+     later); here that spot is a Furniture object searched for nothing, and both lines are its done lines. Lines
+     logged after a goal (Halborn's "Last thing I need", the Projection's "Well done") and the Commando's and Elite
+     Guard's Team lines are what each says when clicked afterwards. -->
+<mission id="309304" title="A Man of One Dimension" description="Find Halborn and get him to a strategy meeting with the General and Malphas." plot="1"
+         order="9304" org="3" contact="Flood" exp="374000" info="63000">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568">
+    <say after="2">Last thing I need is for him to come across me while I'm making whiteboard diagrams...</say>
+  </npc>
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
+    <say after="4">Well done. Unfortunately, it looks like the attack had the effect they wanted.</say>
+  </npc>
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="4" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
+    <say after="4">Thank you for helping defend the General's broadcast point, sir.</say>
+  </npc>
+  <npc id="5" handle="Elite Guard" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="4">Over all too quickly.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>The slums have gone to hell, operative. They're normally quiet, profit-making areas for us, where the desperate from all walks of life pay a premium for goods and services from our vendors and affiliates, without more than a token amount of interference from the Machines; but with Halborn beating the pavements several steps behind the Oracle, the whole district has turned into a morass of humans and programs whose lives are so empty that they have nothing better to do than stick their collective noses into our business.&#10;&#10;That Carlyne fellow, for instance, has been doing more than his fair share of butting in, with help from the cave monkeys. For all his boasting, Halborn's been letting these attacks distract him from business. The time has come for cooler heads to take charge. Find Halborn so that we can come up with an effective plan of action that he can comprehend.</briefing>
+    <enter><say>This would be a lot easier if we could just slap a trace routine on those wires of his.&#10;&#10;I'm picking up a hefty pack of code overrides in there. Redpill signals, too.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Look for Halborn" type="Search" object="1" item="0">
+      <done><say>Ooh. Tell them we got the wrong address by mistake?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hmh. I've already stated my opinion on which of the two I think we should have chosen to work with; feel free to look it up in the archived mission once it's available. By the way, those also serve as handy grammatical reference material, {player}.&#10;&#10;Speaking of poor communication skills, this hunting and pecking through the city's dung heaps wouldn't even be necessary if Halborn could keep in touch like any reasonable person has since the invention of the telegraph.</briefing>
+    <enter><say>Well triple-dot, triple-dash, triple-dot: I think we may have him. No more reds on the monitor, either. It's like some kind of damn miracle.</say></enter>
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="1">
+      <talk><say npc="1">It isn't working? Well, you don't say... Your boss already told me what you people know about the Oracle, and that hasn't helped... And I don't see how you think you'll have any chance of stopping Carlyne.&#10;&#10;... Fine. Whatever. This had better be to the point.</say></talk>
+      <done><say>Right, let's get Flood to set this thing up.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Phew. Nice to be right for a change.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Very well, operative. I've arranged for him to meet the General and Malphas for a discussion of strategy. I say nothing about the General's record as a strategist... In any case, it doesn't exactly take a genius to come up with something better than whatever it is that Halborn thinks he's been doing.</briefing>
+    <enter><say>Mm-kay, the General's hologram and Malphas are inside already. I don't see any override activity in there yet... Guess Halborn's still on his way.</say></enter>
+    <objective goal="3" text="Talk to the Holographic Projection" type="Talk" npc="2">
+      <talk><say npc="2">No, no sign of him yet.&#10;&#10;As closely as he's being pursued, it shouldn't be difficult to--</say></talk>
+      <done>
+        <say>Uh-oh! You've got party crashers.</say>
+        <say npc="2">Handle this incursion, soldier. We need the area clear.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Kill all of the Zionites" type="DefeatAll">
+      <done><say>Looks like that's all of them. I'm being told that Malphas is trying to get your attention.</say></done>
+    </objective>
+    <objective goal="5" text="Talk to Malphas" type="Talk" npc="3" after="4">
+      <talk><say npc="3">We detected the intruder approaching just after the attack began, but then his signal changed direction, leaving the area. He may have been concerned about the possibility of the Zionites reporting his position to Carlyne.&#10;&#10;His signal went out of range, but we have his direction, and are taking more readings so that we can locate him again. Flood will have the latest telemetry.</say></talk>
+      <done><say npc="3">The intruder has not shown himself to be a "team player," to use the modern parlance. Even if he were not being closely pursued by his arch-nemesis, he might have refused to follow our advice simply due to a general distrust of others.&#10;&#10;I have observed that prolonged fear of an outside power usually lies behind the manifestation of such a character trait in humans.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>He can't even attend a basic planning meeting. Scared off by Zionites. Yes, lovely. Always pleasant to work with rational people.&#10;&#10;I don't know why I'm required to bother trying to help the man, but duty calls me to send you after him, {player}. Try not to look like a Zionite; it might scare him off.</briefing>
+    <enter><say>Something's going on down there... I'm getting code override activity saturating that entire area, and it's been getting heavier the closer you've been getting to that spot. Let me see if I can...&#10;&#10;Ack. Dampers just kicked in. There's too much activity in there for me to read. Hm... Outside levels are falling slowly, at least. This is pretty weird. I have no idea what you might run into.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="6" text="Look for Halborn" type="Search" object="1" item="0">
+      <done>
+        <say>You're ... hotter, {player}. I think ... close ... epicenter of whatever this is, but my ... close to overload. ... have to ... down ... except ...</say>
+        <say>... abort ... {player}! ... acknowledge ...</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>I don't see what you're so worried about, operative; it's just a little override radiation.&#10;&#10;Unfortunately, it's completely scrambled scans across the entire region. There's no way we can track Halborn until the activity dies down.&#10;&#10;Hm... It really wouldn't surprise me if this was his own doing, come to think of it...</finish>
+</mission>

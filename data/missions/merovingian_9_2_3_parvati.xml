@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Parvati, Merovingian story mission 9.2.3. Source: research/missions/transcripts/Merv9-2-3.md (a live run of
+     [Merovingian Archive 9.2.3] by a level 37 player, given by [Archived]Flood; 19 screenshots of the log, all taken
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Kurtis Broman, Diedre Stevens and Seraph line, and the names.
+     Retail set "that", "she" and Flood's last paragraph ("Why, Malphas. I was just thinking about you...") in
+     italics; here they are plain. Ours: the description (the Summary tab only said "Datalink established."), every
+     objective text (the Objectives tab was never opened), the sites (phase 3 is a family's home in Mara, "chasing a
+     child through the slums", so SlumApt; the rest Normal, as nothing shows what they were), the looks and the enemy
+     count. Phase 2's hostiles are the intruder's "accelerated" programs, overridden Machine programs, so Machines,
+     as the Zion and Machines 9.2.3 files have them.
+     Joins across screenshots read as contiguous (the log scrolled exactly one window per shot): Flood's "comically
+     inept / attempt to topple", "is going to be / dropping in", "a large concentration of / accelerated programs",
+     "couldn't be all that difficult. / I'll just make some calls" (one paragraph: no blank row at either edge) and
+     "chasing a child through the / slums"; the Operator's "I'm seeing just a / few small readings"; Seraph's "nor
+     before you have returned what / you took from me."
+     Rewards: the log paid 396,000 experience and 129,500 information for a level 37 player's live run; these are
+     Zion's values for 9.2.3 (362,835 experience, 63,000 information), as the other Merovingian missions use Zion's
+     because most of their logs are level-50 players'.
+     Gaps: phase 1's monitoring program (one of the vampire squad set to watch the intruder) isn't said to be dead or
+     alive; here he is a Furniture object examined for nothing, as dead NPCs aren't spawned. Phase 2's "something
+     big" that turned out not to be the intruder ("Well, that isn't him. The rest of these are all smaller signals")
+     is just one of the hostiles here: the area is done when all are dead. Sati is never met: she has left the home in
+     phase 3 and Seraph stands in her place in phase 4. Kurtis Broman's "I'm going to have to ask you to leave" and
+     Diedre Stevens's second "Dear..." came a few seconds after the area was done; here they are said when the two
+     are clicked again, and Seraph's "I have nothing more to tell you." likewise. An entry may be missing from the log
+     between 11:08:54 and 11:11:23. -->
+<mission id="309203" title="Parvati" description="Find Sati, the girl the intruder may be looking for, before he does." plot="1"
+         order="9203" org="3" contact="Flood" exp="362835" info="63000">
+  <npc id="1" handle="Kurtis Broman" type="FRIENDLY" at="3" rsi="c9020058" weapon="0">
+    <say after="3">I'm going to have to ask you to leave. I'll call the police if I have to.</say>
+  </npc>
+  <npc id="2" handle="Diedre Stevens" type="FRIENDLY" at="3" rsi="a5060090" weapon="0">
+    <say>Dear...</say>
+  </npc>
+  <npc id="3" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0">
+    <say after="4">I have nothing more to tell you.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Ah, {player}. It has been decided that the intruder may have been nosing around the General's crater because he was interested in Sati, who the General had kidnapped and taken to Stalingrad in his comically inept attempt to topple the simulation; some would have it that Sati is the very thing the intruder wants so very badly. If that's the case, he who controls the girl will control the intruder, and if anyone's going to control the intruder, it's going to be us.&#10;&#10;The first step, I think, is going to be dropping in on the intruder to sound him out about this thing, without letting on that we know about it. We've been keeping tabs on him, of course. He... Urm... Well, I can't raise the blood-drinker squad assigned to him--they probably forgot their sunglasses again...--but never mind, that just means you'll have to do the legwork.</briefing>
+    <enter><say>I don't see anything in there. Do we have the right spot? Let me double-check this...&#10;&#10;Yeah, that's where he was supposed to be, all right. This isn't looking very promising.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Examine the monitoring program" type="Search" object="1" item="0">
+      <done><say>Hm... That's one of the programs who was supposed to be monitoring him discreetly. This is definitely not looking good.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Lovely. I suppose the lesson here is: don't send a blood-sucker to watch someone who doesn't actually have any bodily fluids.&#10;&#10;And of course it's up to me to salvage this debacle, as usual. Let me see... Mm. Ah! Here we are. It seems a large concentration of accelerated programs has sprung up nearby. No doubt that's where you'll find him.</briefing>
+    <enter><say>That place is practically wall-to-wall with accelerated signals. If they're as aggressive as they usually are, this could be a little tricky.</say></enter>
+    <objective goal="2" text="Kill all of the accelerated programs" type="DefeatAll">
+      <done><say>Well, that isn't him. The rest of these are all smaller signals... I don't think he's in there. Did he just fly the coop?</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Yes, well... I'm now receiving reports of accelerated outbreaks city-wide; it seems our overpowered friend has finally begun his obligatory mindless rampage. Rather inconvenient...but we'll just have to proceed without him. If that invertebrate, the General, was able to kidnap Sati, then it certainly couldn't be all that difficult. I'll just make some calls to our people in Mara...&#10;&#10;Ah, child's play. It appears she's visiting a playmate in the neighborhood. Your appearance may frighten children, but take along a lollipop, and I'm sure you'll have no trouble at all.</briefing>
+    <enter><say>I always wondered how the General managed to get Sati. I mean, the Oracle should have seen it coming, right? And if she did, then that means she wanted him to get her, which means...uh... Well, that's about as far as I get.&#10;&#10;Anyway, here goes... I'm seeing just a few small readings in there. Can't tell if one of them is Sati.</say></enter>
+    <objective goal="3" text="Talk to Kurtis Broman" type="Talk" npc="1">
+      <talk><say npc="1">I'm afraid they've just left... Who did you say you were?</say></talk>
+      <done>
+        <say npc="2">Dear...</say>
+        <say>That would explain the lack of interesting signals in there. Do you think she knew we were coming?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I'm just following orders, operative. If you think chasing a child through the slums is my idea of a good time... Well, I hardly think I need to finish that sentence.&#10;&#10;At any rate, you needn't despair about letting her slip through your fingers; I've just received a hot tip that she's been spotted entering a building nearby. Now, do you think you can handle one little girl?</briefing>
+    <enter><say>I've got one signal in there, and it is definitely out of the ordinary. Keep your eyes peeled.</say></enter>
+    <objective goal="4" text="Talk to Seraph" type="Talk" npc="3">
+      <talk><say npc="3">Her time has not yet come. Take this message to the Frenchman: she will not be found while the Oracle lives, nor before you have returned what you took from me.</say></talk>
+      <done><say>Aw, man... Why'd he have to go and bring a prophecy into it?</say></done>
+    </objective>
+  </phase>
+  <finish>...&#10;&#10;I think I'll find someone else to deliver that particular message to the Merovingian, rather than taking it to him myself. He's rather touchy when it comes to prognostications from that woman, you know.&#10;&#10;Why, Malphas. I was just thinking about you...</finish>
+</mission>

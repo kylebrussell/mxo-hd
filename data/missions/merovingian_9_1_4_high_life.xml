@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- High Life, Merovingian story mission 9.1.4. Source: research/missions/transcripts/Merv9-1-4.md (a live run given
+     by Flood, not an archive replay: 26 small crops, one of a computer's message and 25 of the Log tab scrolled top to
+     bottom after the mission ended; no chat, HUD or Objectives window in any of them). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Intruder, Persephone, Chef, Christeen Westwater, Jeweler,
+     Sculptress and Lotus line, and the names ("Ya know", "the boss' wife" and "Flood better come up" kept as retail
+     wrote them). Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab
+     was never opened), the sites (all Normal: none is named or shown), the looks and the enemy count. Phase 2's
+     hostiles are the Machines' programs ("The Machines are trying to horn in"), so Machines. The Intruder is in three
+     places, so he is three NPCs. Goal numbers run on through the phases (1 to 9) so that each NPC's follow-up line
+     waits for its own goal only. The player's name (Briseus) is {player}. Retail's italics (Flood's aside about the
+     cakes, "Pansette de Gerzat", "melanzane!", the Jeweler's "focus", "Strategy.", "whoosh!" and "And", Flood's last
+     "No,") can't be carried.
+     Read across page joins as contiguous: "that means you're going along too", "You'll excuse me if I outgrew the
+     charms of beauty long ago" (a hidden line there can't be excluded), "Now hurry up, we're running late!", "draw the
+     eye to your best sides" (a cut line there was unreadable) and "Just think how the gold would catch the light".
+     Rewards: the log shows none (no chat window), and Zion has no 9.1 logs, so these are Zion's values for chapter
+     9.2, the nearest (363,000 experience and 63,000 information, as 1313 paid).
+     Gaps: the Jeweler's second line was cut after "I can work with this guy. This could be", so only its first
+     sentence is used. One Operator line at 5:06:43 (after Persephone's) showed only its header; it was very probably
+     the area's "Goals for this area are complete", which the engine adds. Phase 2 ended in retail with "Goals for
+     this mission phase are complete!" and Flood's next line in the same second, so the player did not have to leave
+     an area there; here it is an ordinary site with an exit, and Flood's line is phase 3's briefing. In phase 4
+     the order the three had to be talked to isn't shown: here it is the log's order (Jeweler, Sculptress, Lotus), each
+     waiting for the one before, and the Operator's "Dang" is said when Lotus has spoken. The lines the NPCs said
+     once more after their goals (the Intruder's, Persephone's, the Chef's, the Jeweler's, the Sculptress's and
+     Lotus's second lines) are said when they are clicked again. The computer message at the Chef's ("KX: Christeen!
+     Don't forget the Moroccan sumac!") can't be shown and no goal used it, so there is no computer. -->
+<mission id="309104" title="High Life" description="Help Flood show the intruder everything the Merovingian's organization has to offer." plot="1"
+         order="9104" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="0">
+    <say after="1">This is not what I came here for.</say>
+  </npc>
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say after="2">There is nothing of a young man's blood in this one's body or mind.</say>
+  </npc>
+  <npc id="3" handle="The Chef" type="FRIENDLY" at="3" rsi="c9020058" weapon="0">
+    <say after="4">Christeen! Throw this out! Yes, all of it! It's trash! Bah! Bring the melanzane! We'll whip something up!</say>
+  </npc>
+  <npc id="4" handle="Christeen Westwater" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say display="5">He's tough, but I'm learning a lot.</say>
+  </npc>
+  <npc id="5" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
+    <say after="5">I'll take no more stuffing from this program.</say>
+  </npc>
+  <npc id="6" handle="The Jeweler" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
+    <say after="6">I can work with this guy.</say>
+  </npc>
+  <npc id="7" handle="The Sculptress" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say after="7">That bubble skin of his is interesting... I'll have to ask him about that.</say>
+  </npc>
+  <npc id="8" handle="Lotus" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="8">I wouldn't want him hanging around, anyway.</say>
+  </npc>
+  <npc id="9" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="0">
+    <say after="9">He'll know when I want him to know.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The intruder as yet fails to grasp the full extent of our allure. It's time to give him the full-court press...well, at least with those who I don't particularly mind putting in harm's way. Yes, that means you're going along too, {player}. Just try to make sure everything goes as smoothly as my immaculate plan deserves.</briefing>
+    <enter><say>Yep, as usual, we'll get blamed if anything goes wrong. Good thing nobody actually takes Flood as seriously as he likes to think they do.&#10;&#10;Looks like he isn't messing around, though, 'cause he's starting out with the big gun: Persephone. Better make sure the boss' wife is all right.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="1">
+      <talk><say npc="1">Hmh. This simulation is a far cry from--&#10;&#10;No, never mind. You'll excuse me if I outgrew the charms of beauty long ago.</say></talk>
+      <done><say>Probably what happens when you turn into wireframes. See what Persephone thinks of him.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Persephone" type="Talk" npc="2" after="1">
+      <talk><say npc="2">I expected as much from an acquaintance of Flood. He does not know himself.</say></talk>
+      <done><say>Ouch. Might want to keep that first part out of our report...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Phaugh... Persephone has become sullen and pale--a liability, if you ask me. Fortunately, we have other agents who can demonstrate to him the benefits of our organiza-- Hold on.&#10;&#10;What? The hell you say! Move those cakes! Yes, yes; I'll take care of the rest.&#10;&#10;Lovely. The Machines are trying to horn in. Please deal with them for me; then we can get on with business.</briefing>
+    <enter><say>Cakes?&#10;&#10;Whatever. Probably best we didn't find out.&#10;&#10;All right, hostile programs are all over that place. No cake for them.</say></enter>
+    <objective goal="3" text="Kill all of the hostile programs" type="DefeatAll">
+      <done><say>That takes care of that. We'd better catch up with Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Hm! Well...good job. Now hurry up, we're running late!</briefing>
+    <enter><say>Ya know, if this guy would just tell us what he's after, it would make all this a whole lot easier.&#10;&#10;Looks like it's the Chef's turn to butter our linear buddy up.&#10;&#10;But...does he even eat?</say></enter>
+    <objective goal="4" text="Talk to The Chef" type="Talk" npc="3">
+      <talk><say npc="3">Eh? It's all a matter of sensory inputs, my boy. Don't tell me that you don't have the right receptors? Not that it matters; we could--&#10;&#10;Oh, you do? Then tell me the scent of that fresh Pansette de Gerzat doesn't get your taste buds tingling!</say></talk>
+      <done><say>Maybe Flood should have picked someone a little less over the top.&#10;&#10;He isn't actually eating that stuff, is he?</say></done>
+    </objective>
+    <objective goal="5" text="Talk to the Intruder" type="Talk" npc="5" after="4">
+      <talk><say npc="5">It's almost amusing that they saved all these...trappings of a dead culture--things they were never designed to enjoy. They'd better not be losing their sense of perspective.</say></talk>
+      <done><say>Jeez, I can't tell if this is making an impression or not. Flood better come up with something good...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>No appreciation for cuisine, hm? There's got to be something he'll bite on. Don't stand too close to him, {player}. You're probably putting him off his feed.</briefing>
+    <enter><say>Ooh, a triple threat this time. I guess it's now or never.</say></enter>
+    <objective goal="6" text="Talk to The Jeweler" type="Talk" npc="6">
+      <talk><say npc="6">Sure, you got the glitter thing going on there, man, but you've got to focus it, you know what I mean? Right now you're just one big bright spot. What you want to do is draw the eye to your best sides. Strategy.&#10;&#10;Now, what I'm seeing for you... Hold it... Yeah, yeah. Okay, imagine this: a solid gold circlet, right above the brow there. It would give you weight, man; you're just kind of...whoosh! --floating off, you know? And it would solve the eyebrow problem. I'm telling you, it'd be perfect. Just think how the gold would catch the light from those lines of yours.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to The Sculptress" type="Talk" npc="7" after="6">
+      <talk><say npc="7">If I've ever seen anyone who needed some work... But he said he didn't want any alteration.</say></talk>
+    </objective>
+    <objective goal="8" text="Talk to Lotus" type="Talk" npc="8" after="7">
+      <talk><say npc="8">I gave him one of my most reliable numbers; not much reaction. He isn't relaxed--won't let the music move him. It's wasted on someone like that.</say></talk>
+      <done><say>Dang, it doesn't sound like we made a dent.</say></done>
+    </objective>
+    <objective goal="9" text="Talk to the Intruder" type="Talk" npc="9" after="8">
+      <talk><say npc="9">I have no use for digital substitutes; it's reality I'm after.&#10;&#10;But if your master has access to all of these...it could be that he'd be of use.</say></talk>
+      <done><say>Hey, whoa, maybe that did work--a little. Still isn't much for giving clues though, is he?</say></done>
+    </objective>
+  </phase>
+  <finish>That's because I'm able to outthink these people, operative. I can tell what he's after.&#10;&#10;No, I'm not going to tell you. You wouldn't appreciate it. Just keep following my lead, and soon he'll be eating out of our hand--figuratively speaking.</finish>
+</mission>

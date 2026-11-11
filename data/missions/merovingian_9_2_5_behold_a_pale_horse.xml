@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Behold a Pale Horse, Merovingian story mission 9.2.5. Source: research/missions/transcripts/Merv9-2-5.md (a live run
+     of [Merovingian Archive 9.2.5] by a level 37 player, given by [Archived]Flood; 26 screenshots of the log, all
+     taken after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Twin, Malphas, Merovingian, Persephone, Silver and Intruder
+     line, and the names. Retail's slips are kept: the Twin's "when the Assassin buzzing about" and the Merovingian's
+     "the mysteries the simulation". The Merovingian's "Non" and the Twins' "Very" and "She" were in italics. Two
+     joins across screenshots are read as contiguous: Persephone's "something that will enable him" and Flood's "I'd
+     happily feed both of them to him". Ours: the description (the Summary tab only said "Datalink established."),
+     every objective text (the Objectives tab was never opened), the sites (all Normal; nothing shows what the places
+     were), the looks, and which Twin says which line (the log names both "Twin"; the first asks, the second answers,
+     and they alternate). No phase has hostiles: the Operator saw none at the Merovingian's or Persephone's, and
+     Silver's Exiles let the player in.
+     Rewards: the log showed 396,000 experience and 66,500 information for a level 37 player's live run; these are
+     the same-numbered Zion mission 9.2.5's values (363,000 experience, 63,000 information), as the other
+     Merovingian missions use Zion's because most of their logs are level-50 players'.
+     Gaps: the Twins' and Malphas's lines before the Merovingian spoke were said one after another over 45 seconds;
+     here each group is said on getting near the speaker. The Merovingian's and Persephone's second lines came a few
+     seconds after their goals; here they follow the goal and are repeated if they are clicked again. The Twins'
+     closing remarks, Silver's "Not very good at taking a hint" and the Intruder's "You know as much as I need you to
+     know" are said when they are clicked after the talk. Silver's Exiles ("my guards") aren't placed. A Team chat
+     bark at the Intruder's place that wasn't in the Mission Log ("...looking, but we shouldn't look a gift human in
+     the mouth, should we?", start and speaker not captured) is left out. -->
+<mission id="309205" title="Behold a Pale Horse" description="Find out who or what could be the biological interface program the intruder wants." plot="1"
+         order="9205" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+    <say after="1">Of course, she may not see it in the correct light if her husband brings up such a topic with her... This task demands a trusted intermediary such as yourself, does it not?</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+    <say after="1">Oh, yes... Very generous...</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+    <say after="1">She won't be pleased...</say>
+  </npc>
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="0" />
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+    <say after="2">He hates himself. His hate has consumed him... He cannot love; he can only hate everything around him, everything that reminds him of who he is.</say>
+  </npc>
+  <npc id="6" handle="Silver" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say after="3">Not very good at taking a hint, are you, meatbag?</say>
+  </npc>
+  <npc id="7" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say after="4">You know as much as I need you to know. I'm not letting anyone steal this one out from under me.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The intruder isn't being awfully clear about what this "biological interface program" he's after might actually be; the name suggests something allowing control to pass from a machine to a human, or from a human to a machine, but the intruder isn't saying one way or the other. Some thought Beirn might be it, since he was more or less changed from a human into a program by stolen Machine codes, but the intruder wasn't interested.&#10;&#10;In the mean time, he's been racking up quite the body count. He killed that self-serving snoop, Hypatia, when she couldn't provide what he wanted, and apparently he even offed Agent Gray the other day, not caring for his tone. I'd congratulate him on that one, only I don't think going anywhere near him would be a particularly good idea right now--not for a program, anyway. But something has to be done, and the Merovingian wants a word with you about it.</briefing>
+    <enter><say>He took out Gray? Daaang... I wonder if the Machines will finally send ol' Gray back to the Source now.&#10;&#10;So, okay, that's where you're due to meet with the Merv. No hostiles in sight.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">We will find what the man is after, {player}; make no mistake about that. Who but we are so fluent in the mysteries the simulation? The Machines? Non. They know how it is supposed to work, but it is we who know what actually goes on here--those loopholes in the code that weren't supposed to happen, but that must happen, because the defining qualities of the universe are found only in imperfections.&#10;&#10;Speaking of this... I want you to see my wife. She worked at the pods; she interfaced with humans there. He saw her before, but he did not know this. She may be what he wants... Fortunately, I am a very generous man, yes?</say></talk>
+      <done><say npc="1">Of course, she may not see it in the correct light if her husband brings up such a topic with her... This task demands a trusted intermediary such as yourself, does it not?</say></done>
+    </objective>
+    <near npc="2" radius="1500">
+      <say npc="2">Who d'you think he'll do next? I say he'll off the crusty old geezer himself.</say>
+      <say npc="3">The Architect? No, no... No fun in that. I'd say Agent Pace, once he realizes she's nothing but a shameless flirt.</say>
+      <say npc="2">Almost reminds me of the fun we had when the Assassin buzzing about...</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say npc="4">There is a rumor that the intruder has agreed to meet with the Machines. Certain things he has said make me inclined to think that he asked them for this "biological interface program" at some point in the past, before he came into the Matrix, and that they did not provide him with the answer he was looking for. After this violent spree of his, he may feel that they now owe him a different answer.</say>
+      <say npc="4">It would be regrettable if the Machines led him to the program...but we can only await the result of that meeting.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I must say I'm somewhat skeptical that Persephone is the holy grail the intruder is looking for, although I'm sure she'd like to think so...</briefing>
+    <enter><say>Seems to me it might be a little awkward if the intruder ends up...err...going after Persephone. But orders is orders...&#10;&#10;You're meeting her in there. Looks clear from where I'm sitting.</say></enter>
+    <objective goal="2" text="Talk to Persephone" type="Talk" npc="5">
+      <talk><say npc="5">How convenient that would be for my husband. Unfortunately, I am not the "interface" that brutal man wants. I was a caretaker at the pods--nothing more. Any control I exert over humans is indirect--not at all the kind of thing that would interest the intruder. No... What he wants must be something immediate--something that will enable him to be the person he wants to be, rather than what he has become.</say></talk>
+      <done>
+        <say>Hm... I guess that's that, then...</say>
+        <say npc="5">He hates himself. His hate has consumed him... He cannot love; he can only hate everything around him, everything that reminds him of who he is.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>She denied it? Hmh. Doesn't care for men made out of wires, I suppose.&#10;&#10;Well, operative, this just means I have to give you plan B. Let me see... Ah, yes, here it is. You're to go see Silver, the self-styled inventor, who received his just reward not too long ago at the hands of our operative Sieges for aiding the Machines in that Wright business. We had him reconstructed to be somewhat more tractable... In any case, he has worked on biological interfaces before, particularly with that Wright woman. He may be able to come up with something to interest the intruder.</briefing>
+    <enter><say>Silver should be in there. I'm picking up some of his Exiles as well, but if things have gone according to plan, he should allow you to enter unmolested.</say></enter>
+    <objective goal="3" text="Talk to Silver" type="Talk" npc="6">
+      <talk><say npc="6">The Merovingian obviously doesn't have the slightest idea of what he's looking for. Yes, I've worked on interfaces involving fleshlings, but these were just data conduits--ingenious and useful, certainly, but not worth tearing a world apart to acquire. Wright did have some notion of...control transfer, or something like that, but I don't know that she made any progress on it; at any rate, the Machines gleefully confiscated all of my data after that debacle.&#10;&#10;That's the last time I'll ever work with an organic... Feel free to show yourself out. I suggest you hurry; I haven't fed my guards yet today.</say></talk>
+      <done><say>Jeesh. Well, at least he didn't call you "meatbag."</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I don't know why we bother asking these people their opinions. Just go tell the intruder himself about all of this, operative; he'll know whether they'd be useful or not. I'd happily feed both of them to him, complete with a cherry and whipped cream.</briefing>
+    <enter><say>The big galoot is in there, all right.</say></enter>
+    <objective goal="4" text="Talk to the Intruder" type="Talk" npc="7">
+      <talk><say npc="7">No, no... Those are nothing like what I want.&#10;&#10;Got to be here somewhere... If only HE hadn't taken the other one...</say></talk>
+    </objective>
+  </phase>
+  <finish>Oh, bosh. He didn't want to take those two off our hands anyway? Mm... Too bad.&#10;&#10;I'll tell you, operative, I think he's on a wild goose chase. All those override codes he's loaded up probably blew out whatever used to pass for his brain. Not that I mind; in fact, that would make our job easier--just a matter of coming up with something that would satisfy his delusions.</finish>
+</mission>

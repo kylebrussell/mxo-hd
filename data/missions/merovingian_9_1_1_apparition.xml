@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apparition, Merovingian story mission 9.1.1. Source: research/missions/transcripts/Merv9-1-1.md (one live retail
+     run, given by Flood: 17 tight crops of the Log tab scrolled top to bottom, with two images missing from the
+     series, and two crops of Cerulean's Details window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Malphas and Cerulean line, and the names. The log's player was
+     Briseus; his name is {player} here. Ours: the description (the Summary tab only said "Datalink established."),
+     every objective text (the Objectives tab was never opened), the sites (all Normal: none is described), the looks
+     and the enemy counts. Phase 2's hostiles are Machine programs ("the Machines really are out in force"); phase 3's
+     are "redpills, this time, Machinists, maybe", who work for the Machines, so both phases' enemy is Machines.
+     Joins between crops read as contiguous: "Malphas should have / more details for you", "come to that. / However",
+     "this could mean / trouble.", "one of our / programs in there", "fouling up the readings... / Can't make
+     anything out of it.", "data expert, / and besides".
+     Rewards: the log shows none, and Zion has no logs for chapter 9.1, so these are Zion's values for chapter 9.2,
+     the nearest (363,000 experience, 63,000 information, as 1313 paid).
+     Gaps: two lines are cut short by the missing images and end here in three dots where the log stops: Malphas's
+     report (all but its last word, "first.", is lost after "with a wave of his hand, and") and Cerulean's first
+     line (lost after "code readings of a type completely"). Whatever else Cerulean said between 1:45:15 and 1:45:36
+     is lost too; her 1:45:36 line is her follow-up when the Talk completes. What the goals of phases 2 and 3 were
+     isn't shown: phase 2 is a fight with the Machine programs (the Operator's "Hm... I'm starting to get a picture
+     here..." when the last one dies, the next line when the area is done); phase 3 is a fight with the Machinists
+     (the Operator's "I think they've got one of our programs in there" when it is won), then the dead search
+     program, which is a Furniture object searched for nothing because dead NPCs aren't spawned. The thing on its
+     head and the sync errors are only in the Operator's words. -->
+<mission id="309101" title="Apparition" description="Find out what walked down the Ascension Monument and flattened seven Agents." plot="1"
+         order="9101" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say after="1">I can't say that I have any idea at the moment.</say>
+  </npc>
+  <npc id="2" handle="Cerulean" type="FRIENDLY" at="4" rsi="34050040" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Something's been bollocksed in the Barrens, operative, and considering that seven Agents were flattened in the process, I suppose I can't blame it on you. Nevertheless, you're going to help deal with it. Malphas should have more details for you, if he's been sniffing about as he's supposed to.</briefing>
+    <enter><say>Ah, the joys of working for someone who's bitter about living in the wrong century.&#10;&#10;Malphas should be in there. No hostiles in sight.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">Reports from my sources in Westview are odd, and somewhat contradictory, but it appears that something quite unusual took place near Ascension Monument. A large man composed entirely of white neon wires, they say, walked down the monument, terrorized traffic, killed a group of Agents with a wave of his hand, and...</say></talk>
+      <done><say>So let me guess: Flood's gonna want us to track this weirdo down.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Don't be ridiculous, {player}; the blood-drinkers are far better trackers than you. The lupines aren't so bad either, come to that.&#10;&#10;However...some of them appear to have run into some sort of hitch. Why don't you just go see what they're up to?</briefing>
+    <enter><say>I've got some active programs in there, but they definitely aren't ours. Assuming that Flood sent us to the right address, this could mean trouble.</say></enter>
+    <objective goal="2" text="Kill all of the Machine programs" type="DefeatAll">
+      <done><say>Hm... I'm starting to get a picture here...</say></done>
+    </objective>
+    <complete><say>Looks like the Machines really are out in force. They must be a little mad at the weirdo for smacking their Agents around. That could make getting to him a little tricky...</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Oh, that's lovely news. Yes, thank you. Always the bearer of happy tidings, aren't you?&#10;&#10;Fine, fine. Seeing as how I appear to be running short of search programs at an alarming rate, you've been promoted to a search party. Don't let it go to your head.</briefing>
+    <enter><say>Unidentified signals again! Looks like redpills, this time--Machinists, maybe?&#10;&#10;Hm... Weird reading there... Not sure what that was.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="3" text="Kill all of the Machinists" type="DefeatAll">
+      <done><say>I think they've got one of our programs in there... Huh... I think it's dead, but... Damn it. I keep getting a sync error when I try to run a scan.</say></done>
+    </objective>
+    <objective goal="4" text="Examine the dead program" type="Search" object="1" item="0" after="3">
+      <done><say>There's our program. What the hell is that on its head? I'm still getting sync errors... It's like its cycle speed is off. There's also some kind of code residue fouling up the readings... Can't make anything out of it.&#10;&#10;Jeez, this is messed up. We'd better get back to Flood with this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Frankly, operative, just about anything would have made more sense than what you just told me. Oh, this clay I have to work with...&#10;&#10;I can see that it's time to call in a specialist. I'm setting up an appointment for you with Cerulean. She's an information and data expert, and besides, she spends most of her time in Westview. If anyone has actual hard data on this creature--or an idea of how to get it, anyway--she will.&#10;&#10;She's a ghost, but try not to let that distract you.</briefing>
+    <enter><say>Yeah, well, everyone's got their problems, huh?&#10;&#10;Supernatural or not, she's supposed to be meeting you in there.</say></enter>
+    <objective goal="5" text="Talk to Cerulean" type="Talk" npc="2">
+      <talk><say npc="2">Yes, of course I've seen them: code readings of a type completely...</say></talk>
+      <done><say npc="2">Why? Because there's no telling what that code he wants tracked can do. It's already deleted some of your programs. Data is being lost, and I don't plan to risk mine--at least, not without compensation.</say></done>
+    </objective>
+  </phase>
+  <finish>Double?! Why, that grasping spectre...&#10;&#10;You told her it was out of the question, of course. ... Didn't you?&#10;&#10;{player}?</finish>
+</mission>

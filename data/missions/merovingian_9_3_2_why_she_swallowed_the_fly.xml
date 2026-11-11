@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Why She Swallowed the Fly, Merovingian story mission 9.3.2. Source: research/missions/transcripts/Merv9-3-2.md (a
+     run of [Merovingian Archive 9.3.2] given by [Archived]Flood; 18 screenshots of the Log tab, all taken after the
+     mission ended, scrolled top to bottom). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Aisleen, Arabis, Halborn and Merovingian line, the bystanders'
+     Team-chat lines and all the names. The log's player was TiAmo; that name is {player} here. "It look like" in
+     Flood's third briefing is retail's own typo (checked enlarged) and is kept; so are the asterisks in "*suppose*".
+     The Merovingian's italic "Bonjour" is plain text. Ours: the description (the Summary tab was never opened), every
+     objective text (the Objectives tab was never opened), the sites (none is described; the first is indoors, "no
+     sign of forced entry": all Normal), the looks and the enemy counts. Phase 2's hostiles are the Merovingian's own
+     programs, overridden ("most of the programs in there"; how many isn't shown): Merovingian, 4. The Merovingian
+     Martial Arts Initiate's name was cut by the chat window at "Initi"; it is the full name here.
+     Joins between shots read as contiguous: "to make a mess of things." / "We've just lost touch" and "override
+     routines of theirs." / "Case in point:" as paragraph breaks; "but I see" / "one, wait, two" (dashes dropped here), "is indeed
+     skulking" / "around in that area", "enjoy a chat about the Oracle with" / "Halborn." as running text.
+     Rewards: Zion's values for the same-numbered mission 9.3.2 (374,000 experience, 63,000 information). The log's
+     level-37 run paid 396,000 experience and 66,500 information.
+     Gaps: phase 1's goal completed the moment the player arrived (the Operator's two lines and the area's completion
+     share one second): it was finding the dead programs. The bodies aren't spawned (dead NPCs aren't), so they are a
+     Furniture object searched for nothing, with the Operator's "Whoa..." as its done line. In phase 2 the Operator,
+     Aisleen, Flood and Arabis spoke in one second on arrival; here all four lines come on reaching the floor, and
+     Arabis's "There were more!" seven seconds later is said on getting near him. No line was logged when the fight
+     ended, and no "Goals for this area are complete" either (an entry may hide at the join between 12:34:55 and
+     12:39:56), so the kill goal has no done line. Aisleen's "And the Merovingian still wants to use him..." and
+     Arabis's "They'll be avenged..." came after the fight; they are said when each is clicked afterwards. Halborn's
+     hiding place was 22 seconds from phase 2's (he is "skulking around in that area"); here phase 3 gets a site of
+     its own like the others. In phase 4 Halborn spoke twice before the Merovingian's line completed the area; here
+     the player talks to Halborn, then to the Merovingian, and Halborn's "Yeah, yeah, I heard about the cookies..."
+     and the Merovingian's "What he does when he meets her" are what they say when clicked afterwards. The Merovingian
+     Gunman, Network Hacker and Martial Arts Initiate were targeted in phase 4 before it ended, so they are bystanders
+     there; their lines came in Team chat. A third Team line ("...someone who could hook you up with some of those
+     Accelerator Bits if you need another hit...") lost its start and its speaker, probably the Gunman's, so it isn't
+     used and the Gunman says nothing. -->
+<mission id="309302" title="Why She Swallowed the Fly" description="Find out what the wireframed men's code overrides are doing to the Merovingian's programs, then find out what Halborn wants." plot="1"
+         order="9302" org="3" contact="Flood" exp="374000" info="63000">
+  <npc id="1" handle="Aisleen" type="FRIENDLY" at="2" rsi="34050040" weapon="2568">
+    <say after="2">And the Merovingian still wants to use him...</say>
+  </npc>
+  <npc id="2" handle="Arabis" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568">
+    <say after="2">They'll be avenged... No power that destructive survives for long.</say>
+  </npc>
+  <npc id="3" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="5">I need to see her. That's all you need to know. Is your boss going to keep his promise, or isn't he?</say>
+  </npc>
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say after="6">Yeah, yeah, I heard about the cookies...</say>
+  </npc>
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="7">What he does when he meets her is not our affair, is it?</say>
+  </npc>
+  <npc id="6" handle="Merovingian Gunman" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
+  <npc id="7" handle="Merovingian Network Hacker" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say>The Merv relies on us more than ever now that the wireframes are making things tough for programs. Doesn't seem like such a bad thing to me.</say>
+  </npc>
+  <npc id="8" handle="Merovingian Martial Arts Initiate" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>He ain't so tough. Hell, dude doesn't even know karate.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>While the Merovingian would like to milk the two wireframed men, Halborn and Carlyne, for all they're worth, their mutual dislike, combined with their code overrides, is leading them to make a mess of things.&#10;&#10;We've just lost touch with a pack of our programs, {player}. Informants have described what sounds like code overrides going off in their vicinity, so I expect the worst.</briefing>
+    <enter><say>Hm... I'm picking up some overridden code, but no really active programs in there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Examine the bodies" type="Search" object="1" item="0">
+      <done><say>Whoa... No sign of forced entry, but I'm reading recently spent shell casings in there, and there are bullet and claw wounds on the bodies. Could they have been fighting each other?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>I *suppose* it's possible that one group was overridden by Carlyne, and one by Halborn, and they met at cross purposes, but really, operative, I don't care. One or the other of them--or both--just cost us four programs, and they're both likely to cost us more as long as they've got access to those override routines of theirs.&#10;&#10;Case in point: I'm being pestered by another group of our programs. Apparently some of their number have been overridden, and are attacking those who weren't. Go try to salvage some of them, hm?</briefing>
+    <enter>
+      <say>I'm reading overrides in most of the programs in there, but I see one--wait, two--that are still running clean.</say>
+      <say npc="1">It was that big one! Halborn! He'd have got us, too, but he stopped all of a sudden and ran. Then the others turned on us!</say>
+      <say contact="1">Keep those two alive, would you, {player}? Get rid of the other ones.</say>
+      <say npc="2">Hah! Come on! We'll put a stop to this desecration!</say>
+    </enter>
+    <objective goal="2" text="Kill the overridden programs" type="DefeatAll" />
+    <objective goal="3" text="Do not let Aisleen die" type="Protect" npc="1" />
+    <objective goal="4" text="Do not let Arabis die" type="Protect" npc="2" />
+    <near npc="2" radius="1000">
+      <say npc="2">There were more! Where are they?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It look like Halborn is indeed skulking around in that area, operative. It may also interest you to know that there's a rumor going around that he just met with the Machines again. I wouldn't be surprised if they've manipulated the simple-minded barbarian into taking out his frustrations on our programs...&#10;&#10;I think it's about time we--that is, you, operative--had a talk with him. Hold his hand, look into his eyes, I don't care--just find out what the devil he thinks he's doing.</briefing>
+    <enter><say>If Flood's right, then the big override signal I've got in there is our beloved intruder. Guess this is where you, uh, work your magic.</say></enter>
+    <objective goal="5" text="Talk to Halborn" type="Talk" npc="3">
+      <talk><say npc="3">Who invited you? Go take a--&#10;&#10;... Wait. Do you... Hm. ... What do you know about the Oracle?</say></talk>
+      <done><say>Ohh boy. Uh... You better tell him we're gonna check our sources and get right back to him. I think we need to run this by Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hm... An interesting development. You know the Merovingian's feelings on that particular subject. Mm... Just a moment.&#10;&#10;...&#10;&#10;Well, it seems the Merovingian would enjoy a chat about the Oracle with Halborn. He's getting chummier with that oaf than I'd advise, but, eh, it's his life.</briefing>
+    <enter><say>Flood's so cute when he pretends not to care--and then, of course, he sends us in so he can stay up on what's going on.</say></enter>
+    <objective goal="6" text="Talk to Halborn" type="Talk" npc="4">
+      <talk><say npc="4">Okay... So I'll start around that courtyard in Mara, then. What else? What kind of defenses does she have?</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to the Merovingian" type="Talk" npc="5" after="6">
+      <talk><say npc="5">Bonjour. If there is anything about the Oracle that you would care to share with Halborn, please feel free. Many wait years to see her, after all... But our friend here does not seem to have that kind of time.</say></talk>
+    </objective>
+  </phase>
+  <finish>Well, that's clear enough. He wants to see the Oracle, we help make it happen, and if either or both of them happen to kick off as a result, we'll make the most of it--and let's not forget this mysterious "biological interface program" he's after. He must think the Oracle has it... Hm...&#10;&#10;Oh, go away, {player}. Can't you see I'm trying to get some serious work done here?</finish>
+</mission>

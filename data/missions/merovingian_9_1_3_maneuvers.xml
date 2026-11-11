@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Maneuvers, Merovingian story mission 9.1.3. Source: research/missions/transcripts/Merv9-1-3.md (a live run given
+     by Flood, not an archive replay: 17 crops of the Log tab scrolled top to bottom, and two crops of the transfer
+     computer's screen; no chat, HUD or Objectives window in any of them). The log is cut off in the fourth area, after
+     Flood's briefing. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Merovingian, Holographic Projection, Effectuator and Intruder
+     line, and the names. The log's player was Briseus; his name is {player} here. Retail's italics (Flood's "In
+     general", the Merovingian's "Bonjour, Briseus. Comment allez-vous?", "vous voyez," and "Merci,") can't be carried.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (all Normal: none is described), the looks, the commandos' handle (the log never names them)
+     and phase 4's enemy count ("a gaggle of Zionites"). Goal numbers run on through the phases (1 to 7) so that each
+     NPC's follow-up line waits for its own goal only.
+     Read across page joins as contiguous: "that window may be closing", "The Merovingian has proposed", "the effective
+     application of force", "stand back, and watch the magic". Three entries carry on into the next crop with no
+     header, and are read as one entry each with a paragraph break (a hidden line can't be excluded): the Operator's
+     "...than Zion's." / "No, no; no trouble on the scope.", Flood's "...private squid army." / "I'll figure out
+     something to do with that other one..." and the Intruder's "More books to sell me?" / "Wait... What is this?".
+     Rewards: the log shows none, and Zion has no 9.1 logs, so these are Zion's values for chapter 9.2, the nearest
+     (363,000 experience and 63,000 information, as Snoop and 1313 paid).
+     Gaps: the log stops at an Operator line at 5:27:55 whose text wasn't captured, so phase 4 has only Flood's
+     briefing: its arrival line, its goals, its end and Flood's closing line are lost, and there is no finish line.
+     Phase 4 here is the briefing's fight: the two commandos follow the player in and the Zionites are killed. The
+     intruder "will be observing" in retail; he isn't placed here. Whether retail had a goal to keep the commandos
+     alive isn't shown, so there is none. The computer's screen in phase 2 (":: Press [ENTER] to activate. ::",
+     "Program activation... Complete.", "Connection in progress... Complete.", "Transfer in progress... Complete.",
+     "Hello, sailor.") can't be shown; using the computer completes the goal. The commandos were stealthed beside the
+     Intruder until he "switched off their stealth fields" on being talked to; here they stand there visible from the
+     start. Phase 3 ended in retail with "Goals for this mission phase are complete!" and Flood's next line in the same
+     second, as the commandos were led outside; here leading them out of the site is the goal and ends the phase.
+     The Effectuator's "This is gonna be good." came 17 seconds after his talk and "Yesss! No casualties!" after the
+     transfer, and the Intruder's "Someone's been teaching old programs new tricks" 36 seconds after his talk; they
+     are said when these NPCs are clicked again. -->
+<mission id="309103" title="Maneuvers" description="Help the Merovingian and the General stage a show of force for the intruder." plot="1"
+         order="9103" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+    <say after="2">Merci, {player}. Let's give our guest a good show, eh?</say>
+  </npc>
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
+    <say after="2">The usual arrangements will be made for the transfer.</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="3">This is gonna be good.</say>
+    <say after="4">Yesss! No casualties!</say>
+  </npc>
+  <npc id="4" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
+    <say after="5">Someone's been teaching old programs new tricks. These are with you, I take it?</say>
+  </npc>
+  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="6" handle="Commando" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The intruder is still stand-offish, {player}. The Machines don't seem nearly as concerned about us contacting him as they are about Zion doing it, which has given us a window to win him over, but that window may be closing: while he's been boiling the Machines in their own oil, Zion has managed to take some stumbling steps in the intruder's direction--or so they think.&#10;&#10;It's hard to get useful information out of someone with Neanderthals horning in, so we've got to step up our efforts with the intruder. The Merovingian has proposed something involving the General. In general, I would say that's a bad idea...but nobody listens to me until it's too late, anyway.</briefing>
+    <enter><say>I don't see much reason to be worried. This guy's way more our style than Zion's.&#10;&#10;No, no; no trouble on the scope.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">Bonjour, {player}. Comment allez-vous?&#10;&#10;The General and I have been discussing a plan of attack. The intruder strikes me as a man who appreciates the effective application of force, vous voyez, and I think we have just the means of making an effective demonstration. I'll leave it to you, General...</say></talk>
+      <done><say>Let's see what ol' Guts and Glory wants us to do.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Holographic Projection" type="Talk" npc="2" after="1">
+      <talk><say npc="2">We'll be bringing some of my soldiers back into the Matrix, operative. The demonstration should be quick enough to avoid significant risk of Machine interference, but I'll appreciate it if you take good care of my men while they're here.</say></talk>
+      <done><say>Yeah, yeah... All right, it's time to put this together with Flood. Head out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I knew this was going to happen...&#10;&#10;You'll have to see the Effectuator about the commando transfer, operative. Unfortunately, he's the only one we have available to activate the program. I want it noted that I take no responsibility for the commandos he's sure to mangle in the process.</briefing>
+    <enter><say>You're supposed to meet the Effectuator in there. I just hope he's in a big room this time...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Talk to The Effectuator" type="Talk" npc="3">
+      <talk><say npc="3">No problemo; I totally got it down, now--completely fool-proof. She's all set up, so just launch the program from the computer over there, stand back, and watch the magic.</say></talk>
+      <done><say>Didja ever get that sense of impending doom?&#10;&#10;Might as well get it over with. Computer's right over there.</say></done>
+    </objective>
+    <objective goal="4" text="Launch the transfer program from the computer" type="Use" object="1" after="3">
+      <done><say>Hey, you're still alive...and humanoid. I'm gonna go ahead and call that success.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Lovely.&#10;&#10;Go catch up with the intruder, {player}. We'll introduce him to our private squid army.&#10;&#10;I'll figure out something to do with that other one...</briefing>
+    <enter><say>The intruder's in there, all right. No sign of hostiles.</say></enter>
+    <objective goal="5" text="Talk to the Intruder" type="Talk" npc="4">
+      <talk><say npc="4">Oh, you again. More books to sell me?&#10;&#10;Wait... What is this? Out you come!</say></talk>
+      <done><say>Whoa! He switched off their stealth fields. I guess Flood was hoping to surprise him. Speaking of whom...&#10;&#10;Okay, grab two of those guys, and hustle them outside. We've got a target.</say></done>
+    </objective>
+    <objective goal="6" text="Lead two of the commandos outside" type="Escort" npc="5,6" to="exit" after="5" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>We've drummed up a gaggle of Zionites for you to aim those soldiers at, operative. If all goes as planned, the intruder will be observing, so try not to screw this up.</briefing>
+    <objective goal="7" text="Kill the Zionites" type="DefeatAll" />
+  </phase>
+</mission>

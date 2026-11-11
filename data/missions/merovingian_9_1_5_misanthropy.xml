@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Misanthropy, Merovingian story mission 9.1.5. Source: research/missions/transcripts/Merv9-1-5.md (a live run given
+     by Flood, not an archive replay: 24 crops of the Log tab scrolled top to bottom; no chat, HUD or Objectives window
+     in any of them). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Buchwald, Nekkar, Malphas, Twin, Intruder and Merovingian line,
+     and the names. The log's player was Briseus; his name is {player} here. Retail's italics (Flood's "own", "moi"
+     and "your", the Operator's "gateau", the Merovingian's "au revoir", "Non, merci.", "Nom de Dieu!", "I", "him?",
+     "Qui est ce chien?" and "Non.") can't be carried. Ours: the description (the Summary tab was never opened), every
+     objective text (the Objectives tab was never opened), the sites (all Normal: none is described), the looks, the
+     enemy count, and which Twin says which line (the log names both "Twin"; they alternate). Phase 1's hostiles are
+     the Merovingian's own Exiles, turned by the intruder's code ("You had to kill our own programs?!"), so
+     Merovingian. The Merovingian and the Twins are in two places, so each is two NPCs. Goal numbers run on through
+     the phases (1 to 5) so that each NPC's follow-up line waits for its own goal only.
+     Read across page joins as contiguous: "the club's architecture", "that love-struck pit bull", "Our programs are in
+     there. I'm getting", "going to meet with the Merovingian", "the Merv in the same room", "manipulation of the
+     code", "I have advised the Merovingian", "I'll give you some credit", "And here I thought the Machines", "What
+     more could the Merovingian want?", "Nothing but friendlies", "he would not have learned them here".
+     Rewards: the log shows none, and Zion has no 9.1 logs, so these are Zion's values for chapter 9.2, the nearest
+     (363,000 experience and 63,000 information, as Snoop and 1313 paid).
+     Gaps: the Operator's "Damn it, that's the intruder's code all over our programs!" came 35 seconds after the arrival line, on finding the turned programs; here it
+     is said on arrival with it. Phase 2 ended in retail with "Goals for this mission phase are complete!" 20 seconds
+     after Malphas's second line and in the same second as Flood's next line, so the player did not have to leave an
+     area there, and what closed it isn't shown; here it ends with the talk to Malphas and the site's exit. Buchwald's
+     and Nekkar's lines, said just before Malphas's, and the Twins' pairs of lines before each talk, are said on
+     getting near them. Buchwald and Nekkar don't come along: nothing in the log shows them again. The lines said a
+     few seconds after a goal (Malphas's "Let us hope that it goes well.", the Intruder's "If I'd known all along...",
+     the Merovingian's "Non, merci." and "All men have a weakness", the Twins' last two lines) are said when those
+     NPCs are clicked again. "Mission Completed!" isn't in the captured log; Flood's last line is the finish. -->
+<mission id="309105" title="Misanthropy" description="See the intruder's meeting with the Merovingian through, whatever it takes." plot="1"
+         order="9105" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Buchwald" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Nekkar" type="FRIENDLY" at="2" rsi="58010058" weapon="2568" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="c9020058" weapon="0">
+    <say after="2">Let us hope that it goes well.</say>
+  </npc>
+  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
+  <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
+    <say after="3">If I'd known all along that that was who your boss looked like... Hah!</say>
+  </npc>
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0">
+    <say after="4">Non, merci.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="5">Not that I'm really worried, mind you.</say>
+  </npc>
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="5">Minor blip on the radar.</say>
+  </npc>
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="5">All men have a weakness. This one is no different.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Thanks to my skillful manipulation, our affair with the intruder is going swimmingly. He simply couldn't stay away from the party we threw at the Hel Club the other day. He did seem unusually preoccupied with the club's architecture, but frankly--and I've noticed this with you as well, {player}--not everyone knows how to conduct themselves at a party.&#10;&#10;Yes, he is something of a troglodyte, but it doesn't do to look down our noses at someone with such a high potential. Why, he's far less aggravating than that love-struck pit bull of Persephone's, Beirn. In fact, he could probably get rid of Beirn for me... Hmm...&#10;&#10;What? Oh, yes. He should be meeting up with some of our Exiles. Go see to things.</briefing>
+    <enter>
+      <say>Our programs are in there. I'm getting some unusual activity readings... Oh, I guess the intruder must be there already.</say>
+      <say>What th--?! Damn it, that's the intruder's code all over our programs! I don't know what happened in there...but you'd better clean those guys up before we get back to Flood.</say>
+    </enter>
+    <objective goal="1" text="Kill the corrupted Exiles" type="DefeatAll">
+      <done><say>All right, that's one thing down. No sign of the intruder himself. We need to find out what's going on.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You had to kill our own programs?! Bah! Forget it! I don't want to hear about intruder hexes or any other such nonsense! The restoration fee for those programs is coming out of your paycheck; don't try to weasel out of it!&#10;&#10;Look, the intruder is going to meet with the Merovingian, and our boss is going to see how splendidly I've tamed the brute. I won't have you screwing it up! Obviously, you can't handle it yourself... Fine. Go see Malphas. He'll have something to buck up your courage.</briefing>
+    <enter><say>Flood wants to get the Merv in the same room with the intruder? After what he just did to our programs? Jeez... Flood's had some bad ideas before, but this really takes the gateau, know what I mean?&#10;&#10;Malphas should be in there. I've got a couple redpill readings... No signs of intruder code alterations in my scan, though.</say></enter>
+    <objective goal="2" text="Talk to Malphas" type="Talk" npc="3">
+      <talk><say npc="3">The intruder's manipulation of the code wiped out any chance we had of getting data on what occurred. It's been clear that his temper and intentions are...unpredictable. I can only suggest that you attempt to avoid any course of action that might serve to aggravate him.&#10;&#10;I have advised the Merovingian--strongly--not to expose himself to the intruder at this time. He has chosen to proceed with the meeting. Such is the power of bravado. If it does not go well...do what you can. You and these operatives should be less vulnerable to the intruder's influence than our programs are.</say></talk>
+      <done><say>Don't ask me how those two are gonna be much help if the intruder decides to break out the crazy stick...</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">You don't think this will take long, do you? I can't stand working with Nekkar.</say>
+      <say npc="2">Yo.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Shake a leg there, {player}! The deal of the cycle is about to go down, orchestrated by moi, and it's your job to record it for posterity!&#10;&#10;Security? Pah, you won't be needed for that.</briefing>
+    <enter><say>This is it. He and the boss are in there.&#10;&#10;Oh man... I can't watch...</say></enter>
+    <objective goal="3" text="Talk to the Intruder" type="Talk" npc="6">
+      <talk><say npc="6">I'm surprised as hell that the Machines haven't wiped you and Zion off the map. They're doing a bad job of things. No offense meant, pal, but this just isn't the scheme that was supposed to go down. I'll give you some credit for being resourceful, sure. You seem like an all right guy, relatively speaking. I might have a job for you...but not just yet.&#10;&#10;Huh! Finally realized what's been bugging me about you. Your face--I know the guy they got it from. You're supposed to be...what, French? Yeah, that fits. Hah! And here I thought the Machines didn't have a sense of humor.</say></talk>
+      <done><say>Say what?!</say></done>
+    </objective>
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="7" after="3">
+      <talk><say npc="7">I... Eh... We will talk about this later, operative. I am just bidding our friend au revoir.</say></talk>
+      <done><say>Uh-oh. He didn't sound happy...</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">... I'm sure he's fine.</say>
+      <say npc="5">Wouldn't let us stay in there with him.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Didn't he agree to work with us? What more could the Merovingian want? I can't help it if the man thought he recognized him from somewhere.&#10;&#10;Just go explain it to him, operative. We have nothing to complain about here.</briefing>
+    <enter><say>The Merv should be there. Nothing but friendlies on the scope.&#10;&#10;No... I don't really know what to say to him.</say></enter>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="10">
+      <talk><say npc="10">Nom de Dieu! The man is insolent... To imply that I am a copy of someone... Of what? Some...some man? And that I might work for him? Who is this, eh? Qui est ce chien?&#10;&#10;I will find out. That he has a secret is obvious. And these things he claims to know...he would not have learned them here. Non. His secret lies elsewhere...and I will find it.</say></talk>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">Haven't seen him like this in ages.</say>
+      <say npc="9">Not since Persephone stole that key.</say>
+    </near>
+  </phase>
+  <finish>There, you see? He wasn't at all angry with me. It must have been something you did.</finish>
+</mission>

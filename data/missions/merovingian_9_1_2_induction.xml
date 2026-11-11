@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Induction, Merovingian story mission 9.1.2. Source: research/missions/transcripts/Merv9-1-2.md (one live retail
+     run, given by Flood: 28 tight crops of the Log tab scrolled top to bottom, the Details windows of Hypatia and the
+     Intruder, and two views of the Intruder). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Intruder, Cerulean, Malphas, Ookami and Hypatia line (the
+     Operator's "what to say this guy" kept as retail wrote it; Malphas's and Hypatia's speeches open with two hyphens
+     in retail too), and the names. The log's player was Briseus; his name is {player} here. Ours: the description
+     (the Summary tab only said "Datalink established."), every objective text (the Objectives tab was never opened),
+     the sites, the looks. The Intruder has been "haunting the Heart o' the City Hotel", "that old roach hotel", so
+     phase 1 is Hotel; the others are Normal. Nobody is hostile in the log, so no phase has enemies. The Intruder is
+     in all four places, so he is four NPCs. Goal numbers run on through the phases (1 to 8) so that each NPC's
+     follow-up line waits for its own phase's goal only. Joins between crops read as contiguous: "for no / apparent reason",
+     "acquaintance. I / wouldn't send you in", "fascinates him, / this should blow his wires off.", "permanent
+     damage... / Anyway, good luck.", "her information / tracking abilities", "or kill...as / the case requires",
+     "keep him here. / Hrah! Are we done?", "when this guy / laughs.", "from under the / Merv's thumb".
+     Rewards: the log shows none, and Zion has no logs for chapter 9.1, so these are Zion's values for chapter 9.2,
+     the nearest (363,000 experience, 63,000 information, as 1313 paid).
+     Gaps: the Intruder is a white wireframe man of level 100; here he has an ordinary look. Each area ended with
+     the Intruder's answer at the second its goals completed, so each is built as a Talk to the Merovingian's
+     showpiece, then a Talk to the Intruder; in retail the showpieces may have spoken to him without being clicked.
+     The Operator's two lines while closing in on him in phase 1 are said at 20 m and 10 m from him. Phase 4's
+     briefing has a hole: the end of the sentence "don't worry, nobody's interested in you," wasn't captured, so it
+     ends in three dots here. Not captured at all: an NPC line after phase 1's goals (between 12:30:56 and 12:32:15, its header unreadable) and Cerulean's line at
+     12:35:30 after phase 2's. -->
+<mission id="309102" title="Induction" description="Invite the intruder on a tour of what only the Merovingian's organization can offer." plot="1"
+         order="9102" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="0" />
+  <npc id="2" handle="Cerulean" type="FRIENDLY" at="2" rsi="34050040" weapon="0" />
+  <npc id="3" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="0">
+    <say after="3">Go ahead. I'll pass the time by picking this one's brain.</say>
+  </npc>
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say after="6">Yes...some of us did survive. His knowledge is curious--both its extent, and its gaps.</say>
+  </npc>
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say after="6">Get him out of here... Hurry it up!</say>
+  </npc>
+  <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
+    <say after="6">What, there's more? Well, let's have it.</say>
+  </npc>
+  <npc id="7" handle="Hypatia" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say after="7">I told him what he'd have wanted to hear about my work. Isn't that what you wanted?</say>
+  </npc>
+  <npc id="8" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="0">
+    <say after="8">No. I've got some things to take care of.</say>
+  </npc>
+  <phase site="Hotel" enemy="Machines" enemies="0">
+    <briefing>Cerulean turned out to be quite adept at locating the intruder, operative, once she received a little help from our own resources. A strange fellow... He's been haunting the Heart o' the City Hotel, for instance, for no apparent reason. But there must be something to what he's doing, or else the Machines wouldn't be in such a tizzy over it. Do you know, he actually fought them off by using their own programs against them! Rather droll, actually...&#10;&#10;Yes, the fact is that we feel it's time to make this man's acquaintance. I wouldn't send you in to make the first impression, except that he has a knack for deleting programs, which has proven awfully expensive for us so far. You're not going to impress him with your own dubious merits, of course; you're going to invite him on a tour of the city, the likes of which only our organization can provide. If that old roach hotel fascinates him, this should blow his wires off.</briefing>
+    <enter><say>Are you ready for this? This guy's putting out power readings like...well, like I've never seen before. Would probably be bad for your future children, if your RSI could actually sustain permanent damage...&#10;&#10;Anyway, good luck.</say></enter>
+    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="1">
+      <talk><say npc="1">A Frenchman? I've known a few of those... A tour of the city, you say? Huh.&#10;&#10;All right. Why not? Impress me.</say></talk>
+      <done><say>Okay. It sounds like Flood's going to have courier programs direct the guy. And Flood wants to talk to you, so head outside.</say></done>
+    </objective>
+    <near npc="1" radius="2000">
+      <say>Power readings are climbing. You must be getting close.</say>
+    </near>
+    <near npc="1" radius="1000">
+      <say>Holy-- I've got to dampen down my scan settings. The feedback from him and that...thing nearly locked up my monitoring program.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It isn't as easy as it should be to come up with people to introduce him to who can display impressive credentials, without also suffering from significant character flaws, but I've come up with a few. First of all, it seems only fitting that we should parade Cerulean before him. He might be interested in her information tracking abilities; she found him, after all.</briefing>
+    <enter><say>Okay, just break the ice for those two. Presumably, Flood's already coached Cerulean on what to say this guy...</say></enter>
+    <objective goal="2" text="Talk to Cerulean" type="Talk" npc="2">
+      <talk><say npc="2">Yes. Pleased to meet you. My name is Cerulean; I assist the Merovingian with data tracking tasks from time to time. I was instrumental in locating you, for instance. The vast majority of the Matrix's information is transparent to us, and we are uniquely situated to pursue it, when we wish.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to the Intruder" type="Talk" npc="3" after="2">
+      <talk><say npc="3">An incorporeal program? Yes, I'm sure she can access quite a few interesting pieces of information.&#10;&#10;I didn't expect to find this sort of mutation here. Must be pretty irritating for the Machines.&#10;&#10;Got anything else to show me?</say></talk>
+      <done><say>Sounds like we've got him interested. Let's see what else Flood wants us to show him.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Cerulean charmed him, did she? That was easier than I thought it would be. Very well, if he found her interesting, he ought to be thrilled meeting a vampire and a werewolf.</briefing>
+    <enter><say>I hope someone's got Ookami on a short leash there.</say></enter>
+    <objective goal="4" text="Talk to Malphas" type="Talk" npc="4">
+      <talk><say npc="4">--and I believe you'll find our intelligence network second to none. We are much more...flexible than the Machines in the ways in which we can observe, assist, influence, or kill...as the case requires. You will not find us hampered by illusions of morality, or subservience to ephemeral ideals. Our means are effective, and our ends practical.</say></talk>
+    </objective>
+    <objective goal="5" text="Talk to Ookami" type="Talk" npc="5" after="4">
+      <talk><say npc="5">I get it, but I won't prance like the pony. This man is dangerous. Stupid to try to keep him here.&#10;&#10;Hrah! Are we done? Only an idiot stands next to a bomb longer than he has to.</say></talk>
+      <done><say>Hm... I don't know if I've ever heard Ookami sound that worried before.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to the Intruder" type="Talk" npc="6" after="5">
+      <talk><say npc="6">Very cold, for a blood-sucker. How amusing that some of these survived. I see the Machines aren't nearly as in-control as they like to appear. Should I be concerned for this world's stability? Haha!</say></talk>
+      <done><say>I'm not sure I like it when this guy laughs. And what he said about Malphas... He's talking about that earlier version of the Matrix...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Certainly, he could have killed them if he'd wanted to. There is a reason why we take the trouble to make frequent backups of important personnel, you know. Oh, it would have been a little inconvenient and expensive if he had killed them, but I knew he wouldn't. I can read people, you know; don't worry, nobody's interested in you...&#10;&#10;The last personality on our little tour actually called me before I had to take the trouble to look her up. If only everyone I worked with was so considerate...</briefing>
+    <enter><say>Huh. After the MacHenry pod thing, I had the impression Hypatia was looking to get out from under the Merv's thumb for a while. Guess I'm no Flood.</say></enter>
+    <objective goal="7" text="Talk to Hypatia" type="Talk" npc="7">
+      <talk><say npc="7">--of the Archivist Society. We have compiled an incomparable library of information from previous versions of the Matrix. Access is highly restricted, of course, but for a researcher such as yourself, allowances would be made. We are very interested in the exchange of historical data. Anything you might wish to know is open to negotiation.</say></talk>
+      <done><say>Whoa, hold on. Is she kissing up to him for the Merv, or for herself?</say></done>
+    </objective>
+    <objective goal="8" text="Talk to the Intruder" type="Talk" npc="8" after="7">
+      <talk><say npc="8">Huh. Maybe you people know more than I'd thought, but I'm not much into ancient history right now.&#10;&#10;Anyway... The Merovingian, was it? I'll remember that.</say></talk>
+      <done><say>I've got a feeling that guy isn't really into books.</say></done>
+    </objective>
+  </phase>
+  <finish>What?! If that four-eyed geek has queered this deal--&#10;&#10;Why didn't you shut her up, {player}? What did I have you there for, anyway?&#10;&#10;If she thinks she's going to make some sort of private arrangement with him, she's in for a rude awakening. This is our pigeon--make no mistake about that.</finish>
+</mission>
