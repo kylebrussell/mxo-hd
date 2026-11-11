@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Alchemy, Merovingian story mission 11.1.2. Source: research/missions/transcripts/Merv11-1-2.md (one live retail
+     run, given by Flood: 26 screenshots taken after the mission ended, the Log tab scrolled top to bottom). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Yong, simulacrum, Silver, Twin and Merovingian line, and the
+     names. The log's player was Briseus; his name is {player} here. Italics are dropped, "tete-a-tete" and "Apres
+     tout" lose their accents, and "at rate" and "at least of few" are kept as retail wrote them. Ours: the
+     description (the Summary tab only said "Datalink established."), every objective text (the Objectives tab was
+     never opened), the sites (all Normal: the lab isn't described beyond being a lab), the looks (Silver, the Twins
+     and the Merovingian as the other Merovingian files have them) and the enemy counts. Phases 1 and 3 have Exiles
+     ("Silver employs Exiles of his own", "regulation Exile programs"), so their enemy is Merovingian; phase 2's
+     simulacra are its three named NPCs and phase 4 has no hostiles.
+     Item stand-ins: the rare strain the simulacrum carried is Disease (6802).
+     Joins between images read as contiguous: "Unfortunately, / the only person available", "I can tell you / that I
+     was quite happy", "and applying / pressure to a certain Camon", "so don't kill him, / but do whatever", "at rate,
+     I / wouldn't want you", "the city / that would have", "with a disease; / is it Saturday morning", "you /
+     geocentrist.", "duly compensated for / the use of my expertise", "You only have to know / people, my friend."
+     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
+     115,500 information). The log's run paid 241,780 experience and 80,500 information.
+     Gaps: phase 1 is read as: talk to Yong ("Eeek! Helllp!"), kill his Exiles (the Operator's "Nice." when they are
+     down), talk to him again, then he goes along; retail ended that phase with "Goals for this mission phase are
+     complete!" instead of the usual line, which our runtime doesn't send. Yong follows the player into phase 2 (his
+     "I thought he'd be here!"), so he must stay alive there. The simulacra greeted the player as friends and then
+     turned hostile, so they wait to be attacked; their greetings, the Operator's "Weird." and Yong's line are said on
+     meeting them, and their later combat barks are their click lines. Which simulacrum carried the disease isn't
+     shown: Galen Myers, the only one not heard again once the fight started, carries it here; the Operator's "Hey, I
+     think that one was carrying something" and Yong's "Aaah!" come with his death. In phase 3 the Operator's "Aha!"
+     is said on getting near Silver, and Flood's "Thank you, operative" comes when Silver is talked to, as it did in
+     the same second; no kill is logged there, so the Exiles are only in the way. In phase 4 the Twins' four lines and
+     Silver's demand for payment are said on arrival (which Twin said which isn't shown; they alternate here), and the
+     Merovingian's talk ends the area. Lines logged after a goal (Yong's second "Ah! Ow ow ow!", Silver's "This is
+     Flood's doing", "Oh, shove off." and "Hrmph.", the Merovingian's "Ah, the Machines...") are what each says when
+     clicked. The Operator's entry at 10:45:02 AM is hidden by the scroll; it is taken as the area-complete line. -->
+<mission id="311102" title="Alchemy" description="Track down Silver through his lackey Yong and deliver him to the Merovingian to work on the interface program." plot="1"
+         order="11102" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Yong" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+    <say after="3">Ah! Ow ow ow! Okay, okay! I can tell you-- Ook! Okay! I mean I can take you where you want to go!</say>
+  </npc>
+  <npc id="2" handle="Svetlana Navarra" type="HOSTILE" attacksOnSight="0" at="2" rsi="a5060090" weapon="2568">
+    <say>How about that local sports team?</say>
+  </npc>
+  <npc id="3" handle="Galen Myers" type="HOSTILE" attacksOnSight="0" at="2" rsi="9b0000b4" weapon="2568">
+    <say>Excuse me. Do you have the time?</say>
+  </npc>
+  <npc id="4" handle="Seymour Knickle" type="HOSTILE" attacksOnSight="0" at="2" rsi="9c0000b4" weapon="2568">
+    <say>How about this weather we're having?</say>
+  </npc>
+  <npc id="5" handle="Silver" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say after="7">This is Flood's doing, isn't it? It's practically dripping with his pomade.</say>
+  </npc>
+  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say>Oh, shove off.</say>
+    <say after="8">Hrmph.</say>
+  </npc>
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="8">Ah, the Machines... Let Silver worry; it will help keep his toes on the line, eh? The Machines would like to take the program from us, of course... But it is not one of their programs, and I do not think they have any more understanding of it than we do; in fact, I believe their narrow point of view puts them at a distinct disadvantage in this affair.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568" />
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>After a spectacular failure in getting anything from the interface program, the powers-that-be in this organization have finally realized what I could have told them long ago: we need experience. Unfortunately, the only person available is that insufferable know-it-all, Silver; he's spent a frightful amount of time engaged in biological research, and he worked on advanced bio interface designs with that other insufferable know-it-all, Danielle Wright. Just remember, {player}: nobody likes a know-it-all, and it's no surprise those two were both killed; I can tell you that I was quite happy about it.&#10;&#10;Of course, we brought Silver back, because he has his uses. He's still troublesome, though, and in fact at the moment he's in hiding somewhere; apparently Zion was looking for him when they were going after Wright's company. We know him far better than they do, however, and applying pressure to a certain Camon lickspittle of his, Yong, should yield results.</briefing>
+    <enter><say>Silver employs Exiles of his own, and it looks like there are more than one of them in there. You're looking for a certain one, Yong, who's supposed to know where Silver is, so don't kill him, but do whatever you need to about the others.</say></enter>
+    <objective goal="1" text="Talk to Yong" type="Talk" npc="1">
+      <talk><say npc="1">Eeek! Helllp!</say></talk>
+      <done><say>Maybe making an example of those friends of his will help.</say></done>
+    </objective>
+    <objective goal="2" text="Kill Yong's friends" type="DefeatAll">
+      <done><say>Nice. Okay, let's have him show us where Silver is.</say></done>
+    </objective>
+    <objective goal="3" text="Make Yong talk" type="Talk" npc="1" after="2">
+      <talk><say npc="1">Ah! Ow ow ow! Okay, okay! I can tell you-- Ook! Okay! I mean I can take you where you want to go!</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Yong out of the area" type="Escort" npc="1" to="exit" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You wouldn't think a "genius" would keep someone around who was so easily turned against them, but I can tell you that this sort of thing happens all the time; their egos demand that they have someone weak to worship the ground they walk on. You'll notice that I don't suffer from that problem; at rate, I wouldn't want you fawning over me. I get enough simpering as it is.&#10;&#10;Call me the moment you have Silver.</briefing>
+    <enter><say>I'm getting some active signals in there. They don't look like any Exiles I'm familiar with.</say></enter>
+    <objective goal="5" text="Kill Galen Myers" type="Defeat" npc="3">
+      <done>
+        <say>Hey, I think that one was carrying something.</say>
+        <say npc="1">Aaah!</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Take what Galen Myers was carrying" type="Loot" npc="3" item="6802">
+      <done><say>Ick. Hm... That's a rare strain... There shouldn't be too many labs in the city that would have something like that. Could be Silver's at one of them.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">How about that local sports team?</say>
+      <say npc="3">Excuse me. Do you have the time?</say>
+      <say npc="4">How about this weather we're having?</say>
+      <say>Weird. Bluepill simulacra, I guess?&#10;&#10;You'd better look around. We need to find Silver.</say>
+      <say npc="1">I don't know... I thought he'd be here!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>So you've come back with a disease; is it Saturday morning already? Bah, never mind...&#10;&#10;All right, operative. Fortunately for you, I've only managed to find one lab in the area with a license to carry that particular species of louse. Enjoy.</briefing>
+    <enter><say>Got some active signals in there; at least of few of 'em are regulation Exile programs.</say></enter>
+    <objective goal="7" text="Talk to Silver" type="Talk" npc="5">
+      <talk><say npc="5">Do you mind? I'm trying to work, you geocentrist.&#10;&#10;I don't care what sort of program you've found; I--</say></talk>
+      <done><say contact="1">Thank you, operative. I'm sending some programs over now to bring him back. You'll have to find your own way.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>Aha!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I suggest you hurry if you don't want to miss the juicy parts, operative; encounters between Silver and the Merovingian are usually rather amusing.</briefing>
+    <enter><say>I hope Silver is capable of more impressive work than those simulacra you found...</say></enter>
+    <objective goal="8" text="Talk to the Merovingian" type="Talk" npc="7">
+      <talk><say npc="7">You see? You only have to know people, my friend. A brief tete-a-tete will usually accomplish more than fighting ever could.&#10;&#10;As for Monsieur Silver, I have great faith in his reliability. Apres tout, he is intimately aware of the...cost of failing me.</say></talk>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">Ah, Silver... We'll have a bit of catching up to do.</say>
+      <say npc="9">If I were a less forgiving sort, I might be offended that Silver keeps trying to run away from us.</say>
+      <say npc="8">I think he may take himself a little too seriously.</say>
+      <say npc="9">Why, we have the greatest respect for him. He's a good man with a knife, you know.</say>
+      <say npc="6">I see that you don't intend to leave me any choice. Very well... But as you claim to be a man of business, I expect to be duly compensated for the use of my expertise in this matter, and particularly for the risk it will involve; I do not enjoy making the Machine "most wanted" list.</say>
+    </near>
+  </phase>
+  <finish>Frankly, I have considerable doubts about his usefulness, but he'll probably do something stupid and get himself terminated again, which I will take great pleasure in witnessing.</finish>
+</mission>

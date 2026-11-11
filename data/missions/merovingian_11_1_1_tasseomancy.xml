@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasseomancy, Merovingian story mission 11.1.1. Source: research/missions/transcripts/Merv11-1-1.md (one live retail
+     run, given by Flood: 17 screenshots taken after the mission ended, the Log tab scrolled top to bottom). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Malphas, Ethereal 2, Madame T., Merovingian and Ookami line, and
+     the names. The log's player was Briseus; his name is {player} here. Italics ("Hu-um...", "my", "mon ami") are
+     dropped. Ours: the description (the Summary tab only said "Datalink established."), every objective text (the
+     Objectives tab was never opened), the sites (all Normal: none is described), the looks (Malphas, the Merovingian
+     and Ookami as the other Merovingian files have them) and the enemy counts: no hostile is mentioned, so no phase
+     has any.
+     Item stand-ins: the code sample of the interface program is Data (6787).
+     Joins between images read as contiguous: "even a booby like that / intruder, Halborn", "that this is / going to
+     be...weird?", "hasten our understanding / of the program", "I sensed / the strange code", "you carry the / code of
+     that star-crossed program", and "hoodoo associated with it." / "You can go and report" as a paragraph break.
+     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
+     115,500 information). The log's run paid 132,000 experience and 80,500 information.
+     Gaps: each phase's goal is the one talk the log shows; Malphas's "Please take this code sample" is a Get, and the
+     sample is only carried after that (the Operator's "give her a whiff of that code" is a talk, not a Give). The
+     Operator's lines 30 to 60 seconds after each briefing are the arrival (enter) lines. Lines logged after a goal
+     (Malphas's "Our own studies", the Ethereal's "Please deposit the payment", Madame T.'s "Leave me now!", the
+     Merovingian's "To tell the truth" and Ookami's "Hmh") are what each says when clicked afterwards. The Operator's
+     entry at 9:43:02 PM is hidden by the scroll; it is taken as the standard area-complete line. -->
+<mission id="311101" title="Tasseomancy" description="Take a sample of the biological interface program's code to the Merovingian's specialists and report what they make of it." plot="1"
+         order="11101" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+    <say after="1">Our own studies, of course, will continue.</say>
+  </npc>
+  <npc id="2" handle="Ethereal 2" type="FRIENDLY" at="2" rsi="d8040058" weapon="0">
+    <say after="2">Please deposit the payment into our usual account.&#10;&#10;My thanks to you.</say>
+  </npc>
+  <npc id="3" handle="Madame T." type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say after="3">Leave me now! Ah, I am overcome! O fates, spare your poor servant!</say>
+  </npc>
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="4">To tell the truth, it intrigues me more and more. A new type of program, impervious to standard modes of analysis! Who knows what it might be capable of?</say>
+  </npc>
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+    <say after="4">Hmh. I only showed him a few of my claws.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We spent a great deal of my time and resources rooting around in the Ouroboros Corporation's confounded network, and what we've got to show for it is this "biological interface program" that even a booby like that intruder, Halborn, was hot for.&#10;&#10;Well, it had better be worth it. The brain trust has been poring over it, and apparently they need some low-grade muscle, because they've asked for you.</briefing>
+    <enter><say>Why do I have the feeling that this is going to be...weird?</say></enter>
+    <objective goal="1" text="Get the code sample from Malphas" type="Get" npc="1" item="6787">
+      <talk><say npc="1">The program exhibits properties of both Machine root functions, and "fuzzy" or "intuitive" logic routines; this mix of types is unusual and, I will admit, somewhat baffling.&#10;&#10;In order to hasten our understanding of the program, we have decided to distribute code samples to contracted engineers possessing a variety of specializations. Please take this code sample. Flood will direct you as to where to transport it.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I've had to do some deep digging for this one, {player}, so you'd better get something useful out of him, or... Hrmph. Use your imagination.</briefing>
+    <enter><say>Whenever the Architect comes around acting all smart and slinging Latin proverbs around, I just remind myself that anyone who's as much of a B movie fan as he is can't be all that bad.</say></enter>
+    <objective goal="2" text="Talk to the Ethereal" type="Talk" npc="2">
+      <talk><say npc="2">Say no more, light-dweller; I sensed the strange code before you entered the room. Remain still, and I will begin the melding.&#10;&#10;Hu-um...&#10;&#10;No! I cannot fathom it. Too illogical...too alien...too human!</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Blasted pseudo-science... Never reliable... Don't know why I bother sometimes...&#10;&#10;{player}! Stop standing there losing moisture. You've got another...person to consult. Tarasova is usually dead wrong...which in my view gives her predictions a certain usefulness.</briefing>
+    <enter><say>I assume the "crossing her palm with silver" part of this has been taken care of. Just give her a whiff of that code you're carrying.</say></enter>
+    <objective goal="3" text="Talk to Madame T." type="Talk" npc="3">
+      <talk><say npc="3">Stop! Madame T knows why you have come... The tea leaves, cards, and planets agree... Ah, you carry the code of that star-crossed program...&#10;&#10;I see... I see...calamity! A soul in agony! Suffering! Death! And yet...hope--love!</say></talk>
+      <done><say>Ohh boy.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Yes, well, that's the problem with "intuition," isn't it, operative? It isn't supposed to make "sense," otherwise nobody would put up with all the hoodoo associated with it.&#10;&#10;You can go and report the results to the Merovingian. Just remember, this wasn't my idea.</briefing>
+    <enter><say>You know, the sad thing is that I think Madame T makes more than we do. The green-headed guy I don't mind so much.</say></enter>
+    <objective goal="4" text="Report to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Yes, I see... Mm... Ah, do not let it trouble you, mon ami. If it was easy to unravel, it would not have been worth capturing, eh?&#10;&#10;Do not worry. There are many things yet to try.</say></talk>
+    </objective>
+  </phase>
+  <finish>"Many things"? Oogh...&#10;&#10;Fine, fine. Come back later. I've got practical issues to worry about now.</finish>
+</mission>
