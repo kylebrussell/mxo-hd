@@ -34,7 +34,7 @@ namespace hds
         public UInt32 item;        // gameobject id for Get, Give and Loot
         public int afterGoal = -1; // opens when this goal is done; otherwise it's open from the start of the phase
         public ushort objectId;    // MissionObjectDef.id for Search, Put and Use
-        public string escortTo = "exit"; // Escort: "exit", "npc:<id>" or "hardline"
+        public string escortTo = "exit"; // Escort: "exit", "npc:<id>", "object:<id>" or "hardline"
         public bool optional;      // the phase can end without it
         public List<MissionLine> talkLines = new List<MissionLine>(); // talking to the NPC while this is open
         public List<MissionLine> doneLines = new List<MissionLine>(); // when it completes

@@ -20,7 +20,7 @@ The client handles most of the display. Our server only has to send the right re
 | Each phase | `80 a3` briefing, `80 9e` waypoints, `80 a0` goals | The waypoint names a door's static object |
 | Lines | `80 a1` | Operator, contact or NPC |
 | Goal done | `80 a0` flag 1 | The client removes it from the Objectives window |
-| Phase done | `80 a1` string `0x2600000c` | "Goals for this area are complete. Find the nearest exit quickly!" |
+| Phase done | `80 a1` string `0x2600000c` or `0x26000004` | "Goals for this area are complete. Find the nearest exit quickly!", or "Goals for this mission phase are complete!" when the player needn't leave (see [Ending a phase](#ending-a-phase)) |
 | End | `80 a2`, then XP and info | The client shows the summary screen and adds "Leave the area now!" itself |
 
 Three things the client depends on, found by trying them:
@@ -58,8 +58,18 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
 
 - `type`: `Talk`, `Defeat`, `Loot`, `Get`, `Give`.
 - `goal` is retail's id, which isn't always the order they open in. `after="2"` opens a goal once goal 2 is done; otherwise it's open from the start of the phase, and they can be done in any order.
+- Kill goals (`Defeat`, `DefeatAll`) can wait too. A kill made before the goal opens isn't lost: when the goal opens, a `Defeat` whose NPC is already dead, or a `DefeatAll` with nobody left, is done at once. So is a `Talk` that finds a hostile ("Find Burdette") if the player kills it before reaching it. Where the target shouldn't be there before the goal opens, have it arrive then (`spawnAfter`, below).
 - `<say>` with no attribute is the operator, `npc="n"` that NPC, `contact="1"` the mission contact.
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
+- On an NPC, `spawnAfter="3"` makes it arrive when goal 3 completes, instead of standing there from the start: reinforcements, an Agent, someone who "just appears". The goal is one of phase `at`'s for an NPC placed in a generated site, and for an NPC placed by x, y, z the first goal 3 to complete in any phase. It appears where it would have stood (the site spot kept for it, or its x, y, z), or 3 m from the player with `spawnAt="player"` (also when it has no place). Its talk lines, `<near npc>` triggers and goals work from the moment it arrives; until then a `<near npc>` trigger on it doesn't fire, and a `DefeatAll` waits for it unless its goal is optional.
+
+```xml
+<npc id="3" handle="Security" type="HOSTILE" at="3" rsi="35000024" spawnAfter="3" spawnAt="player" />
+<phase site="Normal" enemy="Machines" enemies="2" enemiesAfter="3">
+  <objective goal="3" text="Talk to Tarka" type="Talk" npc="2" />
+  <objective goal="4" text="Kill Security" type="Defeat" npc="3" after="3" />
+</phase>
+```
 - `order` is its place in the contact's story chain: a contact offers the first unfinished one, then all of them to replay. Finished missions are in the `char_missions` table.
 - `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood; see Contacts below); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
 
@@ -84,7 +94,7 @@ A phase with `site` is placed when it starts instead of at fixed positions. The 
 ```
 
 - `site`: `Normal` (any ordinary building: SlumApt, GenericApt, Office, Derelict, Warehouse), `Any`, or one style: `SlumApt`, `GenericApt`, `Office`, `RedPillExtraction`, `ZionOutpost`, `Derelict`, `Warehouse`, `Bank`, `Hotel`, `Skyscraper`.
-- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight.
+- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight. With `enemiesAfter="3"` they arrive on their site spots when goal 3 completes, instead of when the phase starts.
 - On an NPC, `at="n"` places it in phase n's site when that phase starts. Without `at` it needs x, y, z and spawns at accept. Leave `level` out to match the player's level.
 - `<object id kind>`: a `Computer`, `Safe` or `Mainframe` already on the floor is used if there is one; otherwise one is spawned at the floor's spawner for that kind, or a `Box` at a box spawner. `Furniture` (a filing cabinet, desk or dresser) and `Phone` are bound to one in place.
   - **Retail did the same.** It bound a spawned object to a static only when the static was the same object (`08 <goid> <static>`: The Internuncio's filing cabinets, dressers). At a spawner it spawned the object free (`0c`, no static): the client's definitions give spawner markers no Info or Usable part. Mission objects carry the key `ff <instance> 02` and use count 1, as retail's wall safes and filing cabinets did.
@@ -97,7 +107,7 @@ Goal types beyond the five above:
 | Type | Attributes | Done when |
 |---|---|---|
 | `DefeatAll` | | every hostile of the phase is dead |
-| `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), or on using a hardline (`to="hardline"`) |
+| `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), beside one of the phase's objects (`to="object:1"`: the player and each NPC within 7 m of it, as "Lead Tarka to the Mainframe"), or on using a hardline (`to="hardline"`) |
 | `Protect` | `npc` | the mission fails if the NPC dies; done with the phase's other goals |
 | `Search` | `object`, `item` | a container opens a loot window holding the item; a computer's Take or Hack gives it straight away |
 | `Put` | `object`, `item` | using the object while carrying the item |
@@ -105,6 +115,21 @@ Goal types beyond the five above:
 | `Upload` | `item` | uploading at a hardline while carrying it |
 
 `optional="1"` on any goal lets the phase end without it.
+
+### Ending a phase
+
+Retail's operator ended a phase with one of two client strings, never both:
+
+- `0x2600000c` `ID_MISSION_GOALSCOMPLETELEAVE`, "Goals for this area are complete. Find the nearest exit quickly!", when the player still had to leave. The next briefing came once they had.
+- `0x26000004` `ID_MISSION_GOALSCOMPLETE`, "Goals for this mission phase are complete!", when they didn't. The next briefing, or the contact's closing line and "Mission Completed!", came in the same second. The transcripts in `research/missions/transcripts/` log 154 of these lines. Each is followed at once by the next briefing or the closing. Typical cases are an upload at a hardline (Merv1-2-3, Zion3-1-1, Merv8-3-4), NPCs who were talked to and then follow into the next phase (Merv3-1-3, Merv11-1-2, Merv7-2-4), and leading an NPC out (Merv11-1-4's Tarka). In Merv11-1-4 (screenshots 370 and 371) phase 3 ends on it at 12:09:48 PM and Flood's phase 4 briefing follows at 12:09:48 PM. That phase's other two ends, at 12:04:20 and 12:05:48, are area lines.
+
+The runtime sends the area line and waits for the player to leave, unless:
+
+- the phase has `leave="0"`. Then it sends the mission-phase line and the next phase starts at once, wherever the player is. `leave="1"` always asks them to leave.
+- the last goal was done on the way out: an `Upload`, or an `Escort` to `exit` or `hardline`;
+- the player is already out, 60 m or more from every way out of the area (or it has none).
+
+Then it sends the mission-phase line and moves on at once. Merv11-2-1 and Merv11-2-3 show only area lines where their phase ends are legible. Merv11-2-1 has no end line visible for its phase 2. Screenshots 40 and 41 meet between 12:54:34 and 12:54:51 PM, so a line may be hidden there.
 
 Mission items are game objects: `Access_Code` 6782, `Map_Disk` 6783, `Recording` 6784, `Frags` 6785, `Virus` 6786, `Data` 6787, `Documents` 6794, `Plan` 6798, `Dossier` 6799, `File` 6800, `Antidote` 6803, `Small_Bomb` 6807, `Statue_Wrapped` 6815, `Package` 6817, `Large_Bomb` 6818, `Device` 6820, `Tracer` 6825, `Medical_Supplies` 6829, `Data_CD` 6831, `Recording_Coded_Message` 6836, `Dossier_Zion_Captain` 6850, `Dossier_Machine_Agent` 6853, `Document_Secret_Agreement` 6858, and the rest of 6782 to 6870 in `data/gameobjects.csv`.
 

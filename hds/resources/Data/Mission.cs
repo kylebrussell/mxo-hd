@@ -58,6 +58,8 @@ namespace hds
         public ushort maxHealth = 500;
         public UInt32 weapon;
         public int at;                     // placed in this phase's site (1-based) when that phase starts, instead of x, y, z
+        public int spawnAfter = -1;        // arrives when this goal completes (phase at's goal, or any phase's without at)
+        public bool spawnAtPlayer;         // an arrival appears beside the player instead of at its spot (spawnAt="player")
         public List<MissionLine> lines = new List<MissionLine>(); // what it says when talked to
     }
 

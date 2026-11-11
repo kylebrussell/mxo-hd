@@ -164,34 +164,68 @@ namespace hds
             foreach (MissionNpc npc in placed)
             {
                 double[] spot = NextSpot();
+                if (npc.spawnAfter >= 0)
+                {
+                    // Arrives when its goal completes: its spot is kept for it
+                    progress.reservedSpots[npc.id] = spot;
+                    continue;
+                }
+
                 MissionRuntime.AddMob(client, MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
                     level: npc.level > 1 ? npc.level : level));
             }
 
-            if (phase.enemies > 0 && !string.IsNullOrEmpty(phase.enemy) && Enemies.TryGetValue(phase.enemy, out var template))
+            if (phase.enemies > 0 && !string.IsNullOrEmpty(phase.enemy) && Enemies.ContainsKey(phase.enemy))
             {
+                List<double[]> enemySpots = new List<double[]>();
                 for (int i = 0; i < phase.enemies; i++)
                 {
-                    double[] spot = NextSpot();
-                    MissionNpc enemy = new MissionNpc
-                    {
-                        id = (ushort)(1000 + at * 50 + i),
-                        handle = template.handle,
-                        friendly = false,
-                        attacksOnSight = true,
-                        rsiHex = template.rsi[i % template.rsi.Length],
-                        level = level,
-                        maxHealth = (ushort)(150 + 40 * level),
-                        weapon = template.weapon
-                    };
-                    Mob mob = MissionRuntime.SpawnNpc(client, mission, enemy, spot[0], spot[1], spot[2]);
-                    MissionRuntime.AddMob(client, mob);
-                    progress.hostiles.Add(mob);
+                    enemySpots.Add(NextSpot());
+                }
+
+                if (phase.enemiesAfter >= 0)
+                {
+                    progress.reservedEnemySpots.AddRange(enemySpots);
+                }
+                else
+                {
+                    SpawnEnemies(client, progress, enemySpots);
                 }
             }
 
             PlaceObjects(client, progress, rng);
             return true;
+        }
+
+        /// <summary>The phase's generated hostiles, at these spots: when it starts, or when its enemiesAfter goal completes.</summary>
+        public static void SpawnEnemies(WorldClient client, MissionProgress progress, List<double[]> spots)
+        {
+            MissionPhase phase = progress.Phase;
+            if (phase == null || string.IsNullOrEmpty(phase.enemy) || !Enemies.TryGetValue(phase.enemy, out var template))
+            {
+                return;
+            }
+
+            int at = progress.phaseIndex + 1;
+            ushort level = PlayerLevel(client);
+            for (int i = 0; i < spots.Count; i++)
+            {
+                double[] spot = spots[i];
+                MissionNpc enemy = new MissionNpc
+                {
+                    id = (ushort)(1000 + at * 50 + i),
+                    handle = template.handle,
+                    friendly = false,
+                    attacksOnSight = true,
+                    rsiHex = template.rsi[i % template.rsi.Length],
+                    level = level,
+                    maxHealth = (ushort)(150 + 40 * level),
+                    weapon = template.weapon
+                };
+                Mob mob = MissionRuntime.SpawnNpc(client, progress.mission, enemy, spot[0], spot[1], spot[2]);
+                MissionRuntime.AddMob(client, mob);
+                progress.hostiles.Add(mob);
+            }
         }
 
         private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
@@ -580,7 +614,7 @@ namespace hds
             Output.WriteDebugLog("[MISSION] Teleported to " + x + "," + y + "," + z);
         }
 
-        private static ushort PlayerLevel(WorldClient client)
+        public static ushort PlayerLevel(WorldClient client)
         {
             byte[] level = client.playerInstance.Level.getValue();
             return (ushort)Math.Max(1, level != null && level.Length > 0 ? level[0] : 1);
