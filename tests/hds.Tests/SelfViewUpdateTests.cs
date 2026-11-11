@@ -78,24 +78,45 @@ public class SelfViewUpdateTests
     }
 
     [Fact]
-    public void Bit20IsOneByteAfterYaw()
+    public void Bit20IsTheFirstByte()
     {
-        // From the 7.6005 client as it started walking after a relog.
+        // From the 7.6005 client as it started walking after a relog: counter 00, action 3e (the walking action other
+        // players get as 01 0a 3e), yaw c6.
         SelfViewEntry entry = Entry("01 26 00 3e c6 00 00");
 
-        Assert.Equal((byte)0x00, entry.State.Action);
-        Assert.Equal((byte)0x3e, entry.State.Yaw);
-        Assert.Equal((byte)0xc6, entry.State.Unknown20);
+        Assert.Equal((byte)0x00, entry.State.Unknown20);
+        Assert.Equal((byte)0x3e, entry.State.Action);
+        Assert.Equal((byte)0xc6, entry.State.Yaw);
         Assert.Equal(5, entry.End);
+    }
+
+    [Fact]
+    public void TheEchoedCounterIsNotForwarded()
+    {
+        // Retail 22 01 98 (counter 01, action 98) goes to others as 01 02 98; a lone counter goes nowhere.
+        byte[] packet = Hex("01 22 01 98 00 00");
+        Assert.True(SelfViewEntry.TryParse(packet, 0, out SelfViewEntry entry, out _));
+        Assert.Equal((byte)0x98, entry.State.Action);
+        Assert.Equal("010298", StringUtils.bytesToString_NS(entry.State.ToForwardedUpdate(packet)).ToLowerInvariant());
+
+        byte[] echo = Hex("01 28 08 da 6b 1d 47 00 00 be 42 6f f8 a5 c6 00 00");
+        Assert.True(SelfViewEntry.TryParse(echo, 0, out SelfViewEntry moved, out _));
+        Assert.Equal("0108da6b1d470000be426ff8a5c6", StringUtils.bytesToString_NS(moved.State.ToForwardedUpdate(echo)).ToLowerInvariant());
+
+        byte[] only = Hex("01 20 08 00 00");
+        Assert.True(SelfViewEntry.TryParse(only, 0, out SelfViewEntry counter, out _));
+        Assert.Null(counter.State.ToForwardedUpdate(only));
     }
 
     [Fact]
     public void Bit20ComesBeforeThePositionInRetail()
     {
-        // Retail 0x2e: action 07, yaw 03, bit-0x20 byte 59, then a position whose y is the usual 95.
+        // Retail 0x2e: counter 07, action 03, yaw 59, then a position whose y is the usual 95.
         SelfViewUpdate state = Entry("01 2e 07 03 59 07 77 78 47 00 00 be 42 0b c7 b3 c7 00 00").State;
 
-        Assert.Equal((byte)0x59, state.Unknown20);
+        Assert.Equal((byte)0x07, state.Unknown20);
+        Assert.Equal((byte)0x03, state.Action);
+        Assert.Equal((byte)0x59, state.Yaw);
         Assert.Equal(95f, state.Y);
         Assert.Equal(63607.03f, state.X, 1);
     }

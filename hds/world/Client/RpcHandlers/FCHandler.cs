@@ -65,6 +65,7 @@ namespace hds
             UInt32 factionId = db.CreateFaction(factionName, handle);
             db.AddCrewToFaction(factionId, crewId);
             db.SetFactionOfCrewMembers(crewId, factionId);
+            db.SetCrewFactionRank(crewId, SocialPackets.TopFactionRank); // the founder's crew leads (ours)
             Output.WriteDebugLog("[SOCIAL] " + handle + " founded faction '" + factionName + "' (" + factionId + ")");
             foreach (WorldClient member in SocialHandler.OnlineWhere(c =>
                          NumericalUtils.ByteArrayToUint32(c.playerInstance.CrewID.getValue(), 1) == crewId))

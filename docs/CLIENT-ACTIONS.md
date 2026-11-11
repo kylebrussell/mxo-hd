@@ -18,21 +18,20 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 30 | 10 | 89 |
-| Partial | 0 | 2 | 0 | 2 |
-| Ignored | 0 | 21 | 49 | 70 |
+| Handled | 49 | 42 | 12 | 103 |
+| Partial | 0 | 0 | 0 | 0 |
+| Ignored | 0 | 6 | 37 | 43 |
 | Wrong | 0 | 0 | 1 | 1 |
-| Not sent by this client | | | | 2 |
-| **Total** | 49 | 53 | 60 | 164 |
+| Not sent by this client | | | | 19 |
+| **Total** | 49 | 48 | 50 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items").
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat room requests (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) turned out never to be sent: the client doesn't register the room commands (see "Chat rooms"); the server handles them anyway. Handled since then: booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item.
 
 The biggest gaps left, by impact:
 
-1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-2. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
-3. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-4. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+1. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+2. **Compiling code** (`60`, `81 2e`, `81 31`): Codex's area (crafting).
+3. **Stance sites** (stance 1, benches): entered through `80 c8`; not done.
 
 ## Login and world entry
 
@@ -77,12 +76,12 @@ The biggest gaps left, by impact:
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle) | D, C 1052 | handled | high |
+| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 would be a room line (`/room`, which the client doesn't register) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
 | `29` | Tell (TargetName, Text, bEchoOnly, ChatHandle) | D, C 81 | handled | high |
-| `30` | Emote (EmoteID, TargetID) | D, C 24 | handled | medium |
-| `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | ignored | medium |
-| `33` | Animation stance start (Stance: `19` 249 times, `0a` 33). Guess: sitting, leaning and the like. Retail sent no RPC back | D, C 302 | ignored | medium |
-| `34` | Animation stance stop (Stance) | D, C 21 | ignored | medium |
+| `30` | Emote (EmoteID, TargetID): every emote; an interactive one (`/hug` and 16 more) asks the target | D, C 24 | handled: the player's own view, and now other players' views (new); a paired one sends `31` to the target (new) | medium |
+| `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | handled (new): `32` to the requester, then its accepted animation | medium |
+| `33` | Leave a stance (the current Stance): `/stand`, or moving out of one. Retail's `19` (249 times) was a stance the server imposed and never released | D, C 302 | handled (new): stance 0 to the own view and everyone else's | medium |
+| `34` | Enter a stance (Stance): `/sit` `0a`, `/dance` `11`..`15` | D, C 21 | handled (new): the stance to the own view and everyone else's, sitting with ConditionStateFlags 0x00200000 | medium |
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
 | `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | ignored | low |
 | `3b` | No fields; two senders, one in the slash command handler (0x62256760). Purpose not determined | D | ignored | low |
@@ -91,24 +90,28 @@ The biggest gaps left, by impact:
 
 ## Chat rooms (custom channels)
 
-All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175). The server has no rooms; none are in the captures. The pairing of request to command is read from the field names; which of `81 c7` and `81 c9` is leave and which destroy is a guess.
+All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175), and **the 7.6005 client never sends any of them**. Its command handler (0x62256760) looks the typed word up in the chat manager's command map (+0xf0, 0x621c0900), then in the macro map (0x629ebe48 +0x40), and prints "Unrecognized command.  Please try again." (0x2e000002) when neither has it. The map is filled once from a fixed list of 116 string ids (0x62254020, looped up to 0x74 at 0x6225466e): `/orgnames` .. `/afk`, with no room command among them. No other code inserts into the map (the only other caller of the insert, 0x62253c20, is never called), and the ids 0x02000160..0x02000175 appear nowhere in client.dll except the handler's own switch, so its room cases are dead code. Nothing the server sends changes that: no feature flag (`81 49`, client-scripts/gameFeatures.py) or setting is read on the way. Checked in the real client (CSR_Tester, 75f540b): `/roomcreate`, `/roomenter` and `/room` all print "Unrecognized command" and send nothing.
+
+The server keeps its room code (the records are client.dll's, the rules ours: see "Chat rooms in detail"). It is reachable only through SocialBot and the headless client, and would serve a client build that registers the commands.
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 c2` | Enter a room (RoomName, Password) | D, S | ignored | medium |
-| `81 c7` | RoomName: leave (guess) | D, S | ignored | medium |
-| `81 c9` | RoomName: create or destroy (guess) | D, S | ignored | medium |
-| `81 cd` | Invite (PlayerNameToInvite, RoomName) | D, S | ignored | low |
-| `81 cf` | Uninvite | D, S | ignored | low |
-| `81 d1` | Kick | D, S | ignored | low |
-| `81 d3` | Ban | D, S | ignored | low |
-| `81 d5` | Unban | D, S | ignored | low |
-| `81 d7` | Make moderator (IsTemporaryModerator) | D, S | ignored | low |
-| `81 d9` | Remove moderator | D, S | ignored | low |
-| `81 db` | Set owner | D, S | ignored | low |
-| `81 dd` | Give voice | D, S | ignored | low |
-| `81 df` | Remove voice | D, S | ignored | low |
-| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/rooms`, `/roomfind` | D, S | ignored | medium |
+| `81 c0` | Create (RoomName, Topic, Password, IsPrivate .. IsGameLocal, MaxOccupancy): `/roomcreate room[:password] [topic]`. Missing from `client-rpc-classes.txt` (vtable 0x6288e7d0, sender 0x622461f0) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c1`) | none |
+| `81 c2` | Enter (RoomName, Password): `/roomenter room[:password]` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c3` to the room; a private room's knock is `81 c5` to its moderators) | none |
+| `81 c5` | Let a waiting player in (PlayerName, RoomName, Allow, never set): `/roomallow room player`. The same class as the server's "%s is requesting entry" | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c6`, then `81 c3`) | none |
+| `81 c7` | Leave (RoomName): `/roomleave` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c8`) | none |
+| `81 c9` | Destroy (RoomName): `/roomdestroy` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 ca`) | none |
+| `81 cd` | Invite (PlayerNameToInvite, RoomName): `/roominvite room player` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 ce`) | none |
+| `81 cf` | Uninvite | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d0`) | none |
+| `81 d1` | Kick | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d2`) | none |
+| `81 d3` | Ban | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d4`) | none |
+| `81 d5` | Unban | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d6`) | none |
+| `81 d7` | Make moderator (IsTemporaryModerator, sent as 0) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d8`) | none |
+| `81 d9` | Remove moderator (IsTemporaryModerator before RoomName) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 da`) | none |
+| `81 db` | Set owner | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 dc`) | none |
+| `81 dd` | Give voice | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 de` (kept, but no room can be moderated: see below)) | none |
+| `81 df` | Remove voice | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 e0`) | none |
+| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/roomfind [node] [filter]`, both words as typed. `/rooms` sends nothing | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 e2`, then `81 e3` per room) | none |
 
 ## Friends, ignore list, who and character info
 
@@ -158,15 +161,15 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `80 f4` | Faction info (FactionID) | D, C 372 | handled | medium |
 | `77` | Disband (GroupType), from `viewflashtraffic.cpp` | D, C 1 | handled | medium |
 | `78` | Deposit to / withdraw from the group bank (GroupType, Amount, Deposit), `viewfactionstatus.cpp` | D, C 1 | handled | medium |
-| `72` | GroupType, PlayerID. Guess: remove a member | D | ignored | medium |
-| `75` | GroupType, PlayerID. Guess: make leader | D | ignored | medium |
-| `73` | CrewID. Guess: leave or request a crew's info | D | ignored | low |
-| `80 80` | Promote / demote a crew member (MemberID, bPromote) | D | ignored | medium |
-| `80 87` | Set the first mate (FirstMateID) | D | ignored | low |
-| `80 84` | Invite a crew into a faction (InviteeName, CrewName, OrganizationID) | D | ignored | medium |
+| `72` | GroupType, PlayerID: boot a team member (team window Boot, 0x621c0c40) or remove a crew member (crew right-click "Remove"), each after a confirm dialog | D | handled (new): `72` to every member, the removed one included | medium |
+| `75` | GroupType, PlayerID: make a member team leader (Promote, 0x621c0700) or crew captain ("Make Captain") | D | handled (new): `75` to every member; `7e` to the crew's faction | medium |
+| `73` | CrewID: remove a crew from the faction (faction members window "Remove", for the leading crew's captain) | D | handled (new): `73` to the faction, `74` if refused | low |
+| `80 80` | Promote / demote a crew in the faction (MemberID is a crew id, bPromote): faction members window | D | handled (new): `7f` to the faction, `80 81` if refused | medium |
+| `80 87` | Set the first mate (FirstMateID; 0 demotes): crew right-click "Make First Mate" / "Demote" | D | handled (new): `80 87` to the crew | low |
+| `80 84` | Create a crew by inviting someone (InviteeName, CrewName, OrganizationID): the crew creation window, not a faction invite | D | handled (new): `80 88` to the invitee, `80 85` to the creator | medium |
 | `80 89` | Hovercraft action (submessage; the server's `80 8a`/`80 8b` carry TransactionCode, HovercraftSlot) | D | ignored | low |
-| `80 91` | Join / leave the team seekers list (RemoveFromSeekerList, ExtraDisciplines, OrgsToWorkWith) | D | ignored | medium |
-| `80 92` | Search the seekers list (MinLevel, MaxLevel, MyFactionOnly, DesiredDisciplines, OrgsToWorkWith) | D, C 2 | ignored | medium |
+| `80 91` | Join / leave the team seekers list (RemoveFromSeekerList, ExtraDisciplines, OrgsToWorkWith): the team window's Seek | D | handled (new); the client answers itself | medium |
+| `80 92` | Search the seekers list (MinLevel, MaxLevel, MyFactionOnly, DesiredDisciplines, OrgsToWorkWith): Find Team Members. Retail answered neither capture (40 s) | D, C 2 | handled (new): `80 93` | medium |
 | `80 f2` | FactionID. Guess: the faction's constructs (answer `80 f3`) | D | ignored | low |
 | `80 f6` | Hack a construct (FactionID, ConstructID), `viewhackconstructs.cpp` | D | ignored | low |
 | `80 ef` | Construct firewall / defence settings | D | ignored | low |
@@ -179,8 +182,8 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `80 98` | Mission details (SessionID, PreviewID, Size, Difficulty, AutoAccept) | D, C 8 | handled | high |
 | `80 9b` | Accept (SessionID, Accepted) | D, C 8 | handled | high |
 | `80 a6` | Abort | D, C 11 | handled | high |
-| `81 91` | An FX token coming back (EventID) | D, C 12 | partial: the tutorial only | medium |
-| `81 90` | Answer to a modal (Message, LeftChosen) | D, C 8 | partial: the tutorial only | medium |
+| `81 91` | An FX token coming back (EventID): the token of a server `81 42`, when the FX ends | D, C 12 | handled (new): any feature's callback (`ClientCallbacks`), else the tutorial | medium |
+| `81 90` | Answer to a modal (Message, LeftChosen): the Message of a server `81 8f`, echoed | D, C 8 | handled (new): any feature's callback (`ClientCallbacks`), else the tutorial | medium |
 | `81 04` | A panel the server showed was used (ViewID, ResponseToken) | D, C 62 | handled (the tutorial is its only user) | low |
 | `81 8d` | Shortcut added to the bar | D, C 20 | handled (tutorial) | low |
 | `59` | Use an item (Slot): mission tickets | D, C 8 | handled | medium |
@@ -196,10 +199,10 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination | medium |
 | `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
 | `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
-| `5b` | ItemHandle | D | ignored | low (purpose unknown) |
-| `5c` | Slot, PersonalInventoryItem; two senders, one in the item menu | D | ignored | medium (purpose unknown) |
-| `60` | Use an item on an object (ObjectID, Slot, PersonalInventoryItem, InvSlotOfToolUsed, FromCrafting) | D | ignored | medium |
-| `66` | Slot, TargetID: the give-to-NPC path SECURE-TRADE.md found (0x621eb080) | D | ignored | medium |
+| `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
+| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | ignored: the server has no luggable objects | low |
+| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | ignored; code compiling is Codex's area | medium |
+| `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
 | `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | ignored (pills work through `80 b9`) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
@@ -357,6 +360,359 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 
 The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. So there is nothing to implement for them, and the server keeps Take All as the only way to loot.
 
+## Chat rooms in detail
+
+The 7.6005 client doesn't register the room commands, so it never sends these requests (see "Chat rooms" above); what follows is what its compiled-in senders and handlers would do, and what the server does with requests from SocialBot or the headless client. No capture has a room. The records are client.dll's. Who gets which record, and the rules, are ours.
+
+**Addresses.** Before sending, the client rewrites room arguments (0x6224ff40) and player arguments (0x6224f880) into chat addresses. Dots become `+`, and `SOE+MXO+<WorldPrefix>+` goes in front, so `/roomenter my.room` sends `SOE+MXO+Recursion+my+room`. For display, the client strips its own world's prefix again (0x6224f020 for rooms, 0x6224e810 for players). The server keeps the name after the prefix (`my+room`), compares names without case, and echoes full addresses back.
+
+**Requests.** Strings are `<u16 offset from the record's first byte>` fields, as everywhere else. A string the sender never set keeps offset 0.
+
+| Request | Layout | Command |
+|---|---|---|
+| `81 c0` (0x11) | +2 RoomName, +4 Topic, +6 Password, +8 IsPrivate, +9 IsModerated, +a IsPersistent, +b IsWorldLocal, +c IsGameLocal, +d MaxOccupancy u32 | `/roomcreate room[:password] [topic]`. IsPrivate is 1 only with a password; the other flags and MaxOccupancy are always 0 |
+| `81 c2` (6) | +2 RoomName, +4 Password | `/roomenter room[:password]` |
+| `81 c7`, `81 c9` (4) | +2 RoomName | `/roomleave`, `/roomdestroy` |
+| `81 cd` .. `81 df` (6) | +2 player, +4 RoomName | `/roominvite`, `/roomuninvite`, `/roomkick`, `/roomban`, `/roomunban`, `/roomvoice`, `/roomunvoice` |
+| `81 d7` (7) | +2 player, +4 RoomName, +6 IsTemporaryModerator (0) | `/roommod` |
+| `81 d9` (7) | +2 player, +4 IsTemporaryModerator (0), +5 RoomName | `/roomunmod` |
+| `81 db` (0xa) | +2 player, +4 RoomName, +6 Status (0) | `/roomsetowner` |
+| `81 c5` (7) | +2 PlayerName, +4 RoomName, +6 Allow (0) | `/roomallow` (its usage line says `/roomallowenter`) |
+| `81 e1` (6) | +2 StartingNodeName, +4 SearchFilter | `/roomfind [node] [filter]`, both words as typed |
+| `28` (8) | +1 ChatType 18, +2 bShout 0, +3 Text (up to 255 characters), +5 RoomName, +7 ChatHandle | `/room room text` (0x6216aff0) |
+
+Five commands send nothing. `/rooms` is accepted and dropped. `/roomsize`, `/roomprivate`, `/roompassword` and `/roomtopic` fall to the client's "not a command" path. The only check the client makes is for missing arguments ("usage: /roomX room player").
+
+**Answers.** Each handler prints one System chat line and keeps no state. A status without the success bit is a failure ("Failed to ... Reason: %s."). Where a record names a player, a name left out (offset 0) means "you". `81 c3` without a name prints "You entered chat room %s."; with a name it prints "%s entered chat room %s.".
+
+| Record | Layout | Prints |
+|---|---|---|
+| `81 c1` | +2 RoomName, +4 Status | "Created chat room %s." |
+| `81 c3`, `81 c8`, `81 ca` | +2 PlayerName, +4 RoomName, +6 Status | entered / left / destroyed ("Destroy chat room successful." without a name) |
+| `81 c5` | +2 PlayerName, +4 RoomName, +6 Allow | "%s is requesting entry into chat room %s." |
+| `81 c6` | +2 PlayerName, +4 RoomName, +6 Status | "You allow entry into chat room %s." |
+| `81 c4` | +2 RoomName, +4 Status | "You were denied entry into chat room %s." Unused, since no command denies entry |
+| `81 ce` .. `81 e0` | +2 target, +4 actor, +6 RoomName, +8 Status | "%s kicks you ..." (no target), "You kick %s ..." (no actor), "%s kicks %s ..." (both) |
+| `81 d8`, `81 da` | +2 target, +4 actor, +6 RoomName, +8 IsTemporaryModerator, +9 Status | the same three forms, with "temporary " when the flag is set |
+| `81 dc` | +2 PlayerNameGainingOwnership, +4 RoomName, +6 Status | "%s gains ownership of chat room %s." |
+| `81 e2` | +2 NumRoomsFound u32, +6 Status | "Found %i matching rooms" |
+| `81 e3` (0x17) | +2 RoomName, +4 RoomTopic, +6 private, +7 moderated, +8 persistent, +9 world-local, +a game-local, +b CurrentOccupancy u32, +f MaxOccupancy u32, +13 RoomIndex u32 | "  Room %s (%i occupants)", then the topic and the flags. MaxOccupancy and RoomIndex are not shown |
+| `81 bf` | +2 ChatHandle, +3 Status | "Failed to send room message.  Reason: %s." |
+| `2e` | ChatType 18, SenderName (+7), RoomName (+9), Text (+b) | "[room] Name: text", in every tab that shows type 8 (the default tab does, 0x62249930). The client does not print its own line |
+
+**Status codes** (`LTOBJSRV_SOECHAT_*`, category 0x0e):
+
+| Code | Name |
+|---|---|
+| `0x8e000084` | SUCCESS |
+| `41` | DESTAVATARDOESNTEXIST |
+| `42` | ADDRESSDOESNTEXIST (no such room) |
+| `48` | ROOM_DESTNOTINROOM |
+| `49` | ROOM_BANNEDAVATAR |
+| `4c` | ROOM_NOTINROOM |
+| `4d` | ROOM_NOPRIVILEGES |
+| `55` | ROOM_ALREADYEXISTS |
+| `5b`, `5c`, `5d` | ROOM_DESTAVATARNOTMODERATOR, NOTINVITED, NOTBANNED |
+| `5e`, `5f`, `60` | ROOM_DUPLICATEBAN, DUPLICATEMODERATOR, DUPLICATEINVITE |
+| `61` | ROOM_ALREADYINROOM |
+| `6e` | INVALIDNODENAME |
+| `7e` | ROOM_DESTAVATARNOTENTERING |
+| `80` | ROOM_WAITINGFORENTRY |
+
+There is no wrong-password code.
+
+The text after "Reason:" is not settled. It comes from a map in the chat manager (+0x100), and nothing in client.dll seems to fill that map, so it is probably empty ("Reason: .").
+
+### What the server does (ours, not retail's)
+
+**Rooms.**
+- Rooms live in memory (`ChatRooms`), not the database. A room goes when it is destroyed, or when its last occupant leaves. It also goes when its owner leaves the world if nobody ever entered it.
+- Creating a room doesn't enter it. The creator becomes the owner and enters with `/roomenter`.
+- Names are 1 to 64 characters. Topics are cut at 255.
+
+**Private rooms** (`/roomcreate room:password`).
+- These let in the owner, moderators, invited players and anyone with the password.
+- Anyone else is told ROOM_WAITINGFORENTRY and put on the room's waiting list. The owner and moderators get `81 c5`.
+- `/roomallow` lets a waiting player in: `81 c6` goes to the moderator, and `81 c3` to the newcomer and the room.
+
+**Who is told.**
+- Entering, leaving and destroying go to the player ("You ...") and to everyone in the room ("%s ...").
+- Kick, ban, unban, invite, uninvite, voice and moderator changes go to the actor, to the player they were done to, and to the room.
+- Leaving the world takes a player out of every room, and the others there get "%s left chat room %s.".
+
+**Who may do what.**
+- Moderators and the owner may invite, uninvite, kick, ban, unban, voice and allow.
+- Only the owner makes and unmakes moderators, gives the room away and destroys it.
+- A ban takes the player out of the room and keeps them out.
+- Naming a handle nobody has gives DESTAVATARDOESNTEXIST.
+
+**Room lines.** The speaker must be in the room; otherwise they get ROOM_NOTINROOM in `81 bf`. A line goes to everyone in the room, the speaker included. The client never sets IsModerated, so no room is moderated and voice changes nothing yet.
+
+**`/roomfind`.** The filter is matched inside room names; with only one word, that word is the filter. `81 e2` with the count comes first, then one `81 e3` per room, sorted by name.
+
+### Dev helper
+
+`?socialbot` (`MXO_DEV_COMMANDS=1`) puts SocialBot, a player played by the server, next to you. `?socialbot off` sends it away.
+
+For rooms:
+- `?socialbot room <name> [password]` makes it try to enter the room and say "Hello from SocialBot.".
+- `?socialbot say <room> <text>` makes it speak.
+- `?socialbot leave <room>` makes it leave.
+
+It can be invited, kicked, banned, and made a moderator or the owner, like anyone else.
+
+## Teams, crews and factions in detail
+
+These requests come only from window buttons and right-click menus, each followed by a confirm dialog. The only group slash commands are `/invite` and `/disband`. GroupType is 1 for a faction, 2 for a crew and 3 for a team.
+
+Retail traffic has only `72 03 <own id>` at login, `72 02` to the remaining member after a `71 02`, two `80 92` searches with no answer, and `76`. Everything else below comes from client.dll.
+
+### Records
+
+**Client to server:**
+
+| Record | Layout | What sends it |
+|---|---|---|
+| `72` (6) | +1 GroupType, +2 PlayerID u32 | Team window Boot (`MTBt`, confirm `MTBC`), or the mini team list (`MTBo`). Crew right-click "Remove" (`CrRm`), offered only to the captain |
+| `75` (6) | +1 GroupType, +2 PlayerID u32 | Team Promote (`MTPr`), or crew right-click "Make Captain" (`CNCp`) |
+| `80 87` (6) | +2 FirstMateID u32 | Crew right-click "Make First Mate" (`CrFM`), or "Demote" on the first mate (`CrDm`), which sends 0 |
+| `80 80` (7) | +2 MemberID u32 (a crew id), +6 bPromote | Faction members window "Promote" (`FMPr`) and "Demote" (`FMDe`). Offered only to a captain whose crew ranks higher than the target |
+| `73` (5) | +1 CrewID u32 | Faction members window "Remove" (`FMRm`). Offered only to the captain of a rank-1 crew |
+| `80 84` | +2 InviteeName offset, +4 CrewName offset (7), +6 OrganizationID, then the crew name, then the invitee | The crew creation window (`viewcrewcreation.cpp`). It prints "Crew create invitation sent." |
+| `80 91` | +2 RemoveFromSeekerList, +3 ExtraDisciplines offset, +5 OrgsToWorkWith offset | Team window Seek (`MTSk`). The client prints "You flag yourself as looking for team." itself |
+| `80 92` | +2 MinLevel, +3 MaxLevel, +4 MyFactionOnly, +5 DesiredDisciplines offset (u32 ability ids), +7 OrgsToWorkWith offset (u8) | Find Team Members, or its advanced form |
+
+Arrays are `<u16 count>` followed by the elements, at the offset given.
+
+**Server to client:**
+
+| Record | Layout | The client |
+|---|---|---|
+| `72` | +1 GroupType, +2 PlayerID | If the id is its own: "You have been booted from your team." (team-worded even for a crew), then it drops the group. For anyone else: "%s has left the mission team. / the crew. / the faction." |
+| `75` | +1 GroupType, +2 id | "You are now the leader ..." or "%s is now the leader of your mission team."; for a crew, "... the captain of your crew." |
+| `80 87` | +2 FirstMateID | "%s is now the first mate of your crew."; no text for 0 |
+| `7f` (6) | +1 MemberID (crew id), +5 NewRank u8 | Sets the crew's rank: "Faction member %s is now Rank %i." |
+| `80 81` (11) | +2 MemberID, +6 bPromote, +7 Status | Error popup only: 0x0d00000b "Promotee not found.", 0x0d000010 "Promoter not found...", 0x0d000014 "Promoter is not higher rank.", 0x0d000015 "...illegal rank configuration." |
+| `7e` (42) | +1 CrewID, +5 NewCaptainID, +9 name (32 bytes), +0x29 online | Updates the captain of one crew in the faction's crew list |
+| `73` / `74` | +1 CrewID / +1 CrewID, +5 Status | `73`: if it is its own crew, the faction is cleared; otherwise "%s has left the faction.". `74`: "Failed to eject faction." |
+| `80 85` | +2 CrewID, +6 name offset (0x0d), +8 OrganizationID, +9 Status, then the name | Status 0: the creator is captain of a one-member crew, "Crew created.". Otherwise "Crew could not be created. ...": 0x0d00001e declined, 1f a request in progress, 20 already a member, 21 invalid name |
+| `80 93` | +2 Members offset (4), then `<u16 count>` and 63-byte entries: 00, char id u32, handle (32 bytes), level, a flag, best discipline (ability id u32), five u32 | One row per player. A count of 0 shows "No matching players could be found!" |
+
+**Ranks.** A crew has a captain, one first mate and plain members. `80 86` has no per-member rank: it carries the captain and first mate ids in its header. In a faction, each crew has a rank from 1 (leading) to 5, the last byte of each crew in `7c` mode 2. Retail lists show ranks 1 to 4, with up to three crews at rank 1.
+
+### What the server does (ours, not retail's)
+
+**Teams.**
+- Only the leader may boot or promote. Anyone else gets `6f 03` with MTNOTTEAMLEADER, as for a disband.
+- A boot sends `72 03 <id>` to every member, the booted one included, and MissionTeamID 0 to the booted one.
+- A new leader is `75 03 <id>` to every member.
+
+**Crews.**
+- Only the captain may remove a member, name a captain or name a first mate.
+- A removal sends `72 02 <id>` to every online member, the removed one included, and CrewID and FactionID 0 to the removed one.
+- A new captain is `75 02 <id>` to every member and is stored. If the new captain was first mate, the crew has no first mate.
+- If the old captain was the faction's master, the new one becomes master. The faction's other crews get `7e`.
+- A first mate is `80 87 <id>` to every online member.
+
+**Faction ranks.**
+- The founder's crew starts at rank 1 and crews that join start at 5. Crews from before ranks were kept read as 1 for the master's crew and 5 for the rest.
+- A captain may move another crew up or down one step if their own crew ranks higher (a smaller number), within 1 to 5. That can make several crews rank 1, as retail had.
+- Success is `7f` to every online member of the faction. A refusal is `80 81`, with promoter not higher (0x0d000014) or illegal ranks (0x0d000015).
+- The captain of a rank-1 crew may remove another crew. That crew's members lose the faction, and everyone in the faction gets `73`. A refusal is `74` with 0x0d000014.
+
+**Creating a crew from its window (`80 84`).**
+- The invitee gets the usual `80 88` invite. The crew is created only when they accept.
+- On acceptance the creator gets `80 85` with the new crew id and status 0, then the member list. A decline gives `80 85` with 0x0d00001e.
+- The creator must have no crew, the name must be new and 1 to 31 characters, and the invitee must be online and without a crew. Otherwise `80 85` comes back at once with the matching code.
+- The organisation the window picked is stored with the crew.
+
+**Looking for team.**
+- `80 91` puts the player on the list or takes them off. Leaving the world takes them off too.
+- `80 92` answers with the other seekers in the level range, in the player's faction if asked, with a wanted discipline and an organisation from the lists if given, sorted by level.
+- A range of 0..0 means any level, and the two ends are swapped if given the wrong way round. Retail's own search sent 64..50.
+- Best discipline is the player's TitleAbility. The flag byte is 0.
+
+### Dev helper
+
+SocialBot (`?socialbot`, see "Chat rooms in detail") accepts any team, crew or faction invite a second after getting it.
+
+| Command | What SocialBot does |
+|---|---|
+| `?socialbot leader` | Hands the team, or a crew it captains, back to you |
+| `?socialbot seek` | Puts itself on the looking-for-team list |
+
+A bot has no character row, so its crew membership is kept in memory only. If it is captain when dismissed, or when you leave, the crew goes back to you.
+
+A bot can't captain a crew of its own, so faction ranks and removing a crew need a second player. The headless scenario `faction-ranks-and-removing-a-crew` plays that part.
+
+## Emotes and stances in detail
+
+Retail sent no RPC back for a stance or a plain emote. Everything is in the view updates: the player's own view (view 2), and every other player's view of them.
+
+### The animation block
+
+A view update's state part is `01 <flags>`, with one field per flag, in the order 0x20, 0x01, 0x02, 0x04, 0x08:
+
+| Flag | Field |
+|---|---|
+| 0x20 | The animation block, below |
+| 0x01 | A u16 |
+| 0x02 | The action byte |
+| 0x04 | The yaw |
+| 0x08 | The position, three f32 |
+
+The block is `<counter> <kind> <stance> <25 <action u16> | 00> 00 10`. It is followed by the partner u32 for kinds 01 and 02, and kind 02 then adds four f32: 0, 0, 140, pi. Those four floats are the same in every capture.
+
+| Kind | Meaning | Retail example |
+|---|---|---|
+| `40` | A plain emote or a stance | /clap `40 00 25 04 00 00 10`; sitting `40 0a 00 00 10` |
+| `01` | A paired emote's request (the 'Beckon' action) | `01 00 25 d5 00 00 10 17 00 96 00` |
+| `02` | The accepted paired animation | `02 00 25 d6 00 00 10 <partner> <16 bytes>` |
+
+No client.dll reader for the block was found, so these are retail templates.
+
+**Own view and other views.**
+- The own view uses `28` (block, position), followed by a u32 sim time in ms.
+- Other views use `2a` (block, a `00` action byte, position) and have no time.
+- A sit or stand also carries ConditionStateFlags bit 0x00200000. In the own view it goes in the sub-view `03` attribute part as attribute 42 (`80 80 80 80 80 80 01 <u32>`); in other views as attribute 30 (`80 80 80 80 04 <u32>`).
+
+Retail examples:
+
+| Capture | Bytes |
+|---|---|
+| WhiteHallwaysWarboyTeleportDoors | `04 00 03 2a 0b 40 0a 00 00 10 00 <pos> 80 80 80 80 04 00 00 20 00` |
+| entilsar, own view | `02 00 03 28 12 40 0a 00 00 10 <pos> <time> 80 80 80 80 80 80 01 00 00 28 01` |
+
+**The counter** is one per character and the same in every view. The client echoes it back as the first field of its own update. In retail `01 28 08 <pos>` followed the server's `01 28 08 40 13 ...`, and `22 01 98`, `22 02 98`, `22 03 74` count up.
+
+That fixes the field order in client updates, which the server had wrong (action first): it is the counter, then the action, then the yaw. The echo is no longer forwarded to other players, whose clients would read it as the start of an animation block.
+
+### Paired emotes
+
+The 17 interactive emotes are in the client's Python `emotes` module: `addInteractiveEmote`, in `research/client-scripts/emotes.py`.
+
+Each one gets three action ids from `createActionID` in turn: request, accepted, refused. /shakehands is 189/190/191, and the list runs up to /bangbang at 237/238/239. /manhug is 213/214, which matches retail's `d5`/`d6`.
+
+The ids are per viewer: `<u16 view as that client sees the player> <spawn id> 00`, and a client's own character is view 2.
+
+| Record | Layout | Notes |
+|---|---|---|
+| `30` (C, 9) | EmoteID u32, TargetID u32 | Every emote. Before sending, the client checks the player is standing and has a target |
+| `31` (S, 9) | EmoteID, RequesterID | Handler 0x62252c50. The client must already see the requester. It answers by itself with Result 7 if it ignores them, 4 if a request is already pending, and 2 under its auto-decline check. Otherwise it shows the yes/no dialog "Interactive Emote" |
+| `32` (both, 15) | Result u8, EmoteID, Partner, WaitTime f32, IsRequester u8 | The target's client sends Result 1 (accept) or 2 (refuse), with WaitTime 0 and IsRequester 0. The requester's client prints only when IsRequester is 1 |
+
+`32` Result values, printed for the requester:
+
+| Result | Message |
+|---|---|
+| 1 | "%s agrees to a hug." |
+| 0, 2 | The refusal text |
+| 3 | "You cannot reach %s..." |
+| 4 | "%s cannot perform an interactive emote with you." |
+| 5 | "...not a player" |
+| 6 | "You must wait..." |
+| 7 | "%s is ignoring you" |
+| 8 | "...with an opponent." |
+
+**Retail, both sides of a /manhug (two-person capture):**
+1. The requester sends `30 f5 0d 00 58 17 00 96 00`.
+2. Its own view gets the request animation. The target gets `31 f5 0d 00 58 0f 00 51 00` and sees the requester beckon.
+3. The target sends `32 01 ... 00`.
+4. Seven seconds after the request, the requester gets `32 01 f5 0d 00 58 17 00 96 00 00 00 00 00 01` and the accepted animation, in its own view and the target's.
+5. The target never gets a `32`, and its own view gets nothing.
+
+**What the server does.**
+
+The rules are retail's flow; the checks are ours:
+- A plain emote now plays in other players' views too, not only the player's own.
+- A paired request is refused at once with `32`, IsRequester 1, in these cases:
+  - Result 5 when the target is no player.
+  - Result 3 when the target is more than 1500 units away (the client's limit is 1200).
+  - Result 4 when the target isn't standing, or either player already has a request open.
+- On acceptance, only the requester's view animates, as retail.
+- A refusal or a client-side answer (4, 7) is passed to the requester.
+- With no answer in 20 s (the client's EmoteQueryDurationMS), the requester gets Result 0, which prints the refusal text. That timeout is ours: the client never sends one.
+- No refused animation is played; no capture has a refusal.
+
+### Stances
+
+`docs/CLIENT-ACTIONS.md` used to have these the wrong way round.
+
+**`34 <stance>` enters a stance.**
+- /sit sends `34 0a`.
+- /dance and /dance1–5 send `34 11`–`34 15`.
+
+**`33 <current stance>` leaves one.** The client sends it for /stand, for /sit while sitting, and once when the player moves out of a locked stance. It keeps resending `33` until it sees stance 0: in the shutdown capture (ProxyM2_m2_packets6) the server imposed stance `19` and never released it, and the client sent `33 19` 1,906 times.
+
+**Other values.**
+- Stance 1 is a stance-site object such as a bench, entered by using it (`80 c8`).
+- Free-moving stances are 0, 9, 0x0b, 0x0c and 0x1a (0x6266b7e0).
+
+**The server.**
+- `34` stores the stance and sends it to the own view and everyone else's. Sitting sets ConditionStateFlags 0x00200000 and sends it with the stance.
+- `33` sends stance 0 and clears the bit.
+- Not done: a player who comes into view later sees the sitter standing, because the view creation doesn't carry the stance; and the stance-site objects.
+
+### Dev helper
+
+SocialBot (`?socialbot`) accepts any paired emote a second after it is asked.
+
+| Command | What SocialBot does |
+|---|---|
+| `?socialbot hug [emote id hex]` | Asks you for a paired emote (a hug by default) |
+| `?socialbot sit`, `?socialbot dance`, `?socialbot stand` | Takes that stance, so you see another player's stance |
+
+## Item requests in detail
+
+None of `5b`, `5c`, `60`, `61`, `66` or `80 c6` appears in the 339 captures, so all of this comes from client.dll.
+
+**`66 <Slot u8> <TargetID u32>`: giving a mission item by dragging it.**
+- The trigger is a bag item dropped on a world object (drop handler destination 0). That goes to the trade sender 0x621eb790, which takes this path (0x621eb080) instead of `81 82` when the target lists interface 0x31.
+- Before sending, the client checks two things. The target must also have interface 0x25 and the component 0x1000035. The bag entry's second dword must have bit 31 set and its low bits must equal the NPC's key. That dword is the descriptor `BuildMissionItemAdd` writes.
+- If the checks pass, the client prints "You hand over the %s." and sends `66`, leaving the slot alone. If they fail, it prints "The NPC will not accept your trade request." and sends nothing.
+- TargetID is `<view u16> <spawn id> 00`, as for trades.
+
+**What the server does with `66`.** It runs the NPC menu's Give (`80 c7 ... 0e`) for that NPC: the mission's Give goal takes the item (`5f`) and completes (`80 a0`). For the menu's Give, retail sent `5f 07 00 01`, `81 22`, then the goal.
+
+If no Give goal wants the item from that NPC, the server says "They don't want that." That text is ours: the client has already said it handed the item over, and the item is still in the bag.
+
+**`60`: compile.**
+- Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
+- It comes from the Compile window's button, which an `80 bc` for ability 969 opens, and from the Loading Area storage window's compile. PersonalInventoryItem 0 means the slot is a code storage slot.
+- The answer is `61 <ResultCode u8>`. The client acts on it only while the Compile window is open:
+
+| ResultCode | The client shows |
+|---|---|
+| 0 | placed in the inventory |
+| 1 | failed |
+| 2 | ends the session |
+| 3 | inventory full |
+| 4 | not enough information |
+| 5 | singleton |
+
+- This is code compiling, Codex's area, so it is left alone here.
+
+**`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
+- It is sent when a dragged bag item is released over the world.
+- The client refuses anything that isn't luggable before sending: "You can only drop luggable objects in the world."
+- Offline, the client spawns the object itself. Online, it waits for the server, which has no luggable objects.
+
+**`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
+
+## Prompts and FX tokens
+
+The client hands two things back unchanged:
+- The Message of a two-button prompt. The server sends `81 8f <image> <string id> 1c 00 <Message> <left> <right> ...`, and the client answers `81 90 <Message> <LeftChosen>`.
+- The token of an FX. The server sends `81 42 <fx> <token> <user data>`, and when the FX ends the client sends `81 91 <token>`.
+
+Only the tutorial used either before. `ClientCallbacks` (ours) lets any feature attach a callback: `ShowModal(client, image, string, left, right, onAnswer)` and `PlayFx(client, fx, onEnd)`.
+
+Their Messages and tokens start at 0x10000, above the tutorial's script numbers. An answer or token nobody registered goes on to the tutorial, as before. A callback runs once. Each player keeps the newest 32 callbacks of each kind, because a prompt can be closed without an answer.
+
+Dev helpers (`MXO_DEV_COMMANDS=1`):
+- `?ask [string id hex]` opens a Yes/No prompt and says "You answered Yes." or "You answered No.".
+- `?fxdone <fx id hex>` plays an FX and says "The FX ended." when the client reports it.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -419,3 +775,57 @@ A split starts from the item's right-click menu, not a modifier key. client.dll'
 6. Merge: drag one of the two stacks (plain left drag) and drop it on the other stack's slot. That is the only way to get `67`: the drop handler (0x620a0504) sends it when the destination slot holds the same item. Expect one stack with the total and the other slot empty; the log shows `[INVENTORY] Merged slot ... into ...`.
 7. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
 8. Note anything the client shows that the server didn't confirm, such as a count that jumps back or a stack that reappears.
+
+### Chat rooms
+
+The client doesn't register the room commands, so there is nothing to click through.
+
+1. `/roomcreate Lounge`. Expect "Unrecognized command.  Please try again." and no `81 c0` in the server log. Anything else means this client build does register them: note it.
+2. The server side (create, enter, kick, ban, private rooms, find, room lines) is covered by the headless scenarios `chat-rooms-create-talk-moderate-and-find` and `socialbot-in-a-chat-room`.
+
+### Teams
+
+1. `?socialbot`, then `/invite SocialBot`. Expect SocialBot to join your mission team a second later and appear in the team window.
+2. In the team window, click SocialBot, then Promote, then Yes in the confirm dialog. Expect "SocialBot is now the leader of your mission team.".
+3. `?socialbot leader`. Expect "You are now the leader ..." (the client's own wording).
+4. Click SocialBot, then Boot, then Yes. Expect "SocialBot has left the mission team." and SocialBot gone from the team window.
+5. Looking for team:
+   1. `?socialbot seek`. Expect "SocialBot is looking for a team.".
+   2. Open Find Team Members and search. Expect a row for SocialBot, at your level, with your discipline.
+   3. Click Seek in the team window. Expect "You flag yourself as looking for team.". Click it again: "You are no longer flagged ...".
+6. Note whether the boot and promote buttons need anything but left clicks, and anything the windows show that the server left empty.
+
+### Crews
+
+The crew window's Remove, Make Captain and Make First Mate are right-click menu entries. The headless scenario `crew-create-first-mate-captain-and-remove` covers them.
+
+1. With no crew, open the crew creation window. Type the name `Botcrew` and the invitee `SocialBot`, then create. Expect "Crew create invitation sent.". A second later expect "Crew created." and a crew window listing you as captain and SocialBot.
+2. If right-click menus work: right-click SocialBot and choose Make First Mate. Expect "SocialBot is now the first mate of your crew." and " - FM" after its name.
+3. Make Captain on SocialBot. Expect "SocialBot is now the captain of your crew.". Then `?socialbot leader`: "You are now the captain ...".
+4. Remove on SocialBot. Expect "SocialBot has left the crew.".
+5. `?socialbot off` while SocialBot is captain. Expect the crew to be yours after a relog.
+
+### Emotes and stances
+
+1. `/sit`. Expect your character to sit. `/stand`: it stands. `/sit`, then walk forward (W): it stands up and walks, and the server log shows `[EMOTE] ... stance 00` once, not a stream of them.
+2. `/dance`. Expect a dance; walking stops it.
+3. `?socialbot`, then `?socialbot sit`. Expect SocialBot to sit where it stands. `?socialbot dance`: it dances. `?socialbot stand`: it stands.
+4. Click SocialBot to target it, then `/hug`. Expect your character to beckon, and a second later "SocialBot agrees to a hug." with the hug playing between you.
+5. `?socialbot hug`. Expect the "Interactive Emote" dialog asking whether you accept a hug from SocialBot. Click Yes: SocialBot plays the hug with you. Do it again and click No: nothing plays.
+6. `/clap` with SocialBot nearby. Your own clap should look as before.
+7. `/hug` with no target: the client's own message. `/hug` on an NPC: "...not a player".
+8. Note whether the hug lines the two characters up, or plays with them apart. The four floats after the partner (0, 0, 140, pi) are copied from retail, and their meaning (offset and facing) is a guess.
+
+### Giving a mission item by dragging it
+
+1. Take a mission with a Give goal, for example Tyndall's "Computer Crackdown" (the data disk to Alcor), and play it until the disk is in your bag.
+2. With Alcor in view, left-drag the disk from the bag onto Alcor and release.
+3. Expect "You hand over the Data CD." (the client's own line), the disk gone from the bag, and the goal "Give the data disk to Alcor" done.
+4. Drag any other bag item onto an NPC. Expect "The NPC will not accept your trade request." from the client, and nothing from the server.
+5. If the hand-over line appears but the goal doesn't complete, note it, and note whether "They don't want that." followed.
+
+### Prompts and FX callbacks
+
+1. `?ask`. Expect a Yes/No prompt ("Spawn another opponent for practice?"). Click Yes: "You answered Yes.". `?ask` again and click No: "You answered No.".
+2. `?fxdone 1`. Expect an effect on your character, then "The FX ended." when it finishes. If no line appears, try another FX id from `data/fxlistreal.txt` and note which ones report their end.
+3. Play the tutorial's pill choice and its practice prompt: they must still work (they use their own Messages).

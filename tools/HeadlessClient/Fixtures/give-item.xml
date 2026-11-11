@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test-only catalog, copied into one disposable headless server's working directory: get a mission item from one NPC
+     and hand it to another by dragging it (client 66). -->
+<mission id="399903" title="Give Item Fixture" description="Hand a mission item over."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <npc id="1" handle="Courier" type="FRIENDLY" at="1" rsi="a8060090" />
+  <npc id="2" handle="Receiver" type="FRIENDLY" at="1" rsi="fc0e0004" />
+  <phase site="Normal" leave="0">
+    <briefing>Give item fixture.</briefing>
+    <objective goal="1" text="Get the disk from the courier" type="Get" npc="1" item="6831" />
+    <objective goal="2" text="Give the disk to the receiver" type="Give" npc="2" item="6831" after="1" />
+  </phase>
+  <finish>Give item fixture completed.</finish>
+</mission>

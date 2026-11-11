@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 
 namespace hds
 {
     /// <summary>
-    /// The state part of a client's update of its own view: <c>&lt;flags&gt; [action] [yaw] [b20] [x y z]</c>.
+    /// The state part of a client's update of its own view: <c>&lt;flags&gt; [b20] [action] [yaw] [x y z]</c>.
     /// The flag byte is a bitmask; each set bit adds a field, in this order:
-    /// 0x02 action (u8), 0x04 yaw (u8), 0x20 an unidentified byte, 0x08 position (3 x f32 LE).
+    /// 0x20 the animation counter echoed back (u8), 0x02 action (u8), 0x04 yaw (u8), 0x08 position (3 x f32 LE).
+    /// The server's own updates use the same order with a longer 0x20 field (an animation block, see AnimationPackets);
+    /// the client echoes that block's counter, as retail clients did (ProxyM2_m2_packets: <c>01 28 08 &lt;pos&gt;</c>
+    /// after the server's <c>01 28 08 40 13 ...</c>), and retail's <c>22 01 98</c>, <c>22 02 98</c>, <c>22 03 74</c>
+    /// count up in the first byte.
     /// Seen from the 7.6005 client while walking, turning and strafing (02, 04, 06, 08, 0a, 26) and in
     /// the retail captures under research/ (also 0c, 0e, 20, 22, 24, 2a, 2c, 2e). Bits 0x01, 0x10, 0x40
     /// and 0x80 carry fields whose layout isn't known, so updates using them are not parsed.
@@ -54,6 +59,12 @@ namespace hds
             var result = new SelfViewUpdate { Flags = flags, Start = offset };
             int pos = offset + 1;
 
+            if ((flags & Flag20) != 0)
+            {
+                if (pos + 1 > buffer.Length) return false;
+                result.Unknown20 = buffer[pos++];
+            }
+
             if ((flags & FlagAction) != 0)
             {
                 if (pos + 1 > buffer.Length) return false;
@@ -64,12 +75,6 @@ namespace hds
             {
                 if (pos + 1 > buffer.Length) return false;
                 result.Yaw = buffer[pos++];
-            }
-
-            if ((flags & Flag20) != 0)
-            {
-                if (pos + 1 > buffer.Length) return false;
-                result.Unknown20 = buffer[pos++];
             }
 
             if ((flags & FlagPosition) != 0)
@@ -89,14 +94,19 @@ namespace hds
 
         /// <summary>
         /// The update as other players' views receive it: <c>01 &lt;flags&gt; &lt;fields&gt;</c>, the same layout
-        /// (retail entries for other players look like <c>&lt;view&gt; 01 0a 3e &lt;x y z&gt;</c>).
+        /// (retail entries for other players look like <c>&lt;view&gt; 01 0a 3e &lt;x y z&gt;</c>), less the echoed counter:
+        /// to another client bit 0x20 starts an animation block, so a lone counter byte would be read as one. Null when
+        /// nothing is left.
         /// </summary>
         public byte[] ToForwardedUpdate(byte[] buffer)
         {
-            byte[] update = new byte[1 + End - Start];
-            update[0] = SelfViewEntry.PartState;
-            Array.Copy(buffer, Start, update, 1, End - Start);
-            return update;
+            List<byte> update = new List<byte> { SelfViewEntry.PartState, (byte)(Flags & ~Flag20) };
+            int from = Start + 1 + (Unknown20.HasValue ? 1 : 0);
+            for (int i = from; i < End; i++)
+            {
+                update.Add(buffer[i]);
+            }
+            return update[1] == 0 ? null : update.ToArray();
         }
 
         private static float ReadSingle(byte[] buffer, int pos)

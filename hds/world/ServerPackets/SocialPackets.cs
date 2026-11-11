@@ -332,6 +332,144 @@ namespace hds
             return result;
         }
 
+        // ---- membership changes (client.dll layouts; no retail capture has these answers) ---------------------------
+
+        // Faction rank change refusals (80 81), as the client's handler 0x621ba610 names them.
+        public const uint FactionPromoteeNotFound = 0x0d00000b;
+        public const uint FactionPromoterNotFound = 0x0d000010;
+        public const uint FactionPromoterNotHigher = 0x0d000014;
+        public const uint FactionIllegalRanks = 0x0d000015;
+
+        /// <summary>Faction ranks run from 1 (the leading crew) to 5.</summary>
+        public const ushort TopFactionRank = 1;
+        public const ushort BottomFactionRank = 5;
+
+        /// <summary>75 &lt;type&gt; &lt;charId&gt; (crew, team) or &lt;crewId&gt; (faction): the group has a new leader
+        /// (handler 0x62178d5e: "%s is now the leader of your mission team.", "... the captain of your crew.").</summary>
+        public static byte[] NewLeader(byte groupType, UInt32 id)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x75);
+            pak.AddByte(groupType);
+            pak.AddUint32(id, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>80 87 &lt;FirstMateID&gt;: "%s is now the first mate of your crew." (0x621a9bb0); 0 = none, no text.</summary>
+        public static byte[] FirstMate(UInt32 charId)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x8087, 0);
+            pak.AddUint32(charId, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>7f &lt;crewId&gt; &lt;rank u8&gt;: "Faction member %s is now Rank %i." (0x621bbab0).</summary>
+        public static byte[] FactionRank(UInt32 crewId, byte rank)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x7f);
+            pak.AddUint32(crewId, 1);
+            pak.AddByte(rank);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>80 81 &lt;crewId&gt; &lt;bPromote&gt; &lt;Status&gt;: only ever an error popup (0x621ba610).</summary>
+        public static byte[] FactionRankFailed(UInt32 crewId, bool promote, UInt32 status)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x8081, 0);
+            pak.AddUint32(crewId, 1);
+            pak.AddByte((byte) (promote ? 1 : 0));
+            pak.AddUint32(status, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>7e &lt;crewId&gt; &lt;captain charId&gt; &lt;captain handle, 32 bytes&gt; &lt;online u8&gt; (42 bytes): a
+        /// crew of the faction has a new captain (0x621ba500).</summary>
+        public static byte[] FactionCrewCaptain(UInt32 crewId, UInt32 captainCharId, string captainHandle, bool online)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x7e);
+            pak.AddUint32(crewId, 1);
+            pak.AddUint32(captainCharId, 1);
+            pak.AddByteArray(FixedString(captainHandle, 32));
+            pak.AddByte((byte) (online ? 1 : 0));
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>73 &lt;crewId&gt;: a crew left the faction ("%s has left the faction."; the crew's own members lose
+        /// the faction, 0x621be610).</summary>
+        public static byte[] FactionCrewRemoved(UInt32 crewId)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x73);
+            pak.AddUint32(crewId, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>74 &lt;crewId&gt; &lt;Status&gt;: "Failed to eject faction."</summary>
+        public static byte[] FactionRemoveFailed(UInt32 crewId, UInt32 status)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddByte(0x74);
+            pak.AddUint32(crewId, 1);
+            pak.AddUint32(status, 1);
+            return pak.ReturnFinalPacket();
+        }
+
+        // Crew creation answers (80 85, handler 0x621a9520). 0 sets the crew up with the creator as its captain.
+        public const uint CrewCreateDeclined = 0x0d00001e;       // "... Invitation was declined."
+        public const uint CrewCreateInProgress = 0x0d00001f;     // "... Previous crew creation or invitation request in progress."
+        public const uint CrewCreateAlreadyMember = 0x0d000020;  // "... You are already a member of a crew."
+        public const uint CrewCreateInvalidName = 0x0d000021;    // "... The crew name is not valid."
+
+        /// <summary>80 85 &lt;crewId&gt; 0d 00 &lt;org u8&gt; &lt;Status&gt; &lt;sized name&gt;: the answer to the crew creation
+        /// window's 80 84. Status 0: "Crew created." and the creator is the captain of a one-member crew.</summary>
+        public static byte[] CrewCreated(UInt32 crewId, string crewName, byte org, UInt32 status)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x8085, 0);
+            pak.AddUint32(crewId, 1);
+            pak.AddUint16(0x0d, 1);
+            pak.AddByte(org);
+            pak.AddUint32(status, 1);
+            pak.AddSizedTerminatedString(crewName ?? "");
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>One player in a team search result (80 93): 63 bytes, read by 0x620dad30.</summary>
+        public struct Seeker
+        {
+            public UInt32 CharId;
+            public string Handle;
+            public byte Level;
+            public UInt32 BestDiscipline;
+        }
+
+        /// <summary>80 93 04 00 &lt;count u16&gt; then per player 00 &lt;charId&gt; &lt;handle, 32 bytes&gt; &lt;level u8&gt;
+        /// &lt;flag u8&gt; &lt;best discipline ability u32&gt; &lt;5 x u32&gt;. A count of 0 shows "No matching players could be
+        /// found!". The flag and the five u32s aren't shown; they go as 0.</summary>
+        public static byte[] SeekerResults(IList<Seeker> seekers)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16(0x8093, 0);
+            pak.AddUint16(4, 1);
+            pak.AddUint16((UInt16) seekers.Count, 1);
+            foreach (Seeker seeker in seekers)
+            {
+                pak.AddByte(0x00);
+                pak.AddUint32(seeker.CharId, 1);
+                pak.AddByteArray(FixedString(seeker.Handle, 32));
+                pak.AddByte(seeker.Level);
+                pak.AddByte(0x00);
+                pak.AddUint32(seeker.BestDiscipline, 1);
+                pak.AddByteArray(new byte[20]);
+            }
+
+            return pak.ReturnFinalPacket();
+        }
+
         /// <summary>Exactly <paramref name="size"/> bytes: the text, then zeros (cut so a terminator always fits).</summary>
         public static byte[] FixedString(string value, int size)
         {

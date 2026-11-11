@@ -216,6 +216,23 @@ namespace hds
                     Store.currentClient.FlushQueue();
                 }
 
+                if (command.Equals("?ask") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: a Yes/No prompt whose answer comes back through ClientCallbacks (?ask [string id hex])
+                    WorldClient asker = Store.currentClient;
+                    UInt32 askString = commands.Length > 1 ? Convert.ToUInt32(commands[1], 16) : 0x88000034; // "Spawn another opponent for practice?"
+                    ClientCallbacks.ShowModal(asker, 0, askString, MissionStaging.StringYes, MissionStaging.StringNo,
+                        left => new ServerPackets().sendSystemChatMessage(asker, "You answered " + (left ? "Yes." : "No."), "BROADCAST"));
+                }
+
+                if (command.Equals("?fxdone") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev: ?fxdone <fx id hex> plays an FX and says when the client reports it ended (81 91)
+                    WorldClient watcher = Store.currentClient;
+                    ClientCallbacks.PlayFx(watcher, Convert.ToUInt32(commands[1], 16),
+                        () => new ServerPackets().sendSystemChatMessage(watcher, "The FX ended.", "BROADCAST"));
+                }
+
                 if (command.Equals("?elevator") && commands.Length == 2 &&
                     Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
@@ -405,6 +422,19 @@ namespace hds
                 {
                     new ServerPackets().sendSystemChatMessage(Store.currentClient,
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
+                if (command.Equals("?socialbot"))
+                {
+                    // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
+                    // one client can see the other side (docs/CLIENT-ACTIONS.md). ?socialbot off sends it away.
+                    string reply = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                        ? SocialBot.Command(Store.currentClient, commands.Skip(1).ToArray())
+                        : "?socialbot is a dev command (start the server with MXO_DEV_COMMANDS=1).";
+                    if (reply != null)
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                    }
                 }
 
                 if (command.Equals("?pvpflag") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")

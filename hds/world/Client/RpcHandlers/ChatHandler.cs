@@ -32,6 +32,10 @@ namespace hds
                     //Maybe a parameter			
                     chatCommands.parseCommand(text); // Parse for commands
                 }
+                else if (ChatRoomHandler.TrySendRoomLine(Store.currentClient, packetData, text))
+                {
+                    // /room <room> <text>
+                }
                 else if (SocialHandler.TrySendGroupChat(Store.currentClient, line.Channel, text))
                 {
                     // Crew, faction or team channel.

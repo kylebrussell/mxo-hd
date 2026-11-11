@@ -36,6 +36,7 @@ public class IgnoreListTests
     }
 }
 
+[Collection("ChatAddress")]
 public class ChatAddressTests
 {
     [Fact]

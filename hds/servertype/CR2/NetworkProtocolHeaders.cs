@@ -61,6 +61,7 @@ namespace hds
         CLIENT_ITEM_MOUNT_RSI = 0x63,
         CLIENT_ITEM_UNMOUNT_RSI = 0x64,
         CLIENT_ITEM_MOVE_SLOT = 0x65,
+        CLIENT_ITEM_GIVE_TO_NPC = 0x66,        // 66 <slot u8> <target u32>: a mission item dragged onto an NPC
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_ITEM_MERGE_STACKS = 0x67,       // 67 <slot1 u16> <slot2 u16> <central storage u8> (StackHandler)
         CLIENT_ITEM_SPLIT_STACK = 0x68,        // 68 <source u8> <dest u8> <amount u32> <central storage u8>
@@ -108,8 +109,9 @@ namespace hds
         // Currently unhandled but maybe useful
         // http://code.google.com/p/mxo-singularity/wiki/RpcPacketMap
         CLIENT_EMOTE = 0x30,
-        CLIENT_ANIMATION_START = 0x33,
-        CLIENT_ANIMATION_STOP = 0x34,
+        CLIENT_STANCE_LEAVE = 0x33,            // 33 <stance>: /stand, or moving out of a stance (EmoteHandler)
+        CLIENT_STANCE_ENTER = 0x34,            // 34 <stance>: /sit (0a), /dance (11..15)
+        CLIENT_EMOTE_ANSWER = 0x32,            // 32 <result> <emote> <partner> <wait f32> <is requester>
 
         // Login handshake (docs/CLIENT-ACTIONS.md): sent together once the client is in the world
         CLIENT_LOADING_COMPLETE = 0x0c,        // 0c 01: LoadingComplete; retail answered nothing
@@ -134,6 +136,14 @@ namespace hds
         CLIENT_FACTION_DISBAND_FACTION = 0x77,
         CLIENT_DEPOSIT_MONEY_FACTION_CREW = 0x78,
         CLIENT_FACTION_CREW_INVITE_PLAYER = 0x6e,
+        CLIENT_GROUP_REMOVE_MEMBER = 0x72,     // 72 <type> <charId>: boot from the team / remove from the crew
+        CLIENT_FACTION_REMOVE_CREW = 0x73,     // 73 <crewId>: a leading crew's captain removes a crew from the faction
+        CLIENT_GROUP_MAKE_LEADER = 0x75,       // 75 <type> <charId>: team leader / crew captain
+        CLIENT_FACTION_CHANGE_RANK = 0x80,     // 80 80 <crewId> <promote u8>
+        CLIENT_CREW_CREATE = 0x84,             // 80 84: the crew creation window founds a crew by inviting someone
+        CLIENT_CREW_FIRST_MATE = 0x87,         // 80 87 <charId>: 0 demotes the first mate
+        CLIENT_TEAM_SEEK = 0x91,               // 80 91 <remove u8> <disciplines> <orgs>: looking for team
+        CLIENT_TEAM_FIND_SEEKERS = 0x92,       // 80 92 <min> <max> <my faction only> <disciplines> <orgs>
         
     }
 
