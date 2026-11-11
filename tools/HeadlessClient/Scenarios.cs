@@ -35,6 +35,7 @@ public static partial class Scenarios
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
+        new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
     };
 
