@@ -8,8 +8,8 @@
      his new hideout was an apartment: SlumApt), the looks, the enemy counts. The attackers were Disciples (Disciples
      Postulant, Disciples Novice), "Niobe's people": Zion. Item stand-in: the Key found in Achilles's new hideout is
      Access_Card (6791). Rewards: 206,250 experience and 91,000 information, shown for this mission. Gaps: at the
-     meeting place the attackers came in after the computer was searched; ours are there from the start (a kill goal
-     can't wait for another). Achilles was already dead in his new hideout and we spawn no corpses, so his body is a
+     meeting place the attackers come in once the computer is searched ("Whoa, incoming!"), and the kill goal opens
+     then. Achilles was already dead in his new hideout and we spawn no corpses, so his body is a
      piece of furniture searched for the Key, and the Operator's "He's dead" line comes with it. The hideout's
      computer ("Volume contains no data.") was hacked but may not have been a goal: an optional Search that finds
      nothing. The Operator's second "Goals for this area are complete" (6:59:19) wasn't read; it is automatic anyway. -->
@@ -32,14 +32,14 @@ I think I know a place where you might turn up something more. He used to meet w
 Anyhow, time to get over to this meeting place.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="1">
     <briefing>The location of the alleged meeting place is on your HUD. Proceed there and scour the area for any information.</briefing>
     <enter><say>This place is looking pretty empty. Check any computers, desks, anything you can find.</say></enter>
     <object id="1" kind="Computer" />
     <objective goal="1" text="Search the area for evidence" type="Search" object="1" item="0">
       <done><say>That makes no sense, but I'm reading that weird code fluctuation-- Whoa, incoming!</say></done>
     </objective>
-    <objective goal="2" text="Kill the attackers" type="DefeatAll">
+    <objective goal="2" text="Kill the attackers" type="DefeatAll" after="1">
       <done><say>Ambushed by Niobe's people? I think we'd better go back and pay Achilles another little visit.</say></done>
     </objective>
   </phase>

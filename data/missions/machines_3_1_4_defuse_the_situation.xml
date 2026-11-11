@@ -13,11 +13,11 @@
      Gaps: retail's decryption turned the CD into "the decrypted CD"; here the CD is put in the decryption terminal
      and the decrypted one is given at the start of phase 3. At the transmitting station retail sent hostiles in
      waves once the targeting system was active and the signal had to transmit for a while (a hold out of about
-     three minutes); we can't time a goal or spawn hostiles after one, so the phase's commandos are there on arrival,
-     the Operator's "inbound signals" warning is said then, her later "More hostiles coming in!" isn't said, and the
-     phase ends when the CD is placed, the targeting system is used and the commandos are dead. Gray's link went dead
-     after his success line and the Operator had the last word: both are said when the phase's goals are done, and
-     there is no closing contact line. -->
+     three minutes); we can't time a goal, so the phase's commandos arrive in one wave once the targeting system is
+     used, and only then is killing them an objective. The Operator's "inbound signals" warning is said on reaching
+     the station, her later "More hostiles coming in!" isn't said, and the phase ends when the commandos are dead.
+     Gray's link went dead after his success line and the Operator had the last word: both are said when the phase's
+     goals are done, and there is no closing contact line. -->
 <mission id="203104" title="Defuse the Situation" description="Disable the Colonel's explosive device before it destroys the bluepill pods." plot="1"
          order="3104" org="2" contact="Agent Gray" exp="308000" info="101500">
   <phase site="Normal" enemy="Zion" enemies="0">
@@ -40,7 +40,7 @@ Proceed to our data lab and submit the CD for decryption.</briefing>
       <done><say>All set! Now off to use the disk.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="5">
+  <phase site="Normal" enemy="Zion" enemies="5" enemiesAfter="2">
     <briefing>Now comes the most... delicate part of this mission, {player}. You must take the decrypted CD to a nearby transmitting station. Place the CD in the transmitting computer there, and activate a nearby targeting system.
 
 The system must transmit the signal for a certain period of time. Needless to say, the Colonel's minions will surely do what they can to... interfere with our plans. Be prepared.</briefing>
@@ -52,7 +52,7 @@ The system must transmit the signal for a certain period of time. Needless to sa
     <object id="2" kind="Computer" />
     <objective goal="1" text="Place the CD in the transmitting computer" type="Put" object="1" item="6782" />
     <objective goal="2" text="Activate the targeting system" type="Use" object="2" after="1" />
-    <objective goal="3" text="Defend the transmitting station" type="DefeatAll" />
+    <objective goal="3" text="Defend the transmitting station" type="DefeatAll" after="2" />
     <complete>
       <say contact="1">Very good, {player}. The explosive device has been disabled.
 

@@ -17,8 +17,8 @@
      appears; the search for him is a talk with a second worker. Agent Long's line, logged twice, is said once on
      nearing him. In phase 3 the manager's pep talk and the walkout are said on nearing him, with the Operator's
      "What in hell is going on in there?". In phase 4 retail's security turned hostile after the computer was
-     searched ("drawn attention of the shiny-helmet variety"); here the guards are there from the start, and one of
-     them says the guards' bark on being neared. The support staff's puzzling is said on nearing them, and their
+     searched ("drawn attention of the shiny-helmet variety"); here the guards arrive then, and one of them says the
+     guards' bark on being neared. The support staff's puzzling is said on nearing them, and their
      "Good God! Don't touch that!" and "Ohhh snap!" when the computer is searched. Lines that lost a line at a
      screenshot join (Gray's phase 4 briefing, the Operator's last two) are used as they read. The bystanders' other
      lines are their lines when talked to. -->
@@ -64,7 +64,7 @@ I know your beeper numbers!</say>
   </npc>
   <npc id="13" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
   <npc id="14" handle="Bluepill" type="FRIENDLY" at="4" rsi="5a000040" weapon="0" />
-  <npc id="15" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568" />
+  <npc id="15" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568" spawnAfter="1" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, we have been able to quell some of the rioting in the city, but civilian casualties will continue to rise as long as the widespread shortage of functional television and Internet devices persists. The Ouroboros Corporation, as the supplier of the malfunctioning parts, should have began to furnish working replacements, but this has not occurred, and their apparent recalcitrance is only increasing customer dissatisfaction. Ouroboros must be confronted about the crisis caused by their failed parts, and provide a solution--or at least an explanation.
 
@@ -107,7 +107,7 @@ I'd make some kind of profound statement about the fragility of prewar society d
       <say>What in hell is going on in there?</say>
     </near>
   </phase>
-  <phase site="Office" enemy="Machines" enemies="3">
+  <phase site="Office" enemy="Machines" enemies="3" enemiesAfter="1">
     <briefing>Hm. Ouroboros' product problems may be a symptom of an internal malaise.
 
 The location you see marked is an Ouroboros systems support facility. Staff there should be capable of diagnosing the problems.</briefing>

@@ -8,7 +8,7 @@
      and the enemy counts. The masked thugs have no organisation in the log; they menace an ex-Zion redpill and are
      taken as rogue redpills: enemy Zion. Item stand-ins: the photo is Photos (6797), the leader's key is Access_Card
      (6791). Rewards: the 261,535 experience and 70,000 information shown right after this mission completed.
-     Gaps: in phase 1 the intruders arrive when Christeen first speaks; here they are on the floor from the start. The
+     Gaps: in phase 1 the intruders arrive when Christeen first speaks, and only then is killing them an objective. The
      door Christeen unlocks and the door the leader's key opens aren't locked here: the goal order stands in for them
      (the photo's search opens once she has talked, finding her once the key is taken). Phase 1's last log entry (very
      probably the generic "Goals for this area are complete") wasn't captured; Christeen's "You can borrow that photo"
@@ -28,7 +28,7 @@
   <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
   <npc id="5" handle="Masked Leader" type="HOSTILE" at="5" rsi="c9020058" weapon="2564" />
   <npc id="6" handle="Christeen Sebold" type="FRIENDLY" at="5" rsi="60010058" weapon="2564" />
-  <phase site="Office" enemy="Zion" enemies="3">
+  <phase site="Office" enemy="Zion" enemies="3" enemiesAfter="1">
     <briefing>{player}, you will recall that we were interested in investigating a rumor concerning a human that Morpheus thought was the "One," long before he met Mr. Anderson. You met an ex-Zion informant who revealed that this human was an athlete with exceptional abilities. While it seems unlikely that this human has anything to do with the Assassin, we deem it worthwhile to discover what became of him. Our previous informant proved... unreliable. However, we have located a previous Zion associate of his who should also have first-hand knowledge of this previous "One." You will find and question her.</briefing>
     <enter><say>Okay, you're there to find a woman named Christeen Sebold. She's a redpill and ex-Zion operative, but today she lives in retirement in the Matrix. She should be at work in her office in that building. Locate her and ask her about Morpheus' previous "One."</say></enter>
     <object id="1" kind="Furniture" />
@@ -39,7 +39,7 @@
         <say npc="1">They're trying to get me again! Why won't it stop? Why can't they leave me alone?</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill the masked intruders" type="DefeatAll">
+    <objective goal="2" text="Kill the masked intruders" type="DefeatAll" after="1">
       <done><say>That's all of the hostiles. Maybe Christeen will be willing to talk now.</say></done>
     </objective>
     <objective goal="3" text="Talk to Christeen Sebold" type="Talk" npc="1" after="2">

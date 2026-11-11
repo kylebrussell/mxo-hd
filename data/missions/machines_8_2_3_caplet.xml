@@ -17,9 +17,9 @@
      now!") is only the Operator's line when the phase's goals are done. The red pill came from a dead Zionite; here it
      is looted from the named Zionite, and the Operator's "red pill code" line is said on nearing him, with Austin
      Uris's outburst after it. The lab's analysis was the Put and then a readout; the readout is a Use on the same
-     computer. The Holographic Projection appeared at the lab only after the analysis; here it stands there from the
-     start and its talk opens after the readout. Lines that NPCs said when talked to again in retail are their own
-     lines here, switched by the lab's goals where the order matters. -->
+     computer. The Holographic Projection appears at the lab once the readout is checked, and its talk opens
+     then. Lines that NPCs said when talked to again in retail are their own lines here, switched by the lab's goals
+     where the order matters. -->
 <mission id="208203" title="Caplet" description="Obtain a sample of Zion's new red pill for analysis." plot="1"
          order="8203" org="2" contact="Agent Gray" exp="385175" info="63000">
   <npc id="1" handle="Cryptos" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
@@ -49,7 +49,7 @@ Good night.</say>
     <say display="5">Danielle Wright is eccentric, but undeniably capable. We've monitored her closely since she left Zion, not only to watch for threats, but also to...examine any potentially worthwhile program she may develop. We've obtained a number of useful codes from her. The emergency jack-out system you use is the most widespread, I suppose, although that one she developed while still in Zion, and we had to obtain it from Zionite defectors.</say>
     <say after="3">What else? Oh, well, mostly just component subroutines for various technical uses in networks and so on... There was a certain one of her interface subroutines that I suspect may have been...studied for the Agent Pace project, but of course I didn't have access to that.</say>
   </npc>
-  <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" spawnAfter="3" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, we have found that the Vauxton corporation known as "Wright Research" has been assisting Zion in developing a new red pill trace program that is immune to the exploit we used to gain data on their mainframe. Reports indicate that Danielle Wright, head of the corporation and a former Zion operative, has been carrying out the work personally. There are indications that this work continues, despite direct intervention by System forces against the Wright Research facility.
 

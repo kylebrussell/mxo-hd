@@ -10,9 +10,9 @@
      Gaps: retail's officers turn hostile once told about the special mission; here they are hostiles that wait to be
      attacked, talking to one of them is telling them, and dealing with them is optional. The three dead Zion
      operatives aren't spawned: their bodies are a piece of furniture to examine, which turns up nothing. In phase 2
-     the security force surrounds the building after the witness is questioned; here it is the phase's generated
-     hostiles, there from the start, and the player only has to get out. The Operator's "Agents have locked on to your
-     position!" was most likely the open world's Agent threat and isn't said. -->
+     the security force, the phase's generated hostiles, arrives once the witness is questioned, and the player only
+     has to get out. The Operator's "Agents have locked on to your position!" was most likely the open world's Agent
+     threat and isn't said. -->
 <mission id="201216" title="Murder Mystery" description="Investigate the scene of three tidily executed killings." plot="1"
          order="1216" org="2" contact="Agent Gray" exp="93500" info="63000">
   <npc id="1" handle="Security" type="HOSTILE" attacksOnSight="0" at="1" rsi="35000024" weapon="2568" />
@@ -40,7 +40,7 @@
       <done><say contact="1">Good help is rather hard to find these days. I shall have to have words with their Captain.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="1">
     <briefing>A waypoint indicating the witness' location is uploading to you now. Find the witness and question her about what she saw at the crime scene. See if you can find out what sort of entity it was that struck down three powerful fighters so easily.</briefing>
     <enter>
       <say>A witness to the shooting, Jazmin Quint, is in that building. I guess she was frightened and fled the scene, but she called in after she calmed down. Talk to her and find out what she saw.</say>

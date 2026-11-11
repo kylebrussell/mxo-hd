@@ -15,7 +15,7 @@
      Operator's "piracy or something" cross joins; they read whole and are used as such. Lines between 10:58:01 and
      10:58:35 and between 10:59:19 and 11:01:32 may be missing, and Halborn's second line at the meeting (11:05:14)
      wasn't captured. The computers' readouts (connection lists, a netlog) were client windows and aren't sent; the
-     searches turn up nothing. Halborn appears at the file server from the start rather than when the data goes
+     searches turn up nothing. Halborn arrives at the file server once the computer is searched and the data goes
      strange. Retail had Halborn go with the player to Veil (his lines came in Team chat); here he is led out of the
      meeting area and then to Veil, and the meeting's goals are done only when he is led out. Pace's "Agent Gray will
      have further instructions" and Halborn's "Goddamn runaround..." came after her talk and are said when it is
@@ -24,7 +24,7 @@
      player's team at the end; they are bystanders with their lines. -->
 <mission id="210103" title="License" description="Trace data stolen by the Merovingian, then take Halborn to Veil when the System cannot help him itself." plot="1"
          order="10103" org="2" contact="Agent Gray" exp="363000" info="63000">
-  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564" spawnAfter="1">
     <say after="2">Didn't you hear me?</say>
   </npc>
   <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2564" />

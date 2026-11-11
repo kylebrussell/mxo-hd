@@ -13,9 +13,9 @@
      a box stands in for them: examining it gives the Operator's line about the bodies, searching it gives the letter.
      An E Pluribus Neo Fighter attacked the player there (System chat); he is placed, without a goal. The phone rang after the talk to Liebowitz; ours opens once he is talked to.
      The Desk Phone's text (Veil's voice: "Darling! So nice of you to deliver our message...") was a popup we can't
-     show, so it isn't said. Cryptos came out when Veil called him; he is there from the start, and his talk opens
-     after hers. NPC lines can't wait for a goal of a later phase whose number an earlier phase already used, so
-     Cryptos' second line is said with his first. -->
+     show, so it isn't said. Cryptos comes out when Veil has called him, and his talk opens then. NPC lines can't wait
+     for a goal of a later phase whose number an earlier phase already used, so Cryptos' second line is said with his
+     first. -->
 <mission id="208303" title="The Hook" description="Seek the Oracle's advice on winning over the Morpheus simulacrum." plot="1"
          order="8303" org="2" contact="Agent Gray" exp="384825" info="63000">
   <npc id="1" handle="Seraph" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2564">
@@ -32,7 +32,7 @@
   <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
     <say after="6">He'll tell you all about that meanie Connor and poor Rod.</say>
   </npc>
-  <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" spawnAfter="6" />
   <phase site="SlumApt" enemy="Zion" enemies="0" neighbourhoods="Mara">
     <briefing>{player}, further operative attempts at convincing the Morpheus simulacrum to unlock the encrypted Zion archive for us have met with failure.
 

@@ -13,16 +13,16 @@
      hub; the second virus, obtained from the first terminal, is Virus (6786). Rewards: 373,830 experience and 63,000
      information, shown on completing this mission.
      Gaps: the Operator's "You're getting near the computer" and "The computer should be in there" came on the way to
-     the terminal; they are said on arrival. The General's Holographic Projection appeared only after the virus was in
-     the mainframe; it stands there from the start and says its line when the virus goes in. At the meeting, Pace's
-     "Then we have a deal" was overheard on arrival and is said then; the Operator's reply to Agent Johns isn't said
-     (bystander lines have no follow-up), and the Cypherite Network Hacker and Cypherite Duelist, who said nothing,
-     aren't placed. The debriefing room's computers had flavour text and no goal; they aren't placed. Gray's briefing
-     for the meeting is one log entry too long for one line: its first paragraph (the network shutdown) is said when
-     the hub's goals are done, and the second is the meeting's briefing. -->
+     the terminal; they are said on arrival. The General's Holographic Projection appears once the virus is in the
+     mainframe, and says its line then. At the meeting, Pace's "Then we have a deal" was overheard on arrival and is
+     said then; the Operator's reply to Agent Johns isn't said (bystander lines have no follow-up), and the Cypherite
+     Network Hacker and Cypherite Duelist, who said nothing, aren't placed. The debriefing room's computers had flavour
+     text and no goal; they aren't placed. Gray's briefing for the meeting is one log entry too long for one line: its
+     first paragraph (the network shutdown) is said when the hub's goals are done, and the second is the meeting's
+     briefing. -->
 <mission id="207205" title="Connection Terminated" description="Shut down the General's network for good by infecting its control hub." plot="1"
          order="7205" org="2" contact="Agent Gray" exp="373830" info="63000">
-  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" spawnAfter="2">
     <say>...</say>
   </npc>
   <npc id="2" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />

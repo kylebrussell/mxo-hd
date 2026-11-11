@@ -6,10 +6,11 @@
      the description, the objective texts (the Objectives tab wasn't shown), the sites (unnamed buildings: Normal),
      the looks and the enemy count. The ambushers are the phase's generated Exiles. Rewards: the 88,000 experience and
      59,500 information shown right after this mission completed.
-     Gaps: Stewart The Mechanic calls an Exile ambush on being questioned; here the Exiles are on the floor from the
-     start, and his lines are said when he is first talked to. He turns on the player but stays a friendly program who
-     must be led away alive. At the interrogation center his and Agent Wilson's lines on delivery are said when he
-     reaches Agent Wilson, and Agent Stewart's and Agent Marks's later lines when the phase's goals are done. -->
+     Gaps: Stewart The Mechanic calls an Exile ambush on being questioned; his lines are said when he is first talked
+     to, the Exiles arrive then, and only then is killing them an objective. He turns on the player but stays a
+     friendly program who must be led away alive. At the interrogation center his and Agent Wilson's lines on delivery
+     are said when he reaches Agent Wilson, and Agent Stewart's and Agent Marks's later lines when the phase's goals
+     are done. -->
 <mission id="201213" title="Asset Assessment" description="Question a maintenance program suspected of aiding the hardline saboteurs." plot="1"
          order="1213" org="2" contact="Agent Gray" exp="88000" info="59500">
   <npc id="1" handle="Stewart The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568" />
@@ -26,7 +27,7 @@
   <npc id="6" handle="Agent Park" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
     <say display="5">You want to talk to Agent Wilson.</say>
   </npc>
-  <phase site="Normal" enemy="Merovingian" enemies="5">
+  <phase site="Normal" enemy="Merovingian" enemies="5" enemiesAfter="1">
     <briefing>Operative, we suspect that one of our hardline junction box maintenance programs may have betrayed us, and is now assisting an unknown group in sabotaging junction boxes. Interrogate this program and learn the truth of the matter.</briefing>
     <enter><say contact="1">The hardline maintenance program, named Stewart The Mechanic, will be found inside that building. Question him closely about the hardline sabotage, but do not cause him any irreparable damage.</say></enter>
     <objective goal="1" text="Talk to Stewart The Mechanic" type="Talk" npc="1">
@@ -36,7 +37,7 @@
         <say npc="1">Exiles, attack!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll" after="1">
       <done><say contact="1">Excellent. Now bring the traitorous program known as Stewart The Mechanic to us for interrogation and reprogramming. I will give you an updated waypoint once you get him outside.</say></done>
     </objective>
     <objective goal="3" text="Lead Stewart The Mechanic out of the area" type="Escort" npc="1" to="exit" after="2">

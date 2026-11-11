@@ -10,10 +10,10 @@
      Neo: enemy Zion). No mission items. Rewards: 385,000 experience and 63,000 information, shown on completing this
      mission (the same as 8.3.1).
      Gaps: at the first site the Operator saw nothing at first and the redpills' signals showed up half a minute
-     later; ours are there from the start and both lines are said on arrival. The simulacrum appeared behind the
-     player in the room just passed through once Leigh Quigley had been talked to; ours stands on the floor from the
-     start, and the talk to him opens after Leigh's. Agents Green and Jones followed the player as support; they are
-     led out of Clark's site and then to Agent Pace, and the talk to Pace waits for them. They don't fight. -->
+     later; ours are there from the start and both lines are said on arrival. The simulacrum appears behind the
+     player once Leigh Quigley has been talked to (retail put it in the room just passed through), and the talk to him
+     opens then. Agents Green and Jones followed the player as support; they are led out of Clark's site and then to
+     Agent Pace, and the talk to Pace waits for them. They don't fight. -->
 <mission id="208302" title="Of Two Minds" description="Find the General's Morpheus simulacrum and win its cooperation." plot="1"
          order="8302" org="2" contact="Agent Gray" exp="385000" info="63000">
   <npc id="1" handle="Leigh Quigley" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
@@ -23,7 +23,7 @@ He causin' some kind of trouble?
 
 Well, I don't believe it. He's a good boy.</say>
   </npc>
-  <npc id="2" handle="Morpheus" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
+  <npc id="2" handle="Morpheus" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" spawnAfter="2" spawnAt="player">
     <say after="3">Oh? Have you asked them?
 
 More importantly: did you believe?</say>

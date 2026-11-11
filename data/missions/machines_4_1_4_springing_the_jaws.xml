@@ -12,14 +12,13 @@
      downloaded the enhanced kill code data at the end (the Operator's "make sure you have some inventory slots"); we
      have no item rewards, so it isn't given. Gray's third briefing has a line at a screenshot join that couldn't be
      read; what is readable is used.
-     Gaps: the Exile ambush came in after Alekto handed over the codes; we have no timed spawns, so the attackers are
-     the warehouse's hostiles from the start, and Agent Clark doesn't fight. Dr. Valvo asked to be led to his
-     workstation; an escort can't end at an object, so he is talked to and then the player uses the workstation (a
-     computer). At the third site the readings were taken by being there, and the Exiles were optional ("not mindless
-     slaughter"): the readings are a use of a computer and nothing makes the player fight. At the last site the kill
-     code device locked onto the Exiles over time; here they are just killed. The bug is placed by giving it to the
-     Effectuator, who is friendly (the log shows him with a friendly icon) and talks when reached. Agent Marks stands
-     at the last site from the start, and his custody line is said when the phase completes. -->
+     Gaps: the Exile ambush, the warehouse's hostiles, comes in once Alekto has handed over the codes, and only then
+     is killing it an objective; Agent Clark doesn't fight. Dr. Valvo asked to be led to his workstation: once talked
+     to, he is led to it (a computer). At the third site the readings were taken by being there, and the Exiles were
+     optional ("not mindless slaughter"): the readings are a use of a computer and nothing makes the player fight. At
+     the last site the kill code device locked onto the Exiles over time; here they are just killed. The bug is placed
+     by giving it to the Effectuator, who is friendly (the log shows him with a friendly icon) and talks when reached.
+     Agent Marks stands at the last site from the start, and his custody line is said when the phase completes. -->
 <mission id="204104" title="Springing the Jaws" description="Use Zion's kill codes to break through the Effectuator's guards and bug him." plot="1"
          order="4104" org="2" contact="Agent Gray" exp="341000" info="112000">
   <npc id="1" handle="Alekto" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
@@ -30,7 +29,7 @@
   <npc id="3" handle="Brett Valvo" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
   <npc id="4" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <npc id="5" handle="Agent Marks" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
-  <phase site="Warehouse" enemy="Merovingian" enemies="4">
+  <phase site="Warehouse" enemy="Merovingian" enemies="4" enemiesAfter="1">
     <briefing>A new tactic has presented itself in the hunt for the Effectuator. Zion operatives have offered their help. Apparently they have access to some advanced kill codes, capable of dealing with the particular Exiles that protect your target.
 
 Some of our Agents have met with their operative, known as Alekto. Go to the warehouse indicated and obtain the codes from her. It would seem that they want nothing in return, other than our continuing aggression against the Merovingian. Something that is... easy enough to agree with.</briefing>
@@ -41,7 +40,7 @@ Some of our Agents have met with their operative, known as Alekto. Go to the war
 I've got the codes for you. Trust me, they'll do the trick against those dark wolves.</say></talk>
       <done><say>Nice, now you just need to get those to a hardline and-- Wait! I'm reading inbound hostile signals! Take them out, {player}!</say></done>
     </objective>
-    <objective goal="2" text="Kill the Exile attackers" type="DefeatAll" />
+    <objective goal="2" text="Kill the Exile attackers" type="DefeatAll" after="1" />
     <objective goal="3" text="Upload the kill codes at a hardline" type="Upload" item="6786" after="1" />
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0">
@@ -55,7 +54,7 @@ Oh. Pardon me. You want the results of our research. I tend to get distracted an
 
 My apologies. If you will, ah, lead me to my workstation, I will supply you with the results.</say></talk>
     </objective>
-    <objective goal="2" text="Lead Dr. Valvo to his workstation" type="Use" object="1" after="1">
+    <objective goal="2" text="Lead Dr. Valvo to his workstation" type="Escort" npc="3" to="object:1" after="1">
       <done><say>So, is your ear still attached? I never thought he'd finish.</say></done>
     </objective>
   </phase>
