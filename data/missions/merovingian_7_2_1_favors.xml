@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Favors, Merovingian story mission 7.2.1. Source: research/missions/transcripts/Merv7-2-1.md (the archive replay of
+     [Merovingian Archive 7.2.1], given by [Archived]Flood; 21 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Malphas, Persephone, Trainman,
+     Twin and Merovingian line, and those names. Entries that span two screenshots are read as contiguous (the line cut
+     at the bottom of one screenshot is the top line of the next throughout this set). Italics dropped: "hear",
+     "you", "let-ter", "is", "comme ils disent", "mon ami". The log and the Team chat both show "comme iis disent";
+     it is taken as "ils" in a font where italic l and i look alike.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; no neighbourhood was named), the looks (Malphas's, Persephone's,
+     the Merovingian's and the Twins' are those of earlier missions; the Trainman's is a stand-in, as no file has him)
+     and the enemy counts (no area had a fight). Item stand-in: Persephone's written request to the Apothecary is
+     Letter (6793; no item name was shown).
+     Rewards: the log shows 407,000 experience and 133,000 information, an archive replay and not a normal reward;
+     these are Zion 7.2's values (363,000 experience, 63,000 information, as Hear Me, zion_7_2_2, paid).
+     Gaps: an Operator entry at 8:57:15 after Malphas's briefing wasn't captured (very likely the standard
+     goals-complete line). An entry between 9:01:27 and 9:01:51 may be missing (perhaps a first Trainman line), and
+     the Operator entry at about 9:01:55 after the Trainman's "The let-ter..." wasn't captured, so handing him the
+     letter has no done line. Flood's 9:02:06 briefing may go on past "about it." and anything between 9:02:06 and
+     9:03:46 wasn't captured. Getting the letter took 20 seconds after Persephone's "Take the letter", so it may have
+     lain somewhere in the room; here she hands it over. Her "guard" harem is not placed (none spoke or was named).
+     Malphas's, Persephone's and the Trainman's lines that came after their goals are said when they are talked to
+     again. The System chat targeted [Twin] twice, so both Twins stand in the last area, one with each Twin line;
+     whether talking to the Merovingian was the last goal isn't known, but his is the only long answer there. -->
+<mission id="307201" title="Favors" description="Carry Persephone's letter calling in the Apothecary's favor to the Trainman." plot="1"
+         order="7201" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">I care little for weather of any sort, operative. Now, do not waste any more of your time or mine.</say>
+  </npc>
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+    <say after="3">Of course I know that my husband thinks he will never be called to account for all of the things he owes me.&#10;&#10;I delight in confounding his expectations. A good wife must keep her marriage exciting, after all.</say>
+  </npc>
+  <npc id="3" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
+    <say after="5">Oh, I'll deliver it; don't you worry. Run along now. I have things to do.</say>
+  </npc>
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+    <say after="6">You will find, I think, that the Apothecary takes her business very seriously. She plays, comme ils disent, "for keeps." She does lack a sense of humor, but laughter, mon ami, will not slay the beast we are hunting, eh?</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Here's hoping the Apothecary leaves some alive for us to play with.</say>
+  </npc>
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>She's a dull, deadly old thing. Haha!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Now that the Trainman has so graciously answered the Merovingian's invitation--that was sarcasm, operative; do try to keep up--it's time to put him to work. Malphas will fill you in on the petty details.</briefing>
+    <enter><say>Malphas always complains about the sun; wonder what he thinks of this new all-red theme we've got going on?</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">As you have, I think, heard by now, the Apothecary at one time was rather close to our own Persephone. Certain...difficulties arose, but in any case, the result is that the Apothecary owes Persephone a favor. Persephone will now call in this favor, and convince the Apothecary to leave the Machine mainframe for the Matrix.&#10;&#10;Your task is to obtain Persephone's written request for this favor, addressed to the Apothecary.</say></talk>
+      <done><say>Ohh, a visit to Persephone! I had a feeling today was going to be a good day.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian tells me that he has already obtained Persephone's consent to spend her favor in his favor, if you will, so obtaining the letter from her should be a straightforward task. As this is Persephone we are speaking of, I have little doubt that she will try to complicate this matter somehow, no doubt simply to spite me.
+
+Jealousy is an ugly thing, operative.</briefing>
+    <enter><say>Man, even Persephone's code signal is hot. Looks like it'll just be you and her "guard" harem.</say></enter>
+    <objective goal="2" text="Talk to Persephone" type="Talk" npc="2">
+      <talk><say npc="2">Yes, my husband would like a favor...so I transfer the one that the Apothecary owes me to him. A favor from him is less valuable; he already owes me so many. Have you been keeping count? I have. You'll notice that he requires favors from me much more often than I do from him.&#10;&#10;But you do his bidding, and are here to collect what will cost him yet another favor. Very well.</say></talk>
+      <done><say>Eh... We aren't gonna get in trouble if we take that letter then, are we?</say></done>
+    </objective>
+    <objective goal="3" text="Get the letter from Persephone" type="Get" npc="2" item="6793" after="2">
+      <talk><say npc="2">Take the letter, operative. Don't worry, it won't cost you any favors--yet.</say></talk>
+      <done><say>So now we just drop that in the Apothecary's mailbox?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Charming to hear that Persephone keeps such close account of what is owed her; yet I don't doubt that she has conveniently overlooked the many occasions on which I have saved her from embarrassment.
+
+I can hear you slouching, you know, {player}. Attention, please. That letter--which is costing the Merovingian so dear in the marital balance--must now make its way, courtesy of you, to the Trainman, whom you will find at the position I have highlighted for you.</briefing>
+    <enter><say>I've got a lone signal in there; I guess that must be him. Hope he's a little less cranky than the last time.</say></enter>
+    <objective goal="4" text="Talk to the Trainman" type="Talk" npc="3">
+      <talk><say npc="3">Yes, yes; I know what I'm doing. Give me the letter, and go away.</say></talk>
+      <done><say>Better do what the crazy man says.</say></done>
+    </objective>
+    <objective goal="5" text="Give the letter to the Trainman" type="Give" npc="3" item="6793" after="4">
+      <talk><say npc="3">The let-ter...</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Don't attempt to get me involved, operative. Tell you what: I'll do you a favor, and get you in to ask the Merovingian whatever you like about it.</briefing>
+    <enter><say>So, if the Merv and Persephone do favors for each other, and they're married, and Flood does a favor for us...does that mean we're married to Flood? He is kind of naggy.</say></enter>
+    <objective goal="6" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Ah, yes--favors! The unwritten oil lubricating the machine of business, eh? So much more interesting than coarse currency... But do not concern yourself about Persephone, my friend; she will receive her payment in full when accounts are called to order. Hm-hm!&#10;&#10;As for the Trainman, now that you've given him the letter, have no doubt that it will go where it is meant to go, with the desired effect. Just as he could not resist our summons, neither will the Apothecary. After all, she owes us.</say></talk>
+    </objective>
+  </phase>
+  <finish>Hm... I suppose things will be ridiculously hectic once the Apothecary shows up. Heaven knows I think this is all a massive waste of resources, but do as I do, operative, and make the best of a bad business. Having the mistress of death on our side may turn up some...fringe benefits.</finish>
+</mission>
