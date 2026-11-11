@@ -87,8 +87,11 @@ namespace hds
             me.CharacterName.setValue(Name);
             me.RealFirstName.setValue("Duel");
             me.RealLastName.setValue("Bot");
-            me.Position.setValue(NumericalUtils.doublesToLtVector3d(x + 300, y, z));
-            me.YawInterval.setValue(them.YawInterval.getValue()[0]);
+            byte ownerYaw = them.YawInterval.getValue()[0];
+            Spot(owner.playerData.getDistrictId(), x, y, z, ownerYaw, out double bx, out double by, out double bz);
+            me.Position.setValue(NumericalUtils.doublesToLtVector3d(bx, by, bz));
+            // Facing the owner: in an interlock the bot doesn't turn by itself (see docs/PVP.md)
+            me.YawInterval.setValue(MobAggro.YawTowards(bx, bz, x, z));
             me.Health.setValue(maxHealth);
             me.MaxHealth.setValue(maxHealth);
             me.InnerStrengthAvailable.setValue(maxInner);
@@ -135,6 +138,61 @@ namespace hds
             return bot;
         }
 
+        /// <summary>How far in front of the owner the bot stands (world units, 100 to the metre), nearest first.</summary>
+        private static readonly double[] Distances = { 250, 200, 300, 150 };
+
+        /// <summary>Which way from the owner's facing to try, in yaw steps (256 to the turn): ahead first, then around.</summary>
+        private static readonly int[] Turns = { 0, 16, -16, 32, -32, 48, -48, 64, -64, 96, -96, 128 };
+
+        /// <summary>
+        /// Where the bot stands: on walkable floor about 2.5 m in front of the owner, with walkable floor all the way
+        /// between them (so not through a wall), on the floor's height. Where the district has no nav mesh, 2.5 m ahead
+        /// as it is. The yaw is the owner's YawInterval, in the convention of <see cref="MobAggro.YawTowards"/>
+        /// (0 is +z, a quarter turn is 64 towards +x).
+        /// </summary>
+        public static void Spot(uint district, double x, double y, double z, byte yaw, out double bx, out double by, out double bz)
+        {
+            NavLocation here;
+            bool mesh = NavMesh.Locate((UInt16)district, x, y, z, out here);
+            foreach (double distance in Distances)
+            {
+                foreach (int turn in Turns)
+                {
+                    double angle = (yaw + turn) * 2 * Math.PI / 256;
+                    double tx = x + distance * Math.Sin(angle), tz = z + distance * Math.Cos(angle);
+                    if (!mesh)
+                    {
+                        bx = tx; by = y; bz = tz;
+                        return;
+                    }
+                    if (WalkableLine((UInt16)district, x, y, z, tx, tz, here.floorY, out double floor))
+                    {
+                        bx = tx; by = floor + 95; bz = tz;
+                        return;
+                    }
+                }
+            }
+            // Nowhere walkable around: right beside the owner, where they stand
+            bx = x + 50; by = y; bz = z;
+        }
+
+        /// <summary>Floor all along the line, each step within a step's height of the last. Gives the floor at its end.</summary>
+        private static bool WalkableLine(UInt16 district, double x, double y, double z, double tx, double tz, double startFloor, out double floor)
+        {
+            floor = startFloor;
+            const int steps = 10;
+            for (int i = 1; i <= steps; i++)
+            {
+                double px = x + (tx - x) * i / steps, pz = z + (tz - z) * i / steps;
+                if (!NavMesh.Locate(district, px, floor + 95, pz, out NavLocation at) || Math.Abs(at.floorY - floor) > 40)
+                {
+                    return false;
+                }
+                floor = at.floorY;
+            }
+            return true;
+        }
+
         private static void ChallengeOwner(WorldClient bot, WorldClient owner)
         {
             UInt32 ownerForBot = PvpCombat.HandleOf(bot, owner);
@@ -165,7 +223,14 @@ namespace hds
 
         private static void Remove(WorldClient bot)
         {
+            // A duel with it ends first (DuelID 0 and 56 for the other side, sent now, in a packet of their own); then
+            // the other side's interlock, if one is still up; then the bot's view
             PvpCombat.OnPlayerGone(bot);
+            foreach (WorldClient other in SocialHandler.OnlineWhere(c => c != bot && !c.IsBot))
+            {
+                other.FlushQueue(false, true);
+            }
+            PvpFight.OnPlayerGone(bot, true);
             bot.playerData.setOnWorld(false);
             string key = null;
             List<WorldClient> others;

@@ -191,7 +191,7 @@ namespace hds
         /// <param name="client">The player whose combat is ending</param>
         /// <param name="combatViewId">View ID of the ILCombatHandler to delete</param>
         public void SendCombatEnd(WorldClient client, UInt16 combatViewId, UInt32 targetViewSpawnId,
-            byte[] combatCentre = null, UInt32 rounds = 0)
+            byte[] combatCentre = null, UInt32 rounds = 0, bool releaseTarget = true)
         {
             // Retail releases the attacker with a final record on the combat view, RPC 46 <target> 00, an own-view
             // position handoff and then the delete of the combat view; the out-of-combat reset follows ~10 s
@@ -206,7 +206,11 @@ namespace hds
                 client.messageQueue.addObjectMessage(final.ReturnFinalPacket(), false);
             }
 
-            client.messageQueue.addRpcMessage(BuildCombatTargetFlag(targetViewSpawnId, 0x00));
+            // A duel's loser got no 46 00 (niobe3dualduality 03:04:00: only the final record and the delete)
+            if (releaseTarget)
+            {
+                client.messageQueue.addRpcMessage(BuildCombatTargetFlag(targetViewSpawnId, 0x00));
+            }
 
             // Delete the combat view and hand the player back their position in the same packet, as retail did
             // (01 00 01 01 00 <view> followed by 02 00 01 0c <yaw> <pos> <time>).

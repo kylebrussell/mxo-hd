@@ -329,11 +329,17 @@ namespace hds
             }
         }
 
-        /// <summary>A player disconnected or their world reloaded: their fights end without a teardown for them, and their duel stops.</summary>
-        public static void OnPlayerGone(WorldClient client)
+        /// <summary>
+        /// A player disconnected or their world reloaded: their fights end without a teardown for them, and their duel
+        /// stops (the other side gets the duel's end first and its teardown a second later). With
+        /// <paramref name="tearDownOthersNow"/> the other side's interlock comes down at once, before the player's view
+        /// is deleted.
+        /// </summary>
+        public static void OnPlayerGone(WorldClient client, bool tearDownOthersNow = false)
         {
             EndFightsOf(client, PvpFight.EndReason.Left);
             DuelHandler.OnUnavailable(client);
+            PvpFight.OnPlayerGone(client, tearDownOthersNow);
         }
 
         private static readonly Random random = new Random();

@@ -57,6 +57,8 @@ namespace hds
         /// </summary>
         public void LeaveOtherFights(bool keepInterlock = false)
         {
+            // An interlock still up after a fight between players ended comes down before anything new starts
+            PvpFight.RunPendingTeardown(client);
             StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
             pvpGunfire?.Stop();
             if (!keepInterlock)

@@ -307,6 +307,11 @@ namespace hds
         /// on their view, the kill notice, the buffs' off-records, <c>2e 67</c> with ID_DUEL_DEATH_MESSAGE, the broadcast
         /// and <c>56 01 00 &lt;winner&gt;</c>. The winner (lastday2): own DuelID 0, the loser's view IsDead 1, Health 0,
         /// DuelID 0, and <c>56 01 01 &lt;loser&gt;</c>. DeathPenalty isn't sent: what it does is unknown.
+        /// <para>All of that goes out while the interlock is still up, as in retail: the fight stops at once, but the
+        /// combat view comes down <see cref="PvpFight.DeathTeardownSeconds"/> later. Sending the teardown first, in the
+        /// same packet, left the real client standing at 0 health ("you are not dead") and still locked onto its duel
+        /// opponent (PR 94 QA). The loser's flags lose the in-combat bit with the death, as retail's did (0x01000000,
+        /// the PvP flag alone).</para>
         /// </summary>
         public static void Defeat(WorldClient loser, WorldClient winner)
         {
@@ -316,21 +321,23 @@ namespace hds
                 return;
             }
             Output.WriteDebugLog("[DUEL] " + PvpFlag.Name(winner) + " defeats " + PvpFlag.Name(loser));
-            PvpCombat.EndFightsOf(loser, PvpFight.EndReason.DuelOver);
+            PvpCombat.EndFightsOf(loser, PvpFight.EndReason.Death);
             PvpCombat.EndFightsOf(winner, PvpFight.EndReason.DuelOver);
             TradeHandler.Abort(loser);
 
             ClientData data = loser.playerData;
             data.duelDeath = true;
             data.duelId = 0;
+            data.conditionStateFlags = 0;
             winner.playerData.duelId = 0;
             loser.playerInstance.DuelID.setValue((UInt32)0);
             winner.playerInstance.DuelID.setValue((UInt32)0);
             loser.playerInstance.Health.setValue((UInt16)0);
+            loser.playerInstance.IsDead.setValue(true);
             loser.playerInstance.IsDuelDeath.setValue(true);
-            UInt16 maxHealth = NumericalUtils.ByteArrayToUint16(loser.playerInstance.MaxHealth.getValue(), 1);
+            loser.playerInstance.ConditionStateFlags.setValue(PvpFlag.FlagsOf(loser));
 
-            loser.messageQueue.addObjectMessage(BuildSelfDuelDeath(maxHealth, PvpFlag.FlagsOf(loser)), false);
+            loser.messageQueue.addObjectMessage(BuildSelfDuelDeath(MaxHealthOf(loser), PvpFlag.FlagsOf(loser)), false);
             AbilityBuffs.RemoveAll(loser);
             PvpFlag.ToWatchers(loser, BuildOtherDuelDeath());
             winner.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDuelId, PlayerViewAttributes.U32(0))), false);
@@ -348,6 +355,36 @@ namespace hds
             DuelBot.OnDuelOver(loser);
             DuelBot.OnDuelOver(winner);
         }
+
+        private static UInt16 MaxHealthOf(WorldClient client) => NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+
+        /// <summary>
+        /// After a player's interlock came down (<see cref="PvpFight"/>): the duel's end once more on the own view, in a
+        /// packet of its own: DuelID 0 and, for a loser still lying down, the defeat. The values are the ones already
+        /// sent, so a client that took them changes nothing. Ours: retail sent them once, but the real client lost both
+        /// when they came with the teardown (PR 94 QA), and a lost DuelID keeps the client locked onto its old opponent.
+        /// </summary>
+        public static void AfterInterlockTeardown(WorldClient client)
+        {
+            if (client.IsBot || Now - client.playerData.lastDuelEndedAt > 60 || client.playerData.duelId != 0)
+            {
+                return;
+            }
+            DelayedActions.After(ReassertSeconds, () =>
+            {
+                if (!client.Alive || !client.playerData.getOnWorld() || client.playerData.duelId != 0)
+                {
+                    return;
+                }
+                client.messageQueue.addObjectMessage(client.playerData.duelDeath
+                    ? BuildSelfDuelDeath(MaxHealthOf(client), PvpFlag.FlagsOf(client))
+                    : PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDuelId, PlayerViewAttributes.U32(0))), false);
+                client.FlushQueue();
+            });
+        }
+
+        /// <summary>The gap that keeps a record out of the teardown's packet (the queue gathers what comes within 50 ms).</summary>
+        public const double ReassertSeconds = 0.25;
 
         public static byte[] BuildSelfDuelDeath(UInt16 maxHealth, UInt32 flags)
         {
@@ -381,6 +418,20 @@ namespace hds
                 return false;
             }
             client.playerData.duelDeath = false;
+            if (PvpFight.RunPendingTeardown(client))
+            {
+                // Up before the interlock came down: it comes down first, the stand-up follows in a packet of its own
+                DelayedActions.After(ReassertSeconds, () => SendStandUp(client));
+            }
+            else
+            {
+                SendStandUp(client);
+            }
+            return true;
+        }
+
+        private static void SendStandUp(WorldClient client)
+        {
             client.playerInstance.Health.setValue((UInt16)1);
             client.playerInstance.IsDead.setValue(false);
             double x = 0, y = 0, z = 0;
@@ -393,7 +444,6 @@ namespace hds
                 (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(0)),
                 (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(1))));
             Output.WriteDebugLog("[DUEL] " + PvpFlag.Name(client) + " stands up");
-            return true;
         }
 
         public static byte[] BuildStandUp(byte actionCounter, float x, float y, float z, UInt32 simMs)

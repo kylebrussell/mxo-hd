@@ -107,8 +107,10 @@ public static partial class Scenarios
         RpcRecord notice = await bob.WaitForRpcAsync($"81 9d {aliceForBob} {SelfHandle(bob)} 0c 00");
         Check.That(Contains(notice.Bytes, "Alice") && Contains(notice.Bytes, "Bob"), "Names in the kill notice");
         Check.That(bob.Received("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60").Count == 1, "Death message");
-        await alice.WaitForRpcAsync($"46 {bobForAlice} 00");
         await alice.WaitForRpcAsync($"81 9d {SelfHandle(alice)} {bobForAlice} 0c 00");
+        // The interlock comes down after the death, as in retail (8 to 9 s later), and the dead get no 46 00
+        await alice.WaitForRpcAsync($"46 {bobForAlice} 00", TimeSpan.FromSeconds(15));
+        Check.Equal(0, bob.Received($"46 {aliceForBob} 00").Count, "46 00 for the dead");
 
         // The dead don't fight
         alice.SendRpc($"40 {bobForAlice} 01 6b");
@@ -226,10 +228,14 @@ public static partial class Scenarios
         alice.SendRpc($"40 {bobForAlice} 01 6b");
         await alice.WaitForRpcAsync($"46 {bobForAlice} 01");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
+        await alice.WaitForViewUpdateAsync(1, "02 a7 00");
+        await bob.WaitForViewUpdateAsync(1, "02 a7 00");
 
-        // The loser lies down: IsDuelDeath, IsDead, Health 0 and DuelID 0 on their own view; no death
+        // The loser lies down: IsDuelDeath, IsDead, Health 0 and DuelID 0 on their own view, and flags without the
+        // in-combat bit (retail: the PvP flag alone); no death
         TimeSpan toFall = TimeSpan.FromSeconds(120);
-        await bob.WaitForViewUpdateAsync(2, "02 80 80 c1 ?? ?? 01 c1 01 00 00 80 81 00 00 00 00 01", toFall);
+        ushort bobCombatView = CombatViewOf(bob), aliceCombatView = CombatViewOf(alice);
+        await bob.WaitForViewUpdateAsync(2, UnflaggedDuelDeath, toFall);
         await bob.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 de 00 00 3a");
         await bob.WaitForRpcAsync($"56 01 00 {aliceForBob} 00 00");
         RpcRecord bobBroadcast = bob.Received($"81 9d {SelfHandle(bob)} {aliceForBob} 0c 00").Single();
@@ -237,10 +243,26 @@ public static partial class Scenarios
         Check.Equal(0, bob.Received("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60").Count, "Death messages for a duel's loser");
 
         // The winner: their own DuelID cleared, the loser down on their view, "You have defeated"
-        await alice.WaitForRpcAsync($"46 {bobForAlice} 00", toFall);
         await alice.WaitForRpcAsync($"56 01 01 {bobForAlice} 00 00");
-        await alice.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 01 00 00 00 00");
+        await alice.WaitForViewUpdateAsync(2, OwnDuelIdZero);
         await alice.WaitForViewUpdateAsync(bobView.ViewId, "02 80 80 92 01 00 00 20 00 00 00 00");
+
+        // All of that while the interlock is still up (PR 94 QA: sent after the teardown, in its packet, the real client
+        // dropped it). Retail took the combat view down 8 to 9 s later; for the loser without 46 00.
+        Check.Equal(-1, SectionOf(bob, 1, $"01 01 00 {Le(bobCombatView)}"), "The loser's combat view is gone before the defeat");
+        Check.Equal(-1, SectionOf(alice, 1, $"01 01 00 {Le(aliceCombatView)}"), "The winner's combat view is gone before the duel's end");
+        Check.Equal(0, alice.Received($"46 {bobForAlice} 00").Count, "The winner released before the duel's end");
+        await alice.WaitForRpcAsync($"46 {bobForAlice} 00", TimeSpan.FromSeconds(15));
+        await alice.WaitForViewUpdateAsync(1, $"01 01 00 {Le(aliceCombatView)}");
+        await bob.WaitForViewUpdateAsync(1, $"01 01 00 {Le(bobCombatView)}");
+        Check.That(SectionOf(bob, 2, UnflaggedDuelDeath) < SectionOf(bob, 1, $"01 01 00 {Le(bobCombatView)}"), "The defeat first, in a packet of its own");
+        Check.That(SectionOf(alice, 2, OwnDuelIdZero) < SectionOf(alice, 1, $"01 01 00 {Le(aliceCombatView)}"), "DuelID 0 first, in a packet of its own");
+        Check.Equal(0, bob.Received($"46 {aliceForBob} 00").Count, "46 00 for the loser");
+        // And once more after the teardown, in a packet of their own (ours)
+        await bob.WaitUntilAsync(() => SectionsWith(bob, 2, UnflaggedDuelDeath) == 2, "the defeat again after the teardown", TimeSpan.FromSeconds(5));
+        await alice.WaitUntilAsync(() => SectionsWith(alice, 2, OwnDuelIdZero) == 2, "DuelID 0 again after the teardown", TimeSpan.FromSeconds(5));
+        Check.Equal(0, SectionsWithBoth(bob, 1, $"01 01 00 {Le(bobCombatView)}", 2, UnflaggedDuelDeath), "The defeat in the teardown's packet");
+        Check.Equal(0, SectionsWithBoth(alice, 1, $"01 01 00 {Le(aliceCombatView)}", 2, OwnDuelIdZero), "DuelID 0 in the teardown's packet");
         // The onlooker hears who won
         RpcRecord heard = await carol.WaitForRpcAsync(r => r.Opcode == 0x19d && r.Bytes.Length > 14 && r.Bytes[14] == 0x57, "the duel result");
         Check.Equal($"{HandleOf(bobForCarol)}{HandleOf(aliceForCarol)}".Replace(" ", ""), WireFormat.ToHex(heard.Bytes[2..10]), "Loser and winner in the broadcast");
@@ -257,6 +279,53 @@ public static partial class Scenarios
         await Task.Delay(500);
         Check.Equal(0, bob.Received("80 fd").Count, "Loading Area trips after a duel");
         Check.Equal(0, bob.World.Problems.Count + alice.World.Problems.Count, "Protocol problems");
+    }
+
+    /// <summary>A duel's loser without the PvP flag on their own view: MaxHealth, IsDuelDeath 1, IsDead 1, Health 0,
+    /// DuelID 0, ConditionStateFlags 0 (niobe3dualduality 03:03:51 had the flag, 0x01000000, and DeathPenalty).</summary>
+    private const string UnflaggedDuelDeath = "02 80 80 c1 ?? ?? 01 c1 01 00 00 80 81 00 00 00 00 01 00 00 00 00";
+    private const string OwnDuelIdZero = "02 80 80 80 80 80 01 00 00 00 00";
+
+    private static BytePattern ViewPattern(ushort viewId, string pattern) => BytePattern.Parse($"{viewId & 0xff:x2} {viewId >> 8:x2} {pattern}");
+
+    /// <summary>Which packet (its 03 list, in arrival order) first held the view id followed by these bytes; -1 for none.</summary>
+    private static int SectionOf(HeadlessPlayer player, ushort viewId, string pattern, int from = 0)
+    {
+        BytePattern parsed = ViewPattern(viewId, pattern);
+        List<byte[]> sections = player.World.ViewSnapshot();
+        return from >= sections.Count ? -1 : sections.FindIndex(from, parsed.Occurs);
+    }
+
+    /// <summary>How many packets held the update.</summary>
+    private static int SectionsWith(HeadlessPlayer player, ushort viewId, string pattern)
+    {
+        BytePattern parsed = ViewPattern(viewId, pattern);
+        return player.World.ViewSnapshot().Count(parsed.Occurs);
+    }
+
+    /// <summary>How many packets held both updates.</summary>
+    private static int SectionsWithBoth(HeadlessPlayer player, ushort viewA, string patternA, ushort viewB, string patternB)
+    {
+        BytePattern a = ViewPattern(viewA, patternA), b = ViewPattern(viewB, patternB);
+        return player.World.ViewSnapshot().Count(s => a.Occurs(s) && b.Occurs(s));
+    }
+
+    /// <summary>The combat view of the player's latest interlock, from its combat init (<c>01 00 02 a7 00 &lt;view&gt; 01 ...</c>).</summary>
+    private static ushort CombatViewOf(HeadlessPlayer player)
+    {
+        byte[] needle = WireFormat.FromHex("010002a700");
+        ushort view = 0;
+        foreach (byte[] section in player.World.ViewSnapshot())
+        {
+            for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
+            {
+                if (at + needle.Length + 2 <= section.Length)
+                {
+                    view = BitConverter.ToUInt16(section, at + needle.Length);
+                }
+            }
+        }
+        return view;
     }
 
     /// <summary>The u32 after the last `&lt;view&gt; &lt;bytes&gt;` in what the player received.</summary>
@@ -309,12 +378,18 @@ public static partial class Scenarios
         // /duel stop in a duel is a surrender: nobody falls
         alice.SendRpc($"40 {bobForAlice} 01 6b");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
+        await bob.WaitForViewUpdateAsync(1, "02 a7 00");
+        ushort bobCombatView = CombatViewOf(bob);
         bob.SendRpc("50 00 00 00 00");
-        await bob.WaitForRpcAsync($"46 {aliceForBob} 00");
+        // The duel's end first (DuelID 0, 56), the interlock a second later in packets of its own
         await bob.WaitForRpcAsync($"56 02 00 {aliceForBob}");
-        await alice.WaitForRpcAsync($"46 {bobForAlice} 00");
+        await bob.WaitForRpcAsync($"46 {aliceForBob} 00", TimeSpan.FromSeconds(5));
         await alice.WaitForRpcAsync($"56 02 01 {bobForAlice}");
-        await bob.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 01 00 00 00 00");
+        await alice.WaitForRpcAsync($"46 {bobForAlice} 00", TimeSpan.FromSeconds(5));
+        await bob.WaitForViewUpdateAsync(2, OwnDuelIdZero);
+        await bob.WaitForViewUpdateAsync(1, $"01 01 00 {Le(bobCombatView)}");
+        Check.That(SectionOf(bob, 2, OwnDuelIdZero) < SectionOf(bob, 1, $"01 01 00 {Le(bobCombatView)}"), "DuelID 0 before the teardown");
+        Check.Equal(0, SectionsWithBoth(bob, 1, $"01 01 00 {Le(bobCombatView)}", 2, OwnDuelIdZero), "DuelID 0 in the teardown's packet");
         Check.Equal(0, CountViewUpdate(bob, 2, "028080c1"), "Duel deaths after a surrender");
 
         // A new duel, and one of them walks away: "too far apart" for both
@@ -367,8 +442,8 @@ public static partial class Scenarios
 
         // Surrender, then let the bot challenge
         player.SendRpc("50 00 00 00 00");
-        await player.WaitForRpcAsync($"46 {botHandle} 00");
         await player.WaitForRpcAsync($"56 02 00 {botHandle}");
+        await player.WaitForRpcAsync($"46 {botHandle} 00", TimeSpan.FromSeconds(5));
 
         player.SendChat("?duelbot challenge");
         // The old bot's view goes and a new one comes
@@ -378,9 +453,40 @@ public static partial class Scenarios
         player.SendRpc($"52 {HandleOf(challenger)} 01 00");
         await player.WaitForRpcAsync($"55 {HandleOf(challenger)}");
 
+        // Taking the bot away mid-duel: the duel's end (DuelID 0, 56 reason 4) reaches the player before the bot's
+        // view goes, in a packet of its own, so the client isn't left locked onto a gone opponent (PR 94 QA)
+        int duelEndsBefore = SectionsWith(player, 2, OwnDuelIdZero);
         player.SendChat("?duelbot off");
         await player.WaitForRpcAsync($"56 04 01", TimeSpan.FromSeconds(10));
         await player.WaitForViewUpdateAsync(1, $"01 01 00 {Le(challenger.ViewId)}");
+        List<byte[]> sections = player.World.ViewSnapshot();
+        int duelEnd = sections.FindLastIndex(ViewPattern(2, OwnDuelIdZero).Occurs);
+        int botGone = sections.FindIndex(ViewPattern(1, $"01 01 00 {Le(challenger.ViewId)}").Occurs);
+        Check.That(SectionsWith(player, 2, OwnDuelIdZero) > duelEndsBefore, "DuelID 0 when the bot went");
+        Check.That(duelEnd >= 0 && duelEnd < botGone, $"DuelID 0 (packet {duelEnd}) before the bot's view went (packet {botGone})");
+
+        // Losing to the bot (PR 94 QA, bug A): the defeat while the interlock is up, and /reconstruct at once takes the
+        // interlock down first and stands the player up in a packet after it
+        player.SendChat("?duelbot attack");
+        await player.WaitUntilAsync(() => player.World.CreationSnapshot().Count(c => c.Name == "DuelBot") == 3, "the third bot", TimeSpan.FromSeconds(10));
+        ViewCreation winner = player.World.CreationSnapshot().Last(c => c.Name == "DuelBot");
+        await Task.Delay(TimeSpan.FromSeconds(11)); // out of combat again after the surrender's fight
+        int from = player.World.ViewSnapshot().Count; // view ids are reused: look only at what comes from here
+        player.SendRpc($"50 {HandleOf(winner)}");
+        await player.WaitForRpcAsync($"55 {HandleOf(winner)}", TimeSpan.FromSeconds(10));
+        await player.WaitForRpcAsync($"46 {HandleOf(winner)} 01", TimeSpan.FromSeconds(15));
+        await player.WaitUntilAsync(() => SectionOf(player, 1, "02 a7 00", from) >= 0, "the combat init", TimeSpan.FromSeconds(5));
+        ushort combatView = CombatViewOf(player);
+        player.SendChat("?health 1");
+        await player.WaitForViewUpdateAsync(2, UnflaggedDuelDeath, TimeSpan.FromSeconds(120));
+        Check.Equal(-1, SectionOf(player, 1, $"01 01 00 {Le(combatView)}", from), "The interlock down before the defeat");
+        player.SendRpc("81 4c");
+        string standUp = "03 28 ?? 40 00 00 00 10 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 80 80 80 41 00 01 00";
+        await player.WaitForViewUpdateAsync(2, standUp, TimeSpan.FromSeconds(5));
+        int down = SectionOf(player, 1, $"01 01 00 {Le(combatView)}", from), up = SectionOf(player, 2, standUp, from);
+        Check.That(down >= 0 && down < up, $"The interlock down (packet {down}) before the stand-up (packet {up})");
+        Check.Equal(0, player.Received($"46 {HandleOf(winner)} 00").Count, "46 00 for the loser");
+        Check.Equal(0, player.Received("80 fd").Count, "Loading Area trips after a duel");
         Check.Equal(0, player.World.Problems.Count, "Protocol problems");
     }
 

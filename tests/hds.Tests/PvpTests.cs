@@ -424,4 +424,100 @@ public class PvpTests
         Assert.Equal("00 00 10 00 21", H(plain[^5..]));
         Assert.Equal("00 00 10 01 21", H(flagged[^5..]));
     }
+
+    // The end of a duel on the real client (PR 94 QA): what goes out, in what order, and where the bot stands
+
+    [Fact]
+    public void UnflaggedLosersFlagsAreClearedWithTheDefeat()
+    {
+        // Retail's loser carried 0x01000000, the PvP flag alone: no in-combat bit (niobe3dualduality 03:03:51).
+        // A loser without the flag gets 0 there.
+        Assert.Equal("02 00 02 80 80 c1 64 00 01 c1 01 00 00 80 81 00 00 00 00 01 00 00 00 00",
+            H(DuelHandler.BuildSelfDuelDeath(100, 0)));
+    }
+
+    [Fact]
+    public void WinnersOwnDuelIdZeroIsRetails()
+    {
+        // lastday2 21:54:53: 02 00 02 80 84 b6 80 80 80 01 00 00 00 00 (NoiseLevel b6 and DuelID 0); without NoiseLevel:
+        Assert.Equal("02 00 02 80 80 80 80 80 01 00 00 00 00",
+            H(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDuelId, PlayerViewAttributes.U32(0)))));
+    }
+
+    [Fact]
+    public void TheInterlockComesDownAfterTheDeath()
+    {
+        // Retail took the combat view down 8 to 9 s after a duel's end: the loser 03:03:51 -> 03:04:00
+        // (niobe3dualduality), the winner 21:54:53 -> 21:55:01 (lastday2)
+        Assert.InRange(PvpFight.TeardownDelayFor(PvpFight.EndReason.Death), 8.0, 9.0);
+        Assert.True(PvpFight.TeardownDelayFor(PvpFight.EndReason.DuelOver) > DuelHandler.ReassertSeconds);
+        Assert.True(PvpFight.TeardownDelayFor(PvpFight.EndReason.Left) > DuelHandler.ReassertSeconds);
+        Assert.Equal(0.0, PvpFight.TeardownDelayFor(PvpFight.EndReason.Withdrew));
+        // The gap that keeps records out of one packet is longer than the queue's gathering time
+        Assert.True(DuelHandler.ReassertSeconds * 1000 > WorldClient.FlushIntervalMs);
+    }
+
+    [Fact]
+    public void BotTurnsWithTheOtherPlayerStateRecord()
+    {
+        // died_in_pvp, another player turning and moving on view 03: 03 00 01 0c e6 1e 6a 8c 46 00 80 f7 43 65 0e 95 44
+        byte[] record = PvpFight.BuildFacing(0xe6, BitConverter.ToSingle(B("1e 6a 8c 46"), 0), BitConverter.ToSingle(B("00 80 f7 43"), 0),
+            BitConverter.ToSingle(B("65 0e 95 44"), 0));
+        Assert.Equal("01 0c e6 1e 6a 8c 46 00 80 f7 43 65 0e 95 44", H(record));
+    }
+
+    private static void LoadNavMesh()
+    {
+        string dir = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(dir, "data", "sector_properties.csv")))
+        {
+            dir = Path.GetDirectoryName(dir)!;
+        }
+        SectorProperties.Load(Path.Combine(dir, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(dir, "data", "navmesh"));
+    }
+
+    [Theory]
+    // Indoor and outdoor spots from NavMeshTests (retail positions), facing eight ways each
+    [InlineData(1, 10682.4, 1695.0, -8798.3)]
+    [InlineData(1, 45092.1, 95.0, 6129.0)]
+    [InlineData(3, 44387.0, 2495.0, -3707.1)]
+    [InlineData(1, 9842.2, 895.0, 13694.8)]
+    [InlineData(1, 63242.0, 95.0, -91737.3)]
+    [InlineData(2, -146314.1, 695.0, 28528.2)]
+    [InlineData(1, 41010.332, 1695.0, 12280.438)] // Mara, a room by a wall (sector 1118, where a raw 3 m offset was off the floor)
+    public void DuelBotStandsOnTheFloorInFrontOfItsOwner(ushort district, double x, double y, double z)
+    {
+        LoadNavMesh();
+        Assert.True(NavMesh.Locate(district, x, y, z, out NavLocation owner));
+        for (int yaw = 0; yaw < 256; yaw += 32)
+        {
+            DuelBot.Spot(district, x, y, z, (byte)yaw, out double bx, out double by, out double bz);
+            double distance = Math.Sqrt((bx - x) * (bx - x) + (bz - z) * (bz - z));
+            Assert.InRange(distance, 140.0, 310.0);
+            Assert.True(NavMesh.Locate(district, bx, by, bz, out NavLocation at), $"yaw {yaw}: off the mesh at {bx}, {by}, {bz}");
+            Assert.InRange(by - 95 - at.floorY, -1.0, 1.0);
+            // Every step between them is floor: no wall in the way
+            for (int i = 1; i < 10; i++)
+            {
+                Assert.True(NavMesh.Locate(district, x + (bx - x) * i / 10, by, z + (bz - z) * i / 10, out _));
+            }
+        }
+    }
+
+    [Theory]
+    // Open ground (retail positions from NavMeshTests): straight ahead of the owner, 2.5 m, whichever way they face
+    [InlineData(2, -146314.1, 695.0, 28528.2)]
+    [InlineData(3, -48349.6, 95.0, -31817.8)]
+    [InlineData(1, 40266.6, 95.0, -21183.1)]
+    public void DuelBotGoesStraightAheadOnOpenGround(ushort district, double x, double y, double z)
+    {
+        LoadNavMesh();
+        foreach (byte yaw in new byte[] { 0, 64, 128, 192 })
+        {
+            DuelBot.Spot(district, x, y, z, yaw, out double bx, out _, out double bz);
+            Assert.Equal(yaw, MobAggro.YawTowards(x, z, bx, bz));
+            Assert.InRange(Math.Sqrt((bx - x) * (bx - x) + (bz - z) * (bz - z)), 249.0, 251.0);
+        }
+    }
 }

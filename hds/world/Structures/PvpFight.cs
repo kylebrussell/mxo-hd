@@ -41,6 +41,38 @@ namespace hds
             public bool Withdrawing;
             public UInt16 RoundRecord;
             public UInt16 CombatEffectRecordId;
+            /// <summary>The fight is over but this side's client still has the combat view (see <see cref="End"/>).</summary>
+            public bool TeardownPending;
+            /// <summary>This side lost by death: retail sent it no <c>46 &lt;opponent&gt; 00</c>.</summary>
+            public bool Fell;
+        }
+
+        /// <summary>
+        /// How long after a death (a duel lost, a PvP kill) the interlock is taken down. Retail sent the death first and
+        /// deleted the combat view 8 to 9 s later, ticking it meanwhile: the loser at 03:03:51 and 03:04:00
+        /// (niobe3dualduality), the winner at 21:54:53 and 21:55:01 (lastday2). Taking it down first, in the same packet
+        /// as the death, left the real client standing at 0 health with its DuelID still set (PR 94 QA).
+        /// </summary>
+        public const double DeathTeardownSeconds = 8;
+
+        /// <summary>The same for a duel stopped otherwise (surrender, distance, a player gone): ours, just long enough for
+        /// the duel's end to reach the client in a packet of its own first.</summary>
+        public const double StopTeardownSeconds = 1;
+
+        private static readonly object PendingSync = new object();
+        private static readonly System.Collections.Generic.Dictionary<WorldClient, PvpFight> PendingTeardowns =
+            new System.Collections.Generic.Dictionary<WorldClient, PvpFight>();
+
+        /// <summary>The delay before the teardown for a fight that ends for this reason.</summary>
+        public static double TeardownDelayFor(EndReason reason)
+        {
+            switch (reason)
+            {
+                case EndReason.Death: return DeathTeardownSeconds;
+                case EndReason.DuelOver:
+                case EndReason.Left: return StopTeardownSeconds;
+                default: return 0;
+            }
         }
 
         /// <summary>The player who asked for the fight.</summary>
@@ -170,6 +202,10 @@ namespace hds
                 CombatHandler h = CombatManager.GetHandler(side.Client);
                 h.pvpFight = this;
                 h.isCombatRunning = true;
+                if (side.Client.IsBot)
+                {
+                    FaceOpponent(side.Client, side.Other.Client);
+                }
             }
             IsActive = true;
             timer = new Timer(CombatInterlock.RoundMs) { AutoReset = true };
@@ -189,6 +225,30 @@ namespace hds
             Array.Copy(init, record, init.Length);
             Array.Copy(rest, 0, record, init.Length, rest.Length);
             return record;
+        }
+
+        /// <summary>
+        /// A server-played fighter turns to its opponent on everyone's screen, as an NPC does when a fight starts
+        /// (CombatHandler.FaceThePlayer). A real client turns its own character. The record is the state part other
+        /// players' views get for a moving player: <c>&lt;view&gt; 01 0c &lt;yaw&gt; &lt;x y z f32&gt;</c>.
+        /// </summary>
+        private static void FaceOpponent(WorldClient bot, WorldClient opponent)
+        {
+            double bx = 0, by = 0, bz = 0, ox = 0, oy = 0, oz = 0;
+            NumericalUtils.LtVector3dToDoubles(bot.playerInstance.Position.getValue(), ref bx, ref by, ref bz);
+            NumericalUtils.LtVector3dToDoubles(opponent.playerInstance.Position.getValue(), ref ox, ref oy, ref oz);
+            byte yaw = MobAggro.YawTowards(bx, bz, ox, oz);
+            bot.playerInstance.YawInterval.setValue(yaw);
+            PvpFlag.ToWatchers(bot, BuildFacing(yaw, (float)bx, (float)by, (float)bz));
+        }
+
+        public static byte[] BuildFacing(byte yaw, float x, float y, float z)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("010c");
+            pak.AddByte(yaw);
+            pak.AddFloatLtVector3f(x, y, z);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -494,12 +554,15 @@ namespace hds
         }
 
         /// <summary>
-        /// Ends the fight. Each side still there gets the teardown an NPC fight ends with (the combat view's final
-        /// record, <c>46 &lt;opponent&gt; 00</c>, the delete of the combat view, CombatEffect off, and the combat stance and
-        /// flags reset ten seconds later). <paramref name="who"/> is the player the reason is about.
+        /// Ends the fight: no more rounds, and neither player counts as fighting. Each side still there then gets the
+        /// teardown an NPC fight ends with (the combat view's final record, <c>46 &lt;opponent&gt; 00</c>, the delete of the
+        /// combat view, CombatEffect off, and the combat stance and flags reset ten seconds later), after
+        /// <see cref="TeardownDelayFor"/> the reason: whatever ends the fight (a death, the duel's end) goes out first,
+        /// in packets of its own, as retail did. <paramref name="who"/> is the player the reason is about.
         /// </summary>
         public void End(EndReason reason, WorldClient who)
         {
+            double delay = TeardownDelayFor(reason);
             lock (sync)
             {
                 if (!IsActive)
@@ -511,9 +574,9 @@ namespace hds
                 timer?.Dispose();
                 timer = null;
                 Output.WriteDebugLog("[PVP] Close combat between " + PvpFlag.Name(Attacker.Client) + " and " + PvpFlag.Name(Defender.Client) +
-                                     " ends: " + reason + " (" + (who != null ? PvpFlag.Name(who) : "-") + ")");
+                                     " ends: " + reason + " (" + (who != null ? PvpFlag.Name(who) : "-") + ")" +
+                                     (delay > 0 ? ", interlock down in " + delay + " s" : ""));
 
-                ServerPackets packets = new ServerPackets();
                 foreach (Side side in new[] { Attacker, Defender })
                 {
                     WorldClient client = side.Client;
@@ -526,19 +589,139 @@ namespace hds
                         client.playerData.combatGeneration++;
                         continue;
                     }
-                    SendCombatEffect(side, true);
-                    packets.SendCombatEnd(client, side.HandlerViewId, side.OpponentHandle, centre, Rounds);
-                    client.viewMan.removeViewByViewId(side.HandlerViewId);
-                    client.FlushQueue();
+                    side.Fell = reason == EndReason.Death && client == who;
+                    side.TeardownPending = true;
+                    if (delay > 0)
+                    {
+                        lock (PendingSync)
+                        {
+                            PendingTeardowns[client] = this;
+                        }
+                    }
                 }
-                lock (WorldServer.gameServerEntities)
+            }
+            if (delay > 0)
+            {
+                DelayedActions.After(delay, () =>
                 {
-                    WorldServer.gameServerEntities.Remove(handlerObject);
-                }
+                    Teardown(Attacker);
+                    Teardown(Defender);
+                });
+            }
+            else
+            {
+                Teardown(Attacker);
+                Teardown(Defender);
             }
             if (reason == EndReason.Left && who != null)
             {
                 DuelHandler.OnUnavailable(who);
+            }
+        }
+
+        /// <summary>One side's interlock teardown, once. Nothing for a client that is gone or on its way to the Loading Area.</summary>
+        private void Teardown(Side side)
+        {
+            WorldClient client = side.Client;
+            lock (sync)
+            {
+                if (!side.TeardownPending)
+                {
+                    return;
+                }
+                side.TeardownPending = false;
+                if (!Attacker.TeardownPending && !Defender.TeardownPending)
+                {
+                    lock (WorldServer.gameServerEntities)
+                    {
+                        WorldServer.gameServerEntities.Remove(handlerObject);
+                    }
+                }
+            }
+            lock (PendingSync)
+            {
+                if (PendingTeardowns.TryGetValue(client, out PvpFight pending) && pending == this)
+                {
+                    PendingTeardowns.Remove(client);
+                }
+            }
+            if (!client.Alive || !client.playerData.getOnWorld() || client.playerData.respawnPending)
+            {
+                return;
+            }
+            SendCombatEffect(side, true);
+            new ServerPackets().SendCombatEnd(client, side.HandlerViewId, side.OpponentHandle, centre, Rounds, !side.Fell);
+            client.viewMan.removeViewByViewId(side.HandlerViewId);
+            client.FlushQueue();
+            DuelHandler.AfterInterlockTeardown(client);
+        }
+
+        /// <summary>
+        /// The player's last fight is over but its interlock is still up (<see cref="DeathTeardownSeconds"/>): take it
+        /// down now, before something new (another fight, standing up) is sent. True when there was one.
+        /// </summary>
+        public static bool RunPendingTeardown(WorldClient client)
+        {
+            PvpFight fight;
+            lock (PendingSync)
+            {
+                if (!PendingTeardowns.TryGetValue(client, out fight))
+                {
+                    return false;
+                }
+            }
+            fight.Teardown(fight.SideOf(client));
+            return true;
+        }
+
+        /// <summary>
+        /// A player leaves (disconnect, world reload): their own pending teardown is dropped, their views being gone.
+        /// With <paramref name="othersNow"/>, anyone whose interlock was with them gets theirs now, before the player's
+        /// view is deleted (a dev bot taken away); otherwise theirs runs when it is due.
+        /// </summary>
+        public static void OnPlayerGone(WorldClient client, bool othersNow)
+        {
+            System.Collections.Generic.List<PvpFight> involved;
+            lock (PendingSync)
+            {
+                involved = new System.Collections.Generic.List<PvpFight>();
+                foreach (PvpFight f in PendingTeardowns.Values)
+                {
+                    if (f.Involves(client) && !involved.Contains(f))
+                    {
+                        involved.Add(f);
+                    }
+                }
+            }
+            foreach (PvpFight f in involved)
+            {
+                Side mine = f.SideOf(client);
+                lock (f.sync)
+                {
+                    if (mine.TeardownPending)
+                    {
+                        mine.TeardownPending = false;
+                        client.playerData.combatGeneration++;
+                    }
+                }
+                lock (PendingSync)
+                {
+                    if (PendingTeardowns.TryGetValue(client, out PvpFight p) && p == f)
+                    {
+                        PendingTeardowns.Remove(client);
+                    }
+                }
+                if (othersNow)
+                {
+                    f.Teardown(mine.Other);
+                }
+                if (!mine.Other.TeardownPending)
+                {
+                    lock (WorldServer.gameServerEntities)
+                    {
+                        WorldServer.gameServerEntities.Remove(f.handlerObject);
+                    }
+                }
             }
         }
     }
