@@ -47,6 +47,24 @@ namespace hds
             }
         }
 
+        /// <summary>The interlock with another player this player is in, and their gunfire at one (docs/PVP.md).</summary>
+        public PvpFight pvpFight;
+        public PvpGunfire pvpGunfire;
+
+        /// <summary>
+        /// Ends what the player is fighting before a fight with another player starts: an NPC fight as if they had left
+        /// it, gunfire at another player, and (unless kept) an interlock with one.
+        /// </summary>
+        public void LeaveOtherFights(bool keepInterlock = false)
+        {
+            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            pvpGunfire?.Stop();
+            if (!keepInterlock)
+            {
+                pvpFight?.End(PvpFight.EndReason.Withdrew, client);
+            }
+        }
+
         /// <summary>
         /// Drops the fight without the combat teardown packets, for a world reload (hardline teleport, Loading Area,
         /// jack-out): the client has already dropped every view, so the teardown would address views it no longer
@@ -54,6 +72,7 @@ namespace hds
         /// </summary>
         public void AbandonCombat()
         {
+            PvpCombat.OnPlayerGone(client);
             CombatSession session = currentSession;
             if (session == null)
             {
@@ -146,6 +165,7 @@ namespace hds
             {
                 SendNextMove(session, CombatInterlock.KindNextMoveChanged);
             }
+            pvpFight?.OnTacticChanged(client);
             client.FlushQueue();
         }
 
@@ -189,6 +209,10 @@ namespace hds
         /// </summary>
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId)
         {
+            if (pvpFight != null)
+            {
+                return pvpFight.QueueAbility(client, ability, targetViewId);
+            }
             CombatSession session = currentSession;
             if (session == null || !session.IsActive || session.Type != CombatSession.CombatType.Melee ||
                 session.DefenderMob == null || session.CurrentMove == null || session.GetDefenderViewId() != targetViewId)
@@ -500,6 +524,12 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Close combat requested against target: {targetViewWithSpawnId}");
 
+            // Another player: PvpCombat decides whether they can be fought, and PvpFight runs the interlock
+            if (!npcStarted && PvpCombat.TryCloseCombat(client, packet, targetViewWithSpawnId))
+            {
+                return;
+            }
+
             // A 41 (fire) comes with a 40 for the same target; retail didn't answer that 40, and starting close
             // combat here would end the ranged fight the 41 just started.
             if (IsRangedFightWith(targetViewWithSpawnId))
@@ -517,8 +547,15 @@ namespace hds
                 Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found");
                 return;
             }
+            if (pvpFight != null)
+            {
+                // Locked in close combat with another player: the way out is a withdrawal (44), not an NPC
+                Output.WriteDebugLog("[COMBAT] Close combat with an NPC refused: in an interlock with a player");
+                return;
+            }
 
-            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            LeaveOtherFights();
+            PvpFlag.OnFightStarts(client, false);
 
             // Byte 4 of the request is ForcedInterlock (client.dll's printer for RPC 40); retail answered it with 4e 01,
             // ForcedCombat (4e 00 is what a shot gets).
@@ -591,7 +628,7 @@ namespace hds
             targetMob.SetInCombat(true);
 
             // Send the combat state data (still using hardcoded blob until we understand it better)
-            SendCombatStateBlob(client, theView.ViewID);
+            SendCombatStateBlob(client);
 
             client.FlushQueue();
 
@@ -659,7 +696,16 @@ namespace hds
         /// <summary>
         /// Sends the complex combat state blob (still hardcoded until understood).
         /// </summary>
-        private void SendCombatStateBlob(WorldClient client, UInt16 combatViewId)
+        internal static void SendCombatStateBlob(WorldClient client)
+        {
+            client.messageQueue.addObjectMessage(CombatStateBlob(), false);
+        }
+
+        /// <summary>
+        /// The rest of the combat init record (<see cref="ServerPackets.BuildCombatInitialize"/>): it goes out as the
+        /// next object message and continues that record, so nothing may come between the two.
+        /// </summary>
+        internal static byte[] CombatStateBlob()
         {
             PacketContent pak = new PacketContent();
 
@@ -670,7 +716,7 @@ namespace hds
             pak.AddByteArray(StringUtils.hexStringToBytes(
                 "0703070300bafc42000020c1801baf4200803e40000020c1e0b319430000010013010000f40134059a02233c5200008b0b0024145200008b0b0024262000008b0b00240000000000000000000000000000000021000000700000000010001000000000000000000000000000010000022b600000000000"));
 
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -787,7 +833,7 @@ namespace hds
         /// <summary>
         /// Inner Strength for a close-combat round: retail's combat.GetInnerStrengthUsed, which only gives Block +10.
         /// </summary>
-        private void ApplyRoundInnerStrength(WorldClient player)
+        internal static void ApplyRoundInnerStrength(WorldClient player)
         {
             byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
             if (isBytes == null || isBytes.Length < 2) return;
@@ -926,6 +972,12 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
 
+            // Another player: PvpGunfire fires for this one
+            if (PvpCombat.TryRangedCombat(client, targetViewWithSpawnId))
+            {
+                return;
+            }
+
             if (IsRangedFightWith(targetViewWithSpawnId))
             {
                 Output.WriteDebugLog("[COMBAT] Already firing at this target");
@@ -952,7 +1004,13 @@ namespace hds
                 return;
             }
 
-            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            if (pvpFight != null)
+            {
+                Output.WriteDebugLog("[COMBAT] Gunfire at an NPC refused: in an interlock with a player");
+                return;
+            }
+            LeaveOtherFights();
+            PvpFlag.OnFightStarts(client, false);
 
             currentSession = new CombatSession(
                 client,
@@ -1285,6 +1343,15 @@ namespace hds
         public void ProcessLeaveCloseCombat(ref byte[] rpcData)
         {
             Output.WriteDebugLog("[COMBAT] Leave combat requested");
+
+            // Against another player: gunfire just stops; an interlock is left the way retail let a player leave one
+            // with an NPC, by a withdrawal tried at each round
+            if (pvpGunfire != null || pvpFight != null)
+            {
+                pvpGunfire?.Stop();
+                pvpFight?.RequestWithdraw(client);
+                return;
+            }
 
             // Withdraw in close combat (44 01): retail tried it at each round until it succeeded, the fight going on
             // meanwhile (actions_combat_marketplace_abilitychangecoder 10:38:03: three failed rounds, then 0x200 at

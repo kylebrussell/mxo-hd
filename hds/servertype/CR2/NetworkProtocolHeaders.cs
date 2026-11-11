@@ -14,7 +14,9 @@ namespace hds
         CLIENT_RANGE_COMBAT = 0x41,
         CLIENT_FREE_FIRE_CHOICE = 0x3f, // 3f <inventory slot u16> <kind u32>: hotbar Free Fire weapon (kind 0x10 = item)
         CLIENT_LEAVE_COMBAT = 0x44,
-        CLIENT_DUEL_REQUEST = 0x50,
+        CLIENT_DUEL_REQUEST = 0x50,            // 50 <target handle u32>: /duel on the target; 0 = /duel stop
+        CLIENT_DUEL_RESPONSE = 0x52,           // 52 <challenger handle u32> <accepts u8> <reason u8>
+        CLIENT_PVP_FLAG = 0x19e,               // 81 9e (no body): /pvp
         CLIENT_JUMP_START = 0xc2,
         CLIENT_JUMP_CANCEL = 0xc4,
         CLIENT_OBJECTINTERACTION_DYNAMIC = 0xc7,

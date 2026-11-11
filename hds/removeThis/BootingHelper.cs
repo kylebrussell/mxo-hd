@@ -106,6 +106,25 @@ namespace hds
 
             client.playerInstance.CurExclusiveAbility.setValue(CurCombatExclusiveAbility); //TODO: see what's this
 
+            // PvP (docs/PVP.md): the PvP flag and a duel in progress are part of what a client needs to know about a
+            // player to decide whether they can be attacked. Retail's creation records carried ConditionStateFlags too.
+            // (Setting a value enables the attribute: one that is 0 is taken out of the record again.)
+            UInt32 flags = PvpFlag.FlagsOf(client.playerData);
+            client.playerInstance.ConditionStateFlags.setValue(flags);
+            if (flags == 0)
+            {
+                client.playerInstance.ConditionStateFlags.disable();
+            }
+            client.playerInstance.DuelID.setValue(client.playerData.duelId);
+            if (client.playerData.duelId == 0)
+            {
+                client.playerInstance.DuelID.disable();
+            }
+            if (client.playerData.isDead || client.playerData.duelDeath)
+            {
+                client.playerInstance.IsDead.setValue(true);
+            }
+
             // ok we set all our values - lets get the generated packet for us
             creationPacket =
                 Store.world.objMan.GenerateCreationPacket(client.playerInstance, 0x0000, (byte) spawnIdCounter);

@@ -232,6 +232,11 @@ namespace hds
         public void ProcessRespawnRequest()
         {
             WorldClient client = Store.currentClient;
+            // A duel's loser isn't dead: the same request stands them up where they are
+            if (DuelHandler.StandUp(client))
+            {
+                return;
+            }
             if (!client.playerData.isDead)
             {
                 Output.WriteDebugLog("[DEATH] Respawn request from a living player ignored");
@@ -241,6 +246,9 @@ namespace hds
             UInt16 maxHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
             client.playerInstance.Health.setValue(maxHealth);
             client.playerData.respawnPending = true;
+            // The heal below clears every ConditionStateFlags bit, the PvP flag with it, as retail's did after a PvP
+            // death; a PvP server flags the player again when they next fight (PvpFlag.OnFightStarts)
+            PvpFlag.ClearForRespawn(client);
 
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfRespawnHeal(maxHealth), false);
             client.messageQueue.addRpcMessage(ServerPackets.BuildRespawnToLoadingArea());

@@ -13,6 +13,7 @@ namespace hds.databases.interfaces{
 
         void SetReputation(UInt32 charId, string reputationColumn, int value);
         void SetOrgId(UInt32 charId, int orgId);
+        void SetPvpFlag(UInt32 charId, bool flagged);
         Hashtable GetCharInfoByHandle(string handle);
         UInt32 GetUserIdForCharId(byte[] charIdHex);
         string GetPathForDistrictKey(string key);

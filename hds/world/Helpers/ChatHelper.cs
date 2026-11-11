@@ -97,6 +97,8 @@ namespace hds
                         myselfStateData.AddByteArray(
                             Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
                         Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                        // Other players' clients decide by it whether this one can be fought (OrganizationID, other-view 4)
+                        PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherOrganizationId, PlayerViewAttributes.U8((byte)orgId))));
                     }
                 }
 
@@ -355,6 +357,59 @@ namespace hds
                         new ServerPackets().sendSystemChatMessage(Store.currentClient,
                             "?tradebot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                     }
+                }
+
+                if (command.Equals("?duelbot") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: a player played by the server to duel or fight, so one client can see both sides
+                    // (docs/PVP.md). ?duelbot [wait|attack|gun|challenge|pvp], ?duelbot off
+                    string arg = commands.Length > 1 ? commands[1] : "";
+                    if (arg.Equals("off", StringComparison.OrdinalIgnoreCase))
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            DuelBot.Dismiss(Store.currentClient) ? "DuelBot left." : "You have no DuelBot.", "BROADCAST");
+                    }
+                    else if (DuelBot.TryParseMode(arg, out DuelBot.Mode botMode))
+                    {
+                        DuelBot.Summon(Store.currentClient, botMode);
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, "DuelBot (" + botMode + ") is next to you.", "BROADCAST");
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?duelbot [wait|attack|gun|challenge|pvp|off]", "BROADCAST");
+                    }
+                }
+                else if (command.Equals("?duelbot"))
+                {
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
+                if (command.Equals("?pvpflag") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: the PvP flag itself, whatever the server type allows /pvp to do
+                    PvpFlag.Set(Store.currentClient, commands[1].Equals("on", StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (command.Equals("?pvpability") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    UInt16.TryParse(commands[1], out UInt16 flagAbility))
+                {
+                    // Dev command: one of the flag abilities (PvpFlag.Abilities: a PvP pulse, a pacification zone) lands on you
+                    if (!PvpFlag.ApplyAbility(Store.currentClient, flagAbility))
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, "Not a PvP flag ability.", "BROADCAST");
+                    }
+                }
+
+                if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
+                {
+                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes
+                    Store.currentClient.playerInstance.Health.setValue(devHealth);
+                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
+                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
+                    Store.currentClient.FlushQueue();
                 }
 
                 if (command.Equals("?die"))

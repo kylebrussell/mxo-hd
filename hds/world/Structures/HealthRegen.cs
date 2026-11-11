@@ -37,7 +37,8 @@ namespace hds
             UInt16 current = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
             UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
             bool inCombat = CombatManager.GetHandler(client).isCombatRunning;
-            UInt16? next = Next(current, max, inCombat, client.playerData.isDead, seconds);
+            // A duel's loser lies at 0 health until they stand up
+            UInt16? next = Next(current, max, inCombat, client.playerData.isDead || client.playerData.duelDeath, seconds);
             if (!next.HasValue)
             {
                 return;
@@ -46,6 +47,8 @@ namespace hds
             client.playerInstance.Health.setValue(next.Value);
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(next.Value), false);
             client.FlushQueue();
+            // And on everyone's view of them: a player fighting this one sees what their hits leave (docs/PVP.md)
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next.Value))));
         }
     }
 }
