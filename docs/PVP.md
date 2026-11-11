@@ -14,7 +14,7 @@ Three kinds of evidence, and each statement below says which it rests on.
 |---|---|---|
 | died_in_pvp | `20260607T191353Z-…/mxopackets1_crashover2k_afterwhoruneo_proxy_003_pvp_and_tele_to_park_east_north_died_in_pvp` | The capturing player attacked by two others, shot at, killed, respawned. Always the attacked side. |
 | some_pvp | `20260607T191353Z-…/mxopackets1_crashover2k_008_some_pvp_and_teleports_and_some_doors_open` | Another attacked player and a PvP death; the flag at world entry |
-| lastday2 | `20260607T015831Z-…/mxopackets1_entilsar_enti_lastday2` | Two duels won, started by the capturing player: the attacker's and winner's side |
+| lastday2 | `20260607T015831Z-…/mxopackets1_entilsar_enti_lastday2` | Two duels the capturing player was challenged to, struck first in and won: the attacker's and the winner's side |
 | niobe3dualduality | `20260608T122812Z-…/mxopackets1_medanon_niobe3dualduality` | A duel lost (the loser's side to standing up again), challenges sent, declined and refused |
 | ProxyM2 | `20260608T130150Z-…/ProxyM2_m2_packets` | Twelve duels accepted (51, 52, 55) |
 
@@ -197,7 +197,7 @@ All eight are in client.dll; the dispatcher (0x62175570) has no case for 50 and 
 | They fight | An ordinary fight | lastday2, niobe3dualduality |
 | One falls | See below | niobe3dualduality (loser), lastday2 (winner) |
 
-- **The challenger's id is the even one** in all three captures.
+- **The challenger's id is the even one**: in all three captures the capturing player had been challenged, and their own id was the odd one.
 - **After a "no" the challenger waits a minute** before asking the same player again: a decline at 03:24:42, a new challenge at 03:24:57 answered with 45.0 s (`DuelHandler.RechallengeSeconds`). An unanswered challenge counts as a "no" after 20 s.
 - **Checks before a challenge is passed on** (`DuelHandler.Obstacle`), in this order, each with its reason: the challenger already dueling, already challenging, considering a challenge, in combat, on a mission team; then the target unavailable, on a team, in combat, dueling, challenging, considering; then more than 30 m apart; then the wait. The reasons are the client's. The order and the 30 m are ours.
 
