@@ -245,6 +245,12 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_REMOVE_FRIEND:
 			        new BuddylistHandler().ProcessRemoveFriend(ref rpcData);
 			        break;
+		        case (int) RPCRequestHeader.CLIENT_ADD_IGNORE:
+			        IgnoreListHandler.ProcessAdd(Store.currentClient, rpcData);
+			        break;
+		        case (int) RPCRequestHeader.CLIENT_REMOVE_IGNORE:
+			        IgnoreListHandler.ProcessRemove(Store.currentClient, rpcData);
+			        break;
 		        // MarketPlace
 		        case (int) RPCRequestHeader.CLIENT_MP_OPEN:
 		            new MarketPlaceHandler().ProcessOpen(ref rpcData);

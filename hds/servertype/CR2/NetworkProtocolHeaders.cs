@@ -71,6 +71,8 @@ namespace hds
         // BuddyList
         CLIENT_ADD_FRIEND = 0xd6,
         CLIENT_REMOVE_FRIEND = 0xda,
+        CLIENT_ADD_IGNORE = 0xe0,              // 80 e0 <name offset> <sized name>: /ignore
+        CLIENT_REMOVE_IGNORE = 0xe2,
 
         // MarketPlace
         CLIENT_MP_LIST_ITEMS = 0x124,

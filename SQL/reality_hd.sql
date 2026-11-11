@@ -938,6 +938,18 @@ CREATE TABLE IF NOT EXISTS `mail` (
 -- --------------------------------------------------------
 
 --
+-- Ignore list (IgnoreListHandler also creates it on first use)
+--
+
+CREATE TABLE IF NOT EXISTS `ignorelist` (
+  `charId` int UNSIGNED NOT NULL,
+  `handle` varchar(64) NOT NULL,
+  PRIMARY KEY (`charId`, `handle`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `rsivalues`
 --
 

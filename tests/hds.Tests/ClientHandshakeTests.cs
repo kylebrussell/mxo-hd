@@ -13,3 +13,25 @@ public class ClientHandshakeTests
             Convert.ToHexString(ServerPackets.BuildFeatureList()).ToLowerInvariant());
     }
 }
+
+public class IgnoreListTests
+{
+    private static string H(byte[] bytes) => Convert.ToHexString(bytes).ToLowerInvariant();
+
+    [Fact]
+    public void RecordsAreLaidOutLikeTheFriendList()
+    {
+        // client.dll 80 e1 / 80 e3: +2 IgnoreName (offset), +4 Status
+        Assert.Equal("80e108008400008e0400426f6200", H(IgnoreListPackets.BuildAdded("Bob", IgnoreListPackets.Success)));
+        Assert.Equal("80e308005800000e0400426f6200", H(IgnoreListPackets.BuildRemoved("Bob", IgnoreListPackets.NotIgnored)));
+    }
+
+    [Fact]
+    public void ParsesTheName()
+    {
+        // 80 e0 04 00 <sized name>, after the two opcode bytes
+        Assert.True(IgnoreListPackets.TryParseName(Convert.FromHexString("04000400426f6200"), out string? name));
+        Assert.Equal("Bob", name);
+        Assert.False(IgnoreListPackets.TryParseName(new byte[] { 4, 0 }, out _));
+    }
+}
