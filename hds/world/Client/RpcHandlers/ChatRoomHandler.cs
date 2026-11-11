@@ -8,7 +8,9 @@ namespace hds
 {
     /// <summary>
     /// The client's chat room requests, all from slash commands (client.dll's command handler 0x62256760; no window sends
-    /// them). Who gets which record, and the rules, are ours: docs/CLIENT-ACTIONS.md, "Chat rooms in detail".
+    /// them). The 7.6005 client never sends them: it doesn't register the room commands in its command map (the list at
+    /// 0x62254020 has none), so "/roomcreate" prints "Unrecognized command." and the handler's room cases are dead code.
+    /// They reach the server only from SocialBot and the headless client. Who gets which record, and the rules, are ours: docs/CLIENT-ACTIONS.md, "Chat rooms in detail".
     /// <c>rpcData</c> is the record after its two opcode bytes, so a field at record offset N is rpcData[N - 2], and the
     /// string offsets it holds count from the record's first byte.
     /// </summary>

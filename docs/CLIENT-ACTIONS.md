@@ -18,14 +18,14 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 47 | 23 | 119 |
+| Handled | 49 | 42 | 12 | 103 |
 | Partial | 0 | 0 | 0 | 0 |
 | Ignored | 0 | 6 | 37 | 43 |
 | Wrong | 0 | 0 | 1 | 1 |
-| Not sent by this client | | | | 3 |
-| **Total** | 49 | 53 | 61 | 166 |
+| Not sent by this client | | | | 19 |
+| **Total** | 49 | 48 | 50 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled, and so are booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat room requests (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) turned out never to be sent: the client doesn't register the room commands (see "Chat rooms"); the server handles them anyway. Handled since then: booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item.
 
 The biggest gaps left, by impact:
 
@@ -76,7 +76,7 @@ The biggest gaps left, by impact:
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 is a room line (`/room room text`) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
+| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 would be a room line (`/room`, which the client doesn't register) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
 | `29` | Tell (TargetName, Text, bEchoOnly, ChatHandle) | D, C 81 | handled | high |
 | `30` | Emote (EmoteID, TargetID): every emote; an interactive one (`/hug` and 16 more) asks the target | D, C 24 | handled: the player's own view, and now other players' views (new); a paired one sends `31` to the target (new) | medium |
 | `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | handled (new): `32` to the requester, then its accepted animation | medium |
@@ -90,26 +90,28 @@ The biggest gaps left, by impact:
 
 ## Chat rooms (custom channels)
 
-All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175); no window sends them. The command handler (0x62256760) switches on the command's string id. No capture has a room, so the records are client.dll's and the rules ours: see "Chat rooms in detail".
+All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175), and **the 7.6005 client never sends any of them**. Its command handler (0x62256760) looks the typed word up in the chat manager's command map (+0xf0, 0x621c0900), then in the macro map (0x629ebe48 +0x40), and prints "Unrecognized command.  Please try again." (0x2e000002) when neither has it. The map is filled once from a fixed list of 116 string ids (0x62254020, looped up to 0x74 at 0x6225466e): `/orgnames` .. `/afk`, with no room command among them. No other code inserts into the map (the only other caller of the insert, 0x62253c20, is never called), and the ids 0x02000160..0x02000175 appear nowhere in client.dll except the handler's own switch, so its room cases are dead code. Nothing the server sends changes that: no feature flag (`81 49`, client-scripts/gameFeatures.py) or setting is read on the way. Checked in the real client (CSR_Tester, 75f540b): `/roomcreate`, `/roomenter` and `/room` all print "Unrecognized command" and send nothing.
+
+The server keeps its room code (the records are client.dll's, the rules ours: see "Chat rooms in detail"). It is reachable only through SocialBot and the headless client, and would serve a client build that registers the commands.
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 c0` | Create (RoomName, Topic, Password, IsPrivate .. IsGameLocal, MaxOccupancy): `/roomcreate room[:password] [topic]`. Missing from `client-rpc-classes.txt` (vtable 0x6288e7d0, sender 0x622461f0) | D, S | handled (new): `81 c1` | medium |
-| `81 c2` | Enter (RoomName, Password): `/roomenter room[:password]` | D, S | handled (new): `81 c3` to the room; a private room's knock is `81 c5` to its moderators | medium |
-| `81 c5` | Let a waiting player in (PlayerName, RoomName, Allow, never set): `/roomallow room player`. The same class as the server's "%s is requesting entry" | D, S | handled (new): `81 c6`, then `81 c3` | low |
-| `81 c7` | Leave (RoomName): `/roomleave` | D, S | handled (new): `81 c8` | medium |
-| `81 c9` | Destroy (RoomName): `/roomdestroy` | D, S | handled (new): `81 ca` | medium |
-| `81 cd` | Invite (PlayerNameToInvite, RoomName): `/roominvite room player` | D, S | handled (new): `81 ce` | low |
-| `81 cf` | Uninvite | D, S | handled (new): `81 d0` | low |
-| `81 d1` | Kick | D, S | handled (new): `81 d2` | low |
-| `81 d3` | Ban | D, S | handled (new): `81 d4` | low |
-| `81 d5` | Unban | D, S | handled (new): `81 d6` | low |
-| `81 d7` | Make moderator (IsTemporaryModerator, sent as 0) | D, S | handled (new): `81 d8` | low |
-| `81 d9` | Remove moderator (IsTemporaryModerator before RoomName) | D, S | handled (new): `81 da` | low |
-| `81 db` | Set owner | D, S | handled (new): `81 dc` | low |
-| `81 dd` | Give voice | D, S | handled (new): `81 de` (kept, but no room can be moderated: see below) | low |
-| `81 df` | Remove voice | D, S | handled (new): `81 e0` | low |
-| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/roomfind [node] [filter]`, both words as typed. `/rooms` sends nothing | D, S | handled (new): `81 e2`, then `81 e3` per room | medium |
+| `81 c0` | Create (RoomName, Topic, Password, IsPrivate .. IsGameLocal, MaxOccupancy): `/roomcreate room[:password] [topic]`. Missing from `client-rpc-classes.txt` (vtable 0x6288e7d0, sender 0x622461f0) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c1`) | none |
+| `81 c2` | Enter (RoomName, Password): `/roomenter room[:password]` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c3` to the room; a private room's knock is `81 c5` to its moderators) | none |
+| `81 c5` | Let a waiting player in (PlayerName, RoomName, Allow, never set): `/roomallow room player`. The same class as the server's "%s is requesting entry" | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c6`, then `81 c3`) | none |
+| `81 c7` | Leave (RoomName): `/roomleave` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 c8`) | none |
+| `81 c9` | Destroy (RoomName): `/roomdestroy` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 ca`) | none |
+| `81 cd` | Invite (PlayerNameToInvite, RoomName): `/roominvite room player` | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 ce`) | none |
+| `81 cf` | Uninvite | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d0`) | none |
+| `81 d1` | Kick | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d2`) | none |
+| `81 d3` | Ban | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d4`) | none |
+| `81 d5` | Unban | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d6`) | none |
+| `81 d7` | Make moderator (IsTemporaryModerator, sent as 0) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 d8`) | none |
+| `81 d9` | Remove moderator (IsTemporaryModerator before RoomName) | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 da`) | none |
+| `81 db` | Set owner | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 dc`) | none |
+| `81 dd` | Give voice | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 de` (kept, but no room can be moderated: see below)) | none |
+| `81 df` | Remove voice | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 e0`) | none |
+| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/roomfind [node] [filter]`, both words as typed. `/rooms` sends nothing | D, S | not sent by this client: the command isn't registered (see below). The server handles it (handled (new): `81 e2`, then `81 e3` per room) | none |
 
 ## Friends, ignore list, who and character info
 
@@ -360,7 +362,7 @@ The 7.6005 client can't take one item from a corpse or container. Its container 
 
 ## Chat rooms in detail
 
-No capture has a room. The records are client.dll's. Who gets which record, and the rules, are ours.
+The 7.6005 client doesn't register the room commands, so it never sends these requests (see "Chat rooms" above); what follows is what its compiled-in senders and handlers would do, and what the server does with requests from SocialBot or the headless client. No capture has a room. The records are client.dll's. Who gets which record, and the rules, are ours.
 
 **Addresses.** Before sending, the client rewrites room arguments (0x6224ff40) and player arguments (0x6224f880) into chat addresses. Dots become `+`, and `SOE+MXO+<WorldPrefix>+` goes in front, so `/roomenter my.room` sends `SOE+MXO+Recursion+my+room`. For display, the client strips its own world's prefix again (0x6224f020 for rooms, 0x6224e810 for players). The server keeps the name after the prefix (`my+room`), compares names without case, and echoes full addresses back.
 
@@ -776,29 +778,10 @@ A split starts from the item's right-click menu, not a modifier key. client.dll'
 
 ### Chat rooms
 
-Everything here is typed in the chat box.
+The client doesn't register the room commands, so there is nothing to click through.
 
-1. `/roomcreate Lounge Talk here`. Expect "Created chat room Lounge.".
-2. `/roomcreate Lounge` again. Expect "Failed to create chat room.  Reason: ...". Note what follows "Reason:".
-3. `/roomenter Lounge`. Expect "You entered chat room Lounge.".
-4. `/room Lounge hello`. Expect `[Lounge] <your name>: hello` in the default chat tab.
-5. `?socialbot room Lounge`. Expect "SocialBot entered chat room Lounge." and `[Lounge] SocialBot: Hello from SocialBot.`.
-6. `/roomkick Lounge SocialBot`. Expect "You kick SocialBot from chat room Lounge.". `?socialbot say Lounge hi` then answers "SocialBot is not in Lounge.".
-7. `/roomban Lounge SocialBot`, then `?socialbot room Lounge`. Expect "You ban SocialBot ..." and no "entered" line.
-8. `/roomunban Lounge SocialBot`, then `?socialbot room Lounge`. Expect it to enter.
-9. `/roommod Lounge SocialBot`. Expect "You grant moderator status to SocialBot for chat room Lounge.".
-10. `/roomunmod Lounge SocialBot`. Expect "You revoke moderator status ...".
-11. `/roomfind`. Expect "Found 1 matching rooms" and "  Room Lounge (2 occupants)", with "Topic: Talk here".
-12. `/roomfind xyz`. Expect "Found 0 matching rooms".
-13. Private room:
-    1. `/roomcreate Den:secret`, then `/roomenter Den` (the owner needs no password).
-    2. `?socialbot room Den wrong`. Expect "SocialBot is requesting entry into chat room Den.".
-    3. `/roomallow Den SocialBot`. Expect "You allow entry into chat room Den." and "SocialBot entered chat room Den.".
-    4. `/roomfind Den`. Expect it listed with "Attributes: private".
-14. `/roomleave Lounge`. Expect "You left chat room Lounge.".
-15. `/roomdestroy Den`. Expect "Destroy chat room successful.". Then `/roomenter Den` should print a failure line.
-16. `/roomenter Lounge`, then `/roomsetowner Lounge SocialBot`. Expect "SocialBot gains ownership of chat room Lounge.". `/roomdestroy Lounge` should then fail.
-17. Note any line that differs from these, and the text after "Reason:" in the failures.
+1. `/roomcreate Lounge`. Expect "Unrecognized command.  Please try again." and no `81 c0` in the server log. Anything else means this client build does register them: note it.
+2. The server side (create, enter, kick, ban, private rooms, find, room lines) is covered by the headless scenarios `chat-rooms-create-talk-moderate-and-find` and `socialbot-in-a-chat-room`.
 
 ### Teams
 
