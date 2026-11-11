@@ -37,6 +37,7 @@ public static partial class Scenarios
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
+        new Scenario("merovingian-chapter-samples", MerovingianChapterSamples, StillNpcs),
         new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
         new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),

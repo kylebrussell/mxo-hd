@@ -5,43 +5,75 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static async Task MerovingianChapter12(ScenarioContext context)
+    private static XElement[] MerovingianDefinitions(ScenarioContext context)
     {
         string missionDirectory = Path.Combine(context.RepositoryRoot, "data", "missions");
-        XElement[] definitions = Directory.GetFiles(missionDirectory, "*.xml")
+        return Directory.GetFiles(missionDirectory, "*.xml")
             .Select(XElement.Load)
             .Where(mission => (string?)mission.Attribute("org") == "3")
             .ToArray();
-        string[] files =
-        {
-            "merovingian_12_1_1_hothouse.xml",
-            "merovingian_12_1_2_deep_cover.xml",
-            "merovingian_12_1_3_courtship.xml"
-        };
+    }
 
-        for (int index = 0; index < files.Length; index++)
+    private static async Task<HeadlessPlayer> StartMerovingianStoryMission(ScenarioContext context, XElement mission,
+        XElement[] definitions)
+    {
+        int order = (int)mission.Attribute("order")!;
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")!)
         {
-            XElement mission = XElement.Load(Path.Combine(missionDirectory, files[index]));
+            X = 58800, Y = 2495, Z = 31900, Level = 50
+        });
+        await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions " +
+            "(charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId))");
+        IEnumerable<string> prior = definitions.Where(definition => (int)definition.Attribute("order")! < order)
+            .Select(definition => $"({player.CharId},{(int)definition.Attribute("id")!})");
+        await context.Database.ExecuteAsync("INSERT INTO char_missions (charId, missionId) VALUES " + string.Join(",", prior));
+
+        await player.EnterWorldAsync();
+        player.SendRpc("80 94 05 00 03");
+        await player.WaitForTextAsync((string)mission.Attribute("title")!);
+        await player.WaitForRpcAsync("80 97 05 00");
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForRpcAsync("80 99");
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9c");
+        await player.WaitForRpcAsync("80 9e 00");
+        return player;
+    }
+
+    private static async Task MerovingianChapterSamples(ScenarioContext context)
+    {
+        XElement[] definitions = MerovingianDefinitions(context);
+        IEnumerable<XElement> samples = definitions.Where(mission =>
+        {
             int order = (int)mission.Attribute("order")!;
-            HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("ChapterProbe" + index)
-            {
-                X = 58800, Y = 2495, Z = 31900, Level = 50
-            });
-            await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions " +
-                "(charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId))");
-            IEnumerable<string> prior = definitions.Where(definition => (int)definition.Attribute("order")! < order)
-                .Select(definition => $"({player.CharId},{(int)definition.Attribute("id")!})");
-            await context.Database.ExecuteAsync("INSERT INTO char_missions (charId, missionId) VALUES " + string.Join(",", prior));
+            return order >= 2000 && order < 12000 && order % 1000 == 101;
+        }).OrderBy(mission => (int)mission.Attribute("order")!);
+        foreach (XElement mission in samples)
+        {
+            HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
+            string title = (string)mission.Attribute("title")!;
+            int objectives = mission.Element("phase")!.Elements("objective")
+                .Count(objective => ((int?)objective.Attribute("after") ?? -1) < 0);
+            await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("[MISSION] Accepted '" + title + "'"),
+                title + " staged", TimeSpan.FromSeconds(15));
+            await player.WaitUntilAsync(() => player.Received("80 a0").Count >= objectives,
+                title + " objectives", TimeSpan.FromSeconds(10));
+            Check.Equal(objectives, player.Received("80 a0").Count, title + " first-area objectives");
+            player.SendRpc("80 a6");
+            await player.WaitForRpcAsync("80 a2 08");
+            Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions " +
+                $"WHERE charId={player.CharId} AND missionId={(int)mission.Attribute("id")!}"), "Aborted sample stays incomplete");
+        }
+    }
 
-            await player.EnterWorldAsync();
-            player.SendRpc("80 94 05 00 03");
-            await player.WaitForTextAsync((string)mission.Attribute("title")!);
-            await player.WaitForRpcAsync("80 97 05 00");
-            player.SendRpc("80 98 06 00 00 00 01 02 00");
-            await player.WaitForRpcAsync("80 99");
-            player.SendRpc("80 9b 07 00 01");
-            await player.WaitForRpcAsync("80 9c");
-            await player.WaitForRpcAsync("80 9e 00");
+    private static async Task MerovingianChapter12(ScenarioContext context)
+    {
+        XElement[] definitions = MerovingianDefinitions(context);
+        int[] ids = { 312101, 312102, 312103 };
+        for (int index = 0; index < ids.Length; index++)
+        {
+            XElement mission = definitions.Single(definition => (int)definition.Attribute("id")! == ids[index]);
+            HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
             await EnterMissionArea(player);
 
             switch (index)
