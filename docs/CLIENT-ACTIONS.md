@@ -29,10 +29,9 @@ Counts are rows of the tables below (`81 47` and `81 4a` share a row). Before th
 The biggest gaps left, by impact:
 
 1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-2. **Stack splitting and merging** (`68`, `67`, `62`): the bag's split dialog and dragging stacks together.
-3. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
-4. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-5. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+2. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
+3. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
+4. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
 
 ## Login and world entry
 
@@ -193,9 +192,9 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `64` | Unequip (Slot, DestSlot) | D, C 18 | handled | high |
 | `65` | Move or swap bag slots (SlotA, SlotB, IsCentralStorageItem) | D, C 34 | handled | high |
 | `5d` | Recycle (Slot, PersonalInventoryItem, RecycleItem) | D, C 7 | handled | medium |
-| `68` | Split a stack (SourceSlot, DestSlot, AmountToSplitOff, IsCentralStorageItem) | D | ignored | medium |
-| `67` | Slot1, Slot2, IsCentralStorageItem. Guess: merge stacks | D | ignored | medium |
-| `62` | SourceSlot, DestinationSlot, PersonalInventoryItem. Guess: to or from central storage | D | ignored | medium |
+| `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination | medium |
+| `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
+| `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
 | `5b` | ItemHandle | D | ignored | low (purpose unknown) |
 | `5c` | Slot, PersonalInventoryItem; two senders, one in the item menu | D | ignored | medium (purpose unknown) |
 | `60` | Use an item on an object (ObjectID, Slot, PersonalInventoryItem, InvSlotOfToolUsed, FromCrafting) | D | ignored | medium |
@@ -338,6 +337,16 @@ No retail capture has a subway ride, so the records are client.dll's and the res
 - No cost, level or organisation check: none was found in the map's code.
 - Dev helper `?subway` (`MXO_DEV_COMMANDS=1`): opens the map at the district's nearest station wherever the player stands.
 
+## Stacks in detail
+
+No retail capture has a split or a merge; the layouts are client.dll's and the rules ours. All come from the bag's drag-and-drop handler (0x620a0000):
+
+- `68 <SourceSlot u8> <DestSlot u8> <AmountToSplitOff u32> <IsCentralStorageItem u8>` (class 0x6209b8e0, size 8; DestSlot defaults to `6b`, none). The amount from the split dialog dropped on a slot (DestSlot is that slot) or on a bag page (DestSlot is the page's first free slot, `6b` when it has none).
+- `67 <Slot1 u16> <Slot2 u16> <IsCentralStorageItem u8>` (0x6209b7c0, size 6). A stack dropped on a stack of the same item (0x620a0504), or on a bag page that holds one with room (0x620a01e6: the client looks for one with fewer than 20).
+- `62` is sent for central-storage drags only.
+
+**The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds, central storage) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -387,3 +396,12 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
 6. From a Yellow Line station (Richland - Kedemoth, or `?subway` near 56600, -705, -91500), click "Downtown" on the map. Expect the map to switch to Downtown's Yellow Line. Pick South Vauxton. Expect the Downtown load and arrival on its platform.
 7. Anywhere in a city, `?subway` opens the nearest station's map; a ride from it works as above.
 8. Note anything the map shows that the server leaves empty (a level range, a count, "ON: ..."), and whether the countdown or the arrival looks wrong.
+
+### Stacks
+
+1. Get a stack of a few Code Bits (or pills) into the bag (`?additem 7332` repeatedly, or loot).
+2. Split it: shift-drag (or the split dialog) for 2 of them onto an empty slot. Expect the source to show 2 fewer and a new stack of 2 in that slot. Relog: both still there with those counts.
+3. Split again onto an empty part of the bag page (not a slot). Expect the new stack in the page's first free slot.
+4. Drag the small stack onto the big one. Expect one stack with the total and the other slot empty.
+5. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
+6. Note anything the client does that the server didn't confirm (a count that jumps back, a stack that reappears).

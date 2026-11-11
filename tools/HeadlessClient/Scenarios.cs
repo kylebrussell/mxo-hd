@@ -31,6 +31,7 @@ public static partial class Scenarios
         new Scenario("ignore-list-add-remove-and-relog", IgnoreListAddRemoveAndRelog),
         new Scenario("subway-ride-by-car", SubwayRideByCar),
         new Scenario("subway-across-districts-and-refusals", SubwayAcrossDistrictsAndRefusals),
+        new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("marketplace-purchase", MarketplacePurchase),
