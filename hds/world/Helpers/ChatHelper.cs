@@ -356,6 +356,15 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?subway") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: the subway map of the district's nearest station, as if a subway car was used
+                    if (!SubwayHandler.OpenMap(Store.currentClient, true))
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, "This district has no subway.", "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?mailbot"))
                 {
                     // Dev command: a mail from MailBot with a Code Bit 1 attached; mail sent to MailBot comes back

@@ -305,6 +305,25 @@ namespace hds{
 		             new PlayerHandler().ProcessLootAccepted();
 		             break;
 
+		        // Stacks in the bag
+		        case (int) RPCRequestHeader.CLIENT_ITEM_SPLIT_STACK:
+		            StackHandler.ProcessSplit(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_ITEM_MERGE_STACKS:
+		            StackHandler.ProcessMerge(Store.currentClient, rpcData);
+		            break;
+
+		        // Subway map
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_MAP_OPEN:
+		            SubwayHandler.OnMapOpen(Store.currentClient);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_CANCEL:
+		            SubwayHandler.OnCancel(Store.currentClient);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_PICK:
+		            SubwayHandler.OnPick(Store.currentClient, rpcData);
+		            break;
+
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
 		            break; // retail answered nothing

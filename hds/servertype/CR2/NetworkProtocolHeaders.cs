@@ -62,6 +62,8 @@ namespace hds
         CLIENT_ITEM_UNMOUNT_RSI = 0x64,
         CLIENT_ITEM_MOVE_SLOT = 0x65,
         CLIENT_ITEM_RECYCLE = 0x5D,
+        CLIENT_ITEM_MERGE_STACKS = 0x67,       // 67 <slot1 u16> <slot2 u16> <central storage u8> (StackHandler)
+        CLIENT_ITEM_SPLIT_STACK = 0x68,        // 68 <source u8> <dest u8> <amount u32> <central storage u8>
         CLIENT_VENDOR_BUY = 0x10e,
         CLIENT_VENDOR_SELL = 0x111,
         CLIENT_COLLECTOR_EXCHANGE = 0x116,
@@ -94,6 +96,11 @@ namespace hds
 
         // Teleport
         CLIENT_TELEPORT_HL = 0x18e,
+
+        // Subway map (SubwayHandler)
+        CLIENT_SUBWAY_CANCEL = 0x13b,          // 81 3b: Cancel, or the countdown ran out
+        CLIENT_SUBWAY_PICK = 0x13c,            // 81 3c <world u16> <line u16> <connector u16>
+        CLIENT_SUBWAY_MAP_OPEN = 0x13d,        // 81 3d: the map is open
 
         // Reset Client RPC
         CLIENT_READY_WORLDCHANGE = 0x108,

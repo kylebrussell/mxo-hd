@@ -351,14 +351,8 @@ namespace hds
                         break;
                     }
 
-                    double x = 0;
-                    double y = 0;
-                    double z = 0;
-                    byte[] Ltvector3d = Store.currentClient.playerInstance.Position.getValue();
-                    NumericalUtils.LtVector3dToDoubles(Ltvector3d, ref x, ref y, ref z);
-                    pak.SendInteractionSubway(Store.currentClient, x, y, z);
-
-                    pak.SendSubwaymapWindow(Store.currentClient);
+                    // The map opens on the nearest station's connector (SubwayHandler, docs/CLIENT-ACTIONS.md)
+                    SubwayHandler.OpenMap(Store.currentClient);
 
                     break;
                 case (int) objectTypesDynamic.LOOT:

@@ -82,6 +82,7 @@ namespace hds{
                 // The client dropped all its views with the old world, and any fight with them.
                 CombatManager.GetHandler(Store.currentClient).AbandonCombat();
                 TradeHandler.Abort(Store.currentClient);
+                SubwayHandler.Forget(Store.currentClient);
                 Store.currentClient.viewMan.Clear();
                 lock (Store.currentClient.playerData.openDoors)
                 {

@@ -126,6 +126,14 @@ namespace hds.world.Structures
             }
         }
 
+        /// <summary>
+        /// The view manager's key for a subway car. Views are found by entity id alone, and NPCs' ids are small numbers, so
+        /// the old "metrId followed by mxoStaticId" string (Moriah Projects' car was 18) matched NPC 18: the NPC pass deleted
+        /// the car's view as an out-of-range NPC and the subway pass made it again, twice a second. The top bits keep subway
+        /// ids apart from NPCs, players and the other statics.
+        /// </summary>
+        public static UInt64 EntityId(StaticWorldObject car) => 0x5000000000000000UL | ((UInt64)car.metrId << 32) | car.mxoStaticId;
+
         public void UpdateSubwayState()
         {
             var pak = new PacketContent();
@@ -134,8 +142,9 @@ namespace hds.world.Structures
             pak.AddByte(stateByte);
             pak.AddByteArray(new byte[] {0x0b, 0x00, 0x00, 0x00, 0x00});
             // 02 03 03 00 01 02 be 0b 00 00 00 00
-            String message = "Subway ID " + worldObject.metrId + " STATE NOW " + currentState.ToString();
-            Store.world.SendViewUpdateToClientWhoHasStaticObjectSpawned(pak, worldObject, message);
+            // The state is for the debug log only: it used to go to every player in range as system chat
+            Output.WriteDebugLog("[SUBWAY] Car " + worldObject.mxoStaticId + " in district " + worldObject.metrId + " now " + currentState);
+            Store.world.SendViewUpdateToClientWhoHasStaticObjectSpawned(pak, worldObject, EntityId(worldObject));
         }
     }
 }

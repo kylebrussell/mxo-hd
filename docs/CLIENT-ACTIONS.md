@@ -18,22 +18,21 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 48 | 26 | 10 | 84 |
+| Handled | 49 | 30 | 10 | 89 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 2 | 27 | 48 | 77 |
+| Ignored | 0 | 21 | 49 | 70 |
 | Wrong | 0 | 0 | 1 | 1 |
-| **Total** | 50 | 55 | 59 | 164 |
+| Not sent by this client | | | | 2 |
+| **Total** | 49 | 53 | 60 | 164 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). Before this work 15 of the handled rows were ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items").
 
 The biggest gaps left, by impact:
 
-1. **Subway travel** (`81 3b`, `81 3c`, `81 3d`). The server opens the subway map, but choosing a station does nothing. No capture of a ride exists.
-2. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-3. **Stack splitting and merging** (`68`, `67`, `62`): the bag's split dialog and dragging stacks together.
-4. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
-5. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-6. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
+2. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
+3. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
+4. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
 
 ## Login and world entry
 
@@ -67,9 +66,9 @@ The biggest gaps left, by impact:
 | `81 4c` | Respawn after death | D, C 23 | handled | high |
 | `81 40` | Elevator floor | D, C 29 | handled | medium |
 | `81 41` | Elevator CurrentFloor: the client closes the panel when it decides the player left it (docs/MISSIONS.md) | D, U 7 | ignored; harmless, the client closes the panel itself | low |
-| `81 3b` | No fields, from `viewsubwaymap.cpp` (map open, cancel or back; not determined which) | D | ignored | high |
-| `81 3c` | WorldID, NetworkID, ConnectorID: the station picked on the subway map | D | ignored: the map opens (`81 3e`) but nothing happens on a pick | high |
-| `81 3d` | No fields, subway map (close) | D | ignored | medium |
+| `81 3b` | No fields: the subway map's Cancel, or its countdown reached 0 (0x620fc490; the map closes) | D | handled (new): ends the ride | medium |
+| `81 3c` | WorldID, NetworkID, ConnectorID: the station picked on the subway map (0x620fc520) | D | handled (new): the player moves to the station and the world reloads (`81 07`) | high |
+| `81 3d` | No fields: the map is open (0x620fc150, sent from its set-up) | D | handled (new): the `81 3e` countdown starts | medium |
 | `39` | Direction (`02` 7 times) | D, C 8 | ignored | low |
 | `81 46` | Range, Range2, from the slash command handler. Guess: `/range` | D | ignored | low (guess) |
 | `81 37` | TimeRequested, from `viewcommon.cpp`. Guess: the clock / `/time` | D | ignored | low (guess) |
@@ -194,9 +193,9 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `64` | Unequip (Slot, DestSlot) | D, C 18 | handled | high |
 | `65` | Move or swap bag slots (SlotA, SlotB, IsCentralStorageItem) | D, C 34 | handled | high |
 | `5d` | Recycle (Slot, PersonalInventoryItem, RecycleItem) | D, C 7 | handled | medium |
-| `68` | Split a stack (SourceSlot, DestSlot, AmountToSplitOff, IsCentralStorageItem) | D | ignored | medium |
-| `67` | Slot1, Slot2, IsCentralStorageItem. Guess: merge stacks | D | ignored | medium |
-| `62` | SourceSlot, DestinationSlot, PersonalInventoryItem. Guess: to or from central storage | D | ignored | medium |
+| `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination | medium |
+| `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
+| `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
 | `5b` | ItemHandle | D | ignored | low (purpose unknown) |
 | `5c` | Slot, PersonalInventoryItem; two senders, one in the item menu | D | ignored | medium (purpose unknown) |
 | `60` | Use an item on an object (ObjectID, Slot, PersonalInventoryItem, InvSlotOfToolUsed, FromCrafting) | D | ignored | medium |
@@ -207,11 +206,11 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | ignored | low |
 | `81 16` | Collector exchange (ItemSetIndex, Prizes) | D | handled | medium |
 | `81 17` | `00 00 00 00 00`. Guess: closing the collector | C 1 | ignored | low |
-| `81 1f` | Loot: take all | D, C 39 | handled | high |
-| `81 1b` | Loot one item (ListID, ObjectID, InstanceData); the server's `81 1c` answers | D | ignored | medium |
-| `81 1d` | No fields; the server's `81 1e` (InfoAmount) answers. Guess: take the information | D | ignored | medium |
+| `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
+| `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
+| `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
 | `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | ignored; nothing to do | low |
-| `81 21` | Slot, from item menus (the server's `81 22`: ObjectID, InstanceData, Status) | D | wrong: treated as "open the marketplace" and answered with `81 2a` | low |
+| `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | wrong: treated as "open the marketplace" and answered with `81 2a` | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
 | `81 26` | Marketplace buy | D, C 14 | handled | medium |
@@ -319,6 +318,45 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 
 `80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client does the filtering: chat, mail to and from ignored players.
 
+## Subway in detail
+
+No retail capture has a subway ride, so the records are client.dll's and the rest is ours. The stations are the client's own (`data/subway_network.csv`, docs/WORLD-DATA.md "Subway network").
+
+| Record | Layout and what the client does |
+|---|---|
+| `81 3a` (S) | `<Position: 3 × f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
+| `81 3d` (C) | No body, sent as the map opens (0x620fc150) |
+| `81 3e` (S) | `<Seconds u8>` (0x620fccd0): the departure countdown, shown as m:ss. The client starts at 60 and only takes a lower value. At 0 it shows "The subway is now leaving the station... sorry, but you missed it!" and sends `81 3b` |
+| `81 3b` (C) | No body: Cancel, or the countdown ran out (0x620fc490). The map closes |
+| `81 3c` (C) | `<WorldID u16> <NetworkID u16> <ConnectorID u16>` (0x620fc520, size 8). WorldID is the `universe.btb` id of the district whose map is shown (12, 7, 169). Clicking a link connector ("Downtown", "Richland", "International District") switches the map to that district's line of the same name, and NetworkID then indexes that district's lines (0x620fd31c). The client won't let the player pick their own station, and it closes the map |
+
+**What the server does (ours):**
+
+- Using a subway car (`80 c7 <view> <spawn> 00 02 00` on a 6568 view) opens the map on the nearest station's connector, if it is within 4000 units of the player; `81 3a` carries the connector's position, so the client always finds the line. The old answer sent the player's own position and `81 3e 0a 00`.
+- `81 3d` starts a countdown: `81 3e` every second from 60 (the client's own starting value; retail's timing is not known). At 0 the client says the train left.
+- `81 3c` is ridden if a map is open (up to 65 s after it opened), the connector exists and is a station (on a named line, not a link to another district) and isn't the one the player is at. The player is moved onto the connector at standing height (its nav mesh floor + 95), the position and district are saved, and the world reloads (`81 07`, as a hardline teleport does), which brings up the loading screen the client's subway strings ("Loading World...") belong to. Rides across districts work the same way.
+- No cost, level or organisation check: none was found in the map's code.
+- Dev helper `?subway` (`MXO_DEV_COMMANDS=1`): opens the map at the district's nearest station wherever the player stands.
+
+**The cars.** The server shows each subway car (goid 6568) as a view and runs a door and departure cycle on it (`Subway.cs`, older than this work). Its states went to every player in range as system chat ("Subway ID 1 STATE NOW DRIVE_OUT"); they now go to the debug log. The car's view was keyed by "district followed by static id", so Moriah Projects' car was entity 18, which is also an NPC's id: the NPC pass deleted the car's view as an out-of-range NPC and the subway pass made it again, twice a second (21 creations in 12 s headlessly). Car ids now have their own range.
+
+**The stall at Tabor Park (PR 97 test, not solved).** The tester's client logged in on Tabor Park's Red Line platform and then sent nothing more. The server's packet log shows the client's last packet arriving 2:51:04, right after the server sent the player's own view, the own-view position record (sector 43, region 81, polygon 50: the station prefab's floor, the same polygon as Moriah Projects, where a ride arrived fine) and the usual login RPCs. These were the same bytes as a lobby login except for the position. The subway car's view and its states went out only afterwards (2:51:06 and 2:51:28). A headless login on the same spot keeps going, and `?subway` and a ride work after it (`subway-platform-logins-keep-car-views`). What the client did is not known. If it happens again, a packet log (`MXO_PACKET_LOG=1`) of the attempt will show whether the client stops after the same records.
+
+
+## Stacks in detail
+
+No retail capture has a split or a merge; the layouts are client.dll's and the rules ours. All come from the bag's drag-and-drop handler (0x620a0000):
+
+- `68 <SourceSlot u8> <DestSlot u8> <AmountToSplitOff u32> <IsCentralStorageItem u8>` (class 0x6209b8e0, size 8; DestSlot defaults to `6b`, none). The amount from the split dialog dropped on a slot (DestSlot is that slot) or on a bag page (DestSlot is the page's first free slot, `6b` when it has none).
+- `67 <Slot1 u16> <Slot2 u16> <IsCentralStorageItem u8>` (0x6209b7c0, size 6). A stack dropped on a stack of the same item (0x620a0504), or on a bag page that holds one with room (0x620a01e6: the client looks for one with fewer than 20).
+- `62` is sent for central-storage drags only.
+
+**The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds, central storage) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+
+## Looting single items
+
+The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. So there is nothing to implement for them, and the server keeps Take All as the only way to loot.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -357,3 +395,27 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
 
 1. Log in and look at the server log: `81 48`, `0c` no longer appear in UnknownRPC.txt (`80 be` and `3e` still do).
 2. Nothing should change on screen; if anything does after `81 49` (a feature switched on or off), note it here: what the two features (200, 201) do is not known.
+
+### Subway
+
+1. In Richland, go to the Red Line platform at Tabor Park (its connector is at 68400, -800, 47500, underground; `?sector` shows where you are) and use the subway car there.
+2. Expect the subway map with the Red Line, Tabor Park marked as "you are here", and a departure countdown starting at 1:00 and going down each second.
+3. Pick Moriah Projects. Expect the map to close, a loading screen, and arrival on the Moriah Projects platform, standing on the floor (not in it or above it), facing anywhere.
+4. Use the car there, and let the countdown run out. Expect "The subway is now leaving the station... sorry, but you missed it!" and the map closing.
+5. Use the car again and press Cancel. Expect the map to close and nothing else.
+6. From a Yellow Line station (Richland - Kedemoth, or `?subway` near 56600, -705, -91500), click "Downtown" on the map. Expect the map to switch to Downtown's Yellow Line. Pick South Vauxton. Expect the Downtown load and arrival on its platform.
+7. Anywhere in a city, `?subway` opens the nearest station's map; a ride from it works as above.
+8. Note anything the map shows that the server leaves empty (a level range, a count, "ON: ..."), and whether the countdown or the arrival looks wrong.
+
+### Stacks
+
+A split starts from the item's right-click menu, not a modifier key. client.dll's bag view (0x6203f5a0) answers a right click (`MRCl`) on a bag item with a pop-up menu. That menu has "Split Quantity..." (string 0xb2000034) only when the client's own check 0x621cd790 passes: the slot is in the bag (below 0x60), the item's class has IsStackable, and the slot holds at least 2. Choosing it (`CISQ`) opens "Choose Amount" (Total, Amount; 0x6203d270). OK (`CICQ`) puts that many on the cursor as a split drag (drag type 4). Dropping it on a slot, or on empty bag space, sends `68`. A plain left drag, with or without Shift, is a move (`65`). The path needs no modifier key: a right click, a menu choice, typing the amount and two left clicks. Whether the client reads the right button through window messages (rather than polling it) was not checked.
+
+1. Get a stack of a few Code Bit 1 into the bag (`?additem 7332` several times; each one joins the stack).
+2. Right-click the stack. Expect a pop-up menu with "Split Quantity...". If the menu has no such entry, the client doesn't think the slot holds two or more: note the count shown on the icon.
+3. Choose "Split Quantity...". Expect "Choose Amount" with the stack's total. Enter 2 and press OK. Expect 2 Code Bits on the cursor.
+4. Click an empty bag slot. Expect a new stack of 2 there and the source 2 fewer. The server log shows `[INVENTORY] Split 2 of slot ... to slot ...`. Relog: both stacks keep their counts.
+5. Split again, and this time click empty bag space instead of a slot. Expect the new stack in the first free slot.
+6. Merge: drag one of the two stacks (plain left drag) and drop it on the other stack's slot. That is the only way to get `67`: the drop handler (0x620a0504) sends it when the destination slot holds the same item. Expect one stack with the total and the other slot empty; the log shows `[INVENTORY] Merged slot ... into ...`.
+7. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
+8. Note anything the client shows that the server didn't confirm, such as a count that jumps back or a stack that reappears.
