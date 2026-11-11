@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Useful Man, Merovingian story mission 11.2.2. Source: research/missions/transcripts/Merv11-2-2.md (one live
+     retail run, given by Flood: 20 screenshots, one during phase 3 with the Objectives window and Danielle Wright's
+     popup showing, the rest of the log after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Calvinia, Churyumov, Danielle Wright, Merovingian and Persephone
+     line, Succubus's and Blood Noble's lines (Team chat only), the names, and the objective text "Talk to Wright"
+     (phase 3) from the Objectives window. The log's player was Briseus; his name is {player} here. Italics ("you",
+     "non?") are dropped. "It's wasn't me!" and Wright's "Hm...." are kept as retail wrote them. Ours: the description
+     (the Summary tab only said "Datalink established."), the other objective texts, the sites (phase 3's was a
+     Japanese-style room, the rest aren't described: all Normal), the looks (the Merovingian, Danielle Wright,
+     Persephone, Succubus and Blood Noble as the other files have them; Calvinia, "he", and Churyumov have male
+     looks) and the enemy counts. Phase 3 has Zionites ("cave-dwellers", "Got some actives this time"); phases 1, 2
+     and 4 have none beyond the traitor Calvinia ("Not picking up a whole lot of activity in there" in phase 2).
+     Joins between images read as contiguous: "now that it's skittered off / and things here", "his phone
+     connection's / working", "I hardly knew better / myself, then.", "as well, / yes?", "as he / was." / "Ah... And
+     we know" as a paragraph break, and "the downed Sentinels / showed a ship".
+     Rewards: Zion's chapter 11.2 mission Mara (11.2.3) showed 175,000 information, and the experience is The Spider's
+     (11.1.5, 352,000), as the Zion files have it. The log's run paid 253,000 experience and 84,000 information.
+     Gaps: Calvinia's "Wait! It's wasn't me!" is said on reaching him, and he waits to be attacked. Churyumov is
+     found dying: the Operator's "Sounds like a grisly scene" is said on reaching him, and he stays standing after his
+     last words. The Operator entry after "Pff. Drama queen." is hidden but for its header; it is taken as the
+     area-complete line. Phase 3's only goal shown is "Talk to Wright": the Zionites are in the way but killing them
+     isn't a goal; the Operator's "Whoa, override activation!" is said on reaching Wright, who stands there from the
+     start instead of arriving by override. Wright's later line was logged with a red (hostile) icon and Flood speaks
+     of failing to kill her, but she was "friendly" when targeted; she stays friendly here. No area-complete line
+     shows after the Merovingian's talk. Persephone's "..." before her line isn't used. Lines logged after a goal
+     (Wright's "I imagine you'd like to get it as well", the Merovingian's "Missile attacks forced the General",
+     Persephone's "What is it to me?") are what each says when clicked afterwards; Succubus's and Blood Noble's are
+     their click lines. -->
+<mission id="311202" title="The Useful Man" description="Deal with a traitor among the Merovingian's guards and with the Zionites killing his programs, then report what Danielle Wright had to say." plot="1"
+         order="11202" org="3" contact="Flood" exp="352000" info="175000">
+  <npc id="1" handle="Calvinia" type="HOSTILE" attacksOnSight="0" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Churyumov" type="FRIENDLY" at="2" rsi="c9020058" weapon="0" />
+  <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+    <say after="3">I imagine you'd like to get it as well, yes? Hm.... We'll see.</say>
+  </npc>
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="4">Missile attacks forced the General to retreat from his first foray into the zone, but we kept some of his men hidden nearby for just such an occasion.&#10;&#10;Mm, we never did discover who fired those missiles...only that the flight recorders of the downed Sentinels showed a ship nearby, of the type used by Halborn and Carlyne.</say>
+  </npc>
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say after="4">What is it to me? Go off and kill.</say>
+  </npc>
+  <npc id="6" handle="Succubus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say>Don't bother her.</say>
+  </npc>
+  <npc id="7" handle="Blood Noble" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Ssss... That woman...</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Bah! I'm starting to think we have more leaks than old Zion. Not only did that pesky interface program run around freely in our chateau--it got into a training simulacrum, of all things--but, now that it's skittered off and things here are operational again, I learn that some of our guards are trying to sell us out to those who want the program for themselves!&#10;&#10;I won't have it, {player}! Kill the traitor, Calvinia, or there will be no end to this shameful behavior.</briefing>
+    <enter><say>Not a whole lot of fun having to take out one of our own programs...but you just don't cross the Merv. Everyone knows that.</say></enter>
+    <objective goal="1" text="Kill Calvinia" type="Defeat" npc="1">
+      <done><say>At least it's over with. I wonder who he was supposed to be selling us out to?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Wait! It's wasn't me! It was-- Ah, damn it!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Zionites! Those nincompoops think they're going to get some answers out of us, do they? Hah! I counter with you, operative, who never gave anyone a right answer yet.</briefing>
+    <enter><say>Flood's in fine fettle today; I suppose he's happy his phone connection's working and he can nag all his operatives again.&#10;&#10;Not picking up a whole lot of activity in there... Wouldn't be the first time Flood's been a bit slow.</say></enter>
+    <objective goal="2" text="Talk to Churyumov" type="Talk" npc="2">
+      <talk><say npc="2">They... Th--</say></talk>
+      <done><say>Pff. Drama queen.&#10;&#10;Well, great. Now we're back to square one again.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>Sounds like a grisly scene. Better see if you can get anything out of him.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Hm... If I didn't know better--nobody would pay you anything...not sure why I do--I'd almost think you were in cahoots with the cave-dwellers, {player}. Now, stop dragging your knuckles, and take care of them before they kill off all my programs!</briefing>
+    <enter><say>Got some actives this time--should be our cave-dwellers.</say></enter>
+    <objective goal="3" text="Talk to Wright" type="Talk" npc="3">
+      <talk><say npc="3">Hm? You're no Zionite.&#10;&#10;I understand they helped Carlyne get what he wanted...for a time. Now, they probably feel that was a mistake, though I can't say that I blame them; I hardly knew better myself, then.&#10;&#10;But in the end, Carlyne has been quite a bit more useful than he ever intended.</say></talk>
+      <done><say>Quite the cucumber, isn't she?&#10;&#10;Hm... There isn't much we can do against her directly. We'd better let Flood know what went down.</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Whoa, override activation!&#10;&#10;Aw, man, is that who I think it is? Careful...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I might have felt inclined to give you a bonus if you'd actually managed to kill her, operative. As it stands, I'll settle for sending you to the Merovingian to explain your failure.</briefing>
+    <enter><say>Yeah, I know... I tell ya, sometimes I dream of the day when you're standing around with Flood, and some kind of disruption to the Matrix causes the usual friendly engagement protocols to drop, just for a minute or two...</say></enter>
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Hm... Carlyne "useful"? He collapsed just moments before the woman appeared in that new guise of hers. It must have been her doing, non? Which could mean...that she did something to him in your world--that she was at the same location as he was.&#10;&#10;Ah... And we know where he was to be found, eh? The Machine "no-fly" zone 800 miles to the northwest, as so helpfully pointed out to us by his foe, Halborn. If Wright has been there...&#10;&#10;Yes, this could be very useful indeed. I will send a flight of the General's Sentinels to investigate.</say></talk>
+    </objective>
+  </phase>
+  <finish>So he told you that bit of hearsay was useful, did he? Hmph. He is, as they say, a generous man...</finish>
+</mission>

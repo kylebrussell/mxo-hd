@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zoochemy, Merovingian story mission 11.1.4. Source: research/missions/transcripts/Merv11-1-4.md (one live retail
+     run, given by Flood: 18 screenshots, two during the last phase with the Objectives window and the mainframe's
+     popup showing, the rest of the log after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Silver and Tarka line, Security's line (Team chat only), the
+     names, and the objective texts "Lead Tarka to the Mainframe" and "Don't let Tarka die" (phase 4) from the
+     Objectives window. The log's player was Briseus; his name is {player} here. Italics ("think", "try") are dropped.
+     Ours: the description (the Summary tab only said "Datalink established."), the other objective texts, the sites
+     (Tarka's mainframe was an apartment room in Stamos: SlumApt; the rest Normal), the looks (Silver as the other
+     Merovingian files have him, Security as the Machines files have it; Tarka's sex isn't shown, and Tarka has a
+     male look) and the enemy counts. Phase 3 has Machines (the Operator's "you've got Machines on your tail", and
+     Security's arrest call); the other phases have no hostiles ("So far we've been able to keep that location a
+     secret from the Machines", "I think you managed to ditch the Machines").
+     Joins between images read as contiguous: "even if it fries your jacks, / so I've decided", "Of all the idiotic"
+     / "Yes, there was something" as a paragraph break, "with that program he's desperate for sitting / there in your
+     RSI", "Your readings / look normal", "You'll be / meeting up", "those phone / booths for once", "They've got the
+     mainframe / in there all prepped", and "Is it the interface program?" / "Man, this is weird" as a paragraph break.
+     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
+     115,500 information). The log's run paid 253,000 experience and 84,000 information.
+     Gaps: the interface program is never an item: it rides in the player's signal from phase 1 to 3 and in Tarka's
+     after that. Phase 1 is a Use of the mainframe, whose done line is the Operator's "What th-?!". The Operator's
+     "Uh-oh, you've got Machines on your tail!" has no visible header (a second paragraph or a hidden entry); it comes
+     with Tarka's talk here, followed by Tarka's "Well, what are we waiting for", logged two seconds later. Phase 3's
+     goals aren't shown: it is read as talking to Tarka, then leading Tarka out of the area alive ("Lead Tarka out of
+     the area" is ours), so that Tarka follows into phase 4. Retail ended phase 3 with "Goals for this mission phase
+     are complete!" instead of the usual line, which our runtime doesn't send. "Lead Tarka to the Mainframe" is a Use
+     of the mainframe, since an escort can't end at an object; the mainframe's popups ("Init. Ready.", "Transfer
+     complete. Port 9978 closed.") can't be shown. Lines logged after a goal (Silver's "What is that pithy saying")
+     are what each says when clicked afterwards. -->
+<mission id="311104" title="Zoochemy" description="Carry the biological interface program to Silver in your own signal, then see it passed on to Tarka and safely into a new mainframe." plot="1"
+         order="11104" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Silver" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+    <say after="2">What is that pithy saying you gutbowls came up with? Oh, yes: "Keep it in your pants."</say>
+  </npc>
+  <npc id="2" handle="Tarka" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
+    <say after="3">Well, what are we waiting for, more Agents to show up?</say>
+  </npc>
+  <npc id="3" handle="Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, Silver has requested that you proceed to the biological interface program's location. I don't know what sort of experiment he's got in mind, but it won't put me out too badly even if it fries your jacks, so I've decided to humor him this time.</briefing>
+    <enter><say>The program should be on a secure mainframe in there. So far we've been able to keep that location a secret from the Machines.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Check on the interface program at the mainframe" type="Use" object="1">
+      <done><say>What th-?! What was that? Some kind of program just merged into your broadcast signal! Was that one of those new consumables, or...&#10;&#10;Wait, there's the record. No... Nothing I've seen before. Is it the interface program?&#10;&#10;Man, this is weird. We'd better check with Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Of all the idiotic--&#10;&#10;Yes, there was something about the program making an escape from a Machine attack the other day by piggy-backing onto an operative's signal, but this isn't the sort of thing I want to make a habit of--especially with you! Why, imagine what Halborn, for instance, would do if he came across you right now, with that program he's desperate for sitting there in your RSI.&#10;&#10;Bah. Well, it's too late now. Get to Silver with your "guest." He'd better get that thing out of you and into somewhere secure post-haste.</briefing>
+    <enter><say>You feeling all right? Your readings look normal... Heck, if I hadn't seen the transfer happen, I wouldn't even believe that thing was in you.</say></enter>
+    <objective goal="2" text="Talk to Silver" type="Talk" npc="1">
+      <talk><say npc="1">Hm... Yes... Interesting... Any discomfort? Mm... And no additional slurring of speech...&#10;&#10;Good, then we can proceed. You'll be meeting up with another selected human; oh, and try to stay away from anyone else, would you? We don't want the program moving to another host just yet.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>You're supposed to rendezvous with an operative of ours named Tarka.&#10;&#10;Try to stay away from those phone booths for once, would you? You never know what trampish operatives you'll run across at those places. Just do that jumping thing of yours.</briefing>
+    <enter><say>Tarka's in there waiting for you. They've been keeping everyone else clear, so you should have the place to yourselves.</say></enter>
+    <objective goal="3" text="Talk to Tarka" type="Talk" npc="2">
+      <talk><say npc="2">Oh, so you're {player}. Now what do we--&#10;&#10;Whoa. Did you feel something?</say></talk>
+      <done>
+        <say>Hey, was that... I think the program may have just jumped from you to Tarka.</say>
+        <say>Uh-oh, you've got Machines on your tail! Get out of there!</say>
+        <say npc="2">Well, what are we waiting for, more Agents to show up?</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Lead Tarka out of the area" type="Escort" npc="2" to="exit" after="3" />
+    <objective goal="5" text="Don't let Tarka die" type="Protect" npc="2" />
+    <near npc="3" radius="1500">
+      <say npc="3">You are under arrest for transportation of an illegal program!</say>
+    </near>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>Apparently there's one more part to this experiment, {player}. Get Tarka to the secure mainframe that's been prepared, and try not to lead the Machines right to it this time, hm?</briefing>
+    <enter><say>I think you managed to ditch the Machines. They've got the mainframe in there all prepped for Tarka to do...whatever's supposed to happen.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="6" text="Lead Tarka to the Mainframe" type="Use" object="1">
+      <done><say>There it goes, tucked back into a mainframe again.&#10;&#10;What do you think Silver was testing?</say></done>
+    </objective>
+    <objective goal="7" text="Don't let Tarka die" type="Protect" npc="2" />
+  </phase>
+  <finish>Hmph. Silver's mighty pleased with himself; he claims that the transferrals you just helped execute show that the program can interface perfectly with human broadcast signals. Rather disgusting, if you ask me... Why, next he'll be trying to use it to insert programs into actual human bodies, or some other perverted scheme.&#10;&#10;Ugh! I'm gagging just thinking about it.</finish>
+</mission>
