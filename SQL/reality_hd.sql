@@ -917,6 +917,39 @@ CREATE TABLE `marketplace` (
 -- --------------------------------------------------------
 
 --
+-- In-game email (MySqlMailStore also creates it on first use). items: goid:purity:count, comma separated
+--
+
+CREATE TABLE IF NOT EXISTS `mail` (
+  `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ownerCharId` int UNSIGNED NOT NULL,
+  `sender` varchar(128) NOT NULL DEFAULT '',
+  `folder` varchar(64) NOT NULL DEFAULT '',
+  `category` varchar(32) NOT NULL DEFAULT 'PLAYER',
+  `sentTime` int UNSIGNED NOT NULL DEFAULT '0',
+  `status` int UNSIGNED NOT NULL DEFAULT '1',
+  `subject` varchar(255) NOT NULL DEFAULT '',
+  `body` text NOT NULL,
+  `items` varchar(1024) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `owner` (`ownerCharId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Ignore list (IgnoreListHandler also creates it on first use)
+--
+
+CREATE TABLE IF NOT EXISTS `ignorelist` (
+  `charId` int UNSIGNED NOT NULL,
+  `handle` varchar(64) NOT NULL,
+  PRIMARY KEY (`charId`, `handle`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `rsivalues`
 --
 

@@ -6,7 +6,7 @@ namespace hds
 {
     public class BuddylistHandler
     {
-        private static string Prefix => "SOE+MXO+" + Store.worldConfig.serverName + "+";
+        private static string Prefix => ChatAddress.Prefix;
 
         /// <summary>Client 80 d6 04 00 &lt;sized "SOE+MXO+&lt;server&gt;+handle"&gt;.</summary>
         public void ProcessAddFriend(ref byte[] packet)

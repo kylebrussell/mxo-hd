@@ -19,6 +19,7 @@ namespace hds
             ServerPackets server = new ServerPackets();
             server.sendPlayerAttributes(Store.currentClient);
             server.SendPlayerFriendList(Store.currentClient);
+            IgnoreListHandler.SendList(Store.currentClient);
             //Store.currentClient.playerData.setPss(0x7f);
         }
 

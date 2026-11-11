@@ -356,6 +356,21 @@ namespace hds
                     }
                 }
 
+                if (command.Equals("?mailbot"))
+                {
+                    // Dev command: a mail from MailBot with a Code Bit 1 attached; mail sent to MailBot comes back
+                    // (docs/CLIENT-ACTIONS.md, "Email")
+                    if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    {
+                        MailHandler.SendBotMail(Store.currentClient, string.Join(" ", commands.Skip(1)));
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?mailbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?duelbot") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev command: a player played by the server to duel or fight, so one client can see both sides
