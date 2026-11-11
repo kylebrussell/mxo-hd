@@ -89,18 +89,18 @@ public static partial class Scenarios
             HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
             player.SendRpc("65 01 00 60 00");
             await player.WaitForRpcAsync("65 01 00 60 00");
-            await EnterMissionArea(player);
+            await EnterMissionArea(context, player);
 
             switch (index)
             {
                 case 0:
-                    await PlayHothouse(player);
+                    await PlayHothouse(context, player);
                     break;
                 case 1:
                     await PlayDeepCover(context, player);
                     break;
                 case 2:
-                    await PlayCourtship(player);
+                    await PlayCourtship(context, player);
                     break;
             }
 
@@ -117,20 +117,20 @@ public static partial class Scenarios
         }
     }
 
-    private static async Task PlayHothouse(HeadlessPlayer player)
+    private static async Task PlayHothouse(ScenarioContext context, HeadlessPlayer player)
     {
         await TalkToMissionNpc(player, "Ookami");
         await player.WaitForTextAsync("Leave the area with Ookami");
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("She what?!");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await TalkToMissionNpc(player, "Tesarova");
         await player.WaitForTextAsync("little floating man");
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("It's nice to know");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         foreach (string name in new[] { "Machine Vector", "Machine Despoiler", "Machine Karate Master" })
         {
             await DefeatMissionNpc(player, await player.WaitForViewNamedAsync(name));
@@ -151,7 +151,7 @@ public static partial class Scenarios
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("our contact's source location");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await player.WaitUntilAsync(() => player.ViewsOfGoid(599).Count(view => view.Name == "Override Function") >= 3,
             "Three Override Functions", TimeSpan.FromSeconds(15));
         foreach (ViewCreation npc in player.ViewsOfGoid(599).Where(view => view.Name == "Override Function").TakeLast(3))
@@ -160,7 +160,7 @@ public static partial class Scenarios
         }
     }
 
-    private static async Task PlayCourtship(HeadlessPlayer player)
+    private static async Task PlayCourtship(ScenarioContext context, HeadlessPlayer player)
     {
         await TalkToMissionNpc(player, "Tesarova");
         await player.WaitForTextAsync("Carlyne's android body");
@@ -171,7 +171,7 @@ public static partial class Scenarios
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("traceback from another position");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await DefeatMissionNpc(player, await player.WaitForViewNamedAsync("Override Executable"));
     }
 
@@ -191,7 +191,7 @@ public static partial class Scenarios
         HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
 
         // Phase 1: the mainframe
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await UseMissionObject(context, player, "Mainframe", "04");
         await player.WaitForTextAsync("Some kind of program just merged");
         await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
@@ -200,7 +200,7 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 9e 00");
 
         // Phase 2: Silver
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await TalkToMissionNpc(player, "Silver");
         await player.WaitForTextAsync("Any discomfort?");
         await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
@@ -210,7 +210,7 @@ public static partial class Scenarios
 
         // Phase 3: nobody hostile until Tarka has been talked to. On a small floor Tarka stands near enough the elevator
         // door that leading Tarka out is done as soon as Tarka follows.
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         ViewCreation tarka = await player.WaitForViewNamedAsync("Tarka");
         byte[] tarkaAt = tarka.Attributes["Position"];
         await MoveForMissionTest(player, BitConverter.ToDouble(tarkaAt, 0) + 100, BitConverter.ToDouble(tarkaAt, 8),
@@ -242,7 +242,7 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 9e 00");
 
         // Phase 4: lead Tarka to the mainframe. Tarka follows the player up and to it.
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         ViewCreation mainframe = await MissionObjectView(context, player, "Mainframe", seen);
         byte[] position = mainframe.Attributes["Position"];
         await MoveForMissionTest(player, BitConverter.ToDouble(position, 0) + 100, BitConverter.ToDouble(position, 8),
@@ -299,12 +299,20 @@ public static partial class Scenarios
         return Task.CompletedTask;
     }
 
-    private static async Task EnterMissionArea(HeadlessPlayer player)
+    private static async Task EnterMissionArea(ScenarioContext context, HeadlessPlayer player)
     {
-        byte[] waypoint = player.Received("80 9e 00").Last().Bytes;
-        await MoveForMissionTest(player, BitConverter.ToDouble(waypoint, 3), BitConverter.ToDouble(waypoint, 11),
-            BitConverter.ToDouble(waypoint, 19));
+        // The waypoint is the elevator door on the target floor, sometimes outside the site's area bounds.
+        // Teleporting there bypassed the ride ("already on that floor"), left followers behind, and could
+        // leave deadline clocks unstarted. Travel from the street, wait for the actual ride, then enter.
+        Match site = Regex.Matches(context.Server.DebugLog(),
+            @"\[MISSION\] Phase \d+ at a .* floor in .* \(([-\d.]+),([-\d.]+),([-\d.]+)\), elevator .*; street door at ([-\d.]+),([-\d.]+),([-\d.]+)").Last();
+        double Coordinate(int group) => double.Parse(site.Groups[group].Value, System.Globalization.CultureInfo.InvariantCulture);
+        await MoveForMissionTest(player, Coordinate(4), Coordinate(5), Coordinate(6));
+        int rides = Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count;
         player.SendChat("?missionfloor");
+        await player.WaitUntilAsync(() => Regex.Matches(context.Server.DebugLog(), @"\[MISSION\] Teleported to ").Count > rides,
+            "elevator ride completes before entering the mission area", TimeSpan.FromSeconds(10));
+        await MoveForMissionTest(player, Coordinate(1), Coordinate(2), Coordinate(3));
     }
 
     private static async Task DefeatMissionNpc(HeadlessPlayer player, ViewCreation npc)

@@ -18,7 +18,7 @@ public static partial class Scenarios
         // Empty Vessel
         XElement vessel = definitions.Single(definition => (int)definition.Attribute("id")! == 311303);
         HeadlessPlayer player = await StartMerovingianStoryMission(context, vessel, definitions);
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await UseMissionObject(context, player, "Mainframe", "04");
         await player.WaitForTextAsync("Could be a toughie");
         await player.WaitUntilAsync(() => player.World.CreationSnapshot().Count(view => view.Name == "Machine Captain") >= 2,
@@ -52,14 +52,14 @@ public static partial class Scenarios
         // Office Party
         XElement party = definitions.Single(definition => (int)definition.Attribute("id")! == 310301);
         player = await StartMerovingianStoryMission(context, party, definitions);
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         await UseMissionObject(context, player, "Computer", "04");
         await player.WaitForTextAsync("A secret party, eh?");
         await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("cheap booze-ups");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
 
         ViewCreation boren = await player.WaitForViewNamedAsync("Maxwell Boren");
         Check.That(boren.Attributes.ContainsKey("DontAttack") && !boren.Attributes.ContainsKey("IsEnemy"), "Boren is friendly at the party");

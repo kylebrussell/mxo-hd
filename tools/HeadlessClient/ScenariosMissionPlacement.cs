@@ -17,7 +17,7 @@ public static partial class Scenarios
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9c");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         ViewCreation guide = await player.WaitForViewNamedAsync("Guide");
         double[] start = PositionOf(guide);
         Check.That(NavMesh.Locate(1, start[0], start[1], start[2], out NavLocation floor), "The site NPC was placed on a floor");
