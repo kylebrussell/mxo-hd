@@ -71,6 +71,16 @@ public class CombatRoundEntryTests
     }
 
     [Fact]
+    public void WholeFightEndDetachesBothSlotsBeforeHandlerDeletion()
+    {
+        byte[] final = ServerPackets.BuildCombatViewFinalRecord(new byte[24], 14);
+        Assert.Equal(38, final.Length);
+        Assert.Equal(0x80000000u, BitConverter.ToUInt32(final,29));
+        Assert.Equal(3u, BitConverter.ToUInt32(final,33)); // slot1 and slot2, not a captured slot2-only removal
+        Assert.Equal(0, final[37]);
+    }
+
+    [Fact]
     public void MasterInitLengthIncludesItsOwnFieldAndAllEntries()
     {
         byte[] empty = ServerPackets.BuildCombatInitialize(6, new byte[24], 1, 2);

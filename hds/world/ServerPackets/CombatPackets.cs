@@ -241,18 +241,18 @@ namespace hds
         }
 
         /// <summary>
-        /// Combat view (ILCombatHandler) part 01 closing the fight. Retail ticks were
-        /// <c>01 &lt;centre f64×3&gt; &lt;counter u32&gt; 00000000 00</c> (no round entries); the last one set flags bit 31,
-        /// added a u32 result of 2 and carried the finishing round entry. We send it without the entry.
+        /// Combat view part 01 ending this two-fighter interlock. Bit 31 introduces a fighter-removal mask,
+        /// not a result code (client.dll 6263ac39..6263acd1). Retail's 2 detaches slot 2; ending the whole
+        /// handler here detaches both slots (3), including a withdrawing or defeated slot-1 player.
         /// </summary>
-        public static byte[] BuildCombatViewFinalRecord(byte[] centre, UInt32 counter)
+        public static byte[] BuildCombatViewFinalRecord(byte[] centre, UInt32 counter, UInt32 removedFighterSlots = 3)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x01);
             pak.AddByteArray(centre);
             pak.AddUint32(counter, 1);
             pak.AddUint32(0x80000000, 1);
-            pak.AddUint32(2, 1);
+            pak.AddUint32(removedFighterSlots, 1);
             pak.AddByte(0x00); // round entries
             return pak.ReturnFinalPacket();
         }

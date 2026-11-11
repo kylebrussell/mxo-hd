@@ -59,6 +59,17 @@ public static partial class Scenarios
                 "Fighters are on opposite sides, not overlapping");
         }
     }
+    private static void VerifyFinalDetach(HeadlessPlayer player, ushort view)
+    {
+        byte[] marker = WireFormat.FromHex($"{Le(view)} 01");
+        Check.That(player.World.ViewSnapshot().Any(section =>
+        {
+            for (int at = BytePattern.IndexOf(section,marker,0); at >= 0; at = BytePattern.IndexOf(section,marker,at+1))
+                if (at+40 <= section.Length && BitConverter.ToUInt32(section,at+31) == 0x80000000 &&
+                    BitConverter.ToUInt32(section,at+35) == 3 && section[at+39] == 0) return true;
+            return false;
+        }), "Whole-fight teardown detaches both slot1 and slot2 before deleting the handler");
+    }
     private static async Task CombatRoundsAndObservers(ScenarioContext context)
     {
         HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(
@@ -91,6 +102,7 @@ public static partial class Scenarios
         VerifySharedEntry(alice,aliceNpc,late,lateNpc);
         alice.SendRpc("44 00");
         await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(carolNpc)}");
+        VerifyFinalDetach(alice,aliceNpc); VerifyFinalDetach(carol,carolNpc);
         await late.WaitForViewUpdateAsync(1,$"01 01 00 {Le(lateNpc)}");
         Check.Equal(0,carol.Received("45").Count,"NPC observer receives no combat UI rounds");
         Check.Equal(0,carol.Received("47").Count,"NPC observer receives no move choices");
@@ -117,6 +129,7 @@ public static partial class Scenarios
         await alice.WaitUntilAsync(() => context.Server.DebugLog().Contains("RoundAlice withdraws"),
             "Withdrawal succeeds after Enrage expires",TimeSpan.FromSeconds(35));
         await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(cv)}");
+        VerifyFinalDetach(alice,av); VerifyFinalDetach(bob,bv); VerifyFinalDetach(carol,cv);
 
         // A new fight after withdrawal gets fresh fighter/observer views and live entries, not the old exchange.
         alice.SendRpc($"40 {HandleOf(bobView)} 01 6b");
@@ -129,6 +142,7 @@ public static partial class Scenarios
         bob.SendChat("?health 1");
         await bob.WaitForViewUpdateAsync(2,OwnDeath,TimeSpan.FromSeconds(35));
         await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(cv)}",TimeSpan.FromSeconds(15));
+        VerifyFinalDetach(bob,nextB); VerifyFinalDetach(carol,cv);
         Check.Equal(0,carol.Received("45").Count,"PvP observer receives no participant combat UI");
         Check.Equal(0,carol.Received("47").Count,"PvP observer receives no participant move choices");
         Check.That(context.Server.DebugLog().Contains("[COMBAT-VIEW] Round 2"),"Per-round animation records are logged");

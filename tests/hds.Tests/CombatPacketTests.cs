@@ -169,7 +169,7 @@ public class CombatPacketTests
         byte[] centre = new byte[24];
         centre[7] = 0x40;
         Assert.Equal("01" + "0000000000000040" + new string('0', 32) + "0d000000" + "00000080" + "02000000" + "00",
-            Hex(ServerPackets.BuildCombatViewFinalRecord(centre, 0x0d)));
+            Hex(ServerPackets.BuildCombatViewFinalRecord(centre, 0x0d, 2)));
     }
 
     [Fact]
