@@ -215,7 +215,7 @@ namespace hds
         {
             UInt16 max = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
             UInt16 current = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
-            if (client.playerData.isDead)
+            if (client.playerData.isDead || client.playerData.duelDeath)
             {
                 return current;
             }
@@ -224,6 +224,7 @@ namespace hds
             client.playerInstance.Health.setValue(healed);
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
             client.FlushQueue();
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(healed))));
             Output.WriteDebugLog("[ABILITY] Healed " + current + " -> " + healed);
             return healed;
         }

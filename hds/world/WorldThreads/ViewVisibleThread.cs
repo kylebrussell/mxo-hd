@@ -709,8 +709,9 @@ namespace hds
                                 "Player " + StringUtils.charBytesToString_NZ(otherClient.playerInstance
                                     .CharacterName.getValue()) + " with new View ID " +
                                 clientView.ViewID + " jacked in", "BROADCAST");
-                            pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
-                            clientView.spawnId = currentClient.playerData.spawnViewUpdateCounter;
+                            // The spawn id is the creation record's counter byte: with the view id it is the handle the
+                            // client names this player by (combat, duels, trade). This used to store the next counter value.
+                            clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
                         }
                     }

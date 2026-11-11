@@ -61,15 +61,26 @@ namespace hds
 
         public void SendServerSettingUInt(WorldClient client, string key, UInt32 value)
         {
+            client.messageQueue.addRpcMessage(BuildServerSettingUInt(key, value));
+        }
+
+        /// <summary>
+        /// A numeric client setting: <c>3a 05 00 &lt;offset of the value u16&gt; &lt;key: length with the 0 u16, text, 0&gt;
+        /// &lt;value: 04 00, u32&gt;</c>. Retail, at every world entry on its PvP server:
+        /// <c>3a 05 00 11 00 0a 00 "PvPServer" 00 04 00 06 00 00 00</c> and
+        /// <c>3a 05 00 17 00 10 00 "PvPMaxSafeLevel" 00 04 00 0f 00 00 00</c>.
+        /// This used to write one byte of the header (05), a length in place of the offset and the key without its 0;
+        /// nothing sent it with the default configuration.
+        /// </summary>
+        public static byte[] BuildServerSettingUInt(string key, UInt32 value)
+        {
             PacketContent pak = new PacketContent();
-            pak.AddUShort((ushort)RPCResponseHeaders.SERVER_FEATURE_EVENT);
-            int fullLen = key.Length + 2 + 4;
-            pak.AddInt16((short)fullLen,1);
-            pak.AddSizedString(key);
-            pak.AddUint16(4,1);
-            pak.AddUint32(value,1);
-            
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            pak.AddHexBytes("3a0500");
+            pak.AddUint16((UInt16)(7 + key.Length + 1), 1);
+            pak.AddSizedTerminatedString(key);
+            pak.AddUint16(4, 1);
+            pak.AddUint32(value, 1);
+            return pak.ReturnFinalPacket();
         }
         
         public void SendServerSettingCheckMotdMessage(WorldClient client, string key)
@@ -102,11 +113,11 @@ namespace hds
         {
             // The Packet with PVP Flag etc. 
             // ToDo: load world setting and define it
-            if (Store.worldConfig.IsPvpServer)
-            {
-                SendServerSettingUInt(client, "PvPServer", 6);
-                SendServerSettingUInt(client, "PvPMaxSafeLevel", 16);
-            }
+            // The client's own PvP rule reads these two (client.dll 0x625ed830; docs/PVP.md). Retail sent PvPServer 6
+            // on its PvP server and 2 elsewhere: with 0, the client's default, it ignores every player's PvP flag.
+            // The safe level used to be sent as 16 whatever the configuration said.
+            SendServerSettingUInt(client, "PvPServer", (UInt32)PvpFlag.ServerMode);
+            SendServerSettingUInt(client, "PvPMaxSafeLevel", (UInt32)PvpFlag.MaxSafeLevel);
 
             if (Store.worldConfig.FixedBinkIDOverride > 0)
             {

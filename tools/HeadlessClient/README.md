@@ -66,4 +66,4 @@ Each scenario also fails if a real client would have tripped: a corrupt packet, 
 - Whether the real client accepts any of this: layouts, the order of records, or timing.
 - `81 82`'s real shape. Nothing has ever sent one. TargetID is `<view u16> <spawn id u8> 00` from reading `client.dll` and from `81 51`, which shares the code path and has retail captures.
 - Behaviour under packet loss: on loopback nothing is lost, and the client only resends when told to.
-- Anything the client decides for itself: range checks, slot locks, what it shows.
+- Anything the client decides for itself: range checks, slot locks, what it shows. For fights between players that includes whether it considers the other player an opponent at all (`docs/PVP.md`): the scenarios send the attack whatever a client would think.

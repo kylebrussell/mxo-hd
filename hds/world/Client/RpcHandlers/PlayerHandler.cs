@@ -73,12 +73,19 @@ namespace hds
             UInt32 weapon = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(InventoryHandler.WeaponSlot);
             Store.currentClient.playerInstance.EquippedItemID.setValue(weapon);
 
+            PvpFlag.OnEnterWorld(Store.currentClient);
+
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
             //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            if (Store.currentClient.playerData.pvpFlag)
+            {
+                // Retail's PvP server sent the flag on the own view right after the spawn (some_pvp capture)
+                Store.currentClient.messageQueue.addObjectMessage(PvpFlag.BuildSelfFlags(PvpFlag.FlagsOf(Store.currentClient)), false);
+            }
 
             // Where the player stands on the client's nav mesh, as retail's record names it: without it the client has no
             // nav location until the first teleport (it lets the player through walls, and elevator panels close at once)

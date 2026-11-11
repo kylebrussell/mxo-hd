@@ -433,15 +433,18 @@ namespace hds
             createFlashTraffic(client, "http://mxo.hardlinedreams.com");
         }
 
-        public void SendPlayerSpawn(WorldClient receiverClient, WorldClient otherClient, UInt16 viewId)
+        /// <summary>Spawns another player for the receiver. Returns the spawn id of the creation record.</summary>
+        public byte SendPlayerSpawn(WorldClient receiverClient, WorldClient otherClient, UInt16 viewId)
         {
             PacketContent pak = new PacketContent();
-            byte[] spawnPaket = new BootingHelperRsi().generatePlayerSpawnPacket(otherClient, receiverClient.playerData.assignSpawnIdCounter());
+            byte spawnId = receiverClient.playerData.assignSpawnIdCounter();
+            byte[] spawnPaket = new BootingHelperRsi().generatePlayerSpawnPacket(otherClient, spawnId);
             pak.AddByteArray(spawnPaket);
             pak.AddUint16(viewId,1);
             pak.AddByte(0x00);
             receiverClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(),false);
             receiverClient.FlushQueue();
+            return spawnId;
         }
 
         public void sendSaveCharDataMessage(WorldClient client, string handle)

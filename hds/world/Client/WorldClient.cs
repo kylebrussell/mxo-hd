@@ -65,6 +65,46 @@ namespace hds
         }
 
 
+        /// <summary>
+        /// A player the server plays itself (dev partners such as ?duelbot): a full character in the world that other
+        /// clients see and fight, with no connection behind it. What is sent to it is dropped.
+        /// </summary>
+        public bool IsBot { get; private set; }
+
+        public static WorldClient CreateBot(string key)
+        {
+            lock (WorldServer.Clients)
+            {
+                Store.world.objMan.PushClient(key); // the object table is guarded by this lock everywhere else
+            }
+            return new WorldClient(key);
+        }
+
+        private WorldClient(string botKey)
+        {
+            IsBot = true;
+            key = botKey;
+            messageQueue = new MessageQueue();
+            playerData = new ClientData { isBot = true };
+            viewMan = new ViewManager();
+            playerData.setUniqueKey(key);
+            playerInstance = Store.world.objMan.GetAssignedObject(key);
+            alive = true;
+            lastUsedTime = TimeUtils.getUnixTimeUint32();
+        }
+
+        private void DropQueuedMessages()
+        {
+            lock (messageQueue.ObjectMessagesQueue.SyncRoot)
+            {
+                messageQueue.ObjectMessagesQueue.Clear();
+            }
+            lock (messageQueue.RPCMessagesQueue.SyncRoot)
+            {
+                messageQueue.RPCMessagesQueue.Clear();
+            }
+        }
+
         // This method sends one packet at a time to the game client 
         private void sendPacket(byte[] data)
         {
@@ -160,6 +200,11 @@ namespace hds
 
         public void FlushQueue(bool sent = false, bool force = false)
         {
+            if (IsBot)
+            {
+                DropQueuedMessages();
+                return;
+            }
             if (!force && !sent)
             {
                 long now = Environment.TickCount64;
@@ -588,6 +633,10 @@ namespace hds
         {
             get
             {
+                if (IsBot)
+                {
+                    return alive;
+                }
                 UInt32 now = TimeUtils.getUnixTimeUint32();
                 if (!this.alive || (now - lastUsedTime > 30))
                 {

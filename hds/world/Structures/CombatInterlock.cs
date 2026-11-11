@@ -44,6 +44,11 @@ namespace hds
             public bool HasAbility => Ability != 0;
             /// <summary>The fighter is withdrawing (RPC 44 01): retail marked such moves 2 in the has-ability byte.</summary>
             public bool Withdraw;
+            /// <summary>
+            /// The ability field is all zeros, as on a fight's first move, without the opening move's flag: the first
+            /// move of a player who was attacked (retail: <c>47 00 00 01 01 01 01 00 00 00 00 00 ...</c>).
+            /// </summary>
+            public bool NoAbilityField;
 
             /// <summary>The has-ability byte: 3 on the opening move, 2 withdrawing, 1 an ability, else 0.</summary>
             public byte Flag => First ? (byte)0x03 : Withdraw ? (byte)0x02 : HasAbility ? (byte)0x01 : (byte)0x00;
@@ -54,7 +59,7 @@ namespace hds
             pak.AddByte(0x01);
             pak.AddByte(move.Seq);
             pak.AddUint16(move.Value, 1);
-            pak.AddUint32(move.First ? 0u : 0x80000000u | move.Ability, 1);
+            pak.AddUint32(move.First || move.NoAbilityField ? 0u : 0x80000000u | move.Ability, 1);
             pak.AddUint16(move.R1, 1);
             pak.AddUint16(move.R2, 1);
             pak.AddUint16(move.R3, 1);
@@ -97,7 +102,7 @@ namespace hds
         /// </summary>
         public static byte[] BuildRoundResult(UInt16 round, bool won, Move player, Move npc, UInt32 target, UInt32 result,
             UInt16 damageToPlayer, Int16 playerModifier, UInt16 damageToTarget, Int16 targetModifier, UInt32 simMs,
-            Int32 combatResult = 0)
+            Int32 combatResult = 0, byte opponentFlag = 0)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x45);
@@ -108,7 +113,10 @@ namespace hds
             pak.AddByte(player.Flag);
             pak.AddByte((byte)player.Tactic);
             AddMove(pak, player);
-            pak.AddHexBytes("0000");
+            // The opponent's has-ability byte: always 0 for an NPC; another player's opening move has 3 here
+            // (retail, the attacked player's first 45: ... 00 03 00 01 01 46 00 ...)
+            pak.AddByte(0x00);
+            pak.AddByte(opponentFlag);
             pak.AddByte((byte)npc.Tactic);
             AddMove(pak, npc);
             pak.AddHexBytes("0000000001");
