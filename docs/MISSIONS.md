@@ -171,7 +171,10 @@ count and eight bytes per unclaimed item, containing its four-byte descriptor an
 `20260607T200024Z-hdneo-public-remaining-small-ability-loot-market` intake shows two unclaimed items at
 lines 80-81 and another Take All request at line 100. The client's class at 0x6287fea0 also names these
 fields. The server retains unclaimed pending drops for another Take All and credits the money once.
-The loot state remains per player. A later kill replaces that pending window.
+NPC loot is held per killer and corpse until the corpse despawns or the player disconnects. The native
+`80 c7 ... 05` interaction reopens its remaining contents after another kill or a partial claim. Money
+is credited once. A respawn starts a new death generation, and ending a mission clears its corpses.
+The tutorial's corpse-loot objective waits until both the revolver and letter fit in the bag.
 
 ### Chapter 12 reconstruction
 

@@ -361,14 +361,10 @@ namespace hds
                     pak.SendSubwaymapWindow(Store.currentClient);
 
                     break;
-                case (int) objectTypesDynamic.LOOT when TutorialMission.Of(Store.currentClient)?.OnLootCorpse(InteractedTutorialMob(interactedView)) == true:
-                    break;
-
                 case (int) objectTypesDynamic.LOOT:
-                    UInt32[] theTestArrayLoots = new UInt32[2];
-                    theTestArrayLoots[0] =
-                        NumericalUtils.ByteArrayToUint32(StringUtils.hexStringToBytes("8e220000"), 1);
-                    pak.SendLootWindow(5000, Store.currentClient, theTestArrayLoots);
+                    NpcLoot.Open(Store.currentClient,
+                        interactedView != null && interactedView.spawnId == (numericObjectId >> 16)
+                            ? interactedView.entityId : 0);
                     break;
 
                 case (int) objectTypesDynamic.TALK:

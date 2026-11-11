@@ -302,62 +302,7 @@ namespace hds
                 return;
             }
 
-            ClientView F = Store.currentClient.viewMan.getViewById(Store.currentClient.playerData.currentSelectedTargetViewId);
-
-            // Use pending loot amount from combat kill, or default to 0 if none
-            UInt32 value = 0;
-            if (Store.currentClient.playerData.hasLootPending)
-            {
-                value = Store.currentClient.playerData.pendingLootMoney;
-                // Clear pending loot
-                Store.currentClient.playerData.hasLootPending = false;
-                Store.currentClient.playerData.pendingLootMoney = 0;
-            }
-
-            if (value > 0)
-            {
-                UInt32 newMoneyAmount = (UInt32)Store.currentClient.playerData.getInfo() + value;
-                // Update Info in DB and player data
-                Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newMoneyAmount);
-                Store.currentClient.playerData.setInfo(newMoneyAmount);
-
-                Output.WriteDebugLog($"[LOOT] Player received {value} info. Total: {newMoneyAmount}");
-            }
-
-            ServerPackets packet = new ServerPackets();
-            packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
-
-            List<UInt32> drops;
-            lock (Store.currentClient.playerData.pendingLootDrops)
-            {
-                drops = new List<UInt32>(Store.currentClient.playerData.pendingLootDrops);
-                Store.currentClient.playerData.pendingLootDrops.Clear();
-            }
-            List<UInt32> unclaimed = NpcLoot.GiveItems(Store.currentClient, drops);
-            lock (Store.currentClient.playerData.pendingLootDrops)
-            {
-                Store.currentClient.playerData.pendingLootDrops.AddRange(unclaimed);
-            }
-            var remaining = new List<(byte[] Data, UInt32 Item)>();
-            foreach (UInt32 item in unclaimed)
-            {
-                remaining.Add((new byte[4], item));
-            }
-
-            UInt32 missionItem = Store.currentClient.playerData.pendingLootItem;
-            if (missionItem != 0)
-            {
-                if (!MissionRuntime.OnMissionItemLooted(Store.currentClient, missionItem))
-                {
-                    remaining.Add((new byte[] { 0, 0, 0, 0x08 }, missionItem));
-                }
-                else
-                {
-                    Store.currentClient.playerData.pendingLootItem = 0;
-                }
-            }
-
-            packet.SendLootAccepted(Store.currentClient, remaining.ToArray());
+            NpcLoot.TakeAll(Store.currentClient);
         }
 
         public void ProcessPlayerGetDetails(ref byte[] rpcData)

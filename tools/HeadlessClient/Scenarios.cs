@@ -57,6 +57,15 @@ public static partial class Scenarios
         {
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
         }),
+        new Scenario("retained-corpse-loot", RetainedCorpseLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0",
+            ["MXO_MOB_CORPSE_SECONDS"] = "300", ["MXO_MOB_RESPAWN_SECONDS"] = "600"
+        }),
+        new Scenario("full-bag-tutorial-loot", FullBagTutorialLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0", ["MXO_TUTORIAL_WARP"] = "21"
+        }),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)

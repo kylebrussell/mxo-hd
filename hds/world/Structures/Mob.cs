@@ -31,6 +31,7 @@ namespace hds
         private bool is_dead;
         private bool is_lootable;
         private bool is_spawned = true;
+        public int DeathGeneration { get; private set; }
         public bool isUpdateable = false;
 
         // Friendly NPCs are spawned as non-enemies (no combat offered); mission NPCs remember their mission id
@@ -257,6 +258,10 @@ namespace hds
 
         public void setIsDead(bool dead)
         {
+            if (dead && !is_dead)
+            {
+                DeathGeneration++;
+            }
             is_dead = dead;
         }
 
@@ -275,6 +280,7 @@ namespace hds
                     return false;
                 }
                 is_dead = true;
+                DeathGeneration++;
                 return true;
             }
         }

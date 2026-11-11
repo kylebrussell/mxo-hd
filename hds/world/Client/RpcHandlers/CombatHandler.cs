@@ -879,12 +879,6 @@ namespace hds
                 Random rand = new Random();
                 UInt32 lootMoney = inTutorial ? 0 : KillExperience.PocketChange(rand, mobLevel);
 
-                // Store pending loot for when player accepts
-                session.Attacker.playerData.pendingLootMoney = lootMoney;
-                session.Attacker.playerData.hasLootPending = true;
-
-                // Loot window: the money, a mission's LOOT item when this mob carries one, and the mob's drops
-                session.Attacker.playerData.pendingLootItem = missionItem;
                 List<UInt32> drops = session.DefenderMob.missionInstance == 0
                     ? NpcLoot.Roll(mobLevel, rand)
                     : TutorialMission.Of(session.Attacker)?.DropsFor(session.DefenderMob) ?? new List<UInt32>();
@@ -892,26 +886,8 @@ namespace hds
                 {
                     drops.Insert(0, CollectorHandler.FunctionData);
                 }
-                lock (session.Attacker.playerData.pendingLootDrops)
-                {
-                    session.Attacker.playerData.pendingLootDrops.Clear();
-                    session.Attacker.playerData.pendingLootDrops.AddRange(drops);
-                }
-
-                List<UInt32> lootItems = new List<UInt32>();
-                List<byte> lootFlags = new List<byte>();
-                if (missionItem != 0)
-                {
-                    lootItems.Add(missionItem);
-                    lootFlags.Add(0x08);
-                }
-                foreach (UInt32 drop in drops)
-                {
-                    lootItems.Add(drop);
-                    lootFlags.Add(0x00);
-                }
-                session.Attacker.messageQueue.addRpcMessage(NpcLoot.BuildLootWindow(lootMoney, lootItems, lootFlags));
-                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {lootItems.Count} items");
+                NpcLoot.Drop(session.Attacker, session.DefenderMob, lootMoney, missionItem, drops);
+                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {drops.Count + (missionItem == 0 ? 0 : 1)} items");
                 // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
                 // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
                 session.Attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();

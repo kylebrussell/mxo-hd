@@ -89,6 +89,10 @@ namespace hds
 
             foreach (Mob mob in mobs)
             {
+                lock (data.loot)
+                {
+                    data.loot.Forget(mob);
+                }
                 lock (WorldServer.mobs.SyncRoot)
                 {
                     WorldServer.mobs.Remove(mob);

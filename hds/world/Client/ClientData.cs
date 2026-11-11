@@ -52,9 +52,7 @@ namespace hds
 		public UInt32 jackoutStartTime;
 		public bool isJackoutInProgress;
 
-		// Pending loot from killed mob (cleared after accepting)
-		public UInt32 pendingLootMoney = 0;
-		public bool hasLootPending = false;
+		public readonly NpcLootCache loot = new NpcLootCache();
 
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
@@ -100,9 +98,6 @@ namespace hds
 		// Ids of finished missions; null until the first mission list loads them
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
-		public UInt32 pendingLootItem = 0;
-		// Items a killed NPC dropped (NpcLoot), given on Take All
-		public readonly System.Collections.Generic.List<UInt32> pendingLootDrops = new System.Collections.Generic.List<UInt32>();
         public StaticWorldObject activeCollector;
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule

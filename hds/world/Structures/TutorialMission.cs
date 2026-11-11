@@ -593,6 +593,10 @@ namespace hds
             foreach (Mob mob in npcs.FindAll(n => n.missionNpcId == id))
             {
                 npcs.Remove(mob);
+                lock (client.playerData.loot)
+                {
+                    client.playerData.loot.Forget(mob);
+                }
                 lock (WorldServer.mobs.SyncRoot)
                 {
                     WorldServer.mobs.Remove(mob);
@@ -852,38 +856,21 @@ namespace hds
                     return true;
                 }
 
-                if (done.Contains(ABILITIES_USE_GOAL) && !done.Contains(COMBAT_LOOT_GOAL))
-                {
-                    CompleteGoal(COMBAT_LOOT_GOAL);
-                    client.FlushQueue();
-                }
-
                 return false;
             }
         }
 
-        /// <summary>Double-clicking Bob's body (80 c7 ... 05), as retail's players did: his loot window, again if it was closed.</summary>
-        public bool OnLootCorpse(Mob mob)
+        /// <summary>Bob's combat-loot goal closes after every item fits in the bag.</summary>
+        public void OnCorpseLooted(Mob mob)
         {
             lock (sync)
             {
-                if (mob == null || mob.missionNpcId != BobId || !npcs.Contains(mob) || !mob.getIsDead() || done.Contains(COMBAT_LOOT_GOAL))
+                if (mob.missionNpcId == BobId && npcs.Contains(mob) &&
+                    done.Contains(ABILITIES_USE_GOAL) && !done.Contains(COMBAT_LOOT_GOAL))
                 {
-                    return false;
+                    CompleteGoal(COMBAT_LOOT_GOAL);
+                    client.FlushQueue();
                 }
-
-                List<UInt32> drops = new List<UInt32> { Revolver, Letter };
-                lock (client.playerData.pendingLootDrops)
-                {
-                    client.playerData.pendingLootDrops.Clear();
-                    client.playerData.pendingLootDrops.AddRange(drops);
-                }
-
-                client.playerData.pendingLootMoney = 0;
-                client.playerData.hasLootPending = true;
-                client.messageQueue.addRpcMessage(NpcLoot.BuildLootWindow(0, drops, new List<byte> { 0, 0 }));
-                client.FlushQueue();
-                return true;
             }
         }
 
