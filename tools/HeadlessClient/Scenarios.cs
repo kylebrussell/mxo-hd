@@ -531,6 +531,8 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("81 17 00 00 00 00 00");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
             "The trade checks the current position");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForTextAsync("Move closer to Azuna to trade.");
         player.SendChat("?tp -146900 -55 50200 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         player.SendRpc("80 c8 3d 03 90 28 01 00");

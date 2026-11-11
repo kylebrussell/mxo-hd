@@ -35,6 +35,8 @@ namespace hds
             }
             if (!CanReach(client, collector))
             {
+                new ServerPackets().sendSystemChatMessage(client, "Move closer to Azuna to trade.", "BROADCAST");
+                client.FlushQueue();
                 return true;
             }
 
