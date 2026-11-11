@@ -55,6 +55,7 @@ public static partial class Scenarios
         new Scenario("stances-seen-by-others", StancesSeenByOthers),
         new Scenario("socialbot-emotes-and-stances", SocialBotEmotesAndStances),
         new Scenario("give-mission-item-by-dragging", GiveMissionItemByDragging, StillNpcs, "give-item.xml"),
+        new Scenario("prompt-and-fx-callbacks", PromptAndFxCallbacks),
         new Scenario("marketplace-purchase", MarketplacePurchase),
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
         new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),

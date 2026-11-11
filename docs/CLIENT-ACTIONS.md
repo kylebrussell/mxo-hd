@@ -18,14 +18,14 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 45 | 23 | 117 |
-| Partial | 0 | 2 | 0 | 2 |
+| Handled | 49 | 47 | 23 | 119 |
+| Partial | 0 | 0 | 0 | 0 |
 | Ignored | 0 | 6 | 37 | 43 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 3 |
 | **Total** | 49 | 53 | 61 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled, and so are booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled, and so are booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list. Paired emotes, stances (`34` enters one, `33` leaves it), giving a mission item by dragging it (`66`) and callbacks for any prompt or FX token (`81 90`, `81 91`) followed; `5b` is never sent, `60` is compiling (Codex's area) and `5c` drops a luggable item.
 
 The biggest gaps left, by impact:
 
@@ -180,8 +180,8 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `80 98` | Mission details (SessionID, PreviewID, Size, Difficulty, AutoAccept) | D, C 8 | handled | high |
 | `80 9b` | Accept (SessionID, Accepted) | D, C 8 | handled | high |
 | `80 a6` | Abort | D, C 11 | handled | high |
-| `81 91` | An FX token coming back (EventID) | D, C 12 | partial: the tutorial only | medium |
-| `81 90` | Answer to a modal (Message, LeftChosen) | D, C 8 | partial: the tutorial only | medium |
+| `81 91` | An FX token coming back (EventID): the token of a server `81 42`, when the FX ends | D, C 12 | handled (new): any feature's callback (`ClientCallbacks`), else the tutorial | medium |
+| `81 90` | Answer to a modal (Message, LeftChosen): the Message of a server `81 8f`, echoed | D, C 8 | handled (new): any feature's callback (`ClientCallbacks`), else the tutorial | medium |
 | `81 04` | A panel the server showed was used (ViewID, ResponseToken) | D, C 62 | handled (the tutorial is its only user) | low |
 | `81 8d` | Shortcut added to the bar | D, C 20 | handled (tutorial) | low |
 | `59` | Use an item (Slot): mission tickets | D, C 8 | handled | medium |
@@ -697,6 +697,20 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
 
+## Prompts and FX tokens
+
+The client hands two things back unchanged:
+- The Message of a two-button prompt. The server sends `81 8f <image> <string id> 1c 00 <Message> <left> <right> ...`, and the client answers `81 90 <Message> <LeftChosen>`.
+- The token of an FX. The server sends `81 42 <fx> <token> <user data>`, and when the FX ends the client sends `81 91 <token>`.
+
+Only the tutorial used either before. `ClientCallbacks` (ours) lets any feature attach a callback: `ShowModal(client, image, string, left, right, onAnswer)` and `PlayFx(client, fx, onEnd)`.
+
+Their Messages and tokens start at 0x10000, above the tutorial's script numbers. An answer or token nobody registered goes on to the tutorial, as before. A callback runs once. Each player keeps the newest 32 callbacks of each kind, because a prompt can be closed without an answer.
+
+Dev helpers (`MXO_DEV_COMMANDS=1`):
+- `?ask [string id hex]` opens a Yes/No prompt and says "You answered Yes." or "You answered No.".
+- `?fxdone <fx id hex>` plays an FX and says "The FX ended." when the client reports it.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -826,3 +840,9 @@ The crew window's Remove, Make Captain and Make First Mate are right-click menu 
 3. Expect "You hand over the Data CD." (the client's own line), the disk gone from the bag, and the goal "Give the data disk to Alcor" done.
 4. Drag any other bag item onto an NPC. Expect "The NPC will not accept your trade request." from the client, and nothing from the server.
 5. If the hand-over line appears but the goal doesn't complete, note it, and note whether "They don't want that." followed.
+
+### Prompts and FX callbacks
+
+1. `?ask`. Expect a Yes/No prompt ("Spawn another opponent for practice?"). Click Yes: "You answered Yes.". `?ask` again and click No: "You answered No.".
+2. `?fxdone 1`. Expect an effect on your character, then "The FX ended." when it finishes. If no line appears, try another FX id from `data/fxlistreal.txt` and note which ones report their end.
+3. Play the tutorial's pill choice and its practice prompt: they must still work (they use their own Messages).

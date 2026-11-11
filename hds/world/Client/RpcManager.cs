@@ -106,10 +106,10 @@ namespace hds{
 		            TutorialMission.Of(Store.currentClient)?.OnShortcutAdded(BitConverter.ToUInt32(rpcData, 0), BitConverter.ToUInt32(rpcData, 8));
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MODAL_ANSWER:
-		            TutorialMission.Of(Store.currentClient)?.OnModalAnswer(BitConverter.ToUInt32(rpcData, 0), rpcData[4] != 0);
+		            ClientCallbacks.DispatchModalAnswer(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_EVENT:
-		            TutorialMission.Of(Store.currentClient)?.OnClientEvent(BitConverter.ToUInt32(rpcData, 0));
+		            ClientCallbacks.DispatchFxEnded(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_ABORT:
 		            new MissionHandler().processAbortMission(ref rpcData);
