@@ -45,6 +45,7 @@ public static partial class Scenarios
         new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
         new Scenario("azuna-collector", AzunaCollector, StillNpcs),
+        new Scenario("legacy-inventory-startup", LegacyInventoryStartup, StillNpcs),
         new Scenario("azuna-collector-full-bag", AzunaCollectorFullBag, StillNpcs),
         new Scenario("azuna-collector-guards", AzunaCollectorGuards, StillNpcs),
         new Scenario("azuna-function-data-loot", AzunaFunctionDataLoot, new Dictionary<string, string>
@@ -412,10 +413,21 @@ public static partial class Scenarios
             "The replacement item stays in the old slot");
     }
 
+    private static async Task LegacyInventoryStartup(ScenarioContext context)
+    {
+        await context.Database.ExecuteAsync("SET SESSION sql_mode=''; ALTER TABLE inventory ENGINE=MyISAM, DROP INDEX inventory_character_slot");
+        const string zeroDates = "SELECT COUNT(*) FROM inventory WHERE CAST(updated AS CHAR) LIKE '0000-%' OR CAST(created AS CHAR) LIKE '0000-%'";
+        long originalZeroDates = await context.Database.LongAsync(zeroDates);
+        using ServerInstance restarted = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name, StillNpcs);
+        Check.Equal("InnoDB", await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory'"),
+            "Inventory is transactional before the restarted server reports ready");
+        Check.Equal(originalZeroDates, await context.Database.LongAsync(zeroDates), "Legacy zero timestamps survive startup migration");
+        Check.Equal(2L, await context.Database.LongAsync("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory' AND INDEX_NAME='inventory_character_slot'"),
+            "Legacy inventory receives the character/slot index");
+    }
+
     private static async Task AzunaCollector(ScenarioContext context)
     {
-        // Exercise the first exchange on a database created with the old inventory engine.
-        await context.Database.ExecuteAsync("SET SESSION sql_mode=''; ALTER TABLE inventory ENGINE=MyISAM");
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
             District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,

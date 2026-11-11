@@ -42,6 +42,7 @@ namespace hds{
                 }                
 				
 				Store.dbManager.WorldDbHandler.ResetOnlineStatus();
+                Store.dbManager.WorldDbHandler.EnsureTransactionalInventory();
 
                 /* Initialize the scripting server */
                 Store.rpcScriptManager = new ScriptManager();

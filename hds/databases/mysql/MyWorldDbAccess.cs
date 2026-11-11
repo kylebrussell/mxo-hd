@@ -1231,7 +1231,14 @@ namespace hds.databases{
         private readonly object inventoryMigrationLock = new object();
         private bool inventorySupportsTransactions;
 
-        /// <summary>Upgrades old MyISAM inventory tables before the first exchange that needs rollback.</summary>
+        /// <summary>Upgrades old inventory tables before the network listeners accept players.</summary>
+        public void EnsureTransactionalInventory()
+        {
+            using MySqlConnection connection = new MySqlConnection(connectionString);
+            connection.Open();
+            EnsureTransactionalInventory(connection);
+        }
+
         private void EnsureTransactionalInventory(MySqlConnection connection)
         {
             lock (inventoryMigrationLock)
@@ -1240,10 +1247,12 @@ namespace hds.databases{
                 {
                     return;
                 }
-
                 using MySqlCommand command = connection.CreateCommand();
                 command.CommandText = "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory'";
-                if (!string.Equals(command.ExecuteScalar() as string, "InnoDB", StringComparison.OrdinalIgnoreCase))
+                bool transactional = string.Equals(command.ExecuteScalar() as string, "InnoDB", StringComparison.OrdinalIgnoreCase);
+                command.CommandText = "SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory' AND INDEX_NAME='inventory_character_slot'";
+                bool indexed = Convert.ToInt32(command.ExecuteScalar()) > 0;
+                if (!transactional || !indexed)
                 {
                     // The original dump contains zero timestamps. Keep those values during the engine conversion.
                     command.CommandText = "SELECT @@SESSION.sql_mode";
@@ -1256,7 +1265,8 @@ namespace hds.databases{
                     command.ExecuteNonQuery();
                     try
                     {
-                        command.CommandText = "ALTER TABLE inventory ENGINE=InnoDB";
+                        command.CommandText = "ALTER TABLE inventory ENGINE=InnoDB" +
+                            (indexed ? "" : ", ADD KEY inventory_character_slot (charId, slot)");
                         command.ExecuteNonQuery();
                     }
                     finally

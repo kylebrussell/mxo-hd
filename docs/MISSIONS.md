@@ -264,8 +264,9 @@ The native dialog uses a 4.5 m interaction range. These distances are implementa
 
 The server verifies the district, proximity, active collector and bag contents for each trade. Items in
 worn slots are excluded. Consumption and reward insertion share a database transaction, including reuse
-of a consumed slot in a full bag. Before the first trade, an old MyISAM inventory table is converted to
-InnoDB with its zero timestamps preserved. Fresh databases use InnoDB.
+of a consumed slot in a full bag. At startup, before the network listeners accept players, an old MyISAM
+inventory table is converted to InnoDB with its zero timestamps preserved. The character/slot index is
+added for legacy tables as well. Fresh databases use the same engine and index.
 
 ## The tutorial
 
