@@ -409,9 +409,13 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
 
 ### Stacks
 
-1. Get a stack of a few Code Bits (or pills) into the bag (`?additem 7332` repeatedly, or loot).
-2. Split it: shift-drag (or the split dialog) for 2 of them onto an empty slot. Expect the source to show 2 fewer and a new stack of 2 in that slot. Relog: both still there with those counts.
-3. Split again onto an empty part of the bag page (not a slot). Expect the new stack in the page's first free slot.
-4. Drag the small stack onto the big one. Expect one stack with the total and the other slot empty.
-5. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
-6. Note anything the client does that the server didn't confirm (a count that jumps back, a stack that reappears).
+A split starts from the item's right-click menu, not a modifier key. client.dll's bag view (0x6203f5a0) answers a right click (`MRCl`) on a bag item with a pop-up menu. That menu has "Split Quantity..." (string 0xb2000034) only when the client's own check 0x621cd790 passes: the slot is in the bag (below 0x60), the item's class has IsStackable, and the slot holds at least 2. Choosing it (`CISQ`) opens "Choose Amount" (Total, Amount; 0x6203d270). OK (`CICQ`) puts that many on the cursor as a split drag (drag type 4). Dropping it on a slot, or on empty bag space, sends `68`. A plain left drag, with or without Shift, is a move (`65`). Only mouse clicks and the dialog's text box are involved; no key is read with GetAsyncKeyState on this path.
+
+1. Get a stack of a few Code Bit 1 into the bag (`?additem 7332` several times; each one joins the stack).
+2. Right-click the stack. Expect a pop-up menu with "Split Quantity...". If the menu has no such entry, the client doesn't think the slot holds two or more: note the count shown on the icon.
+3. Choose "Split Quantity...". Expect "Choose Amount" with the stack's total. Enter 2 and press OK. Expect 2 Code Bits on the cursor.
+4. Click an empty bag slot. Expect a new stack of 2 there and the source 2 fewer. The server log shows `[INVENTORY] Split 2 of slot ... to slot ...`. Relog: both stacks keep their counts.
+5. Split again, and this time click empty bag space instead of a slot. Expect the new stack in the first free slot.
+6. Merge: drag one of the two stacks (plain left drag) and drop it on the other stack's slot. That is the only way to get `67`: the drop handler (0x620a0504) sends it when the destination slot holds the same item. Expect one stack with the total and the other slot empty; the log shows `[INVENTORY] Merged slot ... into ...`.
+7. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
+8. Note anything the client shows that the server didn't confirm, such as a count that jumps back or a stack that reappears.
