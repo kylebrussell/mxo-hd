@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Meat for the Maggots, Merovingian Archive 2.1.5. Source: research/missions/transcripts/Merv2-1-5.md (one retail run
+     of the archive replay, given by [Archived]Flood; one screenshot in phase 1 and one beside the Assassin, the rest of
+     the log scrolled after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line (the Operator's "Just recovers" and Roemera's "it's former
+     owner" kept as retail wrote them), the Zion Duelist's and Zion Upgrade Master's barks (Team chat), the names
+     Ether, Wasat, Chrysothemis, Roemera and the Assassin, and the objective text "Recover the Blowflies from Ether".
+     Ours: the description (the Summary tab showed none), the other objective texts, the sites (Office for Ether's
+     office-like hideout, Derelict for the Assassin's room, Normal for the rest), the enemy counts (Wasat's place is
+     "wall to wall with Machines") and the looks; the Assassin has no model of his own here and wears an Exile's.
+     Item stand-ins: Ether's blowflies (the "evidence") are Bug (6824), Wasat's live blowflies are Pet_Carrier (6819),
+     the Assassin's package is Severed_Head (6830), as the Operator says it is. Rewards: the log shows 79,416,249
+     experience and 1,039,500 information, a level 50 player's, so these are Zion chapter 2.1's values (297,000
+     experience and 98,000 information). The Tabloid Clipping looted from a Zion Ballista is generic loot and isn't
+     used.
+     Gaps: Ether and Wasat are dead; dead NPCs aren't spawned, so their bodies are Furniture objects to search, and the
+     Operator's line on finding Ether is said on arrival. The Zion Ballista's line was half hidden and isn't used. The
+     blowflies' short life and the Assassin's short stay imply timers, which aren't built. Flood asks the player to
+     deal with the Zion operatives at the Assassin's location "if you can": an optional kill-all. Retail's last
+     objective, leaving the area, is our usual end of a phase. Image seams in six long lines are joined as one line,
+     repeated NPC lines are said once, and italics are dropped. -->
+<mission id="302105" title="Meat for the Maggots" description="Clean up after the Assassin and deliver his payment." plot="1"
+         order="2105" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Zion Duelist" type="HOSTILE" at="1" rsi="c9020058" weapon="2564" />
+  <npc id="2" handle="Zion Upgrade Master" type="HOSTILE" at="1" rsi="60010058" weapon="2564" />
+  <npc id="3" handle="Chrysothemis" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say after="1">Come on, come on. I haven't got all day! The Merovingian is throwing a party tonight and I have to pick up a few things beforehand.</say>
+    <say after="3">Maybe if you're real nice, the Merovingian will invite you to his next party -- I wouldn't count on it, though.</say>
+  </npc>
+  <npc id="4" handle="Roemera" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say after="1">I hate to see it go, but I know it's former owner misses it more than I will...</say>
+  </npc>
+  <npc id="5" handle="The Assassin" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568">
+    <say>...</say>
+  </npc>
+
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>Our associate, the Assassin, has just completed a small job for us. In light of this, we require a certain favor of you: clean-up duty. I know it doesn't sound as glamorous as your last assignment, but the Merovingian personally selected you for this task. I'm certain that you'll comply, won't you? You will.&#10;&#10;Get yourself over to this address and recover any trace of evidence from Ether's corpse. That is all for now.</briefing>
+    <enter>
+      <say>The Assassin made short work of Ether without alerting a soul. The other Zion operatives have no idea what happened! Just recovers those flies and split.</say>
+      <say>Damn! The Assassin did some serious work here -- Ether is deader than Neo. Strip him of the evidence, then make your exit.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Recover the Blowflies from Ether" type="Search" object="1" item="6824">
+      <done><say>Do you think these flies came from the Assassin? He's leaving parts of himself everywhere! No wonder Flood sent you in to pick up the pieces.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">It smells like a dumpster in there! This is bad... This is real bad!</say>
+    </near>
+    <near npc="2" radius="1000">
+      <say npc="2">It's {player}!</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>While I'm pleased that the evidence of our associate's kill is in your hands, the flies do not serve their greater purpose unless they are still alive. Lucky for you, our associate has finished his second house call.&#10;&#10;Pay a visit to our dearly departed friend, Wasat, and strip him of the Assassin's blowflies.</briefing>
+    <enter>
+      <say>Move quickly and get the blowflies off Wasat's body! Those lil' buggers won't live for very long.</say>
+      <say>This place is wall to wall with Machines who clearly know that Wasat was murdered. If they see you, you can bet they won't hesitate to shoot first and ask questions never.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Recover the Blowflies from Wasat" type="Search" object="1" item="6819" />
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>My dear {player}, we have a bit of a problem: Zion doesn't quite like it when our associate strikes against one of their worthless captains. Nor do they enjoy it when you come in to pick up the pieces. Before the rest of your assignment can continue, you must lay low for a moment.&#10;&#10;Make your way to this Merovingian safe house and relax for a bit. In fact, while you're there, give the blowflies to Chrysothemis. He'll know what to do with them.</briefing>
+    <enter><say>Flood wants you to drop off the blowflies, put your feet up, and have a drink? If that's the case, I wish I could join you.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Chrysothemis" type="Talk" npc="3">
+      <talk><say npc="3">You must be {player}... You got the flies? All right.&#10;&#10;I don't really want to touch those things so cram the blowflies in my safe.</say></talk>
+    </objective>
+    <objective goal="2" text="Put Ether's blowflies in Chrysothemis' safe" type="Put" object="1" item="6824" after="1" />
+    <objective goal="3" text="Put Wasat's blowflies in Chrysothemis' safe" type="Put" object="1" item="6819" after="2" />
+    <complete><say contact="1">You don't have time to loiter, {player}. Another step in this assignment requires your immediate attention. Remove yourself from the safe house and I shall update you.</say></complete>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It seems the Zion lackeys have lost your trail. It doesn't surprise me, as I'm usually right about this sort of thing...&#10;&#10;Now that the coast is clear, meet up with Roemera and pick up a little package for our friend, the Assassin.</briefing>
+    <enter><say>Hmm, I wonder what's in the package...</say></enter>
+    <objective goal="1" text="Get the package from Roemera" type="Get" npc="4" item="6830">
+      <talk>
+        <say npc="4">Welcome, {player}. You've come for the package, have you not? I was so hoping you'd take your time, so I could get a few more drinks in...</say>
+        <say npc="4">Come now. I won't bite.</say>
+      </talk>
+      <done>
+        <say>What the hell?! Do you have any idea what's in that package? It's a freaking severed head! This Assassin guy is one sick bastard. What kind of person wants to be paid in body parts? Oh, yeah... A guy made out of flies.</say>
+        <say npc="4">I hate to see it go, but I know it's former owner misses it more than I will...</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Derelict" enemy="Zion" enemies="3">
+    <briefing>Those Morpheus-worshipping fools have pinpointed your location. If you can do something about it, make short work of the Zion operatives. When you've handled them, deliver that package to our associate.&#10;&#10;Do not delay, {player}. The Assassin cannot stay at this location long.</briefing>
+    <enter><say>Flood isn't joking around. The signal in the code stream is like nothing I've ever seen before. Whatever's in there could do some serious damage.</say></enter>
+    <objective goal="1" text="Give the package to the Assassin" type="Give" npc="5" item="6830">
+      <talk>
+        <say npc="5">...</say>
+        <say>Holy crap. It's really him!</say>
+      </talk>
+      <done>
+        <say>Not exactly a man of words, is he?</say>
+        <say npc="5">...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill the Zion operatives" type="DefeatAll" optional="1" />
+  </phase>
+  <finish>I do hope he didn't scare you. The Assassin can be a rather intimidating creature, to say the least.&#10;&#10;That will be all for now, {player}. Expect your next assignment after we've had a chance to uncover additional information on our enemies' plans.</finish>
+</mission>

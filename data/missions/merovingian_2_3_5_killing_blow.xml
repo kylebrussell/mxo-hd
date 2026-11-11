@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Killing Blow, Merovingian story mission 2.3.5. Source: research/missions/transcripts/Merv2-3-5.md (the archive
+     replay of [Merovingian Archive 2.3.5], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator, Flood and NPC line, and the names
+     Russette Franguiadakis, Desayd, Elite Guard and Blood Drunk. The player (Vesuveus) is {player}. Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     looks, the enemy counts, the sites (none was described: Normal), and the names of the two commandos, Keller and
+     Dawson: their names and lines fell in a gap of the log, so they say nothing here. The Desayd clones are copies
+     and share Desayd's look. Item stand-in: the Hellspawn virus is Virus (6786). Rewards: the log is a level-50
+     player's (79,416,249 experience, a capped figure, and 1,039,500 information), so 308,000 experience and 98,000
+     information are Zion chapter 2.3's values.
+     Gaps: the commandos' device was to weaken the clones; it has no effect here, and the commandos only follow
+     (the Operator lets the player leave them behind). Followers can't be released, so they keep following into
+     phase 4. The Operator's line on finding the terminal came twenty seconds after arriving and is said on arrival.
+     The clones' combat lines are one clone each, said on coming near it (four clones; the clone that only said "..."
+     is left out); one clone line has an illegible middle line and is read without it. The Operator's "transmitter
+     equipment" line came after the clones were dead, before Flood's next briefing, and is said when phase 3 is done.
+     Elite Guard and Blood Drunk taunted in team chat in an unknown phase; they guard the real Desayd here. Goals are
+     numbered across the mission (1 to 8). -->
+<mission id="302305" title="Killing Blow" description="Destroy Desayd's cloning network and kill the traitor himself." plot="1"
+         order="2305" org="3" contact="Flood" exp="308000" info="98000">
+  <npc id="1" handle="Russette Franguiadakis" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+    <say after="2">Now go, and whatever you do, do not get that virus anywhere near our systems!</say>
+  </npc>
+  <npc id="2" handle="Keller" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Dawson" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Desayd" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="5" handle="Desayd" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Desayd" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="7" handle="Desayd" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="8" handle="Desayd" type="HOSTILE" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="9" handle="Elite Guard" type="HOSTILE" at="4" rsi="a5060090" weapon="2568" />
+  <npc id="10" handle="Blood Drunk" type="HOSTILE" at="4" rsi="a8060090" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It is time, {player}. Time to prove your worth to the Merovingian.
+
+We -- well, mostly I -- have discovered how to end this disgusting little insurrection. It will involve a delightful little virus and some wholesale slaughter. Now run along and collect your tools, hmm?</briefing>
+    <enter><say>You'll be meeting with Russette Franguiadakis in here, and getting that virus Flood mentioned.</say></enter>
+    <objective goal="1" text="Talk to Russette Franguiadakis" type="Talk" npc="1">
+      <talk><say npc="1">Ah, {player}. I trust you know enough about viruses to know what a Hellspawn is? And how careful you need to be with it?</say></talk>
+    </objective>
+    <objective goal="2" text="Get the Hellspawn virus from Russette Franguiadakis" type="Get" npc="1" item="6786" after="1">
+      <talk><say npc="1">Well don't just stand there gawking! Take this!</say></talk>
+      <done><say>A Hellspawn virus... wow. The Frenchman is serious about this.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>With that virus in hand, you are prepared to deal with our rebellious friend... but there is one other matter to attend to.
+
+It would seem that our military friends want to help. It's rather cute really, they want to play too! Go to this location and find out how they propose to help.</briefing>
+    <enter><say>There are two of those commandos here, with some sort of plan to present to you.</say></enter>
+    <objective goal="3" text="Talk to Keller" type="Talk" npc="2" />
+    <objective goal="4" text="Talk to Dawson" type="Talk" npc="3" />
+    <objective goal="5" text="Lead Keller and Dawson out of the area" type="Escort" npc="2,3" to="exit" after="4" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hmm, so these commandos think we need their help? Of all-- oh, wait, it's you we're talking about here. Yes, I see.
+
+Bring the commandos with you to the next location. They'll use their device to weaken the Desayd clones, while you eliminate all remaining enemies and place that delightful virus into Desayd's system.</briefing>
+    <enter>
+      <say>Listen, {player}, I think you can take these clones out on your own. It's up to you... you can leave the commandos here if you want.
+
+Whatever you do, though, get that Hellspawn virus into the computer system, and make sure you take out all the Desayd clones. We can't leave a single one alive.</say>
+      <say>There's the terminal hooked up to Desayd's cloning network! Get the virus in there now.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Plant the Hellspawn virus in the terminal" type="Put" object="1" item="6786">
+      <done><say>You ever seen one of those Hellspawns in action? Desayd's system is probably already out of commission.</say></done>
+    </objective>
+    <objective goal="7" text="Kill all of the Desayd clones" type="DefeatAll">
+      <done><say>You've eliminated all of the clones! Nice work.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">Sally sells sea shells... you die now!</say>
+      <say>Huh. Seems like Desayd's cloning process doesn't always turn out the best copies...</say>
+    </near>
+    <near npc="5" radius="1000">
+      <say npc="5">Your existence is excruciating to me. Ergo, I shall eliminate you.</say>
+    </near>
+    <near npc="6" radius="1000">
+      <say npc="6">Remain motionless while I remove your life!</say>
+    </near>
+    <near npc="7" radius="1000">
+      <say npc="7">Die, dimwit!</say>
+    </near>
+    <complete><say>This is where the commandos will set up their transmitter equipment.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Desayd is somewhere within this location. Find him. Kill him. Do not fail.</briefing>
+    <enter><say>Short and sweet in here, {player}. Take that traitor out!</say></enter>
+    <objective goal="8" text="Kill Desayd" type="Defeat" npc="8">
+      <done><say>Desayd is down and it is ugly! Very nice work in there. Now you can get out!</say></done>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">So it all comes to this, does it? My plans, my schemes... murder and mayhem! You think I will indulge this impudence so freely? Think again, fool!</say>
+    </near>
+    <near npc="9" radius="1000">
+      <say npc="9">You made a big mistake coming here!</say>
+    </near>
+    <near npc="10" radius="1000">
+      <say npc="10">Die!</say>
+    </near>
+  </phase>
+  <finish>It's time to celebrate, {player}. The traitor is finished, and all his copies have been destroyed. This just shows how powerful we are when we work together.
+
+Speaking of which... how about you show some teamwork and go get me a mimosa? There's a good human.</finish>
+</mission>

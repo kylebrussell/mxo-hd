@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Burning Both Ends, Merovingian story mission 2.2.3. Source: research/missions/transcripts/Merv2-2-3.md (the archive
+     replay of [Merovingian Archive 2.2.3], given by [Archived]Flood; one screenshot at the mainframe and 19 of the log
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description
+     (the Summary tab was never opened), every objective text (the Objectives tab showed only "Leave the area now!"),
+     the sites (the Machine base is an office: Office; the two trade locations and Fedchenko's place are unnamed
+     buildings: Normal), the looks and the enemy counts. The first trade is between Zion and the Machines: its
+     generated hostiles are Zion, the second location's ("Zion and the Machines are onto us") Machines. Item
+     stand-ins: the access code is Access_Code (6782), the red insecticide from the first trade Poison (6804, as in
+     Zion 2.2.1), the package of flit gun parts Package (6817), the assembled flit gun Weapon (6811) and the second
+     order of insecticide Medicine (6808), since each goes into the safe with its own Put. Rewards: the log is a
+     level-50 player's (79,416,249 experience and 1,039,500 information, the same for every 2.2 archive mission), so
+     the 297,000 experience and 98,000 information are Zion 2.2's values.
+     Gaps: the access code turned up right after the last Machine died in retail, probably on a body; here it is in a
+     filing cabinet, desk or dresser. Retail's mainframe showed a browser history ("two transactions - two locations",
+     "the first - under the pale gray sky", "the second - above the ocean of black"); here the code is put into the
+     mainframe and the search is a Search that turns up nothing, and the text isn't shown. Dubiago and Snake argue over
+     the trade and then attack: both wait to be attacked (attacksOnSight="0"), and reaching Dubiago carries the
+     argument (optional, so killing them first doesn't block the phase). Which of them carried which item isn't
+     shown; Dubiago offered the insecticide, so he has it and Snake the flit gun parts. At the second location the
+     carriers of the flit gun and the insecticide weren't named (and lines between 6:16:25 and 6:25:16 weren't
+     captured): the two are found in two boxes. The Operator's lines at 6:27:3x and 6:34:45 weren't captured. The
+     Merovingian Physician and Kung Fu Master at Fedchenko's place are bystanders with their Team chat lines. -->
+<mission id="302203" title="Burning Both Ends" description="Stop a trade of insecticide and flit gun parts between Zion and the Machines." plot="1"
+         order="2203" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Dubiago" type="HOSTILE" at="2" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Snake" type="HOSTILE" at="2" rsi="050100b4" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Fedchenko" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="1">The supplies need to go inside the safe -- every last one.</say>
+  </npc>
+  <npc id="4" handle="Merovingian Physician" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
+    <say display="5">How's it crackin'?</say>
+  </npc>
+  <npc id="5" handle="Merovingian Kung Fu Master" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say display="5">Why do corpses need to smell so bad, anyway? Who should I ask, God or the Machines? Hmm... When I put it that way, I think the Machines have become God.
+
+Woah.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>Inside sources have informed us of a deal that is going down today. The Machines and Zion plan to trade insecticide and flit gun parts. We -- and by "we" I mean you -- must prevent this transaction from taking place.
+
+Break into this Machine base and access their network via a mainframe. To do this, you will need an access code. Remember this.
+
+And one more thing: I don't doubt that you will run into opposition. If that happens, put a stop to them by making them dead. Capeesh?</briefing>
+    <enter>
+      <say>This doesn't sound so hard. Hit a mainframe, hit some guys in the head, and get out. Easy enough, right?</say>
+      <say>You're getting close. The mainframe should be in the next room. I'll...leave you to your fighting.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Mainframe" />
+    <objective goal="1" text="Kill all of the Machine guards" type="DefeatAll">
+      <done><say>That was the last hostile for this area. Don't worry, I'm sure you'll get your chance to smack down some more suckers at the next location.</say></done>
+    </objective>
+    <objective goal="2" text="Find the access code" type="Search" object="1" item="6782">
+      <done><say>That's the access code. Now, stick it into the mainframe.</say></done>
+    </objective>
+    <objective goal="3" text="Put the access code into the mainframe" type="Put" object="2" item="6782">
+      <done><say>I think it's funny that you're actually inside a massive computer, using a computer, and you still need an access code.
+
+What? You don't think it's funny? Just... just run a search.</say></done>
+    </objective>
+    <objective goal="4" text="Search the mainframe" type="Search" object="2" item="0" after="3">
+      <done><say>What the crap does "under the pale gray sky" mean? "Above the ocean of black?" That could be anywhere...
+
+Whatever. I'll send this off to Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Believe it or not, I have turned that silly little mainframe poetry into two solid leads. Am I good? Yes, I am.
+
+The first location is not far from your current position, but move quickly. If you don't get there before the transaction is complete, there will be nothing left to steal. We can't have that, can we?</briefing>
+    <enter><say>At last, I feel like we're making progress. I'll keep tabs on you as best I can.</say></enter>
+    <objective goal="1" text="Talk to Dubiago" type="Talk" npc="1" optional="1">
+      <done>
+        <say npc="1">Okay, this is how we'll do it: first you give me the flit gun parts, and then I'll give you the red insecticide.</say>
+        <say npc="2">Screw that! You give me the insecticide, and then I'll give you the flit gun parts -- and don't try anything funny. Don't give me that white insecticide crap. I won't fall for it!</say>
+        <say>...or not. Wax 'em!</say>
+        <say npc="1">We don't have time to argue! Merovingian scum at 12 o'clock!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Dubiago" type="Defeat" npc="1" />
+    <objective goal="3" text="Kill Snake" type="Defeat" npc="2" />
+    <objective goal="4" text="Get the red insecticide from Dubiago's body" type="Loot" npc="1" item="6804">
+      <done><say>Insecticide accounted for.</say></done>
+    </objective>
+    <objective goal="5" text="Get the flit gun parts from Snake's body" type="Loot" npc="2" item="6817">
+      <done><say>That package contains the flit gun parts we need. Don't lose it.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>I'm getting a strong signal from that room. I think Dubiago and Snake hold your cargo. Maybe if you ask nice, they'll hand it over...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Progress is made and I am pleased. Things go well when I'm in a good mood. As for the next part of your assignment, an assembled flit gun shan't stay in the hands of the Machines.
+
+The second location is already pointed out to you. Don't waste any time getting there, {player}.</briefing>
+    <enter><say>I have a bad feeling about this. I'm seeing some crazy code stream by... I think Zion and the Machines are onto us. Proceed with caution and a loaded weapon.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Box" />
+    <objective goal="1" text="Kill all of the Zion and Machine operatives" type="DefeatAll">
+      <done><say>I think that was the last hostile signal. Nothing more to slaughter, friend.</say></done>
+    </objective>
+    <objective goal="2" text="Find the flit gun" type="Search" object="1" item="6811">
+      <done><say>I keep thinking that is the silliest looking gun I've ever seen. I'm reminded of its purpose and...it's still funny lookin'.</say></done>
+    </objective>
+    <objective goal="3" text="Find the insecticide" type="Search" object="2" item="6808">
+      <done><say>Another order of insecticide has been accounted for.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Now that you have taken away their precious toys, we need the flit gun parts, the flit gun, and insecticide secured. Bring them to Fedchenko.</briefing>
+    <enter><say>Ahh... The calm after the storm. I always like this part. No surprises.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Talk to Fedchenko" type="Talk" npc="3">
+      <talk><say npc="3">The supplies need to go inside the safe -- every last one.</say></talk>
+    </objective>
+    <objective goal="2" text="Put the flit gun parts in the safe" type="Put" object="1" item="6817" after="1" />
+    <objective goal="3" text="Put the flit gun in the safe" type="Put" object="1" item="6811" after="1" />
+    <objective goal="4" text="Put the red insecticide in the safe" type="Put" object="1" item="6804" after="1" />
+    <objective goal="5" text="Put the second order of insecticide in the safe" type="Put" object="1" item="6808" after="1" />
+    <complete><say npc="3">Now go... before I get hungry.</say></complete>
+  </phase>
+  <finish>The seriousness of the matter with our associate is becoming quite apparent. I fear that Zion and the Machines are proving to be far more deadly than they were before this silly little truce of theirs.
+
+I am outlining the details of your next assignment. Your services will be called upon very soon.</finish>
+</mission>
