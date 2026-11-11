@@ -52,7 +52,7 @@ namespace hds
                 foreach (MissionNpc npc in mission.npcs)
                 {
                     // Site NPCs spawn with their phase; late arrivals wait for their trigger goal.
-                    if (npc.at == 0 && npc.spawnAfter < 0)
+                    if (npc.at == 0 && !npc.arrival.Late)
                     {
                         AddMob(client, SpawnNpc(client, mission, npc));
                     }
@@ -97,21 +97,7 @@ namespace hds
 
                 foreach (Mob mob in mobs)
                 {
-                    lock (data.loot)
-                    {
-                        data.loot.Forget(mob);
-                    }
-                    lock (WorldServer.mobs.SyncRoot)
-                    {
-                        WorldServer.mobs.Remove(mob);
-                    }
-
-                    lock (WorldServer.gameServerEntities.SyncRoot)
-                    {
-                        WorldServer.gameServerEntities.Remove(mob);
-                    }
-
-                    Store.world?.DeleteMobViews(mob);
+                    Despawn(data, mob);
                 }
 
                 // Mission items don't outlive the mission (an abort, or leaving before handing them over).
@@ -128,6 +114,28 @@ namespace hds
                 data.activeMission = null;
                 data.missionProgress = null;
             }
+
+        }
+
+        /// <summary>Takes a mission NPC out of the world and off the clients that have it.</summary>
+        private static void Despawn(ClientData data, Mob mob)
+        {
+            lock (data.loot)
+            {
+                data.loot.Forget(mob);
+            }
+
+            lock (WorldServer.mobs.SyncRoot)
+            {
+                WorldServer.mobs.Remove(mob);
+            }
+
+            lock (WorldServer.gameServerEntities.SyncRoot)
+            {
+                WorldServer.gameServerEntities.Remove(mob);
+            }
+
+            Store.world?.DeleteMobViews(mob);
         }
 
         public static Mob FindMissionMob(ClientData data, ulong entityId)
@@ -260,24 +268,33 @@ namespace hds
                 Complete(client, progress, objective);
             }
 
-            if (AllHostilesDown(client, progress))
-            {
-                foreach (MissionObjective all in new List<MissionObjective>(progress.OpenObjectives()))
-                {
-                    if (all.type == MissionGoalType.DefeatAll)
-                    {
-                        Complete(client, progress, all);
-                    }
-                }
-            }
-
+            CompleteDefeatAlls(client, progress);
             client.FlushQueue();
         }
 
-        /// <summary>Every hostile of the current phase is dead: its generated ones, and the mission's own placed there.</summary>
-        private static bool AllHostilesDown(WorldClient client, MissionProgress progress)
+        /// <summary>Open DefeatAll goals whose hostiles are all dead. Returns whether any completed.</summary>
+        private static bool CompleteDefeatAlls(WorldClient client, MissionProgress progress)
         {
-            if (progress.HostilesStillToArrive())
+            bool any = false;
+            foreach (MissionObjective all in new List<MissionObjective>(progress.OpenObjectives()))
+            {
+                if (all.type == MissionGoalType.DefeatAll && progress.IsOpen(all) && AllHostilesDown(client, progress, all))
+                {
+                    Complete(client, progress, all);
+                    any = true;
+                }
+            }
+
+            return any;
+        }
+
+        /// <summary>
+        /// Every hostile of the current phase that the DefeatAll counts is dead: its generated ones, and the mission's own
+        /// placed there; with wave="n", only those of the waves it names (an NPC's wave is 0 unless it says).
+        /// </summary>
+        private static bool AllHostilesDown(WorldClient client, MissionProgress progress, MissionObjective defeatAll)
+        {
+            if (progress.HostilesStillToArrive(defeatAll))
             {
                 return false;
             }
@@ -287,10 +304,20 @@ namespace hds
             {
                 foreach (Mob mob in client.playerData.missionMobs)
                 {
-                    MissionNpc npc = progress.mission.npcs.Find(n => n.id == mob.missionNpcId);
-                    bool ofPhase = progress.hostiles.Contains(mob) ||
-                                   (npc != null && (npc.at == at || (npc.at == 0 && !progress.mission.generated)));
-                    if (ofPhase && !mob.isFriendly && !mob.getIsDead())
+                    bool ofPhase;
+                    if (progress.hostileWave.TryGetValue(mob, out int wave))
+                    {
+                        ofPhase = true;
+                    }
+                    else
+                    {
+                        MissionNpc npc = progress.hostiles.Contains(mob) ? null : progress.mission.npcs.Find(n => n.id == mob.missionNpcId);
+                        ofPhase = progress.hostiles.Contains(mob) ||
+                                  (npc != null && (npc.at == at || (npc.at == 0 && !progress.mission.generated)));
+                        wave = npc?.wave ?? 0;
+                    }
+
+                    if (ofPhase && MissionProgress.Counts(defeatAll, wave) && !mob.isFriendly && !mob.getIsDead())
                     {
                         return false;
                     }
@@ -490,6 +517,28 @@ namespace hds
             client.FlushQueue();
         }
 
+        /// <summary>Whether the player at (x, y, z) is within radius of a place: "object:1", "npc:2" (living) or "x,y,z".</summary>
+        private static bool Near(WorldClient client, MissionProgress progress, string place, double radius, double x, double y, double z)
+        {
+            if (place.StartsWith("object:"))
+            {
+                return ushort.TryParse(place.Substring(7), out ushort objectId) && progress.objects.TryGetValue(objectId, out MissionObjectState state) &&
+                       state.spot != null && Distance2(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z, x, y, z) <= radius * radius;
+            }
+
+            if (place.StartsWith("npc:"))
+            {
+                return ushort.TryParse(place.Substring(4), out ushort npcId) && Near(client, npcId, x, y, z, radius);
+            }
+
+            string[] parts = place.Split(',');
+            return parts.Length == 3 &&
+                   double.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double px) &&
+                   double.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double py) &&
+                   double.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double pz) &&
+                   Distance2(px, py, pz, x, y, z) <= radius * radius;
+        }
+
         private static bool Near(WorldClient client, ushort npcId, double x, double y, double z, double radius)
         {
             Mob mob = FindNpc(client.playerData, npcId);
@@ -646,6 +695,7 @@ namespace hds
             }
 
             SpawnArrivals(client, progress);
+            SwitchSides(client, progress);
             MissionStaging.RefreshObjects(client, progress);
 
             Say(client, objective.doneLines);
@@ -728,22 +778,23 @@ namespace hds
                 case MissionGoalType.Defeat:
                     return objective.Npcs.Exists(id => progress.killed.Contains(id));
                 case MissionGoalType.DefeatAll:
-                    return AllHostilesDown(client, progress);
+                    return AllHostilesDown(client, progress, objective);
                 default:
                     return false;
             }
         }
 
         /// <summary>
-        /// NPCs that arrive when a goal completes (spawnAfter): at the spot kept for them in a generated phase's site, at their
-        /// own x, y, z, or beside the player (spawnAt="player", or when they have no place). And the phase's late hostiles
-        /// (enemiesAfter), on the spots kept for them.
+        /// NPCs and waves whose time has come (spawnAfter, spawnDelay, spawnNear; enemiesAfter; &lt;wave&gt;): at the spot kept
+        /// for them in a generated phase's site, at their own x, y, z, beside the player (spawnAt="player", or when they
+        /// have no place) or beside one of the phase's objects (spawnAt="object:1"). A wave's lines are said as it comes.
+        /// Returns whether anything arrived.
         /// </summary>
-        private static void SpawnArrivals(WorldClient client, MissionProgress progress)
+        private static bool SpawnArrivals(WorldClient client, MissionProgress progress)
         {
-            if (progress.justArrived.Count == 0 && !progress.enemiesJustArrived)
+            if (progress.justArrived.Count == 0 && progress.wavesJustArrived.Count == 0)
             {
-                return;
+                return false;
             }
 
             double px = 0, py = 0, pz = 0;
@@ -751,49 +802,123 @@ namespace hds
             Mission mission = progress.mission;
             List<MissionNpc> arriving = new List<MissionNpc>(progress.justArrived);
             progress.justArrived.Clear();
-            for (int i = 0; i < arriving.Count; i++)
+            int index = 0;
+            foreach (MissionNpc npc in arriving)
             {
-                MissionNpc npc = arriving[i];
                 ushort level = npc.at > 0 || mission.generated ? (npc.level > 1 ? npc.level : MissionStaging.PlayerLevel(client)) : (ushort)0;
                 bool placedByData = npc.at == 0 && (npc.x != 0 || npc.y != 0 || npc.z != 0);
+                bool friendly = progress.IsFriendly(npc);
                 Mob mob;
-                if (!npc.spawnAtPlayer && progress.reservedSpots.TryGetValue(npc.id, out double[] spot))
+                if (npc.arrival.at == null && progress.reservedSpots.TryGetValue(npc.id, out double[] spot))
                 {
-                    mob = SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2], level);
+                    mob = SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2], level, friendly);
                 }
-                else if (!npc.spawnAtPlayer && placedByData)
+                else if (npc.arrival.at == null && placedByData)
                 {
-                    mob = SpawnNpc(client, mission, npc);
+                    mob = SpawnNpc(client, mission, npc, friendly: friendly);
                 }
                 else
                 {
-                    double[] beside = BesidePlayer(px, py, pz, i);
-                    mob = SpawnNpc(client, mission, npc, beside[0], beside[1], beside[2], level);
+                    double[] beside = ArrivalSpot(client, progress, npc.arrival, index++, px, py, pz);
+                    mob = SpawnNpc(client, mission, npc, beside[0], beside[1], beside[2], level, friendly);
                 }
 
                 AddMob(client, mob);
                 Output.WriteDebugLog("[MISSION] " + npc.handle + " arrives");
             }
 
-            if (progress.enemiesJustArrived)
+            List<MissionWave> waves = new List<MissionWave>(progress.wavesJustArrived);
+            progress.wavesJustArrived.Clear();
+            foreach (MissionWave wave in waves)
             {
-                progress.enemiesJustArrived = false;
-                List<double[]> spots = new List<double[]>(progress.reservedEnemySpots);
-                for (int i = spots.Count; i < progress.Phase.enemies; i++)
+                List<double[]> spots = wave.arrival.at == null ? new List<double[]>(progress.SpotsFor(wave.id)) : new List<double[]>();
+                while (spots.Count < wave.count)
                 {
-                    spots.Add(BesidePlayer(px, py, pz, arriving.Count + i));
+                    spots.Add(ArrivalSpot(client, progress, wave.arrival, index++, px, py, pz));
                 }
 
-                MissionStaging.SpawnEnemies(client, progress, spots);
-                Output.WriteDebugLog("[MISSION] " + spots.Count + " hostiles arrive");
+                MissionStaging.SpawnWave(client, progress, wave, spots);
+                Say(client, wave.lines);
+                Output.WriteDebugLog("[MISSION] " + spots.Count + " hostiles arrive" + (wave.id != 0 ? " (wave " + wave.id + ")" : ""));
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Where an arrival with no spot of its own appears: beside the phase object it names (spawnAt="object:1"), else
+        /// beside the player. index spreads several of them out.
+        /// </summary>
+        public static double[] ArrivalSpot(WorldClient client, MissionProgress progress, MissionArrival arrival, int index,
+            double px, double py, double pz)
+        {
+            ushort objectId = arrival.AtObject;
+            if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
+            {
+                return Beside(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z, index);
+            }
+
+            return BesidePlayer(px, py, pz, index);
         }
 
         /// <summary>A few metres from the player, each arrival at a different angle so they don't stand in one another.</summary>
-        public static double[] BesidePlayer(double px, double py, double pz, int index)
+        public static double[] BesidePlayer(double px, double py, double pz, int index) => Beside(px, py, pz, index);
+
+        /// <summary>3 m from a point, at an angle that differs with index.</summary>
+        public static double[] Beside(double x, double y, double z, int index)
         {
             double angle = 0.6 + index * 1.3;
-            return new[] { px + 300 * Math.Cos(angle), py, pz + 300 * Math.Sin(angle) };
+            return new[] { x + 300 * Math.Cos(angle), y, z + 300 * Math.Sin(angle) };
+        }
+
+        /// <summary>
+        /// NPCs whose side a goal has just changed (hostileAfter, friendlyAfter). The client is told an NPC's side only in its
+        /// creation record (IsEnemy for a hostile; DontAttack, TalkDefaultable and TalkActiveTracker for a friendly, as Mob
+        /// builds it), and no capture shows retail changing those on a living NPC, so the NPC is taken off the clients and
+        /// spawned again where it stands, with its health, on its new side. One that hasn't arrived comes on its new side.
+        /// </summary>
+        private static void SwitchSides(WorldClient client, MissionProgress progress)
+        {
+            if (progress.justSwitched.Count == 0)
+            {
+                return;
+            }
+
+            List<ushort> switching = new List<ushort>(progress.justSwitched);
+            progress.justSwitched.Clear();
+            foreach (ushort id in switching)
+            {
+                MissionNpc npc = progress.mission.npcs.Find(n => n.id == id);
+                Mob old = FindNpc(client.playerData, id);
+                if (npc == null || old == null || old.getIsDead())
+                {
+                    continue;
+                }
+
+                bool friendly = progress.IsFriendly(npc);
+                if (!friendly)
+                {
+                    progress.following.Remove(id); // it no longer walks with the player
+                }
+
+                if (old.isFriendly == friendly)
+                {
+                    continue; // it arrived on its new side
+                }
+
+                Mob mob = SpawnNpc(client, progress.mission, npc, old.getXPos(), old.getYPos(), old.getZPos(), old.getLevel(), friendly);
+                mob.setHealthM(old.getHealthM());
+                mob.setHealthC(old.getHealthC());
+                mob.setRotation(old.getRotation());
+                lock (client.playerData.missionMobs)
+                {
+                    client.playerData.missionMobs.Remove(old);
+                    client.playerData.missionMobs.Add(mob);
+                }
+
+                Despawn(client.playerData, old);
+                Output.WriteDebugLog("[MISSION] " + npc.handle + " turns " + (friendly ? "friendly" : "hostile"));
+            }
         }
 
         private static void SendPhase(WorldClient client, MissionProgress progress)
@@ -893,8 +1018,9 @@ namespace hds
                 {
                     case MissionSpeaker.Npc:
                         MissionNpc npc = client.playerData.activeMission?.npcs.Find(n => n.id == line.npcId);
+                        bool friendly = npc == null || (client.playerData.missionProgress?.IsFriendly(npc) ?? npc.friendly);
                         client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(
-                            npc != null && !npc.friendly ? HostileNpcImage : FriendlyNpcImage, 0, 0, line.display, 0,
+                            npc != null && !friendly ? HostileNpcImage : FriendlyNpcImage, 0, 0, line.display, 0,
                             npc?.handle ?? "", text));
                         break;
                     case MissionSpeaker.Contact:
@@ -1000,6 +1126,29 @@ namespace hds
                 Say(client, phase.enterLines);
                 sent = true;
             }
+
+            // Arrivals on the area, a place or a timer; hold-outs and time limits; a kill-all whose last hostile never came
+            progress.UpdateArrivals((place, radius) => Near(client, progress, place, radius, x, y, z));
+            if (SpawnArrivals(client, progress))
+            {
+                MissionStaging.RefreshObjects(client, progress);
+                sent = true;
+            }
+
+            foreach (MissionObjective survived in progress.DueSurvivals())
+            {
+                Complete(client, progress, survived);
+                sent = true;
+            }
+
+            MissionObjective overdue = progress.Overdue();
+            if (overdue != null)
+            {
+                Fail(client, progress, "You ran out of time.");
+                return;
+            }
+
+            sent |= CompleteDefeatAlls(client, progress);
 
             foreach (MissionTrigger trigger in phase.triggers)
             {
@@ -1268,17 +1417,20 @@ namespace hds
             return dx * dx + dy * dy + dz * dz;
         }
 
+        /// <param name="friendly">The side it comes on, when a goal has changed it (MissionProgress.IsFriendly); otherwise the file's.</param>
         public static Mob SpawnNpc(WorldClient client, Mission mission, MissionNpc npc, double x = double.NaN, double y = double.NaN,
-            double z = double.NaN, ushort level = 0)
+            double z = double.NaN, ushort level = 0, bool? friendly = null)
         {
-            if (!double.IsNaN(x))
+            if (!double.IsNaN(x) || (friendly != null && friendly.Value != npc.friendly))
             {
-                // Placed in a generated site: a copy, since the mission's definition is shared
+                // Placed in a generated site, or on another side: a copy, since the mission's definition is shared
+                bool placed = !double.IsNaN(x);
                 npc = new MissionNpc
                 {
-                    id = npc.id, handle = npc.handle, friendly = npc.friendly, attacksOnSight = npc.attacksOnSight, dead = npc.dead,
-                    phase = npc.phase, x = x, y = y, z = z, rsiHex = npc.rsiHex, weapon = npc.weapon, at = npc.at, lines = npc.lines,
-                    spawnAfter = npc.spawnAfter, spawnAtPlayer = npc.spawnAtPlayer,
+                    id = npc.id, handle = npc.handle, friendly = friendly ?? npc.friendly, attacksOnSight = npc.attacksOnSight, dead = npc.dead,
+                    phase = npc.phase, x = placed ? x : npc.x, y = placed ? y : npc.y, z = placed ? z : npc.z, rsiHex = npc.rsiHex,
+                    weapon = npc.weapon, at = npc.at, lines = npc.lines, arrival = npc.arrival, wave = npc.wave,
+                    hostileAfter = npc.hostileAfter, friendlyAfter = npc.friendlyAfter,
                     level = level > 0 ? level : npc.level,
                     maxHealth = level > 0 ? (ushort)Math.Max((int)npc.maxHealth, 150 + 40 * level) : npc.maxHealth
                 };

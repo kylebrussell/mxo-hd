@@ -62,9 +62,63 @@ namespace hds
         public ushort maxHealth = 500;
         public UInt32 weapon;
         public int at;                     // placed in this phase's site (1-based) when that phase starts, instead of x, y, z
-        public int spawnAfter = -1;        // arrives when this goal completes (phase at's goal, or any phase's without at)
-        public bool spawnAtPlayer;         // an arrival appears beside the player instead of at its spot (spawnAt="player")
+        public MissionArrival arrival = new MissionArrival(); // when it turns up, if not from the start (spawnAfter, spawnDelay, ...)
+        public int wave;                   // which of its phase's waves a DefeatAll with wave= counts it in (0: the phase's own)
+        public int hostileAfter = -1;      // a friendly NPC turns hostile when this goal completes
+        public int friendlyAfter = -1;     // a hostile NPC turns friendly when this goal completes
         public List<MissionLine> lines = new List<MissionLine>(); // what it says when talked to
+
+        /// <summary>Arrives when this goal completes (phase at's goal, or any phase's without at).</summary>
+        public int spawnAfter
+        {
+            get => arrival.afterGoal;
+            set => arrival.afterGoal = value;
+        }
+
+        /// <summary>An arrival appears beside the player instead of at its spot (spawnAt="player").</summary>
+        public bool spawnAtPlayer
+        {
+            get => arrival.AtPlayer;
+            set => arrival.at = value ? "player" : arrival.AtPlayer ? null : arrival.at;
+        }
+    }
+
+    /// <summary>
+    /// When an NPC or a wave of hostiles turns up, if not when its phase starts: once a goal completes (after), once the
+    /// player reaches the area (after="enter") or comes near a place (near), and then after a delay. All that are given
+    /// have to happen, in that order; the delay counts from the last of them, or from the phase's start.
+    /// </summary>
+    public class MissionArrival
+    {
+        public const double DefaultRadius = 1000;
+
+        public int afterGoal = -1;   // a goal completes
+        public bool onEnter;         // the player reaches the phase's area (a generated phase's floor; the phase's start otherwise)
+        public string near;          // "object:1", "npc:2" or "x,y,z": the player comes within radius of it
+        public double radius = DefaultRadius;
+        public double delay;         // seconds after the above
+        public string at;            // "player" or "object:1": appears beside that, instead of at its own spot
+
+        /// <summary>Whether it waits for anything at all, rather than standing there when its phase starts.</summary>
+        public bool Late => afterGoal >= 0 || onEnter || near != null || delay > 0;
+
+        public bool AtPlayer => at == "player";
+
+        /// <summary>The phase object it appears beside (spawnAt="object:1"), or 0.</summary>
+        public ushort AtObject => at != null && at.StartsWith("object:") && ushort.TryParse(at.Substring(7), out ushort id) ? id : (ushort)0;
+    }
+
+    /// <summary>
+    /// A group of generated hostiles: the phase's own (enemy, enemies, enemiesAfter: wave 0) or a &lt;wave&gt; of its own,
+    /// each with its own arrival. A DefeatAll with wave="n" counts only these.
+    /// </summary>
+    public class MissionWave
+    {
+        public int id;
+        public string enemy;       // Machines, Merovingian or Zion
+        public int count;
+        public MissionArrival arrival = new MissionArrival();
+        public List<MissionLine> lines = new List<MissionLine>(); // said when it arrives
     }
 
     /// <summary>The door a mission waypoint marks (80 9e): where the waypoint points and the static object it names.</summary>

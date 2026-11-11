@@ -83,7 +83,7 @@ namespace hds
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
             MissionPhase phase = mission.phases[0];
-            int npcs = mission.npcs.Count(n => n.at == 1) + phase.enemies;
+            int npcs = mission.npcs.Count(n => n.at == 1) + SpotsForWaves(phase);
             int objects = PlacesNeeded(phase);
             Random rng = new Random(unchecked((int)data.getCharID() * 7919 + mission.id * 31 + Environment.TickCount));
             List<MissionSite> sites = MissionSites.For(mission.district);
@@ -100,6 +100,9 @@ namespace hds
         /// picked, and its safe was never placed ("Nowhere to put object"), so the mission couldn't finish.
         /// </summary>
         public static int PlacesNeeded(MissionPhase phase) => phase.objects.Count;
+
+        /// <summary>How many of the site's NPC spots a phase's hostiles take: those that don't appear beside the player or an object.</summary>
+        public static int SpotsForWaves(MissionPhase phase) => phase.Waves().Where(w => w.arrival.at == null).Sum(w => w.count);
 
         /// <summary>Picks and fills the site of the phase that has just started. False when the phase isn't generated.</summary>
         public static bool Stage(WorldClient client, MissionProgress progress)
@@ -123,8 +126,9 @@ namespace hds
             client.playerData.missionPreview = null;
             client.playerData.missionPreviewFor = null;
             List<string> hoods = phase.neighbourhoods.Count > 0 ? phase.neighbourhoods : mission.neighbourhoods;
-            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, placed.Count + phase.enemies, objects, rng, progress.sites, hoods)
-                        ?? MissionSites.Choose(sites, "Any", px, pz, placed.Count + phase.enemies, objects, rng, progress.sites, hoods);
+            int npcs = placed.Count + SpotsForWaves(phase);
+            site = site ?? MissionSites.Choose(sites, phase.site, px, pz, npcs, objects, rng, progress.sites, hoods)
+                        ?? MissionSites.Choose(sites, "Any", px, pz, npcs, objects, rng, progress.sites, hoods);
             if (site == null)
             {
                 Output.WriteLine("[MISSION] No site for phase " + at + " of '" + mission.title + "'");
@@ -161,47 +165,93 @@ namespace hds
             }
 
             ushort level = PlayerLevel(client);
+            List<MissionNpc> besideObjects = new List<MissionNpc>();
             foreach (MissionNpc npc in placed)
             {
                 double[] spot = NextSpot();
-                if (npc.spawnAfter >= 0)
+                if (npc.arrival.Late)
                 {
-                    // Arrives when its goal completes: its spot is kept for it
+                    // Arrives later: its spot is kept for it
                     progress.reservedSpots[npc.id] = spot;
                     continue;
                 }
 
+                if (npc.arrival.AtObject != 0)
+                {
+                    besideObjects.Add(npc); // once the objects are placed
+                    continue;
+                }
+
                 MissionRuntime.AddMob(client, MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
-                    level: npc.level > 1 ? npc.level : level));
+                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc)));
             }
 
-            if (phase.enemies > 0 && !string.IsNullOrEmpty(phase.enemy) && Enemies.ContainsKey(phase.enemy))
+            // Hostiles on the site's spots: the phase's own, then its waves; those that come later have their spots kept
+            List<MissionWave> placeLater = new List<MissionWave>();
+            foreach (MissionWave wave in phase.Waves())
             {
+                if (wave.count <= 0 || !Enemies.ContainsKey(wave.enemy ?? ""))
+                {
+                    continue;
+                }
+
+                if (wave.arrival.at != null)
+                {
+                    if (!wave.arrival.Late)
+                    {
+                        placeLater.Add(wave); // beside the player or an object, from the start
+                    }
+
+                    continue;
+                }
+
                 List<double[]> enemySpots = new List<double[]>();
-                for (int i = 0; i < phase.enemies; i++)
+                for (int i = 0; i < wave.count; i++)
                 {
                     enemySpots.Add(NextSpot());
                 }
 
-                if (phase.enemiesAfter >= 0)
+                if (wave.arrival.Late)
                 {
-                    progress.reservedEnemySpots.AddRange(enemySpots);
+                    progress.SpotsFor(wave.id).AddRange(enemySpots);
                 }
                 else
                 {
-                    SpawnEnemies(client, progress, enemySpots);
+                    SpawnWave(client, progress, wave, enemySpots);
                 }
             }
 
             PlaceObjects(client, progress, rng);
+
+            for (int i = 0; i < besideObjects.Count; i++)
+            {
+                double[] spot = MissionRuntime.ArrivalSpot(client, progress, besideObjects[i].arrival, i, px, py, pz);
+                MissionRuntime.AddMob(client, MissionRuntime.SpawnNpc(client, mission, besideObjects[i], spot[0], spot[1], spot[2],
+                    level: besideObjects[i].level > 1 ? besideObjects[i].level : level, friendly: progress.IsFriendly(besideObjects[i])));
+            }
+
+            foreach (MissionWave wave in placeLater)
+            {
+                List<double[]> beside = new List<double[]>();
+                for (int i = 0; i < wave.count; i++)
+                {
+                    beside.Add(MissionRuntime.ArrivalSpot(client, progress, wave.arrival, besideObjects.Count + i, px, py, pz));
+                }
+
+                SpawnWave(client, progress, wave, beside);
+            }
+
             return true;
         }
 
-        /// <summary>The phase's generated hostiles, at these spots: when it starts, or when its enemiesAfter goal completes.</summary>
-        public static void SpawnEnemies(WorldClient client, MissionProgress progress, List<double[]> spots)
+        /// <summary>
+        /// A wave of the phase's generated hostiles, at these spots: when the phase starts, or when the wave arrives. The
+        /// phase's own (enemies=) are wave 0.
+        /// </summary>
+        public static void SpawnWave(WorldClient client, MissionProgress progress, MissionWave wave, List<double[]> spots)
         {
             MissionPhase phase = progress.Phase;
-            if (phase == null || string.IsNullOrEmpty(phase.enemy) || !Enemies.TryGetValue(phase.enemy, out var template))
+            if (phase == null || string.IsNullOrEmpty(wave.enemy) || !Enemies.TryGetValue(wave.enemy, out var template))
             {
                 return;
             }
@@ -210,14 +260,16 @@ namespace hds
             ushort level = PlayerLevel(client);
             for (int i = 0; i < spots.Count; i++)
             {
+                // Numbered on through the phase's waves, so no two of its hostiles share an id
+                int n = progress.hostiles.Count;
                 double[] spot = spots[i];
                 MissionNpc enemy = new MissionNpc
                 {
-                    id = (ushort)(1000 + at * 50 + i),
+                    id = (ushort)(1000 + at * 50 + n),
                     handle = template.handle,
                     friendly = false,
                     attacksOnSight = true,
-                    rsiHex = template.rsi[i % template.rsi.Length],
+                    rsiHex = template.rsi[n % template.rsi.Length],
                     level = level,
                     maxHealth = (ushort)(150 + 40 * level),
                     weapon = template.weapon
@@ -225,6 +277,7 @@ namespace hds
                 Mob mob = MissionRuntime.SpawnNpc(client, progress.mission, enemy, spot[0], spot[1], spot[2]);
                 MissionRuntime.AddMob(client, mob);
                 progress.hostiles.Add(mob);
+                progress.hostileWave[mob] = wave.id;
             }
         }
 
