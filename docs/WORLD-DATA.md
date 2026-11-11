@@ -81,10 +81,40 @@ u32 `0x18faeb0a`, u16 1, u16 1, zero padding, then a schema: named fields with a
 - the root node "Next ID" (field 0: the next free hid), then u32 1 + a "Hardline" node per hardline, to the end of the file.
 - Hardline fields: 0 HID, 1 Socket GUID, 2 Position, 3 Offset, 4 Portals (a list of positions), 5 Type, 6 Destination ID, 7 Flags, 8 FriendlyNameID. Type and Destination ID are 0 in every hardline.
 
+## Subway network (`.metr` NETS)
+
+`data/subway_network.csv` has every subway connector the client knows: 44 in the three cities, on 11 named lines plus two unnamed test lines. It is made by `research/world-data/subway_network.py` from the loose `.metr` files and the string tables `st_subway_locations` and `st_subway_networks`:
+
+```
+python -I research/world-data/subway_network.py <MxO dir> <dumps/strings dir> data/subway_network.csv
+```
+
+client.dll's subway map (`viewsubwaymap.cpp`) reads the same chunk of the same files, and numbers lines and connectors in file order. That order is what the client sends when a station is picked (`81 3c <world> <line> <connector>`, docs/CLIENT-ACTIONS.md).
+
+| Column | What it is |
+|---|---|
+| `world_id` | The district's id in `resource/worlds/universe.btb`: 12 Richland and Westview (`slums_barrens_full.metr`), 7 Downtown (`dt_world.metr`), 169 International (`it.metr`). The client sends this one |
+| `metr_id`, `district` | The server's district (`MxOLocations`) and its key |
+| `network` | The line's index in the file: the client's NetworkID |
+| `line_id`, `line` | The line's name in `st_subway_networks` (Red, Green, Blue, Orange, Yellow, Purple, Black Line). 0 on the test lines (Richland and Downtown network 0) |
+| `connector` | The connector's index in its line: the client's ConnectorID |
+| `name_id`, `name` | Its name in `st_subway_locations` ("Richland - Tabor Park [ Red Line ]"). `0c000008` (International, Purple Line) has no text |
+| `x`, `y`, `z` | Its position. Every station connector lies on its district's nav mesh floor, within 10 units (`SubwayTests`) |
+| `yaw` | From the stored rotation, read as w x y z (a guess: the values are only 0 and ±1, so it is 0 or ±π) |
+| `link_world`, `link_metr_id` | Set on six connectors named after another district ("Downtown", "Richland", "International District"): the world they lead to. The client's map switches to that district's line of the same name when one is clicked (with `Client_AllowCrossWorldSubwayTeleport`, on by default). Richland - Tabor Park [ Yellow Line ] names its own world, which the client treats as an ordinary station |
+| `map_a`, `map_b` | Two small numbers per connector. A guess: its place on the map drawing |
+
+Lines per district: Richland and Westview have the Red (8 stations), Green (4), Blue (3, plus the International District link) and Yellow (3, plus the Downtown link) lines; Downtown the Orange (7), Yellow (3, plus Richland) and Black (2, plus International District); International the Blue (1, plus Richland), Purple (3) and Black (1, plus Downtown). No cost, level or organisation check was found in the map's code or in this data. The map registers three more strings with its own (`%s [ 1 ], %s(s) [ %u - %u ]`, `%s(s) [ %u - %u ]`, `ON: %s %u`); what fills them was not traced.
+
+### Chunk layout
+
+After the sectors (and `WdID`, `RDMP`, `AcNo`, `Hdln`): `NETS`. A chunk is a tag, a u32 size of what follows its 12-byte header, and a u32 that is `0x01000000 | child count` for a container and `0x8?000000 | size` for data. `NETS` holds one `CNET` per line; a `CNET` holds `NDAT` (u32 `0x32000518`, u32 the line's name id), `CORS` (u32 count, then 52-byte connectors) and `CTNS` (u32 count, then u32 pairs: the connectors the track joins). A connector is u32 `0x32000519`, u32 name id, three i32 x y z, four f32 (rotation), then four i32: `map_a`, `map_b`, the linked world, 0.
+
 ## What the server uses
 
 - **`SectorProperties`** (`hds/world/Structures/SectorProperties.cs`) loads `sector_properties.csv` on first use. `At(district, x, z)` and `Get(district, sector)` give a sector's row; `LevelAt`, `IsPvpZone`, `MissionAreasEnabled(district, sector)` and `SectorsOfContact(contactId)` are the lookups other code calls. Nothing in mission choice calls them yet.
 - **`HardlineNetwork`** (`hds/world/Structures/HardlineNetwork.cs`) loads `hardline_network.csv`. For the three cities it replaces `data_hardlines`: the 6c list (the named hardlines), the hardline a booth belongs to, and where a player lands after 81 8e, 80 ff, the tutorial and a Loading Area fallback (`TeleportHandler.MoveToHardline`). The constructs still use `data_hardlines`.
+- **`SubwayNetwork`** (`hds/world/Structures/SubwayNetwork.cs`) loads `subway_network.csv`: which station a subway car belongs to, and where a ride picked on the map ends (`SubwayHandler`).
 - **World NPC levels** come from `data/mob_parsed.csv` (retail spawns, with their own levels), which already agree with the sector levels, so nothing is overridden.
 - **PvP:** `IsPvpZone` is part of who may attack whom: two players of different organisations who both stand in a PvP sector are opponents whatever their flags (`PvpRules`, `docs/PVP.md`).
 - **`?sector`** (with `MXO_DEV_COMMANDS=1`) prints the sector where the player stands and the nearest hardline.

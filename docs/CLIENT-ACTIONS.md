@@ -28,12 +28,11 @@ Counts are rows of the tables below (`81 47` and `81 4a` share a row). Before th
 
 The biggest gaps left, by impact:
 
-1. **Subway travel** (`81 3b`, `81 3c`, `81 3d`). The server opens the subway map, but choosing a station does nothing. No capture of a ride exists.
-2. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-3. **Stack splitting and merging** (`68`, `67`, `62`): the bag's split dialog and dragging stacks together.
-4. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
-5. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-6. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
+2. **Stack splitting and merging** (`68`, `67`, `62`): the bag's split dialog and dragging stacks together.
+3. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
+4. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
+5. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
 
 ## Login and world entry
 
@@ -67,9 +66,9 @@ The biggest gaps left, by impact:
 | `81 4c` | Respawn after death | D, C 23 | handled | high |
 | `81 40` | Elevator floor | D, C 29 | handled | medium |
 | `81 41` | Elevator CurrentFloor: the client closes the panel when it decides the player left it (docs/MISSIONS.md) | D, U 7 | ignored; harmless, the client closes the panel itself | low |
-| `81 3b` | No fields, from `viewsubwaymap.cpp` (map open, cancel or back; not determined which) | D | ignored | high |
-| `81 3c` | WorldID, NetworkID, ConnectorID: the station picked on the subway map | D | ignored: the map opens (`81 3e`) but nothing happens on a pick | high |
-| `81 3d` | No fields, subway map (close) | D | ignored | medium |
+| `81 3b` | No fields: the subway map's Cancel, or its countdown reached 0 (0x620fc490; the map closes) | D | handled (new): ends the ride | medium |
+| `81 3c` | WorldID, NetworkID, ConnectorID: the station picked on the subway map (0x620fc520) | D | handled (new): the player moves to the station and the world reloads (`81 07`) | high |
+| `81 3d` | No fields: the map is open (0x620fc150, sent from its set-up) | D | handled (new): the `81 3e` countdown starts | medium |
 | `39` | Direction (`02` 7 times) | D, C 8 | ignored | low |
 | `81 46` | Range, Range2, from the slash command handler. Guess: `/range` | D | ignored | low (guess) |
 | `81 37` | TimeRequested, from `viewcommon.cpp`. Guess: the clock / `/time` | D | ignored | low (guess) |
@@ -319,6 +318,26 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 
 `80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client does the filtering: chat, mail to and from ignored players.
 
+## Subway in detail
+
+No retail capture has a subway ride, so the records are client.dll's and the rest is ours. The stations are the client's own (`data/subway_network.csv`, docs/WORLD-DATA.md "Subway network").
+
+| Record | Layout and what the client does |
+|---|---|
+| `81 3a` (S) | `<Position: 3 × f64>` (class 0x621429c0). Opens the map (window 0x47, 0x620fd9e0): the client looks in its own `.metr` for the line and connector within 2000 units of the position; with none the map stays shut |
+| `81 3d` (C) | No body, sent as the map opens (0x620fc150) |
+| `81 3e` (S) | `<Seconds u8>` (0x620fccd0): the departure countdown, shown as m:ss. The client starts at 60 and only takes a lower value. At 0 it shows "The subway is now leaving the station... sorry, but you missed it!" and sends `81 3b` |
+| `81 3b` (C) | No body: Cancel, or the countdown ran out (0x620fc490). The map closes |
+| `81 3c` (C) | `<WorldID u16> <NetworkID u16> <ConnectorID u16>` (0x620fc520, size 8). WorldID is the `universe.btb` id of the district whose map is shown (12, 7, 169). Clicking a link connector ("Downtown", "Richland", "International District") switches the map to that district's line of the same name, and NetworkID then indexes that district's lines (0x620fd31c). The client won't let the player pick their own station, and it closes the map |
+
+**What the server does (ours):**
+
+- Using a subway car (`80 c7 <view> <spawn> 00 02 00` on a 6568 view) opens the map on the nearest station's connector, if it is within 4000 units of the player; `81 3a` carries the connector's position, so the client always finds the line. The old answer sent the player's own position and `81 3e 0a 00`.
+- `81 3d` starts a countdown: `81 3e` every second from 60 (the client's own starting value; retail's timing is not known). At 0 the client says the train left.
+- `81 3c` is ridden if a map is open (up to 65 s after it opened), the connector exists and is a station (on a named line, not a link to another district) and isn't the one the player is at. The player is moved onto the connector at standing height (its nav mesh floor + 95), the position and district are saved, and the world reloads (`81 07`, as a hardline teleport does), which brings up the loading screen the client's subway strings ("Loading World...") belong to. Rides across districts work the same way.
+- No cost, level or organisation check: none was found in the map's code.
+- Dev helper `?subway` (`MXO_DEV_COMMANDS=1`): opens the map at the district's nearest station wherever the player stands.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -357,3 +376,14 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
 
 1. Log in and look at the server log: `81 48`, `0c` no longer appear in UnknownRPC.txt (`80 be` and `3e` still do).
 2. Nothing should change on screen; if anything does after `81 49` (a feature switched on or off), note it here: what the two features (200, 201) do is not known.
+
+### Subway
+
+1. In Richland, go to the Red Line platform at Tabor Park (its connector is at 68400, -800, 47500, underground; `?sector` shows where you are) and use the subway car there.
+2. Expect the subway map with the Red Line, Tabor Park marked as "you are here", and a departure countdown starting at 1:00 and going down each second.
+3. Pick Moriah Projects. Expect the map to close, a loading screen, and arrival on the Moriah Projects platform, standing on the floor (not in it or above it), facing anywhere.
+4. Use the car there, and let the countdown run out. Expect "The subway is now leaving the station... sorry, but you missed it!" and the map closing.
+5. Use the car again and press Cancel. Expect the map to close and nothing else.
+6. From a Yellow Line station (Richland - Kedemoth, or `?subway` near 56600, -705, -91500), click "Downtown" on the map. Expect the map to switch to Downtown's Yellow Line. Pick South Vauxton. Expect the Downtown load and arrival on its platform.
+7. Anywhere in a city, `?subway` opens the nearest station's map; a ride from it works as above.
+8. Note anything the map shows that the server leaves empty (a level range, a count, "ON: ..."), and whether the countdown or the arrival looks wrong.

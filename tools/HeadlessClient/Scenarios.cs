@@ -29,6 +29,8 @@ public static partial class Scenarios
         new Scenario("email-send-read-delete", EmailSendReadDelete),
         new Scenario("email-attachments-and-mailbot", EmailAttachmentsAndMailBot),
         new Scenario("ignore-list-add-remove-and-relog", IgnoreListAddRemoveAndRelog),
+        new Scenario("subway-ride-by-car", SubwayRideByCar),
+        new Scenario("subway-across-districts-and-refusals", SubwayAcrossDistrictsAndRefusals),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("marketplace-purchase", MarketplacePurchase),

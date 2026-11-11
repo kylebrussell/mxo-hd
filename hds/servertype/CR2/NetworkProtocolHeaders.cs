@@ -95,6 +95,11 @@ namespace hds
         // Teleport
         CLIENT_TELEPORT_HL = 0x18e,
 
+        // Subway map (SubwayHandler)
+        CLIENT_SUBWAY_CANCEL = 0x13b,          // 81 3b: Cancel, or the countdown ran out
+        CLIENT_SUBWAY_PICK = 0x13c,            // 81 3c <world u16> <line u16> <connector u16>
+        CLIENT_SUBWAY_MAP_OPEN = 0x13d,        // 81 3d: the map is open
+
         // Reset Client RPC
         CLIENT_READY_WORLDCHANGE = 0x108,
 

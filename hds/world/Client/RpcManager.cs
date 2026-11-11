@@ -305,6 +305,17 @@ namespace hds{
 		             new PlayerHandler().ProcessLootAccepted();
 		             break;
 
+		        // Subway map
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_MAP_OPEN:
+		            SubwayHandler.OnMapOpen(Store.currentClient);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_CANCEL:
+		            SubwayHandler.OnCancel(Store.currentClient);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_SUBWAY_PICK:
+		            SubwayHandler.OnPick(Store.currentClient, rpcData);
+		            break;
+
 		        // Login handshake
 		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
 		            break; // retail answered nothing
