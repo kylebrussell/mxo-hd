@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silver Tongue, Merovingian story mission 6.2.1. Source: research/missions/transcripts/Merv6-2-1.md (the archive
+     replay of [Merovingian Archive 6.2.1], given by [Archived]Flood; 25 screenshots, 22 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Bag Lady, Twin and Silver
+     line, the names, and the objective "Talk to Silver" (the only one shown). Three lines were split across
+     screenshots and are joined: Flood's "you may not have much left to do", a Twin's "have to ask twice" and "But
+     there's really no call for swearing". Ours: the description (the Summary tab only said "Datalink established."),
+     the other objective texts ("Eliminate the hostiles" is retail's wording from 6.2.2), the sites (Normal, in the
+     neighbourhoods the log names: Moriah Projects, then Camon Heights; the Twins' place was reached in 17 seconds,
+     so it is in Moriah Projects too), the looks and the enemy counts. Silver's goons and his Elite Guards are
+     Exiles, so Merovingian. No item was shown.
+     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay; we use
+     Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 is.
+     Gaps: no "Goals for this area are complete" line was logged after the Bag Lady, but the Twins were "in there",
+     so they are a phase of their own. The Twins go from area to area in retail; here each area has its own Twin
+     NPCs. In Silver's abode the Twins question one of his goons (scripted NPC talk; the goon's answer wasn't
+     logged, only Flood's and the Twins' "Minks"): here their lines and Flood's order are said on getting near the
+     Twin, and the goons are the phase's hostiles, there from the start. Lines repeated when an NPC was talked to
+     again are on the NPCs (after). Log entries between 6:07:48 and 6:12:04 weren't captured, so what, if anything,
+     came before the Twins' "You see how it is, mate." is unknown; those two lines are said on getting near the Twins
+     there. The Elite Guards attacked in retail but weren't an objective; they are the last phase's hostiles. -->
+<mission id="306201" title="Silver Tongue" description="Find out from the Bag Lady why revenue from the Slums is falling off, and follow the trail to Silver." plot="1"
+         order="6201" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Bag Lady" type="FRIENDLY" at="1" rsi="60010058" weapon="0">
+    <say after="1">Hey, tell the Merv that if he wants to show his gratitude, he could decrease garbage collection around here. They're taking away perfectly good trash before I can get to it! There's so much to go through these days...</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="2">Toodle-oo.</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Run along; we'll catch up.</say>
+  </npc>
+  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>Ah, Minks. Silver is quite a rascal.</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>We simply can't abide incivility.</say>
+  </npc>
+  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say after="4">The Merovingian wasn't paying attention, meatbag! Messing with cheat codes, Twins, Anome--someone's got to look after number one, and if he's not going to do it, I will!
+
+All right, so he's back. Yes, I believe you've made that sufficiently clear.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>You see how it is, mate.</say>
+    <say after="4">Maybe we'll stick around a bit--help Silver with some "research." Perhaps we can...clarify a few things for him.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Time to own up.</say>
+    <say after="4">Silver's quite a sport, isn't he?</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Moriah Projects">
+    <briefing>Something isn't right in the Slums, {player}. Revenue is falling off, and nobody seems to know why. Now that we're done faffing about with those silly cheat codes, it's time to take care of business.
+
+Word on the street is that the Bag Lady's been dropping hints about what's going on. I want you to pay her a visit, and find out exactly what she knows. That tramp shouldn't put up any resistance once you convince her that you're in earnest, eh? You'll find her in Moriah Projects, no doubt in the proximity of some refuse heap.</briefing>
+    <enter><say>The Bag Lady's an Exile, and you'd think she'd have enough power to at least, well, get a job. Maybe she likes being, uh, independent.</say></enter>
+    <objective goal="1" text="Talk to The Bag Lady" type="Talk" npc="1">
+      <talk><say npc="1">Took you long enough. Yeah, so I've told a few people; a girl's got to make a living, don't she? Dezreki paid fair and square...
+
+Well, fine, you get it for free, seeing as how your boss is, um, such a lady's man. So here's the scoop: the Elements are up to something.
+
+Hey, what are you looking at me for? That's all I know. You should go talk to Silver. That sly old butcher's always got something smelly up his sleeve.</say></talk>
+      <done><say>Silver? We just had a run-in with him over the business of the Twin pieces. Maybe he wasn't quite as forthcoming as he should have been.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Moriah Projects">
+    <briefing>Silver, Silver, Silver...
+
+I know some old chums of his who will be delighted to pay him another visit.</briefing>
+    <enter><say>Identical Exile programs... Must be the Twins in there.</say></enter>
+    <objective goal="2" text="Talk to the Twins" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Old man Silver, you say? Lovely! Only it can be a trick to find him.</say>
+        <say npc="3">But we know just where to start. If we're lucky, we'll find him in time for tea!</say>
+      </talk>
+      <done><say>I always worry when people seem to enjoy their work that much.
+
+I suppose it's time to check in with Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Camon Heights">
+    <briefing>Camon Heights is where Silver makes his abode. The Twins have gone on ahead; you may not have much left to do, {player}, which is probably for the best.</briefing>
+    <enter><say>Exile programs, a Twin or two--looks like a real funhouse.</say></enter>
+    <objective goal="3" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Looks like you're all clear.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">Do enlighten us, dear chap. You wouldn't want us to have to ask twice, now, would you?</say>
+      <say contact="1">Oh, Minks. That will suffice, operative. Now be so good as to eliminate all of Silver's goons at that location before moving on.</say>
+      <say npc="4">That's a good fellow. But there's really no call for swearing, you know.</say>
+      <say npc="5">We simply can't abide incivility.</say>
+      <say npc="4">Ah, Minks. Silver is quite a rascal.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>Time is money, {player}, and you're wasting it.</briefing>
+    <enter><say>Bunches of Exile programs in there.</say></enter>
+    <objective goal="4" text="Talk to Silver" type="Talk" npc="6">
+      <talk><say npc="6">All right, so I have been holding back some of my take... But I wasn't the first one!
+
+No, I don't know their plans. They don't seem to trust me--can't imagine why. But I've been watching Mercury. He's been sending men out of his territory, into the subway. Where they go from there, I don't know. But he's up to something more than just holding back profits, you can be sure of that.</say></talk>
+      <done><say>Mercury, huh? For his sake, I hope Silver's playing it straight with us this time.</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">You see how it is, mate.</say>
+      <say npc="8">Time to own up.</say>
+    </near>
+  </phase>
+  <finish>Silver has always been paranoid about Mercury, so it's no great surprise that he's been spying on him. The Elements are all ready to stab each other in the back at any time. Such a cozy little family... Now you see why we don't invite them to parties.
+
+It is likely that Silver is lying to you, {player}; yes, you have the look of someone too stupid to disbelieve anything polysyllabic. However, it would be worth checking up on Mercury just to call Silver's bluff. I'll be in touch.</finish>
+</mission>

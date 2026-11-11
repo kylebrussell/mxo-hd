@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Invention, Merovingian story mission 6.2.2. Source: research/missions/transcripts/Merv6-2-2.md (the archive replay
+     of [Merovingian Archive 6.2.2], given by [Archived]Flood; 29 screenshots, 20 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Mercury, Twin, assistant and
+     Blackwood line, the names, the computer's message, and the objectives "Search the area" and "Eliminate the
+     hostiles" (phase 2's, the only ones shown). Mercury's first speech spans three screenshots and Flood's third
+     briefing and two Operator lines span two; each is taken as one entry. Flood's "non" and the Operator's "right"
+     were in italics. Ours: the description (the Summary tab only said "Datalink established."), "Talk to Mercury"
+     (after retail's "Talk to Silver" in 6.2.1), phase 3's objectives (retail's wording reused), the sites (Normal;
+     Mercury's place in Mara, as the minimap showed it, the Blackwoods' in Magog), the looks and the enemy counts.
+     The Blackwoods are Exiles, so Merovingian. No item was shown.
+     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay; we use
+     Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 is.
+     Gaps: in retail the computer in the Blackwoods' place showed the message itself when used (speaker
+     "Computer"); a line can't come from an object here, so the Operator reads it out when the computer is used,
+     before his own "I'm gonna run a trace on that message." Phase 3 ended 11 seconds after the last Blackwood died,
+     at the Twin, with the Operator's "my scan isn't showing anything unusual"; its second objective wasn't shown and
+     is built as "Search the area", done by talking to the Twin. The Twins move between areas in retail; here each
+     area has its own Twin NPCs. The Blackwoods' barks are said on getting near them and may not show (hostile
+     NPCs' lines: see Known gaps). Lines said when an NPC was talked to again are on the NPCs (after). The Twins'
+     four lines at the second visit are said on getting near them. -->
+<mission id="306202" title="Invention" description="Have a little chat with Mercury about the workers he is sending into the subway, and check up on the Blackwoods in Magog." plot="1"
+         order="6202" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+    <say after="1">Uh... I'll just get back to work on my device, then...</say>
+  </npc>
+  <npc id="2" handle="Hyman Jobst" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say>If we can get this thing working, it will be a revolution in personal hygiene.</say>
+  </npc>
+  <npc id="3" handle="Jesse Zubkin" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>Uh-oh. Where did I leave those thermal conductors?</say>
+  </npc>
+  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>You go right along.</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>We'll keep an eye on mister Mercury.</say>
+  </npc>
+  <npc id="6" handle="Blackwood Duffy" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>Damn it, who forgot to lock the door?</say>
+  </npc>
+  <npc id="7" handle="Blackwood Elwop" type="HOSTILE" at="2" rsi="c9020058" weapon="2568">
+    <say>What's this Merv goon doing here?</say>
+  </npc>
+  <npc id="8" handle="Blackwood Killer" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="9" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>I got a little bored watching Mercury, you know.</say>
+  </npc>
+  <npc id="10" handle="Mercury" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+    <say after="6">Gah! I can't get any work done with you people dragging your knuckles through here.</say>
+  </npc>
+  <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>It's frightfully dull here.</say>
+  </npc>
+  <npc id="12" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Dullsville.</say>
+  </npc>
+  <npc id="13" handle="Mamoru Dinton" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say>Hey, have you seen where I put that cheat code vi-- Oh. Uh...never mind.</say>
+  </npc>
+  <npc id="14" handle="James Knickle" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say>What? I'm on break.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>It seems that Mercury is up to something. We're not sure what, but as Silver informed us, he is indeed sending workers out of his usual domain, Uriah, and into the subway in Tabor Park, from whence they depart for parts unknown.
+
+We will have to demonstrate to him that we do not like business being conducted without the Merovingian's approval, non? Go have a little chat with him.</briefing>
+    <enter><say>Got some Exile signals in there. Should be Mercury, and maybe some assistants.</say></enter>
+    <objective goal="1" text="Talk to Mercury" type="Talk" npc="1">
+      <talk><say npc="1">Silver! That hack! What does he know? Is using public transportation a crime? My men have to get parts for my work!
+
+Look, I've heard rumors the others are planning something. If you ask me, Thallia's got to be involved. The Blackwoods have been mugging just about everyone who sets foot in Magog, and they wouldn't go to all that trouble without being put up to it by somebody; and who else thinks they're the boss in Magog? Thallia!
+
+I'm telling you, go check it out. They'll start causing trouble in Uriah, next, and neither of us wants that.</say></talk>
+      <done><say>Hm. We'd better go see what Flood wants us to do.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="2" neighbourhoods="Magog">
+    <briefing>Really, operative, do you need me to hold your hand through everything? Get over to Magog and check up on those Blackwoods!</briefing>
+    <enter><say>I've got Exile signals in there. Looks like Flood knew where to find some Blackwoods.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the area" type="Use" object="1">
+      <done>
+        <say>--- reading new message ---
+...meeting at Mjolnir. Always nice to see the boys assembled. Remember what we talked about, and have them ready for next time. Be in touch.
+--- end of message ---</say>
+        <say>Huh. I'm gonna run a trace on that message.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>You got 'em.</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">Damn it, who forgot to lock the door?</say>
+    </near>
+    <near npc="7" radius="1000">
+      <say npc="7">What's this Merv goon doing here?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Magog">
+    <briefing>That message you found may have sounded innocuous, {player}, but I wouldn't trust those Blackwoods farther than I could throw them. Our contacts confirm that their activity has increased lately, and it is causing trouble for our business interests in the area.</briefing>
+    <enter><say>More Exile programs in there.</say></enter>
+    <objective goal="4" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>No more hostile signals in there.</say></done>
+    </objective>
+    <objective goal="5" text="Search the area" type="Talk" npc="9" after="4">
+      <talk><say npc="9">I got a little bored watching Mercury, you know.</say></talk>
+      <done><say>Yeah, well, aside from our albino buddy there, my scan isn't showing anything unusual in the area.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>Hm. I like dead ends almost as little as I like you, {player}. This is quite unsatisfactory. No, I think Mercury is going to have to do better than this. Pay him another visit.</briefing>
+    <enter><say>Flood needs to rearrange his room so he can get up on the right side of the bed once in a while.</say></enter>
+    <objective goal="6" text="Talk to Mercury" type="Talk" npc="10">
+      <talk><say npc="10">What, am I responsible for Thallia's schemes now? It's not my fault you couldn't find--
+
+Okay, okay! Fine. I'll help you out, all right? I'll get in touch with Flood, and we'll set something up.</say></talk>
+      <done><say>Oh, good. That lets me off the hook.</say></done>
+    </objective>
+    <near npc="11" radius="1000">
+      <say npc="11">It's frightfully dull here.</say>
+      <say npc="12">What kept you, old chum?</say>
+      <say npc="11">He doesn't even have a hookah in this place.</say>
+      <say npc="12">Dullsville.</say>
+    </near>
+  </phase>
+  <finish>Passing the buck, are you, {player}? I should have expected it. Mercury's obviously too clever for you--not that that's saying much. Very well; if you'll excuse me, I have arrangements to make.</finish>
+</mission>

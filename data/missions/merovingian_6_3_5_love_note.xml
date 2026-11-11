@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Love Note, Merovingian story mission 6.3.5. Source: research/missions/transcripts/Merv6-3-5.md (the archive replay
+     of [Merovingian Archive 6.3.5], given by [Archived]Flood; 28 screenshots: six during play, 22 of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Merovingian, Persephone, Twin,
+     Blood Noble and Holographic Projection line, the names, and the objective "Talk to the Merovingian" (seen in the
+     Objectives window). The Merovingian's first speech spans two screenshots with no header between them and is taken
+     as one entry, joined with a paragraph break. His French was printed with accents ("Monsieur le General", "et
+     voila"); the text here is plain ASCII.
+     Ours: the description (the Summary only said "Datalink established."), the other objective texts (the Objectives
+     tab was never opened), the sites (phase 1 was an office: Office; the rest Normal), the looks, and the name of
+     phase 3's commando (the log only says "the commando"; an "Elite Commando" stood by the projection in phase 4, so
+     that name is used for both). Item stand-in: Persephone's letter for the General is Letter (6793; no item name
+     was shown).
+     Rewards: the log shows 1,034,235 experience and 504,000 information, a level-48 player's archive replay and not a
+     normal reward. No Zion chapter 6 is built, so these are Zion 7.2's values, the nearest Zion chapter built (363,000
+     experience, 63,000 information).
+     Gaps: an NPC stands in one phase only, so Persephone, the Twins and the Elite Commando are separate NPCs in each
+     phase they appear in. In phase 3 the commando appears out of nowhere once Persephone is reached (her "Oh!")
+     and doesn't attack; spawns can't be triggered, so he is a friendly NPC there from the start. Persephone's "Take
+     this, please.", the Operator's "Now give the letter to the commando" and her "I will stay behind you" (16 seconds
+     in retail) are all said when the letter is taken. The Operator said someone else was with Persephone in phase 2
+     ("you won't quite be alone in there with her") without the log showing who; the Twins are placed there, silent.
+     The Twins' and Blood Noble's lines were barks with no goal: the first ones are said on getting near them, the
+     later ones when a phase's goals complete or when they are talked to afterwards. Persephone's two lines in phase
+     1 came before the Merovingian was talked to; here the second is what she says once he has been. The Holographic
+     Projection is a projected image in retail; here a friendly NPC with the General's look, and the Operator's "Aha,
+     a holographic projection" is said on getting near it. The last "Goals for this area are complete" entry was cut
+     off in the log. -->
+<mission id="306305" title="Love Note" description="Help the Merovingian get a message to the General, with Persephone as the bait." plot="1"
+         order="6305" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say after="1">If you need anything, Flood will attend to it. Do not concern yourself about Persephone. She will do as she is told, and besides, the General will not harm her; he is much too intelligent to waste such an opportunity. At any rate, you will be there to protect her, non? You see, there is no danger.</say>
+  </npc>
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+    <say>Wait 'til I tell mother about this...</say>
+    <say after="1">What gives him the right to command me? Ooh!</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+    <say>So this "General" bloke was causing trouble, eh?</say>
+    <say after="1">Well, I'm sure he'll be on his best behavior now.</say>
+  </npc>
+  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="ec020058" weapon="2568">
+    <say>Pity we weren't there to cut his pretty soldiers down to size.</say>
+    <say after="1">The fun thing about good little soldiers is that they're quite willing to die.</say>
+  </npc>
+  <npc id="5" handle="Blood Noble" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say>The Master is waiting.</say>
+    <say after="1">They are still flesh beneath those black suits...</say>
+  </npc>
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say after="2">Mmm... I suppose we had better be going...</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
+  <npc id="8" handle="Twin" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
+  <npc id="9" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say after="5">Very good. You are not as incompetent as my husband says.</say>
+  </npc>
+  <npc id="10" handle="Twin" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
+    <say>God, this is dull.</say>
+    <say after="5">Do you think he can read?</say>
+  </npc>
+  <npc id="11" handle="Twin" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+    <say>Stupefyingly.</say>
+    <say after="5">Not the brightest-looking fellow, is he?</say>
+  </npc>
+  <npc id="12" handle="Elite Commando" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="13" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" />
+  <npc id="14" handle="Elite Commando" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>It is becoming apparent that we must attract the General's attention in order to begin a discussion with him. The Merovingian has a certain plan to this end in which you will play a small part.</briefing>
+    <enter><say>I wonder if Flood's feeling okay. He didn't add his usual "And don't screw it up!"</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Persephone!
+
+Aha... Excusez... My wife is tired, and forgets what is important. We must get through to Monsieur le General.
+
+We know that in the past he conducted surveillance on my wife, believing her to be a vulnerability in my defenses. We also know that his mysterious black-clad soldiers monitor certain computers within the city. Therefore, we will send Persephone to one of these computers, et voila, the contact will be made, n'est-ce pas?</say>
+        <say npc="1">If you need anything, Flood will attend to it. Do not concern yourself about Persephone. She will do as she is told, and besides, the General will not harm her; he is much too intelligent to waste such an opportunity. At any rate, you will be there to protect her, non? You see, there is no danger.</say>
+      </talk>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">So this "General" bloke was causing trouble, eh?</say>
+      <say npc="4">Pity we weren't there to cut his pretty soldiers down to size.</say>
+      <say npc="5">The Master is waiting.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Persephone wants a little chat with you before the two of you go gallivanting off. Just make sure she follows the Merovingian's order.</briefing>
+    <enter><say>Aw, it looks like you won't quite be alone in there with her.</say></enter>
+    <objective goal="2" text="Talk to Persephone" type="Talk" npc="6">
+      <talk><say npc="6">I will not move a muscle simply because my husband snaps his fingers. But...I would not want to disappoint the General, since he has shown an interest in me. He is a curious man... I do not think he has ever been in love. A pity... There are many things he must not understand--even his own impulses. But such a man can be...useful.</say></talk>
+      <done><say>Sounds like the plan is a go, then.</say></done>
+    </objective>
+    <complete><say npc="6">Mmm... I suppose we had better be going...</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You're to meet Persephone at one of the deactivated terminals that the commandos have been using. The Merovingian thinks that the General's men will appear, but not attack. If that happens, you are to try to arrange a meeting with the General.</briefing>
+    <enter><say>That's the place. It looks like Persephone is already inside. Now remember, those new stealth-suit commandos don't show up on my screen, so keep your eyes peeled in there.</say></enter>
+    <objective goal="3" text="Talk to Persephone" type="Talk" npc="9">
+      <talk><say npc="9">About time you got here. Nothing-- Oh!</say></talk>
+      <done><say>One of them showed up? He isn't attacking, is he? Okay... Persephone should have a letter for the General. Get it from her.</say></done>
+    </objective>
+    <objective goal="4" text="Get the letter from Persephone" type="Get" npc="9" item="6793" after="3">
+      <done>
+        <say npc="9">Take this, please. It is for that...thing.</say>
+        <say>Right. Now give the letter to the commando. Do you see a mail slot on him?</say>
+        <say npc="9">I will stay behind you, where it is safe. Give the letter to him.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Give the letter to the Elite Commando" type="Give" npc="12" item="6793" after="4">
+      <done><say>He took it? All right, I guess that's that. I wonder how often the General checks his mail?</say></done>
+    </objective>
+    <near npc="10" radius="1000">
+      <say npc="10">God, this is dull.</say>
+      <say npc="11">Stupefyingly.</say>
+    </near>
+    <complete>
+      <say npc="9">Very good. You are not as incompetent as my husband says.</say>
+      <say npc="10">Do you think he can read?</say>
+      <say npc="11">Not the brightest-looking fellow, is he?</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It appears that we've finally captured the old man's attention. Apparently he has some kind of reply ready. It could be a bomb, so we're sending you.</briefing>
+    <enter><say>Okay... I don't see any bombs in there, but there is an energy source of some kind.</say></enter>
+    <objective goal="6" text="Talk to the Holographic Projection" type="Talk" npc="13">
+      <talk><say npc="13">This is the General. I received your message. I think I can get you what you want, and I may soon have a use for what you're offering. You'll hear from me again. In the mean time, my men will observe a cease-fire with your forces.
+
+End transmission.</say></talk>
+      <done><say>I'm transmitting that message to Flood right now.</say></done>
+    </objective>
+    <near npc="13" radius="1000">
+      <say>Aha, a holographic projection. That must have his reply.</say>
+    </near>
+  </phase>
+  <finish>I'm not sure I like the General's cavalier attitude. So he means to keep us waiting? He'll do well not to test the limits of the Merovingian's patience.</finish>
+</mission>

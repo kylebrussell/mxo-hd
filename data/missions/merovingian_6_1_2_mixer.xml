@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mixer, Merovingian story mission 6.1.2. Source: research/missions/transcripts/Merv6-1-2.md (the archive replay of
+     [Merovingian Archive 6.1.2], given by [Archived]Flood; 19 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood and Operator line, the NPC lines (all from
+     Team chat) and the names Blood Noble, Chopper Grease Monkey, Chopper Joy Rider, Demon Army Andras, Chopper Runner
+     and Demon Army Yurei. Flood's briefings span several screenshots with no header between them and are taken as one
+     entry each; the Operator's "I've got four steps..." and "Oh, yeah, I'm on it..." are split across two screenshots
+     and taken as one entry. "frappe" lost its accent to stay ASCII. Ours: the description (the Summary tab was never
+     opened), every objective text (nor was the Objectives tab), the sites (all Normal: "our facility", the Uriah
+     Choppers' place, Tabor Park), the looks and the enemy counts. The Choppers are Exiles, so the hostiles are
+     Merovingian. Item stand-ins: the first dose of the cheat code drug is Drugs (6816), the second Medicine (6808);
+     no item name was shown.
+     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay and not a
+     normal reward; these are Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter
+     built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 mission is.
+     Gaps: retail's safe held two doses; a Search gives one item, so the safe gives the first dose and the second is
+     handed to the player when the Demon Army phase starts. In retail the player kills all but one Chopper and doses
+     the survivor; here the survivor, Chopper Joy Rider (the one who asks for it), is a friendly NPC who is given the
+     drug once the others are dead. The two Demon Army Andras both hail the player; the one who asks to be killed is a
+     hostile who waits to be attacked (attacksOnSight="0"), and his lines may not show (see Known gaps in
+     docs/MISSIONS.md), so the Operator's "just kill the ugly one" is said on getting near him. Which Andras said "Oh
+     great and powerful one..." isn't known; it is given to the one who takes the drug. Each NPC's second line is said
+     when talked to again after their goal, except Chopper Joy Rider's and the dosed Andras' reactions, which are said
+     when the drug is given. The Operator's "Which one's which?" is said on getting near the two subjects. The
+     subjects' swapped body sizes and parts aren't shown. -->
+<mission id="306102" title="Mixer" description="Test a new batch of the cheat code drug on a Chopper and a Demon Army follower." plot="1"
+         order="6102" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Blood Noble" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>We've opened the safe for you.</say>
+    <say after="1">The Demon Army--what fools. Sad imitations...</say>
+  </npc>
+  <npc id="2" handle="Chopper Grease Monkey" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>Come into my house? You're gonna get wrecked, sucker!</say>
+  </npc>
+  <npc id="3" handle="Chopper Joy Rider" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
+    <say>You! You're from the Merovingian! You must have his cheat code! Yes, I want it! Kill the others and give it to me!</say>
+  </npc>
+  <npc id="4" handle="Demon Army Andras" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" attacksOnSight="0">
+    <say>Yes, master! Since, as you decree, only one may sup of the fruit of thy puissance, hesitate not to crucify me, wretch that I am, and grant it to my more-deserving brother!</say>
+  </npc>
+  <npc id="5" handle="Demon Army Andras" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say>Oh great and powerful one, who blesses us by trodding the dust of this sorry earth beneath your feet! We go down on our knees before your beneficence!</say>
+  </npc>
+  <npc id="6" handle="Chopper Runner" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+    <say after="6">Hahahaa! What is Anome to me now? I'll crush them all between my fingers!</say>
+  </npc>
+  <npc id="7" handle="Demon Army Yurei" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
+    <say after="7">Praise {player}, and all {player}'s works!</say>
+  </npc>
+  <npc id="8" handle="Blood Noble" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>There are some things even we find...unnatural.</say>
+    <say after="7">Something smells...off, human--besides you, I mean.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Wonderful. All my other operatives are off on missions requiring actual skill, so it looks like I'm stuck with you for another cheat code test run. Clearly we are doomed before we start, but one must go through the motions, mustn't one--at least until I can have you fired for incompetence.
+
+To speed things up a bit, I'm going to have you test this latest batch of code, again in drug form, on two sets of Exiles at once. I know this greatly complicates things for your ape-like brain, but to keep it as easy as possible, I've chosen the weakest gangs in the city as your test subjects: the Uriah Choppers, and the Tabor Park Demon Army.
+
+But I shouldn't get too far ahead, operative, as I know it bewilders you. Go to our facility and pick up two doses of the cheat code drug from the safe.</briefing>
+    <enter><say>Got a few strong Exile programs in there, and something...sparkly--in code, at least. That must be the drug.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Get the cheat code drug from the safe" type="Search" object="1" item="6816">
+      <done><say>Time to force-feed those to more poor bastards!&#10;&#10;Given the low success rates we've seen with experimental codes, it's a good thing that Flood doesn't consider you worthy test subject material...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>You will first find a suitable Chopper. There should be several to choose from at the indicated location. Kill all but one, administer the drug to the survivor, and report back to me. You will most likely not see immediate results, so don't dawdle.</briefing>
+    <enter><say>I feel sorry for those Choppers right now. But a Merv's gotta do what a Merv's gotta do to keep the boss-man happy and us in the red.</say></enter>
+    <objective goal="2" text="Kill all but one of the Choppers" type="DefeatAll">
+      <done><say>My scanner shows just one left. Guess what he's getting for lunch? Fresh-baked cheat code!</say></done>
+    </objective>
+    <objective goal="3" text="Give the drug to Chopper Joy Rider" type="Give" npc="3" item="6816" after="2">
+      <talk><say npc="3">Yes! Give me the code! Give me the power! Haha! I always told the others I'd surpass them--now they'll know!</say></talk>
+      <done>
+        <say npc="3">Ugh... No! The pain is nothing--nothing, compared to the power I will gain! Ahaha!</say>
+        <say>That guy was a little too willing to take the stuff, if you ask me. Flood better keep a close eye on him.</say>
+      </done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Now look what you've done; I just dusted in here!</say>
+    </near>
+    <near npc="3" radius="1000">
+      <say npc="3">You! You're from the Merovingian! You must have his cheat code! Yes, I want it! Kill the others and give it to me!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You're doing surprisingly well so far, {player}. I don't mean that as a compliment; I'm simply surprised that you haven't screwed something up yet.
+
+You'll probably manage it in this next stage: go to Tabor Park, isolate a Demon Army follower, give them the drug, and report.
+
+That was four steps all at once. I realize that was straining things; I can repeat it more slowly and in monosyllables for you, if necessary.</briefing>
+    <enter><say>I've got four steps Flood can follow to kiss my--&#10;&#10;Oh, yeah, I'm on it. Hmm... A few Exile programs in there; they match the known Demon Army profile.</say></enter>
+    <objective goal="4" text="Kill one of the Demon Army followers" type="Defeat" npc="4">
+      <done><say>Well, he was asking for it.</say></done>
+    </objective>
+    <objective goal="5" text="Give the drug to the other Demon Army follower" type="Give" npc="5" item="6808" after="4">
+      <talk><say npc="5">I am humbled by your miraculous benediction, lordship! I will not fail to make myself worthy of this incomprehensible miracle you carry!</say></talk>
+      <done>
+        <say npc="5">The room...whirls about me! Enlightenment! I open myself to receive you!</say>
+        <say>Ho-kay! That was a little too weird. Get away from that nut and report in to Flood.</say>
+      </done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say npc="5">Our savior! We are not worthy of this great boon you bring us, but we shall do our best, and follow your teachings, oh master!</say>
+      <say npc="4">Our savior! We are not worthy of this great boon you bring us, but we shall do our best, and follow your teachings, oh master!</say>
+    </near>
+    <near npc="4" radius="600">
+      <say>Wow. I knew those Demon Army guys were kind of cultish, but this is taking things a bit far!&#10;&#10;Uhhh... Man, there's no real nice way to go about this. I say just kill the ugly one.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Very well, operative; here is where we see whether or not you've frittered away my time with yet another failure.
+
+We have brought the two subjects together for observation. Examine them and report your findings.</briefing>
+    <enter><say>I'm picking up some totally whack code in there, {player}. I'm serious; it looks like someone ran every single Japanese kanji, katakana, and hiragana through a bright-green blender, set on "frappe."</say></enter>
+    <objective goal="6" text="Examine Chopper Runner" type="Talk" npc="6">
+      <talk><say npc="6">The power...fills me! Not yet, no... But soon, I'll blast my enemies like a nuclear holocaust!</say></talk>
+      <done><say>I'm...not actually reading any heightened power levels off that guy. I think it's gonna be a while before he nukes anything.</say></done>
+    </objective>
+    <objective goal="7" text="Examine Demon Army Yurei" type="Talk" npc="7">
+      <talk><say npc="7">Truly, you work in mysterious ways, my master. I dedicate the life you have given me to your calling, though in my still-ignorant state I see only the beginning of its glorious path.</say></talk>
+      <done><say>Cool. Keep this up and you can start a cult of your own. I hear that's how you can really make some easy dough.</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say>Uh... What? Which one's which? Am I imagining things, or did they swap body sizes? And...parts?</say>
+    </near>
+  </phase>
+  <finish>I'm not actually certain you've failed this time, {player}, but just to err on the safe side, I think I'll call it another loss for you.&#10;&#10;These codes we synthesized from Beirn's mutated bloodstream appear to be recompiling RSIs rather than granting raw power such as Unlimit received. Initially disappointing, but I imagine we still may have some use for--&#10;&#10;But why am I wasting my voice on you, operative? You can't possibly understand any of this. Fret not; I'll soon find another menial task for you, I'm sure.</finish>
+</mission>
