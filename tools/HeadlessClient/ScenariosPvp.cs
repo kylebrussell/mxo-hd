@@ -173,6 +173,17 @@ public static partial class Scenarios
         int shots = CountViewUpdate(target, shooterForTarget.ViewId, "032a");
         await Task.Delay(TimeSpan.FromSeconds(7));
         Check.Equal(shots, CountViewUpdate(target, shooterForTarget.ViewId, "032a"), "Shots after the shooter stopped");
+        shooter.SendRpc("3d 01");
+        shooter.SendRpc($"41 {HandleOf(targetForShooter)}");
+        await shooter.WaitUntilAsync(() => CountViewUpdate(target, shooterForTarget.ViewId, "032a") > shots,
+            "Gunfire restarts", TimeSpan.FromSeconds(10));
+        // Native Escape sends this, with no RPC44. It used to leave the server's gunfire running.
+        shooter.SendRpc("3d 00");
+        await shooter.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 80 02 22");
+        await Task.Delay(500);
+        shots = CountViewUpdate(target, shooterForTarget.ViewId, "032a");
+        await Task.Delay(TimeSpan.FromSeconds(7));
+        Check.Equal(shots, CountViewUpdate(target, shooterForTarget.ViewId, "032a"), "Shots after native holster");
     }
 
     /// <summary>

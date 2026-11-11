@@ -61,7 +61,7 @@ public class AbilityTargetTests
         Assert.False(mob.IsStunned(now));
         mob.Stun(now + TempMods.Retail[333].Mods[0].Seconds);
         Assert.True(mob.IsStunned(now + 3.9));
-        Assert.False(mob.IsStunned(now + 4.1));
+        Assert.False(mob.IsStunned(now + 5.1));
         // A shorter stun doesn't cut a longer one short
         mob.Stun(now + 1);
         Assert.True(mob.IsStunned(now + 3.9));

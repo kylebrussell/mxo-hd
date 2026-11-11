@@ -69,6 +69,8 @@ namespace hds
 		public readonly Dictionary<UInt16, AbilityBuffs.Active> activeBuffs = new Dictionary<UInt16, AbilityBuffs.Active>();
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
+        // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
+        public int buffHealthMaximumDelta, buffISMaximumDelta;
 
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;

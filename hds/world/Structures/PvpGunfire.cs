@@ -152,6 +152,7 @@ namespace hds
                     return;
                 }
                 WorldClient shooter = Shooter, target = Target;
+                if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(shooter).Effects)) return;
                 UInt32 gun = GunOf(shooter);
                 byte attackClass = RangedWeapons.AttackClass(gun);
                 if (attackClass == 0)
@@ -164,7 +165,10 @@ namespace hds
                 lock (rng)
                 {
                     shot = FreeAttacks.Fire(rng, PvpFlag.LevelOf(shooter), shooter.playerData.combatTactic, shooter.playerData.combatTacticType,
-                        PvpFlag.LevelOf(target), target.playerData.combatTactic, gun);
+                        PvpFlag.LevelOf(target), target.playerData.combatTactic, gun,
+                        AbilityStats.Attack(shooter, true), AbilityStats.Defense(target, true),
+                        AbilityStats.Player(shooter, 1139), AbilityStats.Player(shooter, 171) / 100.0,
+                        AbilityStats.Toughness(target, true));
                 }
 
                 double x = 0, y = 0, z = 0;

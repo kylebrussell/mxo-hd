@@ -45,7 +45,7 @@ This checklist tracks the current modernization push from "builds locally" to "f
 - [x] Load the whole NPC list in every build (it used to be Release only; `MXO_MOBS=test` selects the small test list, which the client regression and headless scenarios use).
 - [x] Skip rows that are one NPC seen again: same name in the same district within 5 m (`MobSpawnFilter`). 13,141 rows become 5,560 NPCs. The 5 m is a judgement from looking at the client.
 - [x] Attack on sight only where the retail logs show it (`MobBehaviour`): zombies, Corrupted, listed gangs, and Agents against level 50+. Everything else is passive until attacked.
-- [ ] Some rows may belong to mission or instance interiors rather than the open world: not separated yet. Corrupted and Special Agent logged starts at exactly 4 m look like ambush spawns.
+- [x] Separate historical mission / instance-interior / encounter sightings from ambient city populations: `data/npc_spawns/` and [scope policy](NPC-SPAWN-SCOPE.md). All 13,141 source rows are preserved with provenance. Unknown nav context and public interiors remain; private interiors and Corrupted / Special Agent encounter families require runtime ownership.
 - [ ] Only slums, downtown and IT have static world data loaded; the other districts in the list are untested.
 
 ## 6. Packet Research

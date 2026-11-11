@@ -19,6 +19,14 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
+        new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
+        new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),
+        new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
         new Scenario("login", Login),
         new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),

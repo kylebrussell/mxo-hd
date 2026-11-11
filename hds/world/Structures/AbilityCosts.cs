@@ -70,7 +70,11 @@ namespace hds
 
         public static UInt16 Cost(UInt16 abilityId)
         {
-            return Retail.TryGetValue(abilityId, out UInt16 cost) ? cost : Default;
+            UInt16 canonical = AbilityCatalog.Canonical(abilityId);
+            if (Retail.TryGetValue(canonical, out UInt16 cost)) return cost;
+            var entry = AbilityCatalog.Find(canonical);
+            return entry != null && entry.Has("Ability/AbilityInnerStrengthCost")
+                ? (UInt16)Math.Clamp(entry.Number("Ability/AbilityInnerStrengthCost"), 0, UInt16.MaxValue) : Default;
         }
     }
 }

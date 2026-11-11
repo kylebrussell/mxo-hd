@@ -118,6 +118,7 @@ namespace hds
             State,
             /// <summary>Damage over time on DOTPlaceHolderAbility, <see cref="DotTick"/> every <see cref="DotIntervalSeconds"/>.</summary>
             Dot,
+            Hot,
         }
 
         public sealed class Mod
@@ -127,12 +128,19 @@ namespace hds
             public Int32 MinValue, MaxValue;
             public float Seconds;
             public Proc Proc;
+            public float Chance = 1;
+            public BreakRule Break;
+            public int BreakChance;
+            public bool ProtectFirstHealthChange;
+            public double Interval = DotIntervalSeconds;
 
             public override string ToString()
             {
                 return Proc + " " + Target + " " + MinValue + (MaxValue != MinValue ? ".." + MaxValue : "") + " " + Seconds + " s";
             }
         }
+
+        public enum BreakRule { None, Damage, HealthChange, Chance }
 
         /// <summary>The tempmods one use of an ability puts on its target, in retail's record order.</summary>
         public sealed class Effect
@@ -308,13 +316,32 @@ namespace hds
 
             // ---- Stuns that AbilityTargets already had ----
             // Stun 1 / Stun 2.0: no retail capture of a landed one; 4 s like retail's other stuns (StunAbility, 102)
-            { 315, E(315, State(StunAbility, 4)) },
-            { 333, E(333, State(StunAbility, 4)) },
+            { 315, new Effect { Ability = 315, Mods = new[] { State(StunAbility, 7) }, ImmunitySeconds = 14 } },
+            { 333, new Effect { Ability = 333, Mods = new[] { State(StunAbility, 5) }, ImmunitySeconds = 10 } },
         };
 
         public static bool Has(UInt16 abilityId)
         {
-            return Retail.ContainsKey(abilityId);
+            return TryGet(abilityId, out _);
+        }
+
+        public static bool TryGet(UInt16 id, out Effect effect)
+        {
+            id = AbilityCatalog.Canonical(id);
+            Effect source = AbilityCatalog.Controls(id);
+            if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
+            var mods = new List<Mod>();
+            foreach (Mod m in captured.Mods)
+            {
+                Mod rule = source == null ? null : Array.Find(source.Mods, p => p.Target == m.Target && p.Proc == m.Proc);
+                mods.Add(new Mod { Kind = m.Kind, Target = m.Target, MinValue = m.MinValue, MaxValue = m.MaxValue,
+                    Seconds = m.Seconds, Proc = m.Proc, Chance = rule?.Chance ?? m.Chance,
+                    Break = rule?.Break ?? (m.Target == MezAbility ? BreakRule.Damage : m.Break),
+                    BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
+                    Interval = m.Interval });
+            }
+            effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };
+            return true;
         }
     }
 }

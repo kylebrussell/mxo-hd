@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace hds
 {
@@ -72,6 +73,39 @@ namespace hds
         /// </summary>
         public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId)
         {
+            Mob primary = FindMob(client, targetViewId, out _);
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId);
+            if (primary.getIsDead() || primary.isFriendly) return false;
+            var definition = AbilityCatalog.Find(ability.getAbilityID());
+            double range = definition?.Number("Ability/SelectionRange") ?? 0;
+            if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
+                primary.getXPos(), primary.getYPos(), primary.getZPos()) > range) return false;
+            var targets = new List<(Mob Mob, UInt16 View)> { (primary, targetViewId) };
+            double radius = definition?.Number("Ability/RadiusOfEffect") ?? 0;
+            if (definition?.Number("Ability/CastDirectObjects") == 3 && radius > 0)
+            {
+                lock (WorldServer.mobs.SyncRoot)
+                    foreach (Mob mob in WorldServer.mobs)
+                    {
+                        if (mob == primary || mob.isFriendly || mob.getIsDead() || mob.getDistrict() != primary.getDistrict()) continue;
+                        var view = client.viewMan.FindViewForEntity(mob.getEntityId());
+                        if (view != null && WithinArea(primary.getXPos(), primary.getYPos(), primary.getZPos(),
+                            mob.getXPos(), mob.getYPos(), mob.getZPos(), radius)) targets.Add((mob, view.ViewID));
+                    }
+            }
+            foreach (var target in targets) LandOne(client, ability, target.View);
+            if (!primary.getIsDead() && primary.getHealthC() < primary.getHealthM()) MobAggro.Retaliate(client, primary);
+            return true;
+        }
+
+        public static bool WithinArea(double x, double y, double z, double tx, double ty, double tz, double radiusMetres)
+        {
+            double dx = x - tx, dy = y - ty, dz = z - tz, radius = radiusMetres * 100;
+            return Math.Abs(dy) < 150 && dx * dx + dy * dy + dz * dz <= radius * radius;
+        }
+
+        private static bool LandOne(WorldClient client, AbilityItem ability, UInt16 targetViewId)
+        {
             UInt16 abilityId = ability.getAbilityID();
             Effect effect;
             UInt16 damage;
@@ -87,7 +121,9 @@ namespace hds
                 {
                     // Viruses do their damage over time only (retail's Code Infection and Infect Area: "infects you",
                     // then the ticks; TempMods.Retail)
-                    damage = TempMods.Retail.TryGetValue(abilityId, out TempMods.Effect timed) && timed.Virus
+                    var source = AbilityCatalog.Find(abilityId);
+                    damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus ||
+                        source != null && !source.DirectDamage && (source.DamageOverTime || TempMods.Has(abilityId))
                         ? (UInt16)0
                         : AbilityHandler.AbilityDamage(ability, random);
                     fx = ability.getActivationFX();
@@ -109,14 +145,7 @@ namespace hds
             // Timed effects first (TempMods: stuns, debuffs, damage over time): the fight may start here, and its rounds
             // must already see a stun
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
-            if (!handler.ApplyAbilityToTarget(targetViewId, damage, fx))
-            {
-                StartFight(client, view);
-                if (!handler.ApplyAbilityToTarget(targetViewId, damage, fx))
-                {
-                    return false;
-                }
-            }
+            if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }
@@ -153,10 +182,5 @@ namespace hds
             };
         }
 
-        private static void StartFight(WorldClient client, ClientView view)
-        {
-            byte[] request = CloseCombatRequest(view);
-            CombatManager.GetHandler(client).ProcessRequestCloseCombat(ref request);
-        }
     }
 }
