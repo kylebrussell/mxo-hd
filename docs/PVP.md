@@ -2,7 +2,7 @@
 
 Players can fight each other in close combat (the interlock) and with guns and abilities, die by it and respawn; who may attack whom follows the client's own rule; and duels work from the challenge to the loser standing up again.
 
-**Checked so far:** unit tests (byte for byte against retail records) and eight headless scenarios with one to three players. **Not checked: the real 7.6005 client.** The steps for that are at the end, with `?duelbot`.
+**Checked so far:** unit tests (byte for byte against retail records), eight headless scenarios with one to three players, and one round in the real 7.6005 client with `?duelbot` (PR 94 QA at 7380df8). That round found four faults. "Real-client QA" below says what each was and what changed. The changes have not been back in the real client yet; the steps for that are at the end.
 
 ## Where it comes from
 
@@ -115,7 +115,15 @@ The rules are the ones NPC fights use, from retail's own scripts (`CombatRules`,
 - The byte before the opponent's tactic is the opponent's has-ability byte: 3 on the attacker's opening move (`… 00 03 00 01 01 46 00 …`). NPC fights have 0 there.
 - Unit test `AttackedPlayersOpeningRound` builds retail's record byte for byte, except its last four bytes: in PvP they held the opponent's weapon (`22 b6 00 00`); the server sends 0.
 
-**The end.** Each side still there gets what ends an NPC fight: CombatEffect off, the combat view's final record, `46 <opponent> 00`, the delete of the combat view, and the stance and flags reset ten seconds later. Retail ended an unfinished fight that way (died_in_pvp 19:41:48). For the side that died, retail sent no `46 … 00` and deleted the combat view about two seconds after the death; the server sends the usual teardown and then the death.
+**The end.** Each side still there gets what ends an NPC fight: CombatEffect off, the combat view's final record, `46 <opponent> 00`, the delete of the combat view, and the stance and flags reset ten seconds later. Retail ended an unfinished fight that way (died_in_pvp 19:41:48).
+
+- **What ends the fight goes first. The teardown follows, in packets of its own** (`PvpFight.End`). The rounds stop at once, but the combat view comes down later:
+  - **8 s** after a death (a duel lost, a PvP kill);
+  - **1 s** after a duel stopped any other way, or after a player left;
+  - at once after a withdrawal.
+- Retail: the duel's loser got the defeat at 03:03:51 and the delete of the combat view at 03:04:00, with the combat view ticking in between (niobe3dualduality). The winner got DuelID 0 and `56` at 21:54:53 and the teardown at 21:55:01 (lastday2).
+- The side that died gets no `46 … 00`, as in retail.
+- A pending teardown runs at once when the player starts another fight (any close-combat request) or stands up from a duel. It is dropped if the player's world reloads or they are on their way to the Loading Area.
 
 - A player whose client is gone or reloading its world (teleport, Loading Area, disconnect) gets nothing; the other side gets the teardown.
 
@@ -154,7 +162,7 @@ An attack ability on a player (RPC 80 b9 with a player's view):
 
 A player killed by a player dies as retail's PvP deaths did (died_in_pvp 19:42:29, some_pvp):
 
-1. The fights they are in end.
+1. The fights they are in stop. Their interlock comes down 8 s after the death (see "The end" above).
 2. Their own view: `02 00 02 80 80 80 c1 01 00 00 80 80 01 00 00 00 01` (IsDead, Health 0), the buffs' off-records and the death message `2e 67 … 92 00 00 60`. This is the death the server already had for NPC kills: that one was taken from these same captures.
 3. Everyone who sees them: `<view> 02 80 80 12 01 00 00`, IsDead 1 and Health 0 on their view.
 4. **The kill notice** to the victim, the killer and onlookers: `81 9d <killer> <victim> 0c 00 <length> | 81 67 17 00 <offset> 86 00 00 60 00 00 10 00 … 08 <killer's name> <victim's name>`.
@@ -213,7 +221,14 @@ All eight are in client.dll; the dispatcher (0x62175570) has no case for 50 and 
 
 For the winner (lastday2): own DuelID 0, the loser's view IsDead 1, Health 0, DuelID 0, and `56 01 01 <loser>`.
 
+- All of it goes out while both interlocks are still up. The teardown follows 8 s later, for the loser without `46 … 00` (see "The end" under Fights).
+- The loser's ConditionStateFlags lose the in-combat bit with the defeat: retail's record had `00 00 00 01`, the PvP flag alone.
+- **Ours:** 0.25 s after each player's teardown, their own view gets the duel's end once more, in a packet of its own: DuelID 0, or for a loser still lying down, the whole defeat record. The values are the ones already sent, so a client that took them sees no change. Retail didn't do this. It is there because the real client lost both records once (see "Real-client QA", A and B).
+
 **Standing up.** The loser's client sends `81 4c` (its /reconstruct). Retail (03:04:08): `02 00 03 28 <ctr> 40 00 00 00 10 <x y z f32> <sim ms> 80 80 80 41 00 01 00`, an action with position and time, then IsDead 0 and **Health 1**. No Loading Area. IsDuelDeath stayed set and does here. Others get IsDead 0 and Health 1 on their view (inferred; the winner's capture ends before it).
+
+- Retail's loser stood up after the interlock was down. A loser who types /reconstruct sooner gets the teardown first, then the stand-up 0.25 s later in a packet of its own.
+- The client's own check (0x62258e38) reads one byte of the local player's attributes (`[[player+0xac]+0x22c]`) and answers "You cannot /reconstruct, you are not dead." (0x60000096) when it is 0. Since an NPC kill passes that check, the byte is IsDead. The client sends `81 4c` only when it is set.
 
 **The other ends** rest on the client's records alone; no capture shows one:
 
@@ -224,13 +239,44 @@ For the winner (lastday2): own DuelID 0, the loser's view IsDead 1, Health 0, Du
 
 **Not done:** the "duels disabled here" reason; ID_MISSION_INDUEL (no missions while dueling); the unexplained attribute 27 (`01 00`) retail set on the loser's view for others.
 
+## Real-client QA (PR 94)
+
+At 7380df8, CSR_Tester (level 1, no organisation) against `?duelbot` in the Mara apartment lobby. Challenges, both sides of the interlock, and the messages of winning and losing all worked. Four things did not.
+
+### A. The loser didn't fall, and /reconstruct was refused
+
+- **What happened.** After `?duelbot attack`, `/duel` and `?health 20`, the bot won. The messages were right. The player's health bar emptied but the character kept standing, and `/reconstruct` gave the client's own "You cannot /reconstruct, you are not dead." So the client never stored IsDead.
+- **The record itself was retail's.** The own-view defeat matches niobe3dualduality 03:03:51 attribute for attribute (indices 14, 20, 21, 27, 35, 42; masks `80 80 c1 … c1 … 80 81/89 … 01`), with two differences:
+  - DeathPenalty (38) is left out. It is optional in the mask, and retail's ordinary deaths sent it with other values.
+  - The flags kept the in-combat bit (`00 00 10 00`), where retail's had only the PvP flag. Now fixed: the defeat clears it.
+- **What was different from retail is the order.** The server tore the interlock down first (final record, `46 … 00`, the delete of the combat view, the position handoff) and sent the defeat right after it. The queue gathers whatever is sent within 50 ms into one packet, so the defeat usually went out in the same packet as the teardown. Retail sent the defeat while the interlock was up and took the combat view down 9 s later. The NPC-kill path the client accepts also had the teardown first. That does not fit neatly, so the order is the most likely cause, not a proven one: client.dll's handling of an own-view update that arrives with an interlock ending was not traced.
+- **Fix.** Retail's order and timing (see "The end" under Fights), the flags without the in-combat bit, and the defeat sent once more after the teardown, in a packet of its own (ours). `/reconstruct` before the teardown is due runs the teardown first and stands the player up in the next packet. The server already answered `81 4c` from a duel's loser with the stand-up (`DuelHandler.StandUp`, before the respawn path); that is unchanged.
+
+### B. After a duel, the client stayed locked onto the old opponent
+
+- **What happened.** After winning, `?duelbot off` then `?duelbot attack`. Clicking the new bot was refused with "...but your opponent.", and `/duel` said "You must target another player before issuing a duel challenge." The removed bot stayed in the target frame until a relog.
+- **The refusal is the client's.** It is "While in a duel you cannot select anything but your opponent." (0x5e0000d9), printed at 0x6209b085 when the select check 0x62231380 refuses with reason 4. That check reads the player's own DuelID (`[[player+0xa8]+0x78]`). When it is non-zero, it allows only a target whose DuelID pairs with it (0x62231350: equal but for bit 0). So the lock is the own DuelID attribute. The `55`/`56` records only note and forget the opponent for messages. The `/duel` text is 0x3a0000a0/a1 (0x62234ee3): no target could be selected.
+- **Cause.** The winner's own DuelID 0 was sent in the same way as the loser's defeat: after the teardown, in its packet. The client never took it, so its DuelID stayed set. The DuelID at the duel's start, sent in a packet of its own, was taken.
+- **Fix.** As for A: DuelID 0 goes out before the teardown, and again after it. A player who leaves or a bot taken away mid-duel now ends the duel for the other side first: DuelID 0 and `56 04`, flushed. Only then come the interlock teardown and the delete of the gone player's view (`DuelBot.Remove`, `PvpCombat.OnPlayerGone`).
+- **Where the strings are.** `resource/string_tables/Strings.ltp` holds only the ids (`stringtable_client.pyc`, zip-style entries with raw deflate). The texts are in `resource/string_tables/stringtable_client.sta`, packed in `packmaps/zmisc_1.pkb` (rezmap.lta, entry 199). They are UTF-16, each preceded by its id, so a UTF-16 search of the .pkb finds them.
+
+### C. The bot showed no fight animations to its attacker (minor)
+
+- **What happened.** The bot stood still, facing away, while damage numbers showed.
+- **Facing: fixed.** The bot now spawns facing the player (D). When an interlock starts, it turns to its opponent on everyone's view with the state record other players' views get (`<view> 01 0c <yaw> <x y z f32>`). The byte layout is retail's (died_in_pvp, view 03: `01 0c e6 1e 6a 8c 46 00 80 f7 43 65 0e 95 44`).
+- **Animations: not done.** In retail, a player opponent was animated through the combat view's round entries. lastday2 21:54:49 has an entry on the combat view (`… 01 01 02 00 00 00 00 <one fighter's offset from the centre, 3 × f32> <the other's, mirrored> 00 00 0a 00 ed 93 …`), which places both fighters about 0.7 m either side of the centre, followed by what looks like animation fields. The server sends no round entries, for NPC fights or PvP ("Not done" under Fights). NPCs animate without them; another player apparently does not. Decoding the entry is the next step.
+
+### D. `?duelbot` put the bot inside a wall
+
+It stood 3 m along +x. It now stands on walkable floor about 2.5 m in front of the player, facing them (see Dev commands).
+
 ## Dev commands
 
 All need `MXO_DEV_COMMANDS=1`.
 
 | Command | Does |
 |---|---|
-| `?duelbot` | A server-played player, "DuelBot", three metres away at your level. It accepts a duel a second after `/duel` and waits for you to strike. |
+| `?duelbot` | A server-played player, "DuelBot", 2.5 m in front of you on walkable floor, facing you, at your level. It accepts a duel a second after `/duel` and waits for you to strike. |
 | `?duelbot attack` | The same, and it pulls you into close combat three seconds after the duel begins |
 | `?duelbot gun` | It opens fire with a Redpill Special instead |
 | `?duelbot challenge` | It challenges you three seconds after appearing, then attacks |
@@ -240,11 +286,19 @@ All need `MXO_DEV_COMMANDS=1`.
 | `?pvpability <id>` | A flag ability lands on you (1210 a PvP pulse, 1232 a pacification zone, 721 a flip) |
 | `?health <n>` | Your health, to keep test fights short |
 
+**Where the bot stands** (`DuelBot.Spot`):
+
+- It first tries 2.5 m along the player's facing, then the same distance turned 22.5°, 45°, and so on either way, then 2 m, 3 m and 1.5 m.
+- It takes the first spot where the nav mesh (`data/navmesh`) has floor at the spot and every 25 cm on the way to it, with no step more than 40 units high.
+- It stands on that floor (the floor's height + 95), facing the player.
+- Where a district has no nav mesh, it stands 2.5 m ahead without these checks.
+- It used to stand 3 m along +x, which was inside a wall in the Mara apartment lobby (sector 1118).
+
 The bot is a whole character to the rest of the server (`WorldClient.CreateBot`): it is in the client list, the visibility thread spawns it for players nearby, and it fights through the same code as a player. What would be sent to it is dropped. It picks a tactic each round as NPCs do, gets up five seconds after losing a duel, and leaves with its owner.
 
 ## Tests
 
-- **Unit** (`tests/hds.Tests/PvpTests.cs`): the attribute updates, the duel records, the kill notice and broadcast, the attacked player's 47 and 45, the combat init and the settings records against retail's bytes; the opponent rule case by case; the flag tempmods; the order of challenge obstacles.
+- **Unit** (`tests/hds.Tests/PvpTests.cs`): the attribute updates, the duel records, the kill notice and broadcast, the attacked player's 47 and 45, the combat init and the settings records against retail's bytes; the opponent rule case by case; the flag tempmods; the order of challenge obstacles; the loser's and winner's own-view records at the duel's end, the bot's turn record against retail's, the teardown delays; where the bot stands (on the mesh, with a clear line to it, straight ahead on open ground, and in the Mara room by a wall).
 - **Headless** (`tools/HeadlessClient/ScenariosPvp.cs`):
 
 | Scenario | Covers |
@@ -253,9 +307,9 @@ The bot is a whole character to the rest of the server (`WorldClient.CreateBot`)
 | `pvp-gunfire` | Shots on the shooter's, the target's and an onlooker's client; combat-log lines; health; stopping |
 | `pvp-server-flags` | PvPServer 6: flagged at entry above the safe level, the flag in creation records, `/pvp` for the low level, attacking flags the attacker |
 | `pvp-flag-abilities` | `/pvp` refused off a PvP server; pulse and pacification abilities; a withdrawal between players |
-| `duel-to-defeat` | Challenge, competing challenges, accept, DuelIDs, the fight, both sides of the defeat, the broadcast for an onlooker, standing up |
-| `duel-decline-surrender-and-distance` | Not a player, decline, the wait, surrender, too far apart |
-| `duelbot-duels` | The bot accepting and attacking, a tactic change and an ability as the next move, the bot challenging, the bot leaving mid-duel |
+| `duel-to-defeat` | Challenge, competing challenges, accept, DuelIDs, the fight, both sides of the defeat, the broadcast for an onlooker, standing up. The defeat and the winner's DuelID 0 arrive in earlier packets than either combat view's delete, never in the same one; no `46 … 00` for the loser; both records again after the teardown |
+| `duel-decline-surrender-and-distance` | Not a player, decline, the wait, surrender (DuelID 0 and `56` before the teardown, in another packet), too far apart |
+| `duelbot-duels` | The bot accepting and attacking, a tactic change and an ability as the next move, the bot challenging, the bot taken away mid-duel (DuelID 0 before its view's delete), losing to the bot and `81 4c` before the teardown was due (the teardown first, the stand-up in a later packet) |
 | `duelbot-gun-and-pvp` | The bot firing in a duel; the flagged bot of another organisation declining a duel and being attacked without one |
 
 A pass means the server does what this document says. It doesn't show the client accepts it.
@@ -267,9 +321,10 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough. In order of ho
 1. **Does the bot look like a player?** `?duelbot`. A character named DuelBot should stand next to you and be selectable. If the client drops it, everything below fails and the spawn is the place to look.
 2. **The challenge.** Select DuelBot, type `/duel`. Expect "You have challenged DuelBot to a duel!" (54) and a second later "You are now in a duel to the death with DuelBot." (55). The bot should now show as an opponent (hostile selection colour, Close Combat offered): that is the DuelIDs working. Selecting anything else should be refused by the client.
 3. **The attacker's side.** Double-click the bot. The interlock should start as with an NPC: camera, both characters fighting, damage numbers both ways, the bot's health bar falling. Change tactics from the Actions window.
-4. **Winning.** `?duelbot` again for a fresh one if needed; fight it down (it has your maximum health; `?tactic power` helps). Expect "You have defeated DuelBot! The duel is now over.", the area line "TheNeo has defeated DuelBot in a dueling challenge!", and the bot lying down, then up again after five seconds.
+4. **Winning.** `?duelbot` again for a fresh one if needed; fight it down (it has your maximum health; `?tactic power` helps). Expect "You have defeated DuelBot! The duel is now over.", the area line "TheNeo has defeated DuelBot in a dueling challenge!", and the bot lying down, then up again after five seconds. Your interlock ends about 8 s after the duel's end, as in retail.
 5. **The attacked side.** `?duelbot attack`, `/duel`. Three seconds after the duel begins the bot attacks: the interlock must start without any request from the client. This is the side only captures describe, so it is the likeliest to need fixing: watch for a client error, a fight with no camera, or no fight at all.
-6. **Losing.** In that fight, `?health 20`. Expect your character to fall, "DuelBot has defeated you! The duel is now over." and "You have been defeated in a duel. Type /reconstruct to stand up." Then `/reconstruct`: you should stand up where you are with 1 health and stay in the world.
+6. **Losing.** In that fight, `?health 20`. Expect your character to fall, "DuelBot has defeated you! The duel is now over." and "You have been defeated in a duel. Type /reconstruct to stand up." Then `/reconstruct`: you should stand up where you are with 1 health and stay in the world. Try it once within 8 s of falling and once after.
+   - **After a duel** (B). Win or lose a duel, then `?duelbot off` and `?duelbot attack`. You should be able to select the new bot and `/duel` it. Also take the bot away mid-duel (`?duelbot off`): expect "Your duel has been stopped because your target's RSI could not be found in the matrix." and selection free again.
 7. **The dialog.** `?duelbot challenge`. Three seconds later the Yes/No dialog "DuelBot (Level …) challenges you to a duel." should open. Try Yes, No, and letting it run out (15 s).
 8. **Surrender.** In a duel, `/duel stop`: "You have surrendered to DuelBot."
 9. **Gunfire.** `?duelbot gun`, `/duel`: the bot should draw and fire, with tracers or hit reactions and its lines in the combat log. Then shoot it yourself with the Free Fire button.
