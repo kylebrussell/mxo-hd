@@ -40,6 +40,7 @@ public static partial class Scenarios
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
         new Scenario("azuna-collector", AzunaCollector, StillNpcs),
         new Scenario("azuna-collector-full-bag", AzunaCollectorFullBag, StillNpcs),
+        new Scenario("azuna-collector-guards", AzunaCollectorGuards, StillNpcs),
         new Scenario("azuna-function-data-loot", AzunaFunctionDataLoot, new Dictionary<string, string>
         {
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
@@ -463,6 +464,42 @@ public static partial class Scenarios
             "A full bag can reuse the completely consumed stack's slot");
         Check.Equal(96L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId}"),
             "Every other item is preserved");
+    }
+
+    private static async Task AzunaCollectorGuards(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
+        {
+            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,
+            Items = new[] { (1, 48150u, 10) }
+        }))[0];
+
+        // A request with no active dialog and malformed requests cannot consume items.
+        player.SendRpc("81 16 00 00 00");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        foreach (string payload in new[] { "", "00", "01 00 00", "00 01 00 00", "00 00 00 00" })
+        {
+            player.SendRpc("81 16 " + payload);
+        }
+        player.SendChat("?tp -145900 -55 50200 0 0 0");
+        await player.WaitForTextAsync("Teleported to 0/0");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "Malformed requests leave the data intact");
+
+        // Walking away after opening the collector invalidates an otherwise valid trade.
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 00");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "The trade checks the current position");
+        player.SendChat("?tp -146900 -55 50200 0 0 0");
+        await player.WaitForTextAsync("Teleported to 0/0");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 01");
+        Check.Equal(48149L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "A fresh dialog can exchange normally after a refused trade");
     }
 
     private static async Task AzunaFunctionDataLoot(ScenarioContext context)
