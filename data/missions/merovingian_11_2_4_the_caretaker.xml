@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Caretaker, Merovingian story mission 11.2.4. Source: research/missions/transcripts/Merv11-2-4.md (one live
+     retail run, given by Flood: 29 screenshots, two during play in phases 1 and 3 with the Objectives window and
+     Computer popups showing, the rest of the log after the mission ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Twin, Merovingian, Persephone and Holographic Projection line,
+     the Zion Gunman's line (Team chat only), the names, and the objective texts "Search the area" (phase 1) and
+     "Don't let Persephone die" (phase 3) from the Objectives window. The log's player was Briseus; his name is
+     {player} here. Italics are dropped, "Es-tu sure?" loses its accent, and "she isn't dead.;" is kept as retail
+     wrote it. Ours: the description (the Summary tab only said "Datalink established."), the other objective texts,
+     the sites (all Normal: none is described beyond a room or a terminal), the looks (the Twins, the
+     Merovingian, Persephone and the Holographic Projection as the other Merovingian files have them; the Zion Gunman
+     a male redpill's) and the enemy counts. Phase 1's only hostile is the Zion Gunman; phase 3's are Machines for
+     the "program activity" around the terminal; phases 2 and 4 have none.
+     Item stand-ins: the Access Card from the Zionite's body is Access_Code (6782).
+     Joins between images read as contiguous: "the Machine caretaker droid in / charge of the pod", "some record of
+     the / progra", "You think the Machines can / protect them?", "if you are really / determined", "a Machine
+     control / terminal to commandeer", "I wonder / what he'll do", "Among the pieces, my / men found", "I have
+     heard. ... I / warned her". Flood's first briefing ("Mara, though." / "Now, Briseus" / "The Machines have") and
+     his second ("connected to it." / "Wright may have" / "Oh, for...") are read as paragraph breaks.
+     Rewards: Zion's 11.2.4, Ring 149: 352,000 experience, 175,000 information. The log's run paid 253,230
+     experience and 84,000 information.
+     Gaps: phase 1 is read as: kill the Zion Gunman (his Team line when met), take the access card from his body,
+     then use it on the computer ("Search the area"), whose activity report (a popup, left out) gives the bluepill's
+     serial number. An Agent's Area shout ("You are not authorized in this area.") came during phase 1; nobody
+     placed says it. In phase 2 the Twins' four lines are said on arrival (which Twin said which is ours: they
+     alternate), and Persephone's and the Merovingian's answers come when the Merovingian is talked to, as they did
+     in the same second. Phase 3 is read as: clear the terminal of its programs (the Operator's "they've brought
+     Persephone in" after 15 minutes of play), talk to Persephone, then use the computer; Persephone stands in the
+     area from the start instead of being brought in, and there is no goal that leads an NPC to an object, so she
+     doesn't follow the player to the computer. Retail's red "Don't take Persephone out of the area" has no goal
+     type here and is left out. Her "Well? Where is it? Where?!" is her click line once talked to. No area-complete
+     line was logged at the end of phases 3 and 4. In phase 4 the Twins' and the Holographic Projection's lines are
+     said on arrival. Lines logged after a goal (Persephone's "Do as my husband tells you", the Merovingian's second
+     "Ehh..." and "She has always been headstrong", the Twins' last two) are what each says when clicked. -->
+<mission id="311204" title="The Caretaker" description="Learn where the interface program's human host is held from a Zionite's access card, then get Persephone to a Machine terminal to free it." plot="1"
+         order="11204" org="3" contact="Flood" exp="352000" info="175000">
+  <npc id="1" handle="Zion Gunman" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="2" rsi="58010058" weapon="0">
+    <say after="4">Ehh... You know it will be dangerous, my dear. But, if you are really determined to take this rash step...&#10;&#10;Yes? Es-tu sure? Well, then we will do it.&#10;&#10;{player}, contact Flood. He will guide you to the Machine terminal you must secure for my wife.</say>
+  </npc>
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+    <say after="4">Do as my husband tells you.</say>
+  </npc>
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+    <say after="6">Well? Where is it? Where?!</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="9">The joys of wedlock.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+    <say after="9">Oh. That's all, is it?</say>
+  </npc>
+  <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="9">She has always been headstrong, but this--! It is going too far. What will they say of me if my wife gets herself killed so, hm?&#10;&#10;Non, non... She is forgetting her responsibilities. Hmh...</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Hmph. Seraph didn't get away...we let him go. Dreadfully boring fellow; never has anything to say for himself, anyway. Was worth it to give those Zionites a thrashing in Mara, though.&#10;&#10;Now, {player}, to the business of the day: while Seraph was the center of attention in Mara, that interface program slipped away, and appears to have got itself into the actual body of a human. Why it would voluntarily go into the Machine pod system, I have no idea; I always did think it was a few bits short.&#10;&#10;The Machines have the human--Imelda Kroller--under obscenely heavy guard, but word has it that a Zionite ran into Wright before that, and she foolishly shot her mouth off about Kroller's pod. If we can find her pod, we can see about getting that interface program out of it. You're going after the Zionite.</briefing>
+    <enter><say>Okay, the Zionite who ran into Wright earlier should be in there. Let's see if we can find out what Wright said about the pod.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill the Zionite" type="Defeat" npc="1" />
+    <objective goal="2" text="Take the access card from the Zionite" type="Loot" npc="1" item="6782">
+      <done><say>They were carrying an access card, huh? Could be handy.</say></done>
+    </objective>
+    <objective goal="3" text="Search the area" type="Put" object="1" item="6782" after="2">
+      <done>
+        <say>Hey, I think that worked.</say>
+        <say>Serial number for the bluepill, eh? Let's get a check run on that.</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Oh, please. I don't have time for this.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That's Machine pod serial number format, operative; I thought everyone knew that. The third number is the pod's ring on the tower, so evidently Wright detected the interface program in the one hundred and forty ninth ring, and began hunting down all the humans she could find connected to it.&#10;&#10;Wright may have to flail around with brute force approaches, but when it comes to knowing the pod system inside and out, we're the real experts. Now that we know the program's approximate position in the pod network, you'll find that the Merovingian can locate it like that.&#10;&#10;Oh, for... Just imagine you could hear me snap my fingers, then.</briefing>
+    <enter><say>There was that thing a little while after the Truce broke where we were checking out why a woman named MacHenry had just up and vanished from her pod, and we swiped the logs of the Machine caretaker droid in charge of the pod. Maybe we can do that again to find this Kroller chick.</say></enter>
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Yes, we'll hack into their system, and locate the caretaker for those pods. There should be some record of the progra--</say></talk>
+      <done>
+        <say npc="5">No. That will only give us information; it will not save the woman--or the program. You think the Machines can protect them? That monster will take everything.&#10;&#10;Get me a connection to that part of the Machine network. I will find them. I will save them.</say>
+        <say npc="4">Ehh... You know it will be dangerous, my dear. But, if you are really determined to take this rash step...&#10;&#10;Yes? Es-tu sure? Well, then we will do it.&#10;&#10;{player}, contact Flood. He will guide you to the Machine terminal you must secure for my wife.</say>
+      </done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">She's been a moody one, hm?</say>
+      <say npc="3">Keep your mind on your work, brother.</say>
+      <say npc="2">I'm the sensitive one.</say>
+      <say npc="3">Job hazards.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>I'm not one to judge, operative... Well, she is behaving foolishly. You, however, had better wrap your inelastic mind around the task at hand: you've got a Machine control terminal to commandeer.</briefing>
+    <enter><say>Persephone was a caretaker herself before she went into Exile, so I guess she must know what she's doing...&#10;&#10;Okay, the terminal we need is in there. I'm reading a lot of program activity in there, so watch out.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="5" text="Clear the programs from the terminal" type="DefeatAll">
+      <done><say>Okay, they've brought Persephone in. She's in a room nearby.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to Persephone" type="Talk" npc="6" after="5">
+      <talk><say npc="6">Take me to the computer, now!&#10;&#10;If we are too late...</say></talk>
+      <done><say>Get her to that computer. And no funny business with trying to take her outside!</say></done>
+    </objective>
+    <objective goal="7" text="Take Persephone to the computer" type="Use" object="1" after="6">
+      <done>
+        <say>Holy-- The Machines must've been watching that system; she had defense routines all over her as soon as she sent the commands.&#10;&#10;Oh, man; her signal is not looking good. The Merv's gonna kill us for sure.</say>
+        <say npc="6">Unh... I have done it... They are safe...</say>
+      </done>
+    </objective>
+    <objective goal="8" text="Don't let Persephone die" type="Protect" npc="6" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Oh, no; I'm not taking the heat for this one. It was her idea, and you were the one there with her. You go explain it to the Merovingian.</briefing>
+    <enter><say>Well, hey...at least she isn't dead.; they're telling me she was still alive when they got her back to the chateau, anyway.</say></enter>
+    <objective goal="9" text="Talk to the Merovingian" type="Talk" npc="10">
+      <talk><say npc="10">Yes, yes, my wife; I have heard. ... I warned her, did I not? Et, she must have known about those defense routines, but she said nothing... If she had asked for my help, I would have given it, of course!&#10;&#10;But, enough; she has liberated the program from the hands of our enemies. We must move swiftly to take advantage of this.</say></talk>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">Hm... No, I don't remember anyone letting the boss' wife get hacked almost to death before. I wonder what he'll do.</say>
+      <say npc="8">My, that went well.</say>
+      <say npc="9">They detected it on their way back: the wreckage of a compact craft, similar to those that attacked them in the no-fly zone. Among the pieces, my men found an inert but mostly intact android. It does not match any known type. They're bringing it with them now.</say>
+      <say npc="9">End transmission.</say>
+    </near>
+  </phase>
+  <finish>Bah, all she managed to do was to restart Kroller's RSI at a random point in the simulation. Now, who do you suppose is going to have to go collect her?&#10;&#10;Oh, I don't know. I'll get back to you later, {player}; I'm busy.</finish>
+</mission>

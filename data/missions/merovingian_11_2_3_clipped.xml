@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Clipped, Merovingian story mission 11.2.3. Source: research/missions/transcripts/Merv11-2-3.md (one live retail
+     run, given by Flood: 18 screenshots taken after the mission ended, the Log tab scrolled top to bottom). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and Seraph line, the Zion Selective Phage's lines (Team chat
+     only), and the names. The log's player was Briseus; his name is {player} here. Italics ("is", "you're", "yes",
+     "are", the Phage's "was") are dropped. "It's only thank to my wits" and "woiuldn't" are kept as retail wrote them.
+     Ours: the description (the Status tab was never opened), every objective text (nor was the Objectives tab), the
+     sites (none is described: all Normal; "central Richland" isn't one of the world file's neighbourhoods), the looks
+     (Seraph and the Accelerator as the other Merovingian files have them; the Phages have redpill looks) and the
+     enemy counts. Phase 1 has Machines (the Operator's "Looks like redpill activity", "So, the Machines are trying to
+     get in on this little party too", Flood's "they sent in their operatives"); phase 2's are the Merovingian's own
+     overridden programs ("put those poor bastards out of their misery"); phase 3's are the two named Zion Selective
+     Phages ("there are hacks of some sort in there"); phase 4 has none but the Accelerator.
+     Joins between images read as contiguous: "that confounded / Danielle Wright", "popping up in the / slums.", "but
+     the only / things I'm getting", "I'm sure Wright is / looking for me.", "frying pan. / Speaking of frying" (no
+     paragraph break, as the scroll step fits; one can't be ruled out), "mind at all if / he wants", "I say we / go check
+     it out.", "the name "Seraph" around / lightly", and "posted around the / building".
+     Rewards: Zion's chapter 11.2 mission Mara (11.2.3) showed 175,000 information, and the experience is The Spider's
+     (11.1.5, 352,000), as the Zion files have it. The log's run showed 84,000 information; its experience line was
+     scrolled off.
+     Gaps: the goals of every phase are read from the lines: phase 1's done line is the Operator's "So, the Machines
+     are trying"; an Operator entry after it is hidden but for its header and is taken as the area-complete line.
+     Phase 2's two Operator lines a second apart are both said on arrival; the Merovingian's programs are already
+     overridden. Phase 3's "Override interference" has no visible header and is taken as a second arrival line after
+     "Advanced fighter craft?", which was logged 22 minutes after the briefing; the Phages' Team lines are said on
+     reaching them (they wait to be attacked), and the Operator's "Did they say "Seraph"?" comes when they are down.
+     In phase 4 the Operator's "Okay, that explains the override activity." is said on reaching the Accelerator and
+     "Whoa, it is him." on reaching Seraph. Seraph's "..." is his line when clicked afterwards. -->
+<mission id="311203" title="Clipped" description="Follow Danielle Wright's overrides through the slums and central Richland in search of the interface program." plot="1"
+         order="11203" org="3" contact="Flood" exp="352000" info="175000">
+  <npc id="1" handle="Zion Selective Phage" type="HOSTILE" attacksOnSight="0" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Zion Selective Phage" type="HOSTILE" attacksOnSight="0" at="3" rsi="ec020058" weapon="2568" />
+  <npc id="3" handle="Accelerator" type="HOSTILE" attacksOnSight="0" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2564">
+    <say after="4">...</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>That fool of a program almost got me killed--killed, I tell you! There I was in the Hel Club, minding my own business, when in came the interface program, shortly followed by--as is nearly inevitable--that confounded Danielle Wright, blasting things hither and yon. It's only thank to my wits that I'm still alive.&#10;&#10;We searched everywhere in the club for the infernal thing, but it seems to have saved its own skin when Wright appeared--and now I'm getting reports of those blasted override routines of hers popping up in the slums.&#10;&#10;I want you to look into this, {player}; and if you find the interface program, keep it away from any of our Exiles until it can be contained!</briefing>
+    <enter><say>There's a whiff of override distortion across that whole area, but the only things I'm getting a firm reading on in there are definitely not overrides... Looks like redpill activity.</say></enter>
+    <objective goal="1" text="Deal with the redpills" type="DefeatAll">
+      <done><say>So, the Machines are trying to get in on this little party too. That's all we need.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Notice they sent in their operatives, not their Agents. Those insufferable overrides are making the slums unlivable for any decent programs. We've lost contact with some of our people who are over there on Hel Club business.&#10;&#10;I'm not surprised... I'm sure Wright is looking for me. I know how these egomaniacs work, {player}.</briefing>
+    <enter>
+      <say>Uh-oh; the override meter's kicking up nasty in there. Once a program gets zapped by those things, it's usually game over.</say>
+      <say>Damn, too late! Well, at least we can put those poor bastards out of their misery.</say>
+    </enter>
+    <objective goal="2" text="Put the overridden programs out of their misery" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Phah! If you can't save our programs, then for your own sake, you'd better at least do something about that woman and the interface program. She seems to be zeroing in on central Richland, so that's where you're headed, operative, and I expect you to pull something useful out of that frying pan. Speaking of frying: I had a laugh earlier when I was given news that the General's Sentinels we sent back into the no-fly zone a week ago were attacked there by advanced fighter craft, and sent scurrying away with their drilling lasers between their tentacles. That's the second time his troops have gone there and been routed, and I woiuldn't mind at all if he wants to make it three for three, because it's just so amusing to picture.</briefing>
+    <enter>
+      <say>Advanced fighter craft? I guess those must be Oligarch ships, huh? Unless the Machines have been working on new designs we don't know about.</say>
+      <say>Override interference across that whole area is picking up... Hard to get any kind of reading, but there are hacks of some sort in there.</say>
+    </enter>
+    <objective goal="3" text="Deal with the hacks" type="DefeatAll">
+      <done><say>Did they say "Seraph"?&#10;&#10;Hey, it isn't Wright or the interface program, but it's something. I say we go check it out.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">He was, but then he said he had something to take care of, and took off that way!</say>
+      <say npc="2">Aah! Zip it!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>You'd better not be wasting my time with this, operative. You don't just bandy the name "Seraph" around lightly and then come to me with nothing--not if you know what's good for you.</briefing>
+    <enter><say>Got one big override signal in there. It's putting off too much destabilization to be able to see much of anything else.</say></enter>
+    <objective goal="4" text="Talk to Seraph" type="Talk" npc="4">
+      <talk><say npc="4">This will not last.</say></talk>
+      <done><say>He is stuck! As long as that Accelerator stays, he can't get out without getting overridden!&#10;&#10;Okay, I'm calling Flood. We'll need to get some guards posted around the building to keep any Zionites from sticking their noses in...</say></done>
+    </objective>
+    <near npc="3" radius="1500">
+      <say>Okay, that explains the override activity.</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say>Whoa, it is him.&#10;&#10;Hey, do you think that override's got him trapped in there?</say>
+    </near>
+  </phase>
+  <finish>Hm... Well, don't try to take credit for that, operative; it isn't as though you're the one who trapped him there.&#10;&#10;Now, if you'll excuse me, I have some calls to make...&#10;&#10;Okay, yes, they are about the Seraph thing. All right? I'm going to hang up now.</finish>
+</mission>

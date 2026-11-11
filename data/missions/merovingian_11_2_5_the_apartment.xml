@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Apartment, Merovingian story mission 11.2.5. Source: research/missions/transcripts/Merv11-2-5.md (one live
+     retail run, given by Flood: 26 screenshots, three during play in phases 1, 2 and 4, the rest of the log after
+     the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Persephone, Danielle Wright and Merovingian line, the names,
+     and the objective text "Search the Computer" (phase 4, from the Objectives window). The log's player was
+     Briseus; his name is {player} here. Italics are dropped and "Ce n'est pas tres drole." loses its accents (the
+     Team chat copy dropped those letters too). Ours: the description (the Summary tab only said "Datalink
+     established."), the other objective texts (phase 3's search reuses retail's phase 4 wording), the sites (the
+     apartment in Eshean Projects is SlumApt; the rest Normal), the looks (Persephone, Danielle Wright and the
+     Merovingian as the other files have them) and the enemy counts: no hostile is mentioned in the log, so no
+     phase has any. Wright's overrides blanked the computer in phase 3 ("Overrides!"); no override program
+     is spawned for it.
+     Joins between images read as contiguous: "after the Machines again / evinced", "didn't work out too / well,
+     either", "with Danielle Wright, / termination-code-spammer", "the interface program's / human host", "get to
+     Mannsdale, / operative.", "Their blood is on your / hands.", "spoken to / her, well", "Zion has been / busy;",
+     "figure out / what they were up to."; Wright's "possibly imagine." / "This will end" and the Merovingian's "what
+     she" / "Eh?" are read as paragraph breaks.
+     Rewards: Zion has no 11.2.5; its 11.2 missions, Mara (11.2.3) and Ring 149 (11.2.4), both pay 352,000
+     experience and 175,000 information. The log's run paid 253,000 experience and 84,000 information.
+     Gaps: in phase 2 Persephone's and Wright's exchange came in the same second as the arrival line and the
+     area-complete line; here it is said on talking to Persephone. Wright shows as a wireframe projection in a
+     screenshot; here she stands there. In phase 3 the Operator's "There's the computer." is said on arrival, after
+     his enter line (retail: 32 seconds later, on reaching it), and Wright, who spoke 33 seconds after the computer
+     was blanked, stands on the floor so she can say it when the search is done. No area-complete line was logged
+     at the end of phases 3 and 4. In phase 4 the Operator's "Huh? Something on his computer?" and the
+     Merovingian's "How did this get here?" come when he is talked to, and his "Wake up" line when the computer is
+     searched. Lines logged after a goal (Persephone's "I must." and "So...that is it", Wright's "That goes for you
+     as well.") are what each says when clicked. -->
+<mission id="311205" title="The Apartment" description="Follow Persephone to her meeting with Danielle Wright, then search the apartment Zion was combing for the interface program." plot="1"
+         order="11205" org="3" contact="Flood" exp="352000" info="175000">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say after="1">I must.</say>
+  </npc>
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+    <say after="2">So...that is it. Yet she thinks nothing of the lives of those she claims to fight for.&#10;&#10;I know what she feels she has lost, but that was nothing compared to what she is losing now.</say>
+  </npc>
+  <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+    <say after="2">That goes for you as well.</say>
+  </npc>
+  <npc id="4" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Persephone is insisting on seeing you, {player}. She tried "saving" that bluepill hosting the interface program again, after the Machines tracked it back down, and frankly, she's lucky to still be alive after the Machines again evinced their dislike for her interference.&#10;&#10;By the way, if you haven't seen her since she first tried meddling with that bluepill's pod last week, get ready for a bit of a shock.</briefing>
+    <enter><say>Unfortunately it didn't work out too well, either--Wright caught up to that bluepill while the Machines had her, and, well, pretty much straight up killed her, just to keep the Machines from having the interface program.&#10;&#10;On the plus side, at least nobody else has been able to hold onto the interface program yet.</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="1">
+      <talk><say npc="1">Wright... I know you can find her. I must speak to her.&#10;&#10;Please.</say></talk>
+      <done><say>She almost got killed by the Machines twice, and now she wants to hang out with Danielle Wright, termination-code-spammer extraordinaire? Oh, man.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>She does want to get herself killed, doesn't she? Not that I care, only why does she have to try it on my watch? She could at least have a little consideration.&#10;&#10;Of course, we have been following along with Wright's progress since she crushed the interface program's human host into the size of a softball in Westview. She's taken an interest in Richland again: Mannsdale, to be exact, although you couldn't find a worse--&#10;&#10;What was that click? Still there, {player}? Then who-- Oh, damn it all. How did she access my work line? ... Well, you'd better get to Mannsdale, operative. It seems that Persephone's decided to go it alone.</briefing>
+    <enter><say>My readout's covered with override interference. You're probably in the right place.</say></enter>
+    <objective goal="2" text="Find Persephone" type="Talk" npc="2">
+      <talk>
+        <say npc="2">--all this killing? Their blood is on your hands. You can still stop this. If you don't...how many more will die because of you?</say>
+        <say npc="3">I'm fighting a war, program; I can't surrender simply because we take some losses. I've already lost more than you can possibly imagine.&#10;&#10;This will end: when the Matrix is run by those who power it. Until that day comes, I will not stop. Don't try to interfere with me again.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>... I wasn't worried, operative--after all, I could hardly be blamed for her rushing off like that--but you being the last person to have spoken to her, well, that would have looked bad, and I can't have you getting thrown into the iron maiden while I still have work I need you to finish.&#10;&#10;In a way, Persephone's latest whirl in her dance with death has actually been useful: keeping Wright in conversation gave us a chance to take scans of the area. Zion has been busy; how they could have located it on their own, I've no idea, but the fact remains that they've homed in on a particular apartment in Eshean Projects, and I think we can all guess what they were looking for there.&#10;&#10;No, the interface program, operative. They've cleared out now, but I expect you to get in there and figure out what they were up to.</briefing>
+    <enter>
+      <say>I'm reading an active computer system in there. Looks clear otherwise.</say>
+      <say>There's the computer.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>What--?! Overrides! Great, that's blanked whatever was on that computer.&#10;&#10;Too bad Persephone couldn't have kept her chatting longer. Maybe they could start a support group or something.</say>
+        <say npc="4">Sorry, but I didn't need you to see that.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>All my hard work, and you still let her beat you to it? You know, I'm a little insulted by that, {player}. I'll leave it to you to explain your latest failure to the Merovingian.</briefing>
+    <enter><say>Nothing like a pep talk from Flood to get you excited about meeting the boss...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="5">
+      <talk><say npc="5">Ah, it is you, {player}.&#10;&#10;Yes... That is irritating... But not as provoking as what she--&#10;&#10;Eh? Qu'est-ce que c'est?</say></talk>
+      <done>
+        <say>Huh? Something on his computer?</say>
+        <say npc="5">How did this get here? Why do I pay for the best network security if something like this can happen?</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Search the Computer" type="Search" object="1" item="0" after="4">
+      <done><say npc="5">"Wake up"? What is this "Wake up"? I am awake... I do not "awaken" like you humans from your pods.&#10;&#10;Eh... The format looks like messages left in other places recently by the interface program... So, it is having a joke with me, hm? Ce n'est pas tres drole.</say></done>
+    </objective>
+  </phase>
+  <finish>It's just flashing pixels on a screen, operative. That's hardly going to solve this Wright problem.&#10;&#10;Really, you people are so easily distracted...</finish>
+</mission>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Pods, Merovingian story mission 8.2.4. Source: research/missions/transcripts/Merv8-2-4.md (the archive replay
+     of [Merovingian Archive 8.2.4], given by [Archived]Flood; 28 screenshots of the Mission window's log after it
+     ended, cropped to that window, none during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Malphas, Holographic Projection,
+     Sunshine, Twin and Merovingian line, and those names. The player's name (Variel) is {player}. Four entries span two
+     screenshots with no overlapping line and are read as contiguous with a paragraph break, so a line may be missing
+     at each join: Malphas's first line ("...as cover." / "With that information,"), Flood's second briefing
+     ("...ineptitude." / "Not only is"), Sunshine's first line ("...wouldn't be efficient." / "So, hm...") and Malphas's
+     count ("...near the Fields..." / "That works out"). The Operator's "Okay... I think I've got a reading..." starts a
+     screenshot with no header and is read as the end of the line before it ("At least when the General's
+     involved..."). Flood's "of his own of ineptitude" and "the Machine's solar power operation", and the Holographic
+     Projection's broken phrases and dots, are as the log has them. Italics dropped: the Merovingian's "mais..." and
+     "mon ami".
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; no neighbourhood was named, and Sunshine's usual Ikebukuro docks
+     aren't where she is met: "the riff-raff come to you"), the looks (Malphas's, the hologram's, the Twins' and the
+     Merovingian's are those of earlier missions; Sunshine's is her contact's from data/mission_contact_npcs.csv), and
+     the enemy kind and count (Machines "all over the place": five). No item was shown: the General's figures are only
+     in the lines, so there are no item stand-ins.
+     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
+     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest built: no Zion 8.1 or 8.2
+     mission is.
+     Gaps: no "Mission Started!" entry was captured. Malphas's talk in the first area and the Merovingian's in the last
+     had no Operator line before the goals completed, so they have no done line. In the second area the Machines took
+     6.5 minutes to clear and the transmission came 11 s after the last fell, so killing them all is a goal and the
+     Holographic Projection's goal opens after it; its talk is its broken transmission. Sunshine's "Oh, yay! Well, good
+     luck!" (42 s after the goals completed) is said when she is talked to again. In the last area the Twins' four
+     lines came 23 s after arriving and are said on getting near the first Twin; which Twin said which isn't shown, and
+     they alternate here. Malphas's two lines and the Merovingian's reply came one after another, Malphas first; whom
+     the player clicked isn't shown, so all three are said on talking to the Merovingian, the "noble leader" Flood
+     sends the player to. The Merovingian's "I will tell you though, {player}..." (12 s after the goals completed) is
+     said when he is talked to again. -->
+<mission id="308204" title="The Pods" description="Help the Merovingian count the humans in the Machines' pods: hear Malphas out, rescue the General's straying transmission, and ask Sunshine how much of the Earth the pods could cover." plot="1"
+         order="8204" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Sunshine" type="FRIENDLY" at="3" rsi="770a0058" weapon="0">
+    <say after="4">Oh, yay! Well, good luck!&#10;&#10;I wish the sun would come back. I didn't get to find out just what it was that the humans did, but it must really have been something to keep that storm going all this time!</say>
+  </npc>
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+    <say after="5">I will tell you though, {player}, that I am starting to suspect why the Machines are not acting like their old selves.</say>
+  </npc>
+  <npc id="5" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Thanks to Zion's own precious red pill programs, we've located some of the other Machine pod clusters. The General and his Sentinels have been dispatched to investigate.
+
+Although we knew that they were out there, of course, I find any reminder of there being more of you out there distressing.
+
+For some reason, Malphas enjoys this sort of thing, and I'm told that he has further details to impart. I'll thank you to keep them to yourself.</briefing>
+    <enter><say>His Broodiness is in there.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">The General was able to sample the power output of the pod cluster next to the Fields, using the nearby battle between EPN and the Machines as cover.&#10;&#10;With that information, once we can calculate the total number of humans in Machine pods, we can estimate the total energy that the Machines have at their disposal--assuming that the pods, with humans and their mysterious form of fusion, are their sole energy source.&#10;&#10;The General and his Sentinels are attempting to scout further afield now in an attempt to estimate pod cluster density. His increased distance, however, is causing communication difficulties. Flood will have instructions for you regarding this.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Here's some news for you that shouldn't come as much of a surprise, operative: the General is making a botch of things, and we've got to save him once again from the depths of his own of ineptitude.
+
+Not only is his long range broadcast signal straying, but the Machines have picked it up. We seem to have located it, but you'll have to beat the toasters off with a stick before you can receive his transmission.</briefing>
+    <enter><say>At least when the General's involved, Flood makes fun of him instead of us.&#10;&#10;Okay... I think I've got a reading on the General's projected signal in there, but I've also got Machines all over the place.</say></enter>
+    <objective goal="2" text="Kill all of the Machines" type="DefeatAll">
+      <done><say>That takes care of them for now. Let's see what the General's got that's so important.</say></done>
+    </objective>
+    <objective goal="3" text="Receive the General's transmission" type="Talk" npc="2" after="2">
+      <talk><say npc="2">...scouts have found more pod clusters... ...rough grid pattern... ...approximately every 100 to 150 miles. These clusters... ...tenth of the size of the cluster by the Fields...&#10;&#10;Will continue operation until...</say></talk>
+      <done><say>Okay, I think I caught the gist of that. Let's go see what Flood wants us to do with this forbidden data.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>What did I tell you before about deluging me with trivial figures, {player}? Save them for someone who's paid to care.
+
+Now, try to pay attention. You're to go speak to Sunshine, an insufferably cheerful program who managed the Machine's solar power operation before you vile humans shrouded the entire planet in shadow.
+
+Why? Always questions with you, isn't it, operative? You're to get some idea from her of the total surface area the Machines might have at their disposal for their pods. That's right: more numbers.</briefing>
+    <enter><say>Sunshine usually hangs out with her Phoenix gang near the docks in Ikebukuro, but when you work for the Merv, the riff-raff come to you!&#10;&#10;Oh, well, she could be classy for all I know.</say></enter>
+    <objective goal="4" text="Talk to Sunshine" type="Talk" npc="3">
+      <talk><say npc="3">Hi! Gee, the Merv doesn't ask me for help much. This is exciting!&#10;&#10;Hm... Total surface area... Well... The Machines didn't really let me stick around for very long once there was no more sunlight, but I've heard that those clouds have caused the Earth to cool a bit--though not nearly as much as you'd have thought. But even with just a little cooling, the polar ice caps will expand, and there will be increased glaciation in mountain ranges... Oh, well, and the Machines can't keep humans in really cold areas, you know; then they'd have to heat them, and that wouldn't be efficient.&#10;&#10;So, hm... I'd say as a rough figure, maybe about 1/16th of the Earth's surface is good for storing humans. Do you think that's helpful?</say></talk>
+      <done><say>There's no way she's really that cheerful...but I suppose that guesstimate of hers is better than nothing.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Well, operative, now that you've collected your sackful of numbers, kindly deliver them to our noble leader.</briefing>
+    <enter><say>100 divided by 16... Wait... Circumference equals Pi times diameter...&#10;&#10;Oh, forget it. Yep, the boss is in there, and I think old Malphas is, too.</say></enter>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk>
+        <say npc="5">Hm... 1/16th of the surface... Clusters of pods 100 to 150 miles apart...containing 1/10th of the 3 million of the large cluster near the Fields...&#10;&#10;That works out to nearly 1000 pod clusters, and close to 300 million humans in them. That is more than three times higher than our previous estimate, but the population output of the Fields would be too low to account for the birth rate seen in the Matrix.</say>
+        <say npc="5">Numbers are easily manipulated. It would be dangerous to make hasty decisions based on these rough estimates.</say>
+        <say npc="4">300 million? Eh, that is more like it, mais... Even at 100 times the amount of power the General sampled from the 3 million, it is still not...&#10;&#10;Well, I don't wish to bore you, mon ami. Suffice it to say that we must have the General look still further afield, eh? These numbers do not yet add up.</say>
+      </talk>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">Here's something that's been puzzling me. Why go to the trouble of faking this big city? I'd think most chaps would be perfectly happy floating in jelly, every bodily function catered to. Just hook up a telly with old re-runs, and Bob's your uncle.</say>
+      <say npc="7">You'd save them a fortune on their power bill, you would. Only, what if they couldn't get any good shows?</say>
+      <say npc="6">Well, I can't be expected to think of everything.</say>
+      <say npc="7">If they could get the old classics, it just might work.</say>
+    </near>
+  </phase>
+  <finish>It's a tedious business, operative, and I still don't see why I'm supposed to care one jot about that mud-ball of yours, or what the Machines do with it. As for their power output, well, so long as they have enough juice to keep this place going, what does it matter?</finish>
+</mission>
