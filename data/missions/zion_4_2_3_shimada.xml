@@ -16,21 +16,23 @@
      led out of the area, then follow into Shimada's building. Shimada's first line wasn't captured; her second is said
      when she's talked to. The guards' lines were in team chat after she spoke; two of them are said as bystander chatter,
      and the two that only fit after she has spoken ("You heard Shimada; hit the road.", "What she told you is for you
-     alone.") aren't said, since after="1" would already count phase 1's goal 1. -->
+     alone.") are what they say once she has been talked to. -->
 <mission id="104203" title="Shimada" description="Intercept the renegade redpills who dress like Neo and Trinity, and find out who leads them." plot="1"
          order="4203" org="1" contact="Tyndall" exp="340845" info="112000">
   <npc id="1" handle="E Pluribus Neo Crusader" type="HOSTILE" at="1" rsi="000100b4" weapon="2568" />
   <npc id="2" handle="Cordoba" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
-    <say after="1">Piece of advice, friend: don't think about pulling the wool over Shimada's eyes. She's nobody's fool.</say>
+    <say after="7">Piece of advice, friend: don't think about pulling the wool over Shimada's eyes. She's nobody's fool.</say>
   </npc>
   <npc id="3" handle="Pax" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
   <npc id="4" handle="Chang" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
   <npc id="5" handle="Shimada" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
   <npc id="6" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
     <say display="5">Neo and Trinity are watching over you, whether you realize it or not.</say>
+    <say display="5" after="11">You heard Shimada; hit the road.</say>
   </npc>
   <npc id="7" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
     <say display="5">Ask yourself, "what would Neo do"?</say>
+    <say display="5" after="11">What she told you is for you alone.</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="4">
     <briefing>Warrior, we may have a serious problem on our hands. After your recent run-ins with fanatic redpills dressed as Neo and Trinity, we began combing city records for reports of similar encounters. We found a surprising number of reports of similarly dressed people, often involved in fights with groups matching the general description of Cypherites.&#10;&#10;Furthermore, a number of hovercraft that left Zion recently have failed to make their scheduled status broadcasts back to Zion Control. Commander Lock believes that the new costumed redpill group is operating from these renegade hovercraft. Most of the data on their crews was somehow wiped from Zion's databases. Fortunately, we happened to have a backup of one crew's data on a portable drive that they seem not to have known about. We've used this data to trace the crew's RSI signals. Intercept the renegades and attempt to subdue them.</briefing>
@@ -53,36 +55,36 @@
       <say>I'm reading an active computer system in that room. It's running some kind of security protocol, though.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Hack the computer" type="Use" object="1">
+    <objective goal="4" text="Hack the computer" type="Use" object="1">
       <done>
         <say>You just hacked the heck out of that thing. My scan shows that you have free access to that computer now.</say>
         <say>"Shimada"? Sounds like the name of whoever's directing these people. This could be important. See if you can get a data log of network connections from that computer. Maybe we can use it to track down the guy who was chatting on there: "Cordoba."</say>
       </done>
     </objective>
-    <objective goal="2" text="Get the Data from the computer" type="Search" object="1" item="6787" after="1">
+    <objective goal="5" text="Get the Data from the computer" type="Search" object="1" item="6787" after="4">
       <done><say>Great. Upload that data to me at a hardline.</say></done>
     </objective>
-    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+    <objective goal="6" text="Upload the data at a hardline" type="Upload" item="6787" after="5" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>"Shimada"? The name sounds familiar, {player}. She's probably a Zionite; I'll see what I can dig up. Meanwhile, we've been able to use the network connection data you retrieved to trace the location of Cordoba's terminal. Proceed to his location and see if he's willing to talk about Shimada.</briefing>
     <enter><say>I've got more redpill signals in there. Hopefully, Cordoba is one of them. Maybe if we mention Shimada's name they'll be willing to talk.</say></enter>
-    <objective goal="1" text="Talk to Cordoba" type="Talk" npc="2">
+    <objective goal="7" text="Talk to Cordoba" type="Talk" npc="2">
       <talk><say npc="2">You want to meet Shimada, huh? Either you've got Neo in your heart, or you're trying to spy on us for that do-nothing Commander Lock. Anyway, you'll get what you deserve from Shimada.&#10;&#10;Take Pax and Chang here with you. They'll tell your operator where you need to go.</say></talk>
       <done><say>That seemed to go well. Guess you'd better head outside with your little escort party.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Pax" type="Talk" npc="3" after="1">
+    <objective goal="8" text="Talk to Pax" type="Talk" npc="3" after="7">
       <talk><say npc="3">I can't wait to see what Shimada thinks of you. Are you sure you don't want to, you know, put on some decent clothes first?</say></talk>
     </objective>
-    <objective goal="3" text="Talk to Chang" type="Talk" npc="4" after="2">
+    <objective goal="9" text="Talk to Chang" type="Talk" npc="4" after="8">
       <talk><say npc="4">Let's get going. You first.</say></talk>
     </objective>
-    <objective goal="4" text="Lead Pax and Chang out of the area" type="Escort" npc="3,4" to="exit" after="3" />
+    <objective goal="10" text="Lead Pax and Chang out of the area" type="Escort" npc="3,4" to="exit" after="9" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>Shimada was indeed a Zionite, and responses to my inquiries around Zion indicate that she was in the crew of one of the hovercraft that have missed their last scheduled status broadcast to Zion Control.&#10;&#10;Talk to her, {player}, and if you can't persuade her to return the missing hovercraft to Zion, at least try to find out what her group's goals are. Maybe we can still resolve this peaceably.</briefing>
     <enter><say>Lots of redpill signals in there. Looks like this Shimada has plenty of security.</say></enter>
-    <objective goal="1" text="Talk to Shimada" type="Talk" npc="5">
+    <objective goal="11" text="Talk to Shimada" type="Talk" npc="5">
       <talk><say npc="5">You came here seeking answers, operative, but you must find some of them for yourself. I will tell you that our group, E Pluribus Neo, is dedicated to following the teachings and ideals of Neo: most importantly, that all humans should be given the chance of freedom from the Matrix, just as every bird should have a chance to use its wings.&#10;&#10;When you understand the truth of that statement, you will be ready to know more. At present, I must ask you to leave. Do not bother trying to call in other operatives for backup; we will be long gone before they can arrive.</say></talk>
     </objective>
   </phase>

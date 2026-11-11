@@ -26,10 +26,10 @@
   <npc id="3" handle="Lu" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
   <npc id="4" handle="Magnor" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
   <npc id="5" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
-    <say after="2">I know you won't let me down, operative. Zion and I rely on your abilities.</say>
+    <say after="9">I know you won't let me down, operative. Zion and I rely on your abilities.</say>
   </npc>
   <npc id="6" handle="Ghost" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
-    <say after="1">Words convey meaning, operative, but it is actions by which we are judged. The time for action is approaching--the time that will define us.</say>
+    <say after="8">Words convey meaning, operative, but it is actions by which we are judged. The time for action is approaching--the time that will define us.</say>
   </npc>
   <npc id="7" handle="Zion Kung Fu Master" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
     <say display="5">Good luck, sir.</say>
@@ -51,16 +51,16 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Planting a bug in an active enemy operations center without being spotted can be difficult. Fortunately, we've got the perfect decoys: the General's commandos. A squad of them is waiting for you. Rendezvous with them and conduct them out of the building.</briefing>
     <enter><say>I've got the commando squad in there; code scan's clean otherwise.</say></enter>
-    <objective goal="1" text="Talk to Paprock" type="Talk" npc="2">
+    <objective goal="2" text="Talk to Paprock" type="Talk" npc="2">
       <talk><say npc="2">You can count on us, sir!</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Lu" type="Talk" npc="3" after="1">
+    <objective goal="3" text="Talk to Lu" type="Talk" npc="3" after="2">
       <talk><say npc="3">Training with Zion has been very beneficial to our strategy and combat routines, sir!</say></talk>
     </objective>
-    <objective goal="3" text="Talk to Magnor" type="Talk" npc="4" after="2">
+    <objective goal="4" text="Talk to Magnor" type="Talk" npc="4" after="3">
       <talk><say npc="4">Ready to take down some Mervs, sir!</say></talk>
     </objective>
-    <objective goal="4" text="Lead the commandos out of the building" type="Escort" npc="2,3,4" to="exit" after="3" />
+    <objective goal="5" text="Lead the commandos out of the building" type="Escort" npc="2,3,4" to="exit" after="4" />
   </phase>
   <phase site="Office" enemy="Merovingian" enemies="5">
     <briefing>Good work, {player}. Now, take the commandos with you to the target zone. You're looking for a specific computer on which you'll be planting the bug. Leave the commandos in a room nearby to create a distraction while you place the bug on the target. Your operator will instruct you further once you're inside the building.&#10;&#10;Oh, I should warn you that we've received reports of EMP-like devices being used by Merovingian operatives. Apparently they are capable of destroying any of the General's commandos in the immediate vicinity. Fortunately, these devices appear to be in short supply.</briefing>
@@ -69,13 +69,13 @@
       <say>Clear the out the guards in the next two rooms.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Kill the guards" type="DefeatAll">
+    <objective goal="6" text="Kill the guards" type="DefeatAll">
       <done>
         <say>The computer you need to bug is in that room.</say>
         <say>Nice. Now leave the commandos in the outer room, and plant the bug on the computer in the inner room. The commandos will prevent any backup guards from spotting you while you're bugging the computer.</say>
       </done>
     </objective>
-    <objective goal="2" text="Plant the bug on the computer" type="Put" object="1" item="6824" after="1">
+    <objective goal="7" text="Plant the bug on the computer" type="Put" object="1" item="6824" after="6">
       <done><say>Here comes their backup, right on schedule. Get out of that room before they spot you around the computer. We can't have them finding the bug.</say></done>
     </objective>
   </phase>
@@ -85,10 +85,10 @@
       <say>Code stream shows redpills in there. Looks like our people.</say>
       <say>Niobe and Ghost? This must be big.</say>
     </enter>
-    <objective goal="1" text="Talk to Ghost" type="Talk" npc="6">
+    <objective goal="8" text="Talk to Ghost" type="Talk" npc="6">
       <talk><say npc="6">Niobe has an important message for you.</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Niobe" type="Talk" npc="5">
+    <objective goal="9" text="Talk to Niobe" type="Talk" npc="5">
       <talk><say npc="5">Hey, operative. I asked for you because I've heard of the success you've had in your operations against the Merovingian. I wanted to let you know in person--and this is not to go outside this room, understand?--that we're gearing up for an all-out offensive against his remaining forces soon. I can't say when, exactly; we still have details to work out. We'll have some important work for you.&#10;&#10;Be ready for it, {player}. I'm counting on you.</say></talk>
     </objective>
   </phase>

@@ -23,10 +23,10 @@
     <say after="2">And...there!&#10;&#10;Whew, what a rush that was! What should we do next? How about I pretend to be a cop, and arrest you? I've got some handcuffs at home. Just give me a few minutes to go get 'em, okay?</say>
   </npc>
   <npc id="2" handle="Reggie Bosung" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
-    <say after="1">It was those Bells... They took everything from the van. I am so bummed right now, man.</say>
+    <say after="5">It was those Bells... They took everything from the van. I am so bummed right now, man.</say>
   </npc>
   <npc id="3" handle="Yttri" type="FRIENDLY" at="4" rsi="250d0098" weapon="0">
-    <say after="1">Are you...certain that you do not simply pursue a selfish means to power?</say>
+    <say after="7">Are you...certain that you do not simply pursue a selfish means to power?</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="3">
     <briefing>Alright, so we gotta get back the key to the General's case that Niobe dropped off a rooftop. It fell onto the roof of an orange van. Fortunately, I was there, and managed to read the van's license plate number. So now all we gotta do is bust into the Machines' Transportation Department records and trace that plate. I'm sure they won't mind if we "borrow" a little information--all for a good cause, right?</briefing>
@@ -50,7 +50,7 @@
   <phase site="SlumApt" enemy="Merovingian" enemies="0">
     <briefing>That pimped-out van belongs to a bluepill named Reggie Bosung. Lives in a crappy apartment in Achan--well, I assume it's crappy; Achan is a pit. Sucks to be you, but you've gotta go there and get the key off the roof of Mr. Bosung's van.</briefing>
     <enter><say>Reggie Bosung should be in there. Ask him about his van.</say></enter>
-    <objective goal="1" text="Talk to Reggie Bosung" type="Talk" npc="2">
+    <objective goal="5" text="Talk to Reggie Bosung" type="Talk" npc="2">
       <talk><say npc="2">My van? Man, it's totally uncool how it got broken into last night! Those punks stripped it clean. Where's the respect? Those Bells have always been jealous of my sweet hand-painted barbarian mural on the side of the van. I know they were the ones who did this. It's just so... How could they?</say></talk>
       <done><say>The Bells, huh? Their gang rules the streets of Achan. They must have been after the key, and now they've got it. We'd better let Anome know about this.</say></done>
     </objective>
@@ -58,14 +58,14 @@
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>So... The Bells: they fancy themselves really high-class chicks, but who do they think they're fooling, living in a dump like Achan? As if. So, you're gonna go show those stuck-up ladies just what happens to people who steal from Zion. I'm sending you straight to their HQ. The key's got to be there. And keep an eye out for their leader, Bling Bling.</briefing>
     <enter><say>That's the Bells' HQ.</say></enter>
-    <objective goal="1" text="Kill all of the Bells" type="DefeatAll">
+    <objective goal="6" text="Kill all of the Bells" type="DefeatAll">
       <done><say>Huh... I'm not seeing anything special there: no key, and no Bling Bling. Better see if Anome has another idea.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>What?! No key? No Bling? No! We've got to get that key. Think, Anome, think!&#10;&#10;Hey! Let's go ask that hippie street musician, Yttri! She knows most of what goes on in Achan, and she owes me. She's gotta have some idea of what the Bells did with that key.</briefing>
     <enter><say>Yttri should be in there. I'm not picking up any hostiles in the vicinity.</say></enter>
-    <objective goal="1" text="Talk to Yttri" type="Talk" npc="3">
+    <objective goal="7" text="Talk to Yttri" type="Talk" npc="3">
       <talk><say npc="3">You seek the key to power. Ah...yes. It has moved on from the Bells.&#10;&#10;I've heard it's gone to the east--to Moriah. The Crossbones rule the projects there. Perhaps they have what you seek.</say></talk>
       <done><say>Moriah? Huh... That kind of makes sense, since Moriah nearly surrounds Achan. If the Crossbones have the key, then this whole thing just got cranked up a notch.</say></done>
     </objective>

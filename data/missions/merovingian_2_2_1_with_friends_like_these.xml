@@ -20,7 +20,7 @@
   <npc id="1" handle="Duncombe" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
   <npc id="2" handle="Calvinia" type="HOSTILE" at="2" rsi="ec020058" weapon="2568" />
   <npc id="3" handle="Scorpii" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
-    <say after="1">Call me paranoid, but I don't feel so hot about holding onto this thing now...</say>
+    <say after="5">Call me paranoid, but I don't feel so hot about holding onto this thing now...</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Your task is to interrogate and kill a traitor.
@@ -52,8 +52,8 @@ Find and kill Calvinia. Once the target is dead, search the body for the device:
 
 I've already given you his last known whereabouts. Do not let your target escape. Is that clear?</briefing>
     <enter><say>I think you just found the Machines that killed the Exiles at the last location... I'm seeing at least seven separate RSI signals, but there could be more. Don't let your guard down, {player}.</say></enter>
-    <objective goal="1" text="Kill Calvinia" type="Defeat" npc="2" />
-    <objective goal="2" text="Search Calvinia's body for the flit gun" type="Loot" npc="2" item="6811">
+    <objective goal="3" text="Kill Calvinia" type="Defeat" npc="2" />
+    <objective goal="4" text="Search Calvinia's body for the flit gun" type="Loot" npc="2" item="6811">
       <done>
         <say>Crap. Calvinia doesn't have the flit gun. He's only carrying a single component, not the whole thing. Damn it! Just get the flit gun part, {player}. I sure hope Flood has a backup plan...</say>
         <say>Flood might be upset about the weapon not being on Calvinia's body. Hopefully, he won't take it out on you.</say>
@@ -66,7 +66,7 @@ I've already given you his last known whereabouts. Do not let your target escape
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>The gun barrel?! That is...not what I expected. We need the entire weapon in our hands, not a single component. Nevertheless, we must secure what you hold. Just bring the gun barrel to Scorpii.</briefing>
     <enter><say>You know, I'm surprised. I thought Flood would be far more upset than that. I guess it's your lucky day!</say></enter>
-    <objective goal="1" text="Give the gun barrel to Scorpii" type="Give" npc="3" item="6811">
+    <objective goal="5" text="Give the gun barrel to Scorpii" type="Give" npc="3" item="6811">
       <talk><say npc="3">I heard the news. Too bad Calvinia didn't have the whole weapon on him. I wonder why he took it apart in the first place...
 
 Well, never mind that now. I need to secure that gun barrel.</say></talk>
@@ -77,7 +77,7 @@ We can't let them walk away from the scene. Take 'em out!</say>
         <say npc="3">Did you hear that? A sound came from the next room! Maybe you should check it out. I'll just...wait right here. Yeah, that's it...</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill the Tactical Security" type="DefeatAll">
+    <objective goal="6" text="Kill the Tactical Security" type="DefeatAll">
       <done><say>Okay, so I guess it's not your lucky day...</say></done>
     </objective>
   </phase>

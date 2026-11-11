@@ -28,8 +28,8 @@
     <say after="1">Well, now that you have it... can you stay a while?&#10;&#10;No? Fine. I'm sure I can find someone with some time to spare.</say>
   </npc>
   <npc id="2" handle="Boury" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
-    <say after="1">Why... bother...</say>
-    <say after="3">You... go... leave...</say>
+    <say after="2">Why... bother...</say>
+    <say after="4">You... go... leave...</say>
   </npc>
   <npc id="3" handle="Hypatia" type="FRIENDLY" at="3" rsi="4b0a0058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
@@ -47,21 +47,21 @@
     <briefing>Well, I must confess I wasn't sure that I'd see you after that address. Prudentia is known for her, ah... appetites.&#10;&#10;This next task may prove a little trickier. Boury has a key to the vault containing another item. You'll have to get the key from him. Unfortunately, he isn't actually in the Merovingian's employ... which could cause some problems.&#10;&#10;Get the key from him. I expect success from you.</briefing>
     <enter><say>Why would the Merovingian hide keys with people who don't even work for him? And more importantly, why are we gathering these things right now?&#10;&#10;I guess the less we know, the better... let's get this key.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to Boury" type="Talk" npc="2">
+    <objective goal="2" text="Talk to Boury" type="Talk" npc="2">
       <talk><say npc="2">Key... mine. You... leave... now.</say></talk>
       <done><say>How'd this loser get to keep one of the Merovingian's keys? Well, whatever... time to crack some skulls. Take out his guards, then see how talkative he gets.</say></done>
     </objective>
-    <objective goal="2" text="Kill Boury's guards" type="DefeatAll">
+    <objective goal="3" text="Kill Boury's guards" type="DefeatAll">
       <done><say>Maybe he'll... uh... it will be a little more cooperative now.</say></done>
     </objective>
-    <objective goal="3" text="Get the fragments from Boury" type="Get" npc="2" item="6785" after="2">
+    <objective goal="4" text="Get the fragments from Boury" type="Get" npc="2" item="6785" after="3">
       <talk><say npc="2">Stop... agree... fragments... computer... key...</say></talk>
       <done><say>I guess those go in the computer somewhere around here, and we get the key from it? I wish the Frenchmen used lackeys who were a little easier to understand.</say></done>
     </objective>
-    <objective goal="4" text="Put the fragments in the computer" type="Put" object="1" item="6785" after="3">
+    <objective goal="5" text="Put the fragments in the computer" type="Put" object="1" item="6785" after="4">
       <done><say>Okay, now grab the key and we can ditch this place!</say></done>
     </objective>
-    <objective goal="5" text="Get the key from the computer" type="Search" object="1" item="6831" after="4">
+    <objective goal="6" text="Get the key from the computer" type="Search" object="1" item="6831" after="5">
       <done><say>I guess that disk must be the key. Time to go find the vault, I guess.</say></done>
     </objective>
   </phase>
@@ -69,10 +69,10 @@
     <briefing>Ugh. The level you have to stoop to when dealing with some of these cretins-- Oh, I'm sorry. I didn't intend any offense.&#10;&#10;Continue on to the vault. You probably won't come into contact with the vault's owner, which is just as well.</briefing>
     <enter><say>The vault's owner... how mysterious. Wonder who it is?</say></enter>
     <object id="1" kind="Safe" />
-    <objective goal="1" text="Talk to Hypatia" type="Talk" npc="3">
+    <objective goal="7" text="Talk to Hypatia" type="Talk" npc="3">
       <talk><say npc="3">So... it's true. I'd heard that he was collecting his things. I had to come in person to see if it was true.&#10;&#10;But why? Where is he going? How will he get there, without his Effectuator?&#10;&#10;So many questions, and you're not the one with the answers, are you? I thought not. If you have the key, you may take the book. Be careful with that computer, however. My security is rather strict here.</say></talk>
     </objective>
-    <objective goal="2" text="Get the item from the Vault" type="Search" object="1" item="6814" after="1" />
+    <objective goal="8" text="Get the item from the Vault" type="Search" object="1" item="6814" after="7" />
     <near npc="3" radius="1000">
       <say>Hypatia!?</say>
     </near>

@@ -27,7 +27,7 @@
   <npc id="1" handle="Dubiago" type="HOSTILE" at="2" rsi="d8040058" weapon="2568" attacksOnSight="0" />
   <npc id="2" handle="Snake" type="HOSTILE" at="2" rsi="050100b4" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Fedchenko" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
-    <say after="1">The supplies need to go inside the safe -- every last one.</say>
+    <say after="13">The supplies need to go inside the safe -- every last one.</say>
   </npc>
   <npc id="4" handle="Merovingian Physician" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">How's it crackin'?</say>
@@ -71,7 +71,7 @@ Whatever. I'll send this off to Flood.</say></done>
 
 The first location is not far from your current position, but move quickly. If you don't get there before the transaction is complete, there will be nothing left to steal. We can't have that, can we?</briefing>
     <enter><say>At last, I feel like we're making progress. I'll keep tabs on you as best I can.</say></enter>
-    <objective goal="1" text="Talk to Dubiago" type="Talk" npc="1" optional="1">
+    <objective goal="5" text="Talk to Dubiago" type="Talk" npc="1" optional="1">
       <done>
         <say npc="1">Okay, this is how we'll do it: first you give me the flit gun parts, and then I'll give you the red insecticide.</say>
         <say npc="2">Screw that! You give me the insecticide, and then I'll give you the flit gun parts -- and don't try anything funny. Don't give me that white insecticide crap. I won't fall for it!</say>
@@ -79,12 +79,12 @@ The first location is not far from your current position, but move quickly. If y
         <say npc="1">We don't have time to argue! Merovingian scum at 12 o'clock!</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill Dubiago" type="Defeat" npc="1" />
-    <objective goal="3" text="Kill Snake" type="Defeat" npc="2" />
-    <objective goal="4" text="Get the red insecticide from Dubiago's body" type="Loot" npc="1" item="6804">
+    <objective goal="6" text="Kill Dubiago" type="Defeat" npc="1" />
+    <objective goal="7" text="Kill Snake" type="Defeat" npc="2" />
+    <objective goal="8" text="Get the red insecticide from Dubiago's body" type="Loot" npc="1" item="6804">
       <done><say>Insecticide accounted for.</say></done>
     </objective>
-    <objective goal="5" text="Get the flit gun parts from Snake's body" type="Loot" npc="2" item="6817">
+    <objective goal="9" text="Get the flit gun parts from Snake's body" type="Loot" npc="2" item="6817">
       <done><say>That package contains the flit gun parts we need. Don't lose it.</say></done>
     </objective>
     <near npc="1" radius="1000">
@@ -98,13 +98,13 @@ The second location is already pointed out to you. Don't waste any time getting 
     <enter><say>I have a bad feeling about this. I'm seeing some crazy code stream by... I think Zion and the Machines are onto us. Proceed with caution and a loaded weapon.</say></enter>
     <object id="1" kind="Box" />
     <object id="2" kind="Box" />
-    <objective goal="1" text="Kill all of the Zion and Machine operatives" type="DefeatAll">
+    <objective goal="10" text="Kill all of the Zion and Machine operatives" type="DefeatAll">
       <done><say>I think that was the last hostile signal. Nothing more to slaughter, friend.</say></done>
     </objective>
-    <objective goal="2" text="Find the flit gun" type="Search" object="1" item="6811">
+    <objective goal="11" text="Find the flit gun" type="Search" object="1" item="6811">
       <done><say>I keep thinking that is the silliest looking gun I've ever seen. I'm reminded of its purpose and...it's still funny lookin'.</say></done>
     </objective>
-    <objective goal="3" text="Find the insecticide" type="Search" object="2" item="6808">
+    <objective goal="12" text="Find the insecticide" type="Search" object="2" item="6808">
       <done><say>Another order of insecticide has been accounted for.</say></done>
     </objective>
   </phase>
@@ -112,13 +112,13 @@ The second location is already pointed out to you. Don't waste any time getting 
     <briefing>Now that you have taken away their precious toys, we need the flit gun parts, the flit gun, and insecticide secured. Bring them to Fedchenko.</briefing>
     <enter><say>Ahh... The calm after the storm. I always like this part. No surprises.</say></enter>
     <object id="1" kind="Safe" />
-    <objective goal="1" text="Talk to Fedchenko" type="Talk" npc="3">
+    <objective goal="13" text="Talk to Fedchenko" type="Talk" npc="3">
       <talk><say npc="3">The supplies need to go inside the safe -- every last one.</say></talk>
     </objective>
-    <objective goal="2" text="Put the flit gun parts in the safe" type="Put" object="1" item="6817" after="1" />
-    <objective goal="3" text="Put the flit gun in the safe" type="Put" object="1" item="6811" after="1" />
-    <objective goal="4" text="Put the red insecticide in the safe" type="Put" object="1" item="6804" after="1" />
-    <objective goal="5" text="Put the second order of insecticide in the safe" type="Put" object="1" item="6808" after="1" />
+    <objective goal="14" text="Put the flit gun parts in the safe" type="Put" object="1" item="6817" after="13" />
+    <objective goal="15" text="Put the flit gun in the safe" type="Put" object="1" item="6811" after="13" />
+    <objective goal="16" text="Put the red insecticide in the safe" type="Put" object="1" item="6804" after="13" />
+    <objective goal="17" text="Put the second order of insecticide in the safe" type="Put" object="1" item="6808" after="13" />
     <complete><say npc="3">Now go... before I get hungry.</say></complete>
   </phase>
   <finish>The seriousness of the matter with our associate is becoming quite apparent. I fear that Zion and the Machines are proving to be far more deadly than they were before this silly little truce of theirs.

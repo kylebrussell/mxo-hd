@@ -14,8 +14,7 @@
      rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
      Deviation).
      Gaps: the Effectuator is one NPC per phase he appears in; in phases 2 and 4 he arrived after the fight, and we
-     can't spawn an NPC on a goal, so he stands there from the start and his talk waits for the kill goal. Phase 2's
-     talk is goal 4 so that his "Ciao!" waits for it (an after line counts a goal done in any earlier phase). The
+     can't spawn an NPC on a goal, so he stands there from the start and his talk waits for the kill goal. The
      lupines Wolf, Pheasant and Brorfelde fought beside the player (the target window called them Dire Lupine Bane);
      we have no allies who fight, so they are talked to and then led out, and follow the player to the later phases.
      Nothing shows the mission failing if they die, so there is no Protect. The goons' second wave in phase 4 ("more
@@ -32,10 +31,10 @@
   </npc>
   <npc id="2" handle="Wolf" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
-    <say after="4">Ciao!</say>
+    <say after="5">Ciao!</say>
   </npc>
   <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="2568">
-    <say after="1">You do not understand...or perhaps you do. It doesn't matter.</say>
+    <say after="6">You do not understand...or perhaps you do. It doesn't matter.</say>
   </npc>
   <npc id="5" handle="Pheasant" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
   <npc id="6" handle="Brorfelde" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
@@ -66,10 +65,10 @@ Boy, who's the sourpuss today? Fine, if you just want to get down to business, I
   <phase site="Normal" enemy="Zion" enemies="5">
     <briefing>No doubt you've noticed the unusual code signature on Anome's lowest common denominators, {player}. It appears that they've gained this...feature...by mere exposure to the cheat codes. Needless to say, the Merovingian is interested in this phenomenon--very interested.</briefing>
     <enter><say>The network hub is in there. I'm reading code corruption all over the place. Get ready to unleash that hound of yours.</say></enter>
-    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="4" text="Eliminate the hostiles" type="DefeatAll">
       <done><say>Good work. The network's clearing up... Oh, and guess who just arrived. You'd better to talk to him. I suppose.</say></done>
     </objective>
-    <objective goal="4" text="Talk to the Effectuator" type="Talk" npc="3" after="1">
+    <objective goal="5" text="Talk to the Effectuator" type="Talk" npc="3" after="4">
       <talk><say npc="3">Good work! Always knew you had it in you.
 
 We've got this place nailed down. Now, on to the next hub! I'll send the coordinates to your operator.</say></talk>
@@ -83,19 +82,19 @@ Not that I want to know about it. Just hurry up with whatever network repairs yo
     <enter><say>That's not the Effectuator's signal... Or a normal Exile signal... Oh.
 
 Man, how do we always end up in the middle of these things?</say></enter>
-    <objective goal="1" text="Talk to Persephone" type="Talk" npc="4">
+    <objective goal="6" text="Talk to Persephone" type="Talk" npc="4">
       <talk><say npc="4">My husband is a pompous ass: cruel, and heartless. He says he will rescue Niobe, yes, but you know his reasons... I wanted to tell you that I wish her to be rescued as well...for different reasons.</say></talk>
       <done><say>Ohh...kay. If I was you, I'd say nothing, bow, and back out of there slowly.
 
 Hey... Just got a call from the Effectuator for real, this time. He said he's sending a couple more lupines to help you out. They should be showing up in a room nearby.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Pheasant" type="Talk" npc="5" after="1">
+    <objective goal="7" text="Talk to Pheasant" type="Talk" npc="5" after="6">
       <talk><say npc="5">Hrr... Ready...</say></talk>
     </objective>
-    <objective goal="3" text="Talk to Brorfelde" type="Talk" npc="6" after="1">
+    <objective goal="8" text="Talk to Brorfelde" type="Talk" npc="6" after="6">
       <talk><say npc="6">She's here...</say></talk>
     </objective>
-    <objective goal="4" text="Lead Pheasant and Brorfelde out of the area" type="Escort" npc="5,6" to="exit" after="3" />
+    <objective goal="9" text="Lead Pheasant and Brorfelde out of the area" type="Escort" npc="5,6" to="exit" after="8" />
     <near npc="4" radius="1000">
       <say>Yeah, that's what I thought. She's trouble--always has been.</say>
     </near>
@@ -104,7 +103,7 @@ Hey... Just got a call from the Effectuator for real, this time. He said he's se
     <briefing>I see he gave you some more of his playthings.</briefing>
     <enter><say>That place is a total mess of corrupt code. This is gonna be a war.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="10" text="Eliminate the hostiles" type="DefeatAll">
       <done>
         <say>Code's clearing up... I think that's all of 'em, finally.
 
@@ -113,10 +112,10 @@ Your buddy just popped into the computer room there.</say>
         <say npc="6">Finished. They arrrre...disgusting.</say>
       </done>
     </objective>
-    <objective goal="2" text="Talk to the Effectuator" type="Talk" npc="8" after="1">
+    <objective goal="11" text="Talk to the Effectuator" type="Talk" npc="8" after="10">
       <talk><say npc="8">That's done it! I'm running the final trace on Niobe's construct now. We'll have her out of there in no time!</say></talk>
     </objective>
-    <objective goal="3" text="Hack the computer" type="Use" object="1" after="2">
+    <objective goal="12" text="Hack the computer" type="Use" object="1" after="11">
       <done><say npc="8">That's done it! I'm running the final trace on Niobe's construct now. We'll have her out of there in no time!</say></done>
     </objective>
     <near npc="7" radius="1000">

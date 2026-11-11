@@ -41,13 +41,13 @@
   <npc id="9" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
   <npc id="10" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
   <npc id="11" handle="Agent Gray" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
-    <say after="1">Always concentrate on the task at hand, operative.</say>
+    <say after="7">Always concentrate on the task at hand, operative.</say>
   </npc>
   <npc id="12" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
-    <say after="2">It appears that Beirn, once the Frenchman's captive, is being granted a more active role within the Merovingian's organization. This situation must be monitored carefully.</say>
+    <say after="8">It appears that Beirn, once the Frenchman's captive, is being granted a more active role within the Merovingian's organization. This situation must be monitored carefully.</say>
   </npc>
   <npc id="13" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
-    <say after="3">Resources will be allocated to investigate this matter.</say>
+    <say after="9">Resources will be allocated to investigate this matter.</say>
   </npc>
   <npc id="14" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say display="5">The Merovingian cannot assist the General against our Sentinels.</say>
@@ -72,8 +72,8 @@ Makes sense, right?</say></enter>
       <say>That's a Merovingian system in there. You'll have to hack it, or find an access code.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll" />
-    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+    <objective goal="3" text="Eliminate the hostiles" type="DefeatAll" />
+    <objective goal="4" text="Search the area" type="Search" object="1" item="0">
       <done>
         <say>All right, now hook me up with data from that computer.</say>
         <say>Getting a data feed from that terminal. Let's see what we can see...</say>
@@ -92,12 +92,12 @@ I see Elite Commandos, and some Mervs in there, too.
 I love this code scan the Machines have now to detect those Elites! Gray says they can't afford to run the scan routine all the time due to the power drain... Bah! Get those coppertops makin' more babies! I want my perma detection routine!</say>
       <say>Watch it, you've got a couple Elite Commandos waiting to jump you in the next room.</say>
     </enter>
-    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="5" text="Eliminate the hostiles" type="DefeatAll">
       <done><say>Whoa! Power spike! Man alive, the feedback from that just about blew out my screen. What the...
 
 Oh. Uh-oh. Um... Do you see a big fella in there with dripping green eyes? 'Cause what I'm seeing here sure looks like you've got an Unlimit officer in there with you, and there's only one of those left, as far as we know.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Beirn" type="Talk" npc="10" after="1">
+    <objective goal="6" text="Talk to Beirn" type="Talk" npc="10" after="5">
       <talk><say npc="10">Hey there, muffins. You missed the train, you know. He's already reached the Lucero Point station, and once he gets in a subway car, well...they say there's just no catching him.
 
 Now, I strongly suggest you run along. I'm here to wrap up loose ends, and that'll include yours, if you stick around.</say></talk>
@@ -110,15 +110,15 @@ Now, I strongly suggest you run along. I'm here to wrap up loose ends, and that'
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>Meet me at the indicated location, operative. There are a number of topics to discuss.</briefing>
     <enter><say>I'd heard that Beirn guy had issues--now I believe it. Guess you can't expect the last Unlimit to have all his marbles.</say></enter>
-    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="11">
+    <objective goal="7" text="Talk to Agent Gray" type="Talk" npc="11">
       <talk><say npc="11">We must bear in mind that the Merovingian is not the primary objective. The General must be deleted, and the Sati program returned. It is clear that the Merovingian intends to interfere with our efforts. While this complicates the task at hand, we must focus our resources on the General himself in order to achieve a swift resolution of the direct threat his activities pose to the System's stability.</say></talk>
       <done><say>Delete the General first, Merv second. I guess that's clear enough.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Agent Park" type="Talk" npc="12">
+    <objective goal="8" text="Talk to Agent Park" type="Talk" npc="12">
       <talk><say npc="12">The entity you encountered, known by his operative name, Beirn, achieved high power levels through the use of a cheat code given to him by the renegade Zion controller, Anome. While Anome and his other mutated followers have expired, Beirn was preserved by the Merovingian. A side effect of the code he consumed resulted in the death of his human body; Beirn now exists only as data within the Matrix. As such, he can be deleted; however, his power level, and the support of the Merovingian, makes this difficult.</say></talk>
       <done><say>I heard Beirn actually got caught by Persephone, 'cause he had the hots for her. Sounds like a bit of a dope to me.</say></done>
     </objective>
-    <objective goal="3" text="Talk to Agent Stewart" type="Talk" npc="13">
+    <objective goal="9" text="Talk to Agent Stewart" type="Talk" npc="13">
       <talk><say npc="13">The Merovingian has in the past employed an Exile program known as "The Trainman" to transport programs between the Machine mainframes and the Matrix simulation without our permission. Although rumors of his activity have persisted, the Trainman himself has not been seen since the establishment of the Truce. If the Trainman has indeed returned to active service, as the data you found today suggests, it is necessary to consider the possibility that the Merovingian is planning an important program transfer.</say></talk>
     </objective>
   </phase>

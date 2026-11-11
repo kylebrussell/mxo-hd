@@ -26,7 +26,7 @@
   <npc id="3" handle="Sirona" type="FRIENDLY" at="3" rsi="58010058" weapon="2564" />
   <npc id="4" handle="Shedar" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
   <npc id="5" handle="The Kid" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
-    <say after="1">Maybe you've got a better idea of things now. Think about what Neo meant to Zion--to humanity.&#10;&#10;I have a feeling we'll meet again. Take care, {player}.</say>
+    <say after="8">Maybe you've got a better idea of things now. Think about what Neo meant to Zion--to humanity.&#10;&#10;I have a feeling we'll meet again. Take care, {player}.</say>
   </npc>
   <npc id="6" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say display="5">Things make a little more sense now, yah?</say>
@@ -42,18 +42,18 @@
   <phase site="Normal" enemy="Zion" enemies="3">
     <briefing>The Kid? The mewling, kiss-ass "can I carry your bags for you please Neo" Kid?! I hate that punk! I knew I should have pushed him into a crevasse when I ran into him and his moron friends at the last cave party.&#10;&#10;Well, better late than never. I say we take the Kid out. I'm talking execution-style, three shots to the back of the head: pop, pop, pop. Nice and tidy.&#10;&#10;First we gotta find him. You're lucky you got me here to help you with this. I know where one of his little buddies, Alois, likes to hang out in the City. Betcha he's there right now. Let's go see.</briefing>
     <enter><say>I'm picking up some redpill readings in the code stream. Not too many of 'em, though.</say></enter>
-    <objective goal="1" text="Find Alois" type="Talk" npc="2">
+    <objective goal="2" text="Find Alois" type="Talk" npc="2">
       <talk><say npc="2">Look, like Michael said, we've got to find out where the Cypherites are getting their information. They sure-- Hey! Who's that?</say></talk>
       <done><say contact="1">So he isn't alone, huh? You'd better take them all out, then. I've got an idea.</say></done>
     </objective>
-    <objective goal="2" text="Kill Alois" type="Defeat" npc="2" />
-    <objective goal="3" text="Kill all of Alois' friends" type="DefeatAll" />
+    <objective goal="3" text="Kill Alois" type="Defeat" npc="2" />
+    <objective goal="4" text="Kill all of Alois' friends" type="DefeatAll" />
     <complete><say contact="1">Yeah, good. They're all down? Okay, get outta there; we gotta move fast.</say></complete>
   </phase>
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>I got a great plan here, so don't screw this up.&#10;&#10;I know another little snot-nose friend of the Kid's: Sirona. I snooped her on a hunch, and sure enough, she's turned into a traitorous Trinity look-alike. So head to her location fast, and tell her Alois sent you, and that he had urgent info about a Zion counterattack, that the Kid needs to hear, which he passed on to you right before a bunch of Zionites jumped him. He chose you because he knew the Zionites wouldn't suspect you. Tell her this info is for the Kid's ears only. Betcha she takes you straight to that loser.&#10;&#10;Got all that? So get moving already.</briefing>
     <enter><say>A couple redpill signals showing in there.</say></enter>
-    <objective goal="1" text="Talk to Sirona" type="Talk" npc="3">
+    <objective goal="5" text="Talk to Sirona" type="Talk" npc="3">
       <talk>
         <say npc="4">I'm a little worried about this. We don't know-- Who's there?</say>
         <say npc="3">You're right. The Kid needs to know about this right away. I'll tell you where to find him. Actually, scratch that; Shedar and I will come with you. Let's go.</say>
@@ -63,10 +63,10 @@
         <say npc="3">We need to get you to the Kid, fast. Our operator will have the waypoint uploaded for you by the time we're outside.</say>
       </done>
     </objective>
-    <objective goal="2" text="Talk to Shedar" type="Talk" npc="4" after="1">
+    <objective goal="6" text="Talk to Shedar" type="Talk" npc="4" after="5">
       <talk><say npc="4">We'd better get your info to the Kid right away.</say></talk>
     </objective>
-    <objective goal="3" text="Lead Sirona and Shedar out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+    <objective goal="7" text="Lead Sirona and Shedar out of the area" type="Escort" npc="3,4" to="exit" after="6" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>Hah, they're taking us right to him! I'm a friggin' genius!&#10;&#10;Look, don't worry about Sirona; she punches like a drunken lemur. And the Kid--pfft, I could take him with one knee. So all you got to worry about is Shedar there. Take him out first, and the Kid is all yours.</briefing>
@@ -74,7 +74,7 @@
       <say>I've got... What the... There's a jammer in place. I can't get a clear reading. At least we know that it must be the right spot.</say>
       <say contact="1">What?! Where did he get all those people? They can't be following him... He's just a whiny little brat!</say>
     </enter>
-    <objective goal="1" text="Talk to the Kid" type="Talk" npc="5">
+    <objective goal="8" text="Talk to the Kid" type="Talk" npc="5">
       <talk>
         <say npc="4">A real follower of Neo knows the different between the truth and cheap lies.</say>
         <say npc="3">Sorry, sugar. You should have known this was a set-up. Did you really think we were that stupid?</say>

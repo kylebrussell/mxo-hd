@@ -31,10 +31,10 @@
     <say after="2">I did make a mistake. The Matrix was more than I had thought it was. But you know that now too, don't you?</say>
   </npc>
   <npc id="3" handle="Codi Detriech" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
-    <say after="2">Yes, yes. Go ahead.</say>
+    <say after="4">Yes, yes. Go ahead.</say>
   </npc>
   <npc id="4" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
-    <say after="2">Her possession of offensive Oligarch override codes has not been established.</say>
+    <say after="4">Her possession of offensive Oligarch override codes has not been established.</say>
   </npc>
   <npc id="5" handle="Feldman" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
   <npc id="6" handle="Decelerator" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
@@ -63,13 +63,13 @@ And I'm calling an ambulance, too.</say>
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>{player}, at this juncture I believe that a brief discussion concerning the intruder is in order.</briefing>
     <enter><say>Oh boy, here it comes...</say></enter>
-    <objective goal="1" text="Talk to Codi Detriech" type="Talk" npc="3">
+    <objective goal="3" text="Talk to Codi Detriech" type="Talk" npc="3">
       <talk>
         <say npc="3">Is there something you need, {player}? The Agent is waiting for you.</say>
         <say npc="3">Very well.</say>
       </talk>
     </objective>
-    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="4">
+    <objective goal="4" text="Talk to Agent Gray" type="Talk" npc="4">
       <talk>
         <say npc="4">The data returned from your proximity to the intruder corresponds closely enough to characteristics of the ex-Zionite Danielle Wright that we find it likely that this is indeed her. How she survived termination by Sentinels is unknown, but there is no question that their sensors had confirmed her body destroyed.
 
@@ -77,14 +77,14 @@ Also, we must be clear that Wright is not a member of the group termed "Oligarch
         <say>I think they've parked a couple greenhorns in the outer office for you.</say>
       </talk>
     </objective>
-    <objective goal="3" text="Talk to Feldman" type="Talk" npc="5" after="2">
+    <objective goal="5" text="Talk to Feldman" type="Talk" npc="5" after="4">
       <talk><say npc="5">No sweat.</say></talk>
     </objective>
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Obviously, we would like this handled as swiftly as possible, {player}.</briefing>
     <enter><say>They've been tracking Wright since we located her earlier. I'm getting plenty of override interference in there.</say></enter>
-    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll" />
+    <objective goal="6" text="Kill all of the Exiles" type="DefeatAll" />
     <near npc="6" radius="1000">
       <say>Great... Well, now we know that she can at least override the programs she finds here, like the earlier intruders could.</say>
     </near>

@@ -24,14 +24,14 @@
     <say after="2">Funny thing is, it never seemed to work. Hey, uh... Could I get a receipt for that?</say>
   </npc>
   <npc id="2" handle="The Jeweler" type="FRIENDLY" at="2" rsi="7d0b0058" weapon="0">
-    <say after="2">Hey, I'm on the clock here, pudding! I've got a business to run! Go check in with Jason Xavier.</say>
-    <say after="5">Check back any time, baby! I got some diamond-studded piercings you would kill for!</say>
+    <say after="4">Hey, I'm on the clock here, pudding! I've got a business to run! Go check in with Jason Xavier.</say>
+    <say after="7">Check back any time, baby! I got some diamond-studded piercings you would kill for!</say>
   </npc>
   <npc id="3" handle="Jason Xavier" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
-    <say after="4">Take care of that thing, it's gonna be a collector's item some day!</say>
+    <say after="6">Take care of that thing, it's gonna be a collector's item some day!</say>
   </npc>
   <npc id="4" handle="Woodrow Quigley" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
-    <say after="5">That's all I've got. Not my fault! Gotta run!</say>
+    <say after="7">That's all I've got. Not my fault! Gotta run!</say>
   </npc>
   <npc id="5" handle="Abalakin" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
   <npc id="6" handle="E Pluribus Neo Crusader" type="HOSTILE" at="4" rsi="d8040058" weapon="2568" />
@@ -51,29 +51,29 @@
   <phase site="Office" enemy="Zion" enemies="0">
     <briefing>Haha! We stole Cryptos' watch! Oh man, that is rich. Hey, hold on to that thing, would ya? I want to wear it the next time I go slumming.</briefing>
     <enter><say>That's the regional office of the jeweler who worked on Cryptos' watch.</say></enter>
-    <objective goal="1" text="Talk to the Jeweler" type="Talk" npc="2">
+    <objective goal="3" text="Talk to the Jeweler" type="Talk" npc="2">
       <talk><say npc="2">Hey baby, what can I do you for? Cryptos' watch? Yeah, I probably did that--Jeweler to the Stars, that's me! Give it here and I'll take a gander.</say></talk>
       <done><say>Sounds like you'll have to hand over the watch.</say></done>
     </objective>
-    <objective goal="2" text="Show Cryptos' watch to the Jeweler" type="Talk" npc="2" after="1">
+    <objective goal="4" text="Show Cryptos' watch to the Jeweler" type="Talk" npc="2" after="3">
       <talk>
         <say npc="2">Lemme see that watch, sugar-beet.</say>
         <say npc="2">Yep, this is my handiwork, all right. Stunning, ain't she? Damn, I'm good. Cryptos knows quality when he sees it; that's why he comes to yours truly for all his fine craftsmanship needs.&#10;&#10;I didn't do the actual sale, though; I let the little people handle the details. Go talk to my head salesperson, Jason Xavier. He'll hook you up, chief!</say>
       </talk>
       <done><say contact="1">Get Cryptos' watch back from that shyster before you talk to Jason Xavier, {player}! I want that watch!</say></done>
     </objective>
-    <objective goal="3" text="Talk to Jason Xavier" type="Talk" npc="3" after="2">
+    <objective goal="5" text="Talk to Jason Xavier" type="Talk" npc="3" after="4">
       <talk><say npc="3">Cryptos? Doesn't ring a bell. I see a lot of people every day. You got the piece? Maybe it'll help jog something loose upstairs.</say></talk>
       <done><say>Sounds like you'll have to let him see the watch, too. And don't forget to get it back, or Anome will get extra cranky.</say></done>
     </objective>
-    <objective goal="4" text="Show Cryptos' watch to Jason Xavier" type="Talk" npc="3" after="3">
+    <objective goal="6" text="Show Cryptos' watch to Jason Xavier" type="Talk" npc="3" after="5">
       <talk>
         <say npc="3">I'll need to see that watch, bud. A picture's worth a thousand words, ya know?</say>
         <say npc="3">Ohh, right, this piece. Funny request; he wanted a watch that didn't run. Weird guy, huh? Anyway, seeing as how we like to keep on the right side of the law and all around here, I can pull that customer's file for you. And...that should do it. Find my clerk, Woodrow Quigley. He'll have the printout for you.</say>
       </talk>
       <done><say>Don't forget to get the watch back before you go find Woodrow Quigley!</say></done>
     </objective>
-    <objective goal="5" text="Get the printout from Woodrow Quigley" type="Get" npc="4" item="6800" after="4">
+    <objective goal="7" text="Get the printout from Woodrow Quigley" type="Get" npc="4" item="6800" after="6">
       <talk>
         <say npc="4">Printout? Printout... Oh, that! I've got it right here.</say>
         <say>Get that document from him.</say>
@@ -84,10 +84,10 @@
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>Hey, hey, not so fast, lightning. You owe me one Cryptos watch. Head to the marked waypoint and hand it over to my man, Abalakin.&#10;&#10;Oh, and we have some of the General's commandos standing by there to help you when you go to arrest Cryptos; they seem to be interested in encountering Cypherites firsthand. This time I've got that cheap parlor magician right where I want him!</briefing>
     <enter><say>That's the place. Anome sure is anxious to get that watch. I wonder if he collects stamps, too?</say></enter>
-    <objective goal="1" text="Talk to Abalakin" type="Talk" npc="5">
+    <objective goal="8" text="Talk to Abalakin" type="Talk" npc="5">
       <talk><say npc="5">You got that watch?</say></talk>
     </objective>
-    <objective goal="2" text="Give Cryptos' watch to Abalakin" type="Give" npc="5" item="6820" after="1">
+    <objective goal="9" text="Give Cryptos' watch to Abalakin" type="Give" npc="5" item="6820" after="8">
       <talk><say npc="5">This better be the real deal. Uh... You can go now.</say></talk>
     </objective>
   </phase>
@@ -97,7 +97,7 @@
       <say>That's the address we got from the Jeweler's people. I've got redpill readings inside.</say>
       <say>More people dressed like Neo or Trinity? What is going on there?</say>
     </enter>
-    <objective goal="1" text="Kill all of the Neo fanatics" type="DefeatAll">
+    <objective goal="10" text="Kill all of the Neo fanatics" type="DefeatAll">
       <done><say>Place scans clean. No Cypherites, no Cryptos--nothing except those Neo fanatics. This is starting to become a problem.</say></done>
     </objective>
     <complete><say>Agents have locked on to your position! Get out of there now!</say></complete>

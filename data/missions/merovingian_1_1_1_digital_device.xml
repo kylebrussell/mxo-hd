@@ -31,7 +31,7 @@
     <say>You've killed my crew! You'll pay for that!</say>
   </npc>
   <npc id="4" handle="Genaro Kiske" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
-    <say after="2">If you must know what the device does, I can tell you... It's an extension of Disguise Mask that allows a person to carry the signature signal of a Machine program. Basically, all Machine programs would think you are one of them. You could live amongst Agents and they would never question who you are! It's quite amazing.</say>
+    <say after="9">If you must know what the device does, I can tell you... It's an extension of Disguise Mask that allows a person to carry the signature signal of a Machine program. Basically, all Machine programs would think you are one of them. You could live amongst Agents and they would never question who you are! It's quite amazing.</say>
   </npc>
   <npc id="5" handle="Merovingian Physician" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say display="5">I'm only saying what I heard.</say>
@@ -65,16 +65,16 @@ If this is true, we need you to find Rabbit and finish the job if he is unable. 
 I'm sending you to this base to pay Bohrmann a friendly visit. Bohrmann has the device we seek.</briefing>
     <enter><say>I doubt they will welcome your intrusion with open arms; unless they're looking forward to beating the crap out of you.</say></enter>
     <object id="1" kind="Safe" />
-    <objective goal="1" text="Get the key from Bohrmann" type="Loot" npc="3" item="6791">
+    <objective goal="5" text="Get the key from Bohrmann" type="Loot" npc="3" item="6791">
       <done><say>Try that Key on the wall Safe.</say></done>
     </objective>
-    <objective goal="2" text="Open the wall safe" type="Search" object="1" item="6820" after="1">
+    <objective goal="6" text="Open the wall safe" type="Search" object="1" item="6820" after="5">
       <done>
         <say>The Signature Manipulator is inside the safe. Take it!</say>
         <say>That's the device! With this piece of hardware it will allow Exiles to pose as legitimate programs amongst the Machines; even redpills, such as yourself. They won't be able to tell the difference because it causes the carrier to give off the same signal as a Machine program!</say>
       </done>
     </objective>
-    <objective goal="3" text="Kill Bohrmann's crew" type="DefeatAll" />
+    <objective goal="7" text="Kill Bohrmann's crew" type="DefeatAll" />
     <near npc="3" radius="1000">
       <say npc="3">Merovingian operatives! Don't let them get the device!</say>
     </near>
@@ -84,10 +84,10 @@ I'm sending you to this base to pay Bohrmann a friendly visit. Bohrmann has the 
 
 Meet with Genaro Kiske. He is our expert on high-level data replication.</briefing>
     <enter><say>Genaro Kiske is waiting.</say></enter>
-    <objective goal="1" text="Talk to Genaro Kiske" type="Talk" npc="4">
+    <objective goal="8" text="Talk to Genaro Kiske" type="Talk" npc="4">
       <talk><say npc="4">Flood said I could expect you. Do you have the device? Give it to me!</say></talk>
     </objective>
-    <objective goal="2" text="Give the Signature Manipulator to Genaro Kiske" type="Give" npc="4" item="6820" after="1">
+    <objective goal="9" text="Give the Signature Manipulator to Genaro Kiske" type="Give" npc="4" item="6820" after="8">
       <talk><say npc="4">Well, where is it?!</say></talk>
       <done><say npc="4">If you must know what the device does, I can tell you... It's an extension of Disguise Mask that allows a person to carry the signature signal of a Machine program. Basically, all Machine programs would think you are one of them. You could live amongst Agents and they would never question who you are! It's quite amazing.</say></done>
     </objective>

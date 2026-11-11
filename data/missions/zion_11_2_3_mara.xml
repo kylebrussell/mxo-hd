@@ -22,7 +22,7 @@
     <say after="2">Uhh... This is not going to look good when the cops get here.</say>
   </npc>
   <npc id="2" handle="Seraph" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
-    <say after="1">The Oracle lived in many places. To wander is the lot of the exile.</say>
+    <say after="4">The Oracle lived in many places. To wander is the lot of the exile.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="4">
     <briefing>Operative, we've received a few reports of override activity in the slums. This probably indicates the presence of Danielle Wright, and we believe she is still pursuing the biological interface program; we've even heard that she met with the Machines to discuss details of the program. The woman has clearly made herself an enemy, and we must do what we can to prevent her--or the Machines or the Merovingian, for that matter--from capturing the program. It still isn't clear what exactly the program does, but Wright seems to have some idea that it will give her power over the Matrix.&#10;&#10;I'm punching up the site of the most recent override activity for you now.</briefing>
@@ -45,14 +45,14 @@
       <say>Got some override activity in there... Don't see a big one this time, fortunately.</say>
       <say>There they are!</say>
     </enter>
-    <objective goal="1" text="Kill the overridden programs" type="DefeatAll">
+    <objective goal="3" text="Kill the overridden programs" type="DefeatAll">
       <done><say>Hm, I'm picking up unknown redpill signals approaching your position. But we got no Wright or interface program there, so there's no reason to stick around.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Achan, Magog">
     <briefing>I see... If the Machines and Merovingian are sending their operatives to the area as well, locating the program is going to be much more difficult. I'll alert Command to the problem.&#10;&#10;The override front has moved into the Achan/Magog region. There have been a few scattered reports of Wright being spotted in the area, but those remain unconfirmed.</briefing>
     <enter><say>Hm... I'm getting some kind of activity reading, but it doesn't look like overrides this time.</say></enter>
-    <objective goal="1" text="Talk to Seraph" type="Talk" npc="2">
+    <objective goal="4" text="Talk to Seraph" type="Talk" npc="2">
       <talk><say npc="2">What you and these others seek can be found in an apartment once used by the Oracle.&#10;&#10;Your operator will find that he has the necessary information. You will excuse me if I do not accompany you there myself. There are other matters I must see to.</say></talk>
       <done><say>Seraph? Man, with all the overrides around, I'd think he'd--&#10;&#10;Hey, I'm getting some kind of data feed here... Coordinates? Uh, you'd better see about this.</say></done>
     </objective>
@@ -61,7 +61,7 @@
     <briefing>This isn't the first time Seraph has stepped in where the interface program was concerned. The Oracle's supposed authorship of the program is the obvious connection, but what could his goal for the program be?&#10;&#10;You'd better check those coordinates he fed us, {player}. With all the hostile activity in the area, we don't have much time left to operate there.</briefing>
     <enter><say>Seems like we keep getting into these situations in Mara. I kind of thought that would stop after the Oracle was killed, but hey, I guess old habits die hard.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+    <objective goal="5" text="Search the computer" type="Search" object="1" item="0">
       <done><say>Hey... It's sort of like that other message we found when we were on the program's tail a week ago. "This isn't," and now "not here." Hmm...</say></done>
     </objective>
   </phase>

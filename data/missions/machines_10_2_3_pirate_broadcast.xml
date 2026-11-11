@@ -35,7 +35,7 @@
     <say display="5">Uh... I think you might want the modeling agency on the other floor.</say>
   </npc>
   <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
-    <say after="1">Yes, I think we may find Mauser there. This unusual signal could be part of what has enabled him to access the Matrix, in spite of having been grown outside the safety of the pod system.</say>
+    <say after="7">Yes, I think we may find Mauser there. This unusual signal could be part of what has enabled him to access the Matrix, in spite of having been grown outside the safety of the pod system.</say>
   </npc>
   <npc id="7" handle="Agent Jones" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say display="5">The line has been severed. If the terrorists succeed in locating this place, they will be dealt with.</say>
@@ -65,13 +65,13 @@ It is obvious that they possess information we do not, however, as their teams h
 
 Just try not to run any obvious hack programs and you should do fine...as long as it isn't a Zionite you've run into before.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to a Zionite" type="Talk" npc="1">
+    <objective goal="3" text="Talk to a Zionite" type="Talk" npc="1">
       <talk><say npc="1">How about you? Notice anyone messing with that phone lately? We just noticed some unusual activity on our records for this past billing cycle.</say></talk>
       <done><say>Wow, you actually found a Zionite who didn't recognize us. I guess it's mostly the ones with white hair that we're running into all the time.
 
 What? Oh, well...never mind. Anyway, I've got that snoop routine going.</say></done>
     </objective>
-    <objective goal="2" text="Use the computer" type="Use" object="1" optional="1">
+    <objective goal="4" text="Use the computer" type="Use" object="1" optional="1">
       <done><say>Hey, don't mess with that while they're watching!</say></done>
     </objective>
   </phase>
@@ -79,15 +79,15 @@ What? Oh, well...never mind. Anyway, I've got that snoop routine going.</say></d
     <briefing>The Zionites are very communicative... We have already monitored a transmission from another team who believes they are not far from Mauser's current position on the restricted line system. The indicated telephone must be secured and analyzed.</briefing>
     <enter><say>Looks like Zion's been moving in on the line already. Better get in there.</say></enter>
     <object id="1" kind="Phone" />
-    <objective goal="1" text="Analyze the phone" type="Use" object="1">
+    <objective goal="5" text="Analyze the phone" type="Use" object="1">
       <done><say>Mm-kay. Readings look pretty similar to what we saw before... The Machines were gonna try some voodoo on it.</say></done>
     </objective>
-    <objective goal="2" text="Kill the Zionites" type="DefeatAll" />
+    <objective goal="6" text="Kill the Zionites" type="DefeatAll" />
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Full simulation scans of the phone's vicinity revealed the recent presence of an unusual broadcast signal. Scans along projected connecting lines obtained a signal match. You may wish to join our personnel at the location now.</briefing>
     <enter><say>Hm... I don't know for sure, but I think this means we rule.</say></enter>
-    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="6">
+    <objective goal="7" text="Talk to Agent Pace" type="Talk" npc="6">
       <talk><say npc="6">*Ciao, tesoro.* Your information was very useful. We did not find the interloper, Mauser, but we obtained a better reading of the unusual broadcast signal detected earlier. Exterior spectral analysis has found that the signal is originating from the vicinity of the destroyed Zionite city. Now it is merely a matter of narrowing down the signal to its source.</say></talk>
     </objective>
   </phase>

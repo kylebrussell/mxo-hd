@@ -21,8 +21,8 @@
      locked desk are Elite Guard and the phase's generated Exiles; the operator's line about them is said on getting
      near Elite Guard. Both uploads, the disk and the dossier, were made at one hardline at the end, so both are phase
      3 goals. Elite Guard's bark "It's you!" is on him but only plays if he is talked to, since he
-     attacks on sight. Rhett De Bonte's last line ("Huh?") is left out: an NPC line waiting on goal 2 would
-     already count phase 1's goal 2. The Overheard Transmission in the Details popup isn't from this mission
+     attacks on sight. Rhett De Bonte's last line ("Huh?") came as the disk was taken, so it is what he says once
+     it has been. The Overheard Transmission in the Details popup isn't from this mission
      and isn't used. -->
 <mission id="301203" title="Turf of Vengeance" description="Hunt down leads on Morpheus' whereabouts." plot="1"
          order="1203" org="3" contact="Flood" exp="68750" info="91000">
@@ -33,7 +33,8 @@
   <npc id="2" handle="Fortuna" type="HOSTILE" attacksOnSight="0" at="1" rsi="60010058" weapon="2568" />
   <npc id="3" handle="Chimay" type="HOSTILE" attacksOnSight="0" at="1" rsi="d8040058" weapon="2568" />
   <npc id="4" handle="Rhett De Bonte" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
-    <say after="1">My computer is in my bedroom. Just take the disk and go.</say>
+    <say after="6">My computer is in my bedroom. Just take the disk and go.</say>
+    <say after="7">Huh?</say>
   </npc>
   <npc id="5" handle="Elite Guard" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568">
     <say>It's you!</say>
@@ -73,13 +74,13 @@
     <briefing>The second location is the home of a bluepill named Rhett De Bonte. Go there now.</briefing>
     <enter><say contact="1">Rhett De Bonte has been contacted a couple times by Morpheus in an attempt to recruit him to Zion's cause. Now, I know you once affiliated yourself with them, but it shouldn't dissuade you in completing your task. Just interrogate Rhett De Bonte and recover any information that he might have on Morpheus.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to Rhett De Bonte" type="Talk" npc="4">
+    <objective goal="6" text="Talk to Rhett De Bonte" type="Talk" npc="4">
       <talk>
         <say npc="4">Uhm, excuse me. What are you doing here? Can I help you? Oh, you're here about... Morpheus? I... I don't know what to tell you, but he has been telling me some rather strange things about life. I'm a bit put off by his words and it has gotten me pretty depressed so I may be able to help you out... There is a recording on my computer that this "Morpheus" gave me. If you want it, it's yours. I couldn't understand it anyway.</say>
         <say>Interesting... Retrieve that recording.</say>
       </talk>
     </objective>
-    <objective goal="2" text="Get the recording from Rhett De Bonte's computer" type="Search" object="1" item="6832" after="1">
+    <objective goal="7" text="Get the recording from Rhett De Bonte's computer" type="Search" object="1" item="6832" after="6">
       <done><say>I'm going to need you to upload that to me through a hardline.</say></done>
     </objective>
   </phase>
@@ -87,17 +88,17 @@
     <briefing>The final location is housed by a group of Renegade Exiles who are operating outside of the Merovingian's control. These Exiles have been tracking Morpheus' movement as well and we need you to recover any information that they may have obtained. As with the first location, you may resort to violence if you feel it is necessary to recover the information we seek.</briefing>
     <enter><say>Remember, these Exiles aren't working with the Merovingian, and may be irrational in their actions. Try not to get yourself killed.</say></enter>
     <object id="1" kind="Furniture" />
-    <objective goal="1" text="Kill Elite Guard" type="Defeat" npc="5">
+    <objective goal="8" text="Kill Elite Guard" type="Defeat" npc="5">
       <done><say>It appears that the Exile you just killed was carrying something... Search the body!</say></done>
     </objective>
-    <objective goal="2" text="Get the key from Elite Guard" type="Loot" npc="5" item="6791" after="1">
+    <objective goal="9" text="Get the key from Elite Guard" type="Loot" npc="5" item="6791" after="8">
       <done><say>As I thought. I think that key unlocks the desk.</say></done>
     </objective>
-    <objective goal="3" text="Recover information about Morpheus" type="Search" object="1" item="6799" after="2">
+    <objective goal="10" text="Recover information about Morpheus" type="Search" object="1" item="6799" after="9">
       <done><say>I do believe that this is what we are looking for. I'll scan the dossier and send it off to the proper contact once you get them to me through a hardline.</say></done>
     </objective>
-    <objective goal="4" text="Upload the recording at a hardline" type="Upload" item="6832" after="3" />
-    <objective goal="5" text="Upload the dossier at a hardline" type="Upload" item="6799" after="3" />
+    <objective goal="11" text="Upload the recording at a hardline" type="Upload" item="6832" after="10" />
+    <objective goal="12" text="Upload the dossier at a hardline" type="Upload" item="6799" after="10" />
     <near npc="5" radius="1500">
       <say>I think you're getting warmer... Two guards are in the next room standing watch over a locked desk.</say>
     </near>

@@ -32,11 +32,11 @@ Did you hear something?</say>
     <say>You're a little...overdressed.</say>
   </npc>
   <npc id="3" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
-    <say after="1">Those who cannot bear the awful power of knowledge must be protected from those who have proven themselves unworthy of it.</say>
+    <say after="4">Those who cannot bear the awful power of knowledge must be protected from those who have proven themselves unworthy of it.</say>
   </npc>
   <npc id="4" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
   <npc id="5" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
-    <say after="1">The Merovingian has a long history of offenses against public and...System resources. His function is one of commanding a degree of order among programs who have rebelled against us; it could also be argued that he presents an important check against the spread of Zionite influence in the less-patrolled areas of the simulation. But when he makes a direct attack against government forces, public institutions, or legally held private entities, he must be brought to heel...and I do not think I say this only because of his attack against me.
+    <say after="5">The Merovingian has a long history of offenses against public and...System resources. His function is one of commanding a degree of order among programs who have rebelled against us; it could also be argued that he presents an important check against the spread of Zionite influence in the less-patrolled areas of the simulation. But when he makes a direct attack against government forces, public institutions, or legally held private entities, he must be brought to heel...and I do not think I say this only because of his attack against me.
 
 I admit, of course, that due to my experience, my view may be unavoidably biased.</say>
   </npc>
@@ -77,7 +77,7 @@ Oh! It's you, dearie. Isn't this a nice surprise? Well, it just happens that Cry
     <enter><say>Redpill signals in there--should be the Cyphs.
 
 Just remember not to let any of them stand behind you, and I'm sure you'll be fine.</say></enter>
-    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="3">
+    <objective goal="4" text="Talk to Cryptos" type="Talk" npc="3">
       <talk><say npc="3">We have seen with the evidence of our own eyes that the Merovingian seeks information hidden within the network of the Ouroboros Corporation--information which he believes to be related to the intruders whose override programs caused so much damage to this world.
 
 I tell you this in order that information of that kind should not fall into the hands of a man whose ambition knows no boundaries--a man who thinks of his fellow beings only as chattel to be used to further his own ends, to satisfy his own desires.</say></talk>
@@ -88,19 +88,19 @@ I tell you this in order that information of that kind should not fall into the 
     <enter><say>Ouroboros? I think I had one of their toasters once. Worked pretty well, except it had that problem where the bottom would fill up with crumbs that just sit in there getting all...
 
 Anyway, looks like the Pacer is waiting for you in there.</say></enter>
-    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="5">
+    <objective goal="5" text="Talk to Agent Pace" type="Talk" npc="5">
       <talk><say npc="5">The Ouroboros Corporation is an electronics manufacturer, tesoro, and one of the city's largest corporations; they make their headquarters in Creston Heights, and maintain offices and other facilities across the city. Given his hunger for power, it is not surprising that the Merovingian should seek to acquire their assets.
 
 Whatever illegal data he may claim they have, it is no excuse for making war against a corporation that is protected by laws established in the public interest. Michale Plemmons and Stanley Johansen are available to assist you in your mission to preserve law and order.</say></talk>
     </objective>
-    <objective goal="2" text="Lead Michale Plemmons and Stanley Johansen out of the area" type="Escort" npc="7,8" to="exit" after="1" />
+    <objective goal="6" text="Lead Michale Plemmons and Stanley Johansen out of the area" type="Escort" npc="7,8" to="exit" after="5" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>We have located Merovingian forces attacking Ouroboros. We note that Ouroboros has failed to report this; they may have felt that their large private security force was up to the task of fending off the Merovingian, but even so, standard procedures for notifying the appropriate government agencies should have been followed. It is...unfortunate that the larger corporations sometimes seem to consider themselves outside of the usual legal considerations.
 
 Your task is to eliminate the Merovingian elements, and prevent any theft of Ouroboros property. Please refrain from attacking Ouroboros security personnel.</briefing>
     <enter><say>Got some active readings in there: a bunch of unregistered signals, and...ah, that one looks like an Ouroboros guard.</say></enter>
-    <objective goal="1" text="Eliminate the Merovingian forces" type="DefeatAll">
+    <objective goal="7" text="Eliminate the Merovingian forces" type="DefeatAll">
       <done><say>That should cover it. Send in the Ouroboros carpet cleaning team.</say></done>
     </objective>
     <complete><say npc="8">I'll handle the report to Ms. Pace.</say></complete>

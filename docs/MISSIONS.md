@@ -59,6 +59,10 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
 - `type`: `Talk`, `Defeat`, `Loot`, `Get`, `Give`.
 - `goal` is retail's id, which isn't always the order they open in. `after="2"` opens a goal once goal 2 is done; otherwise it's open from the start of the phase, and they can be done in any order.
 - `<say>` with no attribute is the operator, `npc="n"` that NPC, `contact="1"` the mission contact.
+- An NPC's own `<say after="n">` is said when it is talked to with no goal open for it, once goal n is done in any phase.
+  So that an earlier phase's goal can't set it off, a goal it waits on must not share its id with a goal of an earlier
+  phase. The story files number their goals through the whole mission wherever an NPC line waits on one
+  (`StoryMissionTests` checks).
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
 - `order` is its place in the contact's story chain: a contact offers the first unfinished one, then all of them to replay. Finished missions are in the `char_missions` table.
 - `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood; see Contacts below); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
