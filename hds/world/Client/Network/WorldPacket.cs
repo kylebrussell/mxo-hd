@@ -163,7 +163,7 @@ namespace hds
                     foreach (SequencedMessage message in block)
                     {
                         content.append(message.content);
-                        message.rpcPackets.Add(sseq);
+                        message.RecordRpcPacket(sseq);
                         message.lastRpcSendTick = now;
                     }
                 }
