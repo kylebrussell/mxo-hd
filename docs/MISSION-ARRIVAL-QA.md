@@ -45,6 +45,12 @@ player arrives. Unit regressions use the native coordinates, and the headless wa
 also verifies separation. These follow-up changes were verified in unit/headless tests; native
 evidence above is from `6a335d1`.
 
+Final validation of `93c6cd7` passed 3,386 unit tests and all 43 headless scenarios in 367.3 seconds
+with four servers in parallel. Three additional wall-edge runs and three escort runs passed.
+PR 93 merged into `codex/retail-parity-expanded` as `8118660`; its tree matches that tested commit.
+The escort harness now saves its object cursor before the talk that may advance a small floor,
+so an already-received phase-four mainframe is not missed.
+
 Local evidence and full server logs are retained under:
 
 - `C:/Users/russe/AppData/Local/Temp/mxo-native-arrivals-20261111/`
