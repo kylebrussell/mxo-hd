@@ -4,17 +4,18 @@
      Retail's text: the title, the briefings, every Agent Gray, operator and NPC line, Stewart The Mechanic's name, and
      the Protect objective ("Do not allow Stewart The Mechanic to be incapacitated", seen in the tracker). Ours: the
      description, the other objective texts, the sites (Stewart's building: Normal; the hacker nexus, cracked walls in
-     the screenshot: Derelict), the looks and the enemy count ("a large concentration of Exile programs"). Item
-     stand-in: the key to the far door is Access_Card (6791). Rewards: the 58,000 experience and 59,500 information
-     shown right after this mission completed.
-     Gaps: leading Stewart The Mechanic up to the active computer is an escort to that computer. The far door's
-     lock can't be expressed; the key is searched for in a box, the operator's "There's the active system" line is
-     said once it is found, and leading Stewart to the computer opens after it. The Exile reinforcements that came when
-     the repair began are spawned with the rest from the start; Agent Gray's "Those Exile vermin" line is said once all
-     are dead. The repair took a while with Stewart to protect; here it is immediate. The operator's "That's it,
-     {player}" closes the phase. The hacked computer's SecureNet popup and the Threat Analysis of "Kingmaker" in the
-     player's inventory aren't mission goals and are left out; the Exiles' barks (Elite Guard: "You're gonna get it,
-     human!"; Merovingian Martial Arts Initiate: "Spies!") have no place, since they are generated. -->
+     the screenshot: Derelict), the looks and the enemy counts ("a large concentration of Exile programs": 5; the
+     reinforcements: 3). Item stand-in: the key to the far door is Access_Card (6791). Rewards: the 58,000 experience
+     and 59,500 information shown right after this mission completed.
+     Gaps: leading Stewart The Mechanic up to the active computer is an escort to that computer. The far door's lock
+     can't be expressed; the key is searched for in a box, the operator's "There's the active system" line is said once
+     it is found, and leading Stewart to the computer opens after it. The Exile reinforcements that came when the
+     repair began are a wave that arrives beside the computer when Stewart reaches it, with their own kill goal; Agent
+     Gray's "Those Exile vermin" line is said once they are dead. The repair itself has no length: it ends when the
+     reinforcements are dead (in the log, 1:14:55 to 1:16:33 PM). The operator's "That's it, {player}" closes the
+     phase. The hacked computer's SecureNet popup and the Threat Analysis of "Kingmaker" in the player's inventory
+     aren't mission goals and are left out; the Exiles' barks (Elite Guard: "You're gonna get it, human!"; Merovingian
+     Martial Arts Initiate: "Spies!") have no place, since they are generated. -->
 <mission id="201205" title="Under Warranty" description="Escort a repair program to a renegade hacker nexus." plot="1"
          order="1205" org="2" contact="Agent Gray" exp="58000" info="59500">
   <npc id="1" handle="Stewart The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
@@ -32,9 +33,8 @@
     </enter>
     <object id="1" kind="Box" />
     <object id="2" kind="Computer" />
-    <objective goal="1" text="Wipe out the Exile programs" type="DefeatAll">
-      <done><say contact="1">Those Exile vermin deserved a somewhat slower deletion.</say></done>
-    </objective>
+    <wave count="3" after="3" spawnAt="object:2" />
+    <objective goal="1" text="Wipe out the Exile programs" type="DefeatAll" wave="0" />
     <objective goal="2" text="Find the key to the far door" type="Search" object="1" item="6791">
       <done><say>There's the active system. Lead Stewart The Mechanic up to it so that it can begin to repair the damage made by Morpheus' flunkies.</say></done>
     </objective>
@@ -45,6 +45,9 @@
       </done>
     </objective>
     <objective goal="4" text="Do not allow Stewart The Mechanic to be incapacitated" type="Protect" npc="1" />
+    <objective goal="5" text="Destroy the Exile reinforcements" type="DefeatAll" wave="1" after="3">
+      <done><say contact="1">Those Exile vermin deserved a somewhat slower deletion.</say></done>
+    </objective>
     <complete><say>That's it, {player}. You can get out of there now.</say></complete>
   </phase>
   <finish>Those Exiles endangered our mission. We will deal with them after we have finished with Morpheus.</finish>
