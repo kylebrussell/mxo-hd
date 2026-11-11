@@ -26,6 +26,8 @@ public static partial class Scenarios
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
+        new Scenario("email-send-read-delete", EmailSendReadDelete),
+        new Scenario("email-attachments-and-mailbot", EmailAttachmentsAndMailBot),
         new Scenario("team-invite-and-chat", TeamInviteAndChat),
         new Scenario("crew-invite-and-chat", CrewInviteAndChat),
         new Scenario("marketplace-purchase", MarketplacePurchase),

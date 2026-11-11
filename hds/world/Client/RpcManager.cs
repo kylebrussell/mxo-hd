@@ -306,6 +306,20 @@ namespace hds{
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
 		            break;
 
+		        // Email
+		        case (int) RPCRequestHeader.CLIENT_LONG_STRING_HEADER:
+		        case (int) RPCRequestHeader.CLIENT_LONG_STRING_CHUNK:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_SEND:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_GET_HEADERS:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_READ:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_SET_STATUS:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_CHANGE_ALL_STATUS:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_CLASSIFY:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_DELETE_OLDER:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_TAKE_ATTACHMENTS:
+		        case (int) RPCRequestHeader.CLIENT_MAIL_DELETE:
+		            MailHandler.Handle(Store.currentClient, header, rpcData);
+		            break;
 
 
 		        default:
