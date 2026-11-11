@@ -122,10 +122,10 @@ namespace hds{
 		            TutorialMission.Of(Store.currentClient)?.OnShortcutAdded(BitConverter.ToUInt32(rpcData, 0), BitConverter.ToUInt32(rpcData, 8));
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MODAL_ANSWER:
-		            TutorialMission.Of(Store.currentClient)?.OnModalAnswer(BitConverter.ToUInt32(rpcData, 0), rpcData[4] != 0);
+		            ClientCallbacks.DispatchModalAnswer(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_EVENT:
-		            TutorialMission.Of(Store.currentClient)?.OnClientEvent(BitConverter.ToUInt32(rpcData, 0));
+		            ClientCallbacks.DispatchFxEnded(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MISSION_ABORT:
 		            new MissionHandler().processAbortMission(ref rpcData);
@@ -159,6 +159,30 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_FACTION_DISBAND_FACTION:
 					new SocialHandler().ProcessDisbandGroup(ref rpcData);
 					break;
+		        case (int) RPCRequestHeader.CLIENT_GROUP_REMOVE_MEMBER:
+		            SocialHandler.ProcessRemoveMember(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_GROUP_MAKE_LEADER:
+		            SocialHandler.ProcessMakeLeader(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_CREW_FIRST_MATE:
+		            SocialHandler.ProcessSetFirstMate(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_FACTION_CHANGE_RANK:
+		            SocialHandler.ProcessFactionRank(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_FACTION_REMOVE_CREW:
+		            SocialHandler.ProcessFactionRemoveCrew(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_CREW_CREATE:
+		            SocialHandler.ProcessCreateCrew(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_TEAM_SEEK:
+		            SocialHandler.ProcessSeekTeam(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_TEAM_FIND_SEEKERS:
+		            SocialHandler.ProcessFindSeekers(Store.currentClient, rpcData);
+		            break;
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);
@@ -229,6 +253,10 @@ namespace hds{
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_ITEM_MOVE_SLOT:
 		            new InventoryHandler().processItemMove(ref rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_ITEM_GIVE_TO_NPC:
+		            ObjectInteractionHandler.ProcessGiveToNpc(Store.currentClient, rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_ITEM_RECYCLE:
@@ -309,7 +337,16 @@ namespace hds{
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_EMOTE:
-		            new PlayerHandler().processEmote(ref rpcData);
+		            EmoteHandler.ProcessEmote(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_EMOTE_ANSWER:
+		            EmoteHandler.ProcessEmoteAnswer(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_STANCE_ENTER:
+		            EmoteHandler.ProcessStanceStart(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_STANCE_LEAVE:
+		            EmoteHandler.ProcessStanceStop(Store.currentClient, rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_REGION_LOADED:
@@ -360,6 +397,26 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_MAIL_TAKE_ATTACHMENTS:
 		        case (int) RPCRequestHeader.CLIENT_MAIL_DELETE:
 		            MailHandler.Handle(Store.currentClient, header, rpcData);
+		            break;
+
+		        // Chat rooms (/roomcreate .. /roomfind)
+		        case ChatRoomHandler.Create:
+		        case ChatRoomHandler.Enter:
+		        case ChatRoomHandler.Allow:
+		        case ChatRoomHandler.Leave:
+		        case ChatRoomHandler.Destroy:
+		        case ChatRoomHandler.Invite:
+		        case ChatRoomHandler.Uninvite:
+		        case ChatRoomHandler.Kick:
+		        case ChatRoomHandler.Ban:
+		        case ChatRoomHandler.Unban:
+		        case ChatRoomHandler.AddModerator:
+		        case ChatRoomHandler.RemoveModerator:
+		        case ChatRoomHandler.SetOwner:
+		        case ChatRoomHandler.GiveVoice:
+		        case ChatRoomHandler.RemoveVoice:
+		        case ChatRoomHandler.Find:
+		            ChatRoomHandler.Handle(Store.currentClient, header, rpcData);
 		            break;
 
 

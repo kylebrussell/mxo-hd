@@ -56,6 +56,10 @@ namespace hds
 
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
+		// The stance the player is in (client 34 / 33): 0 standing, 0a sitting, 11..15 dancing (EmoteHandler)
+		public byte stance = 0;
+		// Callbacks for prompts (81 8f / 81 90) and FX tokens (81 42 / 81 91) this session (ClientCallbacks)
+		public ClientCallbacks.State callbacks;
 
 		// Last ability used, to drop the duplicate the client sends for a double-click
 		public UInt16 lastAbilityId = 0;

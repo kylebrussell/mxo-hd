@@ -27,6 +27,70 @@ namespace hds.world.Structures
         /// <summary>Crew or faction name the inviter typed; for a crew that does not exist yet it names the new crew.</summary>
         public string GroupName;
         public DateTime CreatedUtc;
+
+        /// <summary>Sent from the crew creation window (80 84): the inviter hears the outcome as 80 85, not 6f.</summary>
+        public bool FromCrewCreation;
+
+        /// <summary>The organisation the creation window picked.</summary>
+        public byte Org;
+    }
+
+    /// <summary>A player on the "looking for team" list (client 80 91).</summary>
+    public class TeamSeeker
+    {
+        public UInt32 CharId;
+        public string Handle;
+        public byte Level;
+        public byte Org;
+        public UInt32 FactionId;
+        public UInt32 BestDiscipline;
+    }
+
+    /// <summary>The filters of a team search (client 80 92).</summary>
+    public class SeekerSearch
+    {
+        public byte MinLevel;
+        public byte MaxLevel;
+        public bool MyFactionOnly;
+        public UInt32 FactionId;
+        public List<UInt32> Disciplines = new List<UInt32>();
+        public List<byte> Orgs = new List<byte>();
+    }
+
+    /// <summary>Faction ranks per crew: 1 leads, 5 is the bottom (client.dll offers Promote above rank 1 and Demote
+    /// below 5, and only to a captain whose crew ranks higher than the target).</summary>
+    public static class FactionRanks
+    {
+        /// <summary>The stored rank, or for crews from before ranks were kept (0): the faction master's crew leads, the
+        /// rest are at the bottom.</summary>
+        public static ushort Effective(ushort stored, bool masterCrew)
+        {
+            if (stored >= SocialPackets.TopFactionRank && stored <= SocialPackets.BottomFactionRank)
+            {
+                return stored;
+            }
+
+            return masterCrew ? SocialPackets.TopFactionRank : SocialPackets.BottomFactionRank;
+        }
+
+        /// <summary>0 and the new rank, or one of the client's refusal codes (80 81).</summary>
+        public static uint Change(ushort actorRank, ushort targetRank, bool promote, out ushort newRank)
+        {
+            newRank = targetRank;
+            if (actorRank >= targetRank)
+            {
+                return SocialPackets.FactionPromoterNotHigher;
+            }
+
+            int wanted = promote ? targetRank - 1 : targetRank + 1;
+            if (wanted < SocialPackets.TopFactionRank || wanted > SocialPackets.BottomFactionRank)
+            {
+                return SocialPackets.FactionIllegalRanks;
+            }
+
+            newRank = (ushort) wanted;
+            return SocialPackets.ResultOk;
+        }
     }
 
     /// <summary>Mission teams and pending invites, shared by all client threads.</summary>
@@ -140,6 +204,73 @@ namespace hds.world.Structures
                 }
 
                 return team;
+            }
+        }
+
+        /// <summary>Makes a member the team's leader; false when they aren't on it.</summary>
+        public bool SetLeader(UInt32 teamId, UInt32 charId)
+        {
+            lock (sync)
+            {
+                LiveTeam team;
+                if (!teams.TryGetValue(teamId, out team) || !team.HasMember(charId))
+                {
+                    return false;
+                }
+
+                team.LeaderCharId = charId;
+                return true;
+            }
+        }
+
+        // ---- looking for team (80 91 / 80 92) ------------------------------------------------------------------
+
+        private readonly Dictionary<UInt32, TeamSeeker> seekers = new Dictionary<UInt32, TeamSeeker>();
+
+        public void AddSeeker(TeamSeeker seeker)
+        {
+            lock (sync)
+            {
+                seekers[seeker.CharId] = seeker;
+            }
+        }
+
+        public bool RemoveSeeker(UInt32 charId)
+        {
+            lock (sync)
+            {
+                return seekers.Remove(charId);
+            }
+        }
+
+        public bool IsSeeking(UInt32 charId)
+        {
+            lock (sync)
+            {
+                return seekers.ContainsKey(charId);
+            }
+        }
+
+        /// <summary>Seekers other than the searcher that pass the filters, by level then handle. A level range of 0..0
+        /// takes every level; an empty discipline or organisation list takes all.</summary>
+        public List<TeamSeeker> FindSeekers(UInt32 searcherCharId, SeekerSearch search)
+        {
+            lock (sync)
+            {
+                byte min = search.MinLevel, max = search.MaxLevel;
+                if (min > max)
+                {
+                    byte swap = min;
+                    min = max;
+                    max = swap;
+                }
+
+                return seekers.Values.Where(s => s.CharId != searcherCharId &&
+                                                 (max == 0 || (s.Level >= min && s.Level <= max)) &&
+                                                 (!search.MyFactionOnly || (search.FactionId != 0 && s.FactionId == search.FactionId)) &&
+                                                 (search.Disciplines.Count == 0 || search.Disciplines.Contains(s.BestDiscipline)) &&
+                                                 (search.Orgs.Count == 0 || search.Orgs.Contains(s.Org)))
+                    .OrderBy(s => s.Level).ThenBy(s => s.Handle, StringComparer.OrdinalIgnoreCase).ToList();
             }
         }
 

@@ -104,6 +104,9 @@ namespace hds.databases.interfaces{
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
         void DisbandFaction(UInt32 factionId);
         UInt32 CreateFaction(string factionName, string masterHandle);
+        void SetCrewFirstMate(UInt32 crewId, UInt32 charId);
+        void SetCrewFactionRank(UInt32 crewId, ushort rank);
+        void SetFactionMaster(UInt32 factionId, string handle);
         bool IsOnFriendList(UInt32 charId, UInt32 friendId);
     }
 }
