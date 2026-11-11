@@ -379,6 +379,11 @@ namespace hds
                 if (other.afterGoal == objective.goal && !done.Contains(other.goal))
                 {
                     opened.Add(other);
+                    if (other.type == MissionGoalType.Survive || other.limit > 0)
+                    {
+                        // An action opens this goal now, even if the next area-entry tick hasn't run yet.
+                        goalClock[other.goal] = clock();
+                    }
                 }
             }
 

@@ -327,6 +327,26 @@ public class MissionWaveTests
     }
 
     [Fact]
+    public void TimedGoalsOpenedByAnActionStartBeforeTheNextAreaTick()
+    {
+        (MissionProgress progress, _, Action<double> wait) = Start(@"<mission id=""1"" title=""T"">
+            <phase site=""Normal"">
+              <objective goal=""1"" text=""Start the encounter"" type=""Use"" object=""1"" />
+              <objective goal=""2"" text=""Hold out"" type=""Survive"" seconds=""5"" after=""1"" />
+              <objective goal=""3"" text=""Finish in time"" type=""Use"" object=""1"" limit=""3"" after=""1"" />
+            </phase></mission>");
+
+        wait(500); // Travel before the action does not spend either timer.
+        Assert.Empty(progress.DueSurvivals());
+        progress.Complete(Goal(progress, 1));
+        wait(3);
+        Assert.Equal(3, progress.Overdue()?.goal);
+        Assert.Empty(progress.DueSurvivals());
+        wait(2);
+        Assert.Equal(2, Assert.Single(progress.DueSurvivals()).goal);
+    }
+
+    [Fact]
     public void WavesAndClocksAreForgottenWithTheirPhase()
     {
         (MissionProgress progress, _, Action<double> wait) = Start();

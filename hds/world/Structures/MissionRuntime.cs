@@ -679,6 +679,17 @@ namespace hds
 
         private static void Complete(WorldClient client, MissionProgress progress, MissionObjective objective)
         {
+            lock (client.playerData.missionSync)
+            {
+                if (client.playerData.missionProgress == progress)
+                {
+                    CompleteGoal(client, progress, objective);
+                }
+            }
+        }
+
+        private static void CompleteGoal(WorldClient client, MissionProgress progress, MissionObjective objective)
+        {
             if (progress.IsDone(objective.goal))
             {
                 return;
