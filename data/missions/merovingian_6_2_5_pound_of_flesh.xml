@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pound of Flesh, Merovingian story mission 6.2.5. Source: research/missions/transcripts/Merv6-2-5.md (the archive
+     replay of [Merovingian Archive 6.2.5], given by [Archived]Flood; 27 screenshots, 4 during play and 23 of the log
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Twin, Mercury, Thallia,
+     Naantali, Beryl and Anti M. line, the 88 Eightball's team chat line, the NPC names, and the objective "Talk to
+     Anti M." (the only one the Objectives window showed). Joins across screenshots read as contiguous: "her
+     relationship with / Beryl...", "of course. / Standard procedure, you know.", "holding out on us as well. /
+     Needless to say, this will cost her.", "This has been / bothersome". Ours: the description (the Summary tab was
+     never opened), the other objective texts, the sites (all Normal: Beryl's is a Midian Park penthouse, Anti M.'s a
+     Mannsdale Housing Projects apartment), the looks and the enemy counts. Argon's guards and Anti M.'s 88s are
+     Exiles, so Merovingian-type hostiles. No mission item was shown.
+     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay and not
+     a normal reward; we use Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter
+     built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 exists.
+     Gaps: the Twins had reached Mercury and Thallia first; their lines there came before the Exile's own and are
+     said on getting near him or her, and their two lines after Thallia's are the phase's complete lines. Thallia's
+     dead guards ("Dead Exile signals") aren't spawned. Mercury's, Thallia's and Beryl's second lines are said when
+     they are talked to again. Beryl talks only once the guards are dead (goal order), as the Operator said. In
+     Anti M.'s place retail listed only "Talk to Anti M."; "Kill Anti M.'s guards" is ours, and optional, so that
+     the Operator's "No more hostiles in the area" has something to fire on. The threat to tell Argon and the
+     coordinates Beryl uploads from her phone are in the lines only. Hostile NPCs' lines don't show on screen here
+     (see Known gaps), so Naantali's and the 88 Eightball's may not appear. -->
+<mission id="306205" title="Pound of Flesh" description="Track down Anti M. through Mercury, Thallia and Beryl, and find out who paid for the distractions in Mara." plot="1"
+         order="6205" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="0">
+    <say after="1">N-no, I'm through with the whole thing, I swear! I just want to get back to my mechanical work. I knew it was a mistake to work with that woman...</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>We came to an understanding with Mercury. Quite a decent chap, really, once you get to know him.</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>Oh, I should think he'll be quite amenable now.</say>
+  </npc>
+  <npc id="4" handle="Thallia" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say after="2">Yeah, yeah. Get it over with.</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Come, come, precious. Don't make us pluck your petals again.</say>
+  </npc>
+  <npc id="6" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Think of the emotional trauma.</say>
+  </npc>
+  <npc id="7" handle="Naantali" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
+    <say>Hey, look, a stupid human.</say>
+  </npc>
+  <npc id="8" handle="Beryl" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+    <say after="4">Remember, don't hurt her! You promised!</say>
+  </npc>
+  <npc id="9" handle="88 Eightball" type="HOSTILE" at="4" rsi="38000024" weapon="2568">
+    <say>You'd better head out the back, Miss M. We'll handle this.</say>
+  </npc>
+  <npc id="10" handle="Anti M." type="FRIENDLY" at="4" rsi="60010058" weapon="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Anti M.? Anti M.?! Investigating the Blackwoods showed that she's behind all this? Little Miss straight and narrow businesswoman? I suppose I should have known, considering what we know of her relationship with Beryl...&#10;&#10;She is not, of course, answering her phone, so I'm putting you in charge of finding her, {player}.&#10;&#10;What? There's only so many places she can be hiding. Might I suggest starting with Mercury, who we now know for certain was lying to us...</briefing>
+    <enter><say>Looks like the Twins beat us there.</say></enter>
+    <objective goal="1" text="Talk to Mercury" type="Talk" npc="1">
+      <talk><say npc="1">I don't... Don't know how to get a hold of Anti M. I always had to run everything through Thallia... You already found her, didn't you? Just talk to her... She'll know...</say></talk>
+      <done><say>This better be the last time I have to see his ugly face for a while...</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">There now, that wasn't so hard, was it?</say>
+      <say npc="3">You'll have to forfeit your profits for the next few months, of course. Standard procedure, you know.</say>
+      <say npc="2">We came to an understanding with Mercury. Quite a decent chap, really, once you get to know him.</say>
+      <say npc="3">Oh, I should think he'll be quite amenable now.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We do know where to find Thallia, operative, and I'm rather vexed that she's been holding out on us as well. Needless to say, this will cost her.</briefing>
+    <enter><say>Hmm... Dead Exile signals, the Twins, and another Exile. Looks like their usual modus operandi again.</say></enter>
+    <objective goal="2" text="Talk to Thallia" type="Talk" npc="4">
+      <talk><say npc="4">I'm not surprised that wuss Mercury ratted me out--again!&#10;&#10;I can't reach Anti M. either, but I know who can: her oh-so-good "friend," Beryl. I'll even tell your operator exactly where to find that pampered beauty queen.&#10;&#10;Yeah, I know what this debacle is gonna cost me. Just make sure the Merv gets his pound of flesh out of Mercury and Anti M., too.</say></talk>
+      <done><say>Hm. Makes sense, since Beryl is supposedly having an affair with Anti M. behind Argon's back. She should be somewhere in Midian Park.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="5">Come, come, precious. Don't make us pluck your petals again.</say>
+      <say npc="6">Think of the emotional trauma.</say>
+    </near>
+    <complete>
+      <say npc="5">A pound of flesh is it? That's not so much.</say>
+      <say npc="6">She isn't quite to my taste, but orders are orders...</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Why do you keep trying to drag me down into the mud with you, {player}? If Beryl is uncooperative, simply tell her that if she doesn't tell us where we can find Anti M., we'll tell Argon all about the sordid little affair she's having with Anti M. Now get on with it!</briefing>
+    <enter><say>I'm picking up multiple Exile programs in there. Argon usually leaves some guards around Beryl, and you'll need to take them out before you can get Beryl to talk.</say></enter>
+    <objective goal="3" text="Kill Argon's guards" type="DefeatAll">
+      <done><say>That's it for the guards.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Beryl" type="Talk" npc="8" after="3">
+      <talk><say npc="8">Ooh! Argon's gonna be steamed when he finds out about his guards! Just what do you think--&#10;&#10;Anti M.? You just march on out of here, you-- What? No! D-don't tell Argon. I... Um... Okay, I'll tell you where to find M., but only if you promise not to hurt her, all right?&#10;&#10;O-okay. She's in Mannsdale. I'll upload the coordinates to you from my phone.</say></talk>
+      <done><say>I'm receiving coordinate data...</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">Hey, look, a stupid human.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>You aren't paid by the hour, {player}, so there's no point in continuing to waste time.</briefing>
+    <enter><say>I'm reading multiple unknown Exile programs in there.</say></enter>
+    <objective goal="5" text="Kill Anti M.'s guards" type="DefeatAll" optional="1">
+      <done><say>No more hostiles in the area. Let's see what M.'s got to say for herself. This better be good...</say></done>
+    </objective>
+    <objective goal="6" text="Talk to Anti M." type="Talk" npc="10">
+      <talk><say npc="10">{player}? So you're the one who's been causing this trouble. What, does Flood actually have competent operatives these days? Or perhaps a better question: why do you work for him?&#10;&#10;I know, that's not what you came to talk about. Very well. This was strictly business. I was hired to organize Blackwood operations in Mara to distract operatives who might be watching the area. I wasn't told why.&#10;&#10;Yes, I know who paid me. He calls himself the General.</say></talk>
+      <done>
+        <say>The General?!</say>
+        <say npc="10">That's all there was to it. I needed the cooperation of some of the other Elements in order to pull it off.&#10;&#10;You win some, you lose some.&#10;&#10;I take it the Merovingian will want payment to the usual account?</say>
+      </done>
+    </objective>
+    <near npc="9" radius="1000">
+      <say npc="9">You'd better head out the back, Miss M. We'll handle this.</say>
+    </near>
+  </phase>
+  <finish>The General? Organizing distractions in Mara? Distractions from what? Evidently, it has worked.&#10;&#10;Not that I care much; we have no substantial investments in Mara. At the moment I'm more concerned about collecting from our rebellious Exile leaders. This has been bothersome, but the profits they forfeit to us should more than make up for the recent losses they caused. Anti M. lost, and we won. Quite satisfactory, I would say.&#10;&#10;Oh, yes, and I suppose you'll be paid as well, though I always wonder why I bother.</finish>
+</mission>

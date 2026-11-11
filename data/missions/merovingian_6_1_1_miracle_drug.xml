@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Miracle Drug, Merovingian story mission 6.1.1. Source: research/missions/transcripts/Merv6-1-1.md (the archive
+     replay of [Merovingian Archive 6.1.1], given by [Archived]Flood; 19 screenshots of the log after it ended, none
+     during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Christel Runnels, Blackwood Goof
+     and Blood Noble line, and those names. Flood's briefings span several screenshots with no header between them and
+     are taken as one entry each. Ours: the description (the Summary tab only said "Datalink established."), every
+     objective text (the Objectives tab was never opened), the sites (all Normal: only "around Mara" was said), the
+     looks and the enemy counts. The Blackwoods are Exiles, so the hostiles are Merovingian. Item stand-in: the cheat
+     code in drug form is Drugs (6816; no item name was shown).
+     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay and not a
+     normal reward; these are Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter
+     built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 mission is.
+     Gaps: in retail the player kills all but one of the Blackwoods and gives the last one the drug "by force"; an item
+     can't be given to a hostile here, so the last Blackwood is a friendly NPC who is given the drug once the others
+     are dead. His name wasn't shown there; he is named Blackwood Goof, as the test subject is in the last area (a
+     second NPC entry, since an NPC stands in one phase). The Operator's "Dude! ...Or not" came seven seconds before
+     the goals completed and is said on getting near the test subject; whether talking to him was the goal isn't
+     known, but his lines are answers to being looked at. Blackwood Goof's and the Blood Noble's second lines are said
+     when they are talked to again after the goal. The Blood Noble is a bystander. An Operator entry at 10:00:19
+     wasn't captured (very likely the standard goals-complete line). -->
+<mission id="306101" title="Miracle Drug" description="Test Flood's synthesized cheat code drug on a Blackwood." plot="1"
+         order="6101" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Christel Runnels" type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+    <say after="2">Hm... I suppose you wouldn't want to get it close to any of your own mucous membranes, however.</say>
+  </npc>
+  <npc id="2" handle="Blackwood Goof" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Blackwood Goof" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="6">Gosh, I hadn't noticed before, but I could sure use a haircut. Hm... If I had a mirror, I could probably just burn it off with my laser vision.&#10;&#10;Do you think you could bring me a mirror? Hey, where are you going?</say>
+  </npc>
+  <npc id="4" handle="Blood Noble" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>No, we haven't checked on the subject. I avoid looking at the lower species whenever possible.</say>
+    <say after="6">Several Blackwoods attempted to force their way in. They were...somewhat stringy, but filling. There have been no more attempts since then.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Operative, have I ever mentioned that I find the very sound of your voice irritating? Oh, I don't blame you for it; after all, you can't help how you were made.
+
+You'll be overwhelmed with joy to know that we have successfully produced a batch of our own cheat codes based off of the Unlimit we captured--the love-sick Beirn. It has been compiled into drug form for ease of distribution.
+
+However, it has yet to be tested. Since you failed in your last attempt at testing a cheat code, in my mighty benevolence I am giving you another chance. Collect the test drug from our technician, Christel Runnels.</briefing>
+    <enter><say>Maybe you can save a little of the drug to slip into Flood's mimosa when he isn't looking.</say></enter>
+    <objective goal="1" text="Talk to Christel Runnels" type="Talk" npc="1">
+      <talk><say npc="1">Ah, Flood's envoy. I'm happy to tell you that in this form, the cheat code is quite stable, and you should be able to take it anywhere in perfect safety.</say></talk>
+      <done><say>I love how working for Flood makes me feel like a crack dealer. Oh well, I suppose these sacrifices must be made. Get the drugs from Christel Runnels.</say></done>
+    </objective>
+    <objective goal="2" text="Get the drugs from Christel Runnels" type="Get" npc="1" item="6816" after="1">
+      <talk><say npc="1">You're fully authorized to accept these from me.</say></talk>
+      <done><say>Off we go! But if Flood sends us to an elementary school, I'm going to file a formal protest.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Now we have only to choose a test subject... I think we want a program. Let me see... Ookami? No, might sour her disposition even more. A blood-drinker? Mmm, no--too old-fashioned. A Crusher? No, they're already ugly enough... A Blackwood? Hm, why not?
+
+Very well. Go find a Blackwood, and give them the drug--by force, if necessary. Make sure you get them alone; if there are more than one, kill the rest before administering the cheat code. Then report back to me.
+
+Oh, I can just imagine the stupid look of confusion on your face. Where to find a Blackwood? They're around Mara, of course. Here, I'll give you a pointer. Now, get moving.</briefing>
+    <enter><say>I'm reading some Exile programs in there. If they're Blackwoods, remember to take out all but one of them.</say></enter>
+    <objective goal="3" text="Kill all but one of the Blackwoods" type="DefeatAll">
+      <done><say>That leaves just the one...</say></done>
+    </objective>
+    <objective goal="4" text="Give the drug to the last Blackwood" type="Give" npc="2" item="6816" after="3">
+      <done><say>I'm reading some alterations in his code, but it's hard to tell what's going on with it. At least it's having some effect this time. I guess we'd better report back to Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>I seem to have underestimated the popularity of this code among the unwashed masses. The news of the "miracle drug" has already spread like wildfire through the puny Blackwood community; you forgot to take his cell phone away from him, didn't you?
+
+You've got a bit of a mess to clean up, operative. A pack of the Blackwoods are massing nearby, no doubt planning to rip our test subject to pieces and drink his blood, or something equally primitive. Why don't you show them who does the ripping?</briefing>
+    <enter><say>You know, I kind of miss the old days when the Blackwoods actually posed a threat to you; remember when Mara seemed like dangerous new territory? Ah, memories...</say></enter>
+    <objective goal="5" text="Kill the Blackwoods" type="DefeatAll">
+      <done><say>Just like the good old days, eh, buddy?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I'm glad to see you've crushed that pygmy rebellion, {player}; I knew those runts were right up your alley.
+
+Now then, it's just about time for you to check on your test subject. If their looks haven't improved, I will be...vexed. And you don't want that, do you?</briefing>
+    <enter><say>How about a little wager? I bet he's now madly in love with Persephone!&#10;&#10;What? This is not a trick bet! Who says all guys are already in love with her? That's totally not true. So do we have a bet, or not?</say></enter>
+    <objective goal="6" text="Check on the test subject" type="Talk" npc="3">
+      <talk><say npc="3">I'm doing good! I still feel a little woozy...but I'm sure to be up and flying around in no time!&#10;&#10;What? What are you looking at? Do I have a big zit on my face? It is feeling a little pinched.</say></talk>
+      <done><say>Yeesh! What are we gonna call that guy now? The "Blackweena"?&#10;&#10;Although... I think I know some guys who might want a pinch of that stuff, if you have any left...</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Dude!&#10;&#10;...Or not, as the case may be.</say>
+    </near>
+  </phase>
+  <finish>I heard your tittering, operative, and I can tell you that there is nothing amusing about this situation in the slightest. Frankly, I find your lack of composure appalling, as well as your second failure in testing cheat codes. I'm not at all sure why I trust you with these assignments.&#10;&#10;Clearly, some adjustments will have to be made.</finish>
+</mission>
