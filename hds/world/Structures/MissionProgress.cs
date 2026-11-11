@@ -32,6 +32,8 @@ namespace hds
         public bool entered;  // the phase's enter lines have played
         public bool failed;
         public bool inventoryFullNotice;
+        public bool completionNotice;
+        public bool entryItemExchanged;
 
         public MissionProgress(Mission mission)
         {

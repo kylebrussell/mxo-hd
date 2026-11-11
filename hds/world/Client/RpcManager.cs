@@ -67,6 +67,9 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_OBJECTINTERACTION_DYNAMIC:
 		            new ObjectInteractionHandler().processObjectDynamic(ref rpcData);
 		            break;
+                case (int)RPCRequestHeader.CLIENT_USE_MISSION_TICKET:
+                    MissionTickets.Use(Store.currentClient, rpcData);
+                    break;
 		        case (int) RPCRequestHeader.CLIENT_OBJECTINTERACTION_STATIC:
 		            new ObjectInteractionHandler().processObjectStatic(ref rpcData);
 		            break;

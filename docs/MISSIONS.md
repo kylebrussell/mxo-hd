@@ -184,11 +184,33 @@ generated sites and reconstructed objectives. Hothouse's captured rewards are re
 and Courtship. Their XML comments identify the placement and encounter choices. The headless scenario
 completes all three using normal mission and combat RPCs, with development teleporting and weakened enemies.
 
-The shipped collector strings `CL_STORY_12_1_MERV_OFFER01` through `OFFER03` describe a separate entry
-path through mission tokens 48134, 48137 and 48140. Their requirements are level 30 and reputation 20
-in Westview, level 40 and reputation 40 in Downtown, and level 50 and reputation 60 in Downtown.
-The token is consumed on completion and retained on abort. The current reconstruction offers these
-missions through Flood's story sequence. Collector-issued entry tokens and their gates still need implementation.
+The Merovingian 12.1 collector in Ikebukuro, static `ac 05 a0 07`, goid 48174, issues the three
+entry tickets. They use native RPC `59 <bag slot u8>` when double-clicked. The client function at
+0x621ed550 checks `GoldenTicketRule` and builds this two-byte request. `rshooks.GoldenTicketStartMission`
+checks the ticket's level, reputation and construct properties.
+
+| Mission | Entry ticket | Verification reward | Minimum level | Merovingian reputation | Construct |
+|---|---|---|---|---|---|
+| Hothouse | 48125 | 48134 | 30 | 20 | 1, Richland/Westview |
+| Deep Cover | 48128 | 48137 | 40 | 40 | 2, Downtown |
+| Courtship | 48131 | 48140 | 50 | 60 | 2, Downtown |
+
+These values come from the tickets' `GoldenTicketConstructID`, `GoldenTicketMinMervRep`,
+`ReqCharLevel`, `GoldenTicketMissionStart`, `GoldenTicketMissionDifficulty` and `Singleton`
+properties in the shipped gameobjects.gob, attribute table 3807. The retail template IDs 3299,
+3300 and 3301 map to this reconstruction's existing mission IDs 312101, 312102 and 312103.
+The first ticket's construct gate covers the shared Richland/Westview world. The offer text calls it Westview.
+
+The entry tickets remain in the bag during play and after abort. Success exchanges one ticket for
+its verification reward in one inventory transaction, reusing the consumed slot in a full bag. A failed
+grant leaves the mission ready to finish after the inventory problem is resolved. Ticket issuance
+enforces the shipped singleton property. These missions enter independently through tickets and
+are excluded from Flood's ordinary story list.
+
+The collector's first three offers use their shipped per-offer strings `CL_STORY_12_1_MERV_OFFER01`
+through `OFFER03`. Issuance is reconstructed as free, consistent with the tickets' zero VendorPrice.
+The server-side requirement-table contents are unavailable in the client. Additional cosmetic
+exchanges in the collector's remaining item sets still require implementation.
 
 ## Contacts
 
@@ -239,7 +261,9 @@ Dev: with `MXO_DEV_COMMANDS=1`, `?contact` moves the player in front of the near
 ## Azuna's collector exchange
 
 Azuna's static in the second basement of the Creston Heights Museum is `3d 03 90 28`, goid 48153, district 2,
-at (-146900, -55, 50200). Using it opens the native collector dialog. Ten Function Data (48150) exchange for
+with CSV origin (-146900, -55, 50200). Retail-client QA on 2026-11-11 placed a player beside the visible
+NPC at (-146195, -54, 50682), about 8.5 m away. Server reach and the native collector window are centered
+at (-146195, -55, 50682), calibrated from that observation. Ten Function Data (48150) exchange for
 Azuna's Surveillance (48149). The client strings describe the data as acquired while protecting Azuna,
 and describe the surveillance as intended for a Merovingian representative in Ikebukuro. The archived
 12.1.2 forum account also describes the ten-item exchange.

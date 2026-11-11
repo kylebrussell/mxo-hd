@@ -37,25 +37,28 @@ namespace hds
 
         public static void Start(WorldClient client, Mission mission)
         {
-            End(client);
-
-            ClientData data = client.playerData;
-            MissionProgress progress = new MissionProgress(mission);
-            data.activeMission = mission;
-            data.missionProgress = progress;
-
-            foreach (MissionNpc npc in mission.npcs)
+            lock (client.playerData.missionSync)
             {
-                // NPCs placed in a generated phase's site spawn when that phase starts
-                if (npc.at == 0)
-                {
-                    AddMob(client, SpawnNpc(client, mission, npc));
-                }
-            }
+                End(client);
 
-            MissionStaging.Stage(client, progress);
-            SendPhase(client, progress);
-            EnsureTimer();
+                ClientData data = client.playerData;
+                MissionProgress progress = new MissionProgress(mission);
+                data.activeMission = mission;
+                data.missionProgress = progress;
+
+                foreach (MissionNpc npc in mission.npcs)
+                {
+                    // NPCs placed in a generated phase's site spawn when that phase starts
+                    if (npc.at == 0)
+                    {
+                        AddMob(client, SpawnNpc(client, mission, npc));
+                    }
+                }
+
+                MissionStaging.Stage(client, progress);
+                SendPhase(client, progress);
+                EnsureTimer();
+            }
         }
 
         public static void AddMob(WorldClient client, Mob mob)
@@ -79,46 +82,49 @@ namespace hds
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
         public static void End(WorldClient client)
         {
-            ClientData data = client.playerData;
-            List<Mob> mobs;
-            lock (data.missionMobs)
+            lock (client.playerData.missionSync)
             {
-                mobs = new List<Mob>(data.missionMobs);
-                data.missionMobs.Clear();
+                ClientData data = client.playerData;
+                List<Mob> mobs;
+                lock (data.missionMobs)
+                {
+                    mobs = new List<Mob>(data.missionMobs);
+                    data.missionMobs.Clear();
+                }
+
+                foreach (Mob mob in mobs)
+                {
+                    lock (data.loot)
+                    {
+                        data.loot.Forget(mob);
+                    }
+                    lock (WorldServer.mobs.SyncRoot)
+                    {
+                        WorldServer.mobs.Remove(mob);
+                    }
+
+                    lock (WorldServer.gameServerEntities.SyncRoot)
+                    {
+                        WorldServer.gameServerEntities.Remove(mob);
+                    }
+
+                    Store.world?.DeleteMobViews(mob);
+                }
+
+                // Mission items don't outlive the mission (an abort, or leaving before handing them over).
+                MissionProgress progress = data.missionProgress;
+                if (progress != null)
+                {
+                    MissionStaging.DespawnObjects(client, progress);
+                    foreach (UInt32 item in new List<UInt32>(progress.itemSlots.Keys))
+                    {
+                        TakeItem(client, progress, item);
+                    }
+                }
+
+                data.activeMission = null;
+                data.missionProgress = null;
             }
-
-            foreach (Mob mob in mobs)
-            {
-                lock (data.loot)
-                {
-                    data.loot.Forget(mob);
-                }
-                lock (WorldServer.mobs.SyncRoot)
-                {
-                    WorldServer.mobs.Remove(mob);
-                }
-
-                lock (WorldServer.gameServerEntities.SyncRoot)
-                {
-                    WorldServer.gameServerEntities.Remove(mob);
-                }
-
-                Store.world?.DeleteMobViews(mob);
-            }
-
-            // Mission items don't outlive the mission (an abort, or leaving before handing them over).
-            MissionProgress progress = data.missionProgress;
-            if (progress != null)
-            {
-                MissionStaging.DespawnObjects(client, progress);
-                foreach (UInt32 item in new List<UInt32>(progress.itemSlots.Keys))
-                {
-                    TakeItem(client, progress, item);
-                }
-            }
-
-            data.activeMission = null;
-            data.missionProgress = null;
         }
 
         public static Mob FindMissionMob(ClientData data, ulong entityId)
@@ -697,6 +703,10 @@ namespace hds
 
         private static void Finish(WorldClient client, MissionProgress progress)
         {
+            if (!MissionTickets.Complete(client, progress))
+            {
+                return;
+            }
             Mission mission = progress.mission;
             ServerPackets packets = new ServerPackets();
             if (!string.IsNullOrEmpty(mission.finishLine))
@@ -800,6 +810,14 @@ namespace hds
         /// <summary>Where the player walked to: lines set off by a place, and leaving a finished phase.</summary>
         private static void Tick(WorldClient client)
         {
+            lock (client.playerData.missionSync)
+            {
+                TickMission(client);
+            }
+        }
+
+        private static void TickMission(WorldClient client)
+        {
             MissionProgress progress = client.playerData.missionProgress;
             MissionPhase phase = progress?.Phase;
             if (phase == null)
@@ -863,17 +881,16 @@ namespace hds
 
             if (progress.IsExiting(x, y, z))
             {
-                MissionStaging.DespawnObjects(client, progress);
-                if (progress.NextPhase())
-                {
-                    Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
-                    MissionStaging.Stage(client, progress);
-                    SendPhase(client, progress);
-                }
-                else
+                if (progress.phaseIndex == progress.mission.phases.Count - 1)
                 {
                     Finish(client, progress);
+                    return;
                 }
+                MissionStaging.DespawnObjects(client, progress);
+                progress.NextPhase();
+                Output.WriteDebugLog("[MISSION] Left the area: phase " + progress.phaseIndex);
+                MissionStaging.Stage(client, progress);
+                SendPhase(client, progress);
 
                 return;
             }

@@ -90,6 +90,7 @@ namespace hds
 
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
+        public readonly object missionSync = new object();
 		public TutorialMission tutorial;
 		public MissionSite missionPreview; public Mission missionPreviewFor; // a generated mission's first site, picked for its info
 		public StaticWorldObject elevatorPanel; // the panel last used, for the floor the player picks next

@@ -55,6 +55,7 @@ namespace hds
         CLIENT_LOOT_ACCEPT = 0x11f,
 
         // Inventory
+        CLIENT_USE_MISSION_TICKET = 0x59, // 59 <slot u8>: native GoldenTicket item use
         CLIENT_ITEM_MOUNT_RSI = 0x63,
         CLIENT_ITEM_UNMOUNT_RSI = 0x64,
         CLIENT_ITEM_MOVE_SLOT = 0x65,

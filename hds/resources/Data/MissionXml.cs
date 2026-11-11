@@ -32,6 +32,10 @@ namespace hds
                 finishLine = Plain(node.SelectSingleNode("finish")?.InnerText),
                 org = (byte)Int(node, "org", 0),
                 contact = Attr(node, "contact") ?? "Tyndall",
+                entryItem = (UInt32)Int(node, "entryItem", 0),
+                minLevel = (byte)Int(node, "minLevel", 0),
+                minReputation = (short)Int(node, "minReputation", 0),
+                completionItem = (UInt32)Int(node, "completionItem", 0),
                 neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 

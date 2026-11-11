@@ -18,6 +18,10 @@ namespace hds
         public string finishLine; // what the contact says when the mission ends
         public byte org;          // 0: offered to everyone; 1 Zion, 2 Machines, 3 Merovingian (the mission list request's org)
         public string contact = "Tyndall"; // who gives it: MissionContacts has their ids
+        public UInt32 entryItem; // a reusable entry ticket, consumed when the mission succeeds
+        public byte minLevel;
+        public short minReputation;
+        public UInt32 completionItem;
         public List<string> neighbourhoods = new List<string>(); // where its generated sites should be, when known
         public bool generated => phases.Exists(p => p.site != null); // placed at accept time in a site from the world's markup
         public List<MissionPhase> phases = new List<MissionPhase>();

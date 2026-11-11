@@ -4,7 +4,7 @@
      Search a furnishing in place of inspecting corpses. Near dialogue marks the ambush at the second site,
      where the Functions are placed when the floor loads. Azuna's museum exchange was an outdoor follow-up. -->
 <mission id="312102" title="Deep Cover" description="Find Azuna and investigate the Oligarch programs at her source's location." plot="1"
-         order="12102" org="3" contact="Flood" exp="239105" info="105000">
+         order="12102" org="3" entryItem="48128" completionItem="48137" minLevel="40" minReputation="40" district="2" districtName="dt" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />
   <npc id="2" handle="Override Function" type="HOSTILE" at="2" rsi="ef0e0004" weapon="2568" />
   <npc id="3" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />

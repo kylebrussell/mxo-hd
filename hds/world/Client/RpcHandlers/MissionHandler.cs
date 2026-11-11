@@ -29,16 +29,30 @@ namespace hds
             }
 
             Mission mission = list[data.selectedMissionIndex];
-            SocialHandler.EnsureTeam(Store.currentClient);
+            Accept(Store.currentClient, mission, txn);
+        }
 
-            data.missionInstanceCounter++;
-            ServerPackets pak = new ServerPackets();
-            pak.sendMissionAccept(Store.currentClient, txn, data.missionInstanceCounter, mission);
+        internal static bool Accept(WorldClient client, Mission mission, UInt16 txn)
+        {
+            ClientData data = client.playerData;
+            lock (data.missionSync)
+            {
+                if (!MissionTickets.CanStart(client, mission))
+                {
+                    return false;
+                }
+                SocialHandler.EnsureTeam(client);
 
-            // Spawns the mission's NPCs, then the first phase's briefing, waypoints and objectives (retail's order).
-            MissionRuntime.Start(Store.currentClient, mission);
-            Store.currentClient.FlushQueue();
-            Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");
+                data.missionInstanceCounter++;
+                ServerPackets pak = new ServerPackets();
+                pak.sendMissionAccept(client, txn, data.missionInstanceCounter, mission);
+
+                // Spawns the mission's NPCs, then the first phase's briefing, waypoints and objectives (retail's order).
+                MissionRuntime.Start(client, mission);
+                client.FlushQueue();
+                Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");
+                return true;
+            }
         }
 
         public void processMissionList(ref byte[] packet)
