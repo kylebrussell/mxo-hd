@@ -7,6 +7,16 @@ namespace hds.Tests;
 // (research/packet-dumps/community-intake: died_in_pvp, some_pvp, niobe3dualduality, lastday2); docs/PVP.md lists them.
 public class PvpTests
 {
+    [Fact]
+    public void AnotherPlayersShotUsesTheObject12StatePartFromRetail()
+    {
+        // died_in_pvp: the target sees the shooter on view 0f, shooting its own view 2/spawn d3.
+        byte[] shot = ServerPackets.BuildOtherPlayerRangedShot(0x71, 0x37, true, 0x00d30002, 100, 495, -200);
+        Assert.Equal("03 2a 71 01 0c 37 81 00 02 00 d3 00 00 00 00 c8 42 00 80 f7 43 00 00 48 c3", H(shot));
+        byte[] npc = ServerPackets.BuildNpcRangedShot(0x71, 0x37, true, 0x00d30002, 100, 495, -200);
+        Assert.Equal(0x02, npc[0]);
+        Assert.Equal(npc.Skip(1), shot.Skip(1));
+    }
     private static string H(byte[] bytes) => BitConverter.ToString(bytes).Replace("-", " ").ToLowerInvariant();
     private static byte[] B(string hex) => StringUtils.hexStringToBytes(hex.Replace(" ", ""));
 

@@ -377,6 +377,19 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
+        /// <summary>
+        /// Object12 player views use state part 03; NPC Object599 uses 02. The action body is shared.
+        /// died_in_pvp: 0f 00 03 2a 71 01 0c 37 81 00 02 00 d3 00 00 followed by the shooter's position.
+        /// Sending 02 to a player view instead parses 2a as an attribute mask and corrupts its appearance.
+        /// </summary>
+        public static byte[] BuildOtherPlayerRangedShot(byte counter, byte attackClass, bool hit, UInt32 targetViewSpawnId,
+            float x, float y, float z)
+        {
+            byte[] shot = BuildNpcRangedShot(counter, attackClass, hit, targetViewSpawnId, x, y, z);
+            shot[0] = 0x03;
+            return shot;
+        }
+
         /// <summary>RPC 4e 00, sent by retail with every shot the player fired (meaning unknown).</summary>
         public static byte[] BuildRangedShotRpc()
         {

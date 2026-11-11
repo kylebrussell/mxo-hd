@@ -10,7 +10,7 @@ namespace hds
     /// client asks to. Records, all retail's for a shot (died_in_pvp capture and the NPC gunfights):
     /// <list type="bullet">
     /// <item>the shooter's own view: <see cref="ServerPackets.BuildRangedShot"/> and RPC <c>4e 00</c>;</item>
-    /// <item>everyone else's view of the shooter, the target's too: <see cref="ServerPackets.BuildNpcRangedShot"/> with
+    /// <item>everyone else's view of the shooter, the target's too: <see cref="ServerPackets.BuildOtherPlayerRangedShot"/> with
     /// the target as that client knows them: itself as <c>02 00 &lt;self spawn&gt;</c> (retail:
     /// <c>0f 00 03 2a 71 01 0c 37 81 00 02 00 d3 00 00 &lt;x y z&gt;</c>);</item>
     /// <item>the target's health, and an 81 68 combat-log line for each of the two (retail:
@@ -192,7 +192,7 @@ namespace hds
                         continue;
                     }
                     watcher.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(shooterView.ViewID,
-                        ServerPackets.BuildNpcRangedShot(counter, attackClass, shot.Hit, targetForWatcher, (float)x, (float)y, (float)z)), false);
+                        ServerPackets.BuildOtherPlayerRangedShot(counter, attackClass, shot.Hit, targetForWatcher, (float)x, (float)y, (float)z)), false);
                     watcher.FlushQueue();
                 }
 

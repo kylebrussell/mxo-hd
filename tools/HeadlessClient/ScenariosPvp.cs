@@ -151,8 +151,8 @@ public static partial class Scenarios
 
         await shooter.WaitForViewUpdateAsync(2, $"03 28 ?? 01 0c ?? ?? ?? {HandleOf(targetForShooter)}", TimeSpan.FromSeconds(15));
         await shooter.WaitForRpcAsync("4e 00");
-        await target.WaitForViewUpdateAsync(shooterForTarget.ViewId, $"02 2a ?? 01 0c ?? ?? ?? {SelfHandle(target)} 00", TimeSpan.FromSeconds(15));
-        await onlooker.WaitForViewUpdateAsync(shooterForOnlooker.ViewId, $"02 2a ?? 01 0c ?? ?? ?? {HandleOf(targetForOnlooker)} 00", TimeSpan.FromSeconds(15));
+        await target.WaitForViewUpdateAsync(shooterForTarget.ViewId, $"03 2a ?? 01 0c ?? ?? ?? {SelfHandle(target)} 00", TimeSpan.FromSeconds(15));
+        await onlooker.WaitForViewUpdateAsync(shooterForOnlooker.ViewId, $"03 2a ?? 01 0c ?? ?? ?? {HandleOf(targetForOnlooker)} 00", TimeSpan.FromSeconds(15));
 
         RpcRecord shooterLine = await shooter.WaitForRpcAsync("81 68");
         RpcRecord targetLine = await target.WaitForRpcAsync("81 68");
@@ -170,9 +170,9 @@ public static partial class Scenarios
         // The shooter stops (44): no more shots
         shooter.SendRpc("44 00");
         await Task.Delay(1000);
-        int shots = CountViewUpdate(target, shooterForTarget.ViewId, "022a");
+        int shots = CountViewUpdate(target, shooterForTarget.ViewId, "032a");
         await Task.Delay(TimeSpan.FromSeconds(7));
-        Check.Equal(shots, CountViewUpdate(target, shooterForTarget.ViewId, "022a"), "Shots after the shooter stopped");
+        Check.Equal(shots, CountViewUpdate(target, shooterForTarget.ViewId, "032a"), "Shots after the shooter stopped");
     }
 
     /// <summary>
@@ -503,7 +503,7 @@ public static partial class Scenarios
         player.SendRpc($"50 {HandleOf(bot)}");
         await player.WaitForRpcAsync($"55 {HandleOf(bot)}", TimeSpan.FromSeconds(10));
         // Its shots at the player, on its view, and the combat-log line for each
-        await player.WaitForViewUpdateAsync(bot.ViewId, $"02 2a ?? 01 0c 38 ?? ?? {SelfHandle(player)} 00", TimeSpan.FromSeconds(15));
+        await player.WaitForViewUpdateAsync(bot.ViewId, $"03 2a ?? 01 0c 38 ?? ?? {SelfHandle(player)} 00", TimeSpan.FromSeconds(15));
         RpcRecord line = await player.WaitForRpcAsync("81 68");
         Check.That(Contains(line.Bytes, "DuelBot") && Contains(line.Bytes, "Alice"), "Names in the combat-log line");
         Check.Equal(0, line.Bytes[22], "The attacker isn't the player");

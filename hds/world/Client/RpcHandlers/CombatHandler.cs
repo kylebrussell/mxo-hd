@@ -1131,7 +1131,7 @@ namespace hds
                 }
                 UInt32 targetId = (UInt32)targetView.ViewID | ((UInt32)targetView.spawnId << 16);
                 watcher.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(shooterView.ViewID,
-                    ServerPackets.BuildNpcRangedShot(counter, attackClass, hit, targetId, x, y, z)), false);
+                    ServerPackets.BuildOtherPlayerRangedShot(counter, attackClass, hit, targetId, x, y, z)), false);
                 watcher.FlushQueue();
             }
         }
