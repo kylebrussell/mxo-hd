@@ -34,9 +34,13 @@ public static partial class Scenarios
             int at = BytePattern.IndexOf(section, prefix, 0);
             if (at < 0) continue;
             found = true;
-            Check.That(at + 20 <= section.Length, "Participant prelude followed by combat-view creation");
+            Check.That(at + 18 <= section.Length, "Complete participant prelude");
             Check.That((BitConverter.ToUInt32(section, at + 14) & 0x00100000) != 0, "Participant in-combat flag");
-            Check.Equal((ushort)1, BitConverter.ToUInt16(section, at + 18), "Next view begins at retail's byte boundary");
+            if (at + 18 != section.Length) // A concurrent queue flush may end this packet at the record boundary.
+            {
+                Check.That(at + 20 <= section.Length, "No trailing partial view ID after participant prelude");
+                Check.Equal((ushort)1, BitConverter.ToUInt16(section, at + 18), "Next view begins at retail's byte boundary");
+            }
         }
         Check.That(found, "Participant received retail combat prelude");
     }

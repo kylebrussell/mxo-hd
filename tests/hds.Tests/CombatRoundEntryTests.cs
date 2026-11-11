@@ -38,6 +38,25 @@ public class CombatRoundEntryTests
     }
 
     [Fact]
+    public void NpcOpeningPreservesApproachFacingDelayAndTransitions()
+    {
+        // actions_combat 10:26:42, ServerSeq113, line12406: asymmetric approach and nonzero facing/delay.
+        var entry = new CombatRoundEntry
+        {
+            FirstApproachMs = 775, FirstFacing = 5, Sequence = 1, StartMs = 275, SecondDelayMs = 775,
+            FirstOffset = new[] { F("6031ab43"), -10, F("40bd3a43") },
+            SecondOffset = new[] { 0, -10, F("000080b7") },
+            FirstDurationMs = 2166, SecondDurationMs = 1995, Flags = 3,
+            FirstTransition = CombatRoundEntry.Reference(21012), SecondTransition = CombatRoundEntry.Reference(21012),
+            Animation = CombatRoundEntry.Reference(9086),
+            ResultData = B("7c0000004500000000100010100000000100000010000000010000000000000000000000")
+        };
+        Assert.Equal(B("0102070300006031ab43000020c140bd3a4300000000000020c1000080b7050001001301000007037608cb0703" +
+            "145200008b0b0024145200008b0b00247e2300008b0b002400000000000000000000000000000000" +
+            "7c0000004500000000100010100000000100000010000000010000000000000000000000"), entry.Serialize());
+    }
+
+    [Fact]
     public void CombatUpdateHasCompleteFramingAndOneEntry()
     {
         var entry = new CombatRoundEntry { Sequence = 2, Animation = CombatRoundEntry.Reference(20899) };
