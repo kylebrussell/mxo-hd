@@ -19,7 +19,7 @@ namespace hds
         public List<GameObjectItem> GODB = new List<GameObjectItem>(); // Holds the GameObjects
         public List<ClothingItem> ClothingRSIDB = new List<ClothingItem>();
         public List<StaticWorldObject> WorldObjectsDB = new List<StaticWorldObject>();
-        public Dictionary<UInt32, StaticWorldObject> WorldObjectsById = new Dictionary<UInt32, StaticWorldObject>();
+        public StaticObjectIndex WorldObjectsById = new StaticObjectIndex();
         public List<EmoteItem> Emotes = new List<EmoteItem>();
         public List<NewRSIItem> newRSIItemsDb = new List<NewRSIItem>();
         public List<Vendor> Vendors = new List<Vendor>();
@@ -567,8 +567,7 @@ namespace hds
                     worldObject.quat = data[10];
 
                     WorldObjectsDB.Add(worldObject);
-                    // First object with an id wins, matching the List.Find this index replaces.
-                    WorldObjectsById.TryAdd(worldObject.mxoStaticId, worldObject);
+                    WorldObjectsById.Add(worldObject);
                     AddWorldObjectToWorldServer(worldObject);
                     worldObject = null;
                 }
@@ -843,7 +842,7 @@ namespace hds
             return TempStaticWorldObjects;
         }
 
-        public StaticWorldObject getObjectValues(UInt32 objectId)
+        public StaticWorldObject getObjectValues(UInt32 objectId, UInt16? district = null)
         {
             Output.WriteLine("REQUEST OBJECT WITH ID :" +
                              StringUtils.bytesToString_NS(NumericalUtils.uint32ToByteArray(objectId, 0)));
@@ -851,7 +850,7 @@ namespace hds
 
             // Indexed lookup: this used to scan all ~2.8M static objects for every client request, and
             // the client sends dozens of these while a district streams in.
-            WorldObjectsById.TryGetValue(objectId, out worldObject);
+            worldObject = WorldObjectsById.Find(objectId, district);
             if (worldObject == null)
             {
                 worldObject = new StaticWorldObject();

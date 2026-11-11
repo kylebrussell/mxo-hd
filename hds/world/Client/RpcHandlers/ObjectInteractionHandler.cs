@@ -159,7 +159,8 @@ namespace hds
 
             DataLoader objectLoader = DataLoader.getInstance();
             StaticWorldObject objectValues =
-                objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectID, 1));
+                objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectID, 1),
+                    (UInt16)Store.currentClient.playerData.getDistrictId());
 
 
             // create a new System message but fill it in the switch block
