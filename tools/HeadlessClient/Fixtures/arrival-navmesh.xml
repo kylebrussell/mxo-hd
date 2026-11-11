@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mission id="399903" title="Arrival Placement Fixture" description="Exercise walkable mission arrivals."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <npc id="1" handle="Guide" type="FRIENDLY" at="1" rsi="a8060090" />
+  <npc id="2" handle="Security" type="HOSTILE" at="1" rsi="ec020058" spawnAfter="1" spawnAt="player" attacksOnSight="0" />
+  <npc id="3" handle="Courier" type="FRIENDLY" at="1" rsi="fc0e0004" spawnAfter="1" spawnAt="player" hostileAfter="3" attacksOnSight="0" />
+  <phase site="Normal" enemy="Machines" enemies="1" enemiesAfter="1" enemiesAt="player" leave="0">
+    <briefing>Arrival placement first area.</briefing>
+    <object id="1" kind="Mainframe" />
+    <wave enemy="Zion" count="2" after="1" spawnAt="object:1" />
+    <objective goal="1" text="Talk to the guide" type="Talk" npc="1" />
+    <objective goal="2" text="Defeat the arrivals" type="DefeatAll" after="1" />
+    <objective goal="3" text="Talk to the guide again" type="Talk" npc="1" after="2" />
+    <objective goal="4" text="Defeat the turned courier" type="Defeat" npc="3" after="3" />
+  </phase>
+  <finish>Arrival placement completed.</finish>
+</mission>

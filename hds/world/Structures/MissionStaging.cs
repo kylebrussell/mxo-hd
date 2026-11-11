@@ -182,8 +182,15 @@ namespace hds
                     continue;
                 }
 
-                MissionRuntime.AddMob(client, MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
-                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc)));
+                Mob mob = MissionRuntime.SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2],
+                    level: npc.level > 1 ? npc.level : level, friendly: progress.IsFriendly(npc));
+                if (mob == null)
+                {
+                    progress.pendingNpcPlacements.Add(npc.id);
+                    progress.reservedSpots[npc.id] = spot;
+                    progress.justArrived.Add(npc);
+                }
+                MissionRuntime.AddMob(client, mob);
             }
 
             // Hostiles on the site's spots: the phase's own, then its waves; those that come later have their spots kept
@@ -217,7 +224,11 @@ namespace hds
                 }
                 else
                 {
-                    SpawnWave(client, progress, wave, enemySpots);
+                    if (!SpawnWave(client, progress, wave, enemySpots))
+                    {
+                        progress.SpotsFor(wave.id).AddRange(enemySpots);
+                        progress.wavesJustArrived.Add(wave);
+                    }
                 }
             }
 
@@ -226,8 +237,14 @@ namespace hds
             for (int i = 0; i < besideObjects.Count; i++)
             {
                 double[] spot = MissionRuntime.ArrivalSpot(client, progress, besideObjects[i].arrival, i, px, py, pz);
-                MissionRuntime.AddMob(client, MissionRuntime.SpawnNpc(client, mission, besideObjects[i], spot[0], spot[1], spot[2],
-                    level: besideObjects[i].level > 1 ? besideObjects[i].level : level, friendly: progress.IsFriendly(besideObjects[i])));
+                Mob mob = MissionRuntime.SpawnNpc(client, mission, besideObjects[i], spot[0], spot[1], spot[2],
+                    level: besideObjects[i].level > 1 ? besideObjects[i].level : level, friendly: progress.IsFriendly(besideObjects[i]));
+                if (mob == null)
+                {
+                    progress.pendingNpcPlacements.Add(besideObjects[i].id);
+                    progress.justArrived.Add(besideObjects[i]);
+                }
+                MissionRuntime.AddMob(client, mob);
             }
 
             foreach (MissionWave wave in placeLater)
@@ -238,7 +255,7 @@ namespace hds
                     beside.Add(MissionRuntime.ArrivalSpot(client, progress, wave.arrival, besideObjects.Count + i, px, py, pz));
                 }
 
-                SpawnWave(client, progress, wave, beside);
+                if (!SpawnWave(client, progress, wave, beside)) progress.wavesJustArrived.Add(wave);
             }
 
             return true;
@@ -248,14 +265,25 @@ namespace hds
         /// A wave of the phase's generated hostiles, at these spots: when the phase starts, or when the wave arrives. The
         /// phase's own (enemies=) are wave 0.
         /// </summary>
-        public static void SpawnWave(WorldClient client, MissionProgress progress, MissionWave wave, List<double[]> spots)
+        public static bool SpawnWave(WorldClient client, MissionProgress progress, MissionWave wave, List<double[]> spots)
         {
             MissionPhase phase = progress.Phase;
             if (phase == null || string.IsNullOrEmpty(wave.enemy) || !Enemies.TryGetValue(wave.enemy, out var template))
             {
-                return;
+                return true;
             }
 
+            // Plan the entire wave first, so a failed placement can retry without duplicating half a wave.
+            List<NavPoint> floor = new List<NavPoint>();
+            foreach (double[] spot in spots)
+            {
+                if (!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out NavPoint placed))
+                {
+                    progress.pendingWavePlacements.Add(wave.id);
+                    return false;
+                }
+                floor.Add(placed);
+            }
             int at = progress.phaseIndex + 1;
             ushort level = PlayerLevel(client);
             for (int i = 0; i < spots.Count; i++)
@@ -272,13 +300,16 @@ namespace hds
                     rsiHex = template.rsi[n % template.rsi.Length],
                     level = level,
                     maxHealth = (ushort)(150 + 40 * level),
-                    weapon = template.weapon
+                    weapon = template.weapon,
+                    arrival = wave.arrival
                 };
-                Mob mob = MissionRuntime.SpawnNpc(client, progress.mission, enemy, spot[0], spot[1], spot[2]);
+                Mob mob = MissionRuntime.SpawnNpc(client, progress.mission, enemy, spot[0], spot[1], spot[2], placement: floor[i]);
                 MissionRuntime.AddMob(client, mob);
                 progress.hostiles.Add(mob);
                 progress.hostileWave[mob] = wave.id;
             }
+            progress.pendingWavePlacements.Remove(wave.id);
+            return true;
         }
 
         private static void PlaceObjects(WorldClient client, MissionProgress progress, Random rng)
@@ -532,10 +563,12 @@ namespace hds
 
         public static void PlaceBeside(Mob mob, double px, double py, double pz)
         {
-            mob.setXPos(px + 150);
-            mob.setYPos(py);
-            mob.setZPos(pz + 100);
-            mob.setRotation(MobAggro.YawTowards(px + 150, pz + 100, px, pz));
+            if (!NavMesh.Project((ushort)mob.getDistrict(), px + 150, py, pz + 100, out NavPoint placed,
+                reachableFrom: new[] { px, py, pz }, requireDirect: true)) return;
+            mob.setXPos(placed.x);
+            mob.setYPos(placed.y);
+            mob.setZPos(placed.z);
+            mob.setRotation(MobAggro.YawTowards(placed.x, placed.z, px, pz));
             mob.updateAnimation((byte)Mob.Animations.STAND);
         }
 

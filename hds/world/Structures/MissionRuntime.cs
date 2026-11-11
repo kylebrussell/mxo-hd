@@ -54,7 +54,13 @@ namespace hds
                     // Site NPCs spawn with their phase; late arrivals wait for their trigger goal.
                     if (npc.at == 0 && !npc.arrival.Late)
                     {
-                        AddMob(client, SpawnNpc(client, mission, npc));
+                        Mob mob = SpawnNpc(client, mission, npc);
+                        if (mob == null)
+                        {
+                            progress.pendingNpcPlacements.Add(npc.id);
+                            progress.justArrived.Add(npc);
+                        }
+                        AddMob(client, mob);
                     }
                 }
 
@@ -66,6 +72,7 @@ namespace hds
 
         public static void AddMob(WorldClient client, Mob mob)
         {
+            if (mob == null) return;
             lock (client.playerData.missionMobs)
             {
                 client.playerData.missionMobs.Add(mob);
@@ -834,6 +841,13 @@ namespace hds
                     mob = SpawnNpc(client, mission, npc, beside[0], beside[1], beside[2], level, friendly);
                 }
 
+                if (mob == null)
+                {
+                    progress.pendingNpcPlacements.Add(npc.id);
+                    progress.justArrived.Add(npc); // Retry rather than place it inside a wall or on another floor.
+                    continue;
+                }
+                progress.pendingNpcPlacements.Remove(npc.id);
                 AddMob(client, mob);
                 Output.WriteDebugLog("[MISSION] " + npc.handle + " arrives");
             }
@@ -848,7 +862,11 @@ namespace hds
                     spots.Add(ArrivalSpot(client, progress, wave.arrival, index++, px, py, pz));
                 }
 
-                MissionStaging.SpawnWave(client, progress, wave, spots);
+                if (!MissionStaging.SpawnWave(client, progress, wave, spots))
+                {
+                    progress.wavesJustArrived.Add(wave);
+                    continue;
+                }
                 Say(client, wave.lines);
                 Output.WriteDebugLog("[MISSION] " + spots.Count + " hostiles arrive" + (wave.id != 0 ? " (wave " + wave.id + ")" : ""));
             }
@@ -866,7 +884,9 @@ namespace hds
             ushort objectId = arrival.AtObject;
             if (objectId != 0 && progress.objects.TryGetValue(objectId, out MissionObjectState state) && state.spot != null)
             {
-                return Beside(state.spot.pos_x, state.spot.pos_y, state.spot.pos_z, index);
+                // Object origins may be on a desk or cabinet. NPC height belongs to the floor, as site NPC spots do.
+                return Beside(state.spot.pos_x, progress.site == null ? state.spot.pos_y : progress.site.floorY - 50,
+                    state.spot.pos_z, index);
             }
 
             return BesidePlayer(px, py, pz, index);
@@ -917,7 +937,14 @@ namespace hds
                     continue; // it arrived on its new side
                 }
 
-                Mob mob = SpawnNpc(client, progress.mission, npc, old.getXPos(), old.getYPos(), old.getZPos(), old.getLevel(), friendly);
+                Mob mob = SpawnNpc(client, progress.mission, npc, old.getXPos(), old.getYPos(), old.getZPos(), old.getLevel(), friendly, sideChange: true);
+                if (mob == null)
+                {
+                    progress.pendingNpcPlacements.Add(id);
+                    progress.justSwitched.Add(id);
+                    continue;
+                }
+                progress.pendingNpcPlacements.Remove(id);
                 mob.setHealthM(old.getHealthM());
                 mob.setHealthC(old.getHealthC());
                 mob.setRotation(old.getRotation());
@@ -1121,6 +1148,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
             bool sent = GiveProvidedItems(client, progress);
+            SwitchSides(client, progress); // Retry a side change that was waiting for a safe placement.
             MissionStaging.Follow(client, progress, x, y, z);
             sent |= TickObjects(client, progress, x, y, z);
             sent |= TickEscorts(client, progress, x, y, z);
@@ -1430,8 +1458,15 @@ namespace hds
 
         /// <param name="friendly">The side it comes on, when a goal has changed it (MissionProgress.IsFriendly); otherwise the file's.</param>
         public static Mob SpawnNpc(WorldClient client, Mission mission, MissionNpc npc, double x = double.NaN, double y = double.NaN,
-            double z = double.NaN, ushort level = 0, bool? friendly = null)
+            double z = double.NaN, ushort level = 0, bool? friendly = null, NavPoint? placement = null, bool sideChange = false)
         {
+            double sx = double.IsNaN(x) ? npc.x : x;
+            double sy = double.IsNaN(y) ? npc.y : y;
+            double sz = double.IsNaN(z) ? npc.z : z;
+            NavPoint onFloor;
+            if (placement.HasValue) onFloor = placement.Value;
+            else if (!MissionPlacement.ForSpawn(client, sx, sy, sz, npc.arrival.AtPlayer && !sideChange, out onFloor)) return null;
+            x = onFloor.x; y = onFloor.y; z = onFloor.z;
             if (!double.IsNaN(x) || (friendly != null && friendly.Value != npc.friendly))
             {
                 // Placed in a generated site, or on another side: a copy, since the mission's definition is shared
