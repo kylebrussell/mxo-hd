@@ -140,7 +140,7 @@ namespace hds
             Store.dbManager.WorldDbHandler.GetCharIdByHandle(handle) == 0 ? null : MySqlMailStore.HandleByCharId(
                 Store.dbManager.WorldDbHandler.GetCharIdByHandle(handle));
 
-        private static string Prefix => "SOE+MXO+" + Store.worldConfig.serverName + "+";
+        private static string Prefix => ChatAddress.Prefix;
 
         /// <summary>Client 80 e0: ignore a player.</summary>
         public static void ProcessAdd(WorldClient client, byte[] rpcData)

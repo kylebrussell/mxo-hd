@@ -570,7 +570,7 @@ namespace hds
                 {
                     if (service == null)
                     {
-                        service = new MailService(new MySqlMailStore(), new WorldMailHost(), () => Store.worldConfig.serverName)
+                        service = new MailService(new MySqlMailStore(), new WorldMailHost(), () => ChatAddress.WorldName)
                         {
                             BotEnabled = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
                         };
@@ -657,7 +657,7 @@ namespace hds
             MailMessage message = new MailMessage
             {
                 OwnerCharId = charId,
-                Sender = MailPackets.Address(Store.worldConfig.serverName, MailService.BotHandle),
+                Sender = ChatAddress.Of(MailService.BotHandle),
                 Category = MailPackets.CategoryPlayer,
                 SentTime = (UInt32)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 Subject = string.IsNullOrWhiteSpace(text) ? "Hello from MailBot" : text,

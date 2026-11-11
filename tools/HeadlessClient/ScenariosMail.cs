@@ -81,15 +81,16 @@ public static partial class Scenarios
         Check.Equal(id, BitConverter.ToUInt32(notice.Bytes, 8), "Notification PersistentMessageID");
         Check.Equal(1u, BitConverter.ToUInt32(notice.Bytes, 0x10), "Notification Status (new)");
         Check.Equal((byte)1, notice.Bytes[0x15], "Notification flag");
-        Check.Equal("SOE+MXO+", StringAtOffset(notice.Bytes, 2).Substring(0, 8), "Sender address prefix");
-        Check.That(StringAtOffset(notice.Bytes, 2).EndsWith("+Alice"), "Sender address ends with the handle");
+        // The world part must be the auth world list's name, or the client shows "World.Alice" as another server's
+        string world = await context.Database.ScalarAsync("SELECT name FROM worlds ORDER BY worldId LIMIT 1");
+        Check.Equal("SOE+MXO+" + world + "+Alice", StringAtOffset(notice.Bytes, 2), "Sender address");
         Check.Equal("Hello", StringAtOffset(notice.Bytes, 0x16), "Subject");
 
         // The inbox, as the client asks for it: 81 eb, 81 ef, the headers
         bob.SendRpc($"81 ea 0d 00 {Le(50u)} {Le(0x7ffffffeu)} 01 01 00 00");
         await bob.WaitForRpcAsync("81 eb 2c 01 00 00");
         RpcRecord end = await bob.WaitForRpcAsync($"81 ef 0c 00 {Le(1u)} {MailSuccess}");
-        Check.That(StringAtOffset(end.Bytes, 2).EndsWith("+Bob"), "81 ef PlayerName is Bob's address");
+        Check.Equal("SOE+MXO+" + world + "+Bob", StringAtOffset(end.Bytes, 2), "81 ef PlayerName is Bob's address");
         RpcRecord header = await bob.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(id)}");
         Check.Equal((byte)0, header.Bytes[0x14], "The last header has More 0");
         Check.Equal((byte)0, header.Bytes[0x15], "A listed header is not a notification");

@@ -68,7 +68,7 @@ namespace hds
             WorldClient receiver = SocialHandler.FindOnlineByHandle(cleanHandle);
             if (receiver != null)
             {
-                string sender = "SOE+MXO+" + Store.worldConfig.serverName + "+" + SocialHandler.HandleOf(Store.currentClient);
+                string sender = ChatAddress.Of(SocialHandler.HandleOf(Store.currentClient));
                 SocialHandler.Send(receiver, SocialPackets.ChatMessage(SocialPackets.ChatTell, 0, sender, receiverMessage));
             }
 

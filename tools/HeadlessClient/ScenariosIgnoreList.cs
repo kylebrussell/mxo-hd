@@ -13,8 +13,8 @@ public static partial class Scenarios
 
         alice.SendRpc(new byte[] { 0x80, 0xe0, 4, 0 }.Concat(Sized("bob")).ToArray());
         RpcRecord added = await alice.WaitForRpcAsync("80 e1 08 00 84 00 00 8e");
-        Check.That(StringAtOffset(added.Bytes, 2).StartsWith(prefix) && StringAtOffset(added.Bytes, 2).EndsWith("+Bob"),
-            "The answer names Bob, spelt as his handle is");
+        string world = await context.Database.ScalarAsync("SELECT name FROM worlds ORDER BY worldId LIMIT 1");
+        Check.Equal(prefix + world + "+Bob", StringAtOffset(added.Bytes, 2), "The answer names Bob as a local player, spelt as his handle is");
 
         alice.SendRpc(new byte[] { 0x80, 0xe0, 4, 0 }.Concat(Sized("Nobody")).ToArray());
         await alice.WaitForRpcAsync("80 e1 08 00 41 00 00 0e");

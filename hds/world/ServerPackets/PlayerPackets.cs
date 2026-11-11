@@ -351,7 +351,7 @@ namespace hds
             List<string> online = new List<string>();
             foreach (Hashtable friend in friends)
             {
-                string handle = "SOE+MXO+" + Store.worldConfig.serverName + "+" + friend["handle"];
+                string handle = ChatAddress.Of(friend["handle"].ToString());
                 bool isOnline = SocialHandler.FindOnlineByHandle(friend["handle"].ToString()) != null;
                 client.messageQueue.addRpcMessage(SocialPackets.FriendListStatus(
                     isOnline ? SocialPackets.FriendOnlineListed : SocialPackets.FriendListed, handle));

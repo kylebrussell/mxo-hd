@@ -35,3 +35,23 @@ public class IgnoreListTests
         Assert.False(IgnoreListPackets.TryParseName(new byte[] { 4, 0 }, out _));
     }
 }
+
+public class ChatAddressTests
+{
+    [Fact]
+    public void AddressesUseTheWorldListName()
+    {
+        // client.dll 0x6224e810 treats SOE+MXO+<its WorldPrefix>+handle as local; WorldPrefix is the world list name
+        string before = ChatAddress.WorldName;
+        try
+        {
+            ChatAddress.WorldName = "Recursion";
+            Assert.Equal("SOE+MXO+Recursion+MailBot", ChatAddress.Of("MailBot"));
+            Assert.Equal("MailBot", MailPackets.HandleOf(ChatAddress.Of("MailBot")));
+        }
+        finally
+        {
+            ChatAddress.WorldName = before;
+        }
+    }
+}
