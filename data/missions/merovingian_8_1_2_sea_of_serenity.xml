@@ -13,8 +13,8 @@
      "business office", Normal otherwise; no neighbourhood was named), the looks (Malphas's, the Effectuator's, the
      Twins', the Merovingian's and the projection's are those of earlier missions) and the enemy count.
      Item stand-in: the tunnel data downloaded from the second terminal is Map_Disk (6783; no item name was shown).
-     Rewards: no reward line is visible (every image is cropped to the Mission window); no Zion 8.1 or 8.2 mission is
-     built, so these are Zion 8.3's values (363,000 experience, 63,000 information, as Evacuation paid), the nearest.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the top of the log wasn't captured: Flood's opening briefing and the first area's arrival line are missing.
      The Status tab's description is used as the first briefing (in Mach1-2-17 the two are the same text), and the
      first area has no arrival line. The Effectuator arrives in the middle of Malphas's line in the first area and at
@@ -35,17 +35,17 @@
   <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
     <say after="2">Bonne chance, operative.</say>
   </npc>
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="2">Ooh, yeah. So Anome was all hot to get up in our constructs--this was back when he worked for Zion--and I egged him on until he had his operative grab some "data" I conveniently left for them to find, and upload it straight to him. Needless to say, the "data" was a little fun-bomb of a virus I'd whipped up just for the occasion, and it went through and deleted all the info Zion had on me! I heard he was begging for mommy! Heh! Man, there was nobody like Anome for taking bait.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="6">That went well, non?&#10;&#10;You have facilitated this strategic maneuver admirably, {player}. Flood will have some payment for your trouble.</say>
   </npc>
   <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
     <say after="6">... End transmission.</say>
   </npc>
-  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
   <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>He's not even here anymore, and he's still causing me headaches...

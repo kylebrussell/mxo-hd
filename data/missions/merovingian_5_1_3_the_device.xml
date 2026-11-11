@@ -10,9 +10,8 @@
      phase they appear in.
      Item stand-ins: the data key, which retail showed as a book, is Book (6814); the disk with the component is
      Data_CD (6831).
-     Rewards: retail showed 1,347,500 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation), used for all of Merovingian 5.1.
+     Rewards: the log shows 1,347,500 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the book turned up only once the Crushers were beaten; we can't spawn an item on a goal, so it is in a box
      searched after the fight. Retail sent the player back to the Effectuator's and Digger's places; a phase never
      reuses a site, so they are elsewhere the second time. Lines at screenshot joins read whole and are used as such
@@ -22,12 +21,12 @@
      are its done lines, and the Effectuator's "Bon voyage!" is his line when talked to again. -->
 <mission id="305103" title="The Device" description="Find the missing component for the Effectuator's Device." plot="1"
          order="5103" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">Bon voyage!</say>
   </npc>
-  <npc id="2" handle="Digger" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
-  <npc id="3" handle="Digger" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
-  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="5" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Digger" type="FRIENDLY" at="2" rsi="2d0d0098" weapon="2568" />
+  <npc id="3" handle="Digger" type="FRIENDLY" at="4" rsi="2d0d0098" weapon="2568" />
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>With all this talk of missing floors, stairs that end, it all seems to point to one thing: a construct. Wouldn't you agree? Oh, my apologies; I completely forgot how too much thinking makes your head hurt.
 

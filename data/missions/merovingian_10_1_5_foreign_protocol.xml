@@ -17,8 +17,9 @@
      been incredibly massive".
      Item stand-ins: the General's data from the commando is Data (6787); the data grabbed from the Machine d-base is
      Data_CD (6831).
-     Rewards: the log shows none. Zion's only chapter 10 mission is Blip (10.2.5), so these are its values (352,000
-     experience, 525,000 information).
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
      Gaps: phase 1 ended 74 seconds after the broadcast, with nothing logged in between; it is read as getting the
      data from "that other commando". The commando who hooked up the broadcast never speaks; he stands there. The
      computers' screens (the terminal's "[0] match(es) found", the d-base's full data recursion and its record on
@@ -39,7 +40,7 @@
     <say after="1">End transmission.</say>
   </npc>
   <npc id="3" handle="Commando" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
-  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="4">Well, I can't really say they don't bite. I think it's kind of cute, though. There was this one time that Ookami--&#10;&#10;Oh, the data? Couldn't really say. Nobody's ever tapped into anything like this. Pretty exciting, huh?</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

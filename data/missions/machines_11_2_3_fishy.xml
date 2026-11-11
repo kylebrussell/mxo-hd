@@ -26,7 +26,7 @@
 <mission id="211203" title="Fishy" description="Destroy the overridden programs in the slums and follow the trail of the biological interface program." plot="1"
          order="11203" org="2" contact="Agent Gray" exp="297000" info="98000">
   <npc id="1" handle="Danielle Wright" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
-    <say after="2">They have their uses--keeping Agents away, for instance--but they are crude, and limited. They are weapons only, and not the tool I need for my work.</say>
+    <say after="6">They have their uses--keeping Agents away, for instance--but they are crude, and limited. They are weapons only, and not the tool I need for my work.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="4">
     <briefing>Operative, available data indicates that the biological interface program has moved from the Merovingian's Hel Club into Richland. Danielle Wright has been tenacious in her pursuit of the program, and, as was to be expected, override use has now spiked in the slums. The overridden programs cannot be allowed to remain active.</briefing>
@@ -44,7 +44,7 @@
       <say>There's a signal in there, but not a big one; and I don't see any overrides.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+    <objective goal="3" text="Search the computer" type="Search" object="1" item="0">
       <done><say>They want us to find...a cat?
 
 I'm really not sure if we should even tell Gray about this...</say></done>
@@ -55,7 +55,7 @@ I'm really not sure if we should even tell Gray about this...</say></done>
     <enter><say>Got some signals in there. Based on the hacks I'm picking up...I'd say they're redpills.
 
 They say that at the meeting in One Zero, Wright was bragging about entering the Matrix as a "complete consciousness," or some kind of crazy thing. Sounds like a load of metaphysical baloney if you ask me.</say></enter>
-    <objective goal="1" text="Kill all of the Zionites" type="DefeatAll">
+    <objective goal="4" text="Kill all of the Zionites" type="DefeatAll">
       <done><say>Damn! Just when you almost think a Zionite's about to be useful for once...</say></done>
     </objective>
   </phase>
@@ -64,8 +64,8 @@ They say that at the meeting in One Zero, Wright was bragging about entering the
     <enter><say>Well, Gray did tell Wright in One Zero that the Oracle made the program to help keep tabs on unplugged humans. Seems to be causing an awful lot of ruckus just for that. Could explain why Wright would want it, though.
 
 Uh-oh, it looks like we've hit some of those overrides we've been hearing about. Wonder what those would do to the interface program...?</say></enter>
-    <objective goal="1" text="Destroy the overridden programs" type="DefeatAll" />
-    <objective goal="2" text="Talk to Danielle Wright" type="Talk" npc="1">
+    <objective goal="5" text="Destroy the overridden programs" type="DefeatAll" />
+    <objective goal="6" text="Talk to Danielle Wright" type="Talk" npc="1">
       <talk>
         <say npc="1">The program has moved on, if that's what you're wondering. Its movements appear to be getting less erratic. In the right hands, it could be a truly elegant control mechanism--not like these Oligarch routines.</say>
         <say>So the program got away again. Well, at least she didn't get her wiry mitts on it.

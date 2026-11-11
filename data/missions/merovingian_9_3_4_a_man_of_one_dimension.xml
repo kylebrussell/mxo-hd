@@ -14,8 +14,8 @@
      monitor", "I say nothing about the General's" / "record as a strategist", "He may" / "have been concerned",
      "prolonged fear" / "of an outside power" (Team chat has the whole line), "and it's" / "been getting heavier".
      Read as paragraph breaks: "business." / "That Carlyne fellow" and "rational people." / "I don't know why".
-     Rewards: the log is a level-37 player's live run (395,820 experience and 66,500 information), so these are Zion's
-     values for 9.3.4 (374,000 experience, 63,000 information).
+     Rewards: the log shows 395,820 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.3's values (374,000 experience, 63,000 information, as Senseless paid).
      Gaps: phase 1's area completed 9 seconds after arriving with no fight logged: reaching the place was the goal, so
      here the place is searched for Halborn (a Furniture object, item 0). Who was there (a pack of code overrides and
      redpills: Carlyne's crowd, from Flood's next line) isn't shown, so no one is placed. The Operator's "Phew." in
@@ -34,7 +34,7 @@
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
     <say after="4">Well done. Unfortunately, it looks like the attack had the effect they wanted.</say>
   </npc>
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2564" />
   <npc id="4" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
     <say after="4">Thank you for helping defend the General's broadcast point, sir.</say>
   </npc>

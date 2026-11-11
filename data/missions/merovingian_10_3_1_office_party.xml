@@ -15,7 +15,9 @@
      last line: "has also / been feeding", "does more / than just", "pick up on a / way of getting at", "find out, and
      / remember", "Andreas Myers's / co-worker", "Okay, okay. Just / don't hurt anyone". Eryn's "during the day." /
      "It is very interesting." is read as one line with a paragraph break.
-     Rewards: Zion's only chapter 10 mission, Blip (10.2.5): 352,000 experience, 525,000 information. The log's run
+     Rewards: the log shows 22,000 experience and 80,500 information (a level-23 player's live run). These are Zion's
+     chapter 10 values, those of Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information;
+     Blip showed the information, and the Zion file takes the experience from The Spider, 11.1.5). The log's run
      paid 22,000 experience and 80,500 information (a level-23 player).
      Gaps: phase 1's goal isn't shown; it completed together with Isabel's and Andreas's party talk, and the player was
      at the office computer ("Network status: Peach", which isn't shown here), so using that computer is the goal and
@@ -52,7 +54,7 @@
   <npc id="11" handle="Hilton" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="12" handle="Psyche" type="FRIENDLY" at="3" rsi="5a000040" weapon="2568" />
   <npc id="13" handle="Prymno" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="14" handle="Ookami" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+  <npc id="14" handle="Ookami" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
     <say after="4">A weakling. I'll have to be careful with him.</say>
   </npc>
   <npc id="15" handle="Maxwell Boren" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />

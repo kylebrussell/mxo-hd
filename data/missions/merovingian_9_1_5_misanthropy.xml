@@ -15,8 +15,8 @@
      there. I'm getting", "going to meet with the Merovingian", "the Merv in the same room", "manipulation of the
      code", "I have advised the Merovingian", "I'll give you some credit", "And here I thought the Machines", "What
      more could the Merovingian want?", "Nothing but friendlies", "he would not have learned them here".
-     Rewards: the log shows none, and Zion has no 9.1 logs, so these are Zion's values for chapter 9.2, the nearest
-     (363,000 experience and 63,000 information, as Snoop and 1313 paid).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 9.1's.
      Gaps: the Operator's "Damn it, that's the intruder's code all over our programs!" came 35 seconds after the arrival line, on finding the turned programs; here it
      is said on arrival with it. Phase 2 ended in retail with "Goals for this mission phase are complete!" 20 seconds
      after Malphas's second line and in the same second as Flood's next line, so the player did not have to leave an
@@ -30,24 +30,24 @@
          order="9105" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Buchwald" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
   <npc id="2" handle="Nekkar" type="FRIENDLY" at="2" rsi="58010058" weapon="2568" />
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="c9020058" weapon="0">
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
     <say after="2">Let us hope that it goes well.</say>
   </npc>
-  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
-  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
+  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
   <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
     <say after="3">If I'd known all along that that was who your boss looked like... Hah!</say>
   </npc>
-  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0">
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0">
     <say after="4">Non, merci.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="5">Not that I'm really worried, mind you.</say>
   </npc>
-  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="5">Minor blip on the radar.</say>
   </npc>
-  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="5">All men have a weakness. This one is no different.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="4">

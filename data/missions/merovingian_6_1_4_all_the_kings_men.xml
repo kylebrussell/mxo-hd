@@ -13,9 +13,9 @@
      span two screenshots with no header between them and are taken as one entry (the briefing, the Effectuator's
      "Lemme take that torso off your hands!" and "Oh? Oh. Oh, all right, give it here."); "The two half shells are still
      there..." had no header and is taken as the Operator's.
-     Rewards: the log shows 1,033,765 experience and 504,000 information, a level-48 player's archive replay and not a
-     normal reward; there is no Zion chapter 6, so these are Zion 7.2's values, the nearest Zion chapter built (363,000
-     experience, 63,000 information).
+     Rewards: the log shows 1,033,765 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: phase 1's goals weren't shown; here the safe is searched twice, for the head and then the torso, and which
      Operator line went with which piece is our guess. Killing the Crushers isn't required. Hostile NPCs' lines don't
      show on screen here (see Known gaps), so the Crushers' lines may not appear. In retail the Half Twin appeared when
@@ -35,19 +35,19 @@
   <npc id="2" handle="Crusher Jackhammer" type="HOSTILE" at="1" rsi="ec020058" weapon="2568">
     <say>Time for your full-body makeover.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
-  <npc id="4" handle="Half Twin" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Half Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="5" handle="Half Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>...</say>
   </npc>
   <npc id="6" handle="Blood Noble" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say>Please, make it go away.</say>
-    <say after="1">It won't listen; all it does is kick me in the shins.</say>
+    <say after="8">It won't listen; all it does is kick me in the shins.</say>
   </npc>
-  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say>Where are the happy feet?</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Operatives were...led to two of our missing hands; however, there are still a few fragments left to be gathered up before we can put our first ghostly Humpty Dumpty back together again. We've finally picked up the signal for the torso and head; they appear to have fallen in the Slums, where they were scavenged by the Bag Lady, who, in a sordid series of transactions, eventually put them in the hands of Mockingbird.&#10;&#10;Mockingbird is having them guarded by hirelings from Gracy Heights, the Crushers. Apparently she is unaware that we are tracking the pieces by their unique code signals. The element of surprise should be on your side.</briefing>
     <enter><say>I've got a lot of Exile signals in there. I've also got the signals for the torso and head, but they're faint; they've probably got them shut up in a safe.</say></enter>
@@ -68,11 +68,11 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>I'm relieved to see that you can at least deal with a pack of low-wattage muscle-heads like the Crushers.&#10;&#10;You're to take those pieces of dead weight to the Effectuator. Hopefully he puts the head on backwards; it would improve their looks.</briefing>
     <enter><say>Mr. Barrel o' Fun is in there.</say></enter>
-    <objective goal="1" text="Talk to the Effectuator" type="Talk" npc="3">
+    <objective goal="3" text="Talk to the Effectuator" type="Talk" npc="3">
       <talk><say npc="3">How-do, partner? I hear you've got some pieces of meat for me! It's nice that I can touch these things--we're kind of immaterial soul-brothers, you know? Except I can't turn mine on and off the way they can. Oh well.&#10;&#10;Lemme take that torso off your hands!</say></talk>
       <done><say>Hand over the torso.</say></done>
     </objective>
-    <objective goal="2" text="Give the Twin Torso Frag to the Effectuator" type="Give" npc="3" item="6785" after="1">
+    <objective goal="4" text="Give the Twin Torso Frag to the Effectuator" type="Give" npc="3" item="6785" after="3">
       <talk><say npc="3">Torso me, baby!</say></talk>
       <done>
         <say>He's just rezzed in another instance of himself.</say>
@@ -81,46 +81,46 @@
         <say>It's the head for him.</say>
       </done>
     </objective>
-    <objective goal="3" text="Give the Twin Head Frag to the Effectuator" type="Give" npc="3" item="6830" after="2">
+    <objective goal="5" text="Give the Twin Head Frag to the Effectuator" type="Give" npc="3" item="6830" after="4">
       <talk><say npc="3">Gimme!</say></talk>
       <done>
         <say>Got a new code signature in there... Aha. It's another half-baked Exile.</say>
         <say npc="3">Huh, not too much worse for all those years bumping around up in the great wide open. Okay, stand back, here goes nothing!&#10;&#10;Hah! Now that's traveling in style!</say>
       </done>
     </objective>
-    <objective goal="4" text="Talk to the Half Twin" type="Talk" npc="4" after="3">
+    <objective goal="6" text="Talk to the Half Twin" type="Talk" npc="4" after="5">
       <talk><say npc="4">This won't do at all.</say></talk>
       <done>
         <say contact="1">Stop wasting time with that halfwit, and bring the subject outside!</say>
         <say npc="4">Could we move along?</say>
       </done>
     </objective>
-    <objective goal="5" text="Lead the Half Twin out of the area" type="Escort" npc="4" to="exit" after="4" />
+    <objective goal="7" text="Lead the Half Twin out of the area" type="Escort" npc="4" to="exit" after="6" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>I need you to lead that floating albino to his lower half; we haven't been able to get it to cooperate at all. Maybe it will listen to reason when its head is present.</briefing>
     <enter><say>Yeah... The other half of the code signature is in there. I hope they...like each other.</say></enter>
-    <objective goal="1" text="Lead the Half Twin to the other Half Twin" type="Escort" npc="4" to="npc:5">
+    <objective goal="8" text="Lead the Half Twin to the other Half Twin" type="Escort" npc="4" to="npc:5">
       <done>
         <say>This is too weird.&#10;&#10;All right... Try to get those two...halves to follow you out.</say>
         <say npc="4">Let's get this taken care of.</say>
       </done>
     </objective>
-    <objective goal="2" text="Lead both Half Twins out of the area" type="Escort" npc="4,5" to="exit" after="1" />
-    <objective goal="3" text="Don't let the first Half Twin die" type="Protect" npc="4" />
-    <objective goal="4" text="Don't let the second Half Twin die" type="Protect" npc="5" />
+    <objective goal="9" text="Lead both Half Twins out of the area" type="Escort" npc="4,5" to="exit" after="8" />
+    <objective goal="10" text="Don't let the first Half Twin die" type="Protect" npc="4" />
+    <objective goal="11" text="Don't let the second Half Twin die" type="Protect" npc="5" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Do not dawdle in the street with those things, {player}; who knows what kind of germs they might pick up.</briefing>
     <enter><say>This is the last time I try conducting a pair of legs across the city!&#10;&#10;The Effectuators are in there. Time for some fireworks, methinks.</say></enter>
-    <objective goal="1" text="Lead both Half Twins to the Effectuator" type="Escort" npc="4,5" to="npc:7">
+    <objective goal="12" text="Lead both Half Twins to the Effectuator" type="Escort" npc="4,5" to="npc:7">
       <done>
         <say>I've got a new program signal in there! Well, whaddaya know; looks like we're halfway to twindom. Better see if he's all there.</say>
         <say npc="7">Voila! One Twin, good as new!</say>
         <say npc="7">And the big galoot is back in the game!&#10;&#10;Well, one of them, anyway. I never could tell them apart.</say>
       </done>
     </objective>
-    <objective goal="2" text="Talk to the Twin" type="Talk" npc="8" after="1">
+    <objective goal="13" text="Talk to the Twin" type="Talk" npc="8" after="12">
       <talk><say npc="8">Ah. That's something.&#10;&#10;Where's my brother?</say></talk>
       <done>
         <say>Sounds all right, I guess. Now, will this make Flood happy, or crabby? My money's on crabby.</say>

@@ -13,7 +13,7 @@
 <mission id="204203" title="Continuing Aggression" description="Stop the Zion radicals' assault on a Machine code storage facility." plot="1"
          order="4203" org="2" contact="Agent Gray" exp="341000" info="112000">
   <npc id="1" handle="Anome" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
-    <say after="1">Just between you and me, I wouldn't give these Neo freaks much longer. I got some contacts working on it right now and, well... let's just say the way to any organization is through their leader. Heh.</say>
+    <say after="2">Just between you and me, I wouldn't give these Neo freaks much longer. I got some contacts working on it right now and, well... let's just say the way to any organization is through their leader. Heh.</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="5">
     <briefing>The Zion radicals have proven to be remarkably... resistant to any sort of cooperation, {player}. At this moment, they are making a concentrated assault on one of our code storage facilities. We believe that they may be searching for components to construct more code bombs.
@@ -29,7 +29,7 @@ Proceed to the location and stop the attackers.</briefing>
 
 You will meet with the Zion controller, Anome. We must have clarification on where Zion stands.</briefing>
     <enter><say>Anome... I've heard some stories about him, and not all of 'em are good ones. He should be somewhere in here.</say></enter>
-    <objective goal="1" text="Talk to Anome" type="Talk" npc="1">
+    <objective goal="2" text="Talk to Anome" type="Talk" npc="1">
       <talk><say npc="1">So, you're the poor sap workin' for the Machines, huh? They put you in a box at night or something?
 
 Okay, okay. Here's the deal, you may or may not know this stuff: They call themselves "Pluribus Neo." They're obviously way outta line, but the Council hasn't got the ba-- the backbone to deal with 'em. One thing's clear, though: they've been disavowed by the Council.

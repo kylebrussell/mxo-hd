@@ -26,11 +26,11 @@
      At least one line before Gray's closing words wasn't readable and is left out. -->
 <mission id="209302" title="Fabrication" description="Investigate an outbreak of overrides, find Halborn and Carlyne, and attend Halborn's meeting with the Architect." plot="1"
          order="9302" org="2" contact="Agent Gray" exp="396000" info="66500">
-  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
-    <say after="1">You still here?</say>
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564">
+    <say after="2">You still here?</say>
   </npc>
   <npc id="2" handle="Carlyne" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564">
-    <say after="1">No? Ah... Hm...
+    <say after="3">No? Ah... Hm...
 
 Well! That's too bad. No, no; don't let me keep you. "Appointed rounds," and all that, eh? That's wonderful. Carry on, then.</say>
   </npc>
@@ -43,15 +43,15 @@ No--no, seriously.</say>
   </npc>
   <npc id="4" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />
   <npc id="5" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
-  <npc id="6" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
-    <say after="2">The palm reader? Yes, I've heard her mentioned... Hm...
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2564">
+    <say after="5">The palm reader? Yes, I've heard her mentioned... Hm...
 
 Come to think of it, those Zionites kept saying her name, and then cutting each other off. I didn't think they knew what they were jabbering about.
 
 No... They couldn't know...</say>
   </npc>
   <npc id="7" handle="The Architect" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
-    <say after="3">...</say>
+    <say after="6">...</say>
   </npc>
   <npc id="8" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
     <say>Full sweep. Find him.</say>
@@ -78,7 +78,7 @@ As we believe that both of them are still taking a non-hostile stance relative t
     <enter><say>So they're both trying to work the system, huh?
 
 Well, one of them is definitely in there. I've got some override program activity, too, and something... Huh, well, it isn't an Agent...</say></enter>
-    <objective goal="1" text="Talk to Halborn" type="Talk" npc="1">
+    <objective goal="2" text="Talk to Halborn" type="Talk" npc="1">
       <talk><say npc="1">Huh. What kept you?
 
 I want to talk to your boss' boss. Go make it happen.</say></talk>
@@ -99,7 +99,7 @@ Override use apart from Halborn is still being detected in that area. He may hav
     <enter><say>I've got just one big override in there... Did we just go in a circle and smack into Halborn again? Or...
 
 Hey, and I'm picking up a civilian in there, too.</say></enter>
-    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Carlyne" type="Talk" npc="2">
       <talk>
         <say npc="2">Oh...hell-o there, {player}! What a pleasant surprise!
 
@@ -122,16 +122,16 @@ That was...really weird.</say>
     <enter><say>Looks like you're hanging with the bigwigs. They're all up there. Security's tighter than--
 
 Never mind.</say></enter>
-    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="4">
+    <objective goal="4" text="Talk to Agent Gray" type="Talk" npc="4">
       <talk><say npc="4">Halborn's request for a consultation with us at this time is likely due to concern over his pursuit by Carlyne. If he feels that he requires our help, this raises the possibility to establish control over him.
 
 You understand this, {player}? Very well; proceed into the adjoining chamber.</say></talk>
       <done><say npc="5">{player} is entering, sir.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Halborn" type="Talk" npc="6" after="1">
+    <objective goal="5" text="Talk to Halborn" type="Talk" npc="6" after="4">
       <talk><say npc="6">So, you didn't make it. Fine. I want to know who did. Don't make this more difficult than it has to be.</say></talk>
     </objective>
-    <objective goal="3" text="Talk to the Architect" type="Talk" npc="7" after="2">
+    <objective goal="6" text="Talk to the Architect" type="Talk" npc="7" after="5">
       <talk><say npc="7">... I have every intention of expediting your departure from this simulation by every means at my disposal.
 
 The program's author is known as the Oracle.</say></talk>

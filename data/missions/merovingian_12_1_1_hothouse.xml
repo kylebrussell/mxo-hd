@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Flood's 12.1.1, from research/missions/transcripts/Merv12-1-1.md. The screenshots give the dialogue and
-     Briseus's level-30 rewards. The objective names, generated sites and redpill count are reconstructed.
-     Ookami leads in the log. The mission engine stages her with its existing escort and carries her to the second site.
-     The outdoor South Vauxton search is referenced in Flood's closing call. The next chapter mission follows
-     through the ordinary story sequence. -->
+<!-- Hothouse, Merovingian story mission 12.1.1. Source: research/missions/transcripts/Merv12-1-1.md (screenshots 364
+     to 380 of the Mission window's Log after the run, given by Flood; the Summary and Objectives tabs were never
+     opened). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator, Ookami and Tesarova line, and those
+     names; Machine Vector, Machine Despoiler and Machine Karate Master are the names in the Team chat. The log's
+     player was Briseus. Ours: the description, every objective text, the sites (none is described: all Normal), the
+     looks and the enemy counts (the last area's hostiles are the three named Machines).
+     Rewards: the log shows 239,105 experience and 105,000 information (a level-30 player's). These are the values
+     for all of 12.1: no other chapter 12 log shows any.
+     Gaps: the Operator's "Huh. Looks like it was a false" (its dashes can't go in this comment) runs into a gap
+     between screenshots, so only the entry's end, "Hm, maybe you should ask her about it.", is said, on getting near
+     Ookami. Ookami leads the player on in the log; here she is talked to, then led out, and follows into the second
+     area. The Operator's data-feed line and Tesarova's and Ookami's last lines are said when Tesarova is talked to.
+     The four lost groups in South Vauxton that Flood names at the end are outside the mission and aren't built. -->
 <mission id="312101" title="Hothouse" description="Follow Ookami's lead on the interface program and intercept a Machine patrol." plot="1"
          order="12101" org="3" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />

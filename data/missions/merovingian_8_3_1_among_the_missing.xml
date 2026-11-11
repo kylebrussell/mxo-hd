@@ -12,8 +12,8 @@
      Holographic Projection's is that of earlier missions; Alden Berman's is a stand-in by sex), the enemy kinds and
      counts (Zionites in the second area, "redpill signals ... they'll be Zionites": Zion; the third area's "System
      programs": Machines), and the item: the surveillance records are Data (6787), a stand-in.
-     Rewards: the log shows no reward line (the end of the mission isn't captured). These are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the same chapter section.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the Operator's "Getting a signal..." (97 s after arriving) is said on getting near the projection, and the
      projection's "End transmission." (6 s after the goals completed) when the phase's goals complete. The Operator's
      "I'm picking up an active computer system nearby." came 106 s after arriving in the second area; there is nothing
@@ -32,7 +32,7 @@
          order="8301" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
   <npc id="2" handle="Alden Berman" type="HOSTILE" attacksOnSight="0" at="3" rsi="ec020058" weapon="2568">
-    <say after="1">SNTL OAJDE.&#10;Access?</say>
+    <say after="4">SNTL OAJDE.&#10;Access?</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Well, well, well... So the toasters have finally wiped out Zion--the old one, anyway. The cave-dwellers really aren't making it easy for us to help them keep this convenient war of theirs going.
@@ -61,8 +61,8 @@ Oh, why--that brings you to mind, {player}. Be a good operative and find out who
       <say>I'm picking up an active computer system nearby.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Hack the Zionites' data terminal" type="Use" object="1" />
-    <objective goal="2" text="Search the data terminal for the man's record" type="Search" object="1" item="0" after="1">
+    <objective goal="2" text="Hack the Zionites' data terminal" type="Use" object="1" />
+    <objective goal="3" text="Search the data terminal for the man's record" type="Search" object="1" item="0" after="2">
       <done><say>Well, that was a flop. Either their security's getting better, or the old city getting wrecked has really put a nail in their tire.</say></done>
     </objective>
   </phase>
@@ -74,10 +74,10 @@ Very well, I can see the way the wind is blowing. We'll try for what we need fro
       <say>You're getting close to some kind of heavy data reading.</say>
       <say>Okay, I'm reading what look like System programs in there. Let's hope they're more in the know about Zion's forces than Zion was.</say>
     </enter>
-    <objective goal="1" text="Find Alden Berman" type="Talk" npc="2">
+    <objective goal="4" text="Find Alden Berman" type="Talk" npc="2">
       <talk><say npc="2">SNTL OAJDE.&#10;Access?</say></talk>
       <done><say>Homey say wha-a?&#10;&#10;Hm... I think the data reading is coming from that guy.</say></done>
     </objective>
-    <objective goal="2" text="Take the surveillance records from Alden Berman" type="Loot" npc="2" item="6787" after="1" />
+    <objective goal="5" text="Take the surveillance records from Alden Berman" type="Loot" npc="2" item="6787" after="4" />
   </phase>
 </mission>

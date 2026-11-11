@@ -18,10 +18,10 @@
      4); each is joined as one line. -->
 <mission id="109305" title="Unsaid" description="Catch up on the hunt for the Oracle, and meet with Carlyne." plot="1"
          order="9305" org="1" contact="Tyndall" exp="374000" info="63000">
-  <npc id="1" handle="Ghost" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Ghost" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
     <say>It make you wonder how much of this she worked out in advance...and how she plans to survive Halborn.</say>
   </npc>
-  <npc id="2" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
     <say>No, no, don't worry yourself. I've got to move through their systems quickly if I'm going to find him, and I'll be able to do that best on my own.</say>
   </npc>
   <npc id="3" handle="The Oracle" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">

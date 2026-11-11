@@ -6,8 +6,8 @@
      every objective text (the Objectives tab was never opened), the looks, the enemy counts and the sites (none was
      described: Normal). Phillips speaks for the commandos, military programs, and has an Exile look like the
      commandos elsewhere. Item stand-in: Phillips' document for the Merovingian is Document_Treaty (6859). Rewards:
-     the log is a level-50 player's (79,416,249 experience, a capped figure, and 1,039,500 information), so 308,000
-     experience and 98,000 information are Zion chapter 2.3's values.
+     the log shows 79,416,249 experience and 1,039,500 information (a level-50 player's). These are Zion 2.3's values
+     (308,000 experience, 98,000 information, as Free Your Mind paid).
      Gaps: in phase 1 the site held neither Desayd nor the package, only hostile Exiles, and its goal was done on
      arrival; here it is a search of a filing cabinet, desk or dresser that turns up nothing, and the Exiles attack
      on sight. "Make your exit." may be the end of the Operator's line or a line of its own; it is said after it. The
@@ -20,7 +20,7 @@
      4, doesn't count phase 2's goals. -->
 <mission id="302302" title="Dissension" description="Find Desayd and the missing package, then meet the commandos' envoy." plot="1"
          order="2302" org="3" contact="Flood" exp="308000" info="98000">
-  <npc id="1" handle="Desayd" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="1" handle="Desayd" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
   <npc id="2" handle="Phillips" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say after="4">See to it that the Merovingian gets that document.
 

@@ -35,14 +35,14 @@
   </npc>
   <npc id="6" handle="Armor" type="HOSTILE" attacksOnSight="0" at="3" rsi="050100b4" weapon="2568" />
   <npc id="7" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
-    <say after="1">What's that? My, these meetings do drag on...</say>
-    <say after="3">Give our best to Agent Pace.</say>
+    <say after="7">What's that? My, these meetings do drag on...</say>
+    <say after="9">Give our best to Agent Pace.</say>
   </npc>
   <npc id="8" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
-    <say after="2">We have the privilege of living our lives over again, of undoing the wrongs we have done, of re-establishing our old companionship with the dead, and knowing their worth much better than we did before we lost them.</say>
+    <say after="8">We have the privilege of living our lives over again, of undoing the wrongs we have done, of re-establishing our old companionship with the dead, and knowing their worth much better than we did before we lost them.</say>
   </npc>
   <npc id="9" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
-    <say after="3">Dismissed, operative. I will contact you shortly.</say>
+    <say after="9">Dismissed, operative. I will contact you shortly.</say>
   </npc>
   <npc id="10" handle="Cypherite Network Hacker" type="FRIENDLY" at="4" rsi="000100b4" weapon="2564">
     <say display="5">What was that? Sorry, I had a bug in my ear.</say>
@@ -73,7 +73,7 @@ Now, to earn my other half: you want an E Pluribus Neo operative named Armor. Se
     <enter><say>Now that Gray mentions it, I'm getting less excited about this deal, too. I mean really, EPN? If they knew something, they'd already have stuck a bomb up it.
 
 Anyway... Pace is in there, with some other programs. Good to see some things can be relied on.</say></enter>
-    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Agent Pace" type="Talk" npc="2">
       <talk><say npc="2">Ciao, {player}. I monitored your conversation with the Zionite traitor. While I will not say she is lying, it seems to me that she is trying to appear to know more than she actually does.
 
 Of course, that does not matter, if she manages to lead us to useful information. In any case, I think you will find August Friesen and Sammy Xander here of assistance.</say></talk>
@@ -82,18 +82,18 @@ Of course, that does not matter, if she manages to lead us to useful information
         <say npc="2">Never trust a double agent, operative. According to what I have found in our records, even among those judged useful enough to be used as contacts, 82% at some point offered false information.</say>
       </done>
     </objective>
-    <objective goal="2" text="Lead August Friesen and Sammy Xander out of the area" type="Escort" npc="3,4" to="exit" after="1" />
+    <objective goal="4" text="Lead August Friesen and Sammy Xander out of the area" type="Escort" npc="3,4" to="exit" after="3" />
   </phase>
   <phase site="Office" enemy="Zion" enemies="4">
     <briefing>The one named Armor is necessary for data extraction. The others may be terminated.</briefing>
     <enter><say>Okay, that's the address we got from Abbs, and I'm scanning redpill signals inside. Time to do this thing.</say></enter>
-    <objective goal="1" text="Talk to Armor" type="Talk" npc="6" optional="1">
+    <objective goal="5" text="Talk to Armor" type="Talk" npc="6" optional="1">
       <done>
         <say npc="6">Hah, yeah, I know what you've got the Cypherites down there digging for: missing supplies, workers--sound familiar, hmm? If they won't even tell us or their own operatives about it, though, fat chance you'll find anything! Now, go to hell!</say>
         <say contact="1">Evidently there has been some...confusion. That is nothing more than an indication of the spying activities we ourselves have ordered. You may dispose of that operative, {player}.</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill Armor" type="Defeat" npc="6">
+    <objective goal="6" text="Kill Armor" type="Defeat" npc="6">
       <done><say>So wait, let's see if I've got this straight... A Zionite sold us info from EPN, who found out that we have Cypherites looking for info on Zion?
 
 This is making my brain hurt. I think I actually know less now than I did before.</say></done>
@@ -106,10 +106,10 @@ While we cannot expect Cryptos to be as useful to us now as he was before Seraph
     <enter><say>Notice that Gray still isn't saying anything to us about what he thinks this business with missing stuff in Zion is about.
 
 It sounds like he wants you to play wingman and do a little nosing around on the side at this meeting. It's you, Gray, and a bunch of Cypherites. Have fun.</say></enter>
-    <objective goal="1" text="Talk to Veil" type="Talk" npc="7">
+    <objective goal="7" text="Talk to Veil" type="Talk" npc="7">
       <talk><say npc="7">Of course, dearie--top priority. And...I'm sure that we can find something useful for Cryptos to do, now that he's feeling better. So lovely of you to be concerned.</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Cryptos" type="Talk" npc="8">
+    <objective goal="8" text="Talk to Cryptos" type="Talk" npc="8">
       <talk><say npc="8">The reason behind the Agent's concern for my state of health is quite apparent. I am not predisposed to be uncooperative, but I do not promise results, for reasons which should be equally apparent, eh?</say></talk>
       <done><say>Geez, you'd think he could get contacts--or at least glasses--to cover that up a bit...
 
@@ -117,7 +117,7 @@ If that's what you got, then it's time to pass the report along to Gray.
 
 Personally, I think he'd get better results if he broke out some nice cocktails at these things. Call me crazy...</say></done>
     </objective>
-    <objective goal="3" text="Talk to Agent Gray" type="Talk" npc="9" after="2">
+    <objective goal="9" text="Talk to Agent Gray" type="Talk" npc="9" after="8">
       <talk><say npc="9">I see. I have done what I could, short of giving outright directives, which in the current conditions would likely have a negative effect.
 
 This is now an internal Cypherite matter. If it does not result in acquisition of necessary intelligence from Zion...</say></talk>

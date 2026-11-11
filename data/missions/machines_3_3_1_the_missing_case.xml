@@ -19,14 +19,14 @@
          order="3301" org="2" contact="Agent Gray" neighbourhoods="Kedemoth" exp="330000" info="108500">
   <npc id="1" handle="Socorro" type="HOSTILE" attacksOnSight="0" at="2" rsi="a8060090" weapon="2568" />
   <npc id="2" handle="Tisiphone" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568">
-    <say after="2">You got lucky, this time. But you'd better watch your back in Kedemoth from here on out, got that?</say>
+    <say after="6">You got lucky, this time. But you'd better watch your back in Kedemoth from here on out, got that?</say>
   </npc>
   <npc id="3" handle="Gat Boy" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <npc id="4" handle="Pixie Licious" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568" />
   <npc id="5" handle="Ms. Boots" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">Don't even think about it.</say>
   </npc>
-  <npc id="6" handle="Argon" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="Argon" type="FRIENDLY" at="4" rsi="350a0058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Greetings, {player}. It seems that a certain case containing items of...significant value was stolen from our couriers as they transported it through Kedemoth. It is of the greatest importance that this case be retrieved with its contents intact.
 
@@ -42,26 +42,26 @@ Proceed to the scene of the crime, secure the area, track the culprit, and retri
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Our records show that an Exile named Tisiphone directs the Furies in Kedemoth. She will be made to answer for their activities. Proceed to the indicated location and interrogate the Furies you find there as to Tisiphone's location.</briefing>
     <enter><say>I've got a bunch of Exile programs in there. More Furies, I'm betting.</say></enter>
-    <objective goal="1" text="Interrogate Socorro" type="Talk" npc="1" optional="1">
+    <objective goal="2" text="Interrogate Socorro" type="Talk" npc="1" optional="1">
       <done>
         <say npc="1">Why should I tell you anything, flesh-bag?</say>
         <say>Sounds like she's got something to hide.</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill Socorro" type="Defeat" npc="1">
+    <objective goal="3" text="Kill Socorro" type="Defeat" npc="1">
       <done><say>That one is holding something, operative. Search her.</say></done>
     </objective>
-    <objective goal="3" text="Get the black book from Socorro" type="Loot" npc="1" item="6814">
+    <objective goal="4" text="Get the black book from Socorro" type="Loot" npc="1" item="6814">
       <done><say>A veritable little black book of Furies locations. I see one that's labeled "Tisiphone." Let's go check it out.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Tisiphone is the mastermind behind the Kedemoth Furies, but she is not necessarily their most powerful fighter. She should be intelligent enough to wish to avoid deletion. Do whatever is necessary to get her to divulge the case's location.</briefing>
     <enter><say>Looks like more Furies programs in there. I don't suppose they'll be happy to see you.</say></enter>
-    <objective goal="1" text="Kill Tisiphone's guards" type="DefeatAll">
+    <objective goal="5" text="Kill Tisiphone's guards" type="DefeatAll">
       <done><say>It's just you and Tisiphone now.</say></done>
     </objective>
-    <objective goal="2" text="Get the card from Tisiphone" type="Get" npc="2" item="6791" after="1">
+    <objective goal="6" text="Get the card from Tisiphone" type="Get" npc="2" item="6791" after="5">
       <talk><say npc="2">Hmph! I have nothing to tell you, anyway, because the Furies had nothing to do with it! I sent some of them to investigate a disturbance reported in that building, that's all. If you really want to find out what happened, try Argon. He knows everything that goes on in Kedemoth. You'll find him at the address on this card.</say></talk>
       <done><say>Why can't every thug advertise their address on a nicely printed business card like Argon? It would make my life so much easier. Let's go pay him a social call.</say></done>
     </objective>
@@ -72,7 +72,7 @@ Proceed to the scene of the crime, secure the area, track the culprit, and retri
       <say>That should be Argon's office. I'm picking up some programs inside.</say>
       <say>The far door is sealed with some pretty hefty code. Talk to those thugs in there.</say>
     </enter>
-    <objective goal="1" text="Show the card to Gat Boy" type="Give" npc="3" item="6791">
+    <objective goal="7" text="Show the card to Gat Boy" type="Give" npc="3" item="6791">
       <talk>
         <say npc="3">Hold up there, captain. Ain't just anybody gets to talk to the man. Tisiphone? Huh. Let me see that card, then.</say>
         <say>Sounds like he wants the card that Tisiphone gave you.</say>
@@ -82,14 +82,14 @@ Proceed to the scene of the crime, secure the area, track the culprit, and retri
         <say>Now he wants that female hacker to scan you. This should be interesting.</say>
       </done>
     </objective>
-    <objective goal="2" text="Let Pixie Licious scan you" type="Talk" npc="4" after="1">
+    <objective goal="8" text="Let Pixie Licious scan you" type="Talk" npc="4" after="7">
       <talk><say npc="4">Lemme see here... Ooh! Oh, that's a nice... Erm... Okay, babe, you can send 'em through! They don't have anything that could hurt the boss.</say></talk>
       <done>
         <say>They've unsealed the door.</say>
         <say npc="3">All right, in you go!</say>
       </done>
     </objective>
-    <objective goal="3" text="Talk to Argon" type="Talk" npc="6" after="2">
+    <objective goal="9" text="Talk to Argon" type="Talk" npc="6" after="8">
       <talk><say npc="6">The stolen case? 'Course I know about it--not that I had anything to do with it getting 'jacked. I also know that you're working for the Machines. And I'm surprised that Gray didn't send you to talk to Kalt; she's the one who made the contents of that precious case for them, anyway. If I was you, I'd pay her a visit.</say></talk>
       <done><say>Kalt: head of Kalt Chemical Engineering. Her executive offices are in Kedemoth. She isn't hard to find, but she doesn't usually waste her time talking to uninvited guests. We'd better check with Gray about this.</say></done>
     </objective>

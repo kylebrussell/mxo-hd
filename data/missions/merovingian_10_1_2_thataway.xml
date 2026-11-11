@@ -17,8 +17,9 @@
      "in the first place was" / "because", "get the information from the" / "Machines.". Read as paragraph breaks
      falling between crops: "who wrote it." / "He may be clueless", "fluff missions to..." / "But I'm getting ahead",
      "they're clever." / "Upload that to me".
-     Rewards: the log shows none; Zion's only chapter 10 mission is Blip (10.2.5), so its values: 352,000 experience,
-     525,000 information.
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
      Gaps: what the goals were isn't shown. Phase 1 had "override activity" as well as Zionite redpills; only the
      Zionites are built (one of them, carrying the access card, is placed so the Operator's Zionites line can
      fire on getting near him; retail's came six and a half minutes in). The Operator's 2:14:05 entry may run on past
@@ -39,11 +40,11 @@
   <npc id="3" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
     <say after="9">Huh. I could. They'll probably try to--&#10;&#10;What? Northwest. Look, mind your own business. I've got to handle this myself. He'd see you clowns coming a mile off, anyway.</say>
   </npc>
-  <npc id="4" handle="Beirn" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="Beirn" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
     <say after="8">No-o problems. We're just like peas in a pod here.</say>
     <say after="9">He's got a bit of an inferiority complex, if you ask me.</say>
   </npc>
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="9">That is a conversation for another time, yes? We would not want to...distract our guest.</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="3">

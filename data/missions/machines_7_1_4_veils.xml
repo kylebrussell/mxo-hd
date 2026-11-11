@@ -30,7 +30,7 @@
 Cryptos' current status is unknown; he jacked out after the attack, and we have received no signal from him since. Seraph has been able to remove overwriting programs from other redpills and bluepills, but reports indicate that the process did not go as expected with Cryptos himself, whose overwriting process was much more involved.</say>
   </npc>
   <npc id="5" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568" />
-  <npc id="6" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+  <npc id="6" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="0">
     <say after="4">Sorry, dearie. I've got some sleep to catch up on. Wouldn't want to be all grumpy tomorrow.
 
 Tell your darling Agent Pace not to frown like that; I'm afraid it doesn't suit her at all.</say>

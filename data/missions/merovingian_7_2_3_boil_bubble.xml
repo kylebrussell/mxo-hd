@@ -11,8 +11,9 @@
      sites (all Normal; no neighbourhood was shown), the looks (the Apothecary's, Persephone's, Beirn's, the
      Merovingian's, the Twins' and the Elite Guard's are those of earlier missions) and the enemy counts. No item:
      the Apothecary takes Beirn's blood herself.
-     Rewards: the log shows 406,815 experience and 133,000 information, a level-38 player's archive replay and not a
-     normal reward; these are Zion 7.2's values (363,000 experience, 63,000 information, as Hear Me paid).
+     Rewards: the log shows 406,815 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
      Gaps: in the third area the Machines "came outta nowhere" once the Apothecary was talked to; NPCs and hostiles
      can't be spawned by a goal, so they are there from the start and killing them is open from the start too. The
      Operator's "No bodies yet..." is said on getting near the Apothecary, and his "This is it! Goodbye, buddy!" just
@@ -26,22 +27,22 @@
 <mission id="307203" title="Boil, Bubble" description="Find out what trouble the Apothecary has with the cheat code, and hurry along her meeting with Beirn before the Machines close in." plot="1"
          order="7203" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Apothecary" type="FRIENDLY" at="1" rsi="5a000040" weapon="0" />
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say after="3">Ooh!</say>
     <say after="5">I knew this would happen. She's delaying on purpose...</say>
     <say after="6">I'll see to it that my husband deals with her...</say>
   </npc>
-  <npc id="3" handle="Beirn" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say after="6">Looks like I won't have to turn her into a pretzel...yet.</say>
   </npc>
   <npc id="4" handle="Apothecary" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
     <say after="6">...&#10;&#10;I will fulfill my obligation, and nothing more.</say>
   </npc>
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0" />
   <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="7">Persephone.&#10;&#10;We've also been discussing paying a courtesy call to the Agent we put in the hospital. Flowers, a card--you know. She was such a pretty little thing. We wouldn't want to seem rude, after all.</say>
   </npc>
-  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="7">Join us in a wager? Persephone, or the Apothecary?</say>
   </npc>
   <npc id="8" handle="Elite Guard" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />

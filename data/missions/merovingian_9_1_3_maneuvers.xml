@@ -15,8 +15,8 @@
      header, and are read as one entry each with a paragraph break (a hidden line can't be excluded): the Operator's
      "...than Zion's." / "No, no; no trouble on the scope.", Flood's "...private squid army." / "I'll figure out
      something to do with that other one..." and the Intruder's "More books to sell me?" / "Wait... What is this?".
-     Rewards: the log shows none, and Zion has no 9.1 logs, so these are Zion's values for chapter 9.2, the nearest
-     (363,000 experience and 63,000 information, as Snoop and 1313 paid).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 9.1's.
      Gaps: the log stops at an Operator line at 5:27:55 whose text wasn't captured, so phase 4 has only Flood's
      briefing: its arrival line, its goals, its end and Flood's closing line are lost, and there is no finish line.
      Phase 4 here is the briefing's fight: the two commandos follow the player in and the Zionites are killed. The
@@ -32,13 +32,13 @@
      are said when these NPCs are clicked again. -->
 <mission id="309103" title="Maneuvers" description="Help the Merovingian and the General stage a show of force for the intruder." plot="1"
          order="9103" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="2">Merci, {player}. Let's give our guest a good show, eh?</say>
   </npc>
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
     <say after="2">The usual arrangements will be made for the transfer.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="3">This is gonna be good.</say>
     <say after="4">Yesss! No casualties!</say>
   </npc>

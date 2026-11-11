@@ -14,9 +14,9 @@
      change.", "I can't waste my time" / "here.", "tracking him down in" / "Mara.", "looks big enough" / "to be him",
      "Oh, and" / "tell Halborn", "staying put for once. This won't work" / "if he moves early". Read as a paragraph
      break: "as bait." / "You get the joy". "staying put" is cut through its descenders at the bottom of a shot.
-     Rewards: the log is a level-37 player's live run (396,000 experience, 66,500 information, and an item forwarded to
-     email because the inventory was full; what it was isn't shown), so these are Zion's values for 9.3.5 (374,000
-     experience, 63,000 information). No reward item is given.
+     Rewards: the log shows 396,000 experience and 66,500 information, and an item forwarded to email because the
+     inventory was full, what it was not shown (a level-37 player's live run). These are Zion 9.3's values (374,000
+     experience, 63,000 information, as Senseless paid). No reward item is given.
      Gaps: the redpill guards' exchange in phase 1 (Ophiuchi's challenge, Eos's answers) came on the player's
      approach, before Halborn spoke; it is said on getting near Ophiuchi. No "Goals complete" was logged after the
      Talks with Halborn in phases 1 and 3. Phase 4's area completed when Carlyne arrived and spoke ("Where is he?"),
@@ -32,17 +32,17 @@
   </npc>
   <npc id="2" handle="Ophiuchi" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
   <npc id="3" handle="Eos" type="FRIENDLY" at="1" rsi="34050040" weapon="2564" />
-  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
     <say after="2">You'd better hurry, {player}. Poor Halborn always has been a fragile creature. No telling how long he'll be able to hold up.</say>
   </npc>
   <npc id="5" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
     <say after="3">The old woman's close... I know it.</say>
   </npc>
-  <npc id="6" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568" />
   <npc id="7" handle="Agent Wilson" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say after="4">Carlyne, you are ordered to come with us. The System requires information concerning your activities.</say>
   </npc>
-  <npc id="8" handle="Agent Park" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+  <npc id="8" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
     <say after="4">Hey, {player}! It's me, Eos! Pretty good disguise, huh?</say>
   </npc>
   <npc id="9" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">

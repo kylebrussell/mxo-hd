@@ -28,7 +28,7 @@
     <say after="3">The codes are in hand, and the Exile attackers have been dealt with.</say>
   </npc>
   <npc id="3" handle="Brett Valvo" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
-  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <npc id="5" handle="Agent Marks" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
   <phase site="Warehouse" enemy="Merovingian" enemies="4">
     <briefing>A new tactic has presented itself in the hunt for the Effectuator. Zion operatives have offered their help. Apparently they have access to some advanced kill codes, capable of dealing with the particular Exiles that protect your target.

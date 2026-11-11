@@ -5,8 +5,9 @@
      the objective texts, the sites (Venaticorum's place: Normal; Calypso's and Dobra's offices: Office), the looks and
      the enemy counts (the renegades' guards and security are the phases' generated Exiles). Item stand-ins: the
      document on Venaticorum's body is Document_Location_Notes (6855), the document in Calypso's office that names Dobra
-     is Dossier_Exile_Leader (6852), the key to Dobra's office is Access_Code (6782). Rewards: the log is a level-50
-     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     is Dossier_Exile_Leader (6852), the key to Dobra's office is Access_Code (6782). Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
      Gaps: each target greets the player and then fights. Here Venaticorum, Calypso and Dobra wait for the player to
      start the fight (attacksOnSight="0"): finding each is a Talk that plays their lines, then they are killed.
      Venaticorum's document is looted from his body. The receptionists' alarms (Anneliese Isenhour, Jason Pamintuan)

@@ -9,9 +9,8 @@
      are redpills modified by his cheat codes; they have no org of their own, so they are the nearest, Zion, as rogue
      redpills, as in the Machines chapter 5 missions. The Blood Nobles' two barks are two Blood Nobles here.
      Item stand-ins: the empty cheat code vial is Antidote (6803); the sealed package is Package (6817).
-     Rewards: retail showed 986,061 experience and 480,150 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation).
+     Rewards: the log shows 986,061 experience and 480,150 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: Anome's men turned up only once the vial was taken ("Watch out! You've got company!"), and in the lab once
      the package was out ("They've found you!"); we can't spawn hostiles on a goal, so they are there from the start.
      Retail's areas were done the moment the item was in hand, so there is no kill goal. The Operator's faint corrupt
@@ -23,16 +22,16 @@
      read whole and are used as such. -->
 <mission id="305205" title="The Vial" description="Retrieve an empty cheat code vial for the Merovingian." plot="1"
          order="5205" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Flood will give you the information you require. See that you follow his instructions precisely.</say>
   </npc>
   <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
     <say>Drop it!</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say after="2">Oh, sure, that's cool. I'll check back with you later. I can get a rain check on this, right? {player}?</say>
   </npc>
-  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" />
   <npc id="5" handle="Blood Noble" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">Interesting...</say>
   </npc>

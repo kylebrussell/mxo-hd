@@ -19,14 +19,14 @@
      a second NPC of the same name. -->
 <mission id="104101" title="Demonstration of Force" description="Lead the General's commandos against the Merovingian's Exiles and show them how a Zion operative fights." plot="1"
          order="4101" org="1" contact="Tyndall" exp="341000" info="112000">
-  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">You'll receive further mission instructions on a need-to-know basis, soldier. I'm counting on you to show those three men just how an expert takes on the Merovingian's forces.</say>
   </npc>
   <npc id="2" handle="Commando" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="3" handle="Commando" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
   <npc id="4" handle="Commando" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="5" handle="Yopp" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
-  <npc id="6" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Hey. Our new best buddy, the Generalissimo himself, wants to meet with us to coordinate offensive efforts against the Merovingian. Guess what, all our real operatives are out doing actual work, so you're elected. Just play nice with him and convince him to give us a lot of ordinance, okay?</briefing>
     <enter><say>The General is supposed to be meeting you in there, and according to these readings, it looks like he's brought some of his troops along.</say></enter>

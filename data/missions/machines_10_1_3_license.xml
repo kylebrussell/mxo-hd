@@ -24,12 +24,12 @@
      player's team at the end; they are bystanders with their lines. -->
 <mission id="210103" title="License" description="Trace data stolen by the Merovingian, then take Halborn to Veil when the System cannot help him itself." plot="1"
          order="10103" org="2" contact="Agent Gray" exp="363000" info="63000">
-  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564">
     <say after="2">Didn't you hear me?</say>
   </npc>
-  <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
+  <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2564" />
   <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568" />
-  <npc id="4" handle="Veil" type="FRIENDLY" at="4" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564" />
   <npc id="5" handle="Cypherite Karate Grandmaster" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say display="5">We'll show him some real action.</say>
   </npc>

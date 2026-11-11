@@ -7,8 +7,9 @@
      description (the Summary tab showed none), every objective text (the Objectives tab was never opened), the sites
      (Normal: the log describes none of the four places), the enemies with Altaj and Cellino (Zion, whose ingredients
      these are) and their counts, and the looks. Item stand-ins: the three insecticide ingredients are Poison (6804,
-     Altaj's), Drugs (6816, Cellino's) and Medicine (6808, Agematsu's). Rewards: none were shown; the player is level 50
-     throughout these logs, so these are Zion chapter 2.1's values (297,000 experience and 98,000 information).
+     Altaj's), Drugs (6816, Cellino's) and Medicine (6808, Agematsu's). Rewards: the log shows none (the player is
+     level 50 throughout these logs). These are Zion 2.1's values (297,000 experience, 98,000 information, as Chemical
+     Fear paid).
      Gaps: the Agent the Operator warns of after Altaj's death ("run!") isn't spawned, as hostiles can't appear on a
      trigger; the warning is still said. Agematsu and his crew are found dead; dead NPCs aren't spawned, so his body is
      a Furniture object to search for the third ingredient, and the Operator's lines on finding the bodies are said on

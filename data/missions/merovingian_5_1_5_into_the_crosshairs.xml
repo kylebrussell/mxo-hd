@@ -8,16 +8,16 @@
      opened), the sites (none is described: Normal), the enemy counts, and the box the disk is found in. The
      attackers are Anome's followers, rogue redpills: Zion.
      Item stand-in: the disk is Data_CD (6831).
-     Rewards: retail showed 808,745 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation), used for all of Merovingian 5.1.
+     Rewards: the log shows 808,745 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: in phase 1 the Merovingian's programs under attack died before they could be saved ("so much for the
      rescue"); we can't place NPCs that die on their own, so they aren't placed and the phase is the fight. In phase
      2 the remaining Exiles were locked in a room and the Operator saw a weird code signature; neither said or did
-     anything in the log, so neither is placed. One line of Flood's third briefing was cut in half between two
-     screenshots and can't be read; it is left out. Flood's first briefing may have run on past "impunity.", and
-     anything said in phase 3's seven-minute fight before "Before you take off" wasn't visible. The Operator's last
-     line (7:15:18) was never visible, most likely the generic goals-complete line. -->
+     anything in the log, so neither is placed. The half-cut lines where two screenshots join in Flood's third briefing
+     are "...surprised now." and "Yes, more of them attacking.", both whole on one side, so nothing is missing there.
+     Flood's first briefing may have run on past "impunity.", and anything said in phase 3's seven-minute fight before
+     "Before you take off" wasn't visible. The Operator's last line (7:15:18) was never visible, most likely the
+     generic goals-complete line. -->
 <mission id="305105" title="Into the Crosshairs" description="Defend the Merovingian's programs from Anome's followers." plot="1"
          order="5105" org="3" contact="Flood" exp="286000" info="94500">
   <phase site="Normal" enemy="Zion" enemies="5">
@@ -39,9 +39,7 @@ It looks like the remaining Exiles are locked in a room in there. Better finish 
     <objective goal="1" text="Kill all of the attackers" type="DefeatAll" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="5">
-    <briefing>Let's not even act surprised now.
-
-Yes, more of them attacking. Really, you'd think they'd learn, but no...
+    <briefing>Let's not even act surprised now. Yes, more of them attacking. Really, you'd think they'd learn, but no...
 
 The area has been evacuated; however, I believe they may be after some sort of data. Destroy them all.</briefing>
     <enter><say>Definitely no allies in here, so have at it!</say></enter>

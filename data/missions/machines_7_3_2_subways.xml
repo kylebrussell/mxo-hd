@@ -30,7 +30,7 @@
     <say display="5">There is no permanent refuge from the System within the simulation, {player}. Many Exile programs make the mistake of ignoring this fact.</say>
   </npc>
   <npc id="4" handle="Wyatt" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
-    <say after="2">He is here. He is watching.</say>
+    <say after="6">He is here. He is watching.</say>
   </npc>
   <npc id="5" handle="Michale" type="HOSTILE" at="2" rsi="c6020058" weapon="2568">
     <say>Yea, and the deceiver shall be himself deceived!</say>
@@ -70,10 +70,10 @@ Man, if it wasn't for the Merv, we'd have had the General a long ago.</say></ent
 The first hub you will approach is in Tabor Park. The Firebolt virus must be inserted into a computer at the hub area. You are also to remain alert for other information pertinent to the General's location.</briefing>
     <enter><say>Place looks pretty quiet. I've got two programs--look like Exiles--on my screen, and a networked computer system. That's got to be the hub switch terminal.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Insert the Firebolt virus into the hub computer" type="Put" object="1" item="6786">
+    <objective goal="5" text="Insert the Firebolt virus into the hub computer" type="Put" object="1" item="6786">
       <done><say>Good. Looks like the virus is doing its thing.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Wyatt" type="Talk" npc="4">
+    <objective goal="6" text="Talk to Wyatt" type="Talk" npc="4">
       <talk><say npc="4">Know? Do I know? I know many things, follower of the Machine. Ipsa scientia potestas est.</say></talk>
       <done>
         <say>Eh... Huh. Maybe that one knows something about the General. Let's bring him along.</say>
@@ -92,7 +92,7 @@ Eh?</briefing>
       <say>What th--? That Demon Army guy's lost it! Watch out!</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Kill Wyatt" type="Defeat" npc="6">
+    <objective goal="7" text="Kill Wyatt" type="Defeat" npc="6">
       <done>
         <say>Jeez. Some programs...
 
@@ -102,10 +102,10 @@ I wonder if he knew anything, or if he was just crazy? I'm leaning toward "crazy
 Oh, looky here. Our scan picked up some of those sneaky commandos. They aren't much for answering questions, but maybe they could mime something for us.</say>
       </done>
     </objective>
-    <objective goal="2" text="Insert the viral program into the hub computer" type="Put" object="1" item="6831">
+    <objective goal="8" text="Insert the viral program into the hub computer" type="Put" object="1" item="6831">
       <done><say>Looks like another successful viral insertion.</say></done>
     </objective>
-    <objective goal="3" text="Eliminate the General's commandos" type="DefeatAll">
+    <objective goal="9" text="Eliminate the General's commandos" type="DefeatAll">
       <done><say>All I got from that was "Ow, pain," so maybe they don't make good mimes. It's all about focus.
 
 Hm... I don't see any suspicious code on them, either. Well, better just report it to Gray.</say></done>
@@ -117,7 +117,7 @@ Hm... I don't see any suspicious code on them, either. Well, better just report 
 The third known switch hub is in Apollyon. Proceed to the location and deploy the White Knight virus in the hub terminal.</briefing>
     <enter><say>Let's see here... Exile signals. Looks like the local gang--5 Points.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Insert the White Knight virus into the hub computer" type="Put" object="1" item="6787">
+    <objective goal="10" text="Insert the White Knight virus into the hub computer" type="Put" object="1" item="6787">
       <done>
         <say>Virus away! Good work.</say>
         <say>Ugh, kill me now. This reminds me why I didn't hang out with the "cool" crowd as a kid--reminds me of one of those awful underage cave mixers. I'd like to haul all of them in and let Pace give 'em twenty lashes...but I guess chances are they don't know anything.</say>

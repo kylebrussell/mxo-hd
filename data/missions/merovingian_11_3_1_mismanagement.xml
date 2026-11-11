@@ -15,8 +15,9 @@
      here make in / the morning", "Speaking of hovercraft issues, how / about that Veil", "areas where / overrides
      are detected", "squished down to the size / of a melon"; Flood's "no doubt." / "We've gotten" is read as a
      paragraph break.
-     Rewards: Zion has no 11.3.1; its 11.3 missions, Resistance (11.3.2) and Gut Check (11.3.3), both pay 352,000
-     experience and 525,000 information. The log's run paid 76,270 experience and 105,000 information at level 30;
+     Rewards: the log shows 76,270 experience and 105,000 information (a level-30 player's). These are Zion 11.3's
+     values (352,000 experience, 525,000 information; Resistance showed the information, and the Zion files take the
+     experience from The Spider, 11.1.5). The log's run paid 76,270 experience and 105,000 information at level 30;
      the Code Bits 4 and 6 received with them aren't given.
      Gaps: the Sergeant's, the Supervisor's and the Office Girl's lines were only in Team chat, not in the log.
      Manager is never met: phase 2's goal is read as talking to the Suit Supervisor, whose "Manager and most of our
@@ -29,7 +30,7 @@
      G.'s "Consider that a freebie", Cheryl's "You operatives") are what each says when clicked. -->
 <mission id="311301" title="Mismanagement" description="Scout Hampton Green after Danielle Wright's overrides, asking Nicky G. and the Suits gang what they know." plot="1"
          order="11301" org="3" contact="Flood" exp="352000" info="525000">
-  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="530a0058" weapon="0">
     <say after="1">Consider that a freebie, sugar. Come chat with me in Club Paradise some time--when it (i)isn't in danger of infestation by wild programs, that is.</say>
   </npc>
   <npc id="2" handle="Corporate Security Sergeant" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">

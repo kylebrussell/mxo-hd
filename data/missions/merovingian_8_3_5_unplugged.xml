@@ -19,8 +19,8 @@
      data/mission_contact_npcs.csv, as in 6.3.3; the Archivists, "nearly identical programs", share one stand-in, and
      the skulky Machine program's is a stand-in), the Machine program's handle (not shown), the enemy kinds and
      counts, and the item stand-in: the data is Data (6787).
-     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: Persephone's second line ("It was so long ago...", 15 s after her first) is said as her goal completes,
      after the Operator's; Hypatia's "I do appreciate..." (10 s after the goals completed) when she is talked to again.
      Which Archivist said which of the five lines isn't shown: three stand here, and talking to one of them gives the
@@ -35,7 +35,7 @@
      and 19 s after the goals completed) are said when they complete. -->
 <mission id="308305" title="Unplugged" description="Trace Persephone's memory of a human taken from the pods through Hypatia's Archivist Society, and recover the old records the Machines are hiding." plot="1"
          order="8305" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0" />
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0" />
   <npc id="2" handle="Hypatia" type="FRIENDLY" at="1" rsi="4b0a0058" weapon="0">
     <say after="2">I do appreciate the Merovingian helping me get away from the Machines. Now we're even.</say>
   </npc>

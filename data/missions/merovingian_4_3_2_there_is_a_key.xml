@@ -7,8 +7,8 @@
      opened), every objective text (the Objectives tab was never opened), the sites (all Normal; Jacqueline's Slashers
      and Jane's place are in Camon Heights as the briefings say), the looks and the enemy counts. Serpentis and his
      guards, and whoever was waiting at Jane's place, are rival programs: Merovingian. Item stand-in: retail's Data CD
-     is Data_CD (6831). Rewards: these logs are a level 50 player's (525,000 information, no experience shown), so the
-     352,000 experience and 115,500 information are Zion chapter 4.3's values.
+     is Data_CD (6831). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are
+     Zion 4.3's values (352,000 experience, 115,500 information, as Shakedown paid).
      Gaps: Jacqueline gave her tip as a friend and turned hostile seconds later. Here she is a hostile who waits to be
      attacked: reaching her completes the goal and both her lines are said then; killing her isn't a goal, as retail's
      area was done before she turned. Serpentis's "Guards!" is said on coming near him. At Jane's place the Operator's
@@ -22,7 +22,7 @@
   <npc id="2" handle="Ehrsson" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
     <say>Remember me to the Frenchman!</say>
   </npc>
-  <npc id="3" handle="Serpentis" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Serpentis" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Camon Heights">
     <briefing>Jane the Ripper. Leader of the Slashers, in Camon Heights. You have to be careful dealing with them... they have this whole disturbing family thing going. It's creepy, it really is.&#10;&#10;Go talk to Jacqueline. She'll get you more information.</briefing>
     <enter><say>I guess Jacqueline is a Merovingian program working undercover in the Slashers. Nothing like some inside information to make a job go easier!</say></enter>

@@ -18,8 +18,8 @@
      "Agent Wilson." / "Serve 'em right", "sends the" / "signal.", "In fact," / "I've suspected it", "He's" / "been
      playing up"; "the contact's profile." / "The other bad news" and "you know." / "Now stop jabbering" as paragraph
      breaks.
-     Rewards: Zion's values for the same-numbered mission 9.3.3 (374,000 experience, 63,000 information). The log's
-     level-37 run paid 396,000 experience and 66,500 information.
+     Rewards: the log shows 396,000 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.3's values (374,000 experience, 63,000 information, as Senseless paid).
      Gaps: phase 1 completed 11 seconds after arriving, with the player at the desk computer (its window: "dir",
      "Unspecified error", "Disk read error", "Error"); here the computer is used, and its readout, a client window,
      isn't sent. The E Pluribus Neo Fighter's bark came only in Team chat; it is said on getting near him. In phase 2
@@ -47,7 +47,7 @@
   <npc id="4" handle="Reggie" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <npc id="5" handle="Sherwood" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
   <npc id="6" handle="Ja" type="HOSTILE" at="4" rsi="c9020058" weapon="2568" attacksOnSight="0" />
-  <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
     <say after="4">Oh, all business--of course, of course. But I am disappointed that he made the mistake of choosing...poorly. I was hoping he was more perceptive. Too bad.</say>
   </npc>
   <phase site="Office" enemy="Zion" enemies="2" neighbourhoods="Achan">

@@ -7,7 +7,7 @@
      {player} here. Italics ("will", "if you please", "Vite", "mon ami") are dropped. Ours: the description (the
      Summary tab only said "Datalink established."), every objective text (the Objectives tab was never opened), the
      sites (none is described: all Normal), the looks (Flood, Silver, Carlyne and the Merovingian as the other
-     Merovingian files have them; ??? has a female look) and the enemy counts. Phase 2 has Machines (Flood: "all we
+     Merovingian files have them; ??? is Danielle Wright, as 11.2.1 says, and has her look) and the enemy counts. Phase 2 has Machines (Flood: "all we
      have to worry about at the moment are their operatives"); phases 3 and 4 have no hostiles ("I'm not picking up
      any activity signals in there"; phase 4's are only override signals and Carlyne).
      Joins between images read as contiguous: "Could be / trouble.", "what to tell you. / Maybe we will" (no
@@ -16,8 +16,9 @@
      "pretty deep fried." / "So, all of our programs dead" as a paragraph break, "in a particularly / aesthetic pose",
      "I'll have to / ask that you deliver it", "the interface program. / You must open it", "get him out of there! /
      Who knows", and "make my way from / here."
-     Rewards: Zion's chapter 11.1.5 mission, The Spider, paid 352,000 experience and 115,500 information, and these
-     are its values. The log's run paid 253,230 experience and 84,000 information.
+     Rewards: the log shows 253,230 experience and 84,000 information. These are Zion 11.1's values (352,000
+     experience, 115,500 information, as The Spider paid). The log's run paid 253,230 experience and 84,000
+     information.
      Gaps: Flood stands in phase 1 as an NPC (the log gives him the green NPC icon there); his "...and if you honestly
      think" is said on reaching Silver. The Operator's "Looking good." is read as the operatives being down; an
      area-complete line after it may be hidden by the scroll. Phase 3 is one Use of the terminal, with both Operator
@@ -36,16 +37,16 @@
   <npc id="1" handle="Flood" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">Hmph! He'll be singing a different tune once I've reported this to the Merovingian!</say>
   </npc>
-  <npc id="2" handle="Silver" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+  <npc id="2" handle="Silver" type="FRIENDLY" at="1" rsi="750a0058" weapon="2564">
     <say after="1">The interface program has remarkable properties, but it is capricious, and out of control. Given sufficient time, I have no doubt that I could bend it to my will...but that time has run out.&#10;&#10;Live to fight another day, meatbag! You humans may place small value on your own short lives, but I intend to be around long after your flesh has rotted and returned to the mud.</say>
   </npc>
-  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">This is new...&#10;&#10;Listen to me carefully, {player}, and do exactly as I say. The computer here houses the interface program. You must open it to the outside network, now. Do not question; there is no time! Quickly!</say>
   </npc>
-  <npc id="4" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
     <say>No. No more questions; no more stalling. The program, if you please.</say>
   </npc>
-  <npc id="5" handle="???" type="FRIENDLY" at="4" rsi="a5060090" weapon="0">
+  <npc id="5" handle="???" type="FRIENDLY" at="4" rsi="60010058" weapon="0">
     <say after="4">I know it is-- Ah. There.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

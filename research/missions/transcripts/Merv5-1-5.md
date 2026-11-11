@@ -24,11 +24,9 @@ Hold on, TiAmo. You're not finished dragging your knuckles just yet. It seems th
 
 It looks like the remaining Exiles are locked in a room in there. Better finish off the attackers first." (join 224/225 [?]: the half-cut line at the bottom of 224 has the shape of "It looks like the remaining Exiles are", the first line of 225; no header between, so read as the second paragraph of this entry)
 8. Operator 7:04:44 PM: "Goals for this area are complete. Find the nearest exit quickly!"
-9. [Archived]Flood 7:05:05 PM [contact]: "Let's not even act surprised now.
-[?] one line of this entry is cut in half at the bottom of 225 and at the top of 226 and cannot be read
-Yes, more of them attacking. Really, you'd think they'd learn, but no...
+9. [Archived]Flood 7:05:05 PM [contact]: "Let's not even act surprised now. Yes, more of them attacking. Really, you'd think they'd learn, but no...
 
-The area has been evacuated; however, I believe they may be after some sort of data. Destroy them all."
+The area has been evacuated; however, I believe they may be after some sort of data. Destroy them all." (the half-cut lines at the bottom of 225 and the top of 226 are "Yes, more of them attacking. Really," and "...surprised now.", each whole on the other image, so nothing is missing at the join)
 10. Operator 7:05:45 PM: "Definitely no allies in here, so have at it!"
    GAP: possibly entries between 7:05:45 PM and 7:13:17 PM (join 226/227; 226 ends at the bottom of this entry, 227 starts with the next header); 7.5 minutes of play pass here.
 11. Operator 7:13:17 PM: "Before you take off, take a look around and see if you can find anything useful in there."

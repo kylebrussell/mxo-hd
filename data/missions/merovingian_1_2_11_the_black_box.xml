@@ -5,8 +5,9 @@
      description, the objective texts, the site (an office with desks and staff: Office), the looks and the enemy count
      (Agent Johns's programs are the phase's generated Machines, one of them placed as "Agent" with the bark he had in
      Team chat). Item stand-in: the Black Box is LED_Black_Box (6835). Where retail's box came from isn't shown; it was
-     found 11 seconds after the last program died, so it is looted from Agent Johns. Rewards: the log is a level-50
-     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     found 11 seconds after the last program died, so it is looted from Agent Johns. Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
      Gaps: Jaymie Satnik greets the player, then turns hostile and calls security when the player goes through her desk.
      NPCs can't switch sides, so she stays a friendly bluepill (her sex isn't shown; a female look by name): searching her desk (a Furniture object that turns up
      nothing) plays her protest and her call for security. Agent Johns waits for the player (attacksOnSight="0"):

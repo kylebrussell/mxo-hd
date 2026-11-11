@@ -15,8 +15,8 @@
      Brandi Junge's is a stand-in by sex) and the enemy kind and count (the "security patrols" are Machines, since the
      Operator calls their record "the Machine version"; three of them). No item was shown, so there are no item
      stand-ins.
-     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the same chapter's.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the Coroner meets the player twice, in the first and last areas, so he is two NPCs with the same look. The
      Operator's "I'd like to see Flood try to ground us" and the arrival line are one line here, said on arrival. The
      records office computer's popup (the search for "MacHenry, Mary" and "Junge, Brandi" and the printed call
@@ -26,9 +26,9 @@
      s after the last goals completed; here it follows that line as the goal completes. -->
 <mission id="308303" title="The Disputed Death of Mary MacHenry" description="Compare three versions of a dead woman's last phone call for the Coroner, who believes the Machines make people disappear." plot="1"
          order="8303" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Coroner" type="FRIENDLY" at="1" rsi="c9020058" weapon="0" />
+  <npc id="1" handle="The Coroner" type="FRIENDLY" at="1" rsi="7d0a0058" weapon="0" />
   <npc id="2" handle="Brandi Junge" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
-  <npc id="3" handle="The Coroner" type="FRIENDLY" at="4" rsi="c9020058" weapon="0" />
+  <npc id="3" handle="The Coroner" type="FRIENDLY" at="4" rsi="7d0a0058" weapon="0" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, the Merovingian is still not satisfied that we understand the Machine motivation for using you feeble humans as batteries. He's been poring over all those numbers we gathered for him, and he's come back to the nagging issue of the death rate: records in the Matrix indicate that the birth rate exceeds the death rate, for a healthy, growing population, but under that scenario, so necessary to the fragile happiness of your kind, the Matrix would be far from a stable system.
 

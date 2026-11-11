@@ -11,9 +11,8 @@
      tab was never opened), the sites (all Normal; Flood names Apollyon for Raini and Camon for Silver, so those
      phases prefer Apollyon and Camon Heights), the looks (as in earlier missions: Nicky G. and Raini as in 6.2.4) and
      the enemy count. No item was shown.
-     Rewards: no reward line was in the images (the archive replays paid level-47/48 players about 1,000,000
-     experience, not a normal reward); no Zion 8.1 mission is built, so these are Zion 8.3's values (363,000
-     experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: six minutes of phase 2 weren't captured (6:27:21 to 6:33:38): the far door was sealed, then "The lock on the
      far door just disengaged." and Raini answered a minute later. What opened the door isn't known; here killing
      Raini's 5 Points gang (the Operator warned of them) unlocks it, and talking to Raini opens after that. Raini's
@@ -26,19 +25,19 @@
      you wonder why" and Malphas's "It will not be an easy matter") are said when they are talked to again. -->
 <mission id="308105" title="Battery" description="Ask Raini about the Machines' fusion power and Silver about the human body's energy, for the Merovingian." plot="1"
          order="8105" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="34050040" weapon="0">
+  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="530a0058" weapon="0">
     <say after="1">Raini's a dumb kid; no surprise the Machines didn't keep her around.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">They are experts in their fields, mon ami. Their opinions will be most useful.</say>
   </npc>
-  <npc id="3" handle="Raini" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+  <npc id="3" handle="Raini" type="FRIENDLY" at="2" rsi="560a0058" weapon="0">
     <say after="3">Not that I'd go back to the Machines if they switched back to fission or anything. Hah! No more working for The Man for this girl!</say>
   </npc>
-  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2568">
     <say after="4">Oh, the simulated bodies to which I have access in this place are quite accurate enough for me to judge, I assure you. Machine knowledge of your pitiful organism is incredibly thorough. They know you better than you'll ever know yourselves--thus their complete disregard for you as animals worthy of being allowed to walk about freely, you see.</say>
   </npc>
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="5">Perhaps you wonder why I am so fascinated by this, {player}? But it is no mystery; power is both the means and the end of this game we play...and I mean to play it to the end.</say>
   </npc>
   <npc id="6" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
@@ -47,7 +46,7 @@
   <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say>Pah. She probably looked all that up on the network just before you arrived.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say>Ah, I'd have liked to have had another...chat with Silver.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

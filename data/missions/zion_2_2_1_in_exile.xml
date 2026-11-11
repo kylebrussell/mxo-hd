@@ -23,8 +23,8 @@
     <say after="1">What? Who are you? I don't know you.</say>
   </npc>
   <npc id="2" handle="Binzel" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
-    <say after="1">Mole, you crackhead! You're gonna get us all sent back to the Train Man! Shut the hell up!</say>
-    <say after="3">Ulp! Sorry about that, uh, your honor. Won't happen again!</say>
+    <say after="2">Mole, you crackhead! You're gonna get us all sent back to the Train Man! Shut the hell up!</say>
+    <say after="4">Ulp! Sorry about that, uh, your honor. Won't happen again!</say>
   </npc>
   <npc id="3" handle="Esperanto" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="4" handle="Mole" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" attacksOnSight="0" />
@@ -47,10 +47,10 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Remember your mission, Espion. Keep comm chatter to a minimum. Oh, and... Good luck.</briefing>
     <enter><say>That's the place. Uh... Over and out.</say></enter>
-    <objective goal="1" text="Talk to Binzel" type="Talk" npc="2">
+    <objective goal="2" text="Talk to Binzel" type="Talk" npc="2">
       <talk><say npc="2">Hey, who're you? Espion? Oh, cra-- Um, I mean, it's an honor to have you here. What can we do for you?</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Esperanto" type="Talk" npc="3" after="1">
+    <objective goal="3" text="Talk to Esperanto" type="Talk" npc="3" after="2">
       <talk>
         <say npc="3">How kind of the Merovingian to send you to attend to this personally. Err... We can take you to the captured insecticide--</say>
         <say npc="4">What? Who the hell is Espion? Don't give 'em nothin', Esperanto! Me, I'll give 'em a beat-down if they want one.</say>
@@ -59,19 +59,19 @@
         <say npc="4">Yeah, you heard me! I ain't scared'a you, meatbag! What you gonna do about it?</say>
       </talk>
     </objective>
-    <objective goal="3" text="Kill Mole" type="Defeat" npc="4">
+    <objective goal="4" text="Kill Mole" type="Defeat" npc="4">
       <done><say npc="2">Ulp! Sorry about that, uh, your honor. Won't happen again!</say></done>
     </objective>
-    <objective goal="4" text="Talk to Esperanto" type="Talk" npc="3" after="3">
+    <objective goal="5" text="Talk to Esperanto" type="Talk" npc="3" after="4">
       <talk><say npc="3">Erm... Good job. I never liked that program. Look, uh, we don't have the stuff here--they took it over to HQ. I can take you there, if you want. No really, it'll be my pleasure.</say></talk>
     </objective>
-    <objective goal="5" text="Lead Esperanto out of the area" type="Escort" npc="3" to="exit" after="4" />
+    <objective goal="6" text="Lead Esperanto out of the area" type="Escort" npc="3" to="exit" after="5" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Proceed, Espion.</briefing>
     <enter><say>Careful...</say></enter>
     <object id="1" kind="Box" />
-    <objective goal="1" text="Find Chandra" type="Talk" npc="5" optional="1">
+    <objective goal="7" text="Find Chandra" type="Talk" npc="5" optional="1">
       <done>
         <say npc="5">Eh? Who are you? Who brought you here?</say>
         <say npc="3">Hey, boss, this is Espion, sent by the Merovingian to check up on the insecticide we captured from those Zion chumps.</say>
@@ -79,9 +79,9 @@
         <say npc="3">So, wait... You're not Espion? But you work for the Merovingian, right?</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill Chandra" type="Defeat" npc="5" />
-    <objective goal="3" text="Kill the Exiles" type="DefeatAll" />
-    <objective goal="4" text="Find the stolen insecticide" type="Search" object="1" item="6804" after="2">
+    <objective goal="8" text="Kill Chandra" type="Defeat" npc="5" />
+    <objective goal="9" text="Kill the Exiles" type="DefeatAll" />
+    <objective goal="10" text="Find the stolen insecticide" type="Search" object="1" item="6804" after="8">
       <done><say>Ah, there's our bug juice. Get out of there while I dial up Tyndall for the drop point.</say></done>
     </objective>
   </phase>
@@ -91,14 +91,14 @@
       <say>I've got a positive on Wolf's signal in there.</say>
       <say>Exiles? That was fast.</say>
     </enter>
-    <objective goal="1" text="Talk to Wolf" type="Talk" npc="6">
+    <objective goal="11" text="Talk to Wolf" type="Talk" npc="6">
       <talk><say npc="6">Some kind of trouble out there? Eugenisis here will assist you, if necessary. Meantime, I'll take that insecticide off your hands.</say></talk>
     </objective>
-    <objective goal="2" text="Give the insecticide to Wolf" type="Give" npc="6" item="6804" after="1">
+    <objective goal="12" text="Give the insecticide to Wolf" type="Give" npc="6" item="6804" after="11">
       <talk><say npc="6">Stay focused, operative. I need to get that insecticide from you.</say></talk>
       <done><say npc="6">Gracias. Don't worry, those Exiles won't touch it.</say></done>
     </objective>
-    <objective goal="3" text="Kill the attacking Exiles" type="DefeatAll" optional="1" />
+    <objective goal="13" text="Kill the attacking Exiles" type="DefeatAll" optional="1" />
   </phase>
   <finish>Thank you, Warrior. In these days of clandestine murder and sabotage, we must be watchful at all times. Have confidence that we will guard our supplies of the new insecticide much more carefully in the future.</finish>
 </mission>

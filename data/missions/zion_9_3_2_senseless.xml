@@ -24,10 +24,10 @@
   <npc id="3" handle="Glen Cheng" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
     <say>Why Svetlana? This doesn't make any sense. It just doesn't make any sense...</say>
   </npc>
-  <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
     <say>Uncorroborated reports suggest that Halborn met with the Machines just before he tracked down Colt. We don't know what they talked about, but it's conceivable that it has something to do with the Oracle.</say>
   </npc>
-  <npc id="5" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
     <say>Oh, it won't be easy, but it can be done, I assure you. I know Halborn very well; in fact, I've made something of a career out of staying one step ahead of him. I'd say we have a few days before we have to start worrying. I'm going to spend them familiarizing myself with the lay of the land.&#10;&#10;It's been quite a pleasure meeting you. I'll be in touch again shortly.</say>
   </npc>
   <npc id="6" handle="Accelerated Exile" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />

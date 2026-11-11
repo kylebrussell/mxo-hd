@@ -14,8 +14,9 @@
      Joins between images read as contiguous: "now that it's skittered off / and things here", "his phone
      connection's / working", "I hardly knew better / myself, then.", "as well, / yes?", "as he / was." / "Ah... And
      we know" as a paragraph break, and "the downed Sentinels / showed a ship".
-     Rewards: Zion's chapter 11.2 mission Mara (11.2.3) showed 175,000 information, and the experience is The Spider's
-     (11.1.5, 352,000), as the Zion files have it. The log's run paid 253,000 experience and 84,000 information.
+     Rewards: the log shows 253,000 experience and 84,000 information. These are Zion 11.2's values (352,000
+     experience, 175,000 information; Mara showed the information, and the Zion files take the experience from The
+     Spider, 11.1.5). The log's run paid 253,000 experience and 84,000 information.
      Gaps: Calvinia's "Wait! It's wasn't me!" is said on reaching him, and he waits to be attacked. Churyumov is
      found dying: the Operator's "Sounds like a grisly scene" is said on reaching him, and he stays standing after his
      last words. The Operator entry after "Pff. Drama queen." is hidden but for its header; it is taken as the
@@ -34,10 +35,10 @@
   <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
     <say after="3">I imagine you'd like to get it as well, yes? Hm.... We'll see.</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">Missile attacks forced the General to retreat from his first foray into the zone, but we kept some of his men hidden nearby for just such an occasion.&#10;&#10;Mm, we never did discover who fired those missiles...only that the flight recorders of the downed Sentinels showed a ship nearby, of the type used by Halborn and Carlyne.</say>
   </npc>
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
     <say after="4">What is it to me? Go off and kill.</say>
   </npc>
   <npc id="6" handle="Succubus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">

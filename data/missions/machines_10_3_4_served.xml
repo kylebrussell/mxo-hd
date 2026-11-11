@@ -28,7 +28,7 @@
     <say after="2">Wright is adamant in insisting on going public with information about Mauser and Zion if the case against Pendhurst-Amaranth is not brought to a satisfactory conclusion. We do not know exactly what information they have, which makes it difficult to deflect or anticipate their claims. Considering their founder's history, we cannot take this lightly.</say>
   </npc>
   <npc id="3" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
-    <say after="1">You may have heard of a recent scandal making the rounds in the city's lesser periodicals: rumors of improprieties at Wright Research, even implicating Pendhurst-Amaranth. It is short on facts and high on speculation: perfect fodder for the public's already primed interest in the current corporate feud. The timing is more than suspect, and there are indications that the Merovingian was involved in the scandal's spread.
+    <say after="3">You may have heard of a recent scandal making the rounds in the city's lesser periodicals: rumors of improprieties at Wright Research, even implicating Pendhurst-Amaranth. It is short on facts and high on speculation: perfect fodder for the public's already primed interest in the current corporate feud. The timing is more than suspect, and there are indications that the Merovingian was involved in the scandal's spread.
 
 I should also inform you that we have sources indicating the Merovingian notified the Ouroboros Corporation of our...interest in that corporation's affairs. This may have had something to do with the override program you encountered at their facility last week.</say>
   </npc>
@@ -37,10 +37,10 @@ I should also inform you that we have sources indicating the Merovingian notifie
   </npc>
   <npc id="5" handle="Lanny Broman" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
   <npc id="6" handle="Marcellus Escarin" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
-    <say after="2">I hope they don't revoke my mail privileges because of this. Maybe if I flag it as low-priority...</say>
+    <say after="5">I hope they don't revoke my mail privileges because of this. Maybe if I flag it as low-priority...</say>
   </npc>
   <npc id="7" handle="Brenda Utley" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
-    <say after="1">Pendhurst-Amaranth and its employees follow the laws of this country, Mr. ...</say>
+    <say after="6">Pendhurst-Amaranth and its employees follow the laws of this country, Mr. ...</say>
   </npc>
   <npc id="8" handle="Kalt" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
     <say display="5">Hmph. She might have warned me about this.</say>
@@ -66,7 +66,7 @@ In short, it is time for us to take control of the dispute. Please join Agent Pa
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>The Wright attitude, and the involvement of other dangerous parties, leave us little alternative in our course of action. I have an important document for you to deliver, {player}. Please come see me.</briefing>
     <enter><say>Mm-hm. Doing fine.</say></enter>
-    <objective goal="1" text="Get the subpoena from Agent Gray" type="Get" npc="3" item="6794">
+    <objective goal="3" text="Get the subpoena from Agent Gray" type="Get" npc="3" item="6794">
       <talk><say npc="3">I have here a subpoena, which you are to deliver to Pendhurst-Amaranth's chairwoman, Brenda Utley. It calls her to a federal hearing to answer questions pertaining to Pendhurst-Amaranth's involvement with Zion, and the alleged theft of property from Wright Research. You must deliver it to her hands personally.</say></talk>
     </objective>
   </phase>
@@ -75,10 +75,10 @@ In short, it is time for us to take control of the dispute. Please join Agent Pa
     <enter><say>Mauser, Mauser, Mauser...
 
 Pendhurst-Amaranth's Ms. Utley is supposed to be in that office. I'm reading a bunch of signals in there. Hm... I guess those are probably P-A security.</say></enter>
-    <objective goal="1" text="Eliminate the Zionites" type="DefeatAll">
+    <objective goal="4" text="Eliminate the Zionites" type="DefeatAll">
       <done><say>Now, where the heck is Utley?</say></done>
     </objective>
-    <objective goal="2" text="Talk to Marcellus Escarin" type="Talk" npc="6">
+    <objective goal="5" text="Talk to Marcellus Escarin" type="Talk" npc="6">
       <talk><say npc="6">S-she isn't here! I don't know... I...uh... I could send out a company-wide email?</say></talk>
       <done><say>Unless she's planning on going underground, she can't be that hard to track down.
 
@@ -96,7 +96,7 @@ Hm. Catching her unprepared might have had a useful psychological impact.</brief
     <enter><say>Couldn't they just squirt some kind of happy juice into her pod if they really wanted a useful psychological impact? Assuming she is in a pod. Maybe we should ask Gray.
 
 Eh... Maybe Pace.</say></enter>
-    <objective goal="1" text="Give the subpoena to Brenda Utley" type="Give" npc="7" item="6794">
+    <objective goal="6" text="Give the subpoena to Brenda Utley" type="Give" npc="7" item="6794">
       <talk><say npc="7">"By authority of the federal government you are hereby commanded to appear..."
 
 Mm-hm...

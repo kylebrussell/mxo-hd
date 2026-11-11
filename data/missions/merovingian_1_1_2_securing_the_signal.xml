@@ -9,8 +9,8 @@
      Normal), the looks and the enemy counts. Item stand-ins: the Tracking Device is Tracer (6825), the Signature
      Manipulator Device (6820). Flood's second line in phases 2 and 3 came half a minute after the briefing, on
      arrival, so it is the enter line.
-     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
-     chapter 1.1 (55,200 experience, 73,500 information, as Redpill Rescue paid).
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.1's values
+     (55,200 experience, 73,500 information, as Redpill Rescue paid).
      Gaps: retail's laptop line ("Unless I'm mistaken...") and the find came two seconds apart, so both are the
      search's done lines. In phase 2 the Zion operatives burst in after the hand-over ("There's someone in the other
      room!"); hostiles can't arrive later, so they are on the floor from the start. The operator's "That's not all of
@@ -21,10 +21,10 @@
 <mission id="301102" title="Securing the Signal" description="Move the Signature Manipulator to a safer place." plot="1"
          order="1102" org="3" contact="Flood" exp="55200" info="73500">
   <npc id="1" handle="Alvin Typpo" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
-    <say after="2">This thing is better off in the hands of Serpentis as I haven't been able to extract any of the information that the Merovingian wanted. I'm afraid that it's simply impossible to replicate the device! I fear the Merovingian won't be pleased... Wait! Did you hear that? There's someone in the other room!</say>
+    <say after="3">This thing is better off in the hands of Serpentis as I haven't been able to extract any of the information that the Merovingian wanted. I'm afraid that it's simply impossible to replicate the device! I fear the Merovingian won't be pleased... Wait! Did you hear that? There's someone in the other room!</say>
   </npc>
-  <npc id="2" handle="Serpentis" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
-    <say after="1">I thank you... Now be off, I have work to do! You shall be summoned again by Flood when you are needed.</say>
+  <npc id="2" handle="Serpentis" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="5">I thank you... Now be off, I have work to do! You shall be summoned again by Flood when you are needed.</say>
   </npc>
   <npc id="3" handle="Blood Drunk" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say display="5">Maybe we should go check it out...</say>
@@ -45,20 +45,20 @@ A group of Zion redpills have been attempting to trace the device's location wit
   <phase site="Normal" enemy="Zion" enemies="4">
     <briefing>I'm sending you the address of Alvin Typpo who is going to be giving the Signature Manipulator to you for transfer.</briefing>
     <enter><say contact="1">Alvin Typpo has the signature manipulation device. Pick it up from him and I will send you the address of its new home.</say></enter>
-    <objective goal="1" text="Talk to Alvin Typpo" type="Talk" npc="1">
+    <objective goal="2" text="Talk to Alvin Typpo" type="Talk" npc="1">
       <talk>
         <say npc="1">I'm quite glad that you're here, {player}. I was beginning to worry the Zion redpills would storm the place and steal back the signature manipulator, but... all is well now that you are here. Quickly, take the device!</say>
         <say>Take the signature manipulator from Alvin Typpo now.</say>
       </talk>
     </objective>
-    <objective goal="2" text="Get the Signature Manipulator from Alvin Typpo" type="Get" npc="1" item="6820" after="1">
+    <objective goal="3" text="Get the Signature Manipulator from Alvin Typpo" type="Get" npc="1" item="6820" after="2">
       <talk><say npc="1">Just take it!</say></talk>
       <done>
         <say contact="1">That is the Signature Manipulator. It is vital that the device doesn't fall into Zion's hands, or come to harm.</say>
         <say npc="1">This thing is better off in the hands of Serpentis as I haven't been able to extract any of the information that the Merovingian wanted. I'm afraid that it's simply impossible to replicate the device! I fear the Merovingian won't be pleased... Wait! Did you hear that? There's someone in the other room!</say>
       </done>
     </objective>
-    <objective goal="3" text="Kill the Zion operatives" type="DefeatAll">
+    <objective goal="4" text="Kill the Zion operatives" type="DefeatAll">
       <done><say>All Zion operatives are dead. I'm sure that Alvin Typpo is quite grateful for the protection.</say></done>
     </objective>
   </phase>
@@ -67,7 +67,7 @@ A group of Zion redpills have been attempting to trace the device's location wit
 
 I'm sending you the address of Serpentis. See to it that the device is securely in his hands.</briefing>
     <enter><say contact="1">You've made it. Good. See to it that Serpentis is given the signature manipulator for safe keeping.</say></enter>
-    <objective goal="1" text="Give the Signature Manipulator to Serpentis" type="Give" npc="2" item="6820">
+    <objective goal="5" text="Give the Signature Manipulator to Serpentis" type="Give" npc="2" item="6820">
       <talk><say npc="2">The Merovingian thanks you for coming all this way, {player}. I shall take the signature manipulator device from you now.</say></talk>
       <done>
         <say>The device will be in good hands but you may see it again...</say>

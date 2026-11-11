@@ -17,16 +17,16 @@
 <mission id="206302" title="Outside the System" description="Question the Exiles of Mara and the nearby neighborhoods about where the General is holding Sati." plot="1"
          order="6302" org="2" contact="Agent Gray" exp="363000" info="59500">
   <npc id="1" handle="Owl Bangheart" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
-  <npc id="2" handle="Sister Margaret" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+  <npc id="2" handle="Sister Margaret" type="FRIENDLY" at="2" rsi="760a0058" weapon="2568">
     <say>The General brings death and war to this place. If you truly seek to stop him, you have my blessing. Beati pacifici.</say>
   </npc>
-  <npc id="3" handle="Thallia" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568">
+  <npc id="3" handle="Thallia" type="FRIENDLY" at="3" rsi="780a0058" weapon="2568">
     <say>The Frenchman already cleaned me out. Go blame him if the Blackwoods are running around looting; I haven't got enough dough left to pay them.</say>
   </npc>
-  <npc id="4" handle="Anti M." type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+  <npc id="4" handle="Anti M." type="FRIENDLY" at="4" rsi="340a0058" weapon="2568">
     <say>Oh, they haven't told you what he was? Please excuse me, operative. I wouldn't want to be indiscreet with information your employers don't see fit to give you.</say>
   </npc>
-  <npc id="5" handle="88 Eightball" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="5" handle="88 Eightball" type="FRIENDLY" at="4" rsi="38000024" weapon="2568">
     <say display="5">I've got nothing to say to you.
 
 The Merovingian already took his compensation for the work we did for the General.

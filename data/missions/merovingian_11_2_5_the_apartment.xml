@@ -16,8 +16,9 @@
      Mannsdale, / operative.", "Their blood is on your / hands.", "spoken to / her, well", "Zion has been / busy;",
      "figure out / what they were up to."; Wright's "possibly imagine." / "This will end" and the Merovingian's "what
      she" / "Eh?" are read as paragraph breaks.
-     Rewards: Zion has no 11.2.5; its 11.2 missions, Mara (11.2.3) and Ring 149 (11.2.4), both pay 352,000
-     experience and 175,000 information. The log's run paid 253,000 experience and 84,000 information.
+     Rewards: the log shows 253,000 experience and 84,000 information. These are Zion 11.2's values (352,000
+     experience, 175,000 information; Mara showed the information, and the Zion files take the experience from The
+     Spider, 11.1.5). The log's run paid 253,000 experience and 84,000 information.
      Gaps: in phase 2 Persephone's and Wright's exchange came in the same second as the arrival line and the
      area-complete line; here it is said on talking to Persephone. Wright shows as a wireframe projection in a
      screenshot; here she stands there. In phase 3 the Operator's "There's the computer." is said on arrival, after
@@ -29,17 +30,17 @@
      as well.") are what each says when clicked. -->
 <mission id="311205" title="The Apartment" description="Follow Persephone to her meeting with Danielle Wright, then search the apartment Zion was combing for the interface program." plot="1"
          order="11205" org="3" contact="Flood" exp="352000" info="175000">
-  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="1">I must.</say>
   </npc>
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="2">So...that is it. Yet she thinks nothing of the lives of those she claims to fight for.&#10;&#10;I know what she feels she has lost, but that was nothing compared to what she is losing now.</say>
   </npc>
   <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
     <say after="2">That goes for you as well.</say>
   </npc>
   <npc id="4" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Persephone is insisting on seeing you, {player}. She tried "saving" that bluepill hosting the interface program again, after the Machines tracked it back down, and frankly, she's lucky to still be alive after the Machines again evinced their dislike for her interference.&#10;&#10;By the way, if you haven't seen her since she first tried meddling with that bluepill's pod last week, get ready for a bit of a shock.</briefing>
     <enter><say>Unfortunately it didn't work out too well, either--Wright caught up to that bluepill while the Machines had her, and, well, pretty much straight up killed her, just to keep the Machines from having the interface program.&#10;&#10;On the plus side, at least nobody else has been able to hold onto the interface program yet.</say></enter>

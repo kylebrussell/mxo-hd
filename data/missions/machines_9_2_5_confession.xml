@@ -20,7 +20,7 @@
      the Architect plays it: the demand and the answer when he is talked to, the rest when that is done. -->
 <mission id="209205" title="Confession" description="Terminate the corrupted Hypatia, then bring the intruder to his meeting with the Architect." plot="1"
          order="9205" org="2" contact="Agent Gray" exp="395820" info="66500">
-  <npc id="1" handle="Hypatia" type="HOSTILE" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="1" handle="Hypatia" type="HOSTILE" at="1" rsi="4b0a0058" weapon="2568" />
   <npc id="2" handle="Intruder" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
     <say>Just tell them I'll be there.</say>
   </npc>

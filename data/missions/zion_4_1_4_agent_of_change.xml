@@ -24,8 +24,8 @@
     <say>The human, Ymodem, is your contact for this exchange. I am merely here to provide security.</say>
   </npc>
   <npc id="3" handle="Ymodem" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
-  <npc id="4" handle="Ghost" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
-    <say after="1">William James also said "We must cheat our foe, politically circumvent his action, not try to change his nature." We won't change the Machines. But we can outmaneuver them, if we are careful. There is much about us that they do not understand. This truce might just prove to be their own undoing--or the making of them, depending on your point of view.&#10;&#10;You've done well today. Go now.</say>
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say after="6">William James also said "We must cheat our foe, politically circumvent his action, not try to change his nature." We won't change the Machines. But we can outmaneuver them, if we are careful. There is much about us that they do not understand. This truce might just prove to be their own undoing--or the making of them, depending on your point of view.&#10;&#10;You've done well today. Go now.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Yo. Look, I'll be straight with you; this latest assignment really sticks in my craw. But I'm just the middleman, right? You can blame the bleeding-hearts on the Council for this...&#10;&#10;It's been decreed that we will share the code for the enhanced anti-Exile weapons that the General gave us with the Machines. Yeah, you heard me; we're giving the Machines weapons. They can only be used against Exiles, so in theory they can only help us bring down the Merovingian from two sides, but... Grr, I just don't like it! I'd write up an official protest, but I know our good Commander Lock would just use it for toilet paper.&#10;&#10;Well, what are you waiting for? You've got a disk of weapon codes to pick up, don't you?</briefing>
@@ -38,14 +38,14 @@
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>That area of the city is crawling with Exiles right now. The Merovingian must have been tipped off that something is going down. We're conducting a sweep of the area to clear out possible security risks; I've assigned you a sector. If you find any Exiles there, execute them real good.</briefing>
     <enter><say>That's the area you're supposed to sweep for Exiles. I'm picking up some programs inside... Could be hostiles.</say></enter>
-    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
       <done><say>Area scans clean. Let's check in with Anome and see if they're ready to do the weapon transfer now.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>You know, it would just be a real shame if, with your natural clumsiness, you, say, tripped and shattered that disk of weapon codes before you could hand them off to those bloody Machines.&#10;&#10;Bah. Okay, no, I didn't say anything.&#10;&#10;The Machine redpill operative you're meeting is named "Ymodem"; just give them the disk. Maybe the General put a virus on it for them, but I doubt it. He seems to be almost as soft as the Council.</briefing>
     <enter><say>I've got an Agent and redpill in there. Looks like the place. Watch yourself around that Agent.</say></enter>
-    <objective goal="1" text="Talk to Ymodem" type="Talk" npc="3">
+    <objective goal="3" text="Talk to Ymodem" type="Talk" npc="3">
       <talk><say npc="3">You're the Zionite with the codes, right? Give 'em over! I-- Huh? What's that?</say></talk>
       <done>
         <say>Hold on, I'm picking up Exile signals in the vicinity. Don't hand that disk over until the area is secure! What's the Agent doing?</say>
@@ -53,14 +53,14 @@
         <say npc="2">We must destroy the Exile programs.</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="4" text="Kill all of the Exiles" type="DefeatAll">
       <done>
         <say>It looks like that takes care of all the hostiles in the area. Time to go hand over those codes.</say>
         <say npc="2">Hostiles eliminated.</say>
         <say npc="3">Okay, the place is clean. Stop wasting our time and hand over the weapon codes.</say>
       </done>
     </objective>
-    <objective goal="3" text="Give the disk of weapon codes to Ymodem" type="Give" npc="3" item="6831" after="2">
+    <objective goal="5" text="Give the disk of weapon codes to Ymodem" type="Give" npc="3" item="6831" after="4">
       <done>
         <say>Well, that's that, I guess.</say>
         <say npc="3">Thanks. You'd better clear out.</say>
@@ -73,7 +73,7 @@
       <say>The debrief is in there. I'm reading three redpills.</say>
       <say>Hey, it's Ghost! Been a while since I've seen that guy.</say>
     </enter>
-    <objective goal="1" text="Talk to Ghost" type="Talk" npc="4">
+    <objective goal="6" text="Talk to Ghost" type="Talk" npc="4">
       <talk><say npc="4">{player}... I know that giving weapon codes to the Machines was not easy for you. Your hesitation does you credit. But this was the right thing to do.&#10;&#10;William James said "The art of being wise is the art of knowing what to overlook." The Machines are not a perfect ally, or even a desirable one, but our goal at this time is to bring down the Merovingian--and we can count on the Machines to help us do that with those weapon codes.</say></talk>
       <done><say>Huh. He sounds like he knows what he's doing, at least. That's encouraging.</say></done>
     </objective>

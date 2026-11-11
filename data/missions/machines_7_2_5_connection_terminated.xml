@@ -29,7 +29,7 @@
   <npc id="3" handle="Agent Johns" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
     <say display="5">One of the Cypherite operatives directed some...personal observations toward Agent Pace. The Agent's response was...vigorous.</say>
   </npc>
-  <npc id="4" handle="Veil" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
+  <npc id="4" handle="Veil" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
     <say>Cryptos? Hm... Best that you don't ask, dearie. He's not in the best frame of mind these days, especially when it comes to your employers. You do know that he used to be one of the biggest anti-Machine crusaders in Zion, don't you? Mm-hm... That was before the Machines overwrote him, of course, but that's all come full circle now--minus a few fused brain cells here and there.</say>
   </npc>
   <npc id="5" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />

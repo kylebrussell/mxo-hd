@@ -10,8 +10,8 @@
      the sites (all Normal: no place was named and the crops show no minimap), the looks (the hologram's, Malphas's,
      the Merovingian's and Beirn's are those of earlier missions; Cellino's is a stand-in by sex), the enemies (Cellino's
      crew are Zion, "reds") and their count (a seven-and-a-half-minute fight, so a larger group). No item was shown.
-     Rewards: not captured (no System chat in the crops); no Zion 8.1 mission is built, so these are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: Flood's third briefing is cut after "go chatter to Malphas if you must. He's monitoring": the rest of it and
      the start of the next entry weren't captured, so the briefing ends at "if you must." and the arrival line is the
      uncaptured entry's surviving end ("But what about that Zion uplink?..."), whose speaker wasn't seen (most likely
@@ -31,10 +31,10 @@
     <say after="3">Just get those things off my ship.</say>
   </npc>
   <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="5">Non, not one more word about work!</say>
   </npc>
-  <npc id="5" handle="Beirn" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="Beirn" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
     <say>I know Persephone worries about me when I'm out there doin' my thing. It's touching, really. She's...you know...quite a woman. ...&#10;&#10;Hey, who's serving the drinks around here?</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="0">

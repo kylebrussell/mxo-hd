@@ -20,7 +20,7 @@
   <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" attacksOnSight="0" />
   <npc id="2" handle="Decelerator" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
   <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
-    <say after="1">That's just how it is.</say>
+    <say after="4">That's just how it is.</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="3">
     <briefing>Warrior, even with anti-override codes developed by Cypherites, the Machines are having serious problems dealing with Wright in Downtown. It hasn't been easy for us, either, but at least this gives us a fighting chance of locating the interface program while she and the Machines slug it out.&#10;&#10;The latest override use has appeared in the heart of the Machine power structure: Park East. Under normal circumstances, the heavy Machine presence would make a search impractical, but Wright's overrides throw the usual rules out the window.</briefing>
@@ -43,7 +43,7 @@
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>{player}, I'm getting a call from Ghost. He wants you to meet him in Hampton Green.</briefing>
     <enter><say>Hope we aren't in trouble or something...&#10;&#10;There's a lot of override background fuzz, but it looks like that immediate area is clear of problems.</say></enter>
-    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+    <objective goal="4" text="Talk to Ghost" type="Talk" npc="3">
       <talk><say npc="3">{player}, I called you here because I've got a feeling Wright is nearby. I'm not sure where exactly, but probably somewhere in Hampton, high up; I've been picking up override traces on rooftops. If she's here, then the...program is probably here too.&#10;&#10;Taking on Wright will be tough, but I'm not going to stand around when I know she's out there. I'm not ordering you to help search... What you do is up to you.</say></talk>
       <done><say>Those anti-override codes the Cyphs are supposedly giving their people in Morrell sure would be handy if we're actually thinking of going after Wright.</say></done>
     </objective>

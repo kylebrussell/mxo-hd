@@ -29,10 +29,10 @@
     <say>Goddammit! Can we get a trace?</say>
   </npc>
   <npc id="2" handle="Mauser" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
-    <say after="2">There are factors beyond your control.</say>
+    <say after="3">There are factors beyond your control.</say>
   </npc>
   <npc id="3" handle="Anibal Cleveland" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
-    <say after="1">Have to try to deal with this interference somehow... Re-establish contact...</say>
+    <say after="5">Have to try to deal with this interference somehow... Re-establish contact...</say>
   </npc>
   <npc id="4" handle="Agent Miller" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
     <say display="5">Security breach! Please take cover, Mr. Cleveland.</say>
@@ -41,7 +41,7 @@
     <say display="5">Right through there, sir.</say>
   </npc>
   <npc id="6" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
-    <say after="1">You can be sure that we will be investigating these avenues with all due diligence.</say>
+    <say after="6">You can be sure that we will be investigating these avenues with all due diligence.</say>
   </npc>
   <npc id="7" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
     <say>Our opponents were able to benefit from the element of surprise. This will not work a second time. If Mauser attempts to re-enter the simulation, he will be detected, isolated, and terminated.
@@ -65,16 +65,16 @@ Proceed to the point where his signal has been detected in the Matrix, and searc
     <briefing>We have achieved a correlation between a signal reading and a suspected pirate phone terminal. Pursue the signal, {player}.</briefing>
     <enter><say>Got something... Hold on. Yeah... Yeah, it's the signal! Get in there!</say></enter>
     <object id="1" kind="Phone" />
-    <objective goal="1" text="Disable the Phone" type="Use" object="1">
+    <objective goal="2" text="Disable the Phone" type="Use" object="1">
       <done><say>That should do it. I'm starting the scan... Stay close to him.</say></done>
     </objective>
-    <objective goal="2" text="Stay close to Mauser" type="Talk" npc="2" after="1">
+    <objective goal="3" text="Stay close to Mauser" type="Talk" npc="2" after="2">
       <talk>
         <say npc="2">So...</say>
         <say contact="1">Operative, scan control reports a problem. Abort and proceed immediately to the operations room.</say>
       </talk>
     </objective>
-    <objective goal="3" text="Do not let Mauser die" type="Protect" npc="2" />
+    <objective goal="4" text="Do not let Mauser die" type="Protect" npc="2" />
     <near npc="2" radius="1000">
       <say>Cut that line before he gets away!</say>
     </near>
@@ -84,7 +84,7 @@ Proceed to the point where his signal has been detected in the Matrix, and searc
 
 Report to the operations room, operative. There has been interference with the scan of Mauser. We will need to run a diagnostic on your instantiation.</briefing>
     <enter><say>Man, everything's checking out here. I don't think the problem was on our end.</say></enter>
-    <objective goal="1" text="Talk to Technician Cleveland" type="Talk" npc="3">
+    <objective goal="5" text="Talk to Technician Cleveland" type="Talk" npc="3">
       <talk><say npc="3">My word! This must have been the source of the interference. Yes... Broadcast from inside the simulation... We've seen this pattern before. It was thought to have been removed!
 
 The interference has climbed too rapidly... We're losing the target signal!</say></talk>
@@ -102,7 +102,7 @@ This merits further discussion. Please meet me at the location shown, operative.
     <enter><say>Well...this sucks.
 
 So wha-- Was that the Morpheus simulacrum, or what?</say></enter>
-    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+    <objective goal="6" text="Talk to Agent Gray" type="Talk" npc="6">
       <talk><say npc="6">Our data indicates that the source of the interference was a broadcast type identical to that used in the past by the Morpheus simulacrum.
 
 This is the first known connection between the simulacrum and Mauser. The simulacrum had been completely inactive within the simulation since the Oracle's termination. When we consider that Mauser is likely to have access to technology developed by Danielle Wright, and that the Morpheus simulacrum's activity prior to its disappearance was linked to that of the Oracle, and that all four of these parties have provided significant assistance to Zion in the past, the possibility of a serious threat to the simulation emerges.</say></talk>

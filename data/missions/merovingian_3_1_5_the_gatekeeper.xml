@@ -8,8 +8,8 @@
      header between them and are taken as one entry (a line between may be missing in the briefing). Ours: the
      description (the Summary tab was never opened), every objective text (nor was the Objectives tab), the sites (no
      building was described: all Normal), the looks and the enemy counts. No items. Rewards: the log shows 79,416,249
-     experience and 1,039,500 information, which is what a level-50 player got and not a normal reward; we use Zion
-     3.1's values instead (308,000 experience, 101,500 information).
+     experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500 information, as
+     Dire Connection paid).
      Gaps: "a couple of Dire Lupines" are two NPCs of that name, each talked to and led out (Talk, then Escort to the
      exit); they said nothing in the captured log when picked up. The Zion attackers arrive once the lupines reach the
      Effectuator in retail ("inbound signals"); waves can't be spawned, so they are the phase's generated Zionites from
@@ -26,7 +26,7 @@
   <npc id="2" handle="Dire Lupine Bane" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="7">No more.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="5">I'm quite certain there are Zionites nearby...</say>
     <say after="7">A pleasure, to be sure.</say>
   </npc>

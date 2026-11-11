@@ -9,8 +9,8 @@
      modified with his stolen code; they have no org of their own, so they are the nearest, Zion, as rogue redpills,
      as in the Machines chapter 5 missions. Beirn's Details gave Organization None and level 70; he is one of them, and
      has no level here. No mission items.
-     Rewards: the log's 1,056,000 experience and 514,500 information were paid to a level-49 player; these are the
-     Machines chapter 5 retail values (286,000 experience and 94,500 information), used for this whole sub-chapter.
+     Rewards: the log shows 1,056,000 experience and 514,500 information (a level-49 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: in Beirn's facility the player posed as a recruit among Unlimit who didn't attack; they are friendly NPCs
      here, and the facility has no hostiles. Which two of them were the guards isn't shown, so the guards' lines are
      the two about Beirn's important message; the other barks go to three bystanders and to the guards when talked to
@@ -41,7 +41,7 @@
   </npc>
   <npc id="7" handle="Spellmann" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
   <npc id="8" handle="Aegle" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
-  <npc id="9" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568" />
+  <npc id="9" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="2568" />
   <phase site="Office" enemy="Zion" enemies="0">
     <briefing>As you would recall if you had an attention span over ten minutes, we are attempting to capture a certain Unlimit lieutenant, Beirn. His obsession with Persephone will be his undoing. Now, I need you to leak information to Unlimit that Persephone will be at a certain location, at a certain time. Since you recently hacked into their email system, you should have no problem accomplishing this. I'm sending you to a certain terminal that can't be traced back to the Merovingian. Your operator will have the necessary details to leak.</briefing>
     <enter>
