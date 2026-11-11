@@ -344,10 +344,10 @@ After about 60 s, `-Click 348,358` presses Take All.
   - `ProcessChangeTactic()` answers with retail's `80 bc` records and RPC 47
 
 - [ ] **5.2 Combat animations sync**
-  - Coordinate attack animations between combatants
-  - Use animation IDs from data files
-  - Sync with damage timing
-  - TODO: Needs original animation timing research
+  - Shared 121-byte round entries now animate NPC/PvP fighters and visible bystanders, including late arrivals; native DuelBot and Blackwoods checks pass
+  - 126 static Self-Defense tactic exchanges use IDs and durations extracted from the shipped ILDB; exact NPC and PvP capture fixtures cover the serializer
+  - Remaining: full style/special-ability choreography and complete timed result semantics, including precise visual damage timing
+  - Evidence and limits: [COMBAT-ROUND-ENTRIES.md](COMBAT-ROUND-ENTRIES.md)
 
 - [x] **5.3 Inner Strength (IS) integration**
   - A round on Block regains 10 (`ApplyRoundInnerStrength()`, retail's `GainISFromBlocks`); other rounds and tactic changes cost nothing
