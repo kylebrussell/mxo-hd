@@ -13,7 +13,7 @@
      (55,200 experience, 73,500 information, as Redpill Rescue paid).
      Gaps: retail's laptop line ("Unless I'm mistaken...") and the find came two seconds apart, so both are the
      search's done lines. In phase 2 the Zion operatives burst in after the hand-over ("There's someone in the other
-     room!"); hostiles can't arrive later, so they are on the floor from the start. The operator's "That's not all of
+     room!"): they arrive then, and the goal to kill them opens with them. The operator's "That's not all of
      them. Search the place for the rest of the Zion operatives." came mid-fight and has no place. Phase 1's last
      operator line wasn't readable. Serpentis' second line was cut off and is left out. Blood Drunk, who said "Maybe we
      should go check it out..." in Team chat where the player stood with Serpentis at the end, is a bystander there.
@@ -42,7 +42,7 @@ A group of Zion redpills have been attempting to trace the device's location wit
       </done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="3">
     <briefing>I'm sending you the address of Alvin Typpo who is going to be giving the Signature Manipulator to you for transfer.</briefing>
     <enter><say contact="1">Alvin Typpo has the signature manipulation device. Pick it up from him and I will send you the address of its new home.</say></enter>
     <objective goal="2" text="Talk to Alvin Typpo" type="Talk" npc="1">
@@ -58,7 +58,7 @@ A group of Zion redpills have been attempting to trace the device's location wit
         <say npc="1">This thing is better off in the hands of Serpentis as I haven't been able to extract any of the information that the Merovingian wanted. I'm afraid that it's simply impossible to replicate the device! I fear the Merovingian won't be pleased... Wait! Did you hear that? There's someone in the other room!</say>
       </done>
     </objective>
-    <objective goal="4" text="Kill the Zion operatives" type="DefeatAll">
+    <objective goal="4" text="Kill the Zion operatives" type="DefeatAll" after="3">
       <done><say>All Zion operatives are dead. I'm sure that Alvin Typpo is quite grateful for the protection.</say></done>
     </objective>
   </phase>

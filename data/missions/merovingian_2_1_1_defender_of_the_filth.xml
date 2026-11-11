@@ -17,10 +17,10 @@
      follows the access code. Pigeon sits behind a door that the laptop's hack opens; doors aren't locked here, so he
      can be found and killed first. Part of the trace line fell on an image seam ("He's ... behind a locked door"):
      the two halves are joined. Flood's line about the whole Morpheus thing came five minutes into phase 1 with no
-     event to tie it to; it is said on arrival. The Zion operatives who arrive at Adam Giddings' while he reads the
-     formula are on the floor from the start (no spawn on a trigger), and the Operator's warning about them is said
-     when the formula is handed over. Adam Giddings' reading has an image seam after "ah, yes, I", joined as one line;
-     his repeated lines are said once. Formatting (italics on Secret Plan and We) is dropped. -->
+     event to tie it to; it is said on arrival. The Zion operatives arrive at Adam Giddings' once the formula is
+     handed over, with the Operator's warning about them, and the kill objective opens then. Adam Giddings' reading has
+     an image seam after "ah, yes, I", joined as one line; his repeated lines are said once. Formatting (italics on
+     Secret Plan and We) is dropped. -->
 <mission id="302101" title="Defender of the Filth" description="Find out what Niobe's Zion operatives have planned against the Merovingian's associate." plot="1"
          order="2101" org="3" contact="Flood" exp="297000" info="98000">
   <npc id="1" handle="Zion Ravager" type="HOSTILE" at="1" rsi="050100b4" weapon="2564" />
@@ -72,7 +72,7 @@
     </near>
   </phase>
 
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="1">
     <briefing>Most intriguing. The formula has a short list of chemical ingredients. We'll need it delivered to one of our technicians so we can determine what the chemicals are for. If it's a plan to take down our associate, your further assistance will be required.&#10;&#10;Take the formula to Adam Giddings at this address... Well, what are you waiting for? Go!</briefing>
     <enter><say>Adam Giddings is inside. Maybe he will shed some light on this formula and Assassin business.</say></enter>
     <objective goal="1" text="Give the formula to Adam Giddings" type="Give" npc="4" item="6794">
@@ -82,7 +82,7 @@
         <say npc="4">Oh, what's this...? Is that what Zion is up to? Sly, dirty, rotten... ah, yes -- I forget my place...&#10;&#10;Hm... I've seen this before. It's a formula for insecticide, a highly dangerous one at that. Two different types, no less. I know Zion wants to kill the Assassin, but it can't be possible with mere insecticide, unless... Oh no! Adam Giddings knows it now -- their plan might actually work! Those rotten, little, dirty... bastards!&#10;&#10;Flood will be interested to hear this... Alright, be on your way. Adam Giddings needs to go over this formula... Lots of tests to run! Yes, yes...</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill the Zion operatives" type="DefeatAll">
+    <objective goal="2" text="Kill the Zion operatives" type="DefeatAll" after="1">
       <done>
         <say>Nicely done. That should dissuade Zion from sending more operatives -- for the time being, at least!</say>
         <say>Things don't look good right now: the Merovingian hired the Assassin to kill Morpheus and you're under attack by Zion operatives because of it! This might get even more complicated... I wonder what Flood has to say about all of this.</say>

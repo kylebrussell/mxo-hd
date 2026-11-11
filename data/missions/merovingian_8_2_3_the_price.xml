@@ -21,12 +21,12 @@
      is talked to again. The two computers' popups (a string of numbers, then a comlog: "Code captured from
      Merovingian source...") aren't shown; the Operator's lines on them are. Wright's security and the Machine programs
      fought each other until the player reached the second computer; a phase has one enemy, so Machines stand for both
-     and killing them isn't required. Binomi "just appear[s]" when the Merovingian hands him over; NPCs can't be
-     spawned by a goal, so he stands in phase 3 from the start and his goals open after the Merovingian's. In phase 4
-     the player turned on Binomi after reaching the EPN boss ("Rrrah! Have you lost your mind?!") and the goals
-     completed 80 s later; an NPC can't be escorted and then fought here (Escort needs him friendly, a kill goal can't
-     wait for another goal, and a new phase would be a new building), so the player talks to him instead and he isn't
-     killed. The EPN boss waits to be attacked and has no goal; the EPN redpills are Zion. -->
+     and killing them isn't required. Binomi "just appear[s]" when the Merovingian hands him over: he arrives once the
+     Merovingian has been talked to, and his goals open then. In phase 4 the player turned on Binomi after reaching the
+     EPN boss ("Rrrah! Have you lost your mind?!") and the goals completed 80 s later; an NPC can't be escorted and then
+     fought here (Escort needs him friendly, a kill goal needs him hostile, and a new phase would be a new building), so
+     the player talks to him instead and he isn't killed. The EPN boss waits to be attacked and has no goal; the EPN
+     redpills are Zion. -->
 <mission id="308203" title="The Price" description="Raid Wright Research for something to use against E Pluribus Neo, and get the Merovingian's doctored code into EPN's hands." plot="1"
          order="8203" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
@@ -39,7 +39,7 @@
   <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say>Get him out of here.</say>
   </npc>
-  <npc id="5" handle="Binomi" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Binomi" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="1" />
   <npc id="6" handle="E Pluribus Neo Leader" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Those bratty E Pluribus Neos are scheming to sabotage Machine power lines using our map. The injustice is appalling, and the Merovingian, of course, is not about to allow it.

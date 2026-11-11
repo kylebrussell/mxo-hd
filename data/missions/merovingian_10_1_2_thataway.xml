@@ -24,11 +24,11 @@
      Zionites are built (one of them, carrying the access card, is placed so the Operator's Zionites line can
      fire on getting near him; retail's came six and a half minutes in). The Operator's 2:14:05 entry may run on past
      the bottom of its crop. In phase 2 the dresser is searched after the computer, as in the log (ten seconds apart);
-     retail's phase ended at the upload with "Goals for this mission phase are complete!", ours with the runtime's own
-     line. Phase 3's hostiles ("overrides", Halborn's "Oracle-lovers") are built as Zionites, and the Operator's
-     "Finally." is the done line of the fight before Halborn is talked to; what retail's "Finally." marked isn't
-     shown. In phase 4 Beirn's "No-o problems" came between the two Talks, when he was clicked; it is his line after
-     goal 8. Lines logged after a goal (Halborn's "I said I'll be there" and "Huh. I could", Beirn's "inferiority
+     retail's phase ended at the upload with "Goals for this mission phase are complete!", which the runtime sends
+     after an upload. Phase 3's hostiles ("overrides", Halborn's "Oracle-lovers") are built as Zionites, and the
+     Operator's "Finally." is the done line of the fight before Halborn is talked to; what retail's "Finally." marked
+     isn't shown. In phase 4 Beirn's "No-o problems" came between the two Talks, when he was clicked; it is his line
+     after goal 8. Lines logged after a goal (Halborn's "I said I'll be there" and "Huh. I could", Beirn's "inferiority
      complex", the Merovingian's "That is a conversation for another time") are what each says when clicked
      afterwards. -->
 <mission id="310102" title="Thataway" description="Track down Halborn and bring him to a meeting with the Merovingian." plot="1"

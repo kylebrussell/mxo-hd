@@ -23,19 +23,19 @@
      stops the player being seen ("Don't let him see you"). Binary Boy's computer popup ("Searching: 01/inv/... File
      type match found: acccode0110.blip.") isn't shown; the Operator's "Put a glove on that code" and "That's the
      ticket", a second apart, are both said when the search gives the code. The Effectuator's "That Binary kid..."
-     (three seconds after his talk) is said with that goal's done lines. In retail the Taskmaster appeared from the
-     computer when the code went in; NPCs can't be spawned by a goal, so he stands in phase 3 from the start and his
-     escort opens once the code is in, which a Put at a computer does with Hack. Leading him out ends phase 3, as in
-     retail ("Goals for this mission phase are complete!" with no exit line, and he was with the player in the next
-     area). In phase 4 bringing him to the Merovingian is our goal (the log only has the Effectuator saying the
-     Merovingian is "just scanning the robot's code"); talking to the Effectuator is a goal because the Operator's "So,
-     did we get anything?" and the Taskmaster's "overload" came in the same seconds as his line, and are its done
+     (three seconds after his talk) is said with that goal's done lines. The Taskmaster appears from the computer,
+     beside the player, when the code goes in (a Put at a computer is done with Hack), and his escort opens then.
+     Leading him out ends phase 3, as in retail (he was with the player in the next area). Retail ended phase 3 with
+     "Goals for this mission phase are complete!" and no exit line; the runtime sends it because the phase ends on
+     leading him out. In phase 4 bringing him to the Merovingian is our goal (the log only has the Effectuator saying
+     the Merovingian is "just scanning the robot's code"); talking to the Effectuator is a goal because the Operator's
+     "So, did we get anything?" and the Taskmaster's "overload" came in the same seconds as his line, and are its done
      lines. Beirn's line (three times in the log) is said on getting near him and when he is talked to; the Operator's
      "Oops, there's the Effectuator" on getting near the Effectuator. The Effectuator's "What does it eat?" and
-     Persephone's "Such power, but so crude..." came before the Merovingian's talk and are said when they are talked
-     to then; Persephone's "Culture, refinement..." and the Effectuator's "I really gotta talk to Binny" when they are
-     talked to after it. The Merovingian's "Simplicity never survives..." came two seconds after his talk and again
-     when talked to, so it is both a done line and his line afterwards. -->
+     Persephone's "Such power, but so crude..." came before the Merovingian's talk and are said when they are talked to
+     then; Persephone's "Culture, refinement..." and the Effectuator's "I really gotta talk to Binny" when they are
+     talked to after it. The Merovingian's "Simplicity never survives..." came two seconds after his talk and again when
+     talked to, so it is both a done line and his line afterwards. -->
 <mission id="308302" title="Humble Beginnings" description="Find out from the Oracle why the Machines came to rely on humans, then get an old Machine out of the Zero One archive for the Merovingian to study." plot="1"
          order="8302" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="The Oracle" type="FRIENDLY" at="1" rsi="3c000040" weapon="0" />
@@ -43,7 +43,7 @@
     <say after="1">I hope the Oracle's answer will help you.</say>
   </npc>
   <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
-  <npc id="4" handle="Taskmaster" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
+  <npc id="4" handle="Taskmaster" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" spawnAfter="4" spawnAt="player" />
   <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="8">Simplicity never survives long in a complex world. Unfortunate. Machines of this early type would have been quite...useful.</say>
   </npc>

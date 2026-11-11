@@ -14,16 +14,15 @@
      Rewards: the log shows 406,815 experience and 133,000 information (a level-38 player's archive replay). These are
      the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
      shows chapter 7's.
-     Gaps: in the third area the Machines "came outta nowhere" once the Apothecary was talked to; NPCs and hostiles
-     can't be spawned by a goal, so they are there from the start and killing them is open from the start too. The
-     Operator's "No bodies yet..." is said on getting near the Apothecary, and his "This is it! Goodbye, buddy!" just
-     before her line when she is talked to (it came 4 s before it). Persephone's "Ooh!" (said twice) and "I knew this
-     would happen...", and the lines said after the third area's goals (Beirn's "pretzel", the Apothecary's "I will
-     fulfill my obligation" and Persephone's "my husband"), are said when they are talked to again. The Merovingian's
-     "Mon ami..." is said when the last area completes. The Twins' lines (also in Team chat) are said when they are
-     talked to after the Merovingian; which Twin said which wasn't shown. One log entry (most likely Beirn's, about
-     10:17:0x PM) was cut off between two screenshots and never captured. No "Goals for this area are complete" entry
-     was logged in the first area. -->
+     Gaps: in the third area the Machines "came outta nowhere" once the Apothecary was talked to: they arrive then, and
+     killing them opens then too. The Operator's "No bodies yet..." is said on getting near the Apothecary, and his
+     "This is it! Goodbye, buddy!" just before her line when she is talked to (it came 4 s before it). Persephone's
+     "Ooh!" (said twice) and "I knew this would happen...", and the lines said after the third area's goals (Beirn's
+     "pretzel", the Apothecary's "I will fulfill my obligation" and Persephone's "my husband"), are said when they are
+     talked to again. The Merovingian's "Mon ami..." is said when the last area completes. The Twins' lines (also in
+     Team chat) are said when they are talked to after the Merovingian; which Twin said which wasn't shown. One log
+     entry (most likely Beirn's, about 10:17:0x PM) was cut off between two screenshots and never captured. No "Goals
+     for this area are complete" entry was logged in the first area. -->
 <mission id="307203" title="Boil, Bubble" description="Find out what trouble the Apothecary has with the cheat code, and hurry along her meeting with Beirn before the Machines close in." plot="1"
          order="7203" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Apothecary" type="FRIENDLY" at="1" rsi="5a000040" weapon="0" />
@@ -78,7 +77,7 @@ Now, regarding the fresh code she-- Hrm, one moment. ... It seems I have some no
       <done><say contact="1">No dawdling in there, if you please. Events are marching on without you.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="5">
     <briefing>The Machines are hunting the Apothecary, of course. Don't bother telling me if I'm going too fast for you--just play your log back afterwards as many times as you need for it to soak through.
 
 The only thing like "fresh" cheat code known to exist now is pumping through the over-inflated biceps of Persephone's ex-Unlimit boy-toy, Beirn. Because the Machines are pushing our timetable, we had the Apothecary meet Beirn to get a blood sample from him directly, but they're taking a little too long for comfort.
@@ -103,7 +102,7 @@ Go hustle them along, would you?</briefing>
         <say npc="4">Go about your business, and I will go about mine.</say>
       </done>
     </objective>
-    <objective goal="6" text="Kill the Machines" type="DefeatAll">
+    <objective goal="6" text="Kill the Machines" type="DefeatAll" after="5">
       <done><say>Place looks clear, but you can bet the Machines'll have more square-jaws there faster'n you can say "Federal offense." Hang on--&#10;&#10;Okay, it sounds like the ladies have dropped it for the time being. Beirn can get them out of there; just get yourself out, and we'll report in to Flood.</say></done>
     </objective>
   </phase>

@@ -26,11 +26,11 @@
      hero..." are said on getting near him, his repeat when he is clicked, and the guests' chatter on getting near
      Rubi. Boren turned hostile (red) when Andreas was talked to; here he stays friendly and only says "C'mere!".
      Retail ended phase 2 with "Goals for this mission phase are complete!" 16 seconds after the talk, with no exit;
-     here Andreas is led out and then follows the player. An Operator line at 12:30:21 at the drop-off wasn't captured
-     and is left out, and so may be one before Flood's phase 4 briefing. The drop-off's chatter is said on getting near
-     Eryn, and Ookami's repeated line when he is clicked again. In Boren's apartment his and Anahit's lines and the
-     Operator's came in one second on finding them, and the mission completed 26 seconds later; here finding them is a
-     talk with Boren. -->
+     here Andreas is led out, which sends that line, and then follows the player. An Operator line at 12:30:21 at the
+     drop-off wasn't captured and is left out, and so may be one before Flood's phase 4 briefing. The drop-off's chatter
+     is said on getting near Eryn, and Ookami's repeated line when he is clicked again. In Boren's apartment his and
+     Anahit's lines and the Operator's came in one second on finding them, and the mission completed 26 seconds later;
+     here finding them is a talk with Boren. -->
 <mission id="310301" title="Office Party" description="Get at Ouroboros network manager Andreas Myers without alerting his company, and bring him in alive." plot="1"
          order="10301" org="3" contact="Flood" exp="352000" info="525000">
   <npc id="1" handle="Andreas Myers" type="FRIENDLY" at="1" rsi="35000024" weapon="0">

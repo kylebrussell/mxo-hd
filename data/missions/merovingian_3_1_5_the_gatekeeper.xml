@@ -11,13 +11,13 @@
      experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500 information, as
      Dire Connection paid).
      Gaps: "a couple of Dire Lupines" are two NPCs of that name, each talked to and led out (Talk, then Escort to the
-     exit); they said nothing in the captured log when picked up. The Zion attackers arrive once the lupines reach the
-     Effectuator in retail ("inbound signals"); waves can't be spawned, so they are the phase's generated Zionites from
-     the start, and the kill goal is open from the start (a kill goal that waits could miss its kills). The Operator's
-     "Keep looking, I think there are some more attackers nearby..." (retail has a double dash there) has no moment to hang on and isn't said; nor is
-     the Effectuator's second, cut copy of his greeting or his uncaptured line at 2:23:56. His three short team chat
-     lines and the lupines' "Done." and "No more." were most likely said when clicked after the end; one of each is
-     kept as their line once he has been thanked ("Smashing! Simply smashing!" and "Bravissimo!" aren't said). -->
+     exit); they said nothing in the captured log when picked up. The Zion attackers (the phase's generated Zionites)
+     arrive once the lupines reach the Effectuator ("inbound signals"), and the kill goal opens then. The Operator's
+     "Keep looking, I think there are some more attackers nearby..." (retail has a double dash there) has no moment to
+     hang on and isn't said; nor is the Effectuator's second, cut copy of his greeting or his uncaptured line at
+     2:23:56. His three short team chat lines and the lupines' "Done." and "No more." were most likely said when
+     clicked after the end; one of each is kept as their line once he has been thanked ("Smashing! Simply smashing!"
+     and "Bravissimo!" aren't said). -->
 <mission id="303105" title="The Gatekeeper" description="Bring dire lupines to the Effectuator and defend a construct portal from Zion." plot="1"
          order="3105" org="3" contact="Flood" exp="308000" info="101500">
   <npc id="1" handle="Dire Lupine Bane" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -38,7 +38,7 @@
     <objective goal="3" text="Lead the first dire lupine out of the area" type="Escort" npc="1" to="exit" after="1" />
     <objective goal="4" text="Lead the second dire lupine out of the area" type="Escort" npc="2" to="exit" after="2" />
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="5">
     <briefing>Now, simply lead those fleabags to the next location. The Effectuator is waiting there for you. No dallying!</briefing>
     <enter><say>Keep an eye out, {player}. Those Zion operatives will be on their way.</say></enter>
     <objective goal="5" text="Lead the dire lupines to the Effectuator" type="Escort" npc="1,2" to="npc:3">
@@ -49,7 +49,7 @@
         <say npc="3">You must eliminate the attackers!</say>
       </done>
     </objective>
-    <objective goal="6" text="Kill the Zion attackers" type="DefeatAll">
+    <objective goal="6" text="Kill the Zion attackers" type="DefeatAll" after="5">
       <done><say>All the attackers are down. Now you'd better check in with the Effectuator before you take off.</say></done>
     </objective>
     <objective goal="7" text="Talk to the Effectuator" type="Talk" npc="3" after="6">

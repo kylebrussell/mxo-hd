@@ -21,11 +21,11 @@
      sentence is used. One Operator line at 5:06:43 (after Persephone's) showed only its header; it was very probably
      the area's "Goals for this area are complete", which the engine adds. Phase 2 ended in retail with "Goals for
      this mission phase are complete!" and Flood's next line in the same second, so the player did not have to leave
-     an area there; here it is an ordinary site with an exit, and Flood's line is phase 3's briefing. In phase 4
-     the order the three had to be talked to isn't shown: here it is the log's order (Jeweler, Sculptress, Lotus), each
-     waiting for the one before, and the Operator's "Dang" is said when Lotus has spoken. The lines the NPCs said
-     once more after their goals (the Intruder's, Persephone's, the Chef's, the Jeweler's, the Sculptress's and
-     Lotus's second lines) are said when they are clicked again. The computer message at the Chef's ("KX: Christeen!
+     an area there; leave="0" sends that line and starts phase 3 at once, and Flood's line is phase 3's briefing. In
+     phase 4 the order the three had to be talked to isn't shown: here it is the log's order (Jeweler, Sculptress,
+     Lotus), each waiting for the one before, and the Operator's "Dang" is said when Lotus has spoken. The lines the
+     NPCs said once more after their goals (the Intruder's, Persephone's, the Chef's, the Jeweler's, the Sculptress's
+     and Lotus's second lines) are said when they are clicked again. The computer message at the Chef's ("KX: Christeen!
      Don't forget the Moroccan sumac!") can't be shown and no goal used it, so there is no computer. -->
 <mission id="309104" title="High Life" description="Help Flood show the intruder everything the Merovingian's organization has to offer." plot="1"
          order="9104" org="3" contact="Flood" exp="363000" info="63000">
@@ -68,7 +68,7 @@
       <done><say>Ouch. Might want to keep that first part out of our report...</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="5">
+  <phase site="Normal" enemy="Machines" enemies="5" leave="0">
     <briefing>Phaugh... Persephone has become sullen and pale--a liability, if you ask me. Fortunately, we have other agents who can demonstrate to him the benefits of our organiza-- Hold on.&#10;&#10;What? The hell you say! Move those cakes! Yes, yes; I'll take care of the rest.&#10;&#10;Lovely. The Machines are trying to horn in. Please deal with them for me; then we can get on with business.</briefing>
     <enter><say>Cakes?&#10;&#10;Whatever. Probably best we didn't find out.&#10;&#10;All right, hostile programs are all over that place. No cake for them.</say></enter>
     <objective goal="3" text="Kill all of the hostile programs" type="DefeatAll">

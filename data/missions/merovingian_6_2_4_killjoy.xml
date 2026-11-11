@@ -16,15 +16,14 @@
      Gaps: the computer is a plain Use (a hack); in retail the Operator's network hack failed on it ("This program
      requires MOS v7.271 or later."). Raini's own first answer wasn't in the log: the first talk brings the Twins'
      lines and Flood's "tell her that we will send in the Effectuator", and telling her so is a second Talk, which
-     gets her story. The Effectuator appeared once Raini had talked; a spawn on a goal isn't expressible, so he
-     stands in her place from the start and speaks when her story is done. The Twins' two lines after that (40
-     seconds later, on the way out) are the phase's complete lines. With Malphas, the Twins' three lines came just
-     before his and are said on getting near him; "He talks too much." was logged 3 seconds before Malphas's line
-     (an entry between may be lost) and is kept in that order. Malphas's second line is said when he is talked to
-     again, Nicky G.'s likewise. One Operator entry at 9:04:27 (after "little black book") wasn't captured. The
-     Corporate Security Paladins beside Nicky G. are friendly bystanders. Hostile NPCs' lines don't show on screen
-     here (see Known gaps), so the Partier's and the Magister's may not appear. NPCs don't fight here, so the Twins
-     don't hold off the 5 Points. -->
+     gets her story. The Effectuator arrives once Raini has talked ("I'm calling the Effectuator to keep her busy")
+     and speaks then. The Twins' two lines after that (40 seconds later, on the way out) are the phase's complete
+     lines. With Malphas, the Twins' three lines came just before his and are said on getting near him; "He talks too
+     much." was logged 3 seconds before Malphas's line (an entry between may be lost) and is kept in that order.
+     Malphas's second line is said when he is talked to again, Nicky G.'s likewise. One Operator entry at 9:04:27
+     (after "little black book") wasn't captured. The Corporate Security Paladins beside Nicky G. are friendly
+     bystanders. Hostile NPCs' lines don't show on screen here (see Known gaps), so the Partier's and the Magister's
+     may not appear. NPCs don't fight here, so the Twins don't hold off the 5 Points. -->
 <mission id="306204" title="Killjoy" description="Find Raini and learn what the Elements are up to with the Blackwoods in Mara." plot="1"
          order="6204" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="5 Points Partier" type="HOSTILE" at="1" rsi="34050040" weapon="2568">
@@ -45,7 +44,7 @@
   <npc id="8" handle="5 Points Magister" type="HOSTILE" at="3" rsi="38000024" weapon="2568">
     <say>Oh, so you're so tough?</say>
   </npc>
-  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" spawnAfter="4">
     <say>Raini just can't get enough of ol' Effy. And who can blame her?</say>
   </npc>
   <npc id="10" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568">

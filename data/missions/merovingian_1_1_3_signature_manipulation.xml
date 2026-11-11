@@ -15,10 +15,10 @@
      near Agent West, Agent Long and Agent Miller (the operator's "Search the computer in this room" hint came with
      Agent Miller's lines, by the computer). Agent North's first line was only "..." and is left out. The computer's
      "Digital Signature verified" text has no place. In phase 3 the disguise failed after the bomb was set and the
-     Agents attacked; the Agents can't turn, so the phase's hostiles are there from the start and the operator's two
-     lines about it are said when the phase is done. The operator's "What's going on here?!" on reaching the mainframe
-     is unexplained and left out; the hint "That's the mainframe..." is the second enter line. The access card goes
-     into the computer as a Put (done with Hack). In phase 4 the attacking programs are on the floor from the start;
+     Agents attacked; the phase's hostiles arrive when the bomb is set, and the operator's two lines about it are
+     said then. The operator's "What's going on here?!" on reaching the mainframe is unexplained and left out; the hint
+     "That's the mainframe..." is the second enter line. The access card goes into the computer as a Put (done with
+     Hack). In phase 4 the attacking programs arrive once Sisyphus is talked to, and the goal to kill them opens then;
      the operator's "The device won't be safe until the attacking programs are dead." has no place. Phase 4's last
      operator line wasn't readable. -->
 <mission id="301103" title="Signature Manipulation" description="Use the Signature Manipulator to infiltrate the Machines." plot="1"
@@ -102,7 +102,7 @@ I've already sent you the address to the Machine base. Pick up the Access Card t
       <say npc="7">They should be removed from the system.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="8">
     <briefing>I've updated your objectives and directed you to the location that holds the mainframe. When you've made it there, put the access card to use on one of the computers which will allow you to transfer sensitive data to the mainframe.
 
 Before we can plant the bomb on the mainframe, you'll need to transfer some sensitive data to the mainframe. Without the data on the server, destroying the mainframe would be a worthless attempt.</briefing>
@@ -123,7 +123,7 @@ Before we can plant the bomb on the mainframe, you'll need to transfer some sens
       <say>No, no! This is impossible!</say>
     </complete>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="9">
     <briefing>What the hell happened back there? Everything was fine until the bomb was set! I don't understand... Maybe planting the bomb caused an electromagnetic pulse to break the Signature Manipulator... This disturbs me.
 
 Just get the Signature Manipulator to Sisyphus, one of the Merovingian's personal assistants. I'm sending you her address now.</briefing>
@@ -136,7 +136,7 @@ Wait... I hear something in the other room. Find out what that insidious sound i
         <say>We have a problem, {player}. It appears that a group of programs has located your position, and they want you dead. Put a stop to the programs.</say>
       </talk>
     </objective>
-    <objective goal="10" text="Kill the attacking programs" type="DefeatAll">
+    <objective goal="10" text="Kill the attacking programs" type="DefeatAll" after="9">
       <done><say>That's all of them.</say></done>
     </objective>
     <objective goal="11" text="Give the Signature Manipulator to Sisyphus" type="Give" npc="8" item="6820" after="10">

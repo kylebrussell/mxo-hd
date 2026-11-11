@@ -24,12 +24,12 @@
      alive isn't shown, so there is none. The computer's screen in phase 2 (":: Press [ENTER] to activate. ::",
      "Program activation... Complete.", "Connection in progress... Complete.", "Transfer in progress... Complete.",
      "Hello, sailor.") can't be shown; using the computer completes the goal. The commandos were stealthed beside the
-     Intruder until he "switched off their stealth fields" on being talked to; here they stand there visible from the
-     start. Phase 3 ended in retail with "Goals for this mission phase are complete!" and Flood's next line in the same
-     second, as the commandos were led outside; here leading them out of the site is the goal and ends the phase.
-     The Effectuator's "This is gonna be good." came 17 seconds after his talk and "Yesss! No casualties!" after the
-     transfer, and the Intruder's "Someone's been teaching old programs new tricks" 36 seconds after his talk; they
-     are said when these NPCs are clicked again. -->
+     Intruder until he "switched off their stealth fields" on being talked to; here they appear beside the player then.
+     Phase 3 ended in retail with "Goals for this mission phase are complete!" and Flood's next line in the same second,
+     as the commandos were led outside; here leading them out of the site is the goal and ends the phase, and the
+     runtime sends that line because the phase ends on leading them out. The Effectuator's "This is gonna be good." came
+     17 seconds after his talk and "Yesss! No casualties!" after the transfer, and the Intruder's "Someone's been
+     teaching old programs new tricks" 36 seconds after his talk; they are said when these NPCs are clicked again. -->
 <mission id="309103" title="Maneuvers" description="Help the Merovingian and the General stage a show of force for the intruder." plot="1"
          order="9103" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
@@ -45,8 +45,8 @@
   <npc id="4" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
     <say after="5">Someone's been teaching old programs new tricks. These are with you, I take it?</say>
   </npc>
-  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
-  <npc id="6" handle="Commando" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
+  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" spawnAfter="5" spawnAt="player" />
+  <npc id="6" handle="Commando" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" spawnAfter="5" spawnAt="player" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>The intruder is still stand-offish, {player}. The Machines don't seem nearly as concerned about us contacting him as they are about Zion doing it, which has given us a window to win him over, but that window may be closing: while he's been boiling the Machines in their own oil, Zion has managed to take some stumbling steps in the intruder's direction--or so they think.&#10;&#10;It's hard to get useful information out of someone with Neanderthals horning in, so we've got to step up our efforts with the intruder. The Merovingian has proposed something involving the General. In general, I would say that's a bad idea...but nobody listens to me until it's too late, anyway.</briefing>
     <enter><say>I don't see much reason to be worried. This guy's way more our style than Zion's.&#10;&#10;No, no; no trouble on the scope.</say></enter>

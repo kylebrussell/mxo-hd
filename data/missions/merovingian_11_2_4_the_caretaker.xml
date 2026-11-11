@@ -28,13 +28,13 @@
      placed says it. In phase 2 the Twins' four lines are said on arrival (which Twin said which is ours: they
      alternate), and Persephone's and the Merovingian's answers come when the Merovingian is talked to, as they did
      in the same second. Phase 3 is read as: clear the terminal of its programs (the Operator's "they've brought
-     Persephone in" after 15 minutes of play), talk to Persephone, then use the computer; Persephone stands in the
-     area from the start instead of being brought in, and there is no goal that leads an NPC to an object, so she
-     doesn't follow the player to the computer. Retail's red "Don't take Persephone out of the area" has no goal
-     type here and is left out. Her "Well? Where is it? Where?!" is her click line once talked to. No area-complete
-     line was logged at the end of phases 3 and 4. In phase 4 the Twins' and the Holographic Projection's lines are
-     said on arrival. Lines logged after a goal (Persephone's "Do as my husband tells you", the Merovingian's second
-     "Ehh..." and "She has always been headstrong", the Twins' last two) are what each says when clicked. -->
+     Persephone in" after 15 minutes of play), talk to Persephone, then lead her to the computer; Persephone is
+     brought in once the programs are cleared, and taking her to the computer is an escort to it. Retail's red "Don't
+     take Persephone out of the area" has no goal type here and is left out. Her "Well? Where is it? Where?!" is her
+     click line once talked to. No area-complete line was logged at the end of phases 3 and 4. In phase 4 the Twins' and
+     the Holographic Projection's lines are said on arrival. Lines logged after a goal (Persephone's "Do as my husband
+     tells you", the Merovingian's second "Ehh..." and "She has always been headstrong", the Twins' last two) are what
+     each says when clicked. -->
 <mission id="311204" title="The Caretaker" description="Learn where the interface program's human host is held from a Zionite's access card, then get Persephone to a Machine terminal to free it." plot="1"
          order="11204" org="3" contact="Flood" exp="352000" info="175000">
   <npc id="1" handle="Zion Gunman" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
@@ -46,7 +46,7 @@
   <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="4">Do as my husband tells you.</say>
   </npc>
-  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0" spawnAfter="5">
     <say after="6">Well? Where is it? Where?!</say>
   </npc>
   <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
@@ -105,7 +105,7 @@
       <talk><say npc="6">Take me to the computer, now!&#10;&#10;If we are too late...</say></talk>
       <done><say>Get her to that computer. And no funny business with trying to take her outside!</say></done>
     </objective>
-    <objective goal="7" text="Take Persephone to the computer" type="Use" object="1" after="6">
+    <objective goal="7" text="Take Persephone to the computer" type="Escort" npc="6" to="object:1" after="6">
       <done>
         <say>Holy-- The Machines must've been watching that system; she had defense routines all over her as soon as she sent the commands.&#10;&#10;Oh, man; her signal is not looking good. The Merv's gonna kill us for sure.</say>
         <say npc="6">Unh... I have done it... They are safe...</say>

@@ -20,18 +20,19 @@
      information.
      Gaps: phase 1 is read as: talk to Yong ("Eeek! Helllp!"), kill his Exiles (the Operator's "Nice." when they are
      down), talk to him again, then he goes along; retail ended that phase with "Goals for this mission phase are
-     complete!" instead of the usual line, which our runtime doesn't send. Yong follows the player into phase 2 (his
-     "I thought he'd be here!"), so he must stay alive there. The simulacra greeted the player as friends and then
-     turned hostile, so they wait to be attacked; their greetings, the Operator's "Weird." and Yong's line are said on
-     meeting them, and their later combat barks are their click lines. Which simulacrum carried the disease isn't
-     shown: Galen Myers, the only one not heard again once the fight started, carries it here; the Operator's "Hey, I
-     think that one was carrying something" and Yong's "Aaah!" come with his death. In phase 3 the Operator's "Aha!"
-     is said on getting near Silver, and Flood's "Thank you, operative" comes when Silver is talked to, as it did in
-     the same second; no kill is logged there, so the Exiles are only in the way. In phase 4 the Twins' four lines and
-     Silver's demand for payment are said on arrival (which Twin said which isn't shown; they alternate here), and the
-     Merovingian's talk ends the area. Lines logged after a goal (Yong's second "Ah! Ow ow ow!", Silver's "This is
-     Flood's doing", "Oh, shove off." and "Hrmph.", the Merovingian's "Ah, the Machines...") are what each says when
-     clicked. The Operator's entry at 10:45:02 AM is hidden by the scroll; it is taken as the area-complete line. -->
+     complete!" instead of the usual line, which the runtime sends because the phase ends on leading Yong out. Yong
+     follows the player into phase 2 (his "I thought he'd be here!"), so he must stay alive there. The simulacra greeted
+     the player as friends and then turned hostile, so they wait to be attacked; their greetings, the Operator's
+     "Weird." and Yong's line are said on meeting them, and their later combat barks are their click lines. Which
+     simulacrum carried the disease isn't shown: Galen Myers, the only one not heard again once the fight started,
+     carries it here; the Operator's "Hey, I think that one was carrying something" and Yong's "Aaah!" come with his
+     death. In phase 3 the Operator's "Aha!" is said on getting near Silver, and Flood's "Thank you, operative" comes
+     when Silver is talked to, as it did in the same second; no kill is logged there, so the Exiles are only in the way.
+     In phase 4 the Twins' four lines and Silver's demand for payment are said on arrival (which Twin said which isn't
+     shown; they alternate here), and the Merovingian's talk ends the area. Lines logged after a goal (Yong's second
+     "Ah! Ow ow ow!", Silver's "This is Flood's doing", "Oh, shove off." and "Hrmph.", the Merovingian's "Ah, the
+     Machines...") are what each says when clicked. The Operator's entry at 10:45:02 AM is hidden by the scroll; it is
+     taken as the area-complete line. -->
 <mission id="311102" title="Alchemy" description="Track down Silver through his lackey Yong and deliver him to the Merovingian to work on the interface program." plot="1"
          order="11102" org="3" contact="Flood" exp="352000" info="115500">
   <npc id="1" handle="Yong" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
