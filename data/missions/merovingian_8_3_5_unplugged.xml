@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unplugged, Merovingian story mission 8.3.5. Source: research/missions/transcripts/Merv8-3-5.md (the archive replay
+     of [Merovingian Archive 8.3.5], given by [Archived]Flood; 25 screenshots of the Mission window's log after it
+     ended, cropped to that window; there is no Mero_45, but its neighbours overlap, so nothing is lost there).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Persephone, Hypatia, Archivist,
+     Malphas and Holographic Projection line, and those names. The log's player was Variel; the name is {player} here.
+     Flood's "naivete" has an accented e in the log, written plain here. The Archivist's "If you would be willing give
+     it to us" and Flood's closing "Talk." (the first line of his last entry) are as the log has them. Italics dropped:
+     the Archivists' "may" and "have". Entries that span screenshots are joined by their overlapping lines, except
+     where a screenshot ends on an entry's last line and the next starts on a new header, so a line may be missing
+     after Flood's first briefing ("despite themselves."), Persephone's first line ("MacHenry woman."), the second
+     Archivist's line and the last Archivist's ("may be obtained."); and two entries are read as contiguous with a
+     paragraph break across a join with no header or overlapping line: Flood's "useful information?" / "Return it to
+     them?" and the Operator's "give us a medal." / "Malphas and a few of his leeches".
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal: none is described; no neighbourhood was named), the looks
+     (Persephone's, Malphas's and the hologram's are those of earlier missions; Hypatia's is her own, from
+     data/mission_contact_npcs.csv, as in 6.3.3; the Archivists, "nearly identical programs", share one stand-in, and
+     the skulky Machine program's is a stand-in), the Machine program's handle (not shown), the enemy kinds and
+     counts, and the item stand-in: the data is Data (6787).
+     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
+     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid).
+     Gaps: Persephone's second line ("It was so long ago...", 15 s after her first) is said as her goal completes,
+     after the Operator's; Hypatia's "I do appreciate..." (10 s after the goals completed) when she is talked to again.
+     Which Archivist said which of the five lines isn't shown: three stand here, and talking to one of them gives the
+     whole exchange (about one line every 6 s), his two colleagues' "That data may not be accessible." first; Flood's
+     and the Operator's replies are said as it completes. In the third area the Operator's "That computer in..." names
+     no computer that was used: the program with the data is a hostile to kill, the data is looted from it and
+     uploaded at a hardline (about 8 minutes of fighting, not captured, came before "Glad we caught it"); the
+     Operator's two arrival lines (9 s apart) are both said on entering, and the other Machines needn't be killed.
+     Malphas's "few of his leeches" didn't speak and aren't named, so they aren't placed. The General's broadcast
+     "just kicked in" 10 s after Malphas's talk and the area's goals completed with it, so hearing the Holographic
+     Projection is a Talk that opens after Malphas's; its "withdraw ... all units" and Malphas's "Excuse me..." (14
+     and 19 s after the goals completed) are said when they complete. -->
+<mission id="308305" title="Unplugged" description="Trace Persephone's memory of a human taken from the pods through Hypatia's Archivist Society, and recover the old records the Machines are hiding." plot="1"
+         order="8305" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0" />
+  <npc id="2" handle="Hypatia" type="FRIENDLY" at="1" rsi="4b0a0058" weapon="0">
+    <say after="2">I do appreciate the Merovingian helping me get away from the Machines. Now we're even.</say>
+  </npc>
+  <npc id="3" handle="Archivist" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="4" handle="Archivist" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="5" handle="Archivist" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="6" handle="Machine Program" type="HOSTILE" at="3" rsi="6e060040" weapon="2568" />
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That little nerd, Hypatia, has been rescued at significant expense from the Machine lock-up. She and her precious "Archivist Society" are known to salt away all sorts of useless data for no apparent reason whatsoever; at the moment, however, they may prove slightly useful, despite themselves.</briefing>
+    <enter><say>You're supposed to meet Hypatia and Persephone in there. This could be interesting.</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="1">
+      <talk><say npc="1">When I was with the Machines, at the pods, there was a time when a human was removed from the tower next to mine. I did not know why or where they were taken. I was intensely curious. I tried to find out, but they would not tell me. I accessed the activity logs secretly, hoping to find the reason, but no--it only showed that they had been strengthened, then disconnected. The log entries looked just like those of the MacHenry woman.</say></talk>
+      <done>
+        <say>More log entries. I think this would be where the librarian comes in.</say>
+        <say npc="1">It was so long ago; I had begun to see it as someone else's life, not mine. Hearing that caretaker program, and seeing the log entries for the woman...it came back--a shock.&#10;&#10;Was it really me, there? A thing of gears and claws... I liked to think I had shed them.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Hypatia" type="Talk" npc="2" after="1">
+      <talk><say npc="2">The Archivists may have records of the incident Persephone remembers. Many records from previous versions of the Matrix were lost when the Machines began this current one, but the Society has recovered more than the Machines themselves would have thought possible. Normally they would at least charge a heavy fee for information from a previous iteration, but tell them that I said the rev.2 data can be allowed in this case.</say></talk>
+      <done><say>Great--free gift certificate to the Archivist Society bookstore. Let's haul.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well, operative, I'm sending you to that colloquy of trivial pundits; you should find yourself right at home.
+
+Although if you really wanted to fit in, you'd need a change of shoes...</briefing>
+    <enter><say>I'm reading some nearly identical programs in there; they should be Archivists.</say></enter>
+    <objective goal="1" text="Ask the Archivists about the records" type="Talk" npc="5">
+      <talk>
+        <say npc="3">That data may not be accessible.</say>
+        <say npc="4">That data may not be accessible.</say>
+        <say npc="5">Hm... Yes... Cross-referencing...</say>
+        <say npc="5">File not found.</say>
+        <say npc="5">My colleagues are correct. However, the index refers us to another occurrence of similar log histories. This was during rev.1--that is, during the first iteration of the Matrix simulation.&#10;&#10;We do not have this data ourselves; however, we know where it is stored. If you would be willing give it to us for archival purposes, we could tell you where it may be obtained.</say>
+      </talk>
+      <done>
+        <say contact="1">Yes, yes--agree to whatever he wants. Just get the location.</say>
+        <say>Let's go liberate some old information.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Hm... If this pans out, I may have to re-evaluate my opinion of those moth-raisers. Can it be they've actually come up with some useful information?
+
+Return it to them? Ah, {player}... Sometimes your naivete almost has a certain quaint charm.</briefing>
+    <enter>
+      <say>Okay, I think I'm getting something. That computer in...&#10;&#10;Hey, wait a second! That little skulky looking one has the data! Trying to sneak off with it!</say>
+      <say>Looks like the Machines have their own colloquy going on, although I think these geeks would be more at home at a gun show than a library.</say>
+    </enter>
+    <objective goal="1" text="Stop the Machine program with the data" type="Defeat" npc="6" />
+    <objective goal="2" text="Get the data from the Machine program" type="Loot" npc="6" item="6787" after="1">
+      <done><say>Hah. Glad we caught it. Okay, upload that to me at a hardline.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I'm busy at the moment, operative; the General's got his tentacles in a knot over something or other. Just go discuss those records with Malphas, or whoever it is...</briefing>
+    <enter><say>Gee, and here I was hoping that Flood was going to give us a medal.&#10;&#10;Malphas and a few of his leeches are in there.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="7">
+      <talk><say npc="7">Although the data you recovered is not complete, it indicates that at one point during the first iteration of the Matrix, fourteen individuals underwent intense physical therapy followed by disconnection from their pods--all of them removed almost at the same time. This could suggest that in that case a group of humans was required for whatever purpose these--&#10;&#10;Hm. I was not expecting contact from the General.</say></talk>
+      <done><say>Hey, the General's broadcast just kicked in. What's the deal?</say></done>
+    </objective>
+    <objective goal="2" text="Listen to the General's broadcast" type="Talk" npc="8" after="1">
+      <talk><say npc="8">--unusual patrol activity, including what may be a convoy or escort formation approaching the city.&#10;&#10;I repeat: I am withdrawing all units from the vicinity of the Machine city. A large number of enemy units have launched from the emplacements surrounding the city to take up what may be either defensive or reconnaissance positions. Simultaneous with this development, my perimeter scouts began reporting unusual patrol activity, including what may be a convoy or escort formation approaching the city.&#10;&#10;I repeat--</say></talk>
+      <done><say>Ah... Problem?</say></done>
+    </objective>
+    <complete>
+      <say npc="8">--withdraw--all units--</say>
+      <say npc="7">Excuse me. I must attend to this.</say>
+    </complete>
+  </phase>
+  <finish>Talk.
+
+You? Don't bother me now. I'll get back to you when I need you.</finish>
+</mission>
