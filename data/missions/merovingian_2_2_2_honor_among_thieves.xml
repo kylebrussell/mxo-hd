@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Honor Among Thieves, Merovingian story mission 2.2.2. Source: research/missions/transcripts/Merv2-2-2.md (the
+     archive replay of [Merovingian Archive 2.2.2], given by [Archived]Flood; 17 screenshots of the log after it ended
+     and three mid-mission captures from other runs). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name, and the objective "Kill
+     Tanner Clark" (seen in the other runs with their informant's name). Retail drew the NPC names at random for each
+     run; these are the main run's (the one whose log was captured): informant Tanner Clark (other runs: Roderick
+     Wheeldon, Jamar Grimstone), his friend Brett Boren (Demarcus Exner), the imposter Aten (Hedgehog, Richilde), the
+     insecticide holder Broomfondle (Chukotka) and the second Exile Aavasaksa (Fabre). Ours: the description (the
+     Summary tab was never opened), the other objective texts, the sites (no building was described: all Normal), the
+     looks and the enemy counts (Aten's Zion soldiers: 3). Item stand-ins: the Data CD is Data_CD (6831), the Red
+     Insecticide is Poison (6804), as in Zion 2.2.1. Rewards: the log is a level-50 player's (79,416,249 experience and
+     1,039,500 information, the same for every 2.2 archive mission), so the 297,000 experience and 98,000 information
+     are Zion 2.2's values.
+     Gaps: Tanner Clark and Brett Boren are friendly until Flood orders a kill; both wait to be attacked
+     (attacksOnSight="0"). Reaching Tanner is the talk that carries his denial (optional, so killing him first doesn't
+     block the phase). Tanner hands over the CD in retail; since he is a hostile who is killed afterwards, the player
+     carries the CD from the phase's start and Tanner's hand-over speech is said when Brett Boren dies. Retail's
+     computer showed the imposter's email (an inbox search for "Espion" and "Aten" turning up a note about a fraudulent
+     Exile dossier); here the CD is put into the computer and the search is a Use, and the email text isn't shown.
+     Brett Boren's, Aten's, Broomfondle's and Aavasaksa's barks are said on coming near them; Aavasaksa's "Mommy!" is
+     said when he dies. The Zion Kung Fu Grandmaster and Zion Ravager seen in another run are the generated Zion
+     hostiles, and their barks aren't said. The Operator's line at 5:22:26 and one entry before 5:29:02 weren't
+     captured. The Elite Guards at Eos's place are bystanders with their Team chat lines. -->
+<mission id="302202" title="Honor Among Thieves" description="Unmask the Zion imposter posing as Espion and recover the stolen insecticide." plot="1"
+         order="2202" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Tanner Clark" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Brett Boren" type="HOSTILE" at="1" rsi="c6020058" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Aten" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="4" handle="Broomfondle" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Aavasaksa" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Eos" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568" />
+  <npc id="7" handle="Elite Guard" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+    <say display="5">Don't let Eos bother you. He...she -- whatever it is -- isn't much of a conversationalist.</say>
+  </npc>
+  <npc id="8" handle="Elite Guard" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say display="5">The Merovingian wants some of us more like Eos. I guess it gives the Merovingian more chances to blab about his wife.</say>
+  </npc>
+  <npc id="9" handle="Elite Guard" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say display="5">I heard about your work on Aten. Life is good when those Zion nut jobs are put in their place.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <!-- The CD is given at the phase's start: no goal provides it before the Put. -->
+    <briefing>An unknown Zion redpill, operating under the name "Espion," has just stolen a stash of the coveted insecticide. To make matters worse, a small band of worthless Exiles fell for the redpill's pathetic disguise.
+
+Your assignment is to uncover the identity of Espion by beating it out of Tanner Clark. Once you have the imposter's true identity, find this person, and eliminate Espion -- or whatever they call themselves... After you've done this, recover the insecticide, and make an example of the inadequate Exiles. Is that clear? I truly hope so.</briefing>
+    <enter><say>What makes Flood think this Tanner Clark guy knows anything? Where does he get this information, anyway?
+
+Maybe...I shouldn't ask.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to Tanner Clark" type="Talk" npc="1" optional="1">
+      <done>
+        <say npc="1">I'm sorry, guv. Do I know ya? Who? Espion? Sorry, don't know anyone by that handle... Cheers.</say>
+        <say contact="1">Tanner Clark is lying. Kill his friend. Now.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Brett Boren" type="Defeat" npc="2">
+      <done>
+        <say contact="1">Tanner Clark should be more cooperative now.</say>
+        <say npc="1">Crikey! You waxed Brett Boren!</say>
+        <say npc="1">Smeggin' hell! Fine, I'll fill ya in... Jus'--just let me live!
+
+This Zion chap named Aten came to me looking for help on an inside job. The redpill wanted to pose as some Exile bloke named Espion. I said I could make it happen for the right price... All I got was a name and some small details saved on this CD -- that's it!
+
+You can have the CD. Just leave me be, alright?</say>
+        <say>Tanner Clark has a computer in another room. You can search the contents of that CD on his computer. Do this now.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Put the CD into Tanner Clark's computer" type="Put" object="1" item="6831" after="2">
+      <done><say>Tracking Aten's RSI signal has proven futile, so we need to get a lead on Aten's current position. Run a search for "Espion" and "Aten" on Tanner Clark's computer</say></done>
+    </objective>
+    <objective goal="4" text="Search the computer for Espion and Aten" type="Use" object="1" after="3">
+      <done><say contact="1">{player}, there's one last piece of business to conduct before we move on: kill Tanner Clark.</say></done>
+    </objective>
+    <objective goal="5" text="Kill Tanner Clark" type="Defeat" npc="1">
+      <done><say contact="1">The Merovingian has a "zero witnesses" policy at the moment, and this includes our cooperative comrade. I am glad that this was not a problem for you.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Listen up, you! You can't just barge in here and walk around like you own the place! That... that isn't right!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The Zion-sucking neomongers have mustered up far more trouble than they can handle. Revenge must be exacted on the insignificant wretch who thought they could pose as Espion. While we can't track Aten's RSI, we can track the dossier mentioned in Aten's email -- it's been in our hands before.
+
+Assassinate Aten and recover the insecticide. It could be in Aten's hands, or someone else's. Just to be on the safe side, check everyone's pockets.</briefing>
+    <enter><say>The Merovingian sure wants a lot of folks dead... That doesn't ever get tiresome, does it?</say></enter>
+    <objective goal="1" text="Kill Aten" type="Defeat" npc="3" />
+    <objective goal="2" text="Kill Broomfondle" type="Defeat" npc="4">
+      <done><say>I was right! Check Broomfondle's pockets for the insecticide -- and loose change while you're at it.</say></done>
+    </objective>
+    <objective goal="3" text="Get the insecticide from Broomfondle's body" type="Loot" npc="4" item="6804">
+      <done><say>Score. Nice work, {player}.</say></done>
+    </objective>
+    <objective goal="4" text="Kill Aavasaksa" type="Defeat" npc="5">
+      <done><say npc="5">Mommy!</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">Ah! You found me!
+
+I'm not going down without a fight.</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say>My scans say Broomfondle has the insecticide. You can always try beating it out of him.</say>
+      <say npc="4">You just made a big mistake.</say>
+    </near>
+    <near npc="5" radius="600">
+      <say npc="5">Beats the hell outta me, boss.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You've surprised me, {player}. Thankfully, the rest of your assignment is far simpler than the preceding tasks.
+
+Bring the insecticide to Eos at that address.</briefing>
+    <enter><say>I hear Eos is a Nightmare. Have you ever met one before? Scary.</say></enter>
+    <objective goal="1" text="Give the insecticide to Eos" type="Give" npc="6" item="6804">
+      <talk><say npc="6">Give.</say></talk>
+      <done><say>All right. Make your exit.</say></done>
+    </objective>
+  </phase>
+  <finish>Your efforts are proving most beneficial, {player}.
+
+You will hear from me again. Don't get too comfortable.</finish>
+</mission>

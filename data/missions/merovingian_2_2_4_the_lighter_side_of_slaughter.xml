@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Lighter Side of Slaughter, Merovingian story mission 2.2.4. Source:
+     research/missions/transcripts/Merv2-2-4.md (the archive replay of [Merovingian Archive 2.2.4], given by
+     [Archived]Flood; 16 screenshots of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the names Mironov, Wallaby, Shark and
+     Downlink. Ours: the description (the Summary tab was never opened), every objective text (nor was the Objectives
+     tab), the lab technician's name (retail's wasn't shown: "Lab Technician"), the sites (the insecticide lab and the
+     strike team's pick-up point are unnamed buildings: Normal; the Machine storehouse: Warehouse), the looks and the
+     enemy counts (the lab had "only two signals": 3, the smallest; the storehouse's "small army" came in waves of
+     three: 5). Item stand-in: the folder marked "Secret Plans" is Plan (6798). Rewards: the log is a level-50 player's
+     (79,416,249 experience and 1,039,500 information, the same for every 2.2 archive mission), so the 297,000
+     experience and 98,000 information are Zion 2.2's values.
+     Gaps: the strike team (Mironov, Wallaby and Shark) joins on talking to Mironov, and retail's phase ended there;
+     here they are led out of the pick-up point and follow the player into the storehouse. Whether they fight beside
+     the player isn't expressed. The storehouse's reinforcements came in three waves of three in retail; here the
+     generated Machines are on the floor from the start, Downlink's bark and the first wave's line are said on coming
+     near him, and the later wave lines ("Three more signals just popped up..." and "...three more signals just came
+     in...") aren't said. The Operator's desk hint was logged just after the plans were found; here it is said on
+     arrival. Retail ended the mission on the upload; here the phase ends when its goals are done, as usual. -->
+<mission id="302204" title="The Lighter Side of Slaughter" description="Strike a Zion insecticide lab and a Machine storehouse." plot="1"
+         order="2204" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Lab Technician" type="HOSTILE" at="1" rsi="60010058" weapon="2568" />
+  <npc id="2" handle="Mironov" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Wallaby" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Shark" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Downlink" type="HOSTILE" at="3" rsi="050100b4" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Those miserable Zion operatives and Machine-following fools have tested the Merovingian's patience -- and mine, for far too long. We must hit them where it counts: assault their insecticide lab and flit gun storehouse.
+
+The first part of your assignment is to strike a Zion insecticide lab. While you're there, say "hi" to the technician for me.</briefing>
+    <enter><say>This looks like a quick in-and-out job. Only two signals pop up on the scanner, but there could be more. You know the drill.</say></enter>
+    <objective goal="1" text="Kill all of the Zion operatives in the lab" type="DefeatAll" />
+    <objective goal="2" text="Kill the lab technician" type="Defeat" npc="1" />
+    <near npc="1" radius="1000">
+      <say>{player}, I think Flood wants the lab worker dead too. If I'm wrong, well... it's good to be on the safe side.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Things are proceeding as planned. This is well and good, but I've decided to call upon a few friends... to aid you in the slaughter.
+
+Pick them up and lead them to the Machine storehouse. Trust me. You could use the help.</briefing>
+    <enter><say>Ugh! Flood is probably making you babysit the new recruits. What a surprise.</say></enter>
+    <objective goal="1" text="Talk to Mironov" type="Talk" npc="2">
+      <talk>
+        <say npc="2">We must move quickly, {player}. My whole body aches for the chance to drain the blood of the tainted.</say>
+        <say>Okay, this is a surprise! I was expecting something less...capable. Nevertheless, this is your strike team. Let's get a move on.</say>
+        <say npc="3">Howl do you do?
+
+Humph. Just my little joke. That's all.</say>
+        <say npc="2">If you took a single minute longer, I would've bit my own arm off.</say>
+        <say npc="4">Move.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead the strike team out of the area" type="Escort" npc="2,3,4" to="exit" after="1" />
+  </phase>
+  <phase site="Warehouse" enemy="Machines" enemies="5">
+    <briefing>Your objectives are quite simple. It's carrying them out that's the hard part. Go to the Machine storehouse and kill the small army you find there.
+
+Oh, and one more thing: do not leave without details on our enemies' next plan of action. We cannot allow Zion or the Machines to stay one step ahead of us, now, can we?</briefing>
+    <enter>
+      <say>That's strange... My readings look like you just stepped into a ghost town. I'm only seeing two signals. I thought there was supposed to be a "small army" here.</say>
+      <say>There's a desk inside the next room... My money is on the off chance that it holds the information Flood seeks.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the small army" type="DefeatAll">
+      <done><say>That was a freakin' massacre! Look at the bodies! Corpses everywhere! That was... insane!</say></done>
+    </objective>
+    <objective goal="2" text="Find the details on the enemies' next plan" type="Search" object="1" item="6798">
+      <done>
+        <say>You're kidding me! It actually says "Secret Plans" right on the folder! Why didn't they just put a giant green arrow on the desk, while they're at it!</say>
+        <say>Sweet! Get those secret plans to a hardline and I'll pass 'em off to good ol' Floody.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Upload the secret plans at a hardline" type="Upload" item="6798" after="2">
+      <done><say>The docs are secure. Nice work, {player}.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>I'm seeing at least three new signals descending on your position!</say>
+      <say npc="5">Your own mother won't recognize you after I'm through with you.</say>
+    </near>
+  </phase>
+  <finish>Don't you ever get a bit jealous? I sit back and drink port while you carry out my -- I mean -- the Merovingian's bidding. Then again, you're the one who is quite good at that sort of thing -- killing, that is.
+
+I'm sending the Merovingian the details of your assignment. I'm sure he'll squeal like a giggling school girl as always... Eh.</finish>
+</mission>

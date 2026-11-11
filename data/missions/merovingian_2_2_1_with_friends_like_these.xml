@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- With Friends Like These, Merovingian story mission 2.2.1. Source: research/missions/transcripts/Merv2-2-1.md (the
+     archive replay of [Merovingian Archive 2.2.1], given by [Archived]Flood; 18 screenshots of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description
+     (the Summary tab was never opened), every objective text (nor was the Objectives tab), the sites (no building was
+     described: all Normal), the looks and the enemy counts (phase 2 had "at least seven" Machine signals: 5; the
+     Tactical Security ambush: 3). Item stand-in: the gun barrel (the flit gun part) is Weapon (6811), as in Zion 2.2.3.
+     Rewards: the log is a level-50 player's (79,416,249 experience and 1,039,500 information, the same for every 2.2
+     archive mission), so the 297,000 experience and 98,000 information are Zion 2.2's values.
+     Gaps: Duncombe pleads (friendly) and turns on the player once interrogated: he waits to be attacked
+     (attacksOnSight="0"); reaching him is the interrogation and carries his lines, and it is optional so that killing
+     him first doesn't block the phase. The corpses of phase 1 aren't placed. Calvinia's "Allow me to end this farce
+     now." is said on coming near him; the gun barrel is looted from his body. In phase 3 the Tactical Security
+     soldiers appear after the hand-over in retail; here they are on the floor from the start, and the Operator's and
+     Scorpii's ambush lines are said with the hand-over. Their Team chat barks aren't said. Scorpii's line at 4:55:28
+     wasn't captured, nor were the lines between 4:44:55 and 4:48:02, 4:52:18 and 4:53:04, and 4:55:28 and 4:58:28. -->
+<mission id="302201" title="With Friends Like These" description="Interrogate and kill a traitor, then take the flit gun from the Machines." plot="1"
+         order="2201" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Duncombe" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Calvinia" type="HOSTILE" at="2" rsi="ec020058" weapon="2568" />
+  <npc id="3" handle="Scorpii" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say after="1">Call me paranoid, but I don't feel so hot about holding onto this thing now...</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Your task is to interrogate and kill a traitor.
+
+Duncombe has defied the Merovingian's respect by aiding the despicable Machines. While I cannot delve into the details of his actions, I will say that he must be dealt with. Extract information from Duncombe about this "flit gun," and then kill the wretch. Do we understand? We do.</briefing>
+    <enter><say>There are a lot of corpses in that building -- mostly Exiles, but a few of them are redpills.</say></enter>
+    <objective goal="1" text="Interrogate Duncombe" type="Talk" npc="1" optional="1">
+      <done>
+        <say npc="1">What the hell do you want?! Ah! It's you, {player}! Oh, man, I didn't think the old Frenchman would send you after me... If I'd known, I would've never betrayed him... Please, let me live! I'll tell you where the Machines went with the flit gun!
+
+It was picked up by a man named Calvinia. See, he's a redpill working for the Machines. If Flood can track his RSI signal, you can find him and the gun... Just don't kill me, okay?</say>
+        <say>Roger that. I'll pass word onto Flood.</say>
+        <say npc="1">You're not gonna kill me, are you?</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Duncombe" type="Defeat" npc="1">
+      <done><say>That's a confirmed kill. Duncombe is down!
+
+Don't worry about cleaning up here, the Merovingian has a special team for that sort of thing.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>According to Flood's instructions, Duncombe is in the next room. If he pleads for his life, it doesn't change anything. The Merovingian still wants him dead once you've interrogated him.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>I may regret it, but I'm inclined to believe that sniveling weasel. I always suspected that Duncombe was a thief, but I never thought he was a liar. It changes nothing, though. The Merovingian shall be relieved to hear of his death.
+
+Find and kill Calvinia. Once the target is dead, search the body for the device: a high-powered flit gun. You see, the Machines think they can kill our associate with the flit gun. It's quite laughable, I assure you.
+
+I've already given you his last known whereabouts. Do not let your target escape. Is that clear?</briefing>
+    <enter><say>I think you just found the Machines that killed the Exiles at the last location... I'm seeing at least seven separate RSI signals, but there could be more. Don't let your guard down, {player}.</say></enter>
+    <objective goal="1" text="Kill Calvinia" type="Defeat" npc="2" />
+    <objective goal="2" text="Search Calvinia's body for the flit gun" type="Loot" npc="2" item="6811">
+      <done>
+        <say>Crap. Calvinia doesn't have the flit gun. He's only carrying a single component, not the whole thing. Damn it! Just get the flit gun part, {player}. I sure hope Flood has a backup plan...</say>
+        <say>Flood might be upset about the weapon not being on Calvinia's body. Hopefully, he won't take it out on you.</say>
+      </done>
+    </objective>
+    <near npc="2" radius="600">
+      <say npc="2">Allow me to end this farce now.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The gun barrel?! That is...not what I expected. We need the entire weapon in our hands, not a single component. Nevertheless, we must secure what you hold. Just bring the gun barrel to Scorpii.</briefing>
+    <enter><say>You know, I'm surprised. I thought Flood would be far more upset than that. I guess it's your lucky day!</say></enter>
+    <objective goal="1" text="Give the gun barrel to Scorpii" type="Give" npc="3" item="6811">
+      <talk><say npc="3">I heard the news. Too bad Calvinia didn't have the whole weapon on him. I wonder why he took it apart in the first place...
+
+Well, never mind that now. I need to secure that gun barrel.</say></talk>
+      <done>
+        <say>Sweet mother of... What the hell is going on with the code?! I'm seeing a new signal in the next room that wasn't there a second ago! Wait -- no, I'm seeing two signals -- no, three! Not just the room behind yours, all over the floor! Bad news, {player}: you've got company!
+
+We can't let them walk away from the scene. Take 'em out!</say>
+        <say npc="3">Did you hear that? A sound came from the next room! Maybe you should check it out. I'll just...wait right here. Yeah, that's it...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill the Tactical Security" type="DefeatAll">
+      <done><say>Okay, so I guess it's not your lucky day...</say></done>
+    </objective>
+  </phase>
+  <finish>You've only accomplished part of our goal. You must recover the other pieces of the flit gun.
+
+Expect another assignment soon.</finish>
+</mission>

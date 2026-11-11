@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unfaithful Existence, Merovingian Archive 2.1.2. Source: research/missions/transcripts/Merv2-1-2.md (one retail run
+     of the archive replay, given by [Archived]Flood, played in a team of three; one screenshot during phase 1, the rest
+     of the log scrolled after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line, the Elite Guards' lines (Team chat), the names Rabbit,
+     Tapio and Platypus, and the objective texts "Search Rabbit's computer" and "Talk to Tapio". Ours: the description
+     (the Summary tab showed none), the other objective texts, the sites (Normal: Rabbit's home in Camon Heights, his
+     laboratory and Platypus' lab aren't described further), the enemies with Rabbit (his "Guard" and others: rogue
+     Exiles, enemy Merovingian) and their count, and the looks. Item stand-in: Rabbit's prototype (the "device", which
+     Platypus calls a gun of some sort) is Device (6820). Rewards: the log shows 45,728,749 experience and 724,500
+     information, a level 50 player's, so these are Zion chapter 2.1's values (297,000 experience and 98,000
+     information).
+     Gaps: Rabbit's computer shows his "Going to my lab" e-mail and gives no item: a Search that turns up nothing. The
+     Operator's "Rabbit isn't here" line is said on nearing Tapio, and "Rabbit is inside that room" on nearing Rabbit.
+     The three Elite Guards are friendly bystanders, one line each. Two lines have a hidden line on an image seam
+     (Platypus' "tracking ... mud in my lab", the Operator's "spilled, ... I suppose"): the halves are joined. The
+     repeated NPC lines are said once, and the italics on "this" are dropped. "pour over" is kept as retail wrote it. -->
+<mission id="302102" title="Unfaithful Existence" description="Kill Rabbit, a rogue Exile inventor, and steal his prototype." plot="1"
+         order="2102" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Tapio" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Elite Guard" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say display="5">Are you looking for Rabbit? He should be in his room with his computer, working on his new prototype.</say>
+  </npc>
+  <npc id="3" handle="Elite Guard" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say display="5">What are you looking at?</say>
+  </npc>
+  <npc id="4" handle="Elite Guard" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say display="5">Where'd the boss go?</say>
+  </npc>
+  <npc id="5" handle="Rabbit" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="6" handle="Platypus" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>An Exile inventor named Rabbit has gone rogue on us. We cannot allow this traitor to live.&#10;&#10;This is Rabbit's last known location. Find him, kill him, and steal any prototypes he's working on. The Merovingian does not tolerate treachery in his organization.</briefing>
+    <enter><say>Rabbit should be inside that building.&#10;&#10;I wonder what Rabbit did to piss the Merovingian off so much...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search Rabbit's computer" type="Search" object="1" item="0">
+      <done><say>You'd think he would've shut down his computer, or at least locked it. This can only mean Rabbit left in a hurry.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Tapio" type="Talk" npc="1">
+      <talk><say npc="1">There was some redpill here just before Rabbit disappeared. Perhaps they have something to do with this.</say></talk>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Damn! Rabbit isn't here! Search his computer and ask Tapio if she knows anything. Maybe we'll get some clues to his whereabouts.</say>
+    </near>
+    <complete><say>Rabbit wasn't there, but you're making progress. I'll forward the details to Flood.</say></complete>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Rabbit has eluded us, but not for long. If he went to his laboratory, we'll find him there.&#10;&#10;You have the coordinates. Make haste, {player}. We cannot allow the traitor to escape our grasp again.</briefing>
+    <enter><say>I'm reading a new signal inside that building. I think the intel you found has paid off.</say></enter>
+    <objective goal="1" text="Kill Rabbit" type="Defeat" npc="5" />
+    <objective goal="2" text="Take the prototype from Rabbit" type="Loot" npc="5" item="6820" after="1">
+      <done><say>Now we're getting somewhere. Keep that device with you, Flood will want it.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>Rabbit is inside that room!</say>
+      <say npc="5">You're not the Machine operative! Guard, seize them! We can't let the prototype fall into the hands of the Merovingian!</say>
+      <say contact="1">There's the little bastard. Bring about his demise, will you?</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You're quite resourceful, aren't you? You managed to find the thorn and pull it from the Merovingian's side. All that is left is to ensure the fruits of Rabbit's labor are smashed -- much like...his face. Oh, that wasn't very nice of me, was it?&#10;&#10;Your final task in this assignment is to deliver the device to Platypus. He will be waiting for you at this address.</briefing>
+    <enter><say>Platypus is inside. I'm sure of it.</say></enter>
+    <objective goal="1" text="Give the prototype to Platypus" type="Give" npc="6" item="6820">
+      <talk><say npc="6">Did anyone follow you? I can't have Zion or Machine operatives tracking mud in my lab.&#10;&#10;Never mind that, I require the prototype that Rabbit was working on. Give it to me.</say></talk>
+      <done>
+        <say>That was easy enough. It's good when things come together in the end -- even if a little blood has to be spilled, I suppose.</say>
+        <say npc="6">What is this? It looks like a gun of some sort. I wonder who commissioned Rabbit for such a device... The Merovingian will want to hear about this and, likely, want it destroyed.&#10;&#10;Leave me be. I have much to ponder, {player}.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>As absurd as it might seem, recent enlightenment has given me reason to believe the Machines plan to defeat our dedicated associate. This raises the stakes a bit since Zion is not the only organization who wishes the death of the Assassin. Honestly, I cannot think of a single reason why the Machines want the Assassin dead, but we are obligated to protect our associate.&#10;&#10;I will have another task for you after the Merovingian has time to pour over the information you so aptly uncovered. Keep yourself prepared, {player}.</finish>
+</mission>
