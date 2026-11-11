@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Charon, Merovingian story mission 7.1.5. Source: research/missions/transcripts/Merv7-1-5.md (the archive replay of
+     [Merovingian Archive 7.1.5], given by [Archived]Flood; 27 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Malphas, Beirn, Trainman, Ookami
+     and Merovingian line, and those names. Several entries span two or three screenshots and are read as one entry
+     (Flood's first two briefings, Malphas's first line, the Operator's "Lucky for us you've got a direct uplink",
+     Beirn's first line and the Trainman's "Damn the Merovingian! We had a deal."). The Merovingian's "Quelle betise!"
+     was in italics and had an e-circumflex (betise here, ASCII).
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; phase 2 prefers Rogers Way, where the Trainman's signal came out of
+     the Abandoned Subway, and phase 3 Moriah Projects, "he's in Moriah"), the looks (Malphas's, Ookami's, the
+     Merovingian's and Beirn's are those of earlier missions; the Trainman's is ours) and the order of phase 4's goals.
+     No item was shown.
+     Rewards: the log shows 406,815 experience and 70,000 information, a level-38 player's archive replay and not a
+     normal reward; no Zion 7.1 mission is built, so these are Zion 7.2's values (363,000 experience, 63,000
+     information, as Hear Me paid), the nearest.
+     Gaps: no fight is shown anywhere (no kill line; 89 seconds in phase 2, where Beirn had already beaten off the
+     "Mechs"), so no phase has hostiles. The guards with Malphas in phase 1 weren't named and aren't placed. Each NPC's
+     second line, a few seconds after the first, is said when they are talked to again after their goal. Phase 4's
+     goals are our reading of the order the lines came in: Malphas, the Trainman, then the Merovingian, whose line
+     completed the area; the Operator's "The far door is sealed" is said on arrival and "accessible now" when the
+     Merovingian is talked to, but no door is locked here and nothing behind it was shown. The Merovingian's second
+     line (a second after the first, as the area completed) is said on that goal's completion. Ookami's first line
+     (4:09:16) wasn't captured, so he only has his second. Uncaptured Operator entries at 4:07:45 and 4:10:00 are very
+     likely the standard goals-complete lines. -->
+<mission id="307105" title="Charon" description="Find the Trainman, who has hidden in his subway construct since the Truce, and bring him to the Merovingian." plot="1"
+         order="7105" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">As a human, you must exercise great caution when dealing with the Trainman. Remember always that he sees in you his potential demise.</say>
+  </npc>
+  <npc id="2" handle="Beirn" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="1">Don't you worry 'bout ol' Beirn. I just want to try turning an Agent inside-out, then I'll get back to the palace--Scout's honor.</say>
+  </npc>
+  <npc id="3" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
+    <say after="1">What are you waiting for? Agents to come arrest me? Get going!</say>
+  </npc>
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="1">On the subject of deranged Exiles, you may be interested to know that Seraph has returned to the Oracle's side. It seems that his recent dip in the code-drenched river gave him a temporary ability to detect Machine overwriting among humans--one of which was the Cypherite leader, Cryptos, who was reportedly crippled when Seraph attempted to remove the program that had overwritten him.</say>
+  </npc>
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say>Hrr... He stinks...of fear, and machines. A scent like that can't be trusted...</say>
+  </npc>
+  <npc id="6" handle="Trainman" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
+    <say after="2">Hear that? Clock's ticking... They know what I'm here to do. They'll be after me. It isn't safe here...&#10;&#10;Damn the Merovingian! We had a deal. The fly man was supposed to be the last...</say>
+  </npc>
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That ingrate, the Trainman, has been traced to the Abandoned Subway in Rogers Way. He isn't there, of course--he must be shut up in his subway construct. But even he has to come out for supplies once in a while.
+
+We have left a note on his front door, as it were--a note with an offer--or demand, if you will--that he can't ignore.
+
+We'll pick up his signal as soon as he re-enters the main simulation. In the meantime, Malphas will attempt to pound additional information into your head concerning this operation. Is there any room left after what I've already told you?</briefing>
+    <enter><say>Geez, what do you suppose he's been doing in his subway construct all this time?&#10;&#10;Looks like Malphas and a few guards in there.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">The Trainman has always suffered from paranoia. Coupled with pronounced egomania, this made him difficult to work with at best. When the Truce was made, he retired to his private construct. We were able to procure his assistance in the Assassin affair, but only with great difficulty; after that incident, he vanished altogether.&#10;&#10;It is my belief that above all, he resents having been made to release Neo when Trinity threatened the Merovingian's life. He sees the Truce that Neo made subsequently as a great and unnatural evil; this outlook stems from a deep-seated fear that humans will one day destroy his home. He was willing to facilitate Morpheus' killing, but he wants no part of the Merovingian's new cooperation with human operatives.</say></talk>
+      <done><say>So... The Trainman is scared of us?&#10;&#10;Oh, hey, I'm getting pinged by Flood. Maybe he needs someone to refill his mimosa.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Rogers Way">
+    <briefing>Blast it! We picked up the Trainman's signal coming out of the Abandoned Subway, but then lost it in a storm of Machine scans. I suppose I need to inform you that the Machines appear to have worked out a way to detect the General's Elite Commandos; it draws a great deal of power, but they've been using it here and there, and they seem to be using it now.
+
+We've got heavy units in the area already, but these damned sensor sweeps are blocking my reception. I need you to get in there, and find out what's going on. If the Machines get to the Trainman first, it'll be on your head!</briefing>
+    <enter><say>Okay... I can't really tell what's going on in there. Supposedly we lost contact with some of our programs in there when the Machines started working their scanners. Lucky for us you've got a direct uplink to the Real, huh?&#10;&#10;Or maybe not so lucky, as the case may be.</say></enter>
+    <objective goal="1" text="Talk to Beirn" type="Talk" npc="2">
+      <talk><say npc="2">Hah! Stupid Mechs--tried to mess with me. I showed them.&#10;&#10;Wazzat? Trainman? Oh, yeah, he bugged out. Headed toward the Lucero subway.&#10;&#10;You better get out, too. Wouldn't want you to scare any other Agents off.</say></talk>
+      <done><say>Beirn's been mixing it up with Agents in there? Whoa.&#10;&#10;If the Trainman got to the subway, then he could be anywhere by now--and probably out of the Machine jamming area. Let's tell Flood to try scanning the rest of the city for his signal.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Moriah Projects">
+    <briefing>A city-wide scan is a costly procedure, operative. This will come out of your paycheck if you're wasting my--
+
+Moriah--he's in Moriah. Make contact with him immediately.</briefing>
+    <enter><say>I've got a strange Exile signal in there--should be our long-lost lamb. What do you think the odds are that he's going to be happy to see us?</say></enter>
+    <objective goal="1" text="Talk to the Trainman" type="Talk" npc="3">
+      <talk><say npc="3">This is what the Merovingian calls "safe passage"? I'm lucky to be alive! You tell him I want to see him immediately! Got that?</say></talk>
+      <done><say>Yikes! O-kay then, let's get Flood on the horn while Mr. Crabby there gets some alone time.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Very well, operative. The arrangements are being made.
+
+Hurry along. I want a full report.</briefing>
+    <enter>
+      <say>I think the Trainman missed the station, if you know what I mean...</say>
+      <say>The far door is sealed.&#10;&#10;Hey, it's Ookami! Rrrow!</say>
+    </enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="4">
+      <talk><say npc="4">His long period of seclusion, followed by the sudden threat to his life by the Machines, has unsettled the Trainman's already precarious mental equilibrium. Great care will have to be taken to ensure that he is sufficiently in command of himself to fulfill the function we require.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to the Trainman" type="Talk" npc="6" after="1">
+      <talk><say npc="6">I get it; I know what the Merovingian wants. No need to come sniffing around after me... These things have to follow a certain schedule.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to the Merovingian" type="Talk" npc="7" after="2">
+      <talk><say npc="7">You have performed most admirably! And so, he who was lost has been found. You see? Now it will be a simple matter to bring the Apothecary here.&#10;&#10;Oh, he is in the next room. Yes, yes--go talk to him!</say></talk>
+      <done>
+        <say>Looks like the far door is accessible now.</say>
+        <say npc="7">What do I have to do to be rid of Morpheus? I have him killed, yet the rabble persist in claiming that he has been seen in the city, talking some nonsense or other.&#10;&#10;Quelle betise! No, I do not want to hear any more about it!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>I hope you appreciate how difficult it is to do my job while surrounded by nincompoops and madmen, {player}.
+
+At any rate, if the Trainman can hold his fragile psyche together long enough to bring the Apothecary into the Matrix, we'll finally be able to get on with this kill-code business over which the Merovingian persists in obsessing.</finish>
+</mission>

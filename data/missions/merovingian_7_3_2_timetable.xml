@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Timetable, Merovingian story mission 7.3.2. Source: research/missions/transcripts/Merv7-3-2.md (the archive replay
+     of [Merovingian Archive 7.3.2], given by [Archived]Flood; 19 screenshots of the log after it ended, none during
+     play; the folder's first image, screenshot_19, is the end of 7.3.1 Furlough). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Krampton, Teslar, Trainman and
+     General line, and those names. Flood's first and third briefings, the Operator's "those should be the commandos
+     we're looking for" and "I'm reading hostile programs in there, ... Looks like the Machines caught up", and the
+     General's "Maybe you can draw some of them off" span two screenshots with no header between and are read as
+     contiguous (the last area's arrival line least surely).
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the third area's commando's name (not shown), the sites (all Normal; no district or
+     neighbourhood was shown), the looks (the Trainman's and the General's are those of earlier missions, the
+     commandos' those of other files' commandos) and the enemy count (the last area's fight took about four minutes
+     twenty, so a large group). No mission item was shown.
+     Rewards: the log shows 406,815 experience and 133,000 information, a level-38 player's archive replay and not a
+     normal reward; no Zion 7.3 mission is built, so these are Zion 7.2's values, the nearest (363,000 experience,
+     63,000 information, as Hear Me paid).
+     Gaps: the first area's goals completed two minutes after the commandos' lines, so here they are led out of the
+     area before being taken to the Trainman; that isn't shown. Flood's warning that they "may be attracting a certain
+     amount of Machine attention" had no fight in the log, so the second area has no hostiles, only Protect goals.
+     The Trainman's "Get out! Go on! Out!" and the commandos' last lines came 5 to 17 seconds after that area's goals
+     and are said when it completes. In the third area the end wasn't captured (an Operator entry about 8:56:50, very
+     likely the standard goals-complete line, 46 seconds after "Good luck to you."); here the commando the General
+     hands over is led out of the area, and he keeps following the player into the last area with no goal of his
+     own (Flood: "I really don't care what you do with that commando of yours"). Retail's last area was "the Trainman's location" again; a generated phase never reuses a
+     site, so the Trainman stands at a new one. The Machines "caught up with the General" there, but nothing shows he
+     had to be protected, so there is no Protect goal. The General's "No... No, it won't take long..." came after the
+     goals and is said when he is talked to again. "You received Code Bit 2." appeared in System chat during the
+     mission, tied to no goal ("a body." before it); it isn't given here. -->
+<mission id="307302" title="Timetable" description="Hand the General's commandos over to the Trainman, then tell the General himself it is time to leave the Matrix." plot="1"
+         order="7302" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Krampton" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Teslar" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="3" handle="Trainman" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="4" handle="The General" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="6" handle="Trainman" type="FRIENDLY" at="4" rsi="ec020058" weapon="0" />
+  <npc id="7" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="12">No... No, it won't take long...</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General has kindly given us the program necessary to transfer his soldiers between the Matrix and your...whatever you call it. I don't care for calling it "The Real," operative--awfully pretentious, you know. I think it would be more accurate if I called it "The Sludge-Pit," for instance.
+
+But I know you have no head for philosophical discussion, so I'll skip ahead to the part you're paid to play. The Trainman will be transporting the General and his troops out of the Matrix. The Machines are still hot on the General's heels, so time is of the essence. You will be collecting a few of his commandos, and handing them off to the Trainman.</briefing>
+    <enter><say>Got a couple programs on my screen; those should be the commandos we're looking for.</say></enter>
+    <objective goal="1" text="Talk to Krampton" type="Talk" npc="1">
+      <talk><say npc="1">We should hit the road.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Teslar" type="Talk" npc="2" after="1">
+      <talk><say npc="2">I wish we could stay with you and stick it to those Machines, sir.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead the commandos out of the area" type="Escort" npc="1,2" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Take them to the Trainman, operative, and call me back once you've dropped them off.
+
+Oh, and those two may be attracting a certain amount of Machine attention, so try to keep your eyes open, hm?</briefing>
+    <enter><say>So far, so good. That's where the Trainman's supposed to be. Looks like we've got some friendlies patrolling the area.</say></enter>
+    <objective goal="4" text="Lead the commandos to the Trainman" type="Escort" npc="1,2" to="npc:3">
+      <done><say>So he's all squared away, then?</say></done>
+    </objective>
+    <objective goal="5" text="Talk to the Trainman" type="Talk" npc="3" after="4">
+      <talk><say npc="3">Yes, yes, I'll handle them. Now, get out of here before you bring the Machines down on me!</say></talk>
+      <done><say>Yeah, I guess he's just peachy.</say></done>
+    </objective>
+    <objective goal="6" text="Don't let Krampton die" type="Protect" npc="1" />
+    <objective goal="7" text="Don't let Teslar die" type="Protect" npc="2" />
+    <complete>
+      <say npc="3">Get out! Go on! Out!</say>
+      <say npc="1">I hope he knows what he's doing.</say>
+      <say npc="2">Thank you, sir. Maybe I'll see you on the other side.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>We've just about got all the General's men out of the way, and it's time for the rustbucket himself to take the plunge. We're trying to keep the Machines from getting wind of this, so you'll be giving him the word in person.
+
+And eh...try to hurry him along, would you? The Machines are getting themselves worked up into something of a lather over this.</briefing>
+    <enter><say>He should be in there. I hope that aerodynamic suit means he can run fast...</say></enter>
+    <objective goal="8" text="Talk to the General" type="Talk" npc="4">
+      <talk><say npc="4">Yes, of course. I need to be there in any case to make sure that he has the transfer program configured correctly.&#10;&#10;The Machines are closing in... Soldier, I want you to take this commando here and proceed to the Trainman ahead of me. Maybe you can draw some of them off.</say></talk>
+      <done>
+        <say>Oh, that's great... This better be the last time we have to take orders from that yahoo...</say>
+        <say npc="4">Good luck to you.</say>
+      </done>
+    </objective>
+    <objective goal="9" text="Lead the commando out of the area" type="Escort" npc="5" to="exit" after="8" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="6">
+    <briefing>We're pressed for time, so just get going. I really don't care what you do with that commando of yours. I want you to meet the General at the Trainman's location, and make sure he's following the program.</briefing>
+    <enter><say>I'm reading hostile programs in there, {player}! Looks like the Machines caught up with the General.&#10;&#10;Serves him right for trying to use you as a decoy...</say></enter>
+    <objective goal="10" text="Kill the Machine programs" type="DefeatAll">
+      <done><say>You're clear. Better go check on the Trainman and the General.</say></done>
+    </objective>
+    <objective goal="11" text="Talk to the Trainman" type="Talk" npc="6" after="10">
+      <talk><say npc="6">What is this? He's refusing to leave! Is he out of his mind?</say></talk>
+      <done>
+        <say>What? What does he think he's doing? Can you talk some sense into him?</say>
+        <say npc="6">They'll kill him--kill him! And the rest of us! The madman's going to get us all killed!</say>
+      </done>
+    </objective>
+    <objective goal="12" text="Talk to the General" type="Talk" npc="7" after="11">
+      <talk><say npc="7">I'm sorry, soldier. I've seen as many of my men out as I could save, but now I have some unfinished business to take care of.</say></talk>
+      <done><say>Flood was right...he really is trying to get himself deleted.</say></done>
+    </objective>
+  </phase>
+  <finish>By Hell and Hades! That fool is jeopardizing our plan!
+
+All he has to do is catch a train, and he can't even get that right...
+
+I don't care what his issue is; one way or another, he is going to get on that train.</finish>
+</mission>

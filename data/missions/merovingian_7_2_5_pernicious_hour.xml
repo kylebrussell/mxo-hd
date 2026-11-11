@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pernicious Hour, Merovingian story mission 7.2.5. Source: research/missions/transcripts/Merv7-2-5.md (the archive
+     replay of [Merovingian Archive 7.2.5], given by [Archived]Flood; 27 screenshots of the log after it ended, none
+     during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Holographic Projection,
+     Trainman, Effectuator, Twin, Persephone and Merovingian line, the two Elite Guard Team lines, and those names.
+     Flood's briefings and several long lines span two or three screenshots with no header between them and are taken
+     as one entry each; the Operator's "Whoops! Machines are rushing the place!" / "Uh... I don't suppose..." and
+     "No hostiles on-scope..." / "Hold on a sec..." are read as one entry each across a screenshot join. Italics
+     dropped: "is", "did", "Psst!", "without", "c'est la guerre", "Le General" (retail's has accented e's, made
+     ASCII), "non?" and "N'oubliez jamais ceci." Ours: the description (the Summary tab only said "Datalink
+     established."), every objective text (the Objectives tab was never opened), the names of the General's soldiers
+     (the "tank jockey" and the trooper are Commandos, the "Elites" Elite Commandos), the sites (all Normal; no
+     neighbourhood was shown), the looks (the hologram's, the Trainman's, the Effectuator's, the Twins', Persephone's
+     and the Merovingian's are those of earlier missions) and the enemy count. No item was shown.
+     Rewards: the log shows 407,000 experience and 133,000 information, a level-38 player's archive replay and not a
+     normal reward; these are Zion 7.2's values (363,000 experience, 63,000 information, as Hear Me paid).
+     Gaps: the "tank jockey" was talked to before the hologram appeared, but his answer wasn't logged, so talking to
+     him has no line of his; the Operator's "Have a word with the tank jockey" is said on getting near him. In the
+     second area the Machines rushed the place after the trooper was talked to; a kill goal can't wait for a talk and
+     hostiles can't be spawned by a goal, so the Machines are there from the start and "Whoops!" is said when the
+     trooper is talked to. The trooper's and the Elites' own lines weren't logged. The Trainman's "Even the
+     Machines..." and the Merovingian's "Trust no one..." came three seconds after the Operator's line and are said
+     in the goal's done, in log order. The Effectuator's "Psst!" and the Trainman's "You ask too many questions" came
+     after the third area's goals and are said when they are talked to again. The Twins' exchange and Persephone's
+     two lines came in the 20 seconds before the Merovingian's and are said on getting near them; which Twin said
+     which line wasn't shown. The two Elite Guards are only in Team chat, after the Twins' lines, so they stand in the
+     last area; where they really were isn't certain. Three entries weren't captured: one after the hologram's area
+     (10:56:43 to 10:57:07), the end of the Effectuator's repeated line at 11:08:16, and one after the Merovingian's
+     last line (all very likely the standard goals-complete line). -->
+<mission id="307205" title="Pernicious Hour" description="Help move the General's soldiers out of the Machines' reach, see that the Trainman and the Effectuator handle the transfer, and report to the Merovingian." plot="1"
+         order="7205" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Commando" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Commando" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Elite Commando" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Elite Commando" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="6" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
+    <say after="6">You ask too many questions. What's your game?</say>
+  </npc>
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say after="6">Psst! I'm not so sure about this guy! I think he's lost a few sprockets lately, if ya know what I mean!</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say>I don't see how you could put anything past the Machines at this point.</say>
+  </npc>
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Quite simple, you know: they couldn't face the fact that he's gone, so they've invented him again. Easiest thing in the world, when people really want to believe it.</say>
+  </npc>
+  <npc id="10" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say>Yes... He will betray everyone, and everything. I learned that long ago. Now...I depend upon it.</say>
+  </npc>
+  <npc id="11" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <npc id="12" handle="Elite Guard" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+    <say>The old man shouldn't have messed with the kid. That was his big mistake right there.</say>
+  </npc>
+  <npc id="13" handle="Elite Guard" type="FRIENDLY" at="4" rsi="ec020058" weapon="2568">
+    <say>I hear that female Agent we hit has come back with a vengeance. I'd like a crack at her.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Oh, it's you, {player}. Didn't go to see the Apothecary off, then? Too bad, too bad... Apparently you missed quite a show.
+
+The General has found himself in something of a pinch; it seems that the Machines are quite systematically shutting down his operation. What to do, eh? Naturally, he wants us to pull his soldiers out of the fire that's licking his polished boots. And we'll be tickled to help.
+
+Why don't you go get the details from him, operative? He seems to like you. As if we needed more proof that he's a few frags short of a set...</briefing>
+    <enter><say>Huh... I heard the Merv basically sold the Apothecary up the river to the Machines, and got her deleted. You don't think Flood had maybe just a little crush on her, do you? No, really! Remember how he wouldn't shut up about how she was an artist and stuff?&#10;&#10;Okay, you should be finding the General, or his hologram or whatever, in there. I've got some of his soldier-boys on my scope.</say></enter>
+    <objective goal="1" text="Talk to the commando" type="Talk" npc="1">
+      <done><say>Sounds like he's even a little shy about hanging around in hologram form now. Those Machines must really be up his tailpipe.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Holographic Projection" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Ah, good. I have several more troop transfers I need, both from within the city, and from Stalingrad. These are time-sensitive. I'll have my men send the details to your operator.</say></talk>
+      <done><say>Shee--! He's pretty sure we're gonna jump right to it like good little soldiers, isn't he?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Hm... No sign of the brass yet. Have a word with the tank jockey in there.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Two transfers, eh? This looks to be a more profitable day than I'd supposed.
+
+Confirm that the soldiers in the city are ready for transport.</briefing>
+    <enter><say>I'm telling you, he's crying over her--on the inside.&#10;&#10;Mm-kay... Got a trooper showing in there. Hm, guess the others are Elites. I'm sure they'll just be pleased as punch to see you.</say></enter>
+    <objective goal="3" text="Talk to the trooper" type="Talk" npc="3">
+      <done><say>Whoops! Machines are rushing the place!&#10;&#10;Uh... I don't suppose you could rally up any of the commandos to help out?</say></done>
+    </objective>
+    <objective goal="4" text="Kill the Machines" type="DefeatAll">
+      <done><say>Man, the Machines are on the General like kids on cake! The guy's starting to become a downright liability.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The Trainman and the Effectuator will be handling the transportation chores, operative, although if you ask me, you'd be hard-pressed to find two less-dependable programs in the Merovingian's employ. Only fitting, I suppose, since you're the one working with them. How I'm meant to get anything accomplished with the dull tools they give me, I simply don't know...
+
+Try to see to it that they're on-task, would you? The Machines are leaving us no room for error.</briefing>
+    <enter><say>Looks like they're both in there. No hostiles on-scope...&#10;&#10;Hold on a sec... I thought the Trainman handled transportation between the Matrix and the Machine mainframes. What's he got to do with moving the General's programs?</say></enter>
+    <objective goal="5" text="Talk to the Trainman" type="Talk" npc="6">
+      <talk><say npc="6">You again? Tell that lap-dog to mind his own business. My shipment will leave on time.</say></talk>
+      <done>
+        <say>So he is moving commandos. But the General wouldn't want them going to the Machines! Something's up...</say>
+        <say npc="6">Even the Machines don't know parts of their servers like I do. They won't find them.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Talk to the Effectuator" type="Talk" npc="7" after="5">
+      <talk><say npc="7">Hah! Tell Floodsy-wudsy to keep his muffs on. We'll have those straight-shooters safely stowed where the Machines can't get 'em!&#10;&#10;'Course, we'll tell the General that the Machines did get 'em. Heh. Wink, wink!</say></talk>
+      <done><say>Wait... So... We're kidnapping commandos?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I know you assume otherwise, operative, but believe it or not, I haven't got all day free to explain everything to you in small words. Go report the transport status to the Merovingian, and stop bothering me.</briefing>
+    <enter><say>Yep, he totally holds the Apothecary thing against us.&#10;&#10;Okay, so we know that we're shipping commandos out of the main simulation, without telling the General about it.&#10;&#10;Hm... Sounds to me like the General just ran out of friends.</say></enter>
+    <objective goal="7" text="Report to the Merovingian" type="Talk" npc="11">
+      <talk><say npc="11">My wife is a demanding woman... Eh, Persephone?&#10;&#10;You would think she would be satisfied with my disposing of the Apothecary for her...but c'est la guerre.&#10;&#10;Ah, and Le General will learn something about war as well, non? But not quite yet. His ignorance will still have its use...for a time.</say></talk>
+      <done>
+        <say>Man! The Merv has been playing the General this whole while?&#10;&#10;Hah. I knew we were working for the right guy.</say>
+        <say npc="11">Trust no one, {player}, especially not those you most wish to trust. No matter how much they may deny it--may not even realize it--even the most charitable person always works precisely in their own interest.&#10;&#10;N'oubliez jamais ceci.</say>
+      </done>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">It's the Machines, obviously--another trick to keep the humans in line, like with the Cryptos fellow.</say>
+      <say npc="9">No, no, no... They haven't got the stones. It's those cultish ones, I tell you.</say>
+      <say npc="9">Quite simple, you know: they couldn't face the fact that he's gone, so they've invented him again. Easiest thing in the world, when people really want to believe it.</say>
+      <say npc="8">I don't see how you could put anything past the Machines at this point.</say>
+    </near>
+    <near npc="10" radius="1000">
+      <say npc="10">Like kissing a statue!</say>
+      <say npc="10">Yes... He will betray everyone, and everything. I learned that long ago. Now...I depend upon it.</say>
+    </near>
+  </phase>
+  <finish>It's a dog-eat-dog world, operative, which is why I prefer to dine alone. The General's soldiers are fated to fatten the pack, and the Apothecary... Hm... She, after all, was merely served her own supper.
+
+Always watch your own back, {player}, because goodness knows, nobody else wants to look at it.
+
+The Apothecary's legacy, however, lives on in the deadly code she compiled. Our people have put the final touches on her kill-code for the Oracle. Now, how to catch a fortune-teller by surprise?</finish>
+</mission>
