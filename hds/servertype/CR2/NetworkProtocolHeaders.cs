@@ -134,6 +134,14 @@ namespace hds
         CLIENT_FACTION_DISBAND_FACTION = 0x77,
         CLIENT_DEPOSIT_MONEY_FACTION_CREW = 0x78,
         CLIENT_FACTION_CREW_INVITE_PLAYER = 0x6e,
+        CLIENT_GROUP_REMOVE_MEMBER = 0x72,     // 72 <type> <charId>: boot from the team / remove from the crew
+        CLIENT_FACTION_REMOVE_CREW = 0x73,     // 73 <crewId>: a leading crew's captain removes a crew from the faction
+        CLIENT_GROUP_MAKE_LEADER = 0x75,       // 75 <type> <charId>: team leader / crew captain
+        CLIENT_FACTION_CHANGE_RANK = 0x80,     // 80 80 <crewId> <promote u8>
+        CLIENT_CREW_CREATE = 0x84,             // 80 84: the crew creation window founds a crew by inviting someone
+        CLIENT_CREW_FIRST_MATE = 0x87,         // 80 87 <charId>: 0 demotes the first mate
+        CLIENT_TEAM_SEEK = 0x91,               // 80 91 <remove u8> <disciplines> <orgs>: looking for team
+        CLIENT_TEAM_FIND_SEEKERS = 0x92,       // 80 92 <min> <max> <my faction only> <disciplines> <orgs>
         
     }
 

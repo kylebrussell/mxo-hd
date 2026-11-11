@@ -143,6 +143,30 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_FACTION_DISBAND_FACTION:
 					new SocialHandler().ProcessDisbandGroup(ref rpcData);
 					break;
+		        case (int) RPCRequestHeader.CLIENT_GROUP_REMOVE_MEMBER:
+		            SocialHandler.ProcessRemoveMember(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_GROUP_MAKE_LEADER:
+		            SocialHandler.ProcessMakeLeader(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_CREW_FIRST_MATE:
+		            SocialHandler.ProcessSetFirstMate(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_FACTION_CHANGE_RANK:
+		            SocialHandler.ProcessFactionRank(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_FACTION_REMOVE_CREW:
+		            SocialHandler.ProcessFactionRemoveCrew(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_CREW_CREATE:
+		            SocialHandler.ProcessCreateCrew(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_TEAM_SEEK:
+		            SocialHandler.ProcessSeekTeam(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_TEAM_FIND_SEEKERS:
+		            SocialHandler.ProcessFindSeekers(Store.currentClient, rpcData);
+		            break;
 		        // Abilitys
 		        case (int) RPCRequestHeader.CLIENT_UPGRADE_ABILITY_LEVEL:
 			        new AbilityHandler().ProcessUpgradeAbility(ref rpcData);

@@ -20,7 +20,14 @@ namespace hds
         private sealed class Bot
         {
             public WorldClient Client, Owner;
+
+            /// <summary>The crew it was invited into (a bot has no character row, so this isn't in the database).</summary>
+            public UInt32 CrewId;
+            public bool FirstMate;
         }
+
+        /// <summary>How long the bot takes to answer an invite or an emote, in seconds.</summary>
+        public const double AnswerDelaySeconds = 1.0;
 
         private static readonly object Sync = new object();
         private static readonly List<Bot> Bots = new List<Bot>();
@@ -49,6 +56,100 @@ namespace hds
             {
                 return Bots.FirstOrDefault(b => b.Client == bot)?.Owner;
             }
+        }
+
+        // ---- groups ---------------------------------------------------------------------------------------------
+
+        /// <summary>The bot accepts every team, crew and faction invite a second after it gets one.</summary>
+        public static void OnInvited(WorldClient invitee, PendingInvite invite)
+        {
+            if (!IsBot(invitee))
+            {
+                return;
+            }
+
+            DelayedActions.After(AnswerDelaySeconds, () =>
+            {
+                if (!IsBot(invitee))
+                {
+                    return;
+                }
+
+                SocialHandler.AnswerInvite(invitee, new SocialRequests.InviteAnswer
+                {
+                    GroupType = invite.GroupType, Result = 0, InviterHandle = invite.InviterHandle
+                });
+            });
+        }
+
+        public static void SetCrew(WorldClient client, UInt32 crewId)
+        {
+            lock (Sync)
+            {
+                Bot bot = Bots.FirstOrDefault(b => b.Client == client);
+                if (bot != null)
+                {
+                    bot.CrewId = crewId;
+                    bot.FirstMate = false;
+                }
+            }
+        }
+
+        public static void SetFirstMate(UInt32 crewId, UInt32 charId)
+        {
+            lock (Sync)
+            {
+                foreach (Bot bot in Bots.Where(b => b.CrewId == crewId))
+                {
+                    bot.FirstMate = bot.Client.playerData.getCharID() == charId;
+                }
+            }
+        }
+
+        /// <summary>The bots in a crew, as crew members.</summary>
+        public static List<CrewMember> CrewMembers(UInt32 crewId)
+        {
+            lock (Sync)
+            {
+                return Bots.Where(b => crewId != 0 && b.CrewId == crewId).Select(b => new CrewMember
+                {
+                    charId = b.Client.playerData.getCharID(), handle = Name, isFirstMate = b.FirstMate,
+                    isCaptain = string.Equals(Store.dbManager.WorldDbHandler.GetCrewData(crewId)?.characterMasterName, Name,
+                        StringComparison.OrdinalIgnoreCase),
+                    inviteAccepted = true, isOnline = 1
+                }).ToList();
+            }
+        }
+
+        /// <summary>Hands the team or the crew back to the owner if the bot leads it.</summary>
+        private static bool GiveBackLead(WorldClient bot, WorldClient owner)
+        {
+            bool gave = false;
+            UInt32 ownerId = owner.playerData.getCharID();
+            LiveTeam team = SocialGroups.Instance.FindTeamOf(bot.playerData.getCharID());
+            if (team != null && team.LeaderCharId == bot.playerData.getCharID() && team.HasMember(ownerId))
+            {
+                SocialHandler.ProcessMakeLeader(bot, Lead(SocialPackets.GroupTeam, ownerId));
+                gave = true;
+            }
+
+            UInt32 crewId = NumericalUtils.ByteArrayToUint32(bot.playerInstance.CrewID.getValue(), 1);
+            Crew crew = crewId != 0 ? Store.dbManager.WorldDbHandler.GetCrewData(crewId) : null;
+            if (crew != null && string.Equals(crew.characterMasterName, Name, StringComparison.OrdinalIgnoreCase))
+            {
+                SocialHandler.ProcessMakeLeader(bot, Lead(SocialPackets.GroupCrew, ownerId));
+                gave = true;
+            }
+
+            return gave;
+        }
+
+        private static byte[] Lead(byte groupType, UInt32 charId)
+        {
+            byte[] request = new byte[5];
+            request[0] = groupType;
+            BitConverter.GetBytes(charId).CopyTo(request, 1);
+            return request;
         }
 
         /// <summary>
@@ -108,12 +209,17 @@ namespace hds
 
                     ChatRoomHandler.Handle(bot, ChatRoomHandler.Leave, RoomRequest(args[1], null));
                     return null;
+                case "leader":
+                    return GiveBackLead(bot, owner) ? null : Name + " leads neither your team nor your crew.";
+                case "seek":
+                    SocialGroups.Instance.AddSeeker(SocialHandler.SeekerOf(bot));
+                    return Name + " is looking for a team.";
                 default:
                     return Usage;
             }
         }
 
-        public const string Usage = "?socialbot [off|room <name> [password]|say <room> <text>|leave <room>]";
+        public const string Usage = "?socialbot [off|room <name> [password]|say <room> <text>|leave <room>|leader|seek]";
 
         /// <summary>The rpcData of 81 c2 (or of 81 c7 with no password): RoomName at +2, Password at +4.</summary>
         private static byte[] RoomRequest(string room, string password)
@@ -218,13 +324,29 @@ namespace hds
                 Bots.Remove(bot);
             }
 
-            Remove(bot.Client);
+            Remove(bot.Client, bot.Owner);
             return true;
         }
 
-        private static void Remove(WorldClient bot)
+        private static void Remove(WorldClient bot, WorldClient owner)
         {
-            // Out of its rooms and its team first, as any player leaving the world
+            // A crew it captains goes back to its owner (the database names the captain); then out of its rooms and its
+            // team, as any player leaving the world
+            if (owner != null && owner.playerData.getOnWorld())
+            {
+                GiveBackLead(bot, owner);
+            }
+            else
+            {
+                UInt32 crewId = NumericalUtils.ByteArrayToUint32(bot.playerInstance.CrewID.getValue(), 1);
+                Crew crew = crewId != 0 ? Store.dbManager.WorldDbHandler.GetCrewData(crewId) : null;
+                CrewMember human = crew == null ? null : Store.dbManager.WorldDbHandler.GetCrewMembersForCrewId(crewId).FirstOrDefault();
+                if (human != null && string.Equals(crew.characterMasterName, Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    Store.dbManager.WorldDbHandler.SetCrewCaptain(crewId, human.charId, human.handle);
+                }
+            }
+
             SocialHandler.PlayerLeftWorld(bot);
             bot.playerData.setOnWorld(false);
             string key = null;
@@ -291,7 +413,7 @@ namespace hds
 
                 foreach (Bot b in orphans)
                 {
-                    Remove(b.Client);
+                    Remove(b.Client, b.Owner);
                 }
             }
             catch (Exception ex)

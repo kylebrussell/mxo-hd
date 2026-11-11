@@ -18,14 +18,14 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 35 | 21 | 105 |
+| Handled | 49 | 41 | 23 | 113 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 0 | 17 | 39 | 56 |
+| Ignored | 0 | 11 | 37 | 48 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 2 |
 | **Total** | 49 | 54 | 61 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled, and so are booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list.
 
 The biggest gaps left, by impact:
 
@@ -159,15 +159,15 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `80 f4` | Faction info (FactionID) | D, C 372 | handled | medium |
 | `77` | Disband (GroupType), from `viewflashtraffic.cpp` | D, C 1 | handled | medium |
 | `78` | Deposit to / withdraw from the group bank (GroupType, Amount, Deposit), `viewfactionstatus.cpp` | D, C 1 | handled | medium |
-| `72` | GroupType, PlayerID. Guess: remove a member | D | ignored | medium |
-| `75` | GroupType, PlayerID. Guess: make leader | D | ignored | medium |
-| `73` | CrewID. Guess: leave or request a crew's info | D | ignored | low |
-| `80 80` | Promote / demote a crew member (MemberID, bPromote) | D | ignored | medium |
-| `80 87` | Set the first mate (FirstMateID) | D | ignored | low |
-| `80 84` | Invite a crew into a faction (InviteeName, CrewName, OrganizationID) | D | ignored | medium |
+| `72` | GroupType, PlayerID: boot a team member (team window Boot, 0x621c0c40) or remove a crew member (crew right-click "Remove"), each after a confirm dialog | D | handled (new): `72` to every member, the removed one included | medium |
+| `75` | GroupType, PlayerID: make a member team leader (Promote, 0x621c0700) or crew captain ("Make Captain") | D | handled (new): `75` to every member; `7e` to the crew's faction | medium |
+| `73` | CrewID: remove a crew from the faction (faction members window "Remove", for the leading crew's captain) | D | handled (new): `73` to the faction, `74` if refused | low |
+| `80 80` | Promote / demote a crew in the faction (MemberID is a crew id, bPromote): faction members window | D | handled (new): `7f` to the faction, `80 81` if refused | medium |
+| `80 87` | Set the first mate (FirstMateID; 0 demotes): crew right-click "Make First Mate" / "Demote" | D | handled (new): `80 87` to the crew | low |
+| `80 84` | Create a crew by inviting someone (InviteeName, CrewName, OrganizationID): the crew creation window, not a faction invite | D | handled (new): `80 88` to the invitee, `80 85` to the creator | medium |
 | `80 89` | Hovercraft action (submessage; the server's `80 8a`/`80 8b` carry TransactionCode, HovercraftSlot) | D | ignored | low |
-| `80 91` | Join / leave the team seekers list (RemoveFromSeekerList, ExtraDisciplines, OrgsToWorkWith) | D | ignored | medium |
-| `80 92` | Search the seekers list (MinLevel, MaxLevel, MyFactionOnly, DesiredDisciplines, OrgsToWorkWith) | D, C 2 | ignored | medium |
+| `80 91` | Join / leave the team seekers list (RemoveFromSeekerList, ExtraDisciplines, OrgsToWorkWith): the team window's Seek | D | handled (new); the client answers itself | medium |
+| `80 92` | Search the seekers list (MinLevel, MaxLevel, MyFactionOnly, DesiredDisciplines, OrgsToWorkWith): Find Team Members. Retail answered neither capture (40 s) | D, C 2 | handled (new): `80 93` | medium |
 | `80 f2` | FactionID. Guess: the faction's constructs (answer `80 f3`) | D | ignored | low |
 | `80 f6` | Hack a construct (FactionID, ConstructID), `viewhackconstructs.cpp` | D | ignored | low |
 | `80 ef` | Construct firewall / defence settings | D | ignored | low |
@@ -459,6 +459,90 @@ For rooms:
 
 It can be invited, kicked, banned, and made a moderator or the owner, like anyone else.
 
+## Teams, crews and factions in detail
+
+These requests come only from window buttons and right-click menus, each followed by a confirm dialog. The only group slash commands are `/invite` and `/disband`. GroupType is 1 for a faction, 2 for a crew and 3 for a team.
+
+Retail traffic has only `72 03 <own id>` at login, `72 02` to the remaining member after a `71 02`, two `80 92` searches with no answer, and `76`. Everything else below comes from client.dll.
+
+### Records
+
+**Client to server:**
+
+| Record | Layout | What sends it |
+|---|---|---|
+| `72` (6) | +1 GroupType, +2 PlayerID u32 | Team window Boot (`MTBt`, confirm `MTBC`), or the mini team list (`MTBo`). Crew right-click "Remove" (`CrRm`), offered only to the captain |
+| `75` (6) | +1 GroupType, +2 PlayerID u32 | Team Promote (`MTPr`), or crew right-click "Make Captain" (`CNCp`) |
+| `80 87` (6) | +2 FirstMateID u32 | Crew right-click "Make First Mate" (`CrFM`), or "Demote" on the first mate (`CrDm`), which sends 0 |
+| `80 80` (7) | +2 MemberID u32 (a crew id), +6 bPromote | Faction members window "Promote" (`FMPr`) and "Demote" (`FMDe`). Offered only to a captain whose crew ranks higher than the target |
+| `73` (5) | +1 CrewID u32 | Faction members window "Remove" (`FMRm`). Offered only to the captain of a rank-1 crew |
+| `80 84` | +2 InviteeName offset, +4 CrewName offset (7), +6 OrganizationID, then the crew name, then the invitee | The crew creation window (`viewcrewcreation.cpp`). It prints "Crew create invitation sent." |
+| `80 91` | +2 RemoveFromSeekerList, +3 ExtraDisciplines offset, +5 OrgsToWorkWith offset | Team window Seek (`MTSk`). The client prints "You flag yourself as looking for team." itself |
+| `80 92` | +2 MinLevel, +3 MaxLevel, +4 MyFactionOnly, +5 DesiredDisciplines offset (u32 ability ids), +7 OrgsToWorkWith offset (u8) | Find Team Members, or its advanced form |
+
+Arrays are `<u16 count>` followed by the elements, at the offset given.
+
+**Server to client:**
+
+| Record | Layout | The client |
+|---|---|---|
+| `72` | +1 GroupType, +2 PlayerID | If the id is its own: "You have been booted from your team." (team-worded even for a crew), then it drops the group. For anyone else: "%s has left the mission team. / the crew. / the faction." |
+| `75` | +1 GroupType, +2 id | "You are now the leader ..." or "%s is now the leader of your mission team."; for a crew, "... the captain of your crew." |
+| `80 87` | +2 FirstMateID | "%s is now the first mate of your crew."; no text for 0 |
+| `7f` (6) | +1 MemberID (crew id), +5 NewRank u8 | Sets the crew's rank: "Faction member %s is now Rank %i." |
+| `80 81` (11) | +2 MemberID, +6 bPromote, +7 Status | Error popup only: 0x0d00000b "Promotee not found.", 0x0d000010 "Promoter not found...", 0x0d000014 "Promoter is not higher rank.", 0x0d000015 "...illegal rank configuration." |
+| `7e` (42) | +1 CrewID, +5 NewCaptainID, +9 name (32 bytes), +0x29 online | Updates the captain of one crew in the faction's crew list |
+| `73` / `74` | +1 CrewID / +1 CrewID, +5 Status | `73`: if it is its own crew, the faction is cleared; otherwise "%s has left the faction.". `74`: "Failed to eject faction." |
+| `80 85` | +2 CrewID, +6 name offset (0x0d), +8 OrganizationID, +9 Status, then the name | Status 0: the creator is captain of a one-member crew, "Crew created.". Otherwise "Crew could not be created. ...": 0x0d00001e declined, 1f a request in progress, 20 already a member, 21 invalid name |
+| `80 93` | +2 Members offset (4), then `<u16 count>` and 63-byte entries: 00, char id u32, handle (32 bytes), level, a flag, best discipline (ability id u32), five u32 | One row per player. A count of 0 shows "No matching players could be found!" |
+
+**Ranks.** A crew has a captain, one first mate and plain members. `80 86` has no per-member rank: it carries the captain and first mate ids in its header. In a faction, each crew has a rank from 1 (leading) to 5, the last byte of each crew in `7c` mode 2. Retail lists show ranks 1 to 4, with up to three crews at rank 1.
+
+### What the server does (ours, not retail's)
+
+**Teams.**
+- Only the leader may boot or promote. Anyone else gets `6f 03` with MTNOTTEAMLEADER, as for a disband.
+- A boot sends `72 03 <id>` to every member, the booted one included, and MissionTeamID 0 to the booted one.
+- A new leader is `75 03 <id>` to every member.
+
+**Crews.**
+- Only the captain may remove a member, name a captain or name a first mate.
+- A removal sends `72 02 <id>` to every online member, the removed one included, and CrewID and FactionID 0 to the removed one.
+- A new captain is `75 02 <id>` to every member and is stored. If the new captain was first mate, the crew has no first mate.
+- If the old captain was the faction's master, the new one becomes master. The faction's other crews get `7e`.
+- A first mate is `80 87 <id>` to every online member.
+
+**Faction ranks.**
+- The founder's crew starts at rank 1 and crews that join start at 5. Crews from before ranks were kept read as 1 for the master's crew and 5 for the rest.
+- A captain may move another crew up or down one step if their own crew ranks higher (a smaller number), within 1 to 5. That can make several crews rank 1, as retail had.
+- Success is `7f` to every online member of the faction. A refusal is `80 81`, with promoter not higher (0x0d000014) or illegal ranks (0x0d000015).
+- The captain of a rank-1 crew may remove another crew. That crew's members lose the faction, and everyone in the faction gets `73`. A refusal is `74` with 0x0d000014.
+
+**Creating a crew from its window (`80 84`).**
+- The invitee gets the usual `80 88` invite. The crew is created only when they accept.
+- On acceptance the creator gets `80 85` with the new crew id and status 0, then the member list. A decline gives `80 85` with 0x0d00001e.
+- The creator must have no crew, the name must be new and 1 to 31 characters, and the invitee must be online and without a crew. Otherwise `80 85` comes back at once with the matching code.
+- The organisation the window picked is stored with the crew.
+
+**Looking for team.**
+- `80 91` puts the player on the list or takes them off. Leaving the world takes them off too.
+- `80 92` answers with the other seekers in the level range, in the player's faction if asked, with a wanted discipline and an organisation from the lists if given, sorted by level.
+- A range of 0..0 means any level, and the two ends are swapped if given the wrong way round. Retail's own search sent 64..50.
+- Best discipline is the player's TitleAbility. The flag byte is 0.
+
+### Dev helper
+
+SocialBot (`?socialbot`, see "Chat rooms in detail") accepts any team, crew or faction invite a second after getting it.
+
+| Command | What SocialBot does |
+|---|---|
+| `?socialbot leader` | Hands the team, or a crew it captains, back to you |
+| `?socialbot seek` | Puts itself on the looking-for-team list |
+
+A bot has no character row, so its crew membership is kept in memory only. If it is captain when dismissed, or when you leave, the crew goes back to you.
+
+A bot can't captain a crew of its own, so faction ranks and removing a crew need a second player. The headless scenario `faction-ranks-and-removing-a-crew` plays that part.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -547,3 +631,25 @@ Everything here is typed in the chat box.
 15. `/roomdestroy Den`. Expect "Destroy chat room successful.". Then `/roomenter Den` should print a failure line.
 16. `/roomenter Lounge`, then `/roomsetowner Lounge SocialBot`. Expect "SocialBot gains ownership of chat room Lounge.". `/roomdestroy Lounge` should then fail.
 17. Note any line that differs from these, and the text after "Reason:" in the failures.
+
+### Teams
+
+1. `?socialbot`, then `/invite SocialBot`. Expect SocialBot to join your mission team a second later and appear in the team window.
+2. In the team window, click SocialBot, then Promote, then Yes in the confirm dialog. Expect "SocialBot is now the leader of your mission team.".
+3. `?socialbot leader`. Expect "You are now the leader ..." (the client's own wording).
+4. Click SocialBot, then Boot, then Yes. Expect "SocialBot has left the mission team." and SocialBot gone from the team window.
+5. Looking for team:
+   1. `?socialbot seek`. Expect "SocialBot is looking for a team.".
+   2. Open Find Team Members and search. Expect a row for SocialBot, at your level, with your discipline.
+   3. Click Seek in the team window. Expect "You flag yourself as looking for team.". Click it again: "You are no longer flagged ...".
+6. Note whether the boot and promote buttons need anything but left clicks, and anything the windows show that the server left empty.
+
+### Crews
+
+The crew window's Remove, Make Captain and Make First Mate are right-click menu entries. The headless scenario `crew-create-first-mate-captain-and-remove` covers them.
+
+1. With no crew, open the crew creation window. Type the name `Botcrew` and the invitee `SocialBot`, then create. Expect "Crew create invitation sent.". A second later expect "Crew created." and a crew window listing you as captain and SocialBot.
+2. If right-click menus work: right-click SocialBot and choose Make First Mate. Expect "SocialBot is now the first mate of your crew." and " - FM" after its name.
+3. Make Captain on SocialBot. Expect "SocialBot is now the captain of your crew.". Then `?socialbot leader`: "You are now the captain ...".
+4. Remove on SocialBot. Expect "SocialBot has left the crew.".
+5. `?socialbot off` while SocialBot is captain. Expect the crew to be yours after a relog.

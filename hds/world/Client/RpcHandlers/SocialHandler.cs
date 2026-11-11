@@ -313,6 +313,7 @@ namespace hds
             }
 
             Send(invitee, invitePacket);
+            SocialBot.OnInvited(invitee, pending);
         }
 
         private static UInt32 PreviousRequestCode(byte groupType)
@@ -334,7 +335,12 @@ namespace hds
                 return;
             }
 
-            WorldClient invitee = Store.currentClient;
+            AnswerInvite(Store.currentClient, answer);
+        }
+
+        /// <summary>The invitee's answer, from client 6f or from SocialBot.</summary>
+        internal static void AnswerInvite(WorldClient invitee, SocialRequests.InviteAnswer answer)
+        {
             PendingInvite invite = Groups.TakeInvite(HandleOf(invitee), answer.GroupType, answer.InviterHandle, DateTime.UtcNow);
             if (invite == null)
             {
@@ -343,6 +349,13 @@ namespace hds
             }
 
             WorldClient inviter = FindOnlineByCharId(invite.InviterCharId);
+            if (!answer.Accepted && invite.FromCrewCreation)
+            {
+                // The crew creation window waits for 80 85: "Crew could not be created.  Invitation was declined."
+                Send(inviter, SocialPackets.CrewCreated(0, invite.GroupName, invite.Org, SocialPackets.CrewCreateDeclined));
+                return;
+            }
+
             if (!answer.Accepted)
             {
                 UInt32 code = answer.Result != 0 ? answer.Result : SocialPackets.InviteDeclinedCode(answer.GroupType);
@@ -405,7 +418,8 @@ namespace hds
                     return;
                 }
 
-                crewId = db.CreateCrew(invite.GroupName, invite.InviterHandle, inviter.playerInstance.OrganizationID.getValue()[0]);
+                byte org = invite.FromCrewCreation ? invite.Org : inviter.playerInstance.OrganizationID.getValue()[0];
+                crewId = db.CreateCrew(invite.GroupName, invite.InviterHandle, org);
                 db.AddMemberToCrew(invite.InviterCharId, crewId, 0, 1, 0);
                 founded = true;
                 Output.WriteDebugLog("[SOCIAL] " + invite.InviterHandle + " founded crew '" + invite.GroupName + "' (" + crewId + ")");
@@ -413,7 +427,14 @@ namespace hds
 
             Crew crew = db.GetCrewData(crewId);
             UInt32 charId = invitee.playerData.getCharID();
-            db.AddMemberToCrew(charId, crewId, crew.factionId, 0, 0);
+            if (SocialBot.IsBot(invitee))
+            {
+                SocialBot.SetCrew(invitee, crewId); // a bot has no character row: its membership lives in memory
+            }
+            else
+            {
+                db.AddMemberToCrew(charId, crewId, crew.factionId, 0, 0);
+            }
 
             // Two-person capture 09:41:13: the newcomer gets FactionID + CrewID on its own view, the member list
             // (80 86) and, when the crew is in a faction, the faction (7c mode 1 and 2); the others get 70 02.
@@ -426,6 +447,11 @@ namespace hds
 
             if (founded)
             {
+                if (invite.FromCrewCreation)
+                {
+                    Send(inviter, SocialPackets.CrewCreated(crewId, crew.crewName, (byte) crew.org, SocialPackets.ResultOk));
+                }
+
                 SetOwnGroupIds(inviter, crew.factionId, crewId, null);
                 SendCrewInfo(inviter, crewId);
                 return;
@@ -448,6 +474,7 @@ namespace hds
 
             db.AddCrewToFaction(faction.factionId, crewId);
             db.SetFactionOfCrewMembers(crewId, faction.factionId);
+            db.SetCrewFactionRank(crewId, SocialPackets.BottomFactionRank); // a newcomer starts at the bottom (ours)
             // ProxyM2_m2_packets 18:55:42: after "6f 01 ... 00 00 00 00" the invitee got 7c mode 1 and mode 2.
             foreach (WorldClient member in OnlineWhere(c => CrewIdOf(c) == crewId))
             {
@@ -481,7 +508,14 @@ namespace hds
             }
 
             Crew crew = Store.dbManager.WorldDbHandler.GetCrewData(crewId);
-            List<CrewMember> members = Store.dbManager.WorldDbHandler.GetCrewMembersForCrewId(crewId);
+            if (crew == null || crew.crewName == null)
+            {
+                // A crew id with no crew behind it (deleted, or never made): say "no crew" rather than fail
+                Send(client, SocialPackets.NoCrewInfo(client.playerData.getCharID()));
+                return;
+            }
+
+            List<CrewMember> members = CrewMembersOf(crewId);
             UInt32 captain = members.Where(m => m.isCaptain).Select(m => m.charId).FirstOrDefault();
             UInt32 firstMate = members.Where(m => m.isFirstMate).Select(m => m.charId).FirstOrDefault();
             foreach (CrewMember member in members)
@@ -700,6 +734,7 @@ namespace hds
                 Output.WriteDebugLog("[SOCIAL] Team cleanup failed: " + e.Message);
             }
 
+            Groups.RemoveSeeker(client.playerData.getCharID());
             try
             {
                 ChatRoomHandler.PlayerLeftWorld(client);
@@ -708,6 +743,485 @@ namespace hds
             {
                 Output.WriteDebugLog("[SOCIAL] Chat room cleanup failed: " + e.Message);
             }
+        }
+
+        // ---- removing members and handing over (72, 75, 80 87) ----------------------------------------------------
+
+        /// <summary>
+        /// Client 72 &lt;type&gt; &lt;charId&gt;: the team leader boots a member (team window Boot, 0x621c0c40), or the crew
+        /// captain removes one (crew window "Remove"). Everyone, the removed player included, gets 72 with that id; the
+        /// removed player's client says "You have been booted from your team." and drops the group.
+        /// </summary>
+        public static void ProcessRemoveMember(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 5)
+            {
+                return;
+            }
+
+            byte type = rpcData[0];
+            UInt32 target = BitConverter.ToUInt32(rpcData, 1);
+            UInt32 me = client.playerData.getCharID();
+            if (target == me)
+            {
+                return; // the client sends 71 to leave
+            }
+
+            switch (type)
+            {
+                case SocialPackets.GroupTeam:
+                {
+                    LiveTeam team = Groups.FindTeamOf(me);
+                    if (team == null || team.LeaderCharId != me)
+                    {
+                        Send(client, SocialPackets.InviteAnswer(type, SocialPackets.TeamNotTeamLeader, HandleOf(client)));
+                        return;
+                    }
+
+                    if (!team.HasMember(target))
+                    {
+                        return;
+                    }
+
+                    List<UInt32> before = team.MemberIds();
+                    Groups.RemoveTeamMember(team.Id, target);
+                    byte[] removed = SocialPackets.LeftGroup(type, target);
+                    foreach (UInt32 memberId in before)
+                    {
+                        Send(FindOnlineByCharId(memberId), removed);
+                    }
+
+                    WorldClient booted = FindOnlineByCharId(target);
+                    if (booted != null)
+                    {
+                        SetOwnGroupIds(booted, null, null, 0);
+                    }
+
+                    Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " boots " + target + " from " + team.Name);
+                    break;
+                }
+
+                case SocialPackets.GroupCrew:
+                {
+                    var db = Store.dbManager.WorldDbHandler;
+                    UInt32 crewId = CrewIdOf(client);
+                    if (!IsCaptain(client, crewId))
+                    {
+                        return;
+                    }
+
+                    List<CrewMember> members = CrewMembersOf(crewId);
+                    if (!members.Any(m => m.charId == target))
+                    {
+                        return;
+                    }
+
+                    db.RemoveMemberFromCrew(target, crewId);
+                    SocialBot.SetCrew(FindOnlineByCharId(target), 0);
+                    byte[] removed = SocialPackets.LeftGroup(type, target);
+                    foreach (CrewMember member in members)
+                    {
+                        Send(FindOnlineByCharId(member.charId), removed);
+                    }
+
+                    WorldClient gone = FindOnlineByCharId(target);
+                    if (gone != null)
+                    {
+                        SetOwnGroupIds(gone, 0, 0, null);
+                    }
+
+                    Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " removes " + target + " from crew " + crewId);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Client 75 &lt;type&gt; &lt;charId&gt;: the team leader makes a member leader (team window Promote, 0x621c0700), or
+        /// the crew captain makes a member captain (crew window "Make Captain"). Every member gets 75 with the new id. A
+        /// crew in a faction also tells the faction (7e: the crew's captain in the faction's crew list).
+        /// </summary>
+        public static void ProcessMakeLeader(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 5)
+            {
+                return;
+            }
+
+            byte type = rpcData[0];
+            UInt32 target = BitConverter.ToUInt32(rpcData, 1);
+            UInt32 me = client.playerData.getCharID();
+            switch (type)
+            {
+                case SocialPackets.GroupTeam:
+                {
+                    LiveTeam team = Groups.FindTeamOf(me);
+                    if (team == null || team.LeaderCharId != me)
+                    {
+                        Send(client, SocialPackets.InviteAnswer(type, SocialPackets.TeamNotTeamLeader, HandleOf(client)));
+                        return;
+                    }
+
+                    if (target == me || !Groups.SetLeader(team.Id, target))
+                    {
+                        return;
+                    }
+
+                    byte[] leader = SocialPackets.NewLeader(type, target);
+                    foreach (UInt32 memberId in team.MemberIds())
+                    {
+                        Send(FindOnlineByCharId(memberId), leader);
+                    }
+
+                    Output.WriteDebugLog("[SOCIAL] " + team.Name + " is now led by " + target);
+                    break;
+                }
+
+                case SocialPackets.GroupCrew:
+                {
+                    var db = Store.dbManager.WorldDbHandler;
+                    UInt32 crewId = CrewIdOf(client);
+                    if (target == me || !IsCaptain(client, crewId))
+                    {
+                        return;
+                    }
+
+                    List<CrewMember> members = CrewMembersOf(crewId);
+                    CrewMember next = members.FirstOrDefault(m => m.charId == target);
+                    if (next == null)
+                    {
+                        return;
+                    }
+
+                    Crew crew = db.GetCrewData(crewId);
+                    db.SetCrewCaptain(crewId, target, next.handle);
+                    if (next.isFirstMate)
+                    {
+                        db.SetCrewFirstMate(crewId, 0);
+                        SocialBot.SetFirstMate(crewId, 0);
+                    }
+
+                    byte[] captain = SocialPackets.NewLeader(type, target);
+                    foreach (CrewMember member in members)
+                    {
+                        Send(FindOnlineByCharId(member.charId), captain);
+                    }
+
+                    if (crew.factionId != 0)
+                    {
+                        Faction faction = db.FetchFaction(crew.factionId);
+                        if (faction != null && string.Equals(faction.masterPlayerHandle, HandleOf(client), StringComparison.OrdinalIgnoreCase))
+                        {
+                            db.SetFactionMaster(crew.factionId, next.handle);
+                        }
+
+                        byte[] inFaction = SocialPackets.FactionCrewCaptain(crewId, target, next.handle, FindOnlineByCharId(target) != null);
+                        SendToAll(OnlineWhere(c => FactionIdOf(c) == crew.factionId && CrewIdOf(c) != crewId), inFaction);
+                    }
+
+                    Output.WriteDebugLog("[SOCIAL] Crew " + crewId + " is now led by " + next.handle);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>Client 80 87 &lt;charId&gt;: the captain makes a member first mate ("Make First Mate"), or 0 to demote
+        /// the first mate. Every online member gets 80 87 with the id.</summary>
+        public static void ProcessSetFirstMate(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 4)
+            {
+                return;
+            }
+
+            UInt32 target = BitConverter.ToUInt32(rpcData, 0);
+            var db = Store.dbManager.WorldDbHandler;
+            UInt32 crewId = CrewIdOf(client);
+            if (!IsCaptain(client, crewId))
+            {
+                return;
+            }
+
+            List<CrewMember> members = CrewMembersOf(crewId);
+            CrewMember mate = members.FirstOrDefault(m => m.charId == target);
+            if (target != 0 && (mate == null || mate.isCaptain))
+            {
+                return;
+            }
+
+            db.SetCrewFirstMate(crewId, target);
+            SocialBot.SetFirstMate(crewId, target);
+            byte[] record = SocialPackets.FirstMate(target);
+            foreach (CrewMember member in members)
+            {
+                Send(FindOnlineByCharId(member.charId), record);
+            }
+
+            Output.WriteDebugLog("[SOCIAL] Crew " + crewId + " first mate: " + (mate != null ? mate.handle : "nobody"));
+        }
+
+        /// <summary>The crew's members: the database's, and SocialBot when it is in the crew.</summary>
+        internal static List<CrewMember> CrewMembersOf(UInt32 crewId)
+        {
+            List<CrewMember> members = Store.dbManager.WorldDbHandler.GetCrewMembersForCrewId(crewId);
+            members.AddRange(SocialBot.CrewMembers(crewId));
+            return members;
+        }
+
+        private static bool IsCaptain(WorldClient client, UInt32 crewId)
+        {
+            if (crewId == 0)
+            {
+                return false;
+            }
+
+            Crew crew = Store.dbManager.WorldDbHandler.GetCrewData(crewId);
+            return crew != null && string.Equals(crew.characterMasterName, HandleOf(client), StringComparison.OrdinalIgnoreCase);
+        }
+
+        // ---- faction ranks and removing a crew (80 80, 73) --------------------------------------------------------
+
+        /// <summary>The crew's rank in its faction (see <see cref="FactionRanks.Effective"/>).</summary>
+        private static ushort RankOf(Faction faction, Crew crew) =>
+            FactionRanks.Effective(crew.factionRank,
+                string.Equals(crew.characterMasterName, faction.masterPlayerHandle, StringComparison.OrdinalIgnoreCase));
+
+        /// <summary>
+        /// Client 80 80 &lt;crewId&gt; &lt;bPromote&gt;: a captain promotes or demotes another crew of the faction (faction
+        /// members window, 0x620b2720 / 0x620b26a0). Success goes to every online member of the faction as 7f; a refusal
+        /// to the captain as 80 81, the only thing that record is ever used for.
+        /// </summary>
+        public static void ProcessFactionRank(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 5)
+            {
+                return;
+            }
+
+            UInt32 targetCrewId = BitConverter.ToUInt32(rpcData, 0);
+            bool promote = rpcData[4] != 0;
+            var db = Store.dbManager.WorldDbHandler;
+            UInt32 factionId = FactionIdOf(client);
+            UInt32 myCrewId = CrewIdOf(client);
+            Faction faction = factionId != 0 ? db.FetchFaction(factionId) : null;
+            Crew mine = faction?.crews.FirstOrDefault(c => c.crewId == myCrewId);
+            Crew target = faction?.crews.FirstOrDefault(c => c.crewId == targetCrewId);
+
+            uint status;
+            ushort newRank = 0;
+            if (mine == null || !IsCaptain(client, myCrewId))
+            {
+                status = SocialPackets.FactionPromoterNotFound;
+            }
+            else if (target == null)
+            {
+                status = SocialPackets.FactionPromoteeNotFound;
+            }
+            else
+            {
+                status = FactionRanks.Change(RankOf(faction, mine), RankOf(faction, target), promote, out newRank);
+            }
+
+            if (status != SocialPackets.ResultOk)
+            {
+                Send(client, SocialPackets.FactionRankFailed(targetCrewId, promote, status));
+                return;
+            }
+
+            db.SetCrewFactionRank(targetCrewId, newRank);
+            SendToAll(OnlineWhere(c => FactionIdOf(c) == factionId), SocialPackets.FactionRank(targetCrewId, (byte) newRank));
+            Output.WriteDebugLog("[SOCIAL] Crew " + targetCrewId + " is now rank " + newRank + " in faction " + factionId);
+        }
+
+        /// <summary>
+        /// Client 73 &lt;crewId&gt;: the captain of a leading crew (rank 1) removes a crew from the faction (faction members
+        /// window "Remove"). Every online member of the faction gets 73 with the crew; the removed crew's clients clear
+        /// their faction. A refusal is 74, "Failed to eject faction."
+        /// </summary>
+        public static void ProcessFactionRemoveCrew(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 4)
+            {
+                return;
+            }
+
+            UInt32 targetCrewId = BitConverter.ToUInt32(rpcData, 0);
+            var db = Store.dbManager.WorldDbHandler;
+            UInt32 factionId = FactionIdOf(client);
+            UInt32 myCrewId = CrewIdOf(client);
+            Faction faction = factionId != 0 ? db.FetchFaction(factionId) : null;
+            Crew mine = faction?.crews.FirstOrDefault(c => c.crewId == myCrewId);
+            Crew target = faction?.crews.FirstOrDefault(c => c.crewId == targetCrewId);
+            if (mine == null || target == null || targetCrewId == myCrewId || !IsCaptain(client, myCrewId) ||
+                RankOf(faction, mine) != SocialPackets.TopFactionRank)
+            {
+                Send(client, SocialPackets.FactionRemoveFailed(targetCrewId, SocialPackets.FactionNotAuthorized));
+                return;
+            }
+
+            List<WorldClient> everyone = OnlineWhere(c => FactionIdOf(c) == factionId);
+            db.RemoveCrewFromFaction(factionId, targetCrewId);
+            db.SetFactionOfCrewMembers(targetCrewId, 0);
+            db.SetCrewFactionRank(targetCrewId, 0);
+            SendToAll(everyone, SocialPackets.FactionCrewRemoved(targetCrewId));
+            foreach (WorldClient member in everyone.Where(c => CrewIdOf(c) == targetCrewId))
+            {
+                SetOwnGroupIds(member, 0, null, null);
+            }
+
+            Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " removed crew " + targetCrewId + " from faction " + factionId);
+        }
+
+        // ---- creating a crew from its window (80 84) -------------------------------------------------------------
+
+        /// <summary>
+        /// Client 80 84 &lt;invitee offset&gt; &lt;crew name offset&gt; &lt;org u8&gt;, the crew creation window
+        /// (viewcrewcreation.cpp): found a crew by inviting someone. The invitee gets the usual crew invite (80 88); the
+        /// crew exists once they accept, and the creator hears the outcome as 80 85 (0: "Crew created.").
+        /// </summary>
+        public static void ProcessCreateCrew(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 5)
+            {
+                return;
+            }
+
+            string invitee, crewName;
+            if (!SocialRequests.TryReadSized(rpcData, (rpcData[0] | (rpcData[1] << 8)) - 2, out invitee) ||
+                !SocialRequests.TryReadSized(rpcData, (rpcData[2] | (rpcData[3] << 8)) - 2, out crewName))
+            {
+                return;
+            }
+
+            byte org = rpcData[4];
+            crewName = crewName.Trim();
+            var db = Store.dbManager.WorldDbHandler;
+            WorldClient other = FindOnlineByHandle(invitee);
+            uint status = SocialPackets.ResultOk;
+            if (CrewIdOf(client) != 0)
+            {
+                status = SocialPackets.CrewCreateAlreadyMember;
+            }
+            else if (crewName.Length == 0 || crewName.Length > 31 || db.CrewNameExists(crewName))
+            {
+                status = SocialPackets.CrewCreateInvalidName;
+            }
+            else if (other == null || other == client)
+            {
+                status = SocialPackets.CrewInvalidCharacterName;
+            }
+            else if (CrewIdOf(other) != 0)
+            {
+                status = SocialPackets.CrewCreateAlreadyMember;
+            }
+
+            if (status != SocialPackets.ResultOk)
+            {
+                Send(client, SocialPackets.CrewCreated(0, crewName, org, status));
+                return;
+            }
+
+            PendingInvite pending = new PendingInvite
+            {
+                GroupType = SocialPackets.GroupCrew,
+                InviterCharId = client.playerData.getCharID(),
+                InviterHandle = HandleOf(client),
+                InviteeHandle = HandleOf(other),
+                GroupName = crewName,
+                FromCrewCreation = true,
+                Org = org
+            };
+            if (!Groups.AddInvite(pending, DateTime.UtcNow))
+            {
+                Send(client, SocialPackets.CrewCreated(0, crewName, org, SocialPackets.CrewCreateInProgress));
+                return;
+            }
+
+            Output.WriteDebugLog("[SOCIAL] " + pending.InviterHandle + " creates crew '" + crewName + "' with " + pending.InviteeHandle);
+            Send(other, SocialPackets.CrewInvite(pending.InviterHandle, crewName, org));
+            SocialBot.OnInvited(other, pending);
+        }
+
+        // ---- looking for team (80 91, 80 92) ---------------------------------------------------------------------
+
+        /// <summary>
+        /// Client 80 91 &lt;RemoveFromSeekerList&gt; &lt;ExtraDisciplines offset&gt; &lt;OrgsToWorkWith offset&gt;: the team
+        /// window's Seek button puts the player on the list, or takes them off. The client says so itself; nothing goes
+        /// back.
+        /// </summary>
+        public static void ProcessSeekTeam(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 1)
+            {
+                return;
+            }
+
+            UInt32 charId = client.playerData.getCharID();
+            if (rpcData[0] != 0)
+            {
+                Groups.RemoveSeeker(charId);
+                Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " stops looking for a team");
+                return;
+            }
+
+            Groups.AddSeeker(SeekerOf(client));
+            Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " is looking for a team");
+        }
+
+        internal static TeamSeeker SeekerOf(WorldClient client) => new TeamSeeker
+        {
+            CharId = client.playerData.getCharID(),
+            Handle = HandleOf(client),
+            Level = client.playerInstance.Level.getValue()[0],
+            Org = client.playerInstance.OrganizationID.getValue()[0],
+            FactionId = FactionIdOf(client),
+            BestDiscipline = NumericalUtils.ByteArrayToUint32(client.playerInstance.TitleAbility.getValue(), 1)
+        };
+
+        /// <summary>
+        /// Client 80 92 &lt;MinLevel&gt; &lt;MaxLevel&gt; &lt;MyFactionOnly&gt; &lt;DesiredDisciplines offset&gt;
+        /// &lt;OrgsToWorkWith offset&gt; (the Find Team Members window): answered with 80 93, the seekers that pass. Each
+        /// array is a u16 count then its elements, u32 ability ids and u8 organisations.
+        /// </summary>
+        public static void ProcessFindSeekers(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 7)
+            {
+                return;
+            }
+
+            SeekerSearch search = new SeekerSearch
+            {
+                MinLevel = rpcData[0],
+                MaxLevel = rpcData[1],
+                MyFactionOnly = rpcData[2] != 0,
+                FactionId = FactionIdOf(client)
+            };
+            int disciplines = (rpcData[3] | (rpcData[4] << 8)) - 2;
+            int orgs = (rpcData[5] | (rpcData[6] << 8)) - 2;
+            if (disciplines >= 0 && disciplines + 2 <= rpcData.Length)
+            {
+                int count = rpcData[disciplines] | (rpcData[disciplines + 1] << 8);
+                for (int i = 0; i < count && disciplines + 2 + i * 4 + 4 <= rpcData.Length; i++)
+                {
+                    search.Disciplines.Add(BitConverter.ToUInt32(rpcData, disciplines + 2 + i * 4));
+                }
+            }
+
+            if (orgs >= 0 && orgs + 2 <= rpcData.Length)
+            {
+                int count = rpcData[orgs] | (rpcData[orgs + 1] << 8);
+                for (int i = 0; i < count && orgs + 2 + i < rpcData.Length; i++)
+                {
+                    search.Orgs.Add(rpcData[orgs + 2 + i]);
+                }
+            }
+
+            List<SocialPackets.Seeker> found = Groups.FindSeekers(client.playerData.getCharID(), search)
+                .Select(s => new SocialPackets.Seeker {CharId = s.CharId, Handle = s.Handle, Level = s.Level, BestDiscipline = s.BestDiscipline})
+                .ToList();
+            Send(client, SocialPackets.SeekerResults(found));
+            Output.WriteDebugLog("[SOCIAL] " + HandleOf(client) + " searched for team members: " + found.Count);
         }
 
         // ---- chat ---------------------------------------------------------------------------------------------

@@ -1087,6 +1087,25 @@ namespace hds.databases{
 	        return Convert.ToUInt32(id);
         }
 
+        /// <summary>Makes the member the crew's first mate (0: nobody).</summary>
+        public void SetCrewFirstMate(UInt32 crewId, UInt32 charId)
+        {
+	        NonQuery("UPDATE crew_members SET is_first_mate = (char_id = @char) WHERE crew_id = @crew",
+		        P("@char", charId), P("@crew", crewId));
+        }
+
+        /// <summary>The crew's rank in its faction, 1 (leading) to 5.</summary>
+        public void SetCrewFactionRank(UInt32 crewId, ushort rank)
+        {
+	        NonQuery("UPDATE crews SET faction_rank = @rank WHERE id = @crew", P("@rank", (int) rank), P("@crew", crewId));
+        }
+
+        public void SetFactionMaster(UInt32 factionId, string handle)
+        {
+	        NonQuery("UPDATE factions SET master_player_handle = @handle WHERE id = @faction",
+		        P("@handle", handle), P("@faction", factionId));
+        }
+
         public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
         {
 	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",
