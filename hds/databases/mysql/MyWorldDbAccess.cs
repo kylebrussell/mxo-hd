@@ -1228,6 +1228,110 @@ namespace hds.databases{
 	                              "' AND slot = '" + slotId + "' LIMIT 1");
         }
 
+        private readonly object inventoryMigrationLock = new object();
+        private bool inventorySupportsTransactions;
+
+        /// <summary>Upgrades old MyISAM inventory tables before the first exchange that needs rollback.</summary>
+        private void EnsureTransactionalInventory(MySqlConnection connection)
+        {
+            lock (inventoryMigrationLock)
+            {
+                if (inventorySupportsTransactions)
+                {
+                    return;
+                }
+
+                using MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory'";
+                if (!string.Equals(command.ExecuteScalar() as string, "InnoDB", StringComparison.OrdinalIgnoreCase))
+                {
+                    // The original dump contains zero timestamps. Keep those values during the engine conversion.
+                    command.CommandText = "SELECT @@SESSION.sql_mode";
+                    string originalMode = (string)command.ExecuteScalar();
+                    List<string> modes = new List<string>(originalMode.Split(','));
+                    modes.Remove("NO_ZERO_DATE");
+                    modes.Remove("NO_ZERO_IN_DATE");
+                    command.CommandText = "SET SESSION sql_mode = @mode";
+                    command.Parameters.AddWithValue("@mode", string.Join(",", modes));
+                    command.ExecuteNonQuery();
+                    try
+                    {
+                        command.CommandText = "ALTER TABLE inventory ENGINE=InnoDB";
+                        command.ExecuteNonQuery();
+                    }
+                    finally
+                    {
+                        command.CommandText = "SET SESSION sql_mode = @mode";
+                        command.Parameters["@mode"].Value = originalMode;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                inventorySupportsTransactions = true;
+            }
+        }
+
+        public CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem)
+        {
+            using MySqlConnection connection = new MySqlConnection(connectionString);
+            connection.Open();
+            EnsureTransactionalInventory(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char AND slot BETWEEN 1 AND 96 ORDER BY slot FOR UPDATE";
+            command.Parameters.AddWithValue("@char", charId);
+
+            HashSet<int> occupied = new HashSet<int>();
+            List<(UInt32 Id, UInt16 Slot, int Remaining)> changes = new List<(UInt32, UInt16, int)>();
+            using (MySqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    UInt16 slot = reader.GetUInt16(1);
+                    if (quantity == 0 || reader.GetUInt32(2) != requiredItem)
+                    {
+                        occupied.Add(slot);
+                        continue;
+                    }
+
+                    int count = ItemStacks.CountFromDb(reader.GetInt32(3));
+                    int consumed = Math.Min(quantity, count);
+                    quantity -= consumed;
+                    int remaining = count - consumed;
+                    changes.Add((reader.GetUInt32(0), slot, remaining));
+                    if (remaining > 0)
+                    {
+                        occupied.Add(slot);
+                    }
+                }
+            }
+
+            UInt16 rewardSlot = LowestFreeBagSlot(occupied);
+            if (quantity != 0 || rewardSlot == 0)
+            {
+                return null;
+            }
+
+            command.Parameters.AddWithValue("@row", 0u);
+            command.Parameters.AddWithValue("@remaining", 0);
+            foreach (var change in changes)
+            {
+                command.Parameters["@row"].Value = change.Id;
+                command.Parameters["@remaining"].Value = change.Remaining;
+                command.CommandText = change.Remaining == 0
+                    ? "DELETE FROM inventory WHERE invId=@row"
+                    : "UPDATE inventory SET count=@remaining WHERE invId=@row";
+                command.ExecuteNonQuery();
+            }
+
+            command.CommandText = "INSERT INTO inventory (charId, goid, slot, count) VALUES (@char, @reward, @slot, 1)";
+            command.Parameters.AddWithValue("@reward", rewardItem);
+            command.Parameters.AddWithValue("@slot", rewardSlot);
+            command.ExecuteNonQuery();
+            transaction.Commit();
+            return new CollectorExchange(rewardSlot, changes.ConvertAll(change => (change.Slot, change.Remaining)));
+        }
+
         /// <summary>Adds a stack of <paramref name="count"/> items to a slot.</summary>
         public void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count)
         {

@@ -888,6 +888,10 @@ namespace hds
                 List<UInt32> drops = session.DefenderMob.missionInstance == 0
                     ? NpcLoot.Roll(mobLevel, rand)
                     : TutorialMission.Of(session.Attacker)?.DropsFor(session.DefenderMob) ?? new List<UInt32>();
+                if (CollectorHandler.DropsFunctionData(session.DefenderMob))
+                {
+                    drops.Insert(0, CollectorHandler.FunctionData);
+                }
                 lock (session.Attacker.playerData.pendingLootDrops)
                 {
                     session.Attacker.playerData.pendingLootDrops.Clear();

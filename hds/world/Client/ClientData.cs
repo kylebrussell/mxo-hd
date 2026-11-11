@@ -103,6 +103,7 @@ namespace hds
 		public UInt32 pendingLootItem = 0;
 		// Items a killed NPC dropped (NpcLoot), given on Take All
 		public readonly System.Collections.Generic.List<UInt32> pendingLootDrops = new System.Collections.Generic.List<UInt32>();
+        public StaticWorldObject activeCollector;
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();

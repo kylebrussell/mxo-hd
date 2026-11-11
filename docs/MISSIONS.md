@@ -205,6 +205,41 @@ All three agree wherever they overlap, and so do the 13 Slums contacts in `data/
 
 Dev: with `MXO_DEV_COMMANDS=1`, `?contact` moves the player in front of the nearest neighbourhood contact in the district, and `?contact <id>` in front of that one (or says which district they're in).
 
+## Azuna's collector exchange
+
+Azuna's static in the second basement of the Creston Heights Museum is `3d 03 90 28`, goid 48153, district 2,
+at (-146900, -55, 50200). Using it opens the native collector dialog. Ten Function Data (48150) exchange for
+Azuna's Surveillance (48149). The client strings describe the data as acquired while protecting Azuna,
+and describe the surveillance as intended for a Merovingian representative in Ikebukuro. The archived
+12.1.2 forum account also describes the ten-item exchange.
+
+The implementation uses the retail collector records recovered from the checked-in captures.
+
+| Record | Contents |
+|---|---|
+| `81 15` | Session GUID, position as three doubles, horizontal interaction distance as a float, five option bytes |
+| `81 13` | Session GUID, initial, incomplete, complete and closing string IDs |
+| `81 14` | Session GUID, item-set index, required item/data, prize item/data, final flag, four optional string IDs |
+| `81 16` | Client exchange request with item-set index and a u16-length array of selected prize indexes |
+| `81 17` | String ID and a byte selecting whether to display the closing text |
+
+The Winter Helper exchanges in `Vector26.log.txt` around line 7831 and
+`Vector_abilityloadoutchange.log.txt` around line 38175 show the GUID shared across the records,
+one required item per `81 14` row, and an empty final row. Their files are in the
+`20260607T203107Z-hdneo-public-vector-state-static-selected` and
+`20260607T200024Z-hdneo-public-remaining-small-ability-loot-market` intakes.
+The request and closing layouts also come from `client.dll` at 0x62072fa0 and 0x62176eb6.
+Azuna uses her shipped offer and closing strings 0x040006c3 and 0x040006c0.
+
+Nearby outdoor-world Override Functions drop Function Data. The museum-floor eligibility bounds are
+reconstructed from the captured spawns, within 40 m horizontally and 6 m vertically of Azuna's static.
+The native dialog uses a 4.5 m interaction range. These distances are implementation choices.
+
+The server verifies the district, proximity, active collector and bag contents for each trade. Items in
+worn slots are excluded. Consumption and reward insertion share a database transaction, including reuse
+of a consumed slot in a full bag. Before the first trade, an old MyISAM inventory table is converted to
+InnoDB with its zero timestamps preserved. Fresh databases use InnoDB.
+
 ## The tutorial
 
 `TutorialMission.cs` runs retail's tutorial (mission 986) for any character that spawns in district 0. Its logic is retail's own: `TutorialScript.g.cs` is the client's decompiled `Mission986` script, converted to C# by `research/missions/gen_tutorial_script.py`, so its lines, voiced narration, timers and goal order are retail's. `TutorialMission.cs` is the engine that script expects, and it handles the goals the script leaves to server data: talking, the wardrobe, giving the key, fights, the hardline. `research/missions/tutorial-wire-spec.md` has the wire evidence.

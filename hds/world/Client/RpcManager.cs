@@ -212,6 +212,9 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_VENDOR_SELL:
 		            new VendorHandler().processSellItem(ref rpcData);
 		            break;
+		        case (int) RPCRequestHeader.CLIENT_COLLECTOR_EXCHANGE:
+		            CollectorHandler.Exchange(Store.currentClient, rpcData);
+		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_TRADE_REQUEST:
 		            new TradeHandler().ProcessRequest(ref rpcData);

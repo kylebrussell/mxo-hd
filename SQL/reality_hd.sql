@@ -694,7 +694,7 @@ CREATE TABLE `inventory` (
   `purity` int(11) NOT NULL DEFAULT '0',
   `updated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Daten für Tabelle `inventory`
@@ -1085,7 +1085,8 @@ ALTER TABLE `factions`
 -- Indizes für die Tabelle `inventory`
 --
 ALTER TABLE `inventory`
-  ADD PRIMARY KEY (`invId`);
+  ADD PRIMARY KEY (`invId`),
+  ADD KEY `inventory_character_slot` (`charId`, `slot`);
 
 --
 -- Indizes für die Tabelle `locations`

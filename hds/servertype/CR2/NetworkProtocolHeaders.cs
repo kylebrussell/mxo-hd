@@ -61,6 +61,7 @@ namespace hds
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_VENDOR_BUY = 0x10e,
         CLIENT_VENDOR_SELL = 0x111,
+        CLIENT_COLLECTOR_EXCHANGE = 0x116,
         CLIENT_TRADE_REQUEST = 0x182,
         CLIENT_TRADE_ACTION = 0x185,
         

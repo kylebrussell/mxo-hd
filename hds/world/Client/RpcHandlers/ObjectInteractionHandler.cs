@@ -172,6 +172,12 @@ namespace hds
                 return;
             }
 
+            if ((objectTypeID == (int)objectTypesStatic.COLLECTOR || objectTypeID == (int)objectTypesStatic.HUMAN_NPC) &&
+                CollectorHandler.TryOpen(Store.currentClient, objectValues))
+            {
+                return;
+            }
+
             // Hardline booths: 03 jack out, 04 upload, 05 exit to the Loading Area (retail 80 c8 <booth> 04 00)
             if (objectValues != null && objectValues.type != null &&
                 HardlineBooths.IsBooth(NumericalUtils.ByteArrayToUint16(objectValues.type, 1)))
