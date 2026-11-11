@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Fields, Merovingian story mission 8.2.1. Source: research/missions/transcripts/Merv8-2-1.md (the archive
+     replay of [Merovingian Archive 8.2.1], given by [Archived]Flood; 35 screenshots: 33 of the log after it ended and
+     two "Computer" pop-ups from the records office during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Persephone, Steffanie Boon,
+     Royce Hirsch, Blossom Hendrickson, Christoper Leiden ("Christoper" as the log spells it), Coroner, Malphas,
+     Holographic Projection and Merovingian line, and those names. Entries that span two screenshots are joined by
+     their overlapping lines. Italics dropped: "biology", "every", "Enough.", "People!", "non?", "n'est-ce pas?" and
+     "mon ami". The log's "%" glyph is read as "%"; the Operator's "I guess that make sense" is as in the log.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (Normal, but the hospital's public records office is Office; no neighbourhood
+     was shown), the looks (Persephone's, Malphas's, the hologram's and the Merovingian's are those of earlier
+     missions; the others are stand-ins by sex) and the enemy counts (no fight in the log). No item: none was shown,
+     and the records computer gives the birth rate on screen.
+     Rewards: the log shows none (no System chat in the images); no Zion 8.2 mission is built, so these are Zion 8.3's
+     values (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Gaps: the computers' own text can't be shown: the records database's "City birth rate in 1999" article and a
+     diagnosis terminal the player used first (a wrong machine, by its text) are in the transcript only, and there is
+     one computer here. Which bystander, if any, was a goal in the records office isn't known: talking to Blossom
+     Hendrickson, who names the computer, is the goal, and Steffanie Boon's and Royce Hirsch's lines are said when
+     they are talked to. Christoper Leiden's line came 24 s after that area's goals and is said when they complete.
+     At the Coroner's the player picked something up twice before talking to him ("Ew, put that down!", "Ick. Do you
+     really have to pick up everything?"); what, and whether it was a goal, isn't shown, so these are two optional
+     searches of furniture with nothing in them. In the last area the Holographic Projection's lines (the player came
+     in mid-conversation) and the Merovingian's reply are said on talking to the Merovingian, whose goal opens once
+     Malphas is talked to (retail's lock on the other door). Flood's records-office briefing may be missing a last
+     line, an entry after Blossom Hendrickson's may be missing, and the Operator's "Oh, there goes the lock..." had no
+     header and is read as the end of the line before it. Persephone's and the Merovingian's last lines are said when
+     they are talked to again. -->
+<mission id="308201" title="The Fields" description="Gather birth and death rates so the Merovingian can count the humans grown in the Fields." plot="1"
+         order="8201" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say after="1">That should be enough for Flood.&#10;&#10;The process is cold, and sterile...but you need not tell him that.</say>
+  </npc>
+  <npc id="2" handle="Steffanie Boon" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>Oh, I see how it is. Just because I'm a healthy young woman, you assume that I know all about babies?&#10;&#10;Hell-o! This is the 90's. We're allowed to have careers now.&#10;&#10;Ugh. People!</say>
+  </npc>
+  <npc id="3" handle="Royce Hirsch" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+    <say>They moved my mother to another hospital, but nobody seems to know how to find out which one she's in! Of all the bureaucratic--</say>
+  </npc>
+  <npc id="4" handle="Blossom Hendrickson" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="5" handle="Christoper Leiden" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="6" handle="The Coroner" type="FRIENDLY" at="3" rsi="c9020058" weapon="0" />
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+    <say after="8">But we already knew that Smith was a dupe of his own System, n'est-ce pas?&#10;&#10;Well... Don't worry about the Machines, mon ami. They may not like us lifting their skirts, but they have many other difficulties at the moment. If they forget, we can always remind them, non?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General's rag-tag band of Sentinel scouts is approaching the human-growing area between Zion and the Machine city known by the descriptive appellation "The Fields."
+
+The Merovingian wants to count babies; something to do with discovering how much energy the Machines have. Really, I find it both boring and disgusting, all this...biology.
+
+Why, I just had an insight, operative: my disgust for this biological aspect explains why I find Persephone so irritating at times. She had something to do with it before she was exiled, you know. In fact, I'm supposed to have some information about it from her, but I really can't be bothered, so I'm sending you. Ta!</briefing>
+    <enter><say>Yeah, Persephone stimulated emotions or something for people in the pods, right? I guess that explains why she's...&#10;&#10;Anyway, she's in there, all right.</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="1">
+      <talk><say npc="1">Flood sent you about it? How rare... In that case, make sure you tell him every detail...&#10;&#10;With the Machines, I was a nameless routine, charged with stimulating reproductive glands of humans in the pods. It was so rarely a result of love...&#10;&#10;But conception does not take place in the pods. The parents could be miles apart. Their genetic samples are sent to the Fields, where they are combined, and grown into children.</say></talk>
+      <done><say>That fits, I guess. Maybe we can sex it up a bit when we tell Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Enough. I understand the principle, operative. There's no need to sicken me with organic minutiae.
+
+The General's scouts have reached the Fields, and I understand they're attempting a visual count of the number of humans being grown. What a horrid chore that must be; why, they must be hoping they'll be discovered by the Machines and torn to pieces to escape the agony.
+
+As for you, you're off to the city hospital's public records office. It will be necessary for us to know the birth rate, and you're to get the "official" version.</briefing>
+    <enter><say>I get the feeling that Flood doesn't like the whole baby-making process.&#10;&#10;Hm... The records office looks pretty tame. Birth rate data should be publicly available, so there's no need to hack anything. Sorry. Just ask around.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Ask about the birth rate" type="Talk" npc="4">
+      <talk><say npc="4">Oh, yes. You can get that information from the computer in the next room.</say></talk>
+    </objective>
+    <objective goal="3" text="Search the Computer" type="Search" object="1" after="2">
+      <done><say>1.5% birth rate, huh? All righty then.</say></done>
+    </objective>
+    <complete>
+      <say npc="5">You done yet? It's my gol-durned turn. I'll bet you even lost my place in the browser, didn't you?</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>They said 1.5%, did they? Well, here are some more boring figures for you, {player}. The General's scouts have counted an estimated one million fetuses--ugh, even that word is sickening--gestating--oh, that was almost as bad--in the Fields. Apparently, elated with that success, they went on to count the humans in the columns of pod structures nearby, and decided that there were about three million more of you plugged in there.
+
+Shh! Maybe you enjoy playing with figures, operative, but I have better things to do. Now that we know about births, it's necessary to know about deaths. You're due for a consultation with the Coroner. He's a witheringly dull, morbid fellow who thinks his preoccupation with dead tissue makes him somehow exciting and dangerous; I'm sure you'll get along like two peas.</briefing>
+    <enter><say>The Coroner should be in there. I'm scanning a single Exile on the premises: that's probably him. They say he likes to work alone...</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="4" text="Talk to the Coroner" type="Talk" npc="6">
+      <talk><say npc="6">The death rate? The question is simple, but the answer is not. City officials would tell you it's 0.7%--about half of that birth rate figure of yours...not forgetting to factor in the 0.6% infant mortality rate, of course.&#10;&#10;But we know something else, don't we? This simulation is meant to be stable--a closed system. Deaths must equal births, or it all goes to hell. But that isn't the picture they want to show the plebs. Do you see? Hah.&#10;&#10;I'll tell you this, though: I trust their birth numbers more than their death numbers. Much easier to hide a death than fake a birth...believe me.</say></talk>
+      <done><say>Deaths must equal births... I guess that make sense, but I don't like the way he put that, somehow.</say></done>
+    </objective>
+    <objective goal="5" text="Search the furniture" type="Search" object="1" optional="1">
+      <done><say>Ew, put that down! You don't know what you could catch from that thing.&#10;&#10;Well, okay, maybe you do.</say></done>
+    </objective>
+    <objective goal="6" text="Search the furniture" type="Search" object="2" optional="1">
+      <done><say>Ick. Do you really have to pick up everything?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Oh, please. I dislike rampant paranoia even more than a tired list of figures. But hold that thought, operative; Malphas enjoys that sort of thing, and he's waiting for your report.</briefing>
+    <enter><say>Hey, the Merv is in there, too.</say></enter>
+    <objective goal="7" text="Talk to Malphas" type="Talk" npc="7">
+      <talk><say npc="7">Hm... Assuming a nine month gestation period, a Field of one million wombs yields 1.3 million humans a year. At a 1.5% birth rate, that would imply a population of about...88 million, after the Coroner's infant mortality rate.&#10;&#10;That figure is far less than some estimates... Even so, it corroborates the Morpheus simulacrum's story: that other clusters of pods exist. Certainly, the three million counted next to the Fields by our scouts could not be all the humans in the Matrix; why, there are many times that in the city itself.&#10;&#10;We will need much more data... However, the Merovingian will want to hear of our progress. You will find him in the next room.</say></talk>
+      <done><say>88 million? Nothing to sneeze at, I guess, but I don't know that this is all adding up... And what about the death rate thing the Coroner hinted at?&#10;&#10;Oh, there goes the lock on the other door. I guess you're allowed in now.</say></done>
+    </objective>
+    <objective goal="8" text="Talk to the Merovingian" type="Talk" npc="9" after="7">
+      <talk>
+        <say npc="8">...far too dangerous to take a direct power reading from the lines. They would surely detect such an attempt. They are already sending probes close to my main force; it appears that they have some idea of our position.&#10;&#10;We have to assume that they suspect our activity, and will retaliate. I suggest you look to your own security immediately.</say>
+        <say npc="8">End transmission.</say>
+        <say npc="9">What? So few? Ah, we must continue our search. You see how much we have found already, and we have only begun! Besides, we know that Zion has found more pods--we heard that from Morpheus himself, non? Or what passes for him.&#10;&#10;Do you know, they say Morpheus liked to claim that the Agent, Smith, spoke of "billions." How amusing if Smith found himself coming up far short of his expectations when he took over the Matrix, eh?</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>It's a sad state of affairs when the General is the clearest head there, {player}, but amid the glee of counting large numbers, his observation of Machine scrutiny strikes me as the only relevant result of these exercises. I always expected that he'd get himself caught; I just didn't hope that he'd manage it this quickly.
+
+But I suppose they'll come to me to save him...</finish>
+</mission>

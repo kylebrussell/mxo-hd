@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hotline, Merovingian story mission 8.2.2. Source: research/missions/transcripts/Merv8-2-2.md (the archive replay of
+     [Merovingian Archive 8.2.2], given by [Archived]Flood; 24 screenshots of the Mission window's log after it ended,
+     cropped to that window, none during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Merovingian, Twin and Druzhba
+     line, and those names. Flood's first briefing and his phone-call briefing span screenshots without an overlapping
+     line at one join each ("risking their necks." / "Oh, by the way"; "precious Fields." / "What you're going to do"),
+     so a line may be missing there; they are taken as one entry each. "Slice!" and "Was." were in italics.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (Office for the phone, "That office should be deserted"; the rest Normal; no
+     neighbourhood was named), the looks (the Merovingian's and the Twins' are those of earlier missions; Druzhba's are
+     stand-ins, a different one in the last area since he has taken "RSI pills") and the enemy counts. No item was
+     shown: the stolen data is never found.
+     Rewards: the crops show no System chat, so the log's reward isn't known; no Zion 8.2 mission is built, so these are
+     Zion 8.3's values (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Gaps: which Twin said which line isn't shown; the four lines on arrival alternate between them here, and each Twin
+     has one of the two lines they repeated after the Merovingian's talk. No goals-complete line was logged after the
+     Merovingian's talk; here the phase ends with it as usual. The phone is used by standing beside it, so the
+     Operator's "There's the phone..." and Flood's "Stop nattering on" (nine seconds apart in retail) are both said as
+     it is done. In retail Druzhba died as the player reached him in the third area ("Uhh!", "There he is! Oh, damn.
+     Was."); NPCs can't die on cue here, so he is a friendly NPC there whose talk is the grunt, and a second, hostile
+     Druzhba stands in the last area. The third area's survivors ("Machine and redpill signals ... in various states
+     of health") are Machines only and needn't be killed (28 seconds from arriving to done). About 12 minutes of the
+     last area (9:43:11 to 9:55:02) weren't captured, and the goals completed 3 minutes after Druzhba died, so the
+     kill-the-redpills goal is our guess. Hostile NPCs' lines don't show on screen here (see Known gaps), so Druzhba's
+     "Get away from me!" may not appear. -->
+<mission id="308202" title="Hotline" description="Track down the E Pluribus Neo thief who ate the Merovingian's cake, and get back the maps they stole." plot="1"
+         order="8202" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+    <say after="1">Eh? What are you still doing here? Go!</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="1">'E's gettin' soft!</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">What's this? Still alive?</say>
+  </npc>
+  <npc id="4" handle="Druzhba" type="FRIENDLY" at="3" rsi="38000024" weapon="2568" />
+  <npc id="5" handle="Druzhba" type="HOSTILE" at="4" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian is in a royal temper, {player}; I mean the "off with their heads" type of temper. Only certain people--such as the intangible--can go near him at times like this without risking their necks.
+
+Oh, by the way, I need you to go receive some instructions from him. Mustn't be late!</briefing>
+    <enter><say>Sometimes I really hate Flood.&#10;&#10;I've got the Merv in there, and it looks like just the Twins are with him.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">E Pluribus Neo has stolen something from me, but they also made a second mistake: gluttony. This mistake will allow you to punish them, severely.&#10;&#10;The cake they consumed so blindly and stupidly at the scene of their crime contains a unique signature, traceable by me. As the cake becomes part of them, they become mine.&#10;&#10;You will follow them, hurt them, and bring back what they stole.</say></talk>
+      <done><say>Geez. I wonder what they stole?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">Wouldn't go in there if I was you, mate.</say>
+      <say npc="3">Slice!&#10;&#10;If you follow me.</say>
+      <say npc="2">Just remember: you was warned.</say>
+      <say npc="3">Right across the windpipe; that's the usual way.&#10;&#10;Now then, if you want to get fancy, you can go in behind, and then come forward... Certain advantages in doin' it like that.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Mm? Oh. They stole the maps the General's scouts had compiled of the area around the Fields. Maybe they want to go wake up all the unborn children; who knows? They're idiots, and the point is academic, anyway, since we're going to get the data back.
+
+But it won't do to make it quick and easy for them. In fact, I think this would be an excellent opportunity to kill two birds with one stone.
+
+No, I mean the Machines. They've been making nuisances of themselves, because they found out the General's been snooping around their precious Fields.
+
+What you're going to do about it is to make an anonymous phone call.</briefing>
+    <enter><say>That office should be deserted. We're just going to borrow their phone for a minute.</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="2" text="Make an anonymous phone call" type="Use" object="1">
+      <done>
+        <say>There's the phone.&#10;&#10;Uh-oh, watch out for--&#10;&#10;Oh. No, I guess it was probably nothing. Just a little jumpy, that's all. I'll feed you the location info on those EPN when you're on the line.</say>
+        <say contact="1">Stop nattering on, operative. They don't need War and Peace.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>If you hurry for once, you should get there in time to polish off the survivors, locate the cake-eater, and retrieve our data.</briefing>
+    <enter><say>I've got Machine and redpill signals in there in various states of health. It looks like Mr. Cake is still kicking. I'll let you know when you're close to him.</say></enter>
+    <objective goal="3" text="Find Druzhba" type="Talk" npc="4">
+      <talk><say npc="4">Uhh!</say></talk>
+      <done><say>There he is!&#10;&#10;Oh, damn. Was. I'm not picking up our missing data anywhere around there, either.</say></done>
+    </objective>
+    <complete><say contact="1">He'll reconstruct, you ape. Get out of there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>You didn't think reconstructing would clear our trace off him, did you?
+
+No... Neither that nor the RSI pills it looks like he's just taken will help him. And I'll wager he's gone running back to headquarters, where they've probably got that stolen data of ours.
+
+I just couldn't make things easier for you, could I?</briefing>
+    <enter><say>I've got a lot of redpill signals in there.&#10;&#10;No Machines in sight, so I guess they're all ours this time.</say></enter>
+    <objective goal="4" text="Kill Druzhba" type="Defeat" npc="5">
+      <done><say>Well...at least that'll teach him to steal cake.</say></done>
+    </objective>
+    <objective goal="5" text="Kill the E Pluribus Neo redpills" type="DefeatAll" />
+    <near npc="5" radius="1000">
+      <say>Aw, forget it. There's no sign of our data there. Maybe they already sent it out. I don't know.&#10;&#10;Yeah, I'm sure Flood will be thrilled.</say>
+      <say npc="5">What the hell? You?! Get away from me!</say>
+    </near>
+  </phase>
+  <finish>They didn't have the data? But I...ah... We... You'd do best to avoid the Merovingian for the time being, {player}, until I manage to sort this out. You're lucky you have me watching out for you.
+
+Oh, but here's some exciting news to dispel the gloom of your dismal failure: the General's had to pull back from the Fields, what with the Machines looking all over the area for his Sentinels. I always said it was a massive waste of time. Fat lot of good that map would do anyone, anyway.</finish>
+</mission>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eyes, Merovingian story mission 8.1.4. Source: research/missions/transcripts/Merv8-1-4.md (the archive replay of
+     [Merovingian Archive 8.1.4], given by [Archived]Flood; 21 screenshots of the Mission window's log, cropped to the
+     window, scrolled top to bottom). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, and every Flood, Operator, Ookami, Malphas,
+     Merovingian, Seraph and Oracle line. Several entries span two or three screenshots and are read as contiguous (the
+     Operator's first line, the Merovingian's two long lines, the Oracle's "Power isn't everything", Flood's closing
+     line). "Bon;", "mais pourquoi pas?", "mon ami" and "Merci." were in italics. The player's name (Variel) is
+     {player}.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; phases 2 to 4 prefer Mara: "search her out in Mara", "stoolies in
+     Mara"), the looks (those of earlier missions) and the enemy count. No item was shown.
+     Rewards: the crops show no chat, so retail's reward isn't known (archive replays paid about 1,000,000 experience,
+     not a normal reward); no Zion 8.1 mission is built, so these are Zion 8.3's values (363,000 experience, 63,000
+     information, as Evacuation paid), the nearest.
+     Gaps: phase 2 is a fight with the Blackwoods ("lean on them a little bit"), then the Operator's "Uh...huh. Well...
+     I guess we might as well check."; whatever the Blackwoods said wasn't in the log, so they say nothing. Ookami's
+     and Malphas's lines came as the player walked up to the Merovingian and are said on getting near him. The
+     Merovingian's "not a bit of barbarism" line came 16 s after the goal completed, answering the Operator, and is
+     said with the goal's done lines. The Operator's "Seraph? Then where is she?" is said on getting near Seraph. In
+     phase 4 the Oracle's answer came in the same second as the Merovingian's line and is said with the goal's done
+     lines; the Merovingian's "Hmm..." and the Oracle's "Well, honey, it's about time you showed that mug of yours
+     around here." are said when they are talked to after the goal. The Oracle's entry continues past a gap in the
+     screenshots with "Oh, that... Tell you what: I'll forget all about it, if you promise not to be a stranger. Deal?";
+     what came between wasn't captured, so it is left out. Flood's 6:06:14 briefing may run on past the bottom of its
+     screenshot. -->
+<mission id="308104" title="Eyes" description="Find the Oracle in Mara so the Merovingian can ask her why the Machines have not struck back." plot="1"
+         order="8104" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0" />
+  <npc id="2" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say>Hrr... Questions--a waste of time. We have everything we need...</say>
+  </npc>
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say>The Machine response thus far has been less than overwhelming. This raises certain...questions.</say>
+  </npc>
+  <npc id="4" handle="Seraph" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2564" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+    <say after="4">Hmm...</say>
+  </npc>
+  <npc id="6" handle="The Oracle" type="FRIENDLY" at="4" rsi="3c000040" weapon="0">
+    <say after="4">Well, honey, it's about time you showed that mug of yours around here.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>There's something amiss, operative. Something doesn't smell right--or rather, it smells like opportunity.
+
+Where I'm going with this is that our boss's nose has a job for you.</briefing>
+    <enter><say>I sure hope for Flood's sake that wasn't a stab at the Gallic nose.&#10;&#10;Okay, that's where you're meeting the Merv. Everything looks peachy.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">{player}! Bon; now that you are here, we can begin.&#10;&#10;You see, I've decided to consult the fortune-teller. Surprised? Ah, mais pourquoi pas? They say she will listen to those who come to her seeking wisdom...and there is something I wish to know--something about the Machines. She knows the answer; I know she does. Yes, we have had our...disagreements, but I think she will answer me.&#10;&#10;You will go search her out in Mara, mm?</say></talk>
+      <done>
+        <say>I don't know about this...</say>
+        <say npc="1">No, no--not a bit of barbarism, mon ami. We merely wish to chat.</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">Hrr... Questions--a waste of time. We have everything we need...</say>
+      <say npc="3">The Machine response thus far has been less than overwhelming. This raises certain...questions.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Mara">
+    <briefing>You'll have grasped that we aren't exactly on the Oracle's standard guest list. That makes this somewhat difficult...
+
+Ah, well, we'll just ask the Blackwoods. They'll know...and they do so love to spill their guts.</briefing>
+    <enter><say>I'm reading programs in there; they fit the Blackwood profile.&#10;&#10;Now, these guys generally aren't that tough, but they're kind of fond of Momma Oracle, so you may have to lean on them a little bit.</say></enter>
+    <objective goal="2" text="Lean on the Blackwoods" type="DefeatAll">
+      <done><say>Uh...huh. Well... I guess we might as well check.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>What did I tell you, operative? I know how these scum think. Now, hurry along. The Merovingian is on his way, and will be arriving shortly.</briefing>
+    <enter><say>I've got a strong solitary signal in there.</say></enter>
+    <objective goal="3" text="Talk to Seraph" type="Talk" npc="4">
+      <talk><say npc="4">Know that she knows you.&#10;&#10;...&#10;&#10;She will see your master.</say></talk>
+      <done><say>Oh...kay. This whole "looking into your soul" thing is kind of creepy. Uh...&#10;&#10;Whoops, I've got Flood pinging me. I think you'd better get out to the street.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>Seraph? Then where is she?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>I just got a dozen calls from stoolies in Mara telling me exactly where the Oracle can be found. Why can't you get results like that, {player}? What have you been doing, anyway?
+
+No, no; don't tell me. Just get there and try not to look too slope-browed, or you'll answer for it!</briefing>
+    <enter><say>Okay. Our people are in there, the Oracle's in there... Basically, everyone but you is already in there. So try to look like you were just in the bathroom or something.</say></enter>
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="5">
+      <talk><say npc="5">Merci. And now that we have attended to the proprieties, I will come to the reason I am here, which you, of course, know; but again, social forms are so important, hm?&#10;&#10;I want to know why the Machines have not obliterated their enemies--have not even tried. Where is the power--the overwhelming might? What has happened to it, mm? You cannot pretend to be ignorant of this.</say></talk>
+      <done><say npc="6">Power isn't everything.&#10;&#10;There's more to them than you give them credit for. It isn't just keeping this place running--which is hard enough, let me tell you.&#10;&#10;But you've got eyes outside, now. Take a look around. You just might find something.</say></done>
+    </objective>
+  </phase>
+  <finish>Clap-trap I could just as easily have got from the back of any tabloid. "Look around": how insightful! Oh, to think of the time we've wasted on that woman...
+
+Don't expect anything to come of this, {player}. All so-called seers spout such vague blither-blather, knowing that someone somewhere will match one of the countless possible interpretations to events after the fact, thereby proving their infallibility!
+
+Mark my words...</finish>
+</mission>
