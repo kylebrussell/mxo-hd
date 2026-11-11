@@ -435,22 +435,19 @@ namespace hds
             }
         }
 
-        public void SendViewUpdateToClientWhoHasStaticObjectSpawned(PacketContent packet, StaticWorldObject worldObject, string debugMessage)
+        public void SendViewUpdateToClientWhoHasStaticObjectSpawned(PacketContent packet, StaticWorldObject worldObject, UInt64 entityStaticId)
         {
             lock (Clients)
             {
                 foreach (string clientKey in Clients.Keys)
                 {
-                    String entityHackString = "" + worldObject.metrId + "" + worldObject.mxoStaticId;
-                    UInt64 entityStaticId = UInt64.Parse(entityHackString);
-                    
                     WorldClient client = Clients[clientKey] as WorldClient;
-                    ClientView objectView = client.viewMan.GetViewForEntityAndGo(entityStaticId, NumericalUtils.ByteArrayToUint16(worldObject.type, 1));
-                    if (objectView.viewCreated && worldObject.metrId == client.playerData.getDistrictId() && client.playerData.getOnWorld())
+                    // Find, not GetViewForEntityAndGo: that would add an empty view to every player for every car
+                    ClientView objectView = client.viewMan.FindViewForEntity(entityStaticId);
+                    if (objectView != null && objectView.viewCreated && worldObject.metrId == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                     {
                         ServerPackets pak = new ServerPackets();
                         pak.SendUpdateViewStatePacket(client, objectView.ViewID, packet.ReturnFinalPacket());
-                        pak.sendSystemChatMessage(client, debugMessage, "BROADCAST");
                     }
                 }
             }

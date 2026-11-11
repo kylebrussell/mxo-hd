@@ -299,11 +299,7 @@ namespace hds
             }
         }
 
-        private static UInt64 GetSubwayEntityId(Subway subway)
-        {
-            String entityHackString = "" + subway.worldObject.metrId + "" + subway.worldObject.mxoStaticId;
-            return UInt64.Parse(entityHackString);
-        }
+        private static UInt64 GetSubwayEntityId(Subway subway) => Subway.EntityId(subway.worldObject);
 
         public static void CheckForStaticSubways(List<WorldClient> clients, List<Subway> subways)
         {

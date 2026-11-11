@@ -107,4 +107,16 @@ public class SubwayTests
         Assert.NotNull(SubwayHandler.CheckPick(from, SubwayNetwork.Get(12, 4, 1), true, 10));
         Assert.NotNull(SubwayHandler.CheckPick(from, null, true, 10));
     }
+
+    [Fact]
+    public void CarEntityIdsStayClearOfNpcIds()
+    {
+        // Moriah Projects' car (district 1, mxoStaticId 8) was entity "1" + "8" = 18, an NPC's id too
+        var moriah = new StaticWorldObject { metrId = 1, mxoStaticId = 8 };
+        var tabor = new StaticWorldObject { metrId = 1, mxoStaticId = 0x02b0052d };
+        Assert.NotEqual(18ul, hds.world.Structures.Subway.EntityId(moriah));
+        Assert.True(hds.world.Structures.Subway.EntityId(moriah) > uint.MaxValue);
+        Assert.NotEqual(hds.world.Structures.Subway.EntityId(moriah), hds.world.Structures.Subway.EntityId(tabor));
+        Assert.NotEqual(hds.world.Structures.Subway.EntityId(moriah), hds.world.Structures.Subway.EntityId(new StaticWorldObject { metrId = 2, mxoStaticId = 8 }));
+    }
 }

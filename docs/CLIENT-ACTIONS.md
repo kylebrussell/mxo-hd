@@ -338,6 +338,11 @@ No retail capture has a subway ride, so the records are client.dll's and the res
 - No cost, level or organisation check: none was found in the map's code.
 - Dev helper `?subway` (`MXO_DEV_COMMANDS=1`): opens the map at the district's nearest station wherever the player stands.
 
+**The cars.** The server shows each subway car (goid 6568) as a view and runs a door and departure cycle on it (`Subway.cs`, older than this work). Its states went to every player in range as system chat ("Subway ID 1 STATE NOW DRIVE_OUT"); they now go to the debug log. The car's view was keyed by "district followed by static id", so Moriah Projects' car was entity 18, which is also an NPC's id: the NPC pass deleted the car's view as an out-of-range NPC and the subway pass made it again, twice a second (21 creations in 12 s headlessly). Car ids now have their own range.
+
+**The stall at Tabor Park (PR 97 test, not solved).** The tester's client logged in on Tabor Park's Red Line platform and then sent nothing more. The server's packet log shows the client's last packet arriving 2:51:04, right after the server sent the player's own view, the own-view position record (sector 43, region 81, polygon 50: the station prefab's floor, the same polygon as Moriah Projects, where a ride arrived fine) and the usual login RPCs. These were the same bytes as a lobby login except for the position. The subway car's view and its states went out only afterwards (2:51:06 and 2:51:28). A headless login on the same spot keeps going, and `?subway` and a ride work after it (`subway-platform-logins-keep-car-views`). What the client did is not known. If it happens again, a packet log (`MXO_PACKET_LOG=1`) of the attempt will show whether the client stops after the same records.
+
+
 ## Stacks in detail
 
 No retail capture has a split or a merge; the layouts are client.dll's and the rules ours. All come from the bag's drag-and-drop handler (0x620a0000):

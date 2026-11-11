@@ -80,3 +80,34 @@ public static partial class Scenarios
         Check.Equal("2 -178500 -705 -63500", row, "Saved at South Vauxton in Downtown");
     }
 }
+
+public static partial class Scenarios
+{
+    /// <summary>
+    /// Logging in on two platforms (PR 97's real-client stall was a login on Tabor Park's): each subway car's view is
+    /// made once and kept, and no train state reaches players as chat. Moriah Projects' car used to have entity id 18, the
+    /// same as an NPC's, so the NPC pass deleted it and the subway pass made it again twice a second. Then the platform
+    /// login can still open the map and ride.
+    /// </summary>
+    private static async Task SubwayPlatformLoginsKeepCarViews(ScenarioContext context)
+    {
+        HeadlessPlayer tabor = (await context.AddPlayersInWorldAsync(new CharacterSeed("TaborLogin") { X = 68400, Y = -705, Z = 47500 }))[0];
+        HeadlessPlayer moriah = await context.AddPlayerAsync(new CharacterSeed("MoriahLogin") { X = 103000, Y = -705, Z = 13600 });
+        await moriah.EnterWorldAsync();
+        await Task.Delay(12000);
+
+        Check.Equal(1, tabor.ViewsOfGoid(6568).Count, "Subway car views made at Tabor Park");
+        Check.Equal(1, moriah.ViewsOfGoid(6568).Count, "Subway car views made at Moriah Projects");
+        Check.Equal(0, tabor.World.RpcSnapshot().Count(r => Contains(r.Bytes, "STATE NOW")) +
+                       moriah.World.RpcSnapshot().Count(r => Contains(r.Bytes, "STATE NOW")), "Train states sent as chat");
+
+        tabor.SendChat("?subway");
+        await tabor.WaitForRpcAsync("81 3a " + Doubles(68400, -800, 47500));
+        tabor.SendRpc("81 3d");
+        await tabor.WaitForRpcAsync("81 3e 3c");
+        tabor.SendRpc($"81 3c {Le((ushort)12)} {Le((ushort)1)} {Le((ushort)7)}");
+        await tabor.WaitForRpcAsync("81 07");
+        string row = await context.Database.ScalarAsync($"SELECT CONCAT(districtId, ' ', ROUND(x), ' ', ROUND(y), ' ', ROUND(z)) FROM characters WHERE charId={tabor.CharId}");
+        Check.Equal("1 9000 -705 14600", row, "Saved at Mara's platform");
+    }
+}
