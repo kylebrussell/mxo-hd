@@ -18,13 +18,14 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 48 | 26 | 10 | 84 |
+| Handled | 49 | 30 | 10 | 89 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 2 | 27 | 48 | 77 |
+| Ignored | 0 | 21 | 49 | 70 |
 | Wrong | 0 | 0 | 1 | 1 |
-| **Total** | 50 | 55 | 59 | 164 |
+| Not sent by this client | | | | 2 |
+| **Total** | 49 | 53 | 60 | 164 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). Before this work 15 of the handled rows were ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`.
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items").
 
 The biggest gaps left, by impact:
 
@@ -205,11 +206,11 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | ignored | low |
 | `81 16` | Collector exchange (ItemSetIndex, Prizes) | D | handled | medium |
 | `81 17` | `00 00 00 00 00`. Guess: closing the collector | C 1 | ignored | low |
-| `81 1f` | Loot: take all | D, C 39 | handled | high |
-| `81 1b` | Loot one item (ListID, ObjectID, InstanceData); the server's `81 1c` answers | D | ignored | medium |
-| `81 1d` | No fields; the server's `81 1e` (InfoAmount) answers. Guess: take the information | D | ignored | medium |
+| `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
+| `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
+| `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
 | `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | ignored; nothing to do | low |
-| `81 21` | Slot, from item menus (the server's `81 22`: ObjectID, InstanceData, Status) | D | wrong: treated as "open the marketplace" and answered with `81 2a` | low |
+| `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | wrong: treated as "open the marketplace" and answered with `81 2a` | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
 | `81 26` | Marketplace buy | D, C 14 | handled | medium |
@@ -346,6 +347,10 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 - `62` is sent for central-storage drags only.
 
 **The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds, central storage) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
+
+## Looting single items
+
+The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. So there is nothing to implement for them, and the server keeps Take All as the only way to loot.
 
 ## Check in the real client
 
