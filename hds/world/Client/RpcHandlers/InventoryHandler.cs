@@ -218,6 +218,8 @@ namespace hds
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
+            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
+
             if (sourceSlot == WeaponSlot)
             {
                 UnequipWeapon(destSlot);
@@ -366,6 +368,8 @@ namespace hds
         {
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
+
+            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
 
             if (destSlot == WeaponSlot)
             {

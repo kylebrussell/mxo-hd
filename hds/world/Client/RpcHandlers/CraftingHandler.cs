@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -11,8 +12,11 @@ namespace hds
     public class CraftingHandler
     {
         /// <summary>Returns the message shown to the player.</summary>
-        public string Compile(UInt32 resultGoid)
+        public string Compile(UInt32 resultGoid) => Compile(resultGoid, out _);
+
+        private string Compile(UInt32 resultGoid, out UInt16 resultSlot)
         {
+            resultSlot = 0;
             WorldClient client = Store.currentClient;
             UInt32 charId = client.playerData.getCharID();
 
@@ -35,6 +39,8 @@ namespace hds
                 return "Missing to compile " + ItemName(resultGoid) + ": " + string.Join(", ", names);
             }
 
+            if (!CraftingRules.HasResultSpace(resultGoid, inventory, slots)) return "Your inventory is full.";
+
             // One item per ingredient: a stack shrinks (69 01), a single item leaves its slot (5f), a storage entry
             // shrinks (69 00).
             foreach (UInt16 slot in slots)
@@ -50,7 +56,7 @@ namespace hds
             }
 
             // Ingredients are gone, so their slots count as free again; a fragment joins a stack of its kind.
-            UInt16 resultSlot = InventoryHandler.AddItem(client, resultGoid, 0);
+            resultSlot = InventoryHandler.AddItem(client, resultGoid, 0);
             client.FlushQueue();
 
             Output.WriteDebugLog("[CRAFTING] Compiled " + resultGoid + " into slot " + resultSlot + " from slots " +
@@ -61,28 +67,108 @@ namespace hds
         /// <summary>CompileActivateAbility: the stance held while compiling (abilityIDs.csv).</summary>
         public const UInt16 CompileActivateAbility = 969;
 
-        /// <summary>
-        /// A guess at the Code Writer's Compile request, which no capture shows. Write Code (970,
-        /// WriteCodeActivateAbility) reached retail as a normal 80 b9 ability request, so Compile is expected as
-        /// 80 b9 with CompileActivateAbility (969). The whole body is logged so a real-client test shows it; if any
-        /// u32 in it is the result goid of a recipe the character knows, that recipe is compiled.
-        /// </summary>
+        /// <summary>81 2e's structured request; the ordinary ability-use opcode never compiles an item.</summary>
         public bool HandleCompileRequest(byte[] body)
         {
             WorldClient client = Store.currentClient;
-            Output.WriteDebugLog("[CRAFTING] Compile request body: " + BitConverter.ToString(body).Replace("-", " "));
-
-            UInt32? goid = FindKnownRecipe(body, KnownRecipes);
-            if (!goid.HasValue)
+            lock (client.playerData.craftingSync)
             {
-                Output.WriteDebugLog("[CRAFTING] No known recipe goid in the compile request");
-                return false;
+                var request = CraftingRequests.ParseCompile(body);
+                var db = Store.dbManager.WorldDbHandler;
+                var bag = db.GetInventoryItems(client.playerData.getCharID());
+                if (request == null || !Ready(client) || !bag.Any(i => i.Slot == request.ToolSlot && i.Goid == 1271) ||
+                    !CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) ||
+                    !Crafting.Recipes.TryGetValue(request.Item, out var recipe) || CraftingRules.Find(request.Item)?.CantCraft != false ||
+                    !CraftingRequests.Matches(request, recipe) ||
+                    !KnownRecipes.Contains(request.Item) && !db.GetLearnedRecipes(client.playerData.getCharID()).Contains(request.Item))
+                    return Finish(client, 0, 0, request?.Item ?? 0, "That compile request is not available.");
+                var available = bag.Concat(CodeStorageHandler.AsIngredients(db.GetCodeStorage(client.playerData.getCharID()))).ToList();
+                var slots = Crafting.MatchIngredients(recipe, available);
+                if (slots == null || !CraftingRules.HasResultSpace(request.Item, bag, slots))
+                    return Finish(client, 0, 0, request.Item, "You need the recipe's ingredients and room for its result.");
+                var item = CraftingRules.Find(request.Item);
+                if (!item.Complexity.HasValue) return Finish(client, 0, 0, request.Item, "This item's crafting complexity is unknown.");
+                long cost = CraftingRules.InfoCost(item, Skill(client, 530));
+                if (client.playerData.getInfo() < cost) return Finish(client, 4, 0, request.Item, "Not enough information to compile this item.");
+                int skill = Skill(client, 706);
+                bool success = CraftingRules.Succeeds(skill, item.Complexity.Value, Roll(), Skill(client, Specialization(item.Category)));
+                long cash = client.playerData.getInfo() - cost;
+                db.SaveInfo(client, cash);
+                client.playerData.setInfo(cash);
+                new ServerPackets().SendInfoCurrent(client, (uint)cash);
+                if (!success) return Finish(client, 0, 0, request.Item, "Failed to compile the item.");
+                string result = Compile(request.Item, out ushort resultSlot);
+                return Finish(client, resultSlot == 0 ? (byte)0 : (byte)1, (byte)resultSlot, request.Item, result);
             }
+        }
 
-            string result = Compile(goid.Value);
-            new ServerPackets().sendSystemChatMessage(client, result, "BROADCAST");
+        private static readonly Random random = new Random();
+        private static int Roll()
+        {
+            lock (random) return (int)Math.Clamp(50 + 16 * Math.Sqrt(-2 * Math.Log(1 - random.NextDouble())) *
+                Math.Cos(2 * Math.PI * random.NextDouble()), 0, 100);
+        }
+
+        private static bool Ready(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath &&
+            !CombatManager.GetHandler(client).isCombatRunning && ControlActions.CanUseAbilities(client);
+
+        private static bool Finish(WorldClient client, byte result, byte slot, uint item, string message)
+        {
+            client.messageQueue.addRpcMessage(CraftingRequests.BuildResult(result, slot, item));
+            new ServerPackets().sendSystemChatMessage(client, message, "SYSTEM");
             client.FlushQueue();
             return true;
+        }
+
+        internal static int Skill(WorldClient client, ushort stat)
+        {
+            if (stat == 0) return 0;
+            int value = AbilityStats.Player(client, stat);
+            foreach (var row in Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID()))
+            {
+                if (!row.getLoaded()) continue;
+                var entry = AbilityCatalog.Find(AbilityCatalog.IdOf(unchecked((uint)row.getAbilityID())));
+                if (entry == null) continue;
+                foreach (var mod in entry.Modifiers.Where(m => m.Target == stat && m.Number("WhenEnabled", -1) == 0))
+                    value += (int)(mod.Number("MinValue") + DeathPenalty.EffectiveLevel(client, row.getLevel()) * mod.Number("ValueScale", 1));
+            }
+            return value;
+        }
+
+        private static ushort Specialization(uint category)
+        {
+            string tag = System.Text.Encoding.ASCII.GetString(BitConverter.GetBytes(category));
+            return tag.StartsWith("IW") ? (ushort)655 : tag.StartsWith("IA") ? (ushort)652 : tag.StartsWith("IT") ? (ushort)654 :
+                tag.StartsWith("IC") ? (ushort)656 : tag.StartsWith("A") ? (ushort)653 : (ushort)0;
+        }
+
+        /// <summary>81 31, inventory-targeted abilities. Decompile's recipe-known byte is a UI hint, never authority.</summary>
+        public static void ProcessInventoryAbility(WorldClient client, byte[] body)
+        {
+            lock (client.playerData.craftingSync)
+            {
+                var request = CraftingRequests.ParseInventoryAbility(body);
+                if (request == null || request.Ability != 276 || request.Slot == 0 || request.Slot >= 97 || !Ready(client) ||
+                    !CombatSelection.IsLoaded(276, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())))
+                { Finish(client, 0, 0, 0, "That inventory ability is not available."); return; }
+                var db = Store.dbManager.WorldDbHandler;
+                var source = db.GetInventoryItems(client.playerData.getCharID()).FirstOrDefault(i => i.Slot == request.Slot);
+                var item = CraftingRules.Find(source.Goid);
+                if (item == null || item.CantDecompile || !item.Complexity.HasValue || !item.Learnable ||
+                    !Crafting.Recipes.TryGetValue(source.Goid, out var recipe))
+                { Finish(client, 0, request.Slot, source.Goid, "This item cannot teach a recipe by decompiling."); return; }
+                int skill = Skill(client, 707);
+                if (!CraftingRules.Succeeds(skill, item.Complexity.Value, Roll()))
+                { Finish(client, 0, request.Slot, source.Goid, "Failed to decompile the item."); return; }
+                // Persist learning before deleting the item; a failed database write cannot destroy the source.
+                db.LearnRecipe(client.playerData.getCharID(), source.Goid);
+                InventoryHandler.RemoveOne(client, request.Slot);
+                byte[] learned = new byte[11] { 0x81, 0x30, 0, 0, 0, 0, (byte)item.Complexity.Value, 0, 0, 0, 0 };
+                BitConverter.GetBytes(source.Goid).CopyTo(learned, 2);
+                BitConverter.GetBytes(item.Category).CopyTo(learned, 7);
+                client.messageQueue.addRpcMessage(learned);
+                Finish(client, 1, request.Slot, source.Goid, "Learned the recipe for " + item.Name + ".");
+            }
         }
 
         /// <summary>The first u32 (at any byte offset) of a request body that is a known recipe's result goid.</summary>

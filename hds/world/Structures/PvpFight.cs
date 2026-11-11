@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using hds.shared;
 
@@ -31,6 +33,8 @@ namespace hds
         public sealed class Side
         {
             public WorldClient Client;
+            public byte Slot;
+            public bool Present = true;
             public Side Other;
             /// <summary>The opponent as this side's client knows them.</summary>
             public UInt32 OpponentHandle;
@@ -88,18 +92,76 @@ namespace hds
         private UInt64 handlerEntity;
         private byte[] centre;
         private CombatPresentation presentation;
+        private readonly List<Side> members = new List<Side>();
+        public const int MaximumFighters = 6;
+        public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
 
         private PvpFight(WorldClient attacker, WorldClient defender)
         {
-            Attacker = new Side { Client = attacker };
-            Defender = new Side { Client = defender };
+            Attacker = new Side { Client = attacker, Slot = 1 };
+            Defender = new Side { Client = defender, Slot = 2 };
             Attacker.Other = Defender;
             Defender.Other = Attacker;
+            members.Add(Attacker); members.Add(Defender);
         }
 
-        public bool Involves(WorldClient client) => Attacker.Client == client || Defender.Client == client;
+        public bool Involves(WorldClient client) { lock (sync) return members.Any(s => s.Present && s.Client == client); }
 
-        public Side SideOf(WorldClient client) => Attacker.Client == client ? Attacker : Defender.Client == client ? Defender : null;
+        public Side SideOf(WorldClient client) { lock (sync) return members.LastOrDefault(s => s.Client == client); }
+
+        public bool ChangeTarget(WorldClient client, WorldClient target, byte[] request)
+        {
+            lock (sync)
+            {
+                Side side = SideOf(client), opponent = SideOf(target);
+                if (!IsActive || side?.Present != true || opponent?.Present != true || side == opponent) return false;
+                if (side.Other == opponent) return true;
+                client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
+                side.Other = opponent;
+                side.OpponentHandle = PvpCombat.HandleOf(client, target);
+                client.messageQueue.addRpcMessage(CombatHandler.BuildCloseCombatEcho(request));
+                client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 1));
+                client.FlushQueue();
+                return true;
+            }
+        }
+
+        /// <summary>Join the target's existing six-slot interlock. Duels are still two people, by PvpRules.Check.</summary>
+        public bool Join(WorldClient client, WorldClient target, byte[] request)
+        {
+            Side joined, opponent;
+            lock (sync)
+            {
+                opponent = SideOf(target);
+                if (!IsActive || opponent?.Present != true || FighterCount >= MaximumFighters || Involves(client)) return false;
+                if (members.Where(s => s.Present).Any(s => PvpCombat.HandleOf(client, s.Client) == 0 ||
+                    PvpCombat.HandleOf(s.Client, client) == 0)) return false;
+                byte slot = Enumerable.Range(1, MaximumFighters).Select(i => (byte)i).First(i => !members.Any(s => s.Present && s.Slot == i));
+                CombatManager.GetHandler(client).LeaveOtherFights();
+                TradeHandler.Abort(client);
+                joined = new Side { Client = client, Other = opponent, Slot = slot,
+                    OpponentHandle = PvpCombat.HandleOf(client, target), Move = NewMove(1, client.playerData.combatTactic) };
+                joined.Move.First = true;
+                members.Add(joined);
+                CombatHandler handler = CombatManager.GetHandler(client);
+                handler.pvpFight = this; handler.isCombatRunning = true;
+                client.playerData.combatGeneration++;
+                PvpFlag.OnFightStarts(client, true);
+                var packets = new ServerPackets();
+                if (request.Length > 4 && request[4] != 0) client.messageQueue.addRpcMessage(new byte[] { 0x4e, 1 });
+                client.messageQueue.addRpcMessage(CombatHandler.BuildCloseCombatEcho(request));
+                packets.SendEnterCombatMode(client);
+                joined.HandlerViewId = SpawnHandlerFor(client, packets);
+                presentation.AddFighter(client, slot);
+                client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(joined.OpponentHandle, 1));
+                client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindStart, joined.Move, null));
+                SendCombatEffect(joined, false);
+                client.FlushQueue();
+                if (client.IsBot) FaceOpponent(client, target);
+            }
+            ResolvePair(joined, opponent, true, false);
+            return true;
+        }
 
         private CombatInterlock.Move NewMove(byte seq, CombatTactic tactic)
         {
@@ -263,6 +325,8 @@ namespace hds
 
         private UInt16 SpawnHandlerFor(WorldClient client, ServerPackets packets)
         {
+            ClientView existing = client.viewMan.FindViewForEntity(handlerEntity);
+            if (existing?.viewCreated == true) return existing.ViewID;
             packets.SendSpawnGameObject(client, handlerObject, handlerEntity);
             return client.viewMan.GetViewForEntityAndGo(handlerEntity,
                 NumericalUtils.ByteArrayToUint16(handlerObject.GetGoid(), 1)).ViewID;
@@ -293,8 +357,10 @@ namespace hds
             }
         }
 
+        private int resolvingRound;
         private void OnRoundTimer()
         {
+            if (System.Threading.Interlocked.Exchange(ref resolvingRound, 1) != 0) return;
             try
             {
                 if (!IsActive)
@@ -303,24 +369,26 @@ namespace hds
                 }
                 // A player whose connection died is cleaned up by the visibility thread; one who is dead or gone for
                 // another reason ends the fight here
-                foreach (Side side in new[] { Attacker, Defender })
+                Side[] present;
+                lock (sync) present = members.Where(s => s.Present).ToArray();
+                foreach (Side side in present)
                 {
                     WorldClient c = side.Client;
                     if (!c.Alive || !c.playerData.getOnWorld() || c.playerData.isDead || c.playerData.duelDeath)
                     {
                         End(c.playerData.isDead || c.playerData.duelDeath ? EndReason.Death : EndReason.Left, c);
-                        return;
+                        if (!IsActive) return;
                     }
                 }
                 Rounds++;
-                CombatHandler.ApplyRoundInnerStrength(Attacker.Client);
-                CombatHandler.ApplyRoundInnerStrength(Defender.Client);
+                foreach (Side side in present.Where(s => s.Present)) CombatHandler.ApplyRoundInnerStrength(side.Client);
                 ResolveRound(false);
             }
             catch (Exception ex)
             {
                 Output.WriteLine("[PVP] Round failed: " + ex);
             }
+            finally { System.Threading.Volatile.Write(ref resolvingRound, 0); }
         }
 
         /// <summary>The player's next move changed (a new tactic, an ability, a withdrawal): RPC 47 kind 6.</summary>
@@ -387,18 +455,35 @@ namespace hds
 
         private void ResolveRound(bool opening)
         {
+            Side[] present;
+            lock (sync) present = members.Where(s => s.Present).ToArray();
+            var acted = new HashSet<Side>();
+            foreach (Side side in present)
+            {
+                if (!side.Present || acted.Contains(side)) continue;
+                Side opponent = side.Other;
+                if (opponent?.Present != true) continue;
+                bool counter = !acted.Contains(opponent) && opponent.Other == side;
+                acted.Add(side);
+                if (counter) acted.Add(opponent);
+                ResolvePair(side, opponent, opening, counter);
+            }
+        }
+
+        private void ResolvePair(Side first, Side second, bool opening, bool counter)
+        {
             WorldClient dead = null, killer = null;
             AbilityItem landed = null;
             Side landedBy = null;
             Side withdrew = null;
             lock (sync)
             {
-                if (!IsActive)
+                if (!IsActive || !first.Present || !second.Present)
                 {
                     return;
                 }
                 // A server-played fighter picks a tactic each round, like an NPC
-                foreach (Side side in new[] { Attacker, Defender })
+                foreach (Side side in new[] { first, second })
                 {
                     if (side.Client.playerData.isBot)
                     {
@@ -411,22 +496,23 @@ namespace hds
                 }
 
                 // The roles of CombatRules.Resolve: its "player" may withdraw, so a withdrawing defender takes that role
-                foreach (Side side in new[] { Attacker, Defender })
+                foreach (Side side in new[] { first, second })
                     if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(side.Client).Effects)) side.Withdrawing = false;
-                bool bothWithdraw = Attacker.Withdrawing && Defender.Withdrawing && !opening;
-                Side p = Defender.Withdrawing && !Attacker.Withdrawing && !opening ? Defender : Attacker;
-                Side n = p.Other;
+                bool bothWithdraw = first.Withdrawing && second.Withdrawing && counter && !opening;
+                Side p = second.Withdrawing && !first.Withdrawing && counter && !opening ? second : first;
+                Side n = p == first ? second : first;
 
                 int pLevel = PvpFlag.LevelOf(p.Client), nLevel = PvpFlag.LevelOf(n.Client);
                 CombatTactic pTactic = p.Client.playerData.combatTactic, nTactic = n.Client.playerData.combatTactic;
                 CombatTacticType pType = p.Client.playerData.combatTacticType, nType = n.Client.playerData.combatTacticType;
                 AbilityItem pAbility = opening ? null : p.QueuedAbility, nAbility = opening ? null : n.QueuedAbility;
+                if (!counter) nAbility = null;
                 if (!ControlActions.CanUseAbilities(p.Client)) pAbility = null;
                 if (!ControlActions.CanUseAbilities(n.Client)) nAbility = null;
                 if (!opening)
                 {
                     p.QueuedAbility = null;
-                    n.QueuedAbility = null;
+                    if (counter) n.QueuedAbility = null;
                 }
 
                 bool pHit, nHit, pCondition, nCondition, pFirst;
@@ -439,7 +525,7 @@ namespace hds
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
                         AbilityStats.Attack(n.Client, false), AbilityStats.Defense(p.Client, false)) &&
-                        !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects);
+                        !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     pDamage = CombatCalculator.CloseCombatDamage(rng, pLevel, nLevel, pTactic, out absorbedByN, pType,
@@ -448,7 +534,7 @@ namespace hds
                     nDamage = CombatCalculator.CloseCombatDamage(rng, nLevel, pLevel, nTactic, out absorbedByP, nType,
                         AbilityStats.Player(n.Client, 1142), AbilityStats.Toughness(p.Client, false));
                     nDamage = (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client));
-                    pFirst = CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == Attacker, () => rng.Next(2) == 0);
+                    pFirst = !counter || CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == first, () => rng.Next(2) == 0);
                 }
 
                 CombatRules.Outcome outcome = bothWithdraw
@@ -474,12 +560,11 @@ namespace hds
                 nDecided.R1 = nDefense;
 
                 SendRound(p, pDecided, nDecided, outcome.PlayerWins, outcome.Flags, outcome.DamageToPlayer, outcome.PlayerAbsorbed,
-                    outcome.DamageToNpc, outcome.NpcAbsorbed, opening, p.Withdrawing && !opening ? pAttack - nAttack : 0);
+                    outcome.DamageToNpc, outcome.NpcAbsorbed, opening, p.Withdrawing && !opening ? pAttack - nAttack : 0, PvpCombat.HandleOf(p.Client,n.Client));
                 SendRound(n, nDecided, pDecided, !outcome.PlayerWins, outcome.Flags, outcome.DamageToNpc, outcome.NpcAbsorbed,
-                    outcome.DamageToPlayer, outcome.PlayerAbsorbed, opening, 0);
-                presentation.Round(p == Attacker ? outcome.PlayerWins : !outcome.PlayerWins, outcome.Flags,
-                    p == Attacker ? pTactic : nTactic, p == Attacker ? nTactic : pTactic,
-                    p == Attacker ? pAttack : nAttack, p == Attacker ? nAttack : pAttack, opening);
+                    outcome.DamageToPlayer, outcome.PlayerAbsorbed, opening && counter, 0, PvpCombat.HandleOf(n.Client,p.Client));
+                presentation.RoundPair(p.Slot, n.Slot, outcome.PlayerWins, outcome.Flags,
+                    pTactic, nTactic, pAttack, nAttack, opening);
 
                 bool special = (outcome.Flags & CombatRules.SpecialMove) != 0;
                 Output.WriteDebugLog($"[PVP] Round {Rounds}{(opening ? " (opening)" : "")}: {PvpFlag.Name(p.Client)} {pTactic} ({pAttack}/{pDefense}) vs " +
@@ -532,7 +617,7 @@ namespace hds
             }
             else if (landed != null)
             {
-                PvpCombat.LandAbilityOn(landedBy.Client, landed, landedBy.Other.Client);
+                PvpCombat.LandAbilityOn(landedBy.Client, landed, (landedBy == first ? second : first).Client);
             }
             else if (dead != null)
             {
@@ -542,7 +627,7 @@ namespace hds
 
         /// <summary>One side's records of a round: RPC 47 kind 3 with its next move (after the 45 on the opening round) and RPC 45.</summary>
         private void SendRound(Side side, CombatInterlock.Move own, CombatInterlock.Move theirs, bool won, UInt32 flags,
-            int damageToSelf, int selfAbsorbed, int damageToOpponent, int opponentAbsorbed, bool opening, int combatResult)
+            int damageToSelf, int selfAbsorbed, int damageToOpponent, int opponentAbsorbed, bool opening, int combatResult, uint roundOpponent)
         {
             WorldClient client = side.Client;
             CombatInterlock.Move next = NewMove((byte)(own.Seq + 1), client.playerData.combatTactic);
@@ -551,7 +636,7 @@ namespace hds
             {
                 client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindNewRound, own, next));
             }
-            client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(side.RoundRecord, won, own, theirs, side.OpponentHandle, flags,
+            client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(side.RoundRecord, won, own, theirs, roundOpponent, flags,
                 (UInt16)damageToSelf, (Int16)selfAbsorbed, (UInt16)damageToOpponent, (Int16)opponentAbsorbed, CombatHandler.CombatStartTime(),
                 combatResult, theirs.Flag));
             side.RoundRecord++;
@@ -580,6 +665,11 @@ namespace hds
                 {
                     return;
                 }
+                if (reason != EndReason.DuelOver && FighterCount > 2 && who != null && SideOf(who)?.Present == true)
+                {
+                    RemoveMember(reason, SideOf(who));
+                    return;
+                }
                 IsActive = false;
                 presentation?.End(delay);
                 timer?.Stop();
@@ -589,8 +679,9 @@ namespace hds
                                      " ends: " + reason + " (" + (who != null ? PvpFlag.Name(who) : "-") + ")" +
                                      (delay > 0 ? ", interlock down in " + delay + " s" : ""));
 
-                foreach (Side side in new[] { Attacker, Defender })
+                foreach (Side side in members.Where(s => s.Present))
                 {
+                    side.Present = false;
                     WorldClient client = side.Client;
                     CombatHandler handler = CombatManager.GetHandler(client);
                     handler.pvpFight = null;
@@ -616,19 +707,57 @@ namespace hds
             {
                 DelayedActions.After(delay, () =>
                 {
-                    Teardown(Attacker);
-                    Teardown(Defender);
+                    foreach (Side side in members.ToArray()) Teardown(side);
                 });
             }
             else
             {
-                Teardown(Attacker);
-                Teardown(Defender);
+                foreach (Side side in members.ToArray()) Teardown(side);
             }
             if (reason == EndReason.Left && who != null)
             {
                 DuelHandler.OnUnavailable(who);
             }
+        }
+
+        private void RemoveMember(EndReason reason, Side removed)
+        {
+            removed.Present = false;
+            var controller = CombatManager.GetHandler(removed.Client);
+            controller.pvpFight = null; controller.isCombatRunning = false;
+            presentation.RemoveFighter(removed.Client, removed.Slot);
+            foreach (Side side in members.Where(s => s.Present && s.Other == removed).ToArray())
+            {
+                Side replacement = members.FirstOrDefault(s => s.Present && s != side &&
+                    PvpCombat.Check(side.Client, s.Client) == PvpRules.Verdict.Allowed);
+                if (replacement == null)
+                {
+                    // Nobody left whom this player may fight: end the remaining interlock cleanly.
+                    End(EndReason.DuelOver, null);
+                    break;
+                }
+                side.Client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
+                side.Other = replacement;
+                side.OpponentHandle = PvpCombat.HandleOf(side.Client, replacement.Client);
+                side.Client.messageQueue.addRpcMessage(BuildAttackedBy(side.OpponentHandle));
+                side.Client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 1));
+                side.Client.FlushQueue();
+            }
+            if (reason == EndReason.Left)
+            {
+                removed.Client.playerData.combatGeneration++;
+                DuelHandler.OnUnavailable(removed.Client);
+                return;
+            }
+            removed.Fell = reason == EndReason.Death;
+            removed.TeardownPending = true;
+            double delay = TeardownDelayFor(reason);
+            if (delay > 0)
+            {
+                lock (PendingSync) PendingTeardowns[removed.Client] = this;
+                DelayedActions.After(delay, () => Teardown(removed));
+            }
+            else Teardown(removed);
         }
 
         /// <summary>One side's interlock teardown, once. Nothing for a client that is gone or on its way to the Loading Area.</summary>
@@ -642,7 +771,7 @@ namespace hds
                     return;
                 }
                 side.TeardownPending = false;
-                if (!Attacker.TeardownPending && !Defender.TeardownPending)
+                if (!IsActive && members.All(s => !s.TeardownPending))
                 {
                     lock (WorldServer.gameServerEntities)
                     {
@@ -662,7 +791,10 @@ namespace hds
                 return;
             }
             SendCombatEffect(side, true);
-            new ServerPackets().SendCombatEnd(client, side.HandlerViewId, side.OpponentHandle, centre, Rounds, !side.Fell);
+            uint mask = 0;
+            lock (sync)
+                foreach (Side member in members) mask |= 1u << (member.Slot - 1);
+            new ServerPackets().SendCombatEnd(client, side.HandlerViewId, side.OpponentHandle, centre, Rounds, !side.Fell, mask);
             client.viewMan.removeViewByViewId(side.HandlerViewId);
             client.FlushQueue();
             DuelHandler.AfterInterlockTeardown(client);
@@ -696,15 +828,9 @@ namespace hds
             System.Collections.Generic.List<PvpFight> involved;
             lock (PendingSync)
             {
-                involved = new System.Collections.Generic.List<PvpFight>();
-                foreach (PvpFight f in PendingTeardowns.Values)
-                {
-                    if (f.Involves(client) && !involved.Contains(f))
-                    {
-                        involved.Add(f);
-                    }
-                }
+                involved = PendingTeardowns.Values.Distinct().ToList();
             }
+            involved = involved.Where(f => f.SideOf(client) != null).ToList();
             foreach (PvpFight f in involved)
             {
                 Side mine = f.SideOf(client);
@@ -725,9 +851,12 @@ namespace hds
                 }
                 if (othersNow)
                 {
-                    f.Teardown(mine.Other);
+                    lock (f.sync)
+                        foreach (Side side in f.members.Where(s => s != mine).ToArray()) f.Teardown(side);
                 }
-                if (!mine.Other.TeardownPending)
+                bool complete;
+                lock (f.sync) complete = !f.IsActive && f.members.All(s => !s.TeardownPending);
+                if (complete)
                 {
                     lock (WorldServer.gameServerEntities)
                     {

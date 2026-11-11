@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mission id="399904" title="Container Deposit Fixture" description="Exercise native container deposits."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <phase site="Normal" leave="0">
+    <briefing>Deposit the test disk.</briefing>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Take the disk" type="Search" object="1" item="6786" />
+    <objective goal="2" text="Put the disk back" type="Put" object="1" item="6786" after="1" />
+  </phase>
+</mission>

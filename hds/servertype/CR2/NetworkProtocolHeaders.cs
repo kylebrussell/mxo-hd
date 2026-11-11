@@ -10,6 +10,8 @@ namespace hds
         CLIENT_CHAT = 0x28,
         CLIENT_WHISPER = 0x29,
         CLIENT_COMBAT_STANCE = 0x3d, // 01 = draw weapon / ready, 00 = stand down
+        CLIENT_COMBAT_SELECTION = 0x3e,
+        CLIENT_MARTIAL_ART = 0x43,
         CLIENT_CLOSE_COMBAT = 0x40,
         CLIENT_RANGE_COMBAT = 0x41,
         CLIENT_FREE_FIRE_CHOICE = 0x3f, // 3f <inventory slot u16> <kind u32>: hotbar Free Fire weapon (kind 0x10 = item)
@@ -51,7 +53,9 @@ namespace hds
         CLIENT_ABILITY_LOADER = 0xae,
         CLIENT_UPGRADE_ABILITY_LEVEL = 0xb7,
         CLIENT_UPGRADE_ATTRIBUTE = 0xb5,
-        CLIENT_DISABLE_BUFF = 0xB6,
+        CLIENT_DISABLE_BUFF = 0xBB, // 80 bb <ability u16>: dismiss a UBF0 effect on oneself
+        CLIENT_COMPILE_CODE = 0x12e,
+        CLIENT_INVENTORY_ABILITY = 0x131,
 
         CLIENT_LOOT_ALL = 0x117,
         CLIENT_LOOT_ACCEPT = 0x11f,
@@ -78,7 +82,7 @@ namespace hds
 
         // MarketPlace
         CLIENT_MP_LIST_ITEMS = 0x124,
-        CLIENT_MP_OPEN = 0x121,
+        CLIENT_CONTAINER_PUT = 0x121, // 81 21 <bag slot u8>
         CLIENT_MP_OPEN_WINDOW = 0x129, // 81 29 00 00 00 00 01: retail's marketplace open
         CLIENT_MP_BUY = 0x126,          // 81 26 <listing id> <slot>
         CLIENT_MP_PLACE_ITEM = 0x12b,   // 81 2b <category> <price> <container> <slot> 00 00 00 00

@@ -75,12 +75,15 @@ namespace hds
             Store.currentClient.playerInstance.EquippedItemID.setValue(weapon);
 
             PvpFlag.OnEnterWorld(Store.currentClient);
+            Store.currentClient.playerData.deathPenaltyRecord = 0; // the new world discarded the old modifier records
+            DeathPenalty.OnEnter(Store.currentClient);
 
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
             //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
+            if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);
             Store.currentClient.playerData.setOnWorld(true);
             if (Store.currentClient.playerData.pvpFlag)
             {

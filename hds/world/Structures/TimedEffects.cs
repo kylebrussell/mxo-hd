@@ -462,6 +462,14 @@ namespace hds
             }
         }
 
+        /// <summary>Remove one parent ability and send every linked modifier/state's off record.</summary>
+        public static bool RemoveParent(Subject subject, UInt16 parent)
+        {
+            List<Active> removed = subject.Effects.RemoveParent(parent);
+            if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+            return removed.Count > 0;
+        }
+
         public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum)
         {
             List<Active> removed;

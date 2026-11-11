@@ -144,6 +144,33 @@ namespace hds
             return true;
         }
 
+        /// <summary>A safe floor when a construct has no shipped arrival coordinates. This is a server fallback,
+        /// not a reconstruction of its retail spawn. Ordinary mission placement still uses same-floor Project.</summary>
+        public static bool NearestEntry(ushort district, double x, double y, double z, out NavPoint point)
+        {
+            point = default;
+            District data = Load(district);
+            double best = double.MaxValue;
+            bool found = false;
+            foreach (var pair in data.sectors)
+            {
+                SectorInfo info = SectorProperties.Get(district, pair.Key);
+                if (info == null) continue;
+                foreach (Surface s in Surfaces(info, pair.Value, data))
+                {
+                    double[] p = s.Closest(x, z);
+                    double floor = s.Floor(p[0], p[1]);
+                    double score = Square(p[0] - x) + Square(p[1] - z) + Square(floor + 95 - y);
+                    if (score >= best) continue;
+                    if (!Locate(district, p[0], floor + 95, p[1], out NavLocation at)) continue;
+                    best = score;
+                    found = true;
+                    point = new NavPoint { x = p[0], y = at.floorY + 95, z = p[1], location = at };
+                }
+            }
+            return found;
+        }
+
         private static List<Surface> Surfaces(SectorInfo info, Sector sector, District district)
         {
             lock (loadLock)

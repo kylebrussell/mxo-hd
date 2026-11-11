@@ -45,9 +45,9 @@ namespace hds
         private class Polygon
         {
             public float minX, minZ, maxX, maxZ;
-            public short[] xz;       // x0, z0, x1, z1, ...
+            public int[] xz;       // x0, z0, x1, z1, ... (v3 supports the large archive sectors)
             public float a, b, c, d; // plane; flat floors have a = c = 0, b = -1, d = y
-            public float area2;      // twice the signed area: the winding
+            public double area2;      // twice the signed area: the winding
 
             public double FloorAt(double x, double z) => -(a * x + c * z + d) / b;
         }
@@ -93,7 +93,7 @@ namespace hds
             }
         }
 
-        private static List<Polygon> ReadPolygons(BinaryReader r)
+        private static List<Polygon> ReadPolygons(BinaryReader r, bool wide = false)
         {
             int count = r.ReadUInt16();
             List<Polygon> list = new List<Polygon>(count);
@@ -115,12 +115,12 @@ namespace hds
                 }
 
                 int n = head & 0x7f;
-                p.xz = new short[n * 2];
+                p.xz = new int[n * 2];
                 p.minX = p.minZ = float.MaxValue;
                 p.maxX = p.maxZ = float.MinValue;
                 for (int v = 0; v < n; v++)
                 {
-                    short x = r.ReadInt16(), z = r.ReadInt16();
+                    int x = wide ? r.ReadInt32() : r.ReadInt16(), z = wide ? r.ReadInt32() : r.ReadInt16();
                     p.xz[v * 2] = x;
                     p.xz[v * 2 + 1] = z;
                     p.minX = Math.Min(p.minX, x);
@@ -132,7 +132,7 @@ namespace hds
                 for (int v = 0; v < n; v++)
                 {
                     int w = (v + 1) % n;
-                    p.area2 += p.xz[v * 2] * p.xz[w * 2 + 1] - p.xz[w * 2] * p.xz[v * 2 + 1];
+                    p.area2 += (double)p.xz[v * 2] * p.xz[w * 2 + 1] - (double)p.xz[w * 2] * p.xz[v * 2 + 1];
                 }
 
                 list.Add(p);
@@ -163,9 +163,11 @@ namespace hds
                     raw.Position = 0;
                     using (BinaryReader r = new BinaryReader(raw))
                     {
-                        if (r.ReadUInt32() != 0x564e584d || r.ReadUInt16() != 2) // "MXNV", version 2
+                        uint magic = r.ReadUInt32();
+                        ushort version = r.ReadUInt16();
+                        if (magic != 0x564e584d || version != 2 && version != 3)
                         {
-                            throw new InvalidDataException("Not a version 2 nav mesh file: " + path);
+                            throw new InvalidDataException("Not a supported nav mesh file: " + path);
                         }
 
                         r.ReadUInt16();
@@ -173,7 +175,7 @@ namespace hds
                         for (int i = 0; i < district.prefabs.Length; i++)
                         {
                             r.ReadUInt32(); // the prefab's resource id
-                            district.prefabs[i] = ReadPolygons(r);
+                            district.prefabs[i] = ReadPolygons(r, version == 3);
                         }
 
                         UInt32 count = r.ReadUInt32();
@@ -183,7 +185,7 @@ namespace hds
                             Sector s = new Sector { regions = new List<Polygon>[r.ReadUInt16()] };
                             for (int g = 0; g < s.regions.Length; g++)
                             {
-                                s.regions[g] = ReadPolygons(r);
+                                s.regions[g] = ReadPolygons(r, version == 3);
                             }
 
                             s.placements = new Placement[r.ReadUInt16()];
@@ -405,7 +407,7 @@ namespace hds
                 return double.MaxValue;
             }
 
-            short[] xz = p.xz;
+            int[] xz = p.xz;
             int n = xz.Length / 2;
             double winding = p.area2 >= 0 ? 1 : -1, worst = double.MinValue;
             for (int j = 0; j < n; j++)

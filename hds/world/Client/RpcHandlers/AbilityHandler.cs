@@ -124,8 +124,6 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
-            // The Code Writer's Compile (a guess: no capture shows it).
-            if (AbilityID == CraftingHandler.CompileActivateAbility && new CraftingHandler().HandleCompileRequest(packet)) return;
             bool support = AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {

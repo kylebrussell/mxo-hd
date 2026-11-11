@@ -408,6 +408,7 @@ namespace hds
                     foreach (MissionObjectState container in progress.objects.Values)
                     {
                         container.lootOpen = false;
+                        container.putOpen = false;
                     }
                     state.lootOpen = true;
                     ushort instance = client.playerData.missionInstanceCounter;
@@ -420,13 +421,15 @@ namespace hds
                     break;
                 }
 
-                if (objective.type == MissionGoalType.Put && progress.itemSlots.ContainsKey(objective.item))
+                if (objective.type == MissionGoalType.Put)
                 {
-                    if (!TakeItem(client, progress, objective.item))
-                    {
-                        break;
-                    }
-                    Complete(client, progress, objective);
+                    lock (client.playerData.loot) client.playerData.loot.Close();
+                    foreach (MissionObjectState container in progress.objects.Values)
+                        container.lootOpen = container.putOpen = false;
+                    state.putOpen = true;
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildContainerLoot(MissionStaging.TitleFor(state.def.kind),
+                        MissionStaging.ContainerElement, client.playerData.missionInstanceCounter, 2,
+                        Array.Empty<(byte[], UInt32)>()));
                     break;
                 }
 
@@ -439,6 +442,29 @@ namespace hds
 
             client.FlushQueue();
             return true;
+        }
+
+        /// <summary>81 21: only the mission item expected by the currently open, nearby Put container is accepted.</summary>
+        public static bool OnPutItem(WorldClient client, byte slot)
+        {
+            lock (client.playerData.missionSync)
+            {
+                MissionProgress progress = client.playerData.missionProgress;
+                if (progress == null || progress.failed || client.playerData.loot.WindowOpen) return false;
+                MissionObjectState state = progress.objects.Values.FirstOrDefault(o => o.putOpen);
+                if (state?.spot == null || !ContainerActions.InReach(client.playerInstance.Position.getValue(),
+                    state.spot.pos_x, state.spot.pos_y, state.spot.pos_z)) return false;
+                MissionObjective objective = progress.OpenObjectives().FirstOrDefault(o => o.type == MissionGoalType.Put &&
+                    o.objectId == state.def.id && progress.itemSlots.TryGetValue(o.item, out ushort ownedSlot) && ownedSlot == slot);
+                if (objective == null || !TakeItem(client, progress, objective.item)) return false;
+                state.putOpen = false;
+                ushort instance = client.playerData.missionInstanceCounter;
+                client.messageQueue.addRpcMessage(ContainerActions.BuildReply(objective.item,
+                    ((uint)instance << 8) | 0x82000000u, 0));
+                ObjectStates.ShowOpened(client, state.entity, state.goid);
+                Complete(client, progress, objective);
+                return true;
+            }
         }
 
         /// <summary>Take All (81 1f) on a mission object's loot window. Returns true if it was one.</summary>

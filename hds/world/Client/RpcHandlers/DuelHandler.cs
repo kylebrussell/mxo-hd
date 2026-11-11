@@ -339,6 +339,7 @@ namespace hds
 
             loser.messageQueue.addObjectMessage(BuildSelfDuelDeath(MaxHealthOf(loser), PvpFlag.FlagsOf(loser)), false);
             AbilityBuffs.RemoveAll(loser);
+            DeathPenalty.Send(loser); // retain a previous injury; a duel doesn't add another death penalty
             PvpFlag.ToWatchers(loser, BuildOtherDuelDeath());
             winner.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDuelId, PlayerViewAttributes.U32(0))), false);
             PvpFlag.ToWatchers(winner, PlayerViewAttributes.Build((PlayerViewAttributes.OtherDuelId, PlayerViewAttributes.U32(0))));

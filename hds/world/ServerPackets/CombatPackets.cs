@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -82,7 +84,13 @@ namespace hds
         /// </summary>
         public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender,
             CombatRoundEntry firstEntry = null)
+            => BuildCombatInitialize(combatViewId, centre, new Dictionary<byte, uint> { { 1, attacker }, { 2, defender } }, 1, firstEntry);
+
+        /// <summary>ILCombatHandler has six slots (client.dll 6263abxx); only changed slots carry handles.</summary>
+        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, IReadOnlyDictionary<byte, uint> fighters,
+            uint counter, CombatRoundEntry firstEntry = null)
         {
+            if (fighters.Count == 0 || fighters.Keys.Any(slot => slot < 1 || slot > 6)) throw new ArgumentException("Invalid fighter slots");
             PacketContent pak = new PacketContent();
 
             // Combat handler reference
@@ -92,11 +100,11 @@ namespace hds
             pak.AddByteArray(centre);
 
             // Combat relationship data
-            pak.AddUint32(1, 1);              // Update counter
-            pak.AddUint32(3, 1);              // Changed fighter slots 1 and 2
-
-            pak.AddUint32(attacker, 1);
-            pak.AddUint32(defender, 1);
+            pak.AddUint32(counter, 1);
+            uint mask = 0;
+            foreach (byte slot in fighters.Keys) mask |= 1u << (slot - 1);
+            pak.AddUint32(mask, 1);
+            foreach (var fighter in fighters.OrderBy(p => p.Key)) pak.AddUint32(fighter.Value, 1);
             pak.AddByte(firstEntry == null ? (byte)0 : (byte)1);
             if (firstEntry != null) pak.AddByteArray(firstEntry.Serialize());
             byte[] body = pak.ReturnFinalPacket();
@@ -197,7 +205,7 @@ namespace hds
         /// <param name="client">The player whose combat is ending</param>
         /// <param name="combatViewId">View ID of the ILCombatHandler to delete</param>
         public void SendCombatEnd(WorldClient client, UInt16 combatViewId, UInt32 targetViewSpawnId,
-            byte[] combatCentre = null, UInt32 rounds = 0, bool releaseTarget = true)
+            byte[] combatCentre = null, UInt32 rounds = 0, bool releaseTarget = true, UInt32 removedFighterSlots = 3)
         {
             // Retail releases the attacker with a final record on the combat view, RPC 46 <target> 00, an own-view
             // position handoff and then the delete of the combat view; the out-of-combat reset follows ~10 s
@@ -206,7 +214,7 @@ namespace hds
             {
                 PacketContent final = new PacketContent();
                 final.AddUint16(combatViewId, 1);
-                final.AddByteArray(BuildCombatViewFinalRecord(combatCentre, rounds));
+                final.AddByteArray(BuildCombatViewFinalRecord(combatCentre, rounds, removedFighterSlots));
                 final.AddUint16(combatViewId, 1);
                 final.AddByteArray(BuildCombatViewAttackerPosition(client.playerInstance.Position.getValue()));
                 client.messageQueue.addObjectMessage(final.ReturnFinalPacket(), false);

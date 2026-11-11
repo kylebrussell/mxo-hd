@@ -74,6 +74,14 @@ namespace hds
 
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;
+        public UInt32 combatSelection = CombatSelection.NoAbility;
+        public UInt16 combatStyle = AbilityProgression.SelfDefenseAbility;
+        public UInt16 martialArt;
+        public readonly object craftingSync = new object();
+        public float deathPenalty = 1;
+        public double deathPenaltyAt, deathPenaltySentAt;
+        public bool deathPenaltyLoaded;
+        public ushort deathPenaltyRecord;
 		public CombatTacticType combatTacticType = CombatTacticType.Normal;
 
 		// The part of a point of Inner Strength regenerated but not yet granted; see AbilityHandler.RegenAmount

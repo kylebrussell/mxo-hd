@@ -727,7 +727,8 @@ namespace hds{
             SendMarginCharData(knownHardlines, 0x08, client,0, false);                   // Hardlines
             SendMarginCharData(empty, 0x09, client,0, false);                            // Access Nodes?
             //sendMarginCharData(codeArchiveTest, 0x0a, client);                // Code Storage
-            SendMarginCharData(Crafting.BuildKnownRecipesBlock(KnownRecipesBaseBlock), 0x0a, client,0, false);   // Known code recipes
+            SendMarginCharData(Crafting.BuildKnownRecipesBlock(KnownRecipesBaseBlock,
+                Store.dbManager.WorldDbHandler.GetLearnedRecipes(newCharID)), 0x0a, client,0, false);   // Known code recipes
             SendMarginCharData(knownContacts, 0x0b, client,0, false);                    // Contacts
             SendMarginCharData(empty, 0x0e, client,0, false);
 

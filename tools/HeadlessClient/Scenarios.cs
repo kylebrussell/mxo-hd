@@ -20,6 +20,12 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
+        new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
+        new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
+        new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
+        new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
+        new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
         new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),

@@ -50,6 +50,22 @@ namespace hds{
 		            CombatManager.GetHandler(Store.currentClient).ProcessFreeFireChoice(ref rpcData);
 		            break;
 
+                case (int)RPCRequestHeader.CLIENT_COMBAT_SELECTION:
+                    CombatSelection.Process(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_MARTIAL_ART:
+                    CombatSelection.ProcessMartialArt(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_DISABLE_BUFF:
+                    AbilityCancellation.Process(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_COMPILE_CODE:
+                    new CraftingHandler().HandleCompileRequest(rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_INVENTORY_ABILITY:
+                    CraftingHandler.ProcessInventoryAbility(Store.currentClient, rpcData);
+                    break;
+
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
 		            Output.WriteRpcLog("RANGE COMBAT REQUEST");
@@ -252,8 +268,8 @@ namespace hds{
 			        IgnoreListHandler.ProcessRemove(Store.currentClient, rpcData);
 			        break;
 		        // MarketPlace
-		        case (int) RPCRequestHeader.CLIENT_MP_OPEN:
-		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		        case (int) RPCRequestHeader.CLIENT_CONTAINER_PUT:
+                    ContainerActions.Process(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MP_OPEN_WINDOW:
 		            new MarketPlaceHandler().ProcessOpen(ref rpcData);

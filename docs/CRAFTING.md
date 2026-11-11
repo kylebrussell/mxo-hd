@@ -41,16 +41,17 @@ The recipes form a chain:
 
 If an ingredient is missing, the reply lists what is missing. The dev chat command `?compile <goid>` runs it.
 
-A Compile request is expected as `80 b9` with CompileActivateAbility (969), since retail's Write Code (970,
-WriteCodeActivateAbility) came as `80 b9`. This is a guess: `CraftingHandler.HandleCompileRequest` logs the body
-and compiles the first known recipe goid found in it.
+Native compile requests now use structured `81 2e`; inventory-target Decompile276 uses `81 31`.
+The old scan for a plausible recipe inside an `80 b9` ability request is no longer dispatched.
+[Combat action evidence](CLIENT-COMBAT-ACTIONS.md#requests) documents layouts, source addresses, validation,
+script contests, persistent learning and remaining Code Writer/fragment-recovery limits.
 
 ## Known recipes (margin opcode 0x0a)
 
 The margin's character data block 0x0a is the known-recipe list: u32 `4`, then recipe result goids. All 425 goids
 in the list the margin always sent are cookbook results (tools, weapons, clothing). The server now adds the 47
 recipes made only of Code Bits (the fragments) and the five health pills (`Crafting.BuildKnownRecipesBlock`).
-There is no per-character list yet.
+Per-character learned recipes are appended from `char_recipes` and survive a fresh margin login.
 
 ## Stacks
 
@@ -133,14 +134,9 @@ Count bits hold count − 1, a reading the captures favour but don't prove. New 
   - compiling costs information;
   - the compile request names a recipe id.
 
-## Still missing
+## Remaining native validation
 
-- The RPC the Code Writer's Compile button sends, and the server's reply. Capture it with the real client:
-  1. open the Code Writer (Write Code);
-  2. click Compile;
-  3. read `UnknownRPC.txt`.
-- How known recipes reach the client (`RecipeListMD5`), and how decompiling teaches them.
-- The values behind the compile info cost and success roll (`CompileCompileCostMultiplier`, `Complexity`).
-- Downloading from code storage back into the bag, and what retail sends when a storage entry runs out.
-- Per-character known recipes (a database table) and decompiling, which teaches them.
-- Retail's real stack limit, and whether recycling a stack pays for every item (it pays for one now).
+The compiler request/reply layouts, `.12` cost, skill contest and per-character recipe learning now have
+binary/script evidence and headless coverage. See [the native checklist and precise remaining limits](CLIENT-COMBAT-ACTIONS.md#native-checklist-and-current-status).
+The Code Writer/Analyzer UI path, fragment recovery, purity/stability, signal boosts, charges, XP and the other
+inventory-target abilities still need implementation or verification. Existing storage and stack behavior is unchanged by this work.

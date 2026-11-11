@@ -41,8 +41,8 @@ The biggest gaps left, by impact:
 | `05` | Spawn ready: the client is ready for its own view | C 274 | handled | high |
 | `0c 01` | LoadingComplete, sent from `OnEnterWorld` with `80 be`, `3e` and `81 48` | D, C 181, U 212 | handled: retail answered nothing, now so does the server | low |
 | `80 be` | No fields. Sent at world entry by the inventory/ability manager (0x629ea4e8, 0x621e2cf0) after it re-sends its slots. Retail answered nothing directly; the `80 bc` effect list followed in 102 of 181 cases, which is also sent at every world entry anyway. Guess: asks for the active effects | D, C 181, U 212 | ignored | low (guess) |
-| `3e` | Slot, Ability, IsSlot, IgnoreStyleUpdate. At world entry `6b 00 10 00 00 00 00` (147 times), `6b 85 00 ..` (37); also sent when picking a special move (caller has `CombatSpecialMove`). Guess: the combat style / special move in use | D, C 187, U 232 | ignored; combat is Codex's area | medium |
-| `81 48` | No fields, from `viewplayer.cpp`. Retail answered `81 49` (FeatureArray, CharacterID, SubscriptionFeatures), mid-session too (luizoe_margins_Syntax packets 1296/1298) | D, C 184, U 237 | handled: retail's `81 49` bytes | low |
+| `3e` | Slot, Ability, IsSlot, IgnoreStyleUpdate. At world entry `6b 00 10 00 00 00 00` (147 times), `6b 85 00 ..` (37); also sent when picking a special move (caller has `CombatSpecialMove`). Guess: the combat style / special move in use | D, C 187, U 232 | handled: validated selection / own attribute39; see [evidence](CLIENT-COMBAT-ACTIONS.md) | medium |
+| `81 48` | No fields, from `viewplayer.cpp`. Retail answered `81 49` (FeatureArray, CharacterID, SubscriptionFeatures), mid-session too (luizoe_margins_Syntax packets 1296/1298) | D, C 184, U 237 | handled: structured bounded `81 49` (PR99 fixes native crash) | low |
 | `81 08` | Ready for the world change (Status) | C 209 | handled | high |
 | `80 c9` | Region loaded (ObjID, ObjPos) | C 10438 | handled | high |
 | `81 00` | No fields, from `clientshell.cpp` near `tutorial.flg`. Retail answered `80 b3` and `3a` | D, C 8, U 3 | ignored | low (purpose unknown) |
@@ -210,7 +210,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
 | `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
 | `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Retail answered nothing | D, C 40, U 33 | ignored; nothing to do | low |
-| `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | wrong: treated as "open the marketplace" and answered with `81 2a` | low |
+| `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
 | `81 26` | Marketplace buy | D, C 14 | handled | medium |
@@ -226,11 +226,11 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `80 ae` | Load / unload abilities (ObjID, UnEquipping, Equipping) | D, C 314 | handled | high |
 | `80 b7` | Upgrade an ability (AbilityID, CSSlot, NumLevels) | D, C 139 | handled | high |
 | `80 b5` | Raise attributes | D, C 6 | handled | high |
-| `80 bb` | AbilityId (`28 04`, `0a 00`, `0c 00`). Guess: cancel an effect on oneself | D, C 7 | ignored | medium |
+| `80 bb` | AbilityId (`28 04`, `0a 00`, `0c 00`): dismiss a removable beneficial effect | D, C 7 | handled: removable beneficial effects; hostile/protected effects refused | medium |
 | `40` | Close combat (TargetID, ForcedInterlock, WeaponToUseSlot) | D, C 75 | handled | high |
 | `41` | Ranged attack (TargetID) | D, C 21 | handled | high |
 | `42` | Tactic (TacticalValue, TacticalTotalValue, TacticType) | D, C 98 | handled | high |
-| `43` | Martial art (MartialArt) | D | ignored | medium |
+| `43` | Martial art (MartialArt) | D | partial: retained u16; producer/value mapping unknown | medium |
 | `44` | Withdraw (WantToWithdraw) | D, C 18 | handled | high |
 | `3d` | Draw / stand down (IsAutoAttacking) | D, C 39 | handled | high |
 | `3f` | Free Fire weapon | D, C 206 | handled | high |
@@ -238,8 +238,8 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `52` | Duel answer | D, C 15 | handled | medium |
 | `81 9e` | `/pvp` | D | handled | medium |
 | `81 51` | Target | D, C 972 | handled | high |
-| `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | ignored | medium |
-| `81 31` | Craft from a recipe (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | ignored | medium |
+| `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | handled: validated compiler request and script contest; [limits](CLIENT-COMBAT-ACTIONS.md) | medium |
+| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; fragment recovery and other inventory abilities remain | medium |
 | `81 aa` | UserData, Interrupted: an FX or cast ending (guess) | D | ignored | low |
 
 ## Help and petitions

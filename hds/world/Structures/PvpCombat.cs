@@ -52,7 +52,8 @@ namespace hds
             {
                 return PvpRules.Verdict.NotOpponent;
             }
-            return PvpRules.Check(SubjectOf(attacker), SubjectOf(target), PvpFlag.ServerMode, PvpFlag.MaxSafeLevel);
+            if (attacker.playerData.getDistrictId() != target.playerData.getDistrictId()) return PvpRules.Verdict.NotOpponent;
+            return PvpRules.Check(SubjectOf(attacker), SubjectOf(target), PvpFlag.ModeFor(attacker), PvpFlag.MaxSafeLevel);
         }
 
         /// <summary>The other player a view of this client shows, or null.</summary>
@@ -146,7 +147,9 @@ namespace hds
             }
             if (handler.pvpFight != null && handler.pvpFight.Involves(target))
             {
-                return true; // already in this interlock
+                PvpRules.Verdict sameFight = Check(attacker, target);
+                if (sameFight != PvpRules.Verdict.Allowed) return Refuse(attacker, sameFight, targetHandle);
+                return handler.pvpFight.ChangeTarget(attacker, target, request);
             }
 
             PvpRules.Verdict verdict = Check(attacker, target);
@@ -160,10 +163,10 @@ namespace hds
                 attacker.FlushQueue();
                 return true;
             }
-            // One interlock per player (ours: retail's interlocks took more fighters, RPC 4d has "too many participants")
             PvpFight theirs = CombatManager.GetHandler(target).pvpFight;
             if (theirs != null)
             {
+                if (handler.pvpFight == null && theirs.Join(attacker, target, request)) return true;
                 attacker.messageQueue.addRpcMessage(BuildCombatRefused(RefusedFull, false, targetHandle));
                 attacker.FlushQueue();
                 return true;

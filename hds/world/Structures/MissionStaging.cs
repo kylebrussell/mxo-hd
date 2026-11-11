@@ -15,6 +15,7 @@ namespace hds
         public UInt16 goid;
         public UInt64 entity;
         public bool lootOpen;           // a Search window is showing
+        public bool putOpen;            // the empty Put container window is showing
         public UInt32 shownState;       // a computer's CurrentState as the client last had it
     }
 

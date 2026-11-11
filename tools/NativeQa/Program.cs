@@ -9,6 +9,7 @@ string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.G
 string commit = args.Length > 2 ? args[2] : "local";
 bool npcStart = args.Length > 3 && args[3] == "npc";
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
+bool actionsMode = args.Length > 3 && args[3] == "actions";
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -49,12 +50,22 @@ DELETE FROM char_missions WHERE charId=110;
 INSERT INTO char_missions (charId,missionId) VALUES (110,986);
 DELETE FROM char_abilities WHERE char_id=110;
 ");
-    ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217 };
+    ushort[] abilities = { 2,17,18,52,128,137,155,1006,77,967,169,371,1064,1067,1089,383,315,333,254,1135,48,352,359,466,329,355,870,450,433,12,184,217,37,277,276,133 };
     using var catalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "data", "ability_catalog.json")));
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
+    var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),
+        e => e.GetProperty("fields").TryGetProperty("Ability/AbilityLevelCap", out var cap) ? Math.Min(50, cap.GetInt32()) : 50);
     string loadout = string.Join("\n", abilities.Distinct().Select((id, slot) =>
-        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},50,1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
+        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
+    if (actionsMode)
+        await database.ExecuteAsync(@"
+DELETE FROM inventory WHERE charId=110 AND slot<97;
+INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
+(110,1271,1,1,0),(110,531,2,1,0),(110,2399,3,1,0),
+(110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
+(110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
+");
     // The native client's login level is derived from XP, independently of the server's stored Level.
     await database.ExecuteAsync($"UPDATE characters SET exp={PlayerProgression.ExperienceForLevel(50)} WHERE charId=110");
     await database.ExecuteAsync($"UPDATE characters SET x={nativeX},z={nativeZ} WHERE charId=110");

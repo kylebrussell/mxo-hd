@@ -1340,6 +1340,7 @@ namespace hds
             // shows its own death UI and asks to respawn with 81 4c (TeleportHandler.ProcessRespawnRequest).
             player.messageQueue.addObjectMessage(ServerPackets.BuildSelfDeathUpdate(), false);
             AbilityBuffs.RemoveAll(player);
+            DeathPenalty.Apply(player);
             player.messageQueue.addRpcMessage(ServerPackets.BuildDeathMessage());
             player.FlushQueue();
 

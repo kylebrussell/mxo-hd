@@ -132,3 +132,11 @@ Each sector has a packed `.nav`: u32 0, u32 0, u32 N, u32 0, then N × (u32 offs
 The last byte changed over time at one spot (b7, bf, c9), so it is probably not about the place; we send 0.
 
 `research/world-data/navmesh.py` packs both into `data/navmesh/<district>.bin.gz` for the tutorial and the three cities (about 13 MB): `MXNV`, u16 version 2, u16 district, u32 prefab count, per prefab u32 resource id + polygons, u32 sector count, then per sector u16 sector, u16 outdoor region count, per region its polygons, u16 placement count, per placement u16 prefab index, the nine i16 above and u8 quarter turns. Polygons: u16 count, then per polygon u8 vertex count (| 0x80 when sloped), f32 floor y (flat) or f32 a, b, c, d (sloped), and per vertex i16 x, i16 z (whole units). `NavMesh.Locate(district, x, y, z)` (`hds/world/Structures/NavMesh.cs`) finds the polygon, outdoors or indoors, whose floor is nearest y − 95 (within 200 units), and `NavLocation.RecordBytes()` gives the 7 bytes. `?sector` shows it.
+
+## Archive nav meshes
+
+Maps4..11 now have exported nav data as well. Their larger sector-local polygon coordinates require MXNV version3:
+the polygon vertex x/z fields are i32 instead of i16. All other fields follow version2. The loader accepts both;
+existing city/tutorial files remain version2. `NavMesh.NearestEntry` selects a verified floor for constructs with
+no shipped arrival coordinates; ordinary mission projection retains its same-floor and reachability rules.
+See [archive transport](CLIENT-COMBAT-ACTIONS.md#archive-books-and-transporters) for map IDs and source limits.
