@@ -20,6 +20,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("login", Login),
+        new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
@@ -147,6 +148,23 @@ public static partial class Scenarios
         (HeadlessPlayer alice, _, ViewCreation bob, ViewCreation aliceSeen) = await TwoNearby(context, new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
         Check.That(bob.ViewId > 3, "Server view ids start at 4");
         Check.Equal(alice.CharId, BitConverter.ToUInt32(aliceSeen.Attributes["CharacterID"]), "CharacterID in the other player's spawn");
+    }
+
+    private static async Task LoginWithOrphanedCrewMember(ScenarioContext context)
+    {
+        await context.Database.ExecuteAsync(@"
+INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank,created_at)
+VALUES (9000,'LegacyCrew','CrewStartup',0,3,0,0,NOW());
+INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
+VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("CrewStartup") { CrewId = 9000 });
+        RpcRecord crew = await player.WaitForRpcAsync("80 86", TimeSpan.FromSeconds(15));
+        Check.That(Contains(crew.Bytes, "LegacyCrew") && Contains(crew.Bytes, "CrewStartup"),
+            "Login sends the crew and its existing member despite an orphaned row");
+        await player.EnterWorldAsync();
+        player.SendChat("?rep mero 30");
+        await player.WaitForRpcAsync("80 ab 03 1e 00");
+        Check.That(!context.Server.FullOutput().Contains("Packet handling failed"), "World setup completes without dropping a packet");
     }
 
     /// <summary>

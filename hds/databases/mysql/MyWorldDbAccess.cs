@@ -337,7 +337,8 @@ namespace hds.databases{
 	        List<CrewMember> crewMembers = new List<CrewMember>();
 	        OpenConnection();
 	        string query =
-		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online FROM crew_members cm LEFT JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "' ";
+		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online " +
+                "FROM crew_members cm JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "'";
 	        
 	        queryExecuter = conn.CreateCommand();
 	        queryExecuter.CommandText = query;
@@ -358,6 +359,7 @@ namespace hds.databases{
 		        member.isOnline = isOnline;
 		        crewMembers.Add(member);
 	        }
+	        dr.Close();
 	        CloseConnection();
 
 	        return crewMembers;
