@@ -102,6 +102,10 @@ namespace hds
         CLIENT_ANIMATION_START = 0x33,
         CLIENT_ANIMATION_STOP = 0x34,
 
+        // Login handshake (docs/CLIENT-ACTIONS.md): sent together once the client is in the world
+        CLIENT_LOADING_COMPLETE = 0x0c,        // 0c 01: LoadingComplete; retail answered nothing
+        CLIENT_FEATURES_REQUEST = 0x148,       // 81 48 (no body): retail answered 81 49, the feature list
+
         // Faction and crew
         CLIENT_FACTION_INFO = 0xf4,
         CLIENT_FACTION_INVITE = 0x7a,

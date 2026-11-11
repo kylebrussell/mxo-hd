@@ -266,6 +266,19 @@ namespace hds
         }
 
         /// <summary>
+        /// 81 49, the answer to the client's 81 48 at world entry (class 0x62143630): +2 FeatureArray (offset), +4
+        /// CharacterID, +8 SubscriptionFeatures (8 bytes); each feature is 00, ID u32, Data (offset from the feature).
+        /// Retail's late servers sent these bytes in every Rajko capture, CharacterID 0 included: features 200 and 201,
+        /// both "count[0] active[1]". What they switch on in the client is not known.
+        /// </summary>
+        internal static byte[] BuildFeatureList()
+        {
+            return Convert.FromHexString(
+                "8149100000000000000000000000000000020000c80000000e0000c90000001c0013" +
+                "00636f756e745b305d206163746976655b315d001300636f756e745b305d206163746976655b315d00");
+        }
+
+        /// <summary>
         /// 80 e4: new absolute cash (u32 LE), then a reason code (u32 LE). Retail only used reason 0
         /// while loading the world; every mid-session change carried a nonzero reason and came right
         /// after an 80 e7. Retail FM-13SK sell: "80 e4 97 e1 7a 00 07 00 00 00" (8,053,143, reason 7).

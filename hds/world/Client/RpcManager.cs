@@ -299,6 +299,14 @@ namespace hds{
 		             new PlayerHandler().ProcessLootAccepted();
 		             break;
 
+		        // Login handshake
+		        case (int) RPCRequestHeader.CLIENT_LOADING_COMPLETE:
+		            break; // retail answered nothing
+		        case (int) RPCRequestHeader.CLIENT_FEATURES_REQUEST:
+		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
+		            break;
+
+
 
 		        default:
 		            //PASS :D
