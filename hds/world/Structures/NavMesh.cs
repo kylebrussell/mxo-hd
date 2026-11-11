@@ -38,7 +38,7 @@ namespace hds
     ///   count + k), and the polygon is the index in that prefab's INAV mesh, after undoing the placement's pivot and
     ///   quarter turns (all 65 retail records; one stands 0.1 unit outside its polygon, which the edge slack covers).
     /// </summary>
-    public static class NavMesh
+    public static partial class NavMesh
     {
         private class Polygon
         {
@@ -61,6 +61,7 @@ namespace hds
         {
             public List<Polygon>[] regions;
             public Placement[] placements;
+            public List<Surface> projectionSurfaces;
         }
 
         private class District

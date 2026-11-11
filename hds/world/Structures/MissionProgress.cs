@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace hds
 {
@@ -43,6 +44,8 @@ namespace hds
         private readonly Dictionary<ushort, double> npcTriggered = new Dictionary<ushort, double>(); // when their delay began
         public readonly HashSet<int> wavesArrived = new HashSet<int>();           // this phase's waves that have come
         public readonly List<MissionWave> wavesJustArrived = new List<MissionWave>(); // and the runtime has yet to spawn
+        public readonly HashSet<ushort> pendingNpcPlacements = new HashSet<ushort>();
+        public readonly HashSet<int> pendingWavePlacements = new HashSet<int>();
         public readonly Dictionary<int, List<double[]>> reservedWaveSpots = new Dictionary<int, List<double[]>>(); // site spots
         private readonly Dictionary<int, double> waveTriggered = new Dictionary<int, double>();
         public readonly Dictionary<Mob, int> hostileWave = new Dictionary<Mob, int>(); // which wave each generated hostile came with
@@ -112,6 +115,9 @@ namespace hds
             {
                 return false;
             }
+
+            if (pendingWavePlacements.Any(wave => Counts(defeatAll, wave)) ||
+                mission.npcs.Exists(n => pendingNpcPlacements.Contains(n.id) && !IsFriendly(n) && !n.dead && Counts(defeatAll, n.wave))) return true;
 
             bool Expected(MissionArrival arrival, bool triggered)
             {
@@ -427,6 +433,8 @@ namespace hds
             leaveNotNeeded = false;
             wavesArrived.Clear();
             wavesJustArrived.Clear();
+            pendingNpcPlacements.Clear();
+            pendingWavePlacements.Clear();
             waveTriggered.Clear();
             reservedWaveSpots.Clear();
             hostileWave.Clear();

@@ -347,6 +347,21 @@ public class MissionWaveTests
     }
 
     [Fact]
+    public void HostilesAwaitingSafePlacementKeepTheirKillGoalOpen()
+    {
+        (MissionProgress progress, _, _) = Start(@"<mission id=""1"" title=""T"">
+            <npc id=""1"" handle=""Guard"" type=""HOSTILE"" at=""1"" rsi=""1"" />
+            <phase site=""Normal"" enemy=""Machines"" enemies=""2""><objective goal=""1"" text=""Kill them"" type=""DefeatAll"" /></phase></mission>");
+        MissionObjective goal = new() { goal = 99, type = MissionGoalType.DefeatAll };
+        Assert.False(progress.HostilesStillToArrive(goal));
+        progress.pendingWavePlacements.Add(0);
+        Assert.True(progress.HostilesStillToArrive(goal));
+        progress.pendingWavePlacements.Clear();
+        progress.pendingNpcPlacements.Add(1);
+        Assert.True(progress.HostilesStillToArrive(goal));
+    }
+
+    [Fact]
     public void WavesAndClocksAreForgottenWithTheirPhase()
     {
         (MissionProgress progress, _, Action<double> wait) = Start();
