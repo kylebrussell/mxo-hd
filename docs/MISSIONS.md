@@ -65,7 +65,7 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
   phase. The story files number their goals through the whole mission wherever an NPC line waits on one
   (`StoryMissionTests` checks).
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
-- On an NPC, `spawnAfter="3"` makes it arrive when goal 3 completes, instead of standing there from the start: reinforcements, an Agent, someone who "just appears". The goal is one of phase `at`'s for an NPC placed in a generated site, and for an NPC placed by x, y, z the first goal 3 to complete in any phase. It appears where it would have stood (the site spot kept for it, or its x, y, z), or 3 m from the player with `spawnAt="player"` (also when it has no place). Its talk lines, `<near npc>` triggers and goals work from the moment it arrives; until then a `<near npc>` trigger on it doesn't fire, and a `DefeatAll` waits for it unless its goal is optional.
+- On an NPC, `spawnAfter="3"` makes it arrive when goal 3 completes, instead of standing there from the start: reinforcements, an Agent, someone who "just appears". The goal is one of phase `at`'s for an NPC placed in a generated site, and for an NPC placed by x, y, z the first goal 3 to complete in any phase. It appears where it would have stood (the site spot kept for it, or its x, y, z), 3 m from the player with `spawnAt="player"` (also when it has no place), or 3 m from one of the phase's objects with `spawnAt="object:1"`. Its talk lines, `<near npc>` triggers and goals work from the moment it arrives; until then a `<near npc>` trigger on it doesn't fire, and a `DefeatAll` waits for it unless its goal is optional. An NPC can also arrive on the area, a place or a timer (`spawnAfter="enter"`, `spawnNear`, `spawnDelay`): see [Arrivals](#arrivals).
 
 ```xml
 <npc id="3" handle="Security" type="HOSTILE" at="3" rsi="35000024" spawnAfter="3" spawnAt="player" />
@@ -98,7 +98,7 @@ A phase with `site` is placed when it starts instead of at fixed positions. The 
 ```
 
 - `site`: `Normal` (any ordinary building: SlumApt, GenericApt, Office, Derelict, Warehouse), `Any`, or one style: `SlumApt`, `GenericApt`, `Office`, `RedPillExtraction`, `ZionOutpost`, `Derelict`, `Warehouse`, `Bank`, `Hotel`, `Skyscraper`.
-- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight. With `enemiesAfter="3"` they arrive on their site spots when goal 3 completes, instead of when the phase starts.
+- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight. With `enemiesAfter="3"` they arrive on their site spots when goal 3 completes, instead of when the phase starts, or beside the player or an object with `enemiesAt="player"` or `enemiesAt="object:1"`. More groups, each with its own arrival, are `<wave>`s (see [Waves](#waves)).
 - On an NPC, `at="n"` places it in phase n's site when that phase starts. Without `at` it needs x, y, z and spawns at accept. Leave `level` out to match the player's level.
 - `<object id kind>`: a `Computer`, `Safe` or `Mainframe` already on the floor is used if there is one; otherwise one is spawned at the floor's spawner for that kind, or a `Box` at a box spawner. `Furniture` (a filing cabinet, desk or dresser) and `Phone` are bound to one in place.
   - **Retail did the same.** It bound a spawned object to a static only when the static was the same object (`08 <goid> <static>`: The Internuncio's filing cabinets, dressers). At a spawner it spawned the object free (`0c`, no static): the client's definitions give spawner markers no Info or Usable part. Mission objects carry the key `ff <instance> 02` and use count 1, as retail's wall safes and filing cabinets did.
@@ -110,15 +110,62 @@ Goal types beyond the five above:
 
 | Type | Attributes | Done when |
 |---|---|---|
-| `DefeatAll` | | every hostile of the phase is dead |
+| `DefeatAll` | `wave` (optional: `wave="0"`, `wave="1,2"`) | every hostile of the phase is dead, or with `wave`, every hostile of those waves (see [Waves](#waves)) |
 | `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), beside one of the phase's objects (`to="object:1"`: the player and each NPC within 7 m of it, as "Lead Tarka to the Mainframe"), or on using a hardline (`to="hardline"`) |
 | `Protect` | `npc` | the mission fails if the NPC dies; done with the phase's other goals |
 | `Search` | `object`, `item` | a container opens a loot window holding the item; a computer's Take or Hack gives it straight away |
 | `Put` | `object`, `item` | using the object while carrying the item |
 | `Use` | `object` | using the object |
 | `Upload` | `item` | uploading at a hardline while carrying it |
+| `Survive` | `seconds` | that many seconds after it opens: a hold-out. A goal open from the start of a generated phase counts from reaching the area |
 
-`optional="1"` on any goal lets the phase end without it.
+`optional="1"` on any goal lets the phase end without it. `limit="120"` on any goal fails the mission if it isn't done 120 seconds after it opens (counted as for `Survive`); the operator says "You ran out of time." No timer is shown: the client's mission timer isn't known, so say the limit in the goal's text or a line.
+
+### Waves
+
+A phase's own `enemy` and `enemies` are its wave 0. `<wave>` adds more groups of generated hostiles, each with its own arrival, place and kill-all scope:
+
+```xml
+<phase site="Normal" enemy="Zion" enemies="3">
+  <object id="2" kind="Computer" />
+  <wave enemy="Machines" count="3" after="2" delay="44" spawnAt="player"><say>More hostiles coming in!</say></wave>
+  <wave count="2" after="enter" near="object:2" radius="800" />
+  <objective goal="1" text="Kill the guards" type="DefeatAll" wave="0" />
+  <objective goal="2" text="Activate the targeting system" type="Use" object="2" />
+  <objective goal="3" text="Transmit the signal" type="Survive" seconds="195" after="2" />
+</phase>
+```
+
+- `id` numbers the wave; without it they count 1, 2, ... in order. `enemy` is the phase's unless it says, and `count` is how many (default 1).
+- When it comes, as on an NPC (see [Arrivals](#arrivals)): `after` (a goal, or `enter`), `near` with `radius`, and `delay`. A wave with none of them is there when the phase starts.
+- Where: on the site's spots (kept for it when the phase starts), or `spawnAt="player"` or `spawnAt="object:2"`, 3 m from it. A phase without a site has no spots, so its waves need `spawnAt`.
+- Its `<say>` lines are said as it arrives.
+- **Kill-all scope.** A `DefeatAll` with `wave="1,2"` counts only those waves, and named hostiles whose `wave` attribute names one of them (an NPC's wave is 0 unless it says). Without `wave` it counts every hostile of the phase, as before. Either way it doesn't wait for a wave that comes only once it's done: one that waits on the DefeatAll itself or on a goal that opens after it. It waits for one that is on its way (its delay running) or waits on the area, a place or a time.
+
+### Arrivals
+
+Named NPCs and waves arrive on the same conditions. Every one given has to happen, in this order, and the delay counts from the last of them, or from the phase's start:
+
+| On an NPC | On a `<wave>` | Meaning |
+|---|---|---|
+| `spawnAfter="3"` | `after="3"` | goal 3 completes |
+| `spawnAfter="enter"` | `after="enter"` | the player reaches the phase's area: a generated phase's floor, or the phase's start when it has no site |
+| `spawnNear="object:1"` and `spawnRadius` | `near` and `radius` | the player comes within `radius` units (default 1000, 10 m) of a phase object, a living NPC (`npc:4`) or a point (`x,y,z`) |
+| `spawnDelay="27"` | `delay` | that many seconds later |
+| `spawnAt="player"` or `"object:1"` | `spawnAt` | where it appears, as above |
+
+A delay with nothing before it counts from the phase's start, which in a generated phase is when the player is still on the street: use `after="enter"` with it for "half a minute after you get there".
+
+### NPCs that change side
+
+`hostileAfter="4"` on a friendly NPC turns it hostile when goal 4 completes; `friendlyAfter="4"` on a hostile turns it friendly. As with `spawnAfter`, the goal is one of phase `at`'s, or any phase's for an NPC placed by x, y, z. Both can be given (friendly, then hostile, then friendly again). A goal that kills the NPC (`Defeat`, `Loot`) needs it hostile by then, and `Escort`, `Protect` and `Give` need it friendly.
+
+```xml
+<npc id="2" handle="Dora" type="FRIENDLY" at="2" rsi="..." hostileAfter="5" />
+```
+
+- **How the client is told.** An NPC's side is in its creation record only. A friendly mission NPC has `DontAttack`, `TalkDefaultable` and `TalkActiveTracker` and the mission's key; a hostile has `IsEnemy` (`Mob.getCreationData`). All five attributes have update indices in NPC_BASE's class, but no capture shows retail changing them on a living NPC, and Bob in the tutorial carried both `IsEnemy` and `DontAttack` from his creation. So a switch takes the NPC off the clients (a view delete) and spawns it again where it stands, with its health, as a new entity on its new side. The client sees it vanish and reappear at once. An NPC that turns before it has arrived comes on its new side.
+- A friendly NPC that was following the player stops when it turns hostile; it can then be fought, and a `DefeatAll` that is still open counts it. Its lines' portrait follows its side.
 
 ### Ending a phase
 

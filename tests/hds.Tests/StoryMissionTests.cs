@@ -121,16 +121,21 @@ public class StoryMissionTests
                 Assert.True(npc.at > 0, file + ": " + npc.handle + " isn't placed (at) in a generated mission");
             }
 
-            if (npc.spawnAfter >= 0)
+            // It arrives, or changes side, when a goal of its phase completes (any phase's, for an NPC placed by x, y, z); a
+            // Protect goal only completes as its phase ends
+            IEnumerable<MissionObjective> goals = npc.at > 0
+                ? mission.phases[npc.at - 1].missionObjectives
+                : mission.phases.SelectMany(p => p.missionObjectives);
+            foreach ((string what, int goal) in new[] { ("arrives", npc.spawnAfter), ("turns hostile", npc.hostileAfter), ("turns friendly", npc.friendlyAfter) })
             {
-                // It arrives when a goal of its phase completes (any phase's, for an NPC placed by x, y, z); a Protect goal
-                // only completes as its phase ends
-                IEnumerable<MissionObjective> goals = npc.at > 0
-                    ? mission.phases[npc.at - 1].missionObjectives
-                    : mission.phases.SelectMany(p => p.missionObjectives);
-                Assert.True(goals.Any(o => o.goal == npc.spawnAfter && o.type != MissionGoalType.Protect),
-                    file + ": " + npc.handle + " arrives after goal " + npc.spawnAfter + ", which its phase doesn't have");
+                Assert.True(goal < 0 || goals.Any(o => o.goal == goal && o.type != MissionGoalType.Protect),
+                    file + ": " + npc.handle + " " + what + " after goal " + goal + ", which its phase doesn't have");
             }
+
+            Assert.True(npc.hostileAfter < 0 || npc.friendly, file + ": " + npc.handle + " turns hostile but is hostile already");
+            Assert.True(npc.friendlyAfter < 0 || !npc.friendly || npc.hostileAfter >= 0,
+                file + ": " + npc.handle + " turns friendly but is friendly already");
+            CheckArrival(file + ": " + npc.handle, npc.arrival, npc.at > 0 ? mission.phases[npc.at - 1] : null);
         }
 
         for (int p = 0; p < mission.phases.Count; p++)
@@ -149,6 +154,19 @@ public class StoryMissionTests
                 Assert.True(phase.missionObjectives.Any(o => o.goal == phase.enemiesAfter && o.type != MissionGoalType.Protect),
                     where + ": the enemies arrive after goal " + phase.enemiesAfter + ", which the phase doesn't have");
             }
+
+            Assert.True(phase.enemiesAt == null || phase.enemies > 0, where + ": enemiesAt without enemies");
+            foreach (MissionWave wave in phase.Waves())
+            {
+                string what = where + " wave " + wave.id;
+                Assert.True(wave.count > 0, what + ": no hostiles");
+                Assert.True(Enemies.Contains(wave.enemy ?? ""), what + ": enemy '" + wave.enemy + "'");
+                Assert.True(phase.site != null || wave.arrival.at != null, what + ": no site to stand in; give it spawnAt");
+                CheckArrival(what, wave.arrival, phase);
+            }
+
+            Assert.True(phase.waves.All(w => w.id > 0), where + ": a <wave> numbered 0, which is the phase's own enemies");
+            Assert.Equal(phase.waves.Count, phase.waves.Select(w => w.id).Distinct().Count());
 
             Assert.NotEmpty(phase.missionObjectives);
             Assert.Equal(phase.missionObjectives.Count, phase.missionObjectives.Select(o => o.goal).Distinct().Count());
@@ -195,14 +213,15 @@ public class StoryMissionTests
                                     what + ": " + npc.handle + " isn't in this phase");
                             }
 
+                            // On the side the goal needs, at least once a goal has turned it
                             if (goal.type == MissionGoalType.Defeat || goal.type == MissionGoalType.Loot)
                             {
-                                Assert.False(npc!.friendly, what + ": " + npc.handle + " is friendly");
+                                Assert.False(npc!.friendly && npc.hostileAfter < 0, what + ": " + npc.handle + " is friendly");
                             }
 
                             if (goal.type == MissionGoalType.Escort || goal.type == MissionGoalType.Protect || goal.type == MissionGoalType.Give)
                             {
-                                Assert.True(npc!.friendly, what + ": " + npc.handle + " is hostile");
+                                Assert.True(npc!.friendly || npc.friendlyAfter >= 0, what + ": " + npc.handle + " is hostile");
                             }
 
                             // A hostile can be found (reached) or hand something over only while it waits to be attacked
@@ -219,10 +238,24 @@ public class StoryMissionTests
                         Assert.Contains(phase.objects, o => o.id == goal.objectId);
                         break;
                     case MissionGoalType.DefeatAll:
-                        Assert.True(phase.enemies > 0 || mission.npcs.Any(n => !n.friendly && n.at == p + 1) ||
-                                    (!mission.generated && mission.npcs.Any(n => !n.friendly)), what + ": nobody to defeat");
+                        bool Hostile(MissionNpc n) => !n.friendly || n.hostileAfter >= 0;
+                        Assert.True(phase.Waves().Any() || mission.npcs.Any(n => Hostile(n) && n.at == p + 1) ||
+                                    (!mission.generated && mission.npcs.Any(Hostile)), what + ": nobody to defeat");
+                        foreach (int wave in goal.waves)
+                        {
+                            Assert.True(phase.Waves().Any(w => w.id == wave) ||
+                                        mission.npcs.Any(n => Hostile(n) && n.wave == wave && (n.at == p + 1 || (!mission.generated && n.at == 0))),
+                                what + ": no wave " + wave);
+                        }
+
+                        break;
+                    case MissionGoalType.Survive:
+                        Assert.True(goal.seconds > 0, what + ": no seconds to hold out");
                         break;
                 }
+
+                Assert.True(goal.limit >= 0, what + ": a negative limit");
+                Assert.True(goal.waves.Count == 0 || goal.type == MissionGoalType.DefeatAll, what + ": wave= is for DefeatAll");
 
                 // A Search may turn up nothing ("Search the computer", then "Get the data disk from the computer")
                 if (goal.type == MissionGoalType.Get || goal.type == MissionGoalType.Give || goal.type == MissionGoalType.Loot ||
@@ -250,6 +283,35 @@ public class StoryMissionTests
                             what + ": escort target isn't in this phase");
                     }
                 }
+            }
+        }
+    }
+
+    /// <summary>When something arrives and where: after a goal of its phase, near a place it has, beside the player or an object of it.</summary>
+    private static void CheckArrival(string what, MissionArrival arrival, MissionPhase? phase)
+    {
+        Assert.True(arrival.delay >= 0, what + ": a negative delay");
+        if (phase != null && arrival.afterGoal >= 0)
+        {
+            Assert.True(phase.missionObjectives.Any(o => o.goal == arrival.afterGoal && o.type != MissionGoalType.Protect),
+                what + " arrives after goal " + arrival.afterGoal + ", which its phase doesn't have");
+        }
+
+        foreach ((string attribute, string? place) in new[] { ("spawnAt", arrival.at), ("near", arrival.near) })
+        {
+            if (place == null)
+            {
+                continue;
+            }
+
+            Match match = Regex.Match(place, @"^(player|object:(\d+)|npc:(\d+)|-?[\d.]+,-?[\d.]+,-?[\d.]+)$");
+            Assert.True(match.Success, what + ": " + attribute + "=\"" + place + "\"");
+            Assert.False(attribute == "spawnAt" && (match.Groups[3].Success || place.Contains(',')), what + ": spawnAt is player or object:n");
+            Assert.False(attribute == "near" && place == "player", what + ": near the player");
+            if (match.Groups[2].Success)
+            {
+                Assert.True(phase != null && phase.objects.Any(o => o.id == ushort.Parse(match.Groups[2].Value)),
+                    what + ": no object " + match.Groups[2].Value + " in its phase");
             }
         }
     }
@@ -374,7 +436,8 @@ public class StoryMissionTests
     public void EveryGoalCanBeDone(string file)
     {
         Mission mission = Load(file);
-        MissionProgress progress = new MissionProgress(mission);
+        double now = 0;
+        MissionProgress progress = new MissionProgress(mission) { clock = () => now };
         HashSet<uint> held = new HashSet<uint>();
 
         do
@@ -392,8 +455,19 @@ public class StoryMissionTests
             string where = file + " phase " + (progress.phaseIndex + 1);
             while (!progress.AllDone)
             {
-                MissionObjective? next = progress.OpenObjectives()
+                MissionObjective? Next() => progress.OpenObjectives()
                     .FirstOrDefault(o => o.type != MissionGoalType.Protect && CanDo(o, held, progress));
+                MissionObjective? next = Next();
+                if (next == null)
+                {
+                    // Nothing to do but wait: the player reaches the area, walks everywhere, and time passes
+                    progress.entered = true;
+                    progress.UpdateArrivals((_, _) => true);
+                    now += 100000;
+                    progress.UpdateArrivals((_, _) => true);
+                    next = Next();
+                }
+
                 Assert.True(next != null, where + ": stuck with " +
                                           string.Join(", ", progress.Phase!.missionObjectives.Where(o => !progress.IsDone(o.goal))
                                               .Select(o => o.goal + " " + o.description)));
@@ -426,8 +500,8 @@ public class StoryMissionTests
         switch (goal.type)
         {
             case MissionGoalType.DefeatAll:
-                // Late hostiles have to arrive before everyone can be dead
-                return progress == null || !progress.HostilesStillToArrive();
+                // Late hostiles it counts have to arrive before everyone can be dead
+                return progress == null || !progress.HostilesStillToArrive(goal);
             case MissionGoalType.Talk:
                 // Talking to a friendly NPC settles the first open goal that names it (MissionRuntime.OnTalk), so a
                 // Talk listed after that NPC's Protect never completes
