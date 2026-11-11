@@ -22,7 +22,6 @@ public static partial class Scenarios
 
         // A fresh server on the same database: the list comes with the friend list at world entry
         string username = await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING (userId) WHERE charId={alice.CharId}");
-        alice.Dispose();
         using ServerInstance reloaded = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name);
         using HeadlessPlayer relogged = await HeadlessPlayer.LoginAsync(reloaded.Address, username, alice.Handle);
         await relogged.EnterWorldAsync();
