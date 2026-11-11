@@ -8,16 +8,16 @@
      turncoats, so they are Zion. Item stand-ins: the package is Package, the Data Disk is Data_CD, the printout is
      Documents.
      Gaps: Chant is found dead and dead NPCs aren't spawned, so he isn't placed. Phase 2's debriefing room has no NPC
-     to lead Extra to, so the phase is the Talk with Extra (who follows from phase 1) and the fight; retail's Exile
-     programs came in only after Extra's mind was wiped, ours are there from the start. Likewise the masked intruders
-     of phase 3 are there from the start rather than arriving after the package is delivered, and nobody is said to
-     die, so there is no Protect. Telling Chimay the plan is "go" and getting her package are one Get. Lyndon Exner
-     and Nunki (two more bystanders with a line or two) are left out to keep the floor to six NPCs. Dubiago warns the
-     player off and turns hostile when ignored: she waits to be attacked (attacksOnSight 0), reaching her is the
-     Talk and then she is killed. Her computer took about a minute to crack before the disk could be taken; here
-     cracking it and taking the disk are one Search. The Operator's lines on reaching rooms and computers have no
-     position to fire at in a generated phase; the ones that fit are said on arrival or with a goal. The end of
-     Tyndall's 11:14:28 line was cut off in the screenshots: "to Elwanda Williams." is our best reading. -->
+     to lead Extra to, so the phase is the Talk with Extra (who follows from phase 1) and the fight; the Exile
+     programs come in once Extra's mind is wiped. Likewise the masked intruders of phase 3 arrive once the package is
+     delivered, and nobody is said to die, so there is no Protect. Telling Chimay the plan is "go" and getting her
+     package are one Get. Lyndon Exner and Nunki (two more bystanders with a line or two) are left out to keep the
+     floor to six NPCs. Dubiago warns the player off and turns hostile when ignored: she waits to be attacked
+     (attacksOnSight 0), reaching her is the Talk and then she is killed. Her computer took about a minute to crack
+     before the disk could be taken; here cracking it and taking the disk are one Search. The Operator's lines on
+     reaching rooms and computers have no position to fire at in a generated phase; the ones that fit are said on
+     arrival or with a goal. The end of Tyndall's 11:14:28 line was cut off in the screenshots: "to Elwanda Williams."
+     is our best reading. -->
 <mission id="101303" title="Untouchable" description="Recover stolen Zion data on Morpheus' past from the Exiles selling it." plot="1"
          order="1303" org="1" contact="Tyndall" exp="357500" info="94500">
   <npc id="1" handle="Extra" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
@@ -81,7 +81,7 @@
     </objective>
   </phase>
 
-  <phase site="ZionOutpost" enemy="Merovingian" enemies="3">
+  <phase site="ZionOutpost" enemy="Merovingian" enemies="3" enemiesAfter="1">
     <briefing>Okay, I'm sending you the location of a nearby safehouse. Take Extra there. We need to find out where he got his information about Morpheus.</briefing>
     <enter>
       <say>Take Extra to the guarded debriefing room there.</say>
@@ -91,12 +91,12 @@
       <talk><say npc="1">How do I know that Morpheus killed my father? I've read the official Zion data record, man. It's all in there, he showed it to me. It said howwwRK! Ka--k. Uk. ...</say></talk>
       <done><say>What? Extra's signal has flat-lined. It's almost like someone pulled his plug. Hold on... I'm reading inbound hostile Exile programs. You'd better take them out.</say></done>
     </objective>
-    <objective goal="2" text="Kill the attacking Exile programs" type="DefeatAll">
+    <objective goal="2" text="Kill the attacking Exile programs" type="DefeatAll" after="1">
       <done><say contact="1">That takes care of the attackers. But now that Extra has somehow been turned into a vegetable, we've got no lead on Morpheus' data. Hm... Get out on the street, Warrior. I'm going to check something.</say></done>
     </objective>
   </phase>
 
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="3">
     <briefing>I've done some checking on our catatonic operative, Extra. It seems that he's been spending a lot of time at an "underground" social group--a place where a bizarre mix of bluepills, redpills, and Exile programs hang out and exchange information. They tend to change venue frequently to avoid monitoring, but I think I've got a lock on their current location. Uploading it to you now.</briefing>
     <enter><say>It looks like that's the place, all right. Ask around and see what you can find out about Extra--it's likely that he got his data on Morpheus from a contact there. These people don't tend to like Zion much, so try keeping a low profile.</say></enter>
     <objective goal="1" text="Talk to Gavin Runnels" type="Talk" npc="2">
@@ -119,7 +119,7 @@
         <say>Aha! So if we track "Dubiago" down--Wait, what's that? I'm picking up masked intruders entering the area. You'd better take them out--we can't have those thugs killing off our informants.</say>
       </done>
     </objective>
-    <objective goal="4" text="Kill the masked intruders" type="DefeatAll">
+    <objective goal="4" text="Kill the masked intruders" type="DefeatAll" after="3">
       <done><say contact="1">You've taken care of all the masked intruders, Warrior! Now leave the area and I'll brief you on what I've found out about this shadowy "Dubiago" person.</say></done>
     </objective>
   </phase>

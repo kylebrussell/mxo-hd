@@ -5,14 +5,15 @@
      the objective texts, the sites (Venaticorum's place: Normal; Calypso's and Dobra's offices: Office), the looks and
      the enemy counts (the renegades' guards and security are the phases' generated Exiles). Item stand-ins: the
      document on Venaticorum's body is Document_Location_Notes (6855), the document in Calypso's office that names Dobra
-     is Dossier_Exile_Leader (6852), the key to Dobra's office is Access_Code (6782). Rewards: the log is a level-50
-     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     is Dossier_Exile_Leader (6852), the key to Dobra's office is Access_Code (6782). Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
      Gaps: each target greets the player and then fights. Here Venaticorum, Calypso and Dobra wait for the player to
      start the fight (attacksOnSight="0"): finding each is a Talk that plays their lines, then they are killed.
      Venaticorum's document is looted from his body. The receptionists' alarms (Anneliese Isenhour, Jason Pamintuan)
      can't call in more guards; their lines are said on arrival. The Operator's line on reaching Calypso's floor wasn't
      captured, so Flood's reminder about Calypso is said there instead. Dobra's office isn't locked: finding Dobra opens
-     once the key is found, but he can be killed at any time (a kill goal can't wait for another). The hidden line at
+     once the key is found, and killing him once he is found (a kill made sooner counts then). The hidden line at
      a scroll seam in the Operator's note about Dobra is read as nothing ("for sometime now and it's high time"), and
      Flood's "location of Dobra's location" is kept as shown. Blood Drunk's and the Elite Guard's barks were only in
      Team chat; they are placed as named hostiles with their lines. -->
@@ -40,7 +41,7 @@ The target isn't behind any sort of security system other than the guards, so yo
         <say npc="1">I shall have to destroy you myself, human!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill Venaticorum" type="Defeat" npc="1">
+    <objective goal="2" text="Kill Venaticorum" type="Defeat" npc="1" after="1">
       <done><say>Venaticorum is confirmed as dead.</say></done>
     </objective>
     <objective goal="3" text="Search Venaticorum's body" type="Loot" npc="1" item="6855" after="2">
@@ -58,7 +59,7 @@ The target isn't behind any sort of security system other than the guards, so yo
     <objective goal="1" text="Find Calypso" type="Talk" npc="2">
       <talk><say npc="2">Guards! Get in here now!</say></talk>
     </objective>
-    <objective goal="2" text="Kill Calypso" type="Defeat" npc="2">
+    <objective goal="2" text="Kill Calypso" type="Defeat" npc="2" after="1">
       <done><say>Calypso is a confirmed kill.</say></done>
     </objective>
     <objective goal="3" text="Search Calypso's office" type="Search" object="1" item="6852" after="2">
@@ -80,7 +81,7 @@ The target isn't behind any sort of security system other than the guards, so yo
     <objective goal="2" text="Find Dobra" type="Talk" npc="4" after="1">
       <talk><say npc="4">I had a feeling that you were coming... {player}! That's right, I know who you are. After I was unable to contact Venaticorum, Calypso or anyone at their base of operations, I prepared for your futile hit. With that, I would like to say... Welcome to your death, human... Security!</say></talk>
     </objective>
-    <objective goal="3" text="Kill Dobra" type="Defeat" npc="4">
+    <objective goal="3" text="Kill Dobra" type="Defeat" npc="4" after="2">
       <done><say>Dobra is dead!</say></done>
     </objective>
   </phase>

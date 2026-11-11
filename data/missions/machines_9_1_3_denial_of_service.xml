@@ -35,7 +35,7 @@ Well. Thank you for your time.</say>
     <say>The operative is attempting to communicate with me. Please advise.</say>
   </npc>
   <npc id="4" handle="Ricardo Magnor" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564" />
-  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2568">
     <say after="6">Oh, well, I haven't got all day to sit around and play phone tag, hon. I've got to get outside...
 
 You just think about what I said, hm? There's a dear.</say>

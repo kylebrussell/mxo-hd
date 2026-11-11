@@ -8,18 +8,18 @@
      Gaps: the posters are boxes that are used (torn down), as in Zion's The Power of Propaganda. Retail had three, one
      and four; a phase has at most three objects, so the third building has three though Agent Gray still says four.
      No fight was logged in the first two buildings (the second took half a minute), so they have no enemies. In the
-     third the alarm brought in hostiles; here the Exiles and the two Security guards are there from the start, and
-     the operator's alarm line is the second poster's done line. Agent Gray's "These posters appear to be attracting
+     third the alarm brought in hostiles: the Exiles and the two Security guards arrive when the second poster is torn
+     down, and the operator's alarm line is that poster's done line. Agent Gray's "These posters appear to be attracting
      certain Exile elements" came after the second building was done, so it is that phase's complete line. The
      Security guards' barks are on them but only play if the player talks to them, since they attack on sight; the
      Exiles' barks (Merovingian Martial Arts Initiate: "Hey! Get back here!"; Elite Guard: "What's it to you,
      human?") have no place, since the Exiles are generated. Code Bit 8 came from a body and is generic loot. -->
 <mission id="201202" title="Poster Hunt" description="Tear down Morpheus' posters around the City." plot="1"
          order="1202" org="2" contact="Agent Gray" exp="132000" info="59500">
-  <npc id="1" handle="Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568">
+  <npc id="1" handle="Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" spawnAfter="2">
     <say>Oh man. What else can go wrong today?</say>
   </npc>
-  <npc id="2" handle="Tactical Security" type="HOSTILE" at="3" rsi="38000024" weapon="2568">
+  <npc id="2" handle="Tactical Security" type="HOSTILE" at="3" rsi="38000024" weapon="2568" spawnAfter="2">
     <say>You're going down!</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">
@@ -42,7 +42,7 @@
     </objective>
     <complete><say contact="1">Interesting. These posters appear to be attracting certain Exile elements.</say></complete>
   </phase>
-  <phase site="Office" enemy="Merovingian" enemies="4">
+  <phase site="Office" enemy="Merovingian" enemies="4" enemiesAfter="2">
     <briefing>We have one more target building for you. I'm uploading the coordinates to you now: proceed to that location and destroy any remaining posters.</briefing>
     <enter><say contact="1">There are four posters in that building. Destroy them all. We have not been able to contact the local security forces and warn them of your arrival, so if you encounter any human resistance, just eliminate them.</say></enter>
     <object id="1" kind="Box" />

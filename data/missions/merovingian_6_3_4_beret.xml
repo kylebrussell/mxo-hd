@@ -11,9 +11,8 @@
      Objectives tab was never opened), the sites (all Normal: no location was named), the looks and the enemy counts.
      The General's commandos are "Exile programs" to the Operator; they are Machines here, as in Zion's Hear Me (7.2.2).
      No item was shown.
-     Rewards: none were seen in the log (a level-47 player's replay, who levelled on finishing it), and no Zion
-     chapter 6 is built, so these are Zion 7.2's values, the nearest Zion chapter built (363,000 experience, 63,000
-     information).
+     Rewards: the log shows none (a level-47 player's archive replay). These are the Zion files' values for 7.2 to 9.2
+     (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log shows chapter 6's.
      Gaps: in phase 3 the commandos kill their network just before the player reaches the terminal; here the
      computer is a plain Use, and the Operator's "The network in there just went dead." (8 seconds earlier in retail)
      is said with his next line when it is used. In phase 4 the Operator sees nothing ("That place looks completely
@@ -26,7 +25,7 @@
      after the phase ended; here it is said when the phase's goals complete. -->
 <mission id="306304" title="Beret" description="Hunt for a way to reach the General through his commandos and the computer systems they use." plot="1"
          order="6304" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Eh, what are you standing about for, bete? You must go find him!</say>
   </npc>
   <npc id="2" handle="Commando" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568">

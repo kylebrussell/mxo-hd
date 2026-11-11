@@ -9,21 +9,21 @@
      listening station was an office in Tabor Park: Office, in Tabor Park; phases 1 and 2 aren't described: Normal).
      Blood Drunk, who shot at the player at the listening station, is a named Exile there. Item stand-ins: Avarice's
      tracker (also "broadcasting device", "signal broadcaster") is Tracer (6825); the Disk is Data_CD (6831). Rewards:
-     the log is a level-50 player's (79,416,249 experience, a capped figure, and 1,039,500 information), so 308,000
-     experience and 98,000 information are Zion chapter 2.3's values.
+     the log shows 79,416,249 experience and 1,039,500 information (a level-50 player's). These are Zion 2.3's values
+     (308,000 experience, 98,000 information, as Free Your Mind paid).
      Gaps: Avarice's "You sure you know how to use that thing?" came right after the hand-over and is said then and
      when he is talked to again. The Operator's "warmer... hot!" line came half a minute after arriving at the clone's
-     site and is said on arrival. Flood said the clone must die once the tracker is planted; a kill only counts for a
-     goal open when it happens, so killing the clone is open from the start. The listening station's computer
-     ("SUCKAH!!!!") is our "Search the computer" goal, which turns up nothing; the Disk was on the listening team's
-     bodies, and dead NPCs aren't spawned, so it is in a filing cabinet, desk or dresser. Goals are numbered across
-     the mission (1 to 7). -->
+     site and is said on arrival. Flood said the clone must die once the tracker is planted, so killing the clone
+     opens once the device is in place. The listening station's computer ("SUCKAH!!!!") is our "Search the computer"
+     goal, which turns up nothing; securing the area and finding the Disk open with its "Crap! It's missing". The Disk
+     was on the listening team's bodies, and dead NPCs aren't spawned, so it is in a filing cabinet, desk or dresser.
+     Goals are numbered across the mission (1 to 7). -->
 <mission id="302304" title="A Little Research" description="Track one of Desayd's clones and recover the data it gives away." plot="1"
          order="2304" org="3" contact="Flood" exp="308000" info="98000">
   <npc id="1" handle="Avarice" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">You sure you know how to use that thing?</say>
   </npc>
-  <npc id="2" handle="Desayd" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Desayd" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="Blood Drunk" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Well, if it isn't everyone's favorite operative. It seems my earlier guess was correct -- Desayd has found a way to copy himself. He is spreading these clones around the Matrix like a bad rash. And I think you have some experience with rashes, no?
@@ -47,7 +47,7 @@ We've tracked down one of his little duplicates. So what are you waiting for? Ge
     <objective goal="2" text="Plant the tracking device on the computer" type="Put" object="1" item="6825">
       <done><say>Now that the device is in place, continue into the next room. My scans show one of Desayd's copies in there.</say></done>
     </objective>
-    <objective goal="3" text="Kill the Desayd clone" type="Defeat" npc="2">
+    <objective goal="3" text="Kill the Desayd clone" type="Defeat" npc="2" after="2">
       <done><say>All right, the clone has been eliminated, and from what I'm seeing it looks like the device is transmitting. You can get out of there now!</say></done>
     </objective>
     <near npc="2" radius="800">
@@ -70,7 +70,7 @@ Go in, get the data from the computer, and upload it. You can handle that, can't
         <say>Well there's our listening team. You'd better search them and see if you can find that data.</say>
       </done>
     </objective>
-    <objective goal="5" text="Secure the area" type="DefeatAll" />
+    <objective goal="5" text="Secure the area" type="DefeatAll" after="4" />
     <objective goal="6" text="Find the Disk" type="Search" object="2" item="6831" after="4" />
     <objective goal="7" text="Upload the Disk at a hardline" type="Upload" item="6831" after="6" />
   </phase>

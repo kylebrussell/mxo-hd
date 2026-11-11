@@ -18,7 +18,9 @@
      control / terminal to commandeer", "I wonder / what he'll do", "Among the pieces, my / men found", "I have
      heard. ... I / warned her". Flood's first briefing ("Mara, though." / "Now, Briseus" / "The Machines have") and
      his second ("connected to it." / "Wright may have" / "Oh, for...") are read as paragraph breaks.
-     Rewards: Zion's 11.2.4, Ring 149: 352,000 experience, 175,000 information. The log's run paid 253,230
+     Rewards: the log shows 253,230 experience and 84,000 information. These are Zion 11.2's values (352,000
+     experience, 175,000 information; Mara showed the information, and the Zion files take the experience from The
+     Spider, 11.1.5). The log's run paid 253,230
      experience and 84,000 information.
      Gaps: phase 1 is read as: kill the Zion Gunman (his Team line when met), take the access card from his body,
      then use it on the computer ("Search the area"), whose activity report (a popup, left out) gives the bluepill's
@@ -26,35 +28,35 @@
      placed says it. In phase 2 the Twins' four lines are said on arrival (which Twin said which is ours: they
      alternate), and Persephone's and the Merovingian's answers come when the Merovingian is talked to, as they did
      in the same second. Phase 3 is read as: clear the terminal of its programs (the Operator's "they've brought
-     Persephone in" after 15 minutes of play), talk to Persephone, then use the computer; Persephone stands in the
-     area from the start instead of being brought in, and there is no goal that leads an NPC to an object, so she
-     doesn't follow the player to the computer. Retail's red "Don't take Persephone out of the area" has no goal
-     type here and is left out. Her "Well? Where is it? Where?!" is her click line once talked to. No area-complete
-     line was logged at the end of phases 3 and 4. In phase 4 the Twins' and the Holographic Projection's lines are
-     said on arrival. Lines logged after a goal (Persephone's "Do as my husband tells you", the Merovingian's second
-     "Ehh..." and "She has always been headstrong", the Twins' last two) are what each says when clicked. -->
+     Persephone in" after 15 minutes of play), talk to Persephone, then lead her to the computer; Persephone is
+     brought in once the programs are cleared, and taking her to the computer is an escort to it. Retail's red "Don't
+     take Persephone out of the area" has no goal type here and is left out. Her "Well? Where is it? Where?!" is her
+     click line once talked to. No area-complete line was logged at the end of phases 3 and 4. In phase 4 the Twins' and
+     the Holographic Projection's lines are said on arrival. Lines logged after a goal (Persephone's "Do as my husband
+     tells you", the Merovingian's second "Ehh..." and "She has always been headstrong", the Twins' last two) are what
+     each says when clicked. -->
 <mission id="311204" title="The Caretaker" description="Learn where the interface program's human host is held from a Zionite's access card, then get Persephone to a Machine terminal to free it." plot="1"
          order="11204" org="3" contact="Flood" exp="352000" info="175000">
   <npc id="1" handle="Zion Gunman" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
-  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
-  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="2" rsi="58010058" weapon="0">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="2" rsi="57050004" weapon="0">
     <say after="4">Ehh... You know it will be dangerous, my dear. But, if you are really determined to take this rash step...&#10;&#10;Yes? Es-tu sure? Well, then we will do it.&#10;&#10;{player}, contact Flood. He will guide you to the Machine terminal you must secure for my wife.</say>
   </npc>
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="4">Do as my husband tells you.</say>
   </npc>
-  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0" spawnAfter="5">
     <say after="6">Well? Where is it? Where?!</say>
   </npc>
-  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="9">The joys of wedlock.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="9">Oh. That's all, is it?</say>
   </npc>
   <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
-  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="9">She has always been headstrong, but this--! It is going too far. What will they say of me if my wife gets herself killed so, hm?&#10;&#10;Non, non... She is forgetting her responsibilities. Hmh...</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="0">
@@ -103,7 +105,7 @@
       <talk><say npc="6">Take me to the computer, now!&#10;&#10;If we are too late...</say></talk>
       <done><say>Get her to that computer. And no funny business with trying to take her outside!</say></done>
     </objective>
-    <objective goal="7" text="Take Persephone to the computer" type="Use" object="1" after="6">
+    <objective goal="7" text="Take Persephone to the computer" type="Escort" npc="6" to="object:1" after="6">
       <done>
         <say>Holy-- The Machines must've been watching that system; she had defense routines all over her as soon as she sent the commands.&#10;&#10;Oh, man; her signal is not looking good. The Merv's gonna kill us for sure.</say>
         <say npc="6">Unh... I have done it... They are safe...</say>

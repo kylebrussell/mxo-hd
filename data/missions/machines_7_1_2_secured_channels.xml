@@ -31,13 +31,13 @@
     <say>Sergeant, I want a full report as soon as you have the terminal online and fully updated. The Machines are shutting down too many of our lines; we need this one ready to transfer ASAP.
 
 End transmission.</say>
-    <say after="2">Sergeant, I want a full report as soon as you have the terminal back online. The Machines are shutting down too many of our lines; we need this one up ASAP.
+    <say after="3">Sergeant, I want a full report as soon as you have the terminal back online. The Machines are shutting down too many of our lines; we need this one up ASAP.
 
 End transmission.</say>
   </npc>
   <npc id="5" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
   <npc id="6" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
-    <say after="1">Grazie, operatore.
+    <say after="7">Grazie, operatore.
 
 I am certain that you are curious why we had you gather this data from the Elite Commando! We believe that by decompiling and studying this data from their suit's code structure, we will be able to develop a code routine that will allow us to disrupt their stealth function. If we can accomplish this, it will make finding them much easier!</say>
   </npc>
@@ -72,10 +72,10 @@ Wait a sec... Those live programs aren't ours! Uh-oh. They look like commandos.<
       <say>Damn! The Machines were supposed to have that place secured! Looks like the commandos have made a counter-attack. You'd better take them all out.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
       <done><say>Got it. On to the access point!</say></done>
     </objective>
-    <objective goal="2" text="Kill all of the Commandos" type="DefeatAll">
+    <objective goal="3" text="Kill all of the Commandos" type="DefeatAll">
       <done><say>So much for the General's counter-attack.</say></done>
     </objective>
   </phase>
@@ -92,15 +92,15 @@ Gimme a holler when you take out the officer. He'll probably be close to the acc
       <say>There's the access point. Spot that officer yet?</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Disable the access point" type="Use" object="1">
+    <objective goal="4" text="Disable the access point" type="Use" object="1">
       <done><say>You've disabled the access point. That should prevent them from popping any more commandos in there.</say></done>
     </objective>
-    <objective goal="2" text="Eliminate the strongest Elite Commando" type="Defeat" npc="5">
+    <objective goal="5" text="Eliminate the strongest Elite Commando" type="Defeat" npc="5">
       <done><say>You got him? Okay, stand next to him. I'm running the scan...now.
 
 Looks like it's picking something up. You should be able to extract the data off the commando now.</say></done>
     </objective>
-    <objective goal="3" text="Extract the data from the Elite Commando" type="Loot" npc="5" item="6787" after="2">
+    <objective goal="6" text="Extract the data from the Elite Commando" type="Loot" npc="5" item="6787" after="5">
       <done><say>It worked? All right, let's give Gray a call.</say></done>
     </objective>
   </phase>
@@ -116,7 +116,7 @@ Scanning... The area is clear, operative. Proceed.</say>
 
 Affirmative; their operator has been warned.</say>
     </enter>
-    <objective goal="1" text="Give the data to Agent Pace" type="Give" npc="6" item="6787">
+    <objective goal="7" text="Give the data to Agent Pace" type="Give" npc="6" item="6787">
       <talk><say npc="6">Ah, I knew you would be able to get the data, tesoro. Thank you very much for bringing it to me.</say></talk>
       <done><say npc="6">Grazie, operatore.
 

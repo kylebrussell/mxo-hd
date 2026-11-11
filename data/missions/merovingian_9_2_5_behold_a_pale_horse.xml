@@ -11,9 +11,8 @@
      were), the looks, and which Twin says which line (the log names both "Twin"; the first asks, the second answers,
      and they alternate). No phase has hostiles: the Operator saw none at the Merovingian's or Persephone's, and
      Silver's Exiles let the player in.
-     Rewards: the log showed 396,000 experience and 66,500 information for a level 37 player's live run; these are
-     the same-numbered Zion mission 9.2.5's values (363,000 experience, 63,000 information), as the other
-     Merovingian missions use Zion's because most of their logs are level-50 players'.
+     Rewards: the log shows 396,000 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
      Gaps: the Twins' and Malphas's lines before the Merovingian spoke were said one after another over 45 seconds;
      here each group is said on getting near the speaker. The Merovingian's and Persephone's second lines came a few
      seconds after their goals; here they follow the goal and are repeated if they are clicked again. The Twins'
@@ -23,20 +22,20 @@
      the mouth, should we?", start and speaker not captured) is left out. -->
 <mission id="309205" title="Behold a Pale Horse" description="Find out who or what could be the biological interface program the intruder wants." plot="1"
          order="9205" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">Of course, she may not see it in the correct light if her husband brings up such a topic with her... This task demands a trusted intermediary such as yourself, does it not?</say>
   </npc>
-  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say after="1">Oh, yes... Very generous...</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say after="1">She won't be pleased...</say>
   </npc>
-  <npc id="4" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="0" />
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="2">He hates himself. His hate has consumed him... He cannot love; he can only hate everything around him, everything that reminds him of who he is.</say>
   </npc>
-  <npc id="6" handle="Silver" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+  <npc id="6" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2564">
     <say after="3">Not very good at taking a hint, are you, meatbag?</say>
   </npc>
   <npc id="7" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">

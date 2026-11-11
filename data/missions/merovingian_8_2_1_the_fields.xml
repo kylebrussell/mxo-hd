@@ -12,8 +12,8 @@
      was shown), the looks (Persephone's, Malphas's, the hologram's and the Merovingian's are those of earlier
      missions; the others are stand-ins by sex) and the enemy counts (no fight in the log). No item: none was shown,
      and the records computer gives the birth rate on screen.
-     Rewards: the log shows none (no System chat in the images); no Zion 8.2 mission is built, so these are Zion 8.3's
-     values (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the computers' own text can't be shown: the records database's "City birth rate in 1999" article and a
      diagnosis terminal the player used first (a wrong machine, by its text) are in the transcript only, and there is
      one computer here. Which bystander, if any, was a goal in the records office isn't known: talking to Blossom
@@ -29,7 +29,7 @@
      they are talked to again. -->
 <mission id="308201" title="The Fields" description="Gather birth and death rates so the Merovingian can count the humans grown in the Fields." plot="1"
          order="8201" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="1">That should be enough for Flood.&#10;&#10;The process is cold, and sterile...but you need not tell him that.</say>
   </npc>
   <npc id="2" handle="Steffanie Boon" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
@@ -40,10 +40,10 @@
   </npc>
   <npc id="4" handle="Blossom Hendrickson" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
   <npc id="5" handle="Christoper Leiden" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
-  <npc id="6" handle="The Coroner" type="FRIENDLY" at="3" rsi="c9020058" weapon="0" />
+  <npc id="6" handle="The Coroner" type="FRIENDLY" at="3" rsi="7d0a0058" weapon="0" />
   <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
   <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
-  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="8">But we already knew that Smith was a dupe of his own System, n'est-ce pas?&#10;&#10;Well... Don't worry about the Machines, mon ami. They may not like us lifting their skirts, but they have many other difficulties at the moment. If they forget, we can always remind them, non?</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

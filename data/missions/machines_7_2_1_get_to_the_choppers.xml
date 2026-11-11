@@ -24,7 +24,7 @@
   </npc>
   <npc id="3" handle="Long The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
   <npc id="4" handle="Lee The Mechanic" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
+  <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
     <say>Agents can't ever unplug, sweetheart; just think about that! And here everyone assumes they have an easy time of it. The poor dears!</say>
   </npc>
   <npc id="6" handle="Agent Gray" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568" />

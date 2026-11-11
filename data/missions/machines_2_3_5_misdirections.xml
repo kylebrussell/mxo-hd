@@ -10,9 +10,9 @@
      chat panel, so no reward was shown; 300,000 experience and 98,000 information are Zion chapter 2.3's values.
      Gaps: Agent Lee offers an unnamed item recovered from a dead Zion operative; whether the player took it isn't
      shown, so he only says his line. In phase 3 retail asked the player not to talk to anyone or fight, then had the
-     commandos arrive as hostiles who must not be killed while the player leaves. We have no stealth or
-     fail on kill and can't spawn hostiles after a goal, so the phase has no enemies: placing the disk completes it,
-     Gray's warning is said then, and the player leaves. -->
+     commandos arrive as hostiles who must not be killed while the player leaves. Here the commandos arrive once the
+     disk is placed (they have no org of their own: they are generated as Zion, the nearest), and Gray's warning is
+     said then. We have no stealth or fail on kill, so the player only has to get out. -->
 <mission id="202305" title="Misdirections" description="Plant misleading data where the commandos will find it." plot="1"
          order="2305" org="2" contact="Agent Gray" exp="300000" info="98000">
   <npc id="1" handle="Agent Green" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
@@ -42,7 +42,7 @@ Before you plant the data, however, you must launch a diversionary attack. This 
       <done><say>That's everyone. Reinforcements should be on their way - but ignore them if you can. You need to get over to the drop location.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="0">
+  <phase site="Normal" enemy="Zion" enemies="3" enemiesAfter="1">
     <briefing>Now we come to the final phase of your mission, {player}. Your HUD is displaying the coordinates of an illicit information brokerage.
 
 Your attack drew away reinforcements from this location. Enter the site and place the disk in the computer.</briefing>

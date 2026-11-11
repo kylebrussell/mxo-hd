@@ -4,19 +4,18 @@
      Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
      the objective texts, the sites (unnamed buildings: Normal), the looks and the enemy count (the Agents behind "You've
      got company!" are the first phase's generated Machines). Item stand-in: Turso's vial of truth serum is Medicine
-     (6808). Rewards: the log is a level-50 player's (525,000 information, no experience), so this pays Zion 1.2's
-     68,750 experience and 91,000 information.
+     (6808). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
+     values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: in retail Dora is friendly while held, is led out of the building and to Alphonse ("If Dora dies on the way
      there..."), then turns hostile and is killed. NPCs can't switch sides, and a follower stays with the player, so
      Dora isn't led out: the Dora of the second phase is a hostile who waits beside Alphonse (attacksOnSight="0"); finding
-     her is a Talk that plays her plea, then she is killed. The Agents arrive after the confession in retail; here they
-     are on the floor from the start, and "You've got company!" isn't said. The white computer that would release Dora
-     if touched, and the serum only working in that room, can't be expressed: there is only the black computer, used
-     once the serum is given. Flood's "Now that we have the information we seek" came one second before Dora's
-     confession in the log; it is said after it. The Operator's line about the new Agents (said with the first area's
-     completion) is the first phase's complete line; a hidden line at a scroll seam in it, and in Turso's last line, is
-     read as nothing. The Forum Post popup seen after this mission isn't used: nothing in the log ties it to the
-     mission. -->
+     her is a Talk that plays her plea, then she is killed. The Agents arrive after the confession, as in retail, but
+     "You've got company!" isn't said. The white computer that would release Dora if touched, and the serum only working
+     in that room, can't be expressed: there is only the black computer, used once the serum is given. Flood's "Now that
+     we have the information we seek" came one second before Dora's confession in the log; it is said after it. The
+     Operator's line about the new Agents (said with the first area's completion) is the first phase's complete line; a
+     hidden line at a scroll seam in it, and in Turso's last line, is read as nothing. The Forum Post popup seen after
+     this mission isn't used: nothing in the log ties it to the mission. -->
 <mission id="301208" title="Necessary Action" description="Extract the location of Morpheus from a captured Zion operative." plot="1"
          order="1208" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Turso" type="FRIENDLY" at="1" rsi="a5060090" weapon="2568" />
@@ -26,7 +25,7 @@
   </npc>
   <npc id="3" handle="Alphonse" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
   <npc id="4" handle="Dora" type="HOSTILE" at="2" rsi="60010058" weapon="2568" attacksOnSight="0" />
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="4">
     <briefing>Our search for Morpheus must continue, however we have managed to capture a Zion operative by the name of Dora who has worked closely with Morpheus on a number of occasions. We need you to extract information from Dora and get her to give up information on Morpheus' current location.
 
 Dora is being held at this address. Go there now.</briefing>

@@ -10,8 +10,9 @@
      (after retail's "Talk to Silver" in 6.2.1), phase 3's objectives (retail's wording reused), the sites (Normal;
      Mercury's place in Mara, as the minimap showed it, the Blackwoods' in Magog), the looks and the enemy counts.
      The Blackwoods are Exiles, so Merovingian. No item was shown.
-     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay; we use
-     Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 is.
+     Rewards: the log shows 1,034,000 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: in retail the computer in the Blackwoods' place showed the message itself when used (speaker
      "Computer"); a line can't come from an object here, so the Operator reads it out when the computer is used,
      before his own "I'm gonna run a trace on that message." Phase 3 ended 11 seconds after the last Blackwood died,
@@ -22,7 +23,7 @@
      four lines at the second visit are said on getting near them. -->
 <mission id="306202" title="Invention" description="Have a little chat with Mercury about the workers he is sending into the subway, and check up on the Blackwoods in Magog." plot="1"
          order="6202" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="4f0a0058" weapon="2568">
     <say after="1">Uh... I'll just get back to work on my device, then...</say>
   </npc>
   <npc id="2" handle="Hyman Jobst" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
@@ -47,7 +48,7 @@
   <npc id="9" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>I got a little bored watching Mercury, you know.</say>
   </npc>
-  <npc id="10" handle="Mercury" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+  <npc id="10" handle="Mercury" type="FRIENDLY" at="4" rsi="4f0a0058" weapon="2568">
     <say after="6">Gah! I can't get any work done with you people dragging your knuckles through here.</say>
   </npc>
   <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">

@@ -15,24 +15,25 @@
      to be said near. Rewards: 396,000 experience and 66,500 information, shown right after this mission completed.
      Gaps: retail had the player find the intruder's big programs and "give a shout"; finding one is reaching it here
      (a Decelerator that waits to be attacked), and the first area has no kill goal, as the Operator said to get out.
-     In the second area the Agents arrived once the Decelerators were verified; we can't spawn NPCs mid-phase, so
-     Agent Miller and Agent Jones stand on the floor from the start and the lead to the Decelerators opens after both
-     are found. Retail's Agents ran a special routine and killed the Decelerators themselves; we have no allies that
-     fight, so the player kills them once the Agents are beside them. If the first Decelerator dies before the Agents
-     reach it, the lead can't finish, so the Decelerators wait to be attacked. Each Agent's "Target sighted" and
-     "Target verified" came twice; here once when talked to and once on reaching the target. One line may hide at the
-     joins in Gray's first briefing, the Operator's "Found one" and Gray's last briefing; they read whole and are used
-     as such. The Operator's two paragraphs at 2:52:21 are one entry and are said on arrival. The last computer's
-     screen (a search for "stalingrad") isn't shown; the Operator's line about it is said when it is searched. -->
+     In the second area Agent Miller and Agent Jones arrive beside the player once the Decelerators are verified
+     (their lines came in the same second as Gray's "Two Agents have been sent to your location"), and the lead to
+     the Decelerators opens then. Retail's Agents ran a special routine and killed the Decelerators themselves; we have
+     no allies that fight, so the player kills them once the Agents are beside them. If the first Decelerator dies
+     before the Agents reach it, the lead can't finish, so the Decelerators wait to be attacked. Each Agent's "Target
+     sighted" and "Target verified" came twice; here once when talked to and once on reaching the target. One line may
+     hide at the joins in Gray's first briefing, the Operator's "Found one" and Gray's last briefing; they read whole
+     and are used as such. The Operator's two paragraphs at 2:52:21 are one entry and are said on arrival. The last
+     computer's screen (a search for "stalingrad") isn't shown; the Operator's line about it is said when it is
+     searched. -->
 <mission id="209202" title="Puncture" description="Locate the intruder's Decelerator programs for the Agents, carry the System's request for a meeting to the intruder, then break up a Merovingian attack." plot="1"
          order="9202" org="2" contact="Agent Gray" exp="396000" info="66500">
   <npc id="1" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="1" rsi="8f080058" weapon="2568" />
   <npc id="2" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="2" rsi="8f080058" weapon="2568" />
   <npc id="3" handle="Decelerator" type="HOSTILE" attacksOnSight="0" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="4" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+  <npc id="4" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" spawnAfter="2" spawnAt="player">
     <say after="5">Well done, {player}. You may leave the area, and report to Agent Gray for further instructions.</say>
   </npc>
-  <npc id="5" handle="Agent Jones" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+  <npc id="5" handle="Agent Jones" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" spawnAfter="2" spawnAt="player">
     <say after="5">Efficient work, operative. Agent Gray was correct to select you for this operation.</say>
   </npc>
   <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" />

@@ -25,7 +25,7 @@
   <npc id="3" handle="Salcedo" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
   <npc id="4" handle="Ezell" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="5" handle="Niobe" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
-    <say after="1">Don't worry about that Cypherite crap, or people who say we can't trust the General. We've got the people, the skills, and the firepower to win this war, and that's all that matters. Don't you forget it.</say>
+    <say after="7">Don't worry about that Cypherite crap, or people who say we can't trust the General. We've got the people, the skills, and the firepower to win this war, and that's all that matters. Don't you forget it.</say>
   </npc>
   <npc id="6" handle="Zion Kung Fu Master" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say display="5">The Captain has a lot of faith in your abilities, soldier. Don't let her down.</say>
@@ -48,18 +48,18 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Scanning that address... We have a positive ID on Exile readings at that location, operative. Procee-- Just a moment, I'm getting a priority transmission. ...&#10;&#10;{player}, that was our liaison with the General. He's been monitoring your progress against the enemy, and he's placed a squad of his commandos at your disposal for this assault. I'm uploading the squad's location to you now. Rendezvous with them before proceeding against the Exile group.</briefing>
     <enter><say>I've got commando readings in there, all right. Looks like our boys.</say></enter>
-    <objective goal="1" text="Talk to Paris" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Paris" type="Talk" npc="2">
       <talk><say npc="2">It's a honor to have this chance to work with you, sir!</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Salcedo" type="Talk" npc="3">
+    <objective goal="4" text="Talk to Salcedo" type="Talk" npc="3">
       <talk><say npc="3">The Merovingian had better watch out now, sir.</say></talk>
     </objective>
-    <objective goal="3" text="Lead Paris, Salcedo and Ezell out of the area" type="Escort" npc="2,3,4" to="exit" after="2" />
+    <objective goal="5" text="Lead Paris, Salcedo and Ezell out of the area" type="Escort" npc="2,3,4" to="exit" after="4" />
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>This is a significant nest of the Merovingian's Exiles, operative. Make good use of the commandos provided by the General.</briefing>
     <enter><say>Exiles. Lots of 'em. I'm just gonna close my eyes, and you let me know when it's okay to look.</say></enter>
-    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="6" text="Kill all of the Exiles" type="DefeatAll">
       <done>
         <say>I can look now? Oh, good. Yep, all clear in there.</say>
         <say npc="3">That was good work, sir!</say>
@@ -71,7 +71,7 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Stand by, soldier. Captain Niobe is jacked in, and wants to speak with you. Uploading her location now. I wouldn't keep her waiting, {player}.</briefing>
     <enter><say>I've got Niobe and a couple other redpill signals in there.</say></enter>
-    <objective goal="1" text="Talk to Niobe" type="Talk" npc="5">
+    <objective goal="7" text="Talk to Niobe" type="Talk" npc="5">
       <talk><say npc="5">Hey, operative. I was monitoring you, and I liked what I saw today. You've been doing a fine job of working with the General's forces and handling the Merv's Exiles. It's good to know I've got people like you I can count on in this war. I may even have a few special missions for you down the road. Keep your eyes peeled and you'll do all right.</say></talk>
       <done><say>I think that's your cue to take off, {player}.</say></done>
     </objective>

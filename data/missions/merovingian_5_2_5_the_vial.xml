@@ -9,30 +9,28 @@
      are redpills modified by his cheat codes; they have no org of their own, so they are the nearest, Zion, as rogue
      redpills, as in the Machines chapter 5 missions. The Blood Nobles' two barks are two Blood Nobles here.
      Item stand-ins: the empty cheat code vial is Antidote (6803); the sealed package is Package (6817).
-     Rewards: retail showed 986,061 experience and 480,150 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation).
-     Gaps: Anome's men turned up only once the vial was taken ("Watch out! You've got company!"), and in the lab once
-     the package was out ("They've found you!"); we can't spawn hostiles on a goal, so they are there from the start.
-     Retail's areas were done the moment the item was in hand, so there is no kill goal. The Operator's faint corrupt
-     reading is said on coming near the named goon. The vial is in a box. The containment computer takes the vial and
-     gives back the package; the Put is done with Hack, as at every computer. The Effectuator popped in after the
-     package was out; we can't spawn an NPC on a goal, so he is there from the start, his greeting and the Operator's
-     answer are said when the package is taken, and his rain check is his line when talked to after that. The
-     Operator's line that may have come between Malphas's last two lines wasn't captured. Lines at screenshot joins
-     read whole and are used as such. -->
+     Rewards: the log shows 986,061 experience and 480,150 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: Anome's men turn up once the vial is taken ("Watch out! You've got company!"), and in the lab once the
+     package is out ("They've found you!"). Retail's areas were done the moment the item was in hand, so there is no
+     kill goal. The Operator's faint corrupt reading is said on coming near the named goon, who is there from the
+     start. The vial is in a box. The containment computer takes the vial and gives back the package; the Put is done
+     with Hack, as at every computer. The Effectuator pops in once the package is out; his greeting and the
+     Operator's answer are said then, and his rain check is his line when talked to after that. The Operator's line
+     that may have come between Malphas's last two lines wasn't captured. Lines at screenshot joins read whole and are
+     used as such. -->
 <mission id="305205" title="The Vial" description="Retrieve an empty cheat code vial for the Merovingian." plot="1"
          order="5205" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Flood will give you the information you require. See that you follow his instructions precisely.</say>
   </npc>
   <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
     <say>Drop it!</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" spawnAfter="2">
     <say after="2">Oh, sure, that's cool. I'll check back with you later. I can get a rain check on this, right? {player}?</say>
   </npc>
-  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" />
   <npc id="5" handle="Blood Noble" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">Interesting...</say>
   </npc>
@@ -48,7 +46,7 @@ The Merovingian is very interested in the powers conferred by the cheat codes An
       <talk><say npc="1">I have a task for you. It is of great importance to me. These..."cheat codes" come in vials, yes? We have learned that Anome's underlings stupidly throw the vials aside after consuming the fluid within. But of course, traces remain inside the vial. Our spies think they have found a location where one of the vials was consumed. Your job is to go in, and snatch the empty flask.</say></talk>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="3">
+  <phase site="Normal" enemy="Zion" enemies="3" enemiesAfter="1">
     <briefing>The item should be at the indicated location. Anome's men may be about...but that's your concern now, isn't it? Just get the-- Hmm... We'll call it "poison," in case someone is listening.</briefing>
     <enter><say>Place looks clean so far.</say></enter>
     <object id="1" kind="Box" />
@@ -61,7 +59,7 @@ You've got company!</say></done>
       <say>Wait, I'm getting a very faint tickle of something... A slightly corrupt reading... You may be getting close.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="3">
+  <phase site="Normal" enemy="Zion" enemies="3" enemiesAfter="2">
     <briefing>Took your time retrieving that, didn't you?
 
 You'll be taking the item to a certain lab of ours for containment. What? Oh, didn't I mention that we believe the cheat codes are a mutagenic agent, capable of corrupting code structures nearby? You've seen what's happened to Anome's men, yes? Why do you think the Machines had the codes in that protective case?

@@ -19,11 +19,11 @@
      own; the Operator's "Morpheus... Man... Morpheus..." is used. -->
 <mission id="107202" title="Hear Me" description="Help Seraph search for Sati's signal in the code of the General's soldiers." plot="1"
          order="7202" org="1" contact="Tyndall" exp="363000" info="63000">
-  <npc id="1" handle="Seraph" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564" />
+  <npc id="1" handle="Seraph" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2564" />
   <npc id="2" handle="Morpheus Signal" type="FRIENDLY" at="3" rsi="000100b4" weapon="2564">
     <say>I will return Neo to Zion...if it takes my very last breath.</say>
   </npc>
-  <npc id="3" handle="Ghost" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say>We'll have to be ready to jump on this signal wherever we pick it up.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

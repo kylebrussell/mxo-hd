@@ -12,8 +12,9 @@
      Joins between images read as contiguous: "even a booby like that / intruder, Halborn", "that this is / going to
      be...weird?", "hasten our understanding / of the program", "I sensed / the strange code", "you carry the / code of
      that star-crossed program", and "hoodoo associated with it." / "You can go and report" as a paragraph break.
-     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
-     115,500 information). The log's run paid 132,000 experience and 80,500 information.
+     Rewards: the log shows 132,000 experience and 80,500 information. These are Zion 11.1's values (352,000
+     experience, 115,500 information, as The Spider paid). The log's run paid 132,000 experience and 80,500
+     information.
      Gaps: each phase's goal is the one talk the log shows; Malphas's "Please take this code sample" is a Get, and the
      sample is only carried after that (the Operator's "give her a whiff of that code" is a talk, not a Give). The
      Operator's lines 30 to 60 seconds after each briefing are the arrival (enter) lines. Lines logged after a goal
@@ -22,19 +23,19 @@
      entry at 9:43:02 PM is hidden by the scroll; it is taken as the standard area-complete line. -->
 <mission id="311101" title="Tasseomancy" description="Take a sample of the biological interface program's code to the Merovingian's specialists and report what they make of it." plot="1"
          order="11101" org="3" contact="Flood" exp="352000" info="115500">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="2564">
     <say after="1">Our own studies, of course, will continue.</say>
   </npc>
   <npc id="2" handle="Ethereal 2" type="FRIENDLY" at="2" rsi="d8040058" weapon="0">
     <say after="2">Please deposit the payment into our usual account.&#10;&#10;My thanks to you.</say>
   </npc>
-  <npc id="3" handle="Madame T." type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+  <npc id="3" handle="Madame T." type="FRIENDLY" at="3" rsi="4d0a0058" weapon="0">
     <say after="3">Leave me now! Ah, I am overcome! O fates, spare your poor servant!</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">To tell the truth, it intrigues me more and more. A new type of program, impervious to standard modes of analysis! Who knows what it might be capable of?</say>
   </npc>
-  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="a8060090" weapon="2564">
     <say after="4">Hmh. I only showed him a few of my claws.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

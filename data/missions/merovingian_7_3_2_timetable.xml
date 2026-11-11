@@ -13,9 +13,9 @@
      neighbourhood was shown), the looks (the Trainman's and the General's are those of earlier missions, the
      commandos' those of other files' commandos) and the enemy count (the last area's fight took about four minutes
      twenty, so a large group). No mission item was shown.
-     Rewards: the log shows 406,815 experience and 133,000 information, a level-38 player's archive replay and not a
-     normal reward; no Zion 7.3 mission is built, so these are Zion 7.2's values, the nearest (363,000 experience,
-     63,000 information, as Hear Me paid).
+     Rewards: the log shows 406,815 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
      Gaps: the first area's goals completed two minutes after the commandos' lines, so here they are led out of the
      area before being taken to the Trainman; that isn't shown. Flood's warning that they "may be attracting a certain
      amount of Machine attention" had no fight in the log, so the second area has no hostiles, only Protect goals.
@@ -33,10 +33,10 @@
   <npc id="1" handle="Krampton" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="2" handle="Teslar" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="Trainman" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
-  <npc id="4" handle="The General" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="The General" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="6" handle="Trainman" type="FRIENDLY" at="4" rsi="ec020058" weapon="0" />
-  <npc id="7" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="7" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say after="12">No... No, it won't take long...</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

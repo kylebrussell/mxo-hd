@@ -13,7 +13,9 @@ namespace hds
     /// Retail behaviour this follows (Welcome to the Matrix, Exile Extermination and The Internuncio, luizoe Recursion log):
     /// objectives go out with 80 a0 (flag 01 = done); talking arrives as 80 c7 &lt;view&gt; &lt;spawn&gt; 09, Get as 0d, Give as 0e. When a
     /// phase's goals are all done the operator sends client string 0x2600000c ("Goals for this area are complete. Find the
-    /// nearest exit quickly!"), and the next phase or the mission's end comes once the player has left.
+    /// nearest exit quickly!"), and the next phase or the mission's end comes once the player has left. When the player
+    /// needn't leave first (an upload at a hardline, NPCs that follow into the next phase), retail's operator sent
+    /// 0x26000004 ("Goals for this mission phase are complete!") instead, and the next briefing came in the same second.
     /// </summary>
     public static class MissionRuntime
     {
@@ -23,7 +25,8 @@ namespace hds
         public const byte ObjectiveOpen = 0;
         public const byte ObjectiveDone = 1;
 
-        public const UInt32 StringGoalsCompleteLeave = 0x2600000c;
+        public const UInt32 StringGoalsCompleteLeave = 0x2600000c; // ID_MISSION_GOALSCOMPLETELEAVE
+        public const UInt32 StringGoalsComplete = 0x26000004;      // ID_MISSION_GOALSCOMPLETE
 
         private const UInt32 OperatorImage = 0x28000a70;
         private const UInt32 OperatorName = 0x26000014;
@@ -48,8 +51,8 @@ namespace hds
 
                 foreach (MissionNpc npc in mission.npcs)
                 {
-                    // NPCs placed in a generated phase's site spawn when that phase starts
-                    if (npc.at == 0)
+                    // Site NPCs spawn with their phase; late arrivals wait for their trigger goal.
+                    if (npc.at == 0 && npc.spawnAfter < 0)
                     {
                         AddMob(client, SpawnNpc(client, mission, npc));
                     }
@@ -234,6 +237,21 @@ namespace hds
             }
 
             progress.kills++;
+            if (mob.missionNpcId != 0)
+            {
+                // Remembered for a kill goal that opens later
+                progress.killed.Add(mob.missionNpcId);
+            }
+
+            // "Find Burdette": a hostile is found by reaching it (TickEscorts), or by killing it before that
+            foreach (MissionObjective found in new List<MissionObjective>(progress.OpenObjectives()))
+            {
+                if (found.type == MissionGoalType.Talk && found.Has(mob.missionNpcId))
+                {
+                    Complete(client, progress, found);
+                }
+            }
+
             MissionObjective objective = mob.missionNpcId == 0
                 ? null
                 : progress.FindOpen(MissionGoalType.Defeat, mob.missionNpcId);
@@ -259,6 +277,11 @@ namespace hds
         /// <summary>Every hostile of the current phase is dead: its generated ones, and the mission's own placed there.</summary>
         private static bool AllHostilesDown(WorldClient client, MissionProgress progress)
         {
+            if (progress.HostilesStillToArrive())
+            {
+                return false;
+            }
+
             int at = progress.phaseIndex + 1;
             lock (client.playerData.missionMobs)
             {
@@ -607,6 +630,11 @@ namespace hds
 
         private static void Complete(WorldClient client, MissionProgress progress, MissionObjective objective)
         {
+            if (progress.IsDone(objective.goal))
+            {
+                return;
+            }
+
             ServerPackets packets = new ServerPackets();
             packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveDone, Fill(client, objective.description), client);
             Output.WriteDebugLog("[MISSION] Goal " + objective.goal + " done: " + objective.description);
@@ -617,12 +645,24 @@ namespace hds
                 packets.SendSetMissionObjective((ushort)next.goal, ObjectiveOpen, Fill(client, next.description), client);
             }
 
+            SpawnArrivals(client, progress);
             MissionStaging.RefreshObjects(client, progress);
 
             Say(client, objective.doneLines);
 
-            if (progress.AllDone)
+            // A kill goal that opens after its kill was made is done at once
+            foreach (MissionObjective next in opened)
             {
+                if (!progress.IsDone(next.goal) && AlreadyKilled(client, progress, next))
+                {
+                    Complete(client, progress, next);
+                }
+            }
+
+            if (progress.AllDone && !progress.goalsCompleteSent)
+            {
+                progress.goalsCompleteSent = true;
+
                 // A Protect goal is kept by finishing the rest
                 foreach (MissionObjective kept in new List<MissionObjective>(progress.OpenObjectives()))
                 {
@@ -635,10 +675,125 @@ namespace hds
 
                 Say(client, progress.Phase.completeLines);
 
-                // Retail: the operator's "Goals for this area are complete. Find the nearest exit quickly!" (client string).
-                client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(OperatorImage, OperatorName, StringGoalsCompleteLeave, 1, 1, "", ""));
-                Output.WriteDebugLog("[MISSION] Phase " + progress.phaseIndex + " goals done; waiting for the player to leave");
+                if (NeedsToLeave(client, progress, objective))
+                {
+                    // Retail: the operator's "Goals for this area are complete. Find the nearest exit quickly!" (client string).
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(OperatorImage, OperatorName, StringGoalsCompleteLeave, 1, 1, "", ""));
+                    Output.WriteDebugLog("[MISSION] Phase " + progress.phaseIndex + " goals done; waiting for the player to leave");
+                }
+                else
+                {
+                    // Retail: "Goals for this mission phase are complete!", then the next briefing (or the closing) at once
+                    progress.leaveNotNeeded = true;
+                    client.messageQueue.addRpcMessage(ServerPackets.BuildDialog(OperatorImage, OperatorName, StringGoalsComplete, 1, 1, "", ""));
+                    Output.WriteDebugLog("[MISSION] Phase " + progress.phaseIndex + " goals done; moving on without leaving");
+                }
             }
+        }
+
+        /// <summary>
+        /// Whether a finished phase waits for the player to leave its area. The phase's leave attribute says so; otherwise they
+        /// must, unless the last goal was done on the way out (an upload at a hardline, an escort to the exit or a hardline)
+        /// or they are far from the area's ways out already.
+        /// </summary>
+        public static bool NeedsToLeave(WorldClient client, MissionProgress progress, MissionObjective last)
+        {
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            return NeedsToLeave(progress, last, x, y, z);
+        }
+
+        public static bool NeedsToLeave(MissionProgress progress, MissionObjective last, double x, double y, double z)
+        {
+            MissionPhase phase = progress.Phase;
+            if (phase?.leave != null)
+            {
+                return phase.leave.Value;
+            }
+
+            if (last != null && (last.type == MissionGoalType.Upload ||
+                                 (last.type == MissionGoalType.Escort && (last.escortTo == "exit" || last.escortTo == "hardline"))))
+            {
+                return false;
+            }
+
+            return !MissionExit.IsOutside(progress.waypoints, progress.exits, x, y, z);
+        }
+
+        /// <summary>A Defeat goal whose NPC is already dead, or a DefeatAll with nobody left: the kill came before the goal opened.</summary>
+        private static bool AlreadyKilled(WorldClient client, MissionProgress progress, MissionObjective objective)
+        {
+            switch (objective.type)
+            {
+                case MissionGoalType.Defeat:
+                    return objective.Npcs.Exists(id => progress.killed.Contains(id));
+                case MissionGoalType.DefeatAll:
+                    return AllHostilesDown(client, progress);
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// NPCs that arrive when a goal completes (spawnAfter): at the spot kept for them in a generated phase's site, at their
+        /// own x, y, z, or beside the player (spawnAt="player", or when they have no place). And the phase's late hostiles
+        /// (enemiesAfter), on the spots kept for them.
+        /// </summary>
+        private static void SpawnArrivals(WorldClient client, MissionProgress progress)
+        {
+            if (progress.justArrived.Count == 0 && !progress.enemiesJustArrived)
+            {
+                return;
+            }
+
+            double px = 0, py = 0, pz = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
+            Mission mission = progress.mission;
+            List<MissionNpc> arriving = new List<MissionNpc>(progress.justArrived);
+            progress.justArrived.Clear();
+            for (int i = 0; i < arriving.Count; i++)
+            {
+                MissionNpc npc = arriving[i];
+                ushort level = npc.at > 0 || mission.generated ? (npc.level > 1 ? npc.level : MissionStaging.PlayerLevel(client)) : (ushort)0;
+                bool placedByData = npc.at == 0 && (npc.x != 0 || npc.y != 0 || npc.z != 0);
+                Mob mob;
+                if (!npc.spawnAtPlayer && progress.reservedSpots.TryGetValue(npc.id, out double[] spot))
+                {
+                    mob = SpawnNpc(client, mission, npc, spot[0], spot[1], spot[2], level);
+                }
+                else if (!npc.spawnAtPlayer && placedByData)
+                {
+                    mob = SpawnNpc(client, mission, npc);
+                }
+                else
+                {
+                    double[] beside = BesidePlayer(px, py, pz, i);
+                    mob = SpawnNpc(client, mission, npc, beside[0], beside[1], beside[2], level);
+                }
+
+                AddMob(client, mob);
+                Output.WriteDebugLog("[MISSION] " + npc.handle + " arrives");
+            }
+
+            if (progress.enemiesJustArrived)
+            {
+                progress.enemiesJustArrived = false;
+                List<double[]> spots = new List<double[]>(progress.reservedEnemySpots);
+                for (int i = spots.Count; i < progress.Phase.enemies; i++)
+                {
+                    spots.Add(BesidePlayer(px, py, pz, arriving.Count + i));
+                }
+
+                MissionStaging.SpawnEnemies(client, progress, spots);
+                Output.WriteDebugLog("[MISSION] " + spots.Count + " hostiles arrive");
+            }
+        }
+
+        /// <summary>A few metres from the player, each arrival at a different angle so they don't stand in one another.</summary>
+        public static double[] BesidePlayer(double px, double py, double pz, int index)
+        {
+            double angle = 0.6 + index * 1.3;
+            return new[] { px + 300 * Math.Cos(angle), py, pz + 300 * Math.Sin(angle) };
         }
 
         private static void SendPhase(WorldClient client, MissionProgress progress)
@@ -851,6 +1006,11 @@ namespace hds
                 double tx = trigger.x, ty = trigger.y, tz = trigger.z;
                 if (trigger.npcId != 0)
                 {
+                    if (!progress.HasArrived(trigger.npcId))
+                    {
+                        continue; // its NPC hasn't arrived yet
+                    }
+
                     Mob placed = FindNpc(client.playerData, trigger.npcId);
                     MissionNpc npc = progress.mission.npcs.Find(n => n.id == trigger.npcId);
                     if (placed != null)
@@ -1031,6 +1191,21 @@ namespace hds
                     Complete(client, progress, objective);
                     sent = true;
                 }
+                else if (objective.escortTo.StartsWith("object:") && ushort.TryParse(objective.escortTo.Substring(7), out ushort objectId))
+                {
+                    // Led to one of the phase's mission objects: the player and each NPC beside it
+                    if (progress.objects.TryGetValue(objectId, out MissionObjectState state) &&
+                        AtObject(client, progress, objective, state, x, y, z))
+                    {
+                        foreach (ushort id in objective.Npcs)
+                        {
+                            progress.following.Remove(id);
+                        }
+
+                        Complete(client, progress, objective);
+                        sent = true;
+                    }
+                }
                 else if (objective.escortTo.StartsWith("npc:") && ushort.TryParse(objective.escortTo.Substring(4), out ushort target))
                 {
                     Mob to = FindNpc(client.playerData, target);
@@ -1038,7 +1213,7 @@ namespace hds
                     foreach (ushort id in objective.Npcs)
                     {
                         Mob follower = FindNpc(client.playerData, id);
-                        arrived &= follower != null && Distance2(to, follower) <= 700.0 * 700.0;
+                        arrived &= follower != null && Distance2(to, follower) <= EscortArrivalUnits * EscortArrivalUnits;
                     }
 
                     if (arrived)
@@ -1055,6 +1230,31 @@ namespace hds
             }
 
             return sent;
+        }
+
+        /// <summary>How near the NPC or object an escort ends: 7 m.</summary>
+        public const double EscortArrivalUnits = 700;
+
+        /// <summary>An escort to an object is there: the player and every NPC it names within reach of the object.</summary>
+        private static bool AtObject(WorldClient client, MissionProgress progress, MissionObjective objective, MissionObjectState state,
+            double x, double y, double z)
+        {
+            double ox = state.spot.pos_x, oy = state.spot.pos_y, oz = state.spot.pos_z;
+            bool arrived = Distance2(ox, oy, oz, x, y, z) <= EscortArrivalUnits * EscortArrivalUnits;
+            foreach (ushort id in objective.Npcs)
+            {
+                Mob follower = FindNpc(client.playerData, id);
+                arrived &= follower != null && !follower.getIsDead() &&
+                           Distance2(ox, oy, oz, follower.getXPos(), follower.getYPos(), follower.getZPos()) <= EscortArrivalUnits * EscortArrivalUnits;
+            }
+
+            return arrived;
+        }
+
+        private static double Distance2(double ax, double ay, double az, double bx, double by, double bz)
+        {
+            double dx = ax - bx, dy = ay - by, dz = az - bz;
+            return dx * dx + dy * dy + dz * dz;
         }
 
         private static double Distance2(Mob a, Mob b)
@@ -1078,6 +1278,7 @@ namespace hds
                 {
                     id = npc.id, handle = npc.handle, friendly = npc.friendly, attacksOnSight = npc.attacksOnSight, dead = npc.dead,
                     phase = npc.phase, x = x, y = y, z = z, rsiHex = npc.rsiHex, weapon = npc.weapon, at = npc.at, lines = npc.lines,
+                    spawnAfter = npc.spawnAfter, spawnAtPlayer = npc.spawnAtPlayer,
                     level = level > 0 ? level : npc.level,
                     maxHealth = level > 0 ? (ushort)Math.Max((int)npc.maxHealth, 150 + 40 * level) : npc.maxHealth
                 };

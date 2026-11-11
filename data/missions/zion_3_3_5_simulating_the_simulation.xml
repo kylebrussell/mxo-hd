@@ -9,8 +9,8 @@
      The Cypherites have no organisation here: they are Zion's (rogue redpills). Item stand-in: the dump of the
      override signal's memory stack is Data (6787). Rewards: the 341,310 experience and 112,000 information shown
      right after this mission completed.
-     Gaps: the simulacra (Veil, and Cryptos three times) are launched by computers in retail; here they stand on the
-     floor from the start, and talking to one only counts once its computer has been used. Veil being cut off by a
+     Gaps: the simulacra (Veil, and Cryptos three times) are launched by computers: each arrives beside the player
+     when its computer is used (image 253 shows Veil next to the player at hers). Veil being cut off by a
      remote override is only in her line. The sealed far doors aren't sealed: the computers and simulacra are done in
      order, and the Operator's lines at each door are said with the goal before it. The three Cryptos simulacra share
      one look, as they did in retail. The hub's door-lock computer is a Use goal; the Key looted there in retail had
@@ -23,12 +23,12 @@
   <npc id="1" handle="Fly" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
     <say>I get a little confused sometimes... But I know that we have to fight for the real world, too, and not just this one.</say>
   </npc>
-  <npc id="2" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+  <npc id="2" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="0" spawnAfter="2" spawnAt="player">
     <say>EG LoopMon shutdown detect 10:52:30.</say>
   </npc>
-  <npc id="3" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
-  <npc id="4" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
-  <npc id="5" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />
+  <npc id="3" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" spawnAfter="1" spawnAt="player" />
+  <npc id="4" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" spawnAfter="3" spawnAt="player" />
+  <npc id="5" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" spawnAfter="5" spawnAt="player" />
   <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>Warrior, the evidence of a connection between the Cypherite movement and the popular performer, Cryptos, seems to be mounting. And since Veil's escape from Zion, the Cypherites have been appearing in increasing numbers, and have been displaying superior training and discipline.&#10;&#10;While we have had mixed results trying to pursue Veil and Cryptos directly, perhaps a more oblique approach will yield better results. I am sending you to interview Fly, an ex-Cypherite who recently returned to Zion. He has been under close supervision, but we had to re-insert him into the simulation when he began showing symptoms of paranoia after being jacked out for an extended period. Ask him about the Cypherites' training procedures.</briefing>
     <enter><say>Fly is in there.</say></enter>

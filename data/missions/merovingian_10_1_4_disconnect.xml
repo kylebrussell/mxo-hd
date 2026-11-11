@@ -14,8 +14,9 @@
      "while on a / mission for me.", "And I'd / rather you left", "completely free of / the weaknesses". Two are read
      as paragraph breaks (a hidden line can't be excluded): the Merovingian's "at an end." / "Too bad..." and
      Persephone's "dead without knowing it." / "It is the price we pay".
-     Rewards: the log shows none. Zion's only chapter 10 mission is Blip (10.2.5), so these are its values (352,000
-     experience, 525,000 information).
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
      Gaps: what the commando squad's fate was isn't shown; the Operator's "That solves part of the mystery" is read as
      finding them, which here is searching a Furniture object for nothing (dead NPCs aren't spawned). The computer's
      reply ("UNAUTHORIZED ACCESS ... An alert has been sent to the administrator.") can't be shown; using it
@@ -29,10 +30,10 @@
 <mission id="310104" title="Disconnect" description="Find out why the General's broadcasts have stopped, then shake off the System's attention." plot="1"
          order="10104" org="3" contact="Flood" exp="352000" info="525000">
   <npc id="1" handle="Accelerator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="0" />
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="6">It is said that he believes the program will cure his decaying flesh. If that is truly his condition, then he is to be pitied, non?&#10;&#10;We here tend to take for granted our freedom from such frailties. This world grants us all the benefits of physical bodies, completely free of the weaknesses suffered by man. Any weaknesses we suffer here are entirely of our own making.</say>
   </npc>
-  <npc id="3" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="3" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
     <say after="6">Don't worry; some get a bargain for theirs.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

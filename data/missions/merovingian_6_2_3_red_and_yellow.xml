@@ -9,8 +9,9 @@
      said "Datalink established."), the other objective texts, the sites (Normal; the guards' place and Thallia's in
      Magog, as the minimap showed, Mercury's in Mara as in 6.2.2), the looks and the enemy count. The Blackwoods are
      Exiles, so Merovingian. No item was shown.
-     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay; we use
-     Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 is.
+     Rewards: the log shows 1,034,000 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: how the player distracted the Blackwood guards in retail isn't known: the objectives weren't shown, the
      phase took two minutes and the Twins said "Feel free to use your imagination." The Team chat held five
      Blackwood lines that aren't in the log and read like answers to someone walking up to them, so here the three
@@ -39,10 +40,10 @@
   <npc id="7" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>We've just been getting to know this delicate flower.</say>
   </npc>
-  <npc id="8" handle="Thallia" type="FRIENDLY" at="3" rsi="34050040" weapon="2568">
+  <npc id="8" handle="Thallia" type="FRIENDLY" at="3" rsi="780a0058" weapon="2568">
     <say after="5">You damn Mervs are too busy stuffing yourselves with cake to see what's going on right under all your chins.</say>
   </npc>
-  <npc id="9" handle="Mercury" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+  <npc id="9" handle="Mercury" type="FRIENDLY" at="4" rsi="4f0a0058" weapon="2568">
     <say after="6">No, no, Raini's got nothing to do with any of this.</say>
   </npc>
   <npc id="10" handle="Hunter Ackley" type="FRIENDLY" at="4" rsi="38000024" weapon="0">

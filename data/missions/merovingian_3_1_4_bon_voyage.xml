@@ -9,9 +9,9 @@
      header between them and is taken as one entry. Ours: the description (the Summary tab was never opened), the other
      objective texts, the sites (phases 1 and 2 were run-down apartments in Moriah Projects: SlumApt; phase 3 a cubicle
      office in Tabor Park: Office), the looks and the enemy counts (phase 3 is retail's six: two named and four
-     generated). Item stand-in: "the Data" is Data (6787), which is also the game object's name. Rewards: the log shows
-     79,416,249 experience and 1,039,500 information, which is what a level-50 player got and not a normal reward; we
-     use Zion 3.1's values instead (308,000 experience, 101,500 information).
+     generated). Item stand-in: "the Data" is Data (6787), which is also the game object's name. Rewards: the log
+     shows 79,416,249 experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500
+     information, as Dire Connection paid).
      Gaps: the Effectuator appears in one room after another in retail; here he is three friendly copies with the same
      look, each a Talk that waits for the one before, and the Operator's surprise at each is said on walking up to the
      first and on talking to the others. His first line was split across two screenshots and is joined (a line between
@@ -22,9 +22,9 @@
      here (see Known gaps), so the Zion operatives' lines may not appear. -->
 <mission id="303104" title="Bon Voyage" description="Meet the Effectuator and stop Zion from learning the location of one of the Merovingian's construct portals." plot="1"
          order="3104" org="3" contact="Flood" exp="308000" info="101500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="4" handle="Zion Howitzer" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
     <say>Okay... I know this... just try the-- Hey!</say>
   </npc>

@@ -7,8 +7,8 @@
      lab: Normal), the looks and the storehouse's guards (three generated Machines; the log shows no fighting there).
      Item stand-ins: the Access Card is Access_Card (6791), the Computer Parts are Computer_Parts (6827). Flood's
      closing "for you next assignment" is kept as retail wrote it, and a possible hidden line at a scroll seam in the
-     briefing ("that you located") is read as nothing. Rewards: the log is a level-50 player's (525,000 information, no
-     experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     briefing ("that you located") is read as nothing. Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: Alvaro Maloney is in his hotel room and later in his lab; he is placed in each (two NPCs of the same name).
      The Access Card doesn't open the storehouse: the storehouse phase just follows. The empty box ("What's in the
      box?! Nothing! Stupid!") is an optional Search that turns up nothing. Hacking the computer to unlock its case is a

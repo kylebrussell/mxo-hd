@@ -27,7 +27,7 @@
   <npc id="1" handle="Agent Gray" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
     <say>Zion is not being as...cooperative as we would have liked. We may have to discuss other solutions for ensuring the System's security.</say>
   </npc>
-  <npc id="2" handle="Niobe" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+  <npc id="2" handle="Niobe" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
     <say>If you think we're letting you out of the truce you made with Neo that easily, you've got another think coming.</say>
   </npc>
   <npc id="3" handle="Ghost" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">

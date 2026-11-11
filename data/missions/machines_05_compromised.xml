@@ -2,8 +2,8 @@
 <!-- Compromised, Agent Gray's mission 5 for the Machines. Text: the Prima guide (2005), with its role names replaced by
      names. Placement is generated: see docs/MISSIONS.md. The guide lists Lattice (the 46N2 program) as Zion Military,
      Bluepill, Bum: it is given a bluepill appearance, as a program in disguise. "The key" is the Access_Code item
-     (6782). "Lead Lattice to the computer" has no escort-to-object goal, so it is a Use of the computer, with Lattice
-     following from phase 1's escort. Enemies as printed (Zion, then Merovingian). -->
+     (6782). "Lead Lattice to the computer" is an escort to the computer, with Lattice following from phase 1's
+     escort. Enemies as printed (Zion, then Merovingian). -->
 <mission id="2205" title="Compromised" description="Relocate a Machine program." plot="1" order="15"
          org="2" contact="Agent Gray" exp="27500" info="42000">
   <npc id="1" handle="Lattice" type="FRIENDLY" at="1" rsi="1400004e" weapon="0" />
@@ -22,8 +22,7 @@ The Master Synthesis Control Program 46N2 is Lattice. Once you get him out of th
     <enter><say>This is the place. Lead the program to the targeted computer and we'll have one more objective to complete.</say></enter>
     <object id="1" kind="Computer" />
     <object id="2" kind="Phone" />
-    <!-- No escort-to-object goal: the player takes Lattice to the computer and uses it. -->
-    <objective goal="1" text="Lead Lattice to the computer" type="Use" object="1" />
+    <objective goal="1" text="Lead Lattice to the computer" type="Escort" npc="1" to="object:1" />
     <objective goal="2" text="Use the phone" type="Use" object="2" after="1" />
     <objective goal="3" text="Do not let Lattice die" type="Protect" npc="1" />
   </phase>

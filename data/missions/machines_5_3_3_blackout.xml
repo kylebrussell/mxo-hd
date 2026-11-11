@@ -11,18 +11,18 @@
      Shinjuku and Murasaki), so no neighbourhood is set. Anome's Unlimit soldiers are redpills modified with his stolen
      code; they have no org of their own, so they are the nearest, Zion, as rogue redpills. No mission items. Rewards:
      345,353 experience and 119,000 information, shown on completing this mission.
-     Gaps: in both stations the Unlimit appeared only after the search or the power came back on; we can't spawn
-     hostiles on a goal, so they are there from the start and the kill goal is open from the start too. The Operator's
-     "That's the control room." came on reaching it; here it is said on arrival. Charlie's dead companion (and the
-     dead woman by the second station's computer) aren't placed: we have no dead bodies. Gray's ceasefire means street
-     gangs may go after the player on the way to the safehouse; we have no street ambush, so it is a plain escort.
-     The friendly Agent at the safehouse said nothing and isn't placed. -->
+     Gaps: in both stations the Unlimit arrive once the area is searched or the power comes back on ("You got
+     company!", "So are the Unlimit!"), and the kill goal opens then. The Operator's "That's the control room." came on
+     reaching it; here it is said on arrival. Charlie's dead companion (and the dead woman by the second station's
+     computer) aren't placed: we have no dead bodies. Gray's ceasefire means street gangs may go after the player on the
+     way to the safehouse; we have no street ambush, so it is a plain escort. The friendly Agent at the safehouse said
+     nothing and isn't placed. -->
 <mission id="205303" title="Blackout" description="Stop a wave of rolling blackouts sweeping across the city's power control stations." plot="1"
          order="5303" org="2" contact="Agent Gray" exp="345353" info="119000">
-  <npc id="1" handle="Unlimit Reactor" type="HOSTILE" at="1" rsi="60010058" weapon="2568">
+  <npc id="1" handle="Unlimit Reactor" type="HOSTILE" at="1" rsi="60010058" weapon="2568" spawnAfter="1">
     <say>What th--? There wasn't supposed to be anyone here!</say>
   </npc>
-  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+  <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568" spawnAfter="1">
     <say>Aw, left in the dark?</say>
   </npc>
   <npc id="3" handle="Charlie Runnels" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
@@ -32,7 +32,7 @@
   <npc id="5" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
     <say display="5">Looters were destroying my neighborhood. Thank goodness these people found me! I hope there's something left when I go back.</say>
   </npc>
-  <phase site="Office" enemy="Zion" enemies="4">
+  <phase site="Office" enemy="Zion" enemies="4" enemiesAfter="1">
     <briefing>Although Anome's threat to the Aqueduct appears to have ended with his lieutenant, Phinney, a sudden series of rolling blackouts has gripped the city. Oddly enough, they appear to be following a pattern. I'm sending you to the power control station for a sector that, at the current rate of the blackout's progress, will be losing power shortly. Do what you can to prevent the power outage.</briefing>
     <enter>
       <say>Nothin' there. Check around, I guess. All the power lines are scrambling my readings a bit.</say>
@@ -44,11 +44,11 @@
 
 Whoops! Spoke too soon! You got company!</say></done>
     </objective>
-    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll" after="1">
       <done><say>That's all of them. Well, that's one less sector that'll get blacked out.</say></done>
     </objective>
   </phase>
-  <phase site="Office" enemy="Zion" enemies="4">
+  <phase site="Office" enemy="Zion" enemies="4" enemiesAfter="1">
     <briefing>It is not very surprising to find Anome's forces behind this latest disaster. But this is no time for congratulations, operative. The path of the blackouts formed a wide front. There are more power control stations to protect.</briefing>
     <enter><say>Uh-oh, looks like they've beat us there this time.</say></enter>
     <object id="1" kind="Computer" />
@@ -57,7 +57,7 @@ Whoops! Spoke too soon! You got company!</say></done>
 
 Whoops! So are the Unlimit! Man, those guys don't quit!</say></done>
     </objective>
-    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll" after="1">
       <done><say>Place is clean.
 
 Generators and Reactors shutting down power stations--irony?</say></done>

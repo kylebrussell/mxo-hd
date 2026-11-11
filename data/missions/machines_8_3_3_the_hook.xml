@@ -13,26 +13,26 @@
      a box stands in for them: examining it gives the Operator's line about the bodies, searching it gives the letter.
      An E Pluribus Neo Fighter attacked the player there (System chat); he is placed, without a goal. The phone rang after the talk to Liebowitz; ours opens once he is talked to.
      The Desk Phone's text (Veil's voice: "Darling! So nice of you to deliver our message...") was a popup we can't
-     show, so it isn't said. Cryptos came out when Veil called him; he is there from the start, and his talk opens
-     after hers. NPC lines can't wait for a goal of a later phase whose number an earlier phase already used, so
-     Cryptos' second line is said with his first. -->
+     show, so it isn't said. Cryptos comes out when Veil has called him, and his talk opens then. NPC lines can't wait
+     for a goal of a later phase whose number an earlier phase already used, so Cryptos' second line is said with his
+     first. -->
 <mission id="208303" title="The Hook" description="Seek the Oracle's advice on winning over the Morpheus simulacrum." plot="1"
          order="8303" org="2" contact="Agent Gray" exp="384825" info="63000">
   <npc id="1" handle="Seraph" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2564">
     <say>Welcome.</say>
     <say after="1">He has visited us a number of times. Sometimes he asks many questions; sometimes, none.</say>
   </npc>
-  <npc id="2" handle="The Oracle" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+  <npc id="2" handle="The Oracle" type="FRIENDLY" at="1" rsi="3c000040" weapon="0">
     <say after="1">Well, I'm sure you'll figure something out. Don't you worry about it too much; you'll have a lot of other things to think about soon enough.</say>
   </npc>
   <npc id="3" handle="E Pluribus Neo Fighter" type="HOSTILE" at="2" rsi="000100b4" weapon="2568" />
   <npc id="4" handle="Connor Liebowitz" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
-    <say after="1">I... I wanted him to stop...stop dreaming his crazy dreams. I couldn't stand it anymore! He'd say such ridiculous things... As if there was any way out of this hell--any except the way he took...</say>
+    <say after="4">I... I wanted him to stop...stop dreaming his crazy dreams. I couldn't stand it anymore! He'd say such ridiculous things... As if there was any way out of this hell--any except the way he took...</say>
   </npc>
   <npc id="5" handle="Veil" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
-    <say after="1">He'll tell you all about that meanie Connor and poor Rod.</say>
+    <say after="6">He'll tell you all about that meanie Connor and poor Rod.</say>
   </npc>
-  <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" spawnAfter="6" />
   <phase site="SlumApt" enemy="Zion" enemies="0" neighbourhoods="Mara">
     <briefing>{player}, further operative attempts at convincing the Morpheus simulacrum to unlock the encrypted Zion archive for us have met with failure.
 
@@ -55,12 +55,12 @@ Hm... It's hard to make up someone's mind for them, kiddo--real hard. If you nee
 
 Huh... If there was something going on there before, it's over now. I'm not picking up any activity.</say></enter>
     <object id="1" kind="Box" />
-    <objective goal="1" text="Investigate the disturbance" type="Use" object="1">
+    <objective goal="2" text="Investigate the disturbance" type="Use" object="1">
       <done><say>Ew! Oh, just EPN... Now what do you suppose put them out of our misery?
 
 Hey, I'm scanning unusual code on one of them.</say></done>
     </objective>
-    <objective goal="2" text="Search the bodies" type="Search" object="1" item="6856" after="1">
+    <objective goal="3" text="Search the bodies" type="Search" object="1" item="6856" after="2">
       <done>
         <say>A mash note? Wa-ait, that lipstick sealing it looks familiar. Let me scan the thing... Ahah! There's an embedded code... Doesn't look too tough to crack, just a base shift... Yep. A message. Here's what it says:
 
@@ -80,7 +80,7 @@ I hope Gray's got us covered on this. We're just passing the guy a simple messag
 
 The code's showing just one bluepill in there.</say></enter>
     <object id="1" kind="Phone" />
-    <objective goal="1" text="Give the message to Connor Liebowitz" type="Talk" npc="4">
+    <objective goal="4" text="Give the message to Connor Liebowitz" type="Talk" npc="4">
       <talk><say npc="4">Who are you? I've been released; you can ask the chief him--
 
 "He shouldn't have..." What-- Who told you that? There was nobody there! Just Rod and I... Oh god... I know... I don't know what I was thinking--why I told him that...</say></talk>
@@ -90,7 +90,7 @@ There's something else going on, but I think we need to leave Liebowitz there fo
 
 Wait a second... The phone's ringing. Doesn't look like Liebowitz is going to pick up... Should we answer?</say></done>
     </objective>
-    <objective goal="2" text="Answer the Phone" type="Use" object="1" after="1">
+    <objective goal="5" text="Answer the Phone" type="Use" object="1" after="4">
       <done><say contact="1">Leave the receiver, operative. We are tracing the call.</say></done>
     </objective>
   </phase>
@@ -101,13 +101,13 @@ This was evidently a demonstration of sorts by the Cypherites. Such an...ineffic
     <enter><say>Gee, nice of them to put on a show. There better've been some point to that.
 
 The call was traced to that building. I've got a redpill signal in there.</say></enter>
-    <objective goal="1" text="Talk to Veil" type="Talk" npc="5">
+    <objective goal="6" text="Talk to Veil" type="Talk" npc="5">
       <talk><say npc="5">Ohh, it's you.
 
 Cryptos, that cute Machinist I was telling you about is here. You can come out now.</say></talk>
       <done><say>And the man himself...</say></done>
     </objective>
-    <objective goal="2" text="Talk to Cryptos" type="Talk" npc="6" after="1">
+    <objective goal="7" text="Talk to Cryptos" type="Talk" npc="6" after="6">
       <talk><say npc="6">Forty-eight hours of police interrogation failed to extract a confession from Connor Liebowitz, but you did it with just a few words. Why did you succeed? Because we knew him. Rod Plunkett was someone we were watching closely--someone in danger of seeing past the careful facade of the Matrix. Tragically, this danger became reality when he told his irritable friend that gravity was a mere illusion, invented to weigh upon the souls of lesser men.
 
 You wish the constructed Morpheus persuaded to assist you; I can accomplish this. Why will I succeed? Because I knew him. I ask only that, in the event that it does unlock the archive as a result, I am allowed to remove the RSI entries of any who are now Cypherites, before the Machines access the data themselves.</say></talk>

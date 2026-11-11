@@ -10,18 +10,18 @@
      (the player searched an Agent's body there in the mid-mission screenshot). Item stand-ins: the first key is
      Access_Card (6791), the document that led to the next address Document_Location_Notes (6855), the second key
      Access_Code (6782), the file that points to the safe File (6800), the Data Disk Data_CD (6831).
-     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
-     chapter 1.2 (68,750 experience, 91,000 information, as Confiscation paid).
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's values
+     (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: where either key came from wasn't captured; each is looted from its carrier. The operator's "Be sure to
      search your fallen opponents" came four minutes after the first key was found and is the second enter line here.
      "The documents might be inside this filing cabinet." came three seconds before the document was found, so it
-     starts the cabinet's done lines. The alarm that brought guards when the safe was opened can't call anyone in: the
-     safe is used once to set off the alarm and opened again for the disk, and the Agents are on the floor from the
-     start. The operator downloaded the disk himself, so there is no upload. The Zion operatives' other barks in Team
-     chat ("Exile scum!", "...you're here and you're not going to get it!") have no place, since they are generated;
-     the Zion Ballista's is on him but only plays if he is talked to, since he attacks on sight. Darleen Anselm and
-     Adrian Quay spoke after the goals were done; Darleen's second line waits for the disk. The Threat Analysis of
-     "Kingmaker" in the Details popup came from an Agent's body as ordinary loot and isn't used. -->
+     starts the cabinet's done lines. The safe is used once to set off the alarm, which brings the phase's guards
+     ("Guards are headed your way right now!"), and opened again for the disk; only the Agent with the key is there
+     from the start. The operator downloaded the disk himself, so there is no upload. The Zion operatives' other barks
+     in Team chat ("Exile scum!", "...you're here and you're not going to get it!") have no place, since they are
+     generated; the Zion Ballista's is on him but only plays if he is talked to, since he attacks on sight. Darleen
+     Anselm and Adrian Quay spoke after the goals were done; Darleen's second line waits for the disk. The Threat
+     Analysis of "Kingmaker" in the Details popup came from an Agent's body as ordinary loot and isn't used. -->
 <mission id="301204" title="Opportunity Knocks" description="Search for the documents Morpheus has been hiding." plot="1"
          order="1204" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Zion Ballista" type="HOSTILE" at="1" rsi="c9020058" weapon="2568">
@@ -55,7 +55,7 @@ The Merovingian requires this information, which is why we are sending you in. W
       </done>
     </objective>
   </phase>
-  <phase site="Office" enemy="Machines" enemies="4">
+  <phase site="Office" enemy="Machines" enemies="4" enemiesAfter="3">
     <briefing>It appears you found yet another address to yet another location... I tire of this.
 
 I'm sending you there now to continue your search. Get moving.</briefing>

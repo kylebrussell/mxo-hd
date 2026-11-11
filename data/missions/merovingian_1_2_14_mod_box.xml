@@ -4,9 +4,9 @@
      Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names and phase 3's objective
      ("Repair the Hardline Junction Box"). Ours: the description, the other objective texts, the sites (a lab, an
      unnamed building and an apartment in Dannah Heights: all Normal), the looks and the enemy counts. Item stand-ins:
-     the modified Black Box is LED_Black_Box (6835), Genaro Whitfield's Shogo 2 DVD is Data_CD (6831). Rewards: the log
-     is a level-50 player's (525,000 information, no experience), so these are Zion's matching chapter 1.2 values,
-     68,750 experience and 91,000 information.
+     the modified Black Box is LED_Black_Box (6835), Genaro Whitfield's Shogo 2 DVD is Data_CD (6831). Rewards: the
+     log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's values (68,750
+     experience, 91,000 information, as Confiscation paid).
      Gaps: Clarissa Babcock, who was to hand over the Black Box, is only named and never seen, so she isn't placed; the
      Agent who took it greets the player ("You're too late", Team chat only) and the Operator's guess about him is said
      on coming near him; the box is looted from his body. Phase 2's Bohrmann is found dead: dead NPCs aren't spawned,

@@ -7,8 +7,9 @@
      Summary tab was never opened), every objective text (the Objectives tab was never opened), the sites (Dr. Ivkovic's
      place is "one of our labs", so an Office; the rest Normal), the looks and the enemy counts (4 guards with
      Abanderada, 4 Exiles with Ether, who shouts "Get them!"). Abanderada, Ether and their men are Exiles; Ivkovic is a
-     scientist and unarmed. No items. Rewards: the player was level 50 and the reward shown (525,000 information) is a
-     level-50 one, so these are Zion 4.2's 341,000 experience and 112,000 information.
+     scientist and unarmed. No items. Rewards: the log shows 525,000 information and no experience (a level-50
+     player's). These are Zion 4.2's values (341,000 experience, 112,000 information, as Between Waking and Sleeping
+     paid).
      Gaps: Abanderada is met in phase 1 and again at the safe location in phase 3, so he is two NPCs with one name
      (ids 1 and 4), as an NPC is placed in one phase only. In retail phase 3 ended as soon as he joined; here he is led
      out of the area so that he follows to Ivkovic's lab. The Operator's "Kill the guards" is said on coming near

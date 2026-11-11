@@ -29,11 +29,11 @@
   <npc id="2" handle="Adan Durden" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
     <say after="2">N-no, I don't know how to get in. I don't have any clearance.&#10;&#10;Please don't tell anyone I talked to you!</say>
   </npc>
-  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
   <npc id="4" handle="Anacost" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
   <npc id="5" handle="Ajax" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
   <npc id="6" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
-    <say after="1">I'm not going to tell you that. The less you know, the better. This isn't your problem, anyway.</say>
+    <say after="11">I'm not going to tell you that. The less you know, the better. This isn't your problem, anyway.</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>Warrior, operatives were able to talk to the intruder long enough to learn that he is looking for something he called a "biological interface program." While the Council isn't at all sure that helping the intruder achieve this goal is in Zion's best interests, locating such a program on our own could give us an advantage.&#10;&#10;It isn't clear exactly what the program might be, but intel thinks that Wright Research may be a good place to start looking, since the specialty of their founder, Danielle Wright, was network interfaces, often in combination with human systems, such as the emergency jack-out system used by most operatives today.&#10;&#10;Wright was killed by the Machines, but her company continues their research and development projects. I want you to check one of their offices for evidence of any new developments that could be related to what the intruder is looking for.</briefing>
@@ -53,17 +53,17 @@
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>We've been able to locate the Wright Research building he spoke of. If it is what he said, it's likely to be heavily guarded. You've been authorized to get some backup from Ghost.</briefing>
     <enter><say>Looks like Ghost is in there with a few helping hands.&#10;&#10;You think the intruder has something to do with Wright? She was kind of a-- Well, she had some pretty crazy ideas about how people should take over the Matrix and stuff.&#10;&#10;I don't know, I'm just... Free association and all that, right?</say></enter>
-    <objective goal="1" text="Talk to Ghost" type="Talk" npc="3">
+    <objective goal="3" text="Talk to Ghost" type="Talk" npc="3">
       <talk><say npc="3">Although we didn't exactly see eye to eye with Danielle Wright, we worked with her in the past; in fact, it was the work she did for us on the new red pill code that got her killed.&#10;&#10;With her out of the picture, we can't expect any of the bluepills in the company to understand why we need access to their most valuable research...so we're going to have to do this the old fashioned way. These two here will go with you.</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Anacost" type="Talk" npc="4" after="1">
+    <objective goal="4" text="Talk to Anacost" type="Talk" npc="4" after="3">
       <talk><say npc="4">Do you think they really have what he's looking for?</say></talk>
       <done><say npc="3">I don't know. If they do have what the intruder's after, then we'll have to decide what to do with it after we figure out what it actually is.</say></done>
     </objective>
-    <objective goal="3" text="Talk to Ajax" type="Talk" npc="5" after="2">
+    <objective goal="5" text="Talk to Ajax" type="Talk" npc="5" after="4">
       <talk><say npc="5">Let me give you a boost.</say></talk>
     </objective>
-    <objective goal="4" text="Lead Anacost and Ajax out of the area" type="Escort" npc="4,5" to="exit" after="3" />
+    <objective goal="6" text="Lead Anacost and Ajax out of the area" type="Escort" npc="4,5" to="exit" after="5" />
   </phase>
   <phase site="Office" enemy="Machines" enemies="5">
     <briefing>Discreet surveillance shows that Wright building 27 is heavily guarded, operative. You'll need to search the area thoroughly for any new research that might match the "biological interface program" description.</briefing>
@@ -71,16 +71,16 @@
     <object id="1" kind="Furniture" />
     <object id="2" kind="Box" />
     <object id="3" kind="Computer" />
-    <objective goal="1" text="Search the filing cabinet" type="Search" object="1" item="0">
+    <objective goal="7" text="Search the filing cabinet" type="Search" object="1" item="0">
       <done><say>Nope.</say></done>
     </objective>
-    <objective goal="2" text="Search the box" type="Search" object="2" item="0">
+    <objective goal="8" text="Search the box" type="Search" object="2" item="0">
       <done><say>Nada.</say></done>
     </objective>
-    <objective goal="3" text="Get the Data from the Computer" type="Search" object="3" item="6787">
+    <objective goal="9" text="Get the Data from the Computer" type="Search" object="3" item="6787">
       <done><say>Ooh, let me scan that data...&#10;&#10;Nope, we already knew about that program.</say></done>
     </objective>
-    <objective goal="4" text="Search the area" type="Use" object="3" after="3">
+    <objective goal="10" text="Search the area" type="Use" object="3" after="9">
       <done><say>Searching...&#10;&#10;Hm. Nothing really out of the ordinary in there. Device drivers, network controllers, junk like that.</say></done>
     </objective>
     <complete><say>Great. Well, if that's all they've got, then Wright Research is really alienating their operative customer base these days.</say></complete>
@@ -88,7 +88,7 @@
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>If that was the extent of Wright Research's recent development, then they don't appear to be working on any breakthrough interface technologies.&#10;&#10;The intruder has made himself more accessible of late; we've heard of him contacting the Merovingian and the Machines, for instance. This may be an indication that he's willing to divulge more of his goals; if we tell him that the Wright Research corporation does not have a biological interface program, he may give us more information on what he's looking for. I'm sending you to his most recently reported location.</briefing>
     <enter><say>So, if Wright Research doesn't have something like what this guy is after, then who would? I'm kind of coming up empty on ideas here.&#10;&#10;Anyway, it looks like the intruder's in there. Good luck.</say></enter>
-    <objective goal="1" text="Talk to the Intruder" type="Talk" npc="6">
+    <objective goal="11" text="Talk to the Intruder" type="Talk" npc="6">
       <talk><say npc="6">Hm? Huh. Doesn't surprise me.&#10;&#10;If a human could have written it, I'd have had it by now.</say></talk>
       <done><say>Hey! Did he just insult us?&#10;&#10;Wait... He's supposedly human, isn't he?</say></done>
     </objective>

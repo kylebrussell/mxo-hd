@@ -10,17 +10,18 @@
      counts. Ouroboros sides with the Machines, so phase 1's security guards are Machines, with the Agent named;
      phase 2's are the Machine facility's security.
      Item stand-ins: the file the Operator compiled is File (6800); the data taken back is Data (6787).
-     Rewards: Zion's 11.3.2, Resistance: 352,000 experience, 525,000 information. None are shown.
+     Rewards: the log shows none. These are Zion 11.3's values (352,000 experience, 525,000 information; Resistance
+     showed the information, and the Zion files take the experience from The Spider, 11.1.5).
      Gaps: the post gives the player's actions only in outline. Phase 1 is read as: use the computer (the Agent
      problem follows), kill the Agent and the guards, take the file from the same computer, and upload it at a
-     hardline; the guards and the Agent are on the floor from the start rather than arriving, so the kills may come
-     first. The Operator's "Head's up. I'm picking up overridden code" is said on the upload; the accelerated
-     program that went after the player between the two areas isn't spawned. In phase 2 the "Machine
-     reinforcements" that arrived at the terminal aren't spawned either: the Operator's "That's the Right terminal"
-     and "More goons incoming!" come together when the terminal is searched. -->
+     hardline; the guards are on the floor from the start, and the Agent arrives once the computer has been used
+     ("You've got an Agent problem!"), when the kill goal opens. The Operator's "Head's up. I'm picking up overridden
+     code" is said on the upload; the accelerated program that went after the player between the two areas isn't
+     spawned. In phase 2 the "Machine reinforcements" that arrived at the terminal aren't spawned either: the Operator's
+     "That's the Right terminal" and "More goons incoming!" come together when the terminal is searched. -->
 <mission id="311302" title="The Mechanical Man" description="Hunt for data matching the android the General's men recovered, from a looted Ouroboros network to a Machine facility in Maribeau." plot="1"
          order="11302" org="3" contact="Flood" exp="352000" info="525000">
-  <npc id="1" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="1" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" spawnAfter="1" />
   <phase site="Office" enemy="Machines" enemies="2">
     <briefing>I suppose you know that the General's flying octopi fished an android body out of a wrecked fighter craft that they came across on the way back from their disastrous misadventure in the Machine no-cly zone. I'm sure it's just the General's way of trying to have something to show for that boondoggle--inventing trophy is the first thing they teach you in Washed-up Military Commanding 101.&#10;&#10;But the Merovingian likes shiny new toys, so now we have to spend our time figuring out what makes the thing tick--or made, rather, since it hasn't given the slightest sign of wanting to function. But examination has shown it to be configured for data structures similar to what we've found in the Oligarch network, which means that you're off to an Ouroboros office in Vauxton to hunt for a data match, as we know the Oligarchs have kept secrets such as the interface program inside that company.</briefing>
     <enter><say>The Machines took over Ouroboros after we fished the interface program out of the company's hidden network. In theory that means their security is better now, and it might mean that some of those hidden parts of their network that we found previously have been shut down, which would throw the proverbial spanner into this plan. On the other hand, the Machines have their feelers full with things like Wright and Zion, so it's just possible that what we're looking for is below their radar.</say></enter>
@@ -28,7 +29,7 @@
     <objective goal="1" text="Access the computer" type="Use" object="1">
       <done><say>Ah, dang. The hidden Network we were looking for did get looted. Maybe I can figure out where they took the infor--&#10;&#10;Whoops! You've got an Agent problem!</say></done>
     </objective>
-    <objective goal="2" text="Kill the Agent and the security guards" type="DefeatAll">
+    <objective goal="2" text="Kill the Agent and the security guards" type="DefeatAll" after="1">
       <done><say>Okay, the coast is clear. I think I've managed to trace where the network data we were looking for got dumped to. Grab the file I've compiled on that computer and upload it to me.</say></done>
     </objective>
     <objective goal="3" text="Get the file from the computer" type="Search" object="1" item="6800" after="1" />

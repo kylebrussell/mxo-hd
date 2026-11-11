@@ -37,13 +37,13 @@
 Why are you looking at me in that way?</say>
   </npc>
   <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564">
-    <say after="1">Good to see you again so soon, {player}. I did indeed mention to the Agent here how helpful you've been; it was the very first thing out of my mouth.
+    <say after="3">Good to see you again so soon, {player}. I did indeed mention to the Agent here how helpful you've been; it was the very first thing out of my mouth.
 
 Oh, then we went on and discussed the trouble you've been having with that other fellow. It really is a shame...and I mean to put a stop to it for you, indeed I do.</say>
   </npc>
   <npc id="5" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
   <npc id="6" handle="Agent Gray" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568">
-    <say after="1">Currently, Halborn's activity appears to be relatively benign; that is to say, he is not attacking the System regularly, although his override codes create problems wherever he uses them. He continues to exhibit a disregard for the simulation's stability.</say>
+    <say after="5">Currently, Halborn's activity appears to be relatively benign; that is to say, he is not attacking the System regularly, although his override codes create problems wherever he uses them. He continues to exhibit a disregard for the simulation's stability.</say>
   </npc>
   <npc id="7" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
     <say>We had hoped that, after the Architect told him that the program he sought had been removed from the Matrix, Halborn would leave the simulation. Purtroppo, he has not done so. He is a very stubborn man, and reason alone is insufficient to change his mind.
@@ -103,13 +103,13 @@ As he has already met you, and reacted amicably, I consider that your presence a
 Oh, never mind; I don't even wanna think about that. You'd better just get in there and save whatever's left of him.
 
 Hm... Looks like he's still functional, anyway. I've got him and a Carlyne-sized chunk of override code showing up in there.</say></enter>
-    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="4">
+    <objective goal="3" text="Talk to Carlyne" type="Talk" npc="4">
       <talk><say npc="4">Oh, I very much appreciate you taking the time to hear me out, Agent. Believe me, it will be a great relief to me once I've eliminated Halborn as a problem here.
 
 I won't claim that I'm doing this entirely out of altruism, mind you; we both know better than that, don't we? Haha! But rest assured, you can leave him to me.</say></talk>
       <done><say>Who'd he say? "Halborn"?</say></done>
     </objective>
-    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="5" after="1">
+    <objective goal="4" text="Talk to Agent Gray" type="Talk" npc="5" after="3">
       <talk><say npc="5">Thank you, operative. We can consider this meeting successfully concluded; I have received Carlyne's assurances that his intentions are in line with the System's welfare. We will discuss how to proceed once we have returned to our offices.</say></talk>
       <done><say>Hm...</say></done>
     </objective>
@@ -117,7 +117,7 @@ I won't claim that I'm doing this entirely out of altruism, mind you; we both kn
   <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Magog">
     <briefing>I understand that you have questions, operative. We will discuss this once you've arrived.</briefing>
     <enter><say>All clear.</say></enter>
-    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="6">
+    <objective goal="5" text="Talk to Agent Gray" type="Talk" npc="6">
       <talk><say npc="6">Carlyne refers to the man we have known as the "intruder" by the name "Halborn." He claims to know him personally. He proposes to remove Halborn from the simulation--presumably by force, but he did not specify his intended means of achieving this goal. He did not explain its nature or cause, but he made it clear that there is a conflict between the two of them.
 
 The override codes Carlyne possesses pose a considerable threat to the System. While he has promised to act against Halborn, and presents himself as a friend of the System, we have no real guarantee of his future behavior. Caution must be exercised when dealing with him.</say></talk>

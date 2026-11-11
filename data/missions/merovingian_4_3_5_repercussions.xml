@@ -7,15 +7,15 @@
      called the player Vesuveus; that is {player}. Ours: the description (the Summary tab was never opened), every
      objective text (the Objectives tab was never opened), the sites (all Normal; where the Merovingian receives the
      player and the Zion-held place have no site style of their own), the looks and the enemy counts. No items.
-     Rewards: these logs are a level 50 player's (525,000 information, no experience shown), so the 352,000
-     experience and 115,500 information are Zion chapter 4.3's values.
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 4.3's values
+     (352,000 experience, 115,500 information, as Shakedown paid).
      Gaps: Aeschylus and Osiris joined the player when talked to and fought beside them; here they are led out of the
      area so that they follow into the fight, but NPCs don't fight here and killing them doesn't fail the mission.
      Blood Noble's line and the Zion fighters' "For Zion!" showed only in team chat; Blood Noble says his when talked
      to, and the two named Zion fighters say theirs on coming near them, among the generated Zionites. -->
 <mission id="304305" title="Repercussions" description="Face the Merovingian's displeasure, then lead Aeschylus and Osiris in a strike against Zion." plot="1"
          order="4305" org="3" contact="Flood" exp="352000" info="115500">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Flood will give you the information you require. Now go!</say>
   </npc>
   <npc id="2" handle="Blood Noble" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">

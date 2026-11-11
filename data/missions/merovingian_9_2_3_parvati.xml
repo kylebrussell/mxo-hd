@@ -14,9 +14,8 @@
      "couldn't be all that difficult. / I'll just make some calls" (one paragraph: no blank row at either edge) and
      "chasing a child through the / slums"; the Operator's "I'm seeing just a / few small readings"; Seraph's "nor
      before you have returned what / you took from me."
-     Rewards: the log paid 396,000 experience and 129,500 information for a level 37 player's live run; these are
-     Zion's values for 9.2.3 (362,835 experience, 63,000 information), as the other Merovingian missions use Zion's
-     because most of their logs are level-50 players'.
+     Rewards: the log shows 396,000 experience and 129,500 information (a level-37 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
      Gaps: phase 1's monitoring program (one of the vampire squad set to watch the intruder) isn't said to be dead or
      alive; here he is a Furniture object examined for nothing, as dead NPCs aren't spawned. Phase 2's "something
      big" that turned out not to be the intruder ("Well, that isn't him. The rest of these are all smaller signals")
@@ -26,7 +25,7 @@
      are clicked again, and Seraph's "I have nothing more to tell you." likewise. An entry may be missing from the log
      between 11:08:54 and 11:11:23. -->
 <mission id="309203" title="Parvati" description="Find Sati, the girl the intruder may be looking for, before he does." plot="1"
-         order="9203" org="3" contact="Flood" exp="362835" info="63000">
+         order="9203" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Kurtis Broman" type="FRIENDLY" at="3" rsi="c9020058" weapon="0">
     <say after="3">I'm going to have to ask you to leave. I'll call the police if I have to.</say>
   </npc>

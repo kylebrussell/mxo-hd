@@ -20,7 +20,7 @@ The client handles most of the display. Our server only has to send the right re
 | Each phase | `80 a3` briefing, `80 9e` waypoints, `80 a0` goals | The waypoint names a door's static object |
 | Lines | `80 a1` | Operator, contact or NPC |
 | Goal done | `80 a0` flag 1 | The client removes it from the Objectives window |
-| Phase done | `80 a1` string `0x2600000c` | "Goals for this area are complete. Find the nearest exit quickly!" |
+| Phase done | `80 a1` string `0x2600000c` or `0x26000004` | "Goals for this area are complete. Find the nearest exit quickly!", or "Goals for this mission phase are complete!" when the player needn't leave (see [Ending a phase](#ending-a-phase)) |
 | End | `80 a2`, then XP and info | The client shows the summary screen and adds "Leave the area now!" itself |
 
 Three things the client depends on, found by trying them:
@@ -58,8 +58,22 @@ The two points in `80 a3` are street-level entrances to the mission area; the op
 
 - `type`: `Talk`, `Defeat`, `Loot`, `Get`, `Give`.
 - `goal` is retail's id, which isn't always the order they open in. `after="2"` opens a goal once goal 2 is done; otherwise it's open from the start of the phase, and they can be done in any order.
+- Kill goals (`Defeat`, `DefeatAll`) can wait too. A kill made before the goal opens isn't lost: when the goal opens, a `Defeat` whose NPC is already dead, or a `DefeatAll` with nobody left, is done at once. So is a `Talk` that finds a hostile ("Find Burdette") if the player kills it before reaching it. Where the target shouldn't be there before the goal opens, have it arrive then (`spawnAfter`, below).
 - `<say>` with no attribute is the operator, `npc="n"` that NPC, `contact="1"` the mission contact.
+- An NPC's own `<say after="n">` is said when it is talked to with no goal open for it, once goal n is done in any phase.
+  So that an earlier phase's goal can't set it off, a goal it waits on must not share its id with a goal of an earlier
+  phase. The story files number their goals through the whole mission wherever an NPC line waits on one
+  (`StoryMissionTests` checks).
 - On an NPC: `attacksOnSight="0"` waits for the player to start the fight; `dead="1"` is a corpse; `phase` is the first byte of its MissionKey.
+- On an NPC, `spawnAfter="3"` makes it arrive when goal 3 completes, instead of standing there from the start: reinforcements, an Agent, someone who "just appears". The goal is one of phase `at`'s for an NPC placed in a generated site, and for an NPC placed by x, y, z the first goal 3 to complete in any phase. It appears where it would have stood (the site spot kept for it, or its x, y, z), or 3 m from the player with `spawnAt="player"` (also when it has no place). Its talk lines, `<near npc>` triggers and goals work from the moment it arrives; until then a `<near npc>` trigger on it doesn't fire, and a `DefeatAll` waits for it unless its goal is optional.
+
+```xml
+<npc id="3" handle="Security" type="HOSTILE" at="3" rsi="35000024" spawnAfter="3" spawnAt="player" />
+<phase site="Normal" enemy="Machines" enemies="2" enemiesAfter="3">
+  <objective goal="3" text="Talk to Tarka" type="Talk" npc="2" />
+  <objective goal="4" text="Kill Security" type="Defeat" npc="3" after="3" />
+</phase>
+```
 - `order` is its place in the contact's story chain: a contact offers the first unfinished one, then all of them to replay. Finished missions are in the `char_missions` table.
 - `org` is the organisation whose contact gives it (1 Zion: Tyndall, 2 Machines: Agent Gray, 3 Merovingian: Flood; see Contacts below); 0 or none is Tyndall's introduction. The client's mission list request (`80 94 <txn> <org>`) carries the contact's org, and it only shows a list whose header names that contact. `contact` names who speaks the mission's contact lines.
 
@@ -84,7 +98,7 @@ A phase with `site` is placed when it starts instead of at fixed positions. The 
 ```
 
 - `site`: `Normal` (any ordinary building: SlumApt, GenericApt, Office, Derelict, Warehouse), `Any`, or one style: `SlumApt`, `GenericApt`, `Office`, `RedPillExtraction`, `ZionOutpost`, `Derelict`, `Warehouse`, `Bank`, `Hotel`, `Skyscraper`.
-- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight.
+- `enemy` (`Machines`, `Merovingian` or `Zion`) and `enemies`: hostiles spawned at the player's level, which attack on sight. With `enemiesAfter="3"` they arrive on their site spots when goal 3 completes, instead of when the phase starts.
 - On an NPC, `at="n"` places it in phase n's site when that phase starts. Without `at` it needs x, y, z and spawns at accept. Leave `level` out to match the player's level.
 - `<object id kind>`: a `Computer`, `Safe` or `Mainframe` already on the floor is used if there is one; otherwise one is spawned at the floor's spawner for that kind, or a `Box` at a box spawner. `Furniture` (a filing cabinet, desk or dresser) and `Phone` are bound to one in place.
   - **Retail did the same.** It bound a spawned object to a static only when the static was the same object (`08 <goid> <static>`: The Internuncio's filing cabinets, dressers). At a spawner it spawned the object free (`0c`, no static): the client's definitions give spawner markers no Info or Usable part. Mission objects carry the key `ff <instance> 02` and use count 1, as retail's wall safes and filing cabinets did.
@@ -97,7 +111,7 @@ Goal types beyond the five above:
 | Type | Attributes | Done when |
 |---|---|---|
 | `DefeatAll` | | every hostile of the phase is dead |
-| `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), or on using a hardline (`to="hardline"`) |
+| `Escort` | `npc` (one id, or several: `npc="2,3"`), `to` | the NPCs follow the player from when they're reached or talked to; done at the way out (`to="exit"`), beside another NPC (`to="npc:4"`), beside one of the phase's objects (`to="object:1"`: the player and each NPC within 7 m of it, as "Lead Tarka to the Mainframe"), or on using a hardline (`to="hardline"`) |
 | `Protect` | `npc` | the mission fails if the NPC dies; done with the phase's other goals |
 | `Search` | `object`, `item` | a container opens a loot window holding the item; a computer's Take or Hack gives it straight away |
 | `Put` | `object`, `item` | using the object while carrying the item |
@@ -105,6 +119,21 @@ Goal types beyond the five above:
 | `Upload` | `item` | uploading at a hardline while carrying it |
 
 `optional="1"` on any goal lets the phase end without it.
+
+### Ending a phase
+
+Retail's operator ended a phase with one of two client strings, never both:
+
+- `0x2600000c` `ID_MISSION_GOALSCOMPLETELEAVE`, "Goals for this area are complete. Find the nearest exit quickly!", when the player still had to leave. The next briefing came once they had.
+- `0x26000004` `ID_MISSION_GOALSCOMPLETE`, "Goals for this mission phase are complete!", when they didn't. The next briefing, or the contact's closing line and "Mission Completed!", came in the same second. The transcripts in `research/missions/transcripts/` log 154 of these lines. Each is followed at once by the next briefing or the closing. Typical cases are an upload at a hardline (Merv1-2-3, Zion3-1-1, Merv8-3-4), NPCs who were talked to and then follow into the next phase (Merv3-1-3, Merv11-1-2, Merv7-2-4), and leading an NPC out (Merv11-1-4's Tarka). In Merv11-1-4 (screenshots 370 and 371) phase 3 ends on it at 12:09:48 PM and Flood's phase 4 briefing follows at 12:09:48 PM. That phase's other two ends, at 12:04:20 and 12:05:48, are area lines.
+
+The runtime sends the area line and waits for the player to leave, unless:
+
+- the phase has `leave="0"`. Then it sends the mission-phase line and the next phase starts at once, wherever the player is. `leave="1"` always asks them to leave.
+- the last goal was done on the way out: an `Upload`, or an `Escort` to `exit` or `hardline`;
+- the player is already out, 60 m or more from every way out of the area (or it has none).
+
+Then it sends the mission-phase line and moves on at once. Merv11-2-1 and Merv11-2-3 show only area lines where their phase ends are legible. Merv11-2-1 has no end line visible for its phase 2. Screenshots 40 and 41 meet between 12:54:34 and 12:54:51 PM, so a line may be hidden there.
 
 Mission items are game objects: `Access_Code` 6782, `Map_Disk` 6783, `Recording` 6784, `Frags` 6785, `Virus` 6786, `Data` 6787, `Documents` 6794, `Plan` 6798, `Dossier` 6799, `File` 6800, `Antidote` 6803, `Small_Bomb` 6807, `Statue_Wrapped` 6815, `Package` 6817, `Large_Bomb` 6818, `Device` 6820, `Tracer` 6825, `Medical_Supplies` 6829, `Data_CD` 6831, `Recording_Coded_Message` 6836, `Dossier_Zion_Captain` 6850, `Dossier_Machine_Agent` 6853, `Document_Secret_Agreement` 6858, and the rest of 6782 to 6870 in `data/gameobjects.csv`.
 
@@ -211,6 +240,95 @@ The collector's first three offers use their shipped per-offer strings `CL_STORY
 through `OFFER03`. Issuance is reconstructed as free, consistent with the tickets' zero VendorPrice.
 The server-side requirement-table contents are unavailable in the client. Additional cosmetic
 exchanges in the collector's remaining item sets still require implementation.
+
+### Merovingian rewards
+
+Most of the Merovingian logs are level-50 archive replays. They paid 525,000 or 1,039,500 information and capped or
+no experience, which isn't a normal reward. So each section of the Merovingian story pays one pair of values,
+taken from another log, and every file's header says it the same way: "Rewards: the log shows ... These are ...".
+
+| Section | Experience | Information | From |
+|---|---|---|---|
+| 1.1 | 55,200 | 73,500 | Zion 1.1 (Redpill Rescue's log) |
+| 1.2 | 68,750 | 91,000 | Zion 1.2 (Confiscation's log) |
+| 1.3 | 308,750 | 94,500 | Zion 1.3 (Miracle Man's log) |
+| 2.1, 2.2 | 297,000 | 98,000 | Zion 2.1 and 2.2 (Chemical Fear's and In Exile's logs) |
+| 2.3 | 308,000 | 98,000 | Zion 2.3 (Free Your Mind's log) |
+| 3.1 | 308,000 | 101,500 | Zion 3.1 (Dire Connection's log) |
+| 4.1, 4.2 | 341,000 | 112,000 | Zion 4.1 and 4.2 (Demonstration of Force's and Between Waking and Sleeping's logs) |
+| 4.3 | 352,000 | 115,500 | Zion 4.3 (Shakedown's log) |
+| 5 | 286,000 | 94,500 | Machines 5 (Deviation's log): no Zion log shows chapter 5's |
+| 6 to 9.2 | 363,000 | 63,000 | Zion 9.2 (1313's log), as the Zion files also have them for 7.2 and 8.3 |
+| 9.3 | 374,000 | 63,000 | Zion 9.3 (Senseless's log) |
+| 10 | 352,000 | 525,000 | Zion 10 (Blip, Zion's only chapter 10 file) |
+| 11.1 | 352,000 | 115,500 | Zion 11.1 (The Spider's log) |
+| 11.2 | 352,000 | 175,000 | Zion 11.2 (Mara's information, The Spider's experience) |
+| 11.3 | 352,000 | 525,000 | Zion 11.3 (Resistance's information, The Spider's experience) |
+| 12.1 | 239,105 | 105,000 | Hothouse's own log, a level-30 player's |
+
+### Recurring characters' looks
+
+The screenshot logs don't show RSIs, so the story files give their NPCs stand-in looks. A character who comes back
+keeps one look in all three story sets (`zion_*`, `machines_*`, `merovingian_*`). The look is chosen in this order:
+
+1. **A neighbourhood contact** wears the look the server gives them on their street corner
+   (`data/mission_contact_npcs.csv`).
+2. **The Merovingian, Persephone and Tesarova** wear their own client models, which the 12.1 files already used.
+3. **Anyone else** wears the look the Zion and Machine files agree on. If they don't agree, it is the look most
+   files used.
+
+Two limits apply to every choice:
+
+- **Sex.** A look must be of the character's sex. Sexes come from the logs' pronouns, and each look's sex comes from
+  the client's model list (`client-data/npc_appearances.tsv` in the research folder). Several characters had been
+  given female recruit looks (`c6020058`, `58010058`): the Merovingian, the Effectuator, Malphas, Carlyne, Beirn,
+  Desayd, Serpentis, Pemberton, Chrysothemis and Brent. Ookami had been given male ones, though she is "she".
+- **No twins by accident.** Two named characters in the same area never share a look. For that reason, Veil and
+  the General take their second-most-used looks, and Kaplan, Wolf (5.2.4) and Zion's Craven take other looks.
+
+Names that the logs reuse for different people keep separate looks: Serpentis, Alpha, Bohrmann, Wallaby, Calvinia,
+Alligator, Cellino, Chimay, Churyumov, Downlink, Eos, Rabbit and Pigeon in the Merovingian files. The Zion and
+Machine files' Abanderada, Anza, Brent, Chrysothemis, Dobrovoleva, Fissure, Ophiuchi and Zverev are also
+different people from the Merovingian ones.
+
+| Character | RSI | Model | Client's own model, not used yet |
+|---|---|---|---|
+| The Merovingian | `57050004` | Merovingian/MerovingianBlack | |
+| Persephone | `5c050004` | Persephone/PersephoneCreme | |
+| Tesarova | `fc0e0004` | oligarchs/og04 | |
+| Malphas | `35000024` | NPCMpedCasual06 (M) | |
+| The Effectuator | `9b0000b4` | recruit-03b (M), retail's male "Merovingian Soldier" | |
+| Twin, Half Twin | `9c0000b4` | recruit-03c (M) | `2c01004e` Twins01 |
+| Seraph | `9c0000b4` | recruit-03c (M) | `92010058` Seraph |
+| The General | `9b0000b4` | recruit-03b (M) | `9400004e` NPCM_General |
+| Holographic Projection (the General's) | `8f080058` | ZeroOne robot-2-1 | `2c030004` General_holo |
+| Flood | `9b0000b4` | recruit-03b (M) | `d4020090` Flood |
+| The Oracle | `3c000040` | Pedestrians-female2_1 | `3302009c` OracleNPC |
+| Danielle Wright, and 11.1.5's "???" | `60010058` | lieutenant-02 (F) | `ec050004` daniellewright |
+| Carlyne | `d8040058` | hacker-lieutenant-01b (M) | |
+| Halborn | `8f080058` | ZeroOne robot-2-1 | |
+| Beirn | `c9020058` | recruit-02b (M) | `30030004` unlimit/beirn |
+| Trainman | `ec020058` | captain-01 (M) | `ad040004` trainman |
+| Ookami | `a8060090` | succubus2 (F) | |
+| Veil | `58010058` | lieutenant-01b (F) | `c0030008` veil |
+| Niobe | `60010058` | lieutenant-02 (F) | `b1070040` Naobi |
+| Ghost | `050100b4` | goatee-lieutenant-01 (M) | `e1010058` NPCMGhost |
+| Morpheus | `050100b4` | goatee-lieutenant-01 (M) | `41020090` NPCMorph |
+| Desayd and his clones | `c9020058` | recruit-02b (M) | |
+| Kaplan | `d8040058` | hacker-lieutenant-01b (M) | |
+| Cheeta | `9c0000b4` | recruit-03c (M) | |
+| Apothecary | `5a000040` | Pedestrians-female1_4 | |
+| Ebony | `5a000040` | Pedestrians-female1_4 | |
+| Strenlo | `d8040058` | hacker-lieutenant-01b (M) | |
+| Earnest Hungerford | `35000024` | NPCMpedCasual06 (M) | |
+| 88 Eightball | `38000024` | NPCMpedCasual07 (M) | |
+| Blackwood Duffy, Elwop, Killer | `ec020058`, `c9020058`, `8f080058` | | |
+| Agents Long, Park (Merovingian files) | `9b000090` | Agent03 | |
+| Agents Miller, West, Wilson, Wong (Merovingian files) | `3600004e` | Agent01 | |
+| Contacts: Hypatia, Silver, Mercury, Thallia, Raini, Cerulean, Nicky G., The Coroner, Dame White, Anti M., The Jeweler, Argon, The Bag Lady, Beryl, Digger, Sister Margaret, Yttri, Lotus, The Sculptress, Madame T., The Chef, The Auditor, Sunshine, The Bartender, The Network, Mr. Black | their `rsi` in `data/mission_contact_npcs.csv` | their street look | |
+
+The client's own models in the last column would be truer to retail, but nobody has seen them on a mission NPC in
+the client yet. The 12.1 files' own models for the Merovingian, Persephone and Tesarova are also untried there.
 
 ## Contacts
 

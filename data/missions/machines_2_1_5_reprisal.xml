@@ -13,11 +13,11 @@
      option to leave team members outside the strong point isn't offered, and the team doesn't fight. Their barks in
      phase 2 were six; an NPC says one line when talked to, so each says one ("Oh yeah!", "Keep your eyes open!" and
      "Hope we find some real enemies in here." are left out), and Isaiah's "We're all set!" is said when Agent Park is
-     talked to. In phase 3 retail wanted Brown brought to the mainframe; an Escort can't end at an object, so finding
-     the mainframe is a Use of it, and Brown's jamming field failure is a Get of the virus from him that opens after,
-     then the player puts it in the mainframe. Phase 4's timer (kill them all before the security net is restored)
-     isn't kept, and the cascading resonance (killing Gnat kills the rest) can't be: the phase ends when Gnat dies,
-     and the other Exiles are left standing. At least one line after Gnat's bark wasn't captured. -->
+     talked to. In phase 3 retail wanted Brown brought to the mainframe: he is led to it, and his jamming field failure
+     is a Get of the virus from him that opens after, then the player puts it in the mainframe. Phase 4's timer (kill
+     them all before the security net is restored) isn't kept, and the cascading resonance (killing Gnat kills the rest)
+     can't be: the phase ends when Gnat dies, and the other Exiles are left standing. At least one line after Gnat's
+     bark wasn't captured. -->
 <mission id="202105" title="Reprisal" description="Lead an assault team against the Merovingian's strong points." plot="1"
          order="2105" org="2" contact="Agent Gray" exp="297000" info="98000">
   <npc id="1" handle="Agent Park" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
@@ -57,7 +57,7 @@
     <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
       <done><say>That's all of the Exiles.</say></done>
     </objective>
-    <objective goal="2" text="Find the Merovingian's mainframe" type="Use" object="1">
+    <objective goal="2" text="Find the Merovingian's mainframe" type="Escort" npc="2" to="object:1">
       <done>
         <say>All right, there's the mainframe. Now you've just got to get the virus in there.</say>
         <say>Uh oh... Brown The Exterminator's code stream is all over the place. There's some sort of jamming field at work here. Go check him out!</say>

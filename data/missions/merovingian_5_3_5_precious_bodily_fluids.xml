@@ -12,8 +12,8 @@
      nearest, Zion, as rogue redpills, as in the Machines chapter 5 missions. Beirn is powerless under the code
      inhibitors and never fought, so he is friendly. Item stand-in: Beirn's fluid sample is Disease (6802), a sample
      vial.
-     Rewards: the log's 1,056,240 experience and 514,500 information were paid to a level-49 player; these are the
-     Machines chapter 5 retail values (286,000 experience and 94,500 information), used for this whole sub-chapter.
+     Rewards: the log shows 1,056,240 experience and 514,500 information (a level-49 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the Unlimit came in two waves ("Code shift! You've got incoming!"); we can't spawn a second wave, so the
      phase has one large group and that line isn't said. A computer in the hideout held a stored Unlimit message
      with no goal; it isn't placed. Persephone's "Get this creature away from me!" came three times; it is her line
@@ -24,7 +24,7 @@
          order="5305" org="3" contact="Flood" exp="286000" info="94500">
   <npc id="1" handle="Beirn" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="2" handle="Shantell Quicksey" type="FRIENDLY" at="1" rsi="a5060090" weapon="2568" />
-  <npc id="3" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+  <npc id="3" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="2568">
     <say>Get this creature away from me!</say>
   </npc>
   <npc id="4" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">

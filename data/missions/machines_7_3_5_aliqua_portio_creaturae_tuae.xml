@@ -18,15 +18,15 @@
          order="7305" org="2" contact="Agent Gray" exp="373830" info="63000">
   <npc id="1" handle="Seraph" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2564" />
   <npc id="2" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
-    <say after="2">I think we're pretty much wrapped up here...</say>
+    <say after="3">I think we're pretty much wrapped up here...</say>
   </npc>
   <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
-    <say after="3">Dismissed, operative.</say>
+    <say after="4">Dismissed, operative.</say>
   </npc>
   <npc id="4" handle="Veil" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
-    <say after="1">If you'll excuse me, I have some phone calls to make.</say>
+    <say after="5">If you'll excuse me, I have some phone calls to make.</say>
   </npc>
-  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="61000040" weapon="0" />
+  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="3c000040" weapon="0" />
   <npc id="6" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2564">
     <say>...</say>
   </npc>
@@ -54,18 +54,18 @@ I am sending you to the location of some of the commandos now. They cannot hide 
       <say>Hm, I'm picking up redpills in there, and...is that Seraph?</say>
       <say>Okay... It looks like all the commandos are already kaput. That definitely is Seraph in there, and...looks like Ghost, too, so that probably explains what took out the commandos. I'd better notify Gray that we've been one-upped.</say>
     </enter>
-    <objective goal="1" text="Talk to Seraph" type="Talk" npc="1">
+    <objective goal="2" text="Talk to Seraph" type="Talk" npc="1">
       <talk><say npc="1">It is good to hear that they have been eliminated. They were brought in as a diversion, while another tried to kill the Oracle. Fortunately, he was stopped.</say></talk>
       <done><say>Yeah, I heard talk about the Kid taking the bullet for the Oracle, or something. Seems he survived too, unfortunately.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Ghost" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Ghost" type="Talk" npc="2">
       <talk><say npc="2">Thanks for asking, operative, but I think we've got them handled.</say></talk>
       <done>
         <say>Gee, what's his problem?</say>
         <say npc="2">I think we're pretty much wrapped up here...</say>
       </done>
     </objective>
-    <objective goal="3" text="Talk to Agent Pace" type="Talk" npc="3" after="2">
+    <objective goal="4" text="Talk to Agent Pace" type="Talk" npc="3" after="3">
       <talk><say npc="3">I will have a word with operative Ghost, {player}. You may leave, and report back to Agent Gray. Thank you.</say></talk>
       <done><say>Three's a crowd? Wait a second--Seraph's still there, too. Uh... Anyhow, sounds like you'd better move out.</say></done>
     </objective>
@@ -80,7 +80,7 @@ As this activity could have repercussions, the Cypherite controller Veil has bee
     <enter><say>I dunno how I feel about you meeting with Veil without an Agent at your back.
 
 That's where you're supposed to meet her. I'm picking up some redpill signals.</say></enter>
-    <objective goal="1" text="Talk to Veil" type="Talk" npc="4">
+    <objective goal="5" text="Talk to Veil" type="Talk" npc="4">
       <talk><say npc="4">I'll tell you how it went, dearie: I darn near lost a ship and crew down there, and we got precious little to show for it.
 
 You want results? Fine! We'll get them, but don't start questioning our methods. The Machines knew very well what they were asking for. Tell me we're endangering the Truce? Don't make me laugh.</say></talk>
@@ -96,7 +96,7 @@ I should mention, operative, that Seraph has extended an invitation for you to m
     <enter><say>The Cypherites killed the crew? Oh, brother. Yeah, I see that going over real well with Zion.
 
 Zion and EPN are still playing "guard the Oracle," even though the General's gone, and the Merv wasted his kill-code on the Kid. They should know better than to try to stop you from getting in...hopefully.</say></enter>
-    <objective goal="1" text="Talk to The Oracle" type="Talk" npc="5">
+    <objective goal="6" text="Talk to The Oracle" type="Talk" npc="5">
       <talk><say npc="5">Why do you think Neo died to get us peace, huh? 'Cause he wanted to save people--stop the killing--same as most everyone else.
 
 Problem is, people have different ideas on how to go about that, and different priorities. Machines, humans--too many see the differences, but not the similarities. Or maybe they just don't care.

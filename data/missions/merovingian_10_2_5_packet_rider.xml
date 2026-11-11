@@ -15,14 +15,17 @@
      / arrives safely", "the last of the / captured data now.", "but if you really / must satisfy", "so far has been /
      of at least", "instead of you, / operative.", "I should provide you / with an escort", "the right address this /
      time...". The Team chat confirms Weisbrod's and Huang's.
-     Rewards: Zion's only chapter 10 mission, Blip (10.2.5): 352,000 experience, 525,000 information. The log's run
+     Rewards: the log shows 362,670 experience and 63,000 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5). The log's run
      paid 362,670 experience and 63,000 information.
      Gaps: how the data reached the player in phase 1 isn't shown; the talk with the projection is the goal, and phase 2
      hands the data over. Weisbrod's first line is said on getting near him. Nightmare's line was only in Team chat,
      between Weisbrod's two log lines; it is said when the data is put in. Huang's second line came 4 seconds after her
      first and follows it here. Bessel's and Pigeon's greetings are said on getting near them, and Ookami's second
      line when he is clicked again. Retail ended phase 3 with "Goals for this mission phase are complete!" 20 seconds
-     after Ookami spoke, with no exit; here Bessel and Pigeon are led out and then follow the player into phase 4.
+     after Ookami spoke, with no exit; here Bessel and Pigeon are led out and then follow the player into phase 4,
+     and leading them out sends that line.
      The friendly Commandos in phase 2 said nothing and aren't placed. Phase 4's goals aren't shown: the guards were
      fought (bodies searched), and the player targeted a computer just before the end, so here the guards are killed
      and the computer searched for nothing; the Operator's line about the guards is said on getting near one. The
@@ -33,7 +36,7 @@
   <npc id="2" handle="Jasper Weisbrod" type="FRIENDLY" at="2" rsi="d8040058" weapon="0" />
   <npc id="3" handle="Nightmare" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="4" handle="Sarita Huang" type="FRIENDLY" at="2" rsi="a5060090" weapon="0" />
-  <npc id="5" handle="Ookami" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
     <say after="4">If you mean to test my patience, you won't have long to wait.</say>
   </npc>
   <npc id="6" handle="Bessel" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />

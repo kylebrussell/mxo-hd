@@ -11,33 +11,32 @@
      missions. Each fighting phase has one named Unlimit Reactor; the three barks (dead end, Niobe, power) came in phases 2 to 4 without a clear order, so each takes one.
      Item stand-ins: the two halves of the encoded file are File (6800) and Data (6787); the location data from the
      goon's pockets is Map_Disk (6783).
-     Rewards: retail showed 1,056,000 experience and 514,500 information, but the log is a level-49 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation).
+     Rewards: the log shows 1,056,000 experience and 514,500 information (a level-49 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the three Effectuators are three NPCs with the same name and look (retail's copies looked alike); the
      first is the one to talk to, and the other two say their after lines. Their "Amigo!" and "Compadre!" came on
-     coming near and are said with the Operator's "three at once". In phase 2 the second half of the file came after
-     the first ("Ooh, looks like you just got more company!"); we can't spawn hostiles on a goal, so the goon who
-     carries it is there from the start and the goal to loot it is open from the start too, as is phase 4's. The
-     log shows no kill goal, so the goons need not all be beaten. Phase 3's computer screens (the data feed to
-     70972.3272.79493.022:0232 and "Remote user maxson override in progress") can't be shown; the Operator's lines
-     tell it. The Operator's "A hardline junction box? ... Hey, and a computer." came on approach and is said on arrival; the
-     junction box had no goal and isn't placed. The searches of phases 3 and 4 turn up nothing, as in the log. Lines
-     at screenshot joins read whole and are used as such. -->
+     coming near and are said with the Operator's "three at once". In phase 2 the goon who carries the second half of
+     the file arrives once the first half is found ("Ooh, looks like you just got more company!"), and the goal to
+     loot it opens then; phase 4's goon is there from the start ("The place is hot"), and the goal to loot him is open
+     from the start. The log shows no kill goal, so the goons need not all be beaten. Phase 3's computer screens (the
+     data feed to 70972.3272.79493.022:0232 and "Remote user maxson override in progress") can't be shown; the
+     Operator's lines tell it. The Operator's "A hardline junction box? ... Hey, and a computer." came on approach and
+     is said on arrival; the junction box had no goal and isn't placed. The searches of phases 3 and 4 turn up
+     nothing, as in the log. Lines at screenshot joins read whole and are used as such. -->
 <mission id="305202" title="Location Data" description="Raid the computer center of Anome's hacker, Maxson, and recover his data." plot="1"
          order="5202" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">No, no, don't thank me; I just have your career advancement at heart.</say>
   </npc>
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say>Compadre!</say>
     <say after="1">Donde esta el cuarto de bano?</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say>Compadre!</say>
     <say after="1">Vaya con dios!</say>
   </npc>
-  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568" spawnAfter="1">
     <say>Dead end--for you.</say>
   </npc>
   <npc id="5" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
@@ -73,7 +72,7 @@ So look, this Maxson guy working for Anome... Operatives recovered some data poi
 
 Ooh, looks like you just got more company!</say></done>
     </objective>
-    <objective goal="2" text="Get the other half of the file from the Unlimit Reactor" type="Loot" npc="4" item="6787">
+    <objective goal="2" text="Get the other half of the file from the Unlimit Reactor" type="Loot" npc="4" item="6787" after="1">
       <done><say>That's it! I'll need you to upload those to me at a hardline.
 
 Hey, I just picked up more corrupt code signals in there. Be careful!</say></done>

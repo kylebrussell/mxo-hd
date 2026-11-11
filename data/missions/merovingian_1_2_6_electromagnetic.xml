@@ -5,12 +5,12 @@
      description, the objective texts, the Protect goal, the site (a Zion base: ZionOutpost), the looks and the enemy count. The Zion
      Aikido Grandmaster and Zion Duelist are placed with the barks they had in Team chat; the Zion Destroyer (no line) is
      one of the phase's generated Zionites. Item stand-in: the EMP Bomb is Small_Bomb (6807), handed to the player when
-     the phase starts, as Flood's "The device is being downloaded to you right now". Rewards: the log is a level-50
-     player's (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     the phase starts, as Flood's "The device is being downloaded to you right now". Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
      Gaps: retail's ceaseless waves of Zion operatives until the bomb is set are a fixed group of five here. Showing
-     Churyumov to the mainframe can't target an object, so it is a Use of the Mainframe; Churyumov doesn't follow the
-     player there, and his "I've placed the EMP Bomb" line is said when it is used. The 911 Transcript popup seen
-     after this mission isn't used: nothing in the log ties it to the mission. -->
+     Churyumov to the mainframe is an escort to it, and his "I've placed the EMP Bomb" line is said when he gets
+     there. The 911 Transcript popup seen after this mission isn't used: nothing in the log ties it to the mission. -->
 <mission id="301206" title="Electromagnetic" description="Deliver an EMP bomb to an Exile team raiding a Zion base." plot="1"
          order="1206" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Churyumov" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
@@ -33,7 +33,7 @@ Once you find him and have delivered the bomb to Churyumov he will still be in n
       <talk><say npc="1">Quickly, give me the EMP Bomb.</say></talk>
       <done><say npc="1">Excellent. Now I need you to help me get into the heart of the base. Show me to the mainframe and I'm going to place the bomb in that room to disable the entrance of additional Zion operatives at this location.</say></done>
     </objective>
-    <objective goal="3" text="Show Churyumov to the mainframe" type="Use" object="1" after="2">
+    <objective goal="3" text="Show Churyumov to the mainframe" type="Escort" npc="1" to="object:1" after="2">
       <done>
         <say>The EMP Bomb has been set! Now get out of there!</say>
         <say>All clear, {player}.</say>

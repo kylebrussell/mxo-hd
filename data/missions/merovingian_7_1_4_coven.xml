@@ -13,36 +13,36 @@
      Giddings, Jane De Bonte and Lo Ruhamah are given female looks, a guess for all but Lo Ruhamah) and the enemy count.
      The Jade Moons are Exiles, so the hostiles are Merovingian. Item stand-in: the Apothecary's code trace is Data
      (6787; "You'd better get that data from her"; no item name was shown).
-     Rewards: the log shows 407,000 experience and 70,000 information, an archive replay and not a normal reward; no Zion
-     7.1 mission is built, so these are Zion 7.2's values (363,000 experience, 63,000 information, as Hear Me paid), the
-     nearest.
+     Rewards: the log shows 407,000 experience and 70,000 information (an archive replay). These are the Zion files'
+     values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log shows chapter
+     7's.
      Gaps: the first area's goal wasn't shown ("you've covered that whole area, and I don't see anything there other
      than those Jade Moons"); ours is a search of a piece of furniture that turns up nothing, with a few hostile Exiles
      standing in for the Jade Moons, whose names weren't shown and whose fight, if any, wasn't either. The Operator's
      "Jade Moons? What the devil..." came 13 seconds after arriving and is said on arrival. Onyx's and Ebony's lines came
      before Dame White's and are said on getting near Onyx. Persephone's "test" isn't shown: Tana Giddings spoke, then
      Jane De Bonte 74 seconds later, then 35 seconds after that the test was passed; ours is talking to Tana Giddings
-     and then to Jane De Bonte. Lo Ruhamah stands there from the start ("there's Lo in the flesh" in retail when the test
-     was passed) and her goal opens after the test. No give was shown; Persephone's "You must give it to Lo Ruhamah"
-     makes it a Give. Dame White's second line (said twice) and Persephone's, Jane De Bonte's and Lo Ruhamah's last
-     lines are said when they are talked to again after their goals. -->
+     and then to Jane De Bonte. Lo Ruhamah arrives when the test is passed ("there's Lo in the flesh"; "I've only got a
+     couple bluepills on my screen" before it), and her goal opens then. No give was shown; Persephone's "You must give
+     it to Lo Ruhamah" makes it a Give. Dame White's second line (said twice) and Persephone's, Jane De Bonte's and Lo
+     Ruhamah's last lines are said when they are talked to again after their goals. -->
 <mission id="307104" title="Coven" description="Follow the trace of the Apothecary's code from Dame White to Persephone and Lo Ruhamah." plot="1"
          order="7104" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Onyx" type="FRIENDLY" at="2" rsi="60010058" weapon="2568" />
   <npc id="2" handle="Ebony" type="FRIENDLY" at="2" rsi="5a000040" weapon="2568">
     <say>...</say>
   </npc>
-  <npc id="3" handle="Dame White" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="3" handle="Dame White" type="FRIENDLY" at="2" rsi="460a0058" weapon="0">
     <say after="2">Oh, the Black Widow, the Apothecary and I go way back. I was something of a wild-child in my younger days.&#10;&#10;Hm! You could ask Persephone about it, if you really want to know.</say>
   </npc>
-  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say after="4">If only you had come to the Matrix a long time ago, you would understand...&#10;&#10;Do not forget: she will test you.</say>
   </npc>
   <npc id="5" handle="Tana Giddings" type="FRIENDLY" at="4" rsi="60010058" weapon="0" />
   <npc id="6" handle="Jane De Bonte" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
     <say after="6">Knowledge lights the path.</say>
   </npc>
-  <npc id="7" handle="Lo Ruhamah" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+  <npc id="7" handle="Lo Ruhamah" type="FRIENDLY" at="4" rsi="34050040" weapon="0" spawnAfter="6">
     <say after="7">The Trainman will not want to be found, yet find him you must.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="3">

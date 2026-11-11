@@ -175,6 +175,103 @@ public static partial class Scenarios
         await DefeatMissionNpc(player, await player.WaitForViewNamedAsync("Override Executable"));
     }
 
+    /// <summary>The operator's client-string lines (80 a1 with the operator's portrait and name).</summary>
+    private const string GoalsCompleteLeaveLine = "80 a1 70 0a 00 28 14 00 00 26 14 00 0c 00 00 26";
+    private const string GoalsCompleteLine = "80 a1 70 0a 00 28 14 00 00 26 14 00 04 00 00 26";
+
+    /// <summary>
+    /// Zoochemy (11.1.4): Security and the Machines arrive when Tarka has been talked to (spawnAfter, enemiesAfter), phase 3
+    /// ends on leading Tarka out with "Goals for this mission phase are complete!" and phase 4 follows at once, and phase 4
+    /// is leading Tarka to the mainframe (to="object:1").
+    /// </summary>
+    private static async Task MissionArrivalsAndEscortToObject(ScenarioContext context)
+    {
+        XElement[] definitions = MerovingianDefinitions(context);
+        XElement mission = definitions.Single(definition => (int)definition.Attribute("id")! == 311104);
+        HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
+
+        // Phase 1: the mainframe
+        await EnterMissionArea(player);
+        await UseMissionObject(context, player, "Mainframe", "04");
+        await player.WaitForTextAsync("Some kind of program just merged");
+        await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
+        await LeaveMissionArea(player);
+        await player.WaitForTextAsync("Of all the idiotic");
+        await player.WaitForRpcAsync("80 9e 00");
+
+        // Phase 2: Silver
+        await EnterMissionArea(player);
+        await TalkToMissionNpc(player, "Silver");
+        await player.WaitForTextAsync("Any discomfort?");
+        await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
+        await LeaveMissionArea(player);
+        await player.WaitForTextAsync("rendezvous with an operative of ours named Tarka");
+        await player.WaitForRpcAsync("80 9e 00");
+
+        // Phase 3: nobody hostile until Tarka has been talked to. On a small floor Tarka stands near enough the elevator
+        // door that leading Tarka out is done as soon as Tarka follows.
+        await EnterMissionArea(player);
+        ViewCreation tarka = await player.WaitForViewNamedAsync("Tarka");
+        byte[] tarkaAt = tarka.Attributes["Position"];
+        await MoveForMissionTest(player, BitConverter.ToDouble(tarkaAt, 0) + 100, BitConverter.ToDouble(tarkaAt, 8),
+            BitConverter.ToDouble(tarkaAt, 16));
+        await Task.Delay(1500);
+        Check.That(!context.Server.DebugLog().Contains("Security arrives"), "Security arrives only after the talk");
+        Check.That(!player.World.CreationSnapshot().Any(view => view.Name == "Security" || view.Name == "Machine Program"),
+            "No hostiles before the talk");
+        player.SendRpc($"80 c7 {MissionNpcId(tarka)} 09 00");
+        await player.WaitForTextAsync("Did you feel something?");
+        await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("[MISSION] Security arrives") &&
+                                          context.Server.DebugLog().Contains("[MISSION] 2 hostiles arrive"), "Arrivals", TimeSpan.FromSeconds(10));
+        await player.WaitForViewNamedAsync("Security");
+        await player.WaitUntilAsync(() => player.World.CreationSnapshot().Count(view => view.Name == "Machine Program") >= 2,
+            "Two Machine Programs", TimeSpan.FromSeconds(10));
+        // Security's near line works from its arrival: it stands beside the player
+        await player.WaitForTextAsync("You are under arrest");
+
+        // Leading Tarka out ends the phase without a "find the exit", and phase 4's briefing follows at once. Phase 4's
+        // mainframe is spawned as the phase starts.
+        int seen = player.World.CreationSnapshot().Count;
+        await LeaveMissionArea(player);
+        await player.WaitUntilAsync(() => player.Received(GoalsCompleteLine).Count == 1, "Goals for this mission phase are complete!",
+            TimeSpan.FromSeconds(15));
+        await player.WaitForTextAsync("one more part to this experiment");
+        Check.Equal(2, player.Received(GoalsCompleteLeaveLine).Count, "Area lines before phase 4");
+        await player.WaitForRpcAsync("80 9e 00");
+
+        // Phase 4: lead Tarka to the mainframe. Tarka follows the player up and to it.
+        await EnterMissionArea(player);
+        ViewCreation mainframe = await MissionObjectView(context, player, "Mainframe", seen);
+        byte[] position = mainframe.Attributes["Position"];
+        await MoveForMissionTest(player, BitConverter.ToDouble(position, 0) + 100, BitConverter.ToDouble(position, 8),
+            BitConverter.ToDouble(position, 16));
+        await player.WaitForTextAsync("tucked back into a mainframe", TimeSpan.FromSeconds(15));
+        await player.WaitForRpcAsync(GoalsCompleteLeaveLine);
+        await LeaveMissionArea(player);
+        await player.WaitForRpcAsync("80 a2 00", TimeSpan.FromSeconds(15));
+        Check.Equal(1, player.Received(GoalsCompleteLine).Count, "One mission-phase line");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT completions FROM char_missions " +
+            $"WHERE charId={player.CharId} AND missionId=311104"), "Zoochemy completion recorded");
+    }
+
+    /// <summary>The current phase's newest object of this kind, as the server placed it.</summary>
+    /// <param name="seen">Creation records before the phase's: an earlier phase's object of the same kind is skipped.</param>
+    private static async Task<ViewCreation> MissionObjectView(ScenarioContext context, HeadlessPlayer player, string kind, int seen = 0)
+    {
+        string placement = @"\[MISSION\] Object 1 \(" + kind + @"\) is a (\d+)";
+        await player.WaitUntilAsync(() => Regex.IsMatch(context.Server.DebugLog(), placement), kind + " placement", TimeSpan.FromSeconds(15));
+        ushort goid = ushort.Parse(Regex.Matches(context.Server.DebugLog(), placement).Last().Groups[1].Value);
+        List<ViewCreation> Fresh() => player.World.CreationSnapshot().Skip(seen).Where(view => view.Goid == goid).ToList();
+        await player.WaitUntilAsync(() => Fresh().Count > 0, kind + " view", TimeSpan.FromSeconds(10));
+        return Fresh().Last();
+    }
+
+    private static async Task UseMissionObject(ScenarioContext context, HeadlessPlayer player, string kind, string use)
+    {
+        ViewCreation view = await MissionObjectView(context, player, kind);
+        player.SendRpc($"80 c7 {MissionNpcId(view)} {use} 00");
+    }
+
     private static string MissionNpcId(ViewCreation view) => $"{Le(view.ViewId)} {Le((ushort)view.SpawnId)}";
 
     private static async Task TalkToMissionNpc(HeadlessPlayer player, string name)

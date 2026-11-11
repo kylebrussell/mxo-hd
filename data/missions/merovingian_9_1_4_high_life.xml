@@ -15,27 +15,27 @@
      Read across page joins as contiguous: "that means you're going along too", "You'll excuse me if I outgrew the
      charms of beauty long ago" (a hidden line there can't be excluded), "Now hurry up, we're running late!", "draw the
      eye to your best sides" (a cut line there was unreadable) and "Just think how the gold would catch the light".
-     Rewards: the log shows none (no chat window), and Zion has no 9.1 logs, so these are Zion's values for chapter
-     9.2, the nearest (363,000 experience and 63,000 information, as 1313 paid).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 9.1's.
      Gaps: the Jeweler's second line was cut after "I can work with this guy. This could be", so only its first
      sentence is used. One Operator line at 5:06:43 (after Persephone's) showed only its header; it was very probably
      the area's "Goals for this area are complete", which the engine adds. Phase 2 ended in retail with "Goals for
      this mission phase are complete!" and Flood's next line in the same second, so the player did not have to leave
-     an area there; here it is an ordinary site with an exit, and Flood's line is phase 3's briefing. In phase 4
-     the order the three had to be talked to isn't shown: here it is the log's order (Jeweler, Sculptress, Lotus), each
-     waiting for the one before, and the Operator's "Dang" is said when Lotus has spoken. The lines the NPCs said
-     once more after their goals (the Intruder's, Persephone's, the Chef's, the Jeweler's, the Sculptress's and
-     Lotus's second lines) are said when they are clicked again. The computer message at the Chef's ("KX: Christeen!
+     an area there; leave="0" sends that line and starts phase 3 at once, and Flood's line is phase 3's briefing. In
+     phase 4 the order the three had to be talked to isn't shown: here it is the log's order (Jeweler, Sculptress,
+     Lotus), each waiting for the one before, and the Operator's "Dang" is said when Lotus has spoken. The lines the
+     NPCs said once more after their goals (the Intruder's, Persephone's, the Chef's, the Jeweler's, the Sculptress's
+     and Lotus's second lines) are said when they are clicked again. The computer message at the Chef's ("KX: Christeen!
      Don't forget the Moroccan sumac!") can't be shown and no goal used it, so there is no computer. -->
 <mission id="309104" title="High Life" description="Help Flood show the intruder everything the Merovingian's organization has to offer." plot="1"
          order="9104" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="0">
     <say after="1">This is not what I came here for.</say>
   </npc>
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="2">There is nothing of a young man's blood in this one's body or mind.</say>
   </npc>
-  <npc id="3" handle="The Chef" type="FRIENDLY" at="3" rsi="c9020058" weapon="0">
+  <npc id="3" handle="The Chef" type="FRIENDLY" at="3" rsi="320a0058" weapon="0">
     <say after="4">Christeen! Throw this out! Yes, all of it! It's trash! Bah! Bring the melanzane! We'll whip something up!</say>
   </npc>
   <npc id="4" handle="Christeen Westwater" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
@@ -44,13 +44,13 @@
   <npc id="5" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
     <say after="5">I'll take no more stuffing from this program.</say>
   </npc>
-  <npc id="6" handle="The Jeweler" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
+  <npc id="6" handle="The Jeweler" type="FRIENDLY" at="4" rsi="7d0b0058" weapon="0">
     <say after="6">I can work with this guy.</say>
   </npc>
-  <npc id="7" handle="The Sculptress" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="7" handle="The Sculptress" type="FRIENDLY" at="4" rsi="8a0a0058" weapon="0">
     <say after="7">That bubble skin of his is interesting... I'll have to ask him about that.</say>
   </npc>
-  <npc id="8" handle="Lotus" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+  <npc id="8" handle="Lotus" type="FRIENDLY" at="4" rsi="4c0a0058" weapon="0">
     <say after="8">I wouldn't want him hanging around, anyway.</say>
   </npc>
   <npc id="9" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="0">
@@ -68,7 +68,7 @@
       <done><say>Ouch. Might want to keep that first part out of our report...</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="5">
+  <phase site="Normal" enemy="Machines" enemies="5" leave="0">
     <briefing>Phaugh... Persephone has become sullen and pale--a liability, if you ask me. Fortunately, we have other agents who can demonstrate to him the benefits of our organiza-- Hold on.&#10;&#10;What? The hell you say! Move those cakes! Yes, yes; I'll take care of the rest.&#10;&#10;Lovely. The Machines are trying to horn in. Please deal with them for me; then we can get on with business.</briefing>
     <enter><say>Cakes?&#10;&#10;Whatever. Probably best we didn't find out.&#10;&#10;All right, hostile programs are all over that place. No cake for them.</say></enter>
     <objective goal="3" text="Kill all of the hostile programs" type="DefeatAll">

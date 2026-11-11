@@ -9,13 +9,13 @@
      the description (the Summary tab was never opened), the other objective texts, the sites (Silver's processing
      center, with its conference room, and his lab, desks and whiteboard, are Office sites in Camon Heights, as the map
      showed; the rest Normal), the looks and the enemy counts. Silver's people are rogue programs: Merovingian. Item
-     stand-in: retail's Disk is Data_CD (6831). Rewards: these logs are a level 50 player's (525,000 information, no
-     experience shown), so the 352,000 experience and 115,500 information are Zion chapter 4.3's values.
+     stand-in: retail's Disk is Data_CD (6831). Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 4.3's values (352,000 experience, 115,500 information, as Shakedown paid).
      Gaps: in retail the first phase ended as soon as Polyxena was talked to and she simply joined; here she is led out
-     of the area so that she follows into phase 2. An escort can't end at a computer, so "Lead Polyxena to the main
-     terminal" is using the terminal with her alongside; the Operator's "Bingo! Now get Polyxena in here" and her
-     line about Polyxena downloading the data onto a disk are said then, and the disk is taken from the same computer.
-     Polyxena "finds her own way out" in retail; here she may keep following. Whether phase 2 had hostiles didn't show;
+     of the area so that she follows into phase 2. "Lead Polyxena to the main terminal" is an escort to the terminal;
+     the Operator's "Bingo! Now get Polyxena in here" and her line about Polyxena downloading the data onto a disk
+     are said when they get there, and the disk is taken from the same computer. Polyxena "finds her own way out" in
+     retail; here she stays at the terminal. Whether phase 2 had hostiles didn't show;
      the fail condition suggests it did, so a few are there. The SilverOS communications log that the search turned up
      in phase 3 can't be shown; the Operator's line about it is said when the search is done. In Silver's place he
      spoke after the fight, so talking to him waits for the kill goal. The middle of Flood's reply to Silver was hidden
@@ -23,7 +23,7 @@
 <mission id="304303" title="Highly Polished" description="Follow the encrypted data back to Silver, break into his network with Polyxena, and find out what he has done with the key." plot="1"
          order="4303" org="3" contact="Flood" exp="352000" info="115500">
   <npc id="1" handle="Polyxena" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
-  <npc id="2" handle="Silver" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="2" handle="Silver" type="FRIENDLY" at="4" rsi="750a0058" weapon="2568">
     <say>Think it over, meatbag. Who am I kidding... let your boss think it over. You're not qualified.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">
@@ -41,7 +41,7 @@
     <briefing>All right, I see you and Polyxena are getting along splendidly. That puts my heart at ease, it really does.&#10;&#10;Now stop wasting time and get over to one of Silver's outposts. You've got some data collection to take care of.</briefing>
     <enter><say>Okay, this is a major processing center of Silver's.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Lead Polyxena to the main terminal" type="Use" object="1">
+    <objective goal="1" text="Lead Polyxena to the main terminal" type="Escort" npc="1" to="object:1">
       <done>
         <say>Bingo! Now get Polyxena in here.</say>
         <say>Looks like Polyxena just downloaded the data you need onto a disk. Grab it from the computer and you can get out of there.</say>

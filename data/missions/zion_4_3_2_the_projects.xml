@@ -17,15 +17,15 @@
 <mission id="104302" title="The Projects" description="Search Moriah for the Crossbones and the stolen key to the General's case." plot="1"
          order="4302" org="1" contact="Tyndall" exp="352320" info="115500">
   <npc id="1" handle="Justin Yopp" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
-    <say after="1">I'm...err...busy. Yes, very busy. My wife can help you with such a...trivial...code.</say>
-    <say after="3">Oh, please, don't mention it. Only too glad to help. No, no, please don't put any credit for this in your article--it was really too simple to be worth anything to a researcher of my caliber.</say>
+    <say after="3">I'm...err...busy. Yes, very busy. My wife can help you with such a...trivial...code.</say>
+    <say after="5">Oh, please, don't mention it. Only too glad to help. No, no, please don't put any credit for this in your article--it was really too simple to be worth anything to a researcher of my caliber.</say>
   </npc>
   <npc id="2" handle="Sunni De Bonte" type="FRIENDLY" at="2" rsi="61000040" weapon="0" />
   <npc id="3" handle="JC" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
-    <say after="2">Go see Hatchet. He'll listen to ya. Clear this whole thing up.</say>
+    <say after="7">Go see Hatchet. He'll listen to ya. Clear this whole thing up.</say>
   </npc>
   <npc id="4" handle="Hatchet" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
-    <say after="1">*cough* We don't have a problem with Zion here in Moriah. *cough* Why should Zion have a problem with us?</say>
+    <say after="8">*cough* We don't have a problem with Zion here in Moriah. *cough* Why should Zion have a problem with us?</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Warrior, since your report that the missing key to the General's case has most likely been taken to Moriah Projects, intel has been working on possible leads in that neighborhood. The local gang, the Crossbones, are a primary suspect; it is known that they assisted the Machines in attempting to recover the case several months ago.&#10;&#10;We've discovered the location of an active Crossbones cell. Subdue the gang members, and search the area for information on the stolen key.</briefing>
@@ -44,18 +44,18 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>The document is written in a code language unknown to us. However, we know of a researcher in urban linguistics, Professor Yopp, who may be able to decipher it. He's a bluepill, so please be careful in what you say to him.</briefing>
     <enter><say>That's the professor's pad. I'm scanning several bluepills inside.</say></enter>
-    <objective goal="1" text="Talk to Justin Yopp" type="Talk" npc="1">
+    <objective goal="3" text="Talk to Justin Yopp" type="Talk" npc="1">
       <talk><say npc="1">Oh! H-hello. Y-yes, always a pleasure to converse with a fellow scholar. A coded message from Moriah... Ah... Say, I'm a little, uh, busy at the moment. Why don't you run it by my wife? She...uh...she's picked up a lot of the local cants by...er...watching my research.</say></talk>
       <done>
         <say>Uh... Huh. Guess you'd better give the document to his wife, Sunni De Bonte.</say>
         <say>Ask her if she can decipher it for you.</say>
       </done>
     </objective>
-    <objective goal="2" text="Give the coded document to Sunni De Bonte" type="Give" npc="2" item="6794" after="1">
+    <objective goal="4" text="Give the coded document to Sunni De Bonte" type="Give" npc="2" item="6794" after="3">
       <talk><say npc="2">This is interesting... What did Justin think? Oh, did he? I suppose I'd better give him a hand then. Let me see here...&#10;&#10;There are some similarities to a character set found in a codex of late seventeenth-century privateer's shorthand found off Tortuga... Hm... Then perhaps an alphabetical rotation... Aha!&#10;&#10;It's a street address. I've written it on this note for you.</say></talk>
       <done><say>Guess we know who the real brains of the family is, eh? Get the note she copied out for you.</say></done>
     </objective>
-    <objective goal="3" text="Get the note from Sunni De Bonte" type="Get" npc="2" item="6855" after="2">
+    <objective goal="5" text="Get the note from Sunni De Bonte" type="Get" npc="2" item="6855" after="4">
       <talk><say npc="2">That was a pretty obscure code--no wonder Justin passed it off to me. Hah! He'd be lost without me.</say></talk>
       <done><say>Great, I'll track down that address. Head on outside.</say></done>
     </objective>
@@ -63,11 +63,11 @@
   <phase site="Normal" enemy="Merovingian" enemies="5">
     <briefing>{player}, you're making great progress. Our scans show a significant amount of Crossbones activity at that location. They could very well have the key there.</briefing>
     <enter><say>Lots of Crossbones in there. Good luck.</say></enter>
-    <objective goal="1" text="Talk to JC" type="Talk" npc="3">
+    <objective goal="6" text="Talk to JC" type="Talk" npc="3">
       <talk><say npc="3">Hold on there, pup. Just what is this all about? Don't be startin' a war with the Crossbones, Zion.&#10;&#10;A key? Haven't seen it. But if you need more convincin', why don't you go talk to our dear leader, Hatchet? You'll find him at the address on this card. He'll set ya straight. No need for all this runnin' about.</say></talk>
       <done><say>Sounds like a set-up, but we might as well play along. Get that card.</say></done>
     </objective>
-    <objective goal="2" text="Get the business card from JC" type="Get" npc="3" item="6796" after="1">
+    <objective goal="7" text="Get the business card from JC" type="Get" npc="3" item="6796" after="6">
       <talk><say npc="3">Come on, this card ain't gonna bite ya! Take it!</say></talk>
       <done><say>Get to the street and I'll punch up that address for you.</say></done>
     </objective>
@@ -75,7 +75,7 @@
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Use caution when dealing with Outsider leaders such as Hatchet, {player}. The gangs have their own agendas, and will do anything to maintain their control of what they view as "their" neighborhood.</briefing>
     <enter><say>I'm picking up an Exile program in there.</say></enter>
-    <objective goal="1" text="Talk to Hatchet" type="Talk" npc="4">
+    <objective goal="8" text="Talk to Hatchet" type="Talk" npc="4">
       <talk><say npc="4">You're the one JC *cough* sent, are you? After the key to the General's case, eh? Oh, yes, I know about it. I also know that Yttri told you we had it. You should know *cough* .... You should know that Yttri is hardly an authority on happenings outside of Achan.&#10;&#10;I *cough* don't have the key. I've never seen it. I don't expect you to believe me, but a scan will show you that it isn't in here, and you already know it wasn't at our Crossbones meeting place. Now, you can waste all your time roughing up each one of my men in Moriah, or you can go get a hold of your people in Zion and try to find out where the key actually went before it's too late. *cough* Up to you.</say></talk>
       <done><say>Running a detail scan of the place now... Nope... Clean as a whistle. He's right, we don't have an evidence the key is in Moriah aside from what Yttri said. We'd better check in with Tyndall.</say></done>
     </objective>

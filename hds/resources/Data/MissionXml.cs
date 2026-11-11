@@ -69,7 +69,9 @@ namespace hds
                 level = (ushort)Int(node, "level", 1),
                 maxHealth = (ushort)Int(node, "maxHP", 500),
                 weapon = (UInt32)Int(node, "weapon", 0),
-                at = Int(node, "at", 0)
+                at = Int(node, "at", 0),
+                spawnAfter = Int(node, "spawnAfter", -1),
+                spawnAtPlayer = string.Equals(Attr(node, "spawnAt"), "player", StringComparison.OrdinalIgnoreCase)
             };
             foreach (XmlNode line in Elements(node, "say"))
             {
@@ -86,6 +88,8 @@ namespace hds
                 site = Attr(node, "site"),
                 enemy = Attr(node, "enemy"),
                 enemies = Int(node, "enemies", 0),
+                enemiesAfter = Int(node, "enemiesAfter", -1),
+                leave = Attr(node, "leave") == null ? (bool?)null : Int(node, "leave", 1) != 0,
                 neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 

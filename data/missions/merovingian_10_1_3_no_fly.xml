@@ -13,8 +13,9 @@
      Joins between crops read as contiguous: "any fool with an" / "atlas knows", "it is possible" / "that the
      suppression", "The location data we have for" (repeated on both), "suspected I" / "had mastered". Read as a
      paragraph break falling between crops: "opportunity?" / "Hmph. You really must".
-     Rewards: the log shows none; Zion's only chapter 10 mission is Blip (10.2.5), so its values: 352,000 experience,
-     525,000 information.
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
      Gaps: what the goals were isn't shown. The Twins' exchange came on the player's approach, before Malphas spoke;
      it is said on getting near the first Twin, and which Twin said which line isn't shown. Two Operator entries
      (2:39:59 and 2:41:45) are hidden between crops, most likely the area-complete lines. The data isn't handed over in
@@ -28,14 +29,14 @@
      afterwards. -->
 <mission id="310103" title="No Fly" description="Get the Machines' data on a blank spot on the map to the General, then clear his way past the Sentinels." plot="1"
          order="10103" org="3" contact="Flood" exp="352000" info="525000">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="2564">
     <say after="1">Guard it carefully, operative. There is something here that the Machines do not want found.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="2">Non, I do not know what we will find there. It is where the man Carlyne came from, if Halborn is to be believed. They have told us next to nothing about themselves; now, we find the answers for ourselves.</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
   <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>If you'll recall, Halborn let slip something about Carlyne being 800 miles northwest of the Machine city. Topographic data purloined from the Machines shows that the area is mountainous, which any fool with an atlas knows, but also that the regular grid of Machine pods and power lines breaks there, leaving a wide area apparently clear of Machine activity.&#10;&#10;This data is obviously highly sensitive. For some reason, you've been chosen to handle a copy. I sense disaster.</briefing>

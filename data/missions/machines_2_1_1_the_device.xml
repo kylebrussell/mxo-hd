@@ -6,12 +6,11 @@
      log names no building type: Normal), the looks and the enemy count. Item stand-in: the schematic found on the
      bodies is Plan (6798). Rewards: the screenshots are crops of the Mission window with no chat panel, so no reward
      is shown; these are the Zion chapter 2 values (about 297,000 experience and 98,000 information).
-     Gaps: Coyote asks to be taken to a private room with a computer in the same building. An Escort can't end at an
-     object, so finding that room is a Use of a Computer, and Coyote's second speech is a Talk that opens after it; he
-     doesn't follow the player there. One more line, probably Coyote's, after his first one wasn't captured. Phase 3
-     finds Coyote and others dead in his laboratory; dead NPCs aren't spawned, so the bodies are a Furniture object to
-     search for the schematic, and the Operator's line on finding Coyote's body is said on arrival. The device itself
-     is never obtained, as in retail. No fight is shown in the laboratory, so it has no hostiles. -->
+     Gaps: Coyote asks to be taken to a private room with a computer in the same building: he is led to the computer,
+     and his second speech is a Talk that opens after it. One more line, probably Coyote's, after his first one wasn't
+     captured. Phase 3 finds Coyote and others dead in his laboratory; dead NPCs aren't spawned, so the bodies are a
+     Furniture object to search for the schematic, and the Operator's line on finding Coyote's body is said on arrival.
+     The device itself is never obtained, as in retail. No fight is shown in the laboratory, so it has no hostiles. -->
 <mission id="202101" title="The Device" description="Obtain a prototype device from the Exile Coyote." plot="1"
          order="2101" org="2" contact="Agent Gray" exp="297000" info="98000">
   <npc id="1" handle="Coyote" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -24,7 +23,7 @@
     <objective goal="1" text="Talk to Coyote" type="Talk" npc="1">
       <talk><say npc="1">Who are you? Why are you here? The device? Wait... are you with... them? There is a private room near here with a computer. Take me there and we can speak more freely...</say></talk>
     </objective>
-    <objective goal="2" text="Find the private room with the computer" type="Use" object="1" after="1" />
+    <objective goal="2" text="Find the private room with the computer" type="Escort" npc="1" to="object:1" after="1" />
     <objective goal="3" text="Talk to Coyote in private" type="Talk" npc="1" after="2">
       <talk><say npc="1">All right... are you sure no one is listening? I am being stalked by shadowy figures. Just when I think I'm alone, I see them out of the corner of my eye... and then they're gone! I'm certain they are after my device. If you can free me from my stalkers, you may have the device prototype. Please, you must help me! Do you understand?</say></talk>
       <done><say>Shadowy figures? I think this guy is cracked... let's get outside and see what Gray has to say about this.</say></done>

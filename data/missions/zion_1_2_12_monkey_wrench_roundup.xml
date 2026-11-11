@@ -9,7 +9,8 @@
      91,000 information shown right after this mission completed.
      Gaps: Burdette greets the player and then turns hostile. Here he waits for the player to start the fight
      (attacksOnSight="0"): finding him is a Talk that plays his lines, then he is killed and the box looted from his
-     body. Retail's upload had no separate area, so it is a goal of the same phase. -->
+     body (killing him before he is found counts as finding him). Retail's upload had no separate area, so it is a goal
+     of the same phase. -->
 <mission id="101212" title="Monkey Wrench Roundup" description="Intercept one of the imposter Agents' black boxes." plot="1"
          order="1212" org="1" contact="Tyndall" exp="68750" info="91000">
   <npc id="1" handle="Burdette" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
@@ -23,7 +24,7 @@
         <say npc="1">The box is mine!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill Burdette" type="Defeat" npc="1">
+    <objective goal="2" text="Kill Burdette" type="Defeat" npc="1" after="1">
       <done><say>The Exile group leader that you just defeated should have the black box somewhere on his person.</say></done>
     </objective>
     <objective goal="3" text="Get the black box from Burdette" type="Loot" npc="1" item="6835" after="2">

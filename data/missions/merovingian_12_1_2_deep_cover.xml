@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Flood's 12.1.2, from research/missions/transcripts/Merv12-1-2.md. The two areas and dialogue are from the
-     typed retail log. The goal names, generated sites, Override Function count and rewards are reconstructed.
-     Search a furnishing in place of inspecting corpses. Near dialogue marks the ambush at the second site,
-     where the Functions are placed when the floor loads. Azuna's museum exchange was an outdoor follow-up. -->
+<!-- Deep Cover, Merovingian story mission 12.1.2. Source: research/missions/transcripts/Merv12-1-2.md (two
+     screenshots of ZippyTheSquirrel's typed account on the official forum, "12.1 missions logs/summaries/screenshots
+     (all orgs)", 12/23/2008; no log, objectives or rewards). Placement is generated: see docs/MISSIONS.md.
+     Retail's text, as typed: the title, both briefings, the closing line and every Operator line. The post's typo
+     note gives retail's "very calmly, direct you to" without "to", and it is kept; its "Musem" isn't in the note, so
+     it is taken for the poster's slip and written "Museum". Italics dropped: the Operator's "not". Ours: the
+     description, every objective text, the sites (none is described: both Normal), the looks and the enemies (the
+     post says "three or four" Logic Cannon shots felled the Override Functions; three are placed).
+     Rewards: the post shows none. These are Hothouse's (12.1.1), whose log shows 239,105 experience and 105,000
+     information (a level-30 player's), the values for all of 12.1.
+     Gaps: the Machine corpses in the first area can't be placed, since dead NPCs aren't spawned, so searching a
+     piece of furniture there stands in for finding them. The Override Functions appeared once the second area had
+     been explored; here they are there from the start, and the Operator's "What" line is said on getting near one.
+     Azuna's exchange at the Creston Heights Museum came after the mission (see Azuna's collector exchange in
+     docs/MISSIONS.md). -->
 <mission id="312102" title="Deep Cover" description="Find Azuna and investigate the Oligarch programs at her source's location." plot="1"
          order="12102" org="3" entryItem="48128" completionItem="48137" minLevel="40" minReputation="40" district="2" districtName="dt" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />
@@ -25,7 +36,7 @@ Looks quiet in there--real quiet.</say></enter>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>...
 
-Operative, I'm going to try, very calmly, to direct you to what was, to the best of my knowledge, our contact's source location. I'm sure this is all some sort of commonplace mistake on your part, and she'll be there, with the very valuable information well in hand.
+Operative, I'm going to try, very calmly, direct you to what was, to the best of my knowledge, our contact's source location. I'm sure this is all some sort of commonplace mistake on your part, and she'll be there, with the very valuable information well in hand.
 
 ...</briefing>
     <enter><say>I don't know about this. I'm not showing anyone at home.</say></enter>

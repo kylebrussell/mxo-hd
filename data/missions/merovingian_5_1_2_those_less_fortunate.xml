@@ -10,9 +10,8 @@
      enemy count. The "rabble" at the first meeting place isn't named or shown; it is a rival gang, Merovingian. The
      Blood Noble seen beside the Merovingian said nothing and isn't placed. Flood in person is two NPCs, one per
      phase he appears in.
-     Rewards: retail showed 808,500 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation), used for all of Merovingian 5.1.
+     Rewards: the log shows 808,500 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: Flood's line and the Merovingian's reply came together, on talking to the Merovingian, so both are his
      goal's talk lines; their next lines (Flood's "Of course, I was coming to exactly the same conclusion" and the
      Merovingian's "Remember this") came seconds apart after it and are said when each is talked to again. Three
@@ -27,7 +26,7 @@
 
 I don't know what you're waiting around here for, {player}.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Now you get perhaps a glimpse of why it is that I have outlasted so many others, so many instances of this simulation, non? Others inevitably seek to remove you from power, but you never take it personally. A la fin, it is all business.
 
 Wait them out, bide your time, until fate brings you the instrument of your salvation.

@@ -4,8 +4,9 @@
      Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name, and the second phase's
      kill objective ("Kill all of the programs!", from the Operator's "New objective" line). Ours: the description, the
      other objective texts, the sites (the office complex: Office; the meeting: Normal), the looks and the Agent count.
-     Agent Lee's "Mr. DeNiro" (the player's bluepill surname) is "Mr. {player}". Rewards: the log is a level-50 player's
-     (525,000 information, no experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     Agent Lee's "Mr. DeNiro" (the player's bluepill surname) is "Mr. {player}". Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
      Gaps: retail's Agents at the meeting could be spoken to before the fight ("try and speak with all of the Agents").
      Here three Agents wait for the player (attacksOnSight="0"), and there are no other hostiles: finding each is a Talk
      that plays one of the lines the Agents said in Team chat, and the kill goal is open from the start (a kill goal

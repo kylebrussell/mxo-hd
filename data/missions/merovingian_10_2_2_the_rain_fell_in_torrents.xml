@@ -18,8 +18,9 @@
      except / higher up", "the lower / atmosphere", "at that spot, / operative", "the storm's / composition". The
      Operator's "Got a few active signals in there" starts a page with no header, so it is the second paragraph of his
      12:54:07 line.
-     Rewards: the log shows 242,000 experience and 80,500 information for this run; these are Zion's only chapter 10
-     mission's, Blip (10.2.5): 352,000 experience, 525,000 information.
+     Rewards: the log shows 242,000 experience and 80,500 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5).
      Gaps: the radio show's answer on the Desk Phone (Rainy Day Dan's temperature inversion and "tropospheric
      ducting") and the Computer's newspaper article on Operation Dark Storm were object text windows we can't show; the
      transcript has both. The Operator's "Reversible?" answers the article. The Twins' four lines came one after
@@ -32,12 +33,12 @@
      fell between two pages and is taken to be the area's completion. -->
 <mission id="310202" title="The Rain Fell in Torrents" description="Find out whether the storm between the Merovingian and the General can carry a signal." plot="1"
          order="10202" org="3" contact="Flood" exp="352000" info="525000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">That storm... The greatest force on the planet. What are the Machines to it? Mon dieu... Just think of it...</say>
   </npc>
-  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="1">Do you think the universe is finite? No, not even here. You accumulate more, and still there is more that you do not have.</say>
   </npc>
   <npc id="5" handle="Jaimee Ninemire" type="FRIENDLY" at="2" rsi="a5060090" weapon="0">

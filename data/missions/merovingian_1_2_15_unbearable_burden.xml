@@ -6,14 +6,15 @@
      the objective texts, the sites (phase 1 an unnamed building: Normal; phase 2 Salid Helmet's apartment complex:
      SlumApt; phase 3 a Zion Redpill Extraction Point: RedPillExtraction), the looks and the enemy counts. Item
      stand-ins: Captain Rat's document (his plan, listing three bluepills) is Plan (6798), Salid Helmet's note is Letter
-     (6793). Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's matching
-     chapter 1.2 values, 68,750 experience and 91,000 information.
+     (6793). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
+     values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: Gnu and the security crew are Zion's (the Bacchus' crew); in retail the crew turned on the player after Gnu
-     died, here they are the phase's generated hostiles and attack from the start, and the Operator's line about them
-     is said when Gnu dies. The Operator's remark about a bluepill recruit candidate ("Coppertop here...") was cut off
-     in the log and isn't said, and the bluepill isn't placed. Sunshine Marin collapsing ("Oh, gaah!") is only her line,
-     said when the letter is found. Phase 3's murdered crew of the Bacchus (Captain Rat among them, as far as the log
-     tells) aren't spawned, as dead NPCs aren't; only Salid Helmet stands there, and talking to him ends the mission. -->
+     died, here they are the phase's generated hostiles, who arrive when Gnu dies, with the Operator's line about
+     them and the goal to kill them. The Operator's remark about a bluepill recruit candidate ("Coppertop here...") was
+     cut off in the log and isn't said, and the bluepill isn't placed. Sunshine Marin collapsing ("Oh, gaah!") is only
+     her line, said when the letter is found. Phase 3's murdered crew of the Bacchus (Captain Rat among them, as far as
+     the log tells) aren't spawned, as dead NPCs aren't; only Salid Helmet stands there, and talking to him ends the
+     mission. -->
 <mission id="301215" title="Unbearable Burden" description="Hunt down Captain Rat and the crew of the Bacchus." plot="1"
          order="1215" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Gnu" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
@@ -23,7 +24,7 @@
   <npc id="3" handle="Salid Helmet" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
     <say>I -- I can't stay here.... must.... leave.</say>
   </npc>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="1">
     <briefing>I have an interesting job for you, {player}. A Zion Operative known as Captain Rat of the Bacchus has taken it upon himself to become... an unbearable burden in the search for Morpheus. We require that his life, and those aboard his crew, are put to an indefinite end.
 
 Rat and his crew were last seen at this location. Go there, locate Rat and his crew and present them the gift of... death. You will succeed, won't you? Yes, of course you will.</briefing>
@@ -34,7 +35,7 @@ Rat and his crew were last seen at this location. Go there, locate Rat and his c
         <say>I think you just pissed off the security crew. Take them out!</say>
       </done>
     </objective>
-    <objective goal="2" text="Kill the security crew" type="DefeatAll">
+    <objective goal="2" text="Kill the security crew" type="DefeatAll" after="1">
       <done><say>Maybe that'll teach them that anger never solves anything.</say></done>
     </objective>
     <objective goal="3" text="Search Gnu's corpse" type="Loot" npc="1" item="6798" after="1">

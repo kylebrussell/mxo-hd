@@ -10,9 +10,9 @@
      never opened), the other objective texts, the sites (all Normal: Beryl's is a Midian Park penthouse, Anti M.'s a
      Mannsdale Housing Projects apartment), the looks and the enemy counts. Argon's guards and Anti M.'s 88s are
      Exiles, so Merovingian-type hostiles. No mission item was shown.
-     Rewards: the log shows 1,034,000 experience and 504,000 information, a level-48 player's archive replay and not
-     a normal reward; we use Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter
-     built (Machines 6's retail logs paid 363,000 and 59,500), since no Zion 6 exists.
+     Rewards: the log shows 1,034,000 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: the Twins had reached Mercury and Thallia first; their lines there came before the Exile's own and are
      said on getting near him or her, and their two lines after Thallia's are the phase's complete lines. Thallia's
      dead guards ("Dead Exile signals") aren't spawned. Mercury's, Thallia's and Beryl's second lines are said when
@@ -23,7 +23,7 @@
      (see Known gaps), so Naantali's and the 88 Eightball's may not appear. -->
 <mission id="306205" title="Pound of Flesh" description="Track down Anti M. through Mercury, Thallia and Beryl, and find out who paid for the distractions in Mara." plot="1"
          order="6205" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="0">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="4f0a0058" weapon="0">
     <say after="1">N-no, I'm through with the whole thing, I swear! I just want to get back to my mechanical work. I knew it was a mistake to work with that woman...</say>
   </npc>
   <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -32,7 +32,7 @@
   <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>Oh, I should think he'll be quite amenable now.</say>
   </npc>
-  <npc id="4" handle="Thallia" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+  <npc id="4" handle="Thallia" type="FRIENDLY" at="2" rsi="780a0058" weapon="0">
     <say after="2">Yeah, yeah. Get it over with.</say>
   </npc>
   <npc id="5" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
@@ -44,13 +44,13 @@
   <npc id="7" handle="Naantali" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
     <say>Hey, look, a stupid human.</say>
   </npc>
-  <npc id="8" handle="Beryl" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+  <npc id="8" handle="Beryl" type="FRIENDLY" at="3" rsi="360a0058" weapon="0">
     <say after="4">Remember, don't hurt her! You promised!</say>
   </npc>
   <npc id="9" handle="88 Eightball" type="HOSTILE" at="4" rsi="38000024" weapon="2568">
     <say>You'd better head out the back, Miss M. We'll handle this.</say>
   </npc>
-  <npc id="10" handle="Anti M." type="FRIENDLY" at="4" rsi="60010058" weapon="0" />
+  <npc id="10" handle="Anti M." type="FRIENDLY" at="4" rsi="340a0058" weapon="0" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Anti M.? Anti M.?! Investigating the Blackwoods showed that she's behind all this? Little Miss straight and narrow businesswoman? I suppose I should have known, considering what we know of her relationship with Beryl...&#10;&#10;She is not, of course, answering her phone, so I'm putting you in charge of finding her, {player}.&#10;&#10;What? There's only so many places she can be hiding. Might I suggest starting with Mercury, who we now know for certain was lying to us...</briefing>
     <enter><say>Looks like the Twins beat us there.</say></enter>

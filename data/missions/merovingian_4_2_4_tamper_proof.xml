@@ -7,8 +7,8 @@
      Summary tab was never opened), every objective text (only "Leave the area now!" was shown, which the server says
      itself), the sites (both Normal), the looks and the enemy count (4 Machine programs at the attack). Dr. Kidney
      and Alhambra are the Merovingian's scientist and tester and unarmed. No items: the modified EMCP device stays
-     with Alhambra. Rewards: none were shown, and the player was level 50, so these are Zion 4.2's 341,000 experience
-     and 112,000 information.
+     with Alhambra. Rewards: the log shows none (a level-50 player's). These are Zion 4.2's values (341,000
+     experience, 112,000 information, as Between Waking and Sleeping paid).
      Gaps: in retail Alhambra was to set off the device behind a door, Agents were there instead, and the phase ended as
      the Agents attacked, leaving the player to flee. We can't stage the door or the device, so the Agents stand on the
      floor from the start and wait to be attacked (attacksOnSight="0"); reaching Agent Jones is the goal that ends the

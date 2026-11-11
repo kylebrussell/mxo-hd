@@ -27,13 +27,13 @@
      is bridged. -->
 <mission id="103103" title="Cause and Effect" description="Seize the control terminal of a construct portal and follow the trail of the Effectuator." plot="1"
          order="3103" org="1" contact="Tyndall" exp="308280" info="101500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="6">Two rooms down now, operative.</say>
   </npc>
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="6">Next room, operative. This one is so five-minutes-ago.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="7">Toodles!</say>
   </npc>
   <npc id="4" handle="Dire Lupine Bane" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568" />

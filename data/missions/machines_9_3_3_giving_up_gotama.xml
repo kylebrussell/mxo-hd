@@ -28,19 +28,19 @@ This situation relies very much upon human reactions, and that makes it difficul
   </npc>
   <npc id="2" handle="Ferret" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
     <say>Sir.</say>
-    <say after="3">Thank you. Good hunting, sir.</say>
+    <say after="5">Thank you. Good hunting, sir.</say>
   </npc>
   <npc id="3" handle="Brest" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
     <say>Hi.</say>
-    <say after="3">Yeah, I'm sure it will work out all right. See you.</say>
+    <say after="5">Yeah, I'm sure it will work out all right. See you.</say>
   </npc>
-  <npc id="4" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
-    <say after="1">That smug idiot? Huh. He's pretty desperate if he's got these saps trying to do his dirty work.
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2564">
+    <say after="6">That smug idiot? Huh. He's pretty desperate if he's got these saps trying to do his dirty work.
 
 Now, get out of here. When I want something from the Machines, you'll know.</say>
   </npc>
-  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
-    <say after="1">We've all got to do what we've got to do... Isn't that right, {player}?</say>
+  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="3c000040" weapon="0">
+    <say after="7">We've all got to do what we've got to do... Isn't that right, {player}?</say>
   </npc>
   <npc id="6" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0">
     <say>There is no chance to surprise the watchful.</say>
@@ -65,11 +65,11 @@ The Zionites are believed to be working with Carlyne. You should consider Carlyn
   <phase site="Normal" enemy="Zion" enemies="4">
     <briefing>Intercept Zionite hostiles at the indicated location, operative. They must be prevented from interfering with Halborn.</briefing>
     <enter><say>I'm finding it easier if I just concentrate on the Zion-smashing aspect of this. Unregistered redpill programs in there are lighting up my screen. We've got 'em cold.</say></enter>
-    <objective goal="1" text="Eliminate the Zionite hostiles" type="DefeatAll">
+    <objective goal="3" text="Eliminate the Zionite hostiles" type="DefeatAll">
       <done><say>Not much chance of them catching Halborn now.</say></done>
     </objective>
-    <objective goal="2" text="Do not let Ferret die" type="Protect" npc="2" />
-    <objective goal="3" text="Do not let Brest die" type="Protect" npc="3" />
+    <objective goal="4" text="Do not let Ferret die" type="Protect" npc="2" />
+    <objective goal="5" text="Do not let Brest die" type="Protect" npc="3" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="3" neighbourhoods="Mara">
     <briefing>Halborn has been detected in the vicinity of the Mara neighborhood, where the Oracle is usually found.
@@ -78,7 +78,7 @@ We are unable to determine the Oracle's location at this time. Whether or not sh
 
 Carlyne is not detected in Mara, but if Zion finds Halborn there, they may call Carlyne for assistance. This must be prevented.</briefing>
     <enter><say>Redpills in there... Hey, I'm getting heavy override readings, too.</say></enter>
-    <objective goal="1" text="Talk to Halborn" type="Talk" npc="4">
+    <objective goal="6" text="Talk to Halborn" type="Talk" npc="4">
       <talk><say npc="4">What the hell? Beat it. You'll just lead more of these annoyances to me. Does it look like I need your help?</say></talk>
       <done><say>Grr... This guy is really making it hard to want to help him...</say></done>
     </objective>
@@ -93,7 +93,7 @@ Continue your elimination of the hostile forces. Halborn must remain free to rea
     <enter><say>This would be a whole lot easier if they could just send in Agents without having to worry that Carlyne would zap 'em. Hell, Halborn probably would, too, come to that.
 
 Huh, this is weird... The wide scans picked up redpill activity, but I'm not reading anything in there now except standard background programs. Did the Zionites ditch out already?</say></enter>
-    <objective goal="1" text="Talk to the Oracle" type="Talk" npc="5">
+    <objective goal="7" text="Talk to the Oracle" type="Talk" npc="5">
       <talk><say npc="5">All right, all right, I give up.
 
 Haha. Miss me? Well, I'm sorry for the cloak and dagger routine, I really am, and I promise you, it's almost over. If all this fuss is over little old me, well... Maybe it'd be better for everyone if I was removed from the picture, huh?</say></talk>

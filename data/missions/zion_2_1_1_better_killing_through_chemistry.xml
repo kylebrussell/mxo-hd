@@ -13,8 +13,8 @@
      Gaps: the searches of the two companies turn up nothing in retail; here they are Searches of a computer that give
      nothing. Which guard carried the sick notice isn't known: a named Security Guard is killed and looted. The
      engineer's reply (the Operator calls it "a likely story") wasn't logged, so talking to him says nothing of his own.
-     The police arrive in retail only after the formula is found ("Don't move!", "Give yourself up, scumbag!"); here
-     the phase's hostiles are on the floor from the start and their barks aren't said. -->
+     The police, the phase's hostiles, arrive once the formula is found ("just called the fuzz"); their barks ("Don't
+     move!", "Give yourself up, scumbag!") were only in Team chat and aren't said. -->
 <mission id="102101" title="Better Killing Through Chemistry" description="Find the formula for an insecticide that can kill the Assassin's flies." plot="1"
          order="2101" org="1" contact="Tyndall" exp="297000" info="98000">
   <npc id="1" handle="Security Guard" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
@@ -42,7 +42,7 @@
     </objective>
   </phase>
 
-  <phase site="SlumApt" enemy="Machines" enemies="3">
+  <phase site="SlumApt" enemy="Machines" enemies="3" enemiesAfter="2">
     <briefing>Intel isn't a perfect science, operative; I thought you would have appreciated that by now. I can't be held responsible if some bluepill piece of crud is too damn lazy to drag his bedsore-ridden ass into work on any given day.&#10;&#10;Sounds like it's time for you to pay them a house call.</briefing>
     <enter><say>"Knock, knock." "Who's there?" "Zion Bug Exterminators, chump! Give us your insecticide formula!" Right?</say></enter>
     <object id="1" kind="Furniture" />

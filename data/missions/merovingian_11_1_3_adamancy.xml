@@ -16,8 +16,9 @@
      Joins between images read as contiguous: "but if something / happens to that program", "Silver is supposed to
      have been / heading up our research", "found a way / to get free.", "someone's got to / get things done", "More
      interference / from them", and the closing's "That should keep it in its place." / "If Silver can't".
-     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
-     115,500 information). The log's run paid 242,000 experience and 80,500 information, and a level.
+     Rewards: the log shows 242,000 experience and 80,500 information, and a level. These are Zion 11.1's values
+     (352,000 experience, 115,500 information, as The Spider paid). The log's run paid 242,000 experience and 80,500
+     information, and a level.
      Gaps: Nightmare's line, the Commandos' and Security's were only in Team chat, not in the log; Nightmare's is his
      talk, the Commandos' are said on reaching them (which Commando said which is ours: the first speaks to the
      player and answers to "Sergeant", the second reports Private Axelrod), and Security's on getting near. The
@@ -34,7 +35,7 @@
 <mission id="311103" title="Adamancy" description="Find out how the biological interface program got loose, then chase it through the computers it hops between." plot="1"
          order="11103" org="3" contact="Flood" exp="352000" info="115500">
   <npc id="1" handle="Nightmare" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
-  <npc id="2" handle="Silver" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+  <npc id="2" handle="Silver" type="FRIENDLY" at="2" rsi="750a0058" weapon="2564">
     <say after="2">You're wasting neurokinetic energy producing sounds from your vocal chords here, human. Leave me to my research.</say>
   </npc>
   <npc id="3" handle="Shameka Brandon" type="FRIENDLY" at="2" rsi="a5060090" weapon="0" />

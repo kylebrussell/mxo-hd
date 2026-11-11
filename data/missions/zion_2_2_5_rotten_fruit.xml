@@ -33,7 +33,7 @@
   </npc>
   <npc id="5" handle="Stevie" type="HOSTILE" at="2" rsi="a5060090" weapon="2568" attacksOnSight="0" />
   <npc id="6" handle="Alejandro" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
-  <npc id="7" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+  <npc id="7" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="2568">
     <say>Be careful; he lives in a pit of intense decay. Death gives him power. You cannot take him by surprise, and my husband will do everything he can to protect him. You must be strong, my hero--strong, and very brave.</say>
   </npc>
   <phase site="Derelict" enemy="Merovingian" enemies="0">

@@ -33,7 +33,7 @@ Wright who? Ohh, the crazy glowing woman? Uh... No... But-- But why don't you ju
     <say after="4">You are wasting your time.</say>
   </npc>
   <npc id="4" handle="Danielle Wright" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
-    <say after="1">These were just to get their attention. Their responses aren't very difficult to predict.</say>
+    <say after="5">These were just to get their attention. Their responses aren't very difficult to predict.</say>
   </npc>
   <npc id="5" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
@@ -74,7 +74,7 @@ Wright who? Ohh, the crazy glowing woman? Uh... No... But-- But why don't you ju
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, heavy override use has just been detected at another area not far from your position. Programs in the area have failed. This requires immediate investigation.</briefing>
     <enter><say>Even more override activity than where you just were with Wright. This can't be good...</say></enter>
-    <objective goal="1" text="Talk to Danielle Wright" type="Talk" npc="4">
+    <objective goal="5" text="Talk to Danielle Wright" type="Talk" npc="4">
       <talk>
         <say npc="4">I've had a thought. There is something I want to discuss with them. Have them open a channel.</say>
         <say>Uh... Okay, I'm getting in touch with Gray about this.</say>
@@ -86,7 +86,7 @@ Wright who? Ohh, the crazy glowing woman? Uh... No... But-- But why don't you ju
 They've cleared out our other programs, so it'll just be the three of you.</say>
       </done>
     </objective>
-    <objective goal="2" text="Talk to Agent Gray" type="Talk" npc="5" after="1">
+    <objective goal="6" text="Talk to Agent Gray" type="Talk" npc="5" after="5">
       <talk>
         <say npc="5">Very well. For our part, we would like to know how you have apparently survived the termination of your body. The technology you borrowed would not suffice in itself.</say>
         <say npc="4">How I "exceeded my parameters," hm?

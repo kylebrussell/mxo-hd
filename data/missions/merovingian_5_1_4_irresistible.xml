@@ -9,9 +9,8 @@
      loyal to Anome from among Niobe's old faithful: Zion. Ghost, Zion's representative, is friendly here. The Blood
      Noble seen at the end said nothing and isn't placed. Malphas and the Merovingian are each two NPCs, one per phase
      they appear in. The listening post's scanning equipment is a computer, searched for nothing.
-     Rewards: retail showed 1,078,000 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation), used for all of Merovingian 5.1.
+     Rewards: the log shows 1,078,000 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: lines that came seconds after a goal are its done lines; Ghost's "..." came after Malphas was satisfied and
      is Ghost's line when talked to again. The Merovingian's talk at the meeting and his aside to Malphas three seconds
      later may have had an entry between them, and Malphas's request may have run on past "presence is required.";
@@ -19,13 +18,13 @@
      goals-complete line. The Zion operative who left the meeting before the player arrived isn't placed. -->
 <mission id="305104" title="Irresistible" description="Secure the listening post and sound out Zion's representative at the meeting." plot="1"
          order="5104" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="2568" />
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="2568" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2568" />
   <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
     <say after="3">...</say>
   </npc>
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="2568" />
   <phase site="Normal" enemy="Zion" enemies="4">
     <briefing>Ah, my plan is coming together, {player}. Aren't you happy for me? The trap is about to spring, and the delightful thing is that they won't even realize it until it's far too late; not that they have any alternative to walking into it, anyway. Oh, such genius! It really deserves better than to be wasted on Zionites, but, when in Rome...
 

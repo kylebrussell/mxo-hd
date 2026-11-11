@@ -27,7 +27,7 @@
     <say>Oh crap! It was the Machines in our system!</say>
   </npc>
   <npc id="2" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
-    <say after="1">No, we did not contradict the terrorist story of Sentinels at the site earlier, as there was no need. The less they know of our actual movements, the better, yes? The transfer of Lock to New Zion has in all likelihood helped to spread this misinformation among the Zionites.</say>
+    <say after="3">No, we did not contradict the terrorist story of Sentinels at the site earlier, as there was no need. The less they know of our actual movements, the better, yes? The transfer of Lock to New Zion has in all likelihood helped to spread this misinformation among the Zionites.</say>
   </npc>
   <npc id="3" handle="Agent Norris" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say display="5">"Emotion" and "hope" are frequent excuses among humans for failure to observe facts.</say>
@@ -35,8 +35,8 @@
   <npc id="4" handle="E Pluribus Neo Fighter" type="HOSTILE" at="2" rsi="050100b4" weapon="2564" />
   <npc id="5" handle="Aubrey Casca" type="HOSTILE" attacksOnSight="0" at="3" rsi="35000024" weapon="0" />
   <npc id="6" handle="Ash" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
-    <say after="1">What I tell you, hm?</say>
-    <say after="2">Watch out for Babylon, Iya.</say>
+    <say after="8">What I tell you, hm?</say>
+    <say after="9">Watch out for Babylon, Iya.</say>
   </npc>
   <phase site="Derelict" enemy="Zion" enemies="4">
     <briefing>Operative, we were on the verge of taking over E Pluribus Neo scanning systems around Zion's old city which, in conjunction with our own scans, would have allowed us to triangulate the suspected Mauser's transmission source quickly, but the circumvented EPN security systems inexplicably reactivated, using a variant of their previous algorithm, which resisted all attempts to break it.
@@ -56,12 +56,12 @@ Gonna have to talk to Gray about this...</say></done>
 
 Hm... There is a related problem that may be more appropriate to our particular capabilities, {player}. I will have Agent Pace present the pertinent data to you.</briefing>
     <enter><say>Some of our programs in there...and no EPN, at least.</say></enter>
-    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Agent Pace" type="Talk" npc="2">
       <talk><say npc="2">That is a recording of a typical Pluribus Neo account of Mauser's demise. You have noted the obvious shortcomings in the story, yes? *Prima*, Lock did not see the Sentinels himself, and we certainly have no record of our Sentinels killing Mauser. *Secondo*, Lock did not actually claim to see Mauser killed.
 
 Later accounts by EPN described the building in which they found Lock as roughly above Zion, with Sentinel claw marks around an opening torn in the outer wall; but they found no Sentinel wreckage, and only blood and fingerprints--no body--of Mauser: curious details and omissions. You see that it has become important for us to inspect this building for ourselves.</say></talk>
     </objective>
-    <objective goal="2" text="Kill the E Pluribus Neo Fighter" type="Defeat" npc="4" optional="1" />
+    <objective goal="4" text="Kill the E Pluribus Neo Fighter" type="Defeat" npc="4" optional="1" />
     <near npc="4" radius="1000">
       <say>Gah! An EPN!</say>
     </near>
@@ -76,13 +76,13 @@ For this reason, we will have you access this loose network via a third party.</
 
 Uh... Oh, yeah. Gray suggested to me that we use a silencer for this, just in case Casca has nosy neighbors.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Find Aubrey Casca" type="Talk" npc="5" optional="1">
+    <objective goal="5" text="Find Aubrey Casca" type="Talk" npc="5" optional="1">
       <talk><say npc="5">Aah! No no-- I didn't... Yes, all right, I did claim mail fraud on the newsgroup just to throw a smokescreen up in front of the credit fraud...but...look... I'll-- I'll make it up to you! Do you need another account? I've got dozens! Clean records, great ratings--everything you could want!</say></talk>
     </objective>
-    <objective goal="2" text="Kill Aubrey Casca" type="Defeat" npc="5">
+    <objective goal="6" text="Kill Aubrey Casca" type="Defeat" npc="5">
       <done><say>Let's help ourselves to his computer.</say></done>
     </objective>
-    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0" after="2">
+    <objective goal="7" text="Search the Computer" type="Search" object="1" item="0" after="6">
       <done><say>Ew. I feel so dirty...
 
 If that seller was legit...relatively speaking...then all we gotta do is make the pickup.</say></done>
@@ -94,16 +94,16 @@ If that seller was legit...relatively speaking...then all we gotta do is make th
 
 I'm...not getting much in there. I think they've got scan suppression running. Figures.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Give the money to Ash" type="Give" npc="6" item="6790">
+    <objective goal="8" text="Give the money to Ash" type="Give" npc="6" item="6790">
       <talk><say npc="6">I'll just be takin' a minute to check that.
 
 ... All right, mon. I tink we can do business. Check the computa there.</say></talk>
       <done><say>I just got an activity reading from the terminal in there.</say></done>
     </objective>
-    <objective goal="2" text="Get the data from the computer" type="Search" object="1" item="6787" after="1">
+    <objective goal="9" text="Get the data from the computer" type="Search" object="1" item="6787" after="8">
       <done><say>Looks like our cash was good. No problem found with that data. Get it to a hardline and we'll see what the Machines make of it.</say></done>
     </objective>
-    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+    <objective goal="10" text="Upload the data at a hardline" type="Upload" item="6787" after="9" />
   </phase>
   <finish>The data identified, via images and positional data, the building in which Lock was found as the same lab where, previously, the renegade scientist Danielle Wright was terminated by our Sentinels. The terrorists had not known this lab's location, thus, it is unlikely that this coincidence is a fabrication.
 

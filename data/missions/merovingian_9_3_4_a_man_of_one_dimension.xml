@@ -14,16 +14,16 @@
      monitor", "I say nothing about the General's" / "record as a strategist", "He may" / "have been concerned",
      "prolonged fear" / "of an outside power" (Team chat has the whole line), "and it's" / "been getting heavier".
      Read as paragraph breaks: "business." / "That Carlyne fellow" and "rational people." / "I don't know why".
-     Rewards: the log is a level-37 player's live run (395,820 experience and 66,500 information), so these are Zion's
-     values for 9.3.4 (374,000 experience, 63,000 information).
+     Rewards: the log shows 395,820 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.3's values (374,000 experience, 63,000 information, as Senseless paid).
      Gaps: phase 1's area completed 9 seconds after arriving with no fight logged: reaching the place was the goal, so
      here the place is searched for Halborn (a Furniture object, item 0). Who was there (a pack of code overrides and
      redpills: Carlyne's crowd, from Flood's next line) isn't shown, so no one is placed. The Operator's "Phew." in
      phase 2 is said on getting near Halborn. In phase 3 talking to the Holographic Projection set off the Zionites'
-     attack; here they are there from the start (a kill goal can't wait for the talk). Malphas's second line, 4 seconds
-     after his first, is his follow-up when the Talk completes. Phase 4's area completed on reaching the centre of the
-     override storm, the Operator breaking up on the way ("You're ... hotter" 13 seconds in, "... abort ..." 7 seconds
-     later); here that spot is a Furniture object searched for nothing, and both lines are its done lines. Lines
+     attack ("You've got party crashers"): they arrive then, and killing them opens then. Malphas's second line, 4
+     seconds after his first, is his follow-up when the Talk completes. Phase 4's area completed on reaching the centre
+     of the override storm, the Operator breaking up on the way ("You're ... hotter" 13 seconds in, "... abort ..." 7
+     seconds later); here that spot is a Furniture object searched for nothing, and both lines are its done lines. Lines
      logged after a goal (Halborn's "Last thing I need", the Projection's "Well done") and the Commando's and Elite
      Guard's Team lines are what each says when clicked afterwards. -->
 <mission id="309304" title="A Man of One Dimension" description="Find Halborn and get him to a strategy meeting with the General and Malphas." plot="1"
@@ -34,7 +34,7 @@
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
     <say after="4">Well done. Unfortunately, it looks like the attack had the effect they wanted.</say>
   </npc>
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2564" />
   <npc id="4" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
     <say after="4">Thank you for helping defend the General's broadcast point, sir.</say>
   </npc>
@@ -60,7 +60,7 @@
       <say>Phew. Nice to be right for a change.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="3">
     <briefing>Very well, operative. I've arranged for him to meet the General and Malphas for a discussion of strategy. I say nothing about the General's record as a strategist... In any case, it doesn't exactly take a genius to come up with something better than whatever it is that Halborn thinks he's been doing.</briefing>
     <enter><say>Mm-kay, the General's hologram and Malphas are inside already. I don't see any override activity in there yet... Guess Halborn's still on his way.</say></enter>
     <objective goal="3" text="Talk to the Holographic Projection" type="Talk" npc="2">
@@ -70,7 +70,7 @@
         <say npc="2">Handle this incursion, soldier. We need the area clear.</say>
       </done>
     </objective>
-    <objective goal="4" text="Kill all of the Zionites" type="DefeatAll">
+    <objective goal="4" text="Kill all of the Zionites" type="DefeatAll" after="3">
       <done><say>Looks like that's all of them. I'm being told that Malphas is trying to get your attention.</say></done>
     </objective>
     <objective goal="5" text="Talk to Malphas" type="Talk" npc="3" after="4">

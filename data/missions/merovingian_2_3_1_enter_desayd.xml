@@ -6,9 +6,9 @@
      let Finsen die"; seen in the Objectives window). The Operator's "Your heard the man" is kept as retail showed it.
      The player (Vesuveus) is {player}. Ours: the description (the Summary tab was never opened), the other objective
      texts, the looks, the enemy counts and the sites (phase 2 was an office in Mara: Office, in Mara; phases 1 and 3
-     aren't described: Normal). Item stand-in: the unmarked package is Package (6817). Rewards: the log is a level-50
-     player's (79,416,249 experience, a capped figure, and 1,039,500 information), so 308,000 experience and 98,000
-     information are Zion chapter 2.3's values.
+     aren't described: Normal). Item stand-in: the unmarked package is Package (6817). Rewards: the log shows
+     79,416,249 experience and 1,039,500 information (a level-50 player's). These are Zion 2.3's values (308,000
+     experience, 98,000 information, as Free Your Mind paid).
      Gaps: Flood's first briefing may have a hidden line between its paragraphs. "Kill Alligator" isn't in retail's
      objective list; it is ours, to carry the Operator's line on his death. Alligator waits to be attacked
      (attacksOnSight 0) so that Finsen can be led to him first. The two "Tactical Security" taunts were seen in team
@@ -23,7 +23,7 @@
   <npc id="2" handle="Alligator" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
   <npc id="4" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="5" handle="Desayd" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="Desayd" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say after="8">Splendid. Send a signal to Flood that his faith in me is well-founded.</say>
   </npc>
   <npc id="6" handle="Blood Drunk" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">

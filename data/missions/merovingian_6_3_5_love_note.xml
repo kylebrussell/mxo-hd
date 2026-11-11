@@ -12,35 +12,35 @@
      phase 3's commando (the log only says "the commando"; an "Elite Commando" stood by the projection in phase 4, so
      that name is used for both). Item stand-in: Persephone's letter for the General is Letter (6793; no item name
      was shown).
-     Rewards: the log shows 1,034,235 experience and 504,000 information, a level-48 player's archive replay and not a
-     normal reward. No Zion chapter 6 is built, so these are Zion 7.2's values, the nearest Zion chapter built (363,000
-     experience, 63,000 information).
+     Rewards: the log shows 1,034,235 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: an NPC stands in one phase only, so Persephone, the Twins and the Elite Commando are separate NPCs in each
-     phase they appear in. In phase 3 the commando appears out of nowhere once Persephone is reached (her "Oh!")
-     and doesn't attack; spawns can't be triggered, so he is a friendly NPC there from the start. Persephone's "Take
-     this, please.", the Operator's "Now give the letter to the commando" and her "I will stay behind you" (16 seconds
-     in retail) are all said when the letter is taken. The Operator said someone else was with Persephone in phase 2
-     ("you won't quite be alone in there with her") without the log showing who; the Twins are placed there, silent.
-     The Twins' and Blood Noble's lines were barks with no goal: the first ones are said on getting near them, the
-     later ones when a phase's goals complete or when they are talked to afterwards. Persephone's two lines in phase
-     1 came before the Merovingian was talked to; here the second is what she says once he has been. The Holographic
-     Projection is a projected image in retail; here a friendly NPC with the General's look, and the Operator's "Aha,
-     a holographic projection" is said on getting near it. The last "Goals for this area are complete" entry was cut
-     off in the log. -->
+     phase they appear in. In phase 3 the commando appears out of nowhere beside the player once Persephone is reached
+     (her "Oh!") and doesn't attack, so he is a friendly NPC. Persephone's "Take this, please.", the Operator's "Now
+     give the letter to the commando" and her "I will stay behind you" (16 seconds in retail) are all said when the
+     letter is taken. The Operator said someone else was with Persephone in phase 2 ("you won't quite be alone in
+     there with her") without the log showing who; the Twins are placed there, silent. The Twins' and Blood Noble's
+     lines were barks with no goal: the first ones are said on getting near them, the later ones when a phase's goals
+     complete or when they are talked to afterwards. Persephone's two lines in phase 1 came before the Merovingian was
+     talked to; here the second is what she says once he has been. The Holographic Projection is a projected image in
+     retail; here a friendly NPC with the look the other files give it, and the Operator's "Aha, a holographic
+     projection" is said on getting near it. The last "Goals for this area are complete" entry was cut off in the
+     log. -->
 <mission id="306305" title="Love Note" description="Help the Merovingian get a message to the General, with Persephone as the bait." plot="1"
          order="6305" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">If you need anything, Flood will attend to it. Do not concern yourself about Persephone. She will do as she is told, and besides, the General will not harm her; he is much too intelligent to waste such an opportunity. At any rate, you will be there to protect her, non? You see, there is no danger.</say>
   </npc>
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="2568">
     <say>Wait 'til I tell mother about this...</say>
     <say after="1">What gives him the right to command me? Ooh!</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>So this "General" bloke was causing trouble, eh?</say>
     <say after="1">Well, I'm sure he'll be on his best behavior now.</say>
   </npc>
-  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="ec020058" weapon="2568">
+  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>Pity we weren't there to cut his pretty soldiers down to size.</say>
     <say after="1">The fun thing about good little soldiers is that they're quite willing to die.</say>
   </npc>
@@ -48,24 +48,24 @@
     <say>The Master is waiting.</say>
     <say after="1">They are still flesh beneath those black suits...</say>
   </npc>
-  <npc id="6" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="2568">
     <say after="2">Mmm... I suppose we had better be going...</say>
   </npc>
-  <npc id="7" handle="Twin" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
-  <npc id="8" handle="Twin" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
-  <npc id="9" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+  <npc id="7" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="8" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="9" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="2568">
     <say after="5">Very good. You are not as incompetent as my husband says.</say>
   </npc>
-  <npc id="10" handle="Twin" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
+  <npc id="10" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>God, this is dull.</say>
     <say after="5">Do you think he can read?</say>
   </npc>
-  <npc id="11" handle="Twin" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+  <npc id="11" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>Stupefyingly.</say>
     <say after="5">Not the brightest-looking fellow, is he?</say>
   </npc>
-  <npc id="12" handle="Elite Commando" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="13" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" />
+  <npc id="12" handle="Elite Commando" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="3" spawnAt="player" />
+  <npc id="13" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
   <npc id="14" handle="Elite Commando" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>It is becoming apparent that we must attract the General's attention in order to begin a discussion with him. The Merovingian has a certain plan to this end in which you will play a small part.</briefing>

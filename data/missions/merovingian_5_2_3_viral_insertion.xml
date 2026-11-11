@@ -13,35 +13,34 @@
      they have no org of their own, so they are the nearest, Zion, as rogue redpills, as in the Machines chapter 5
      missions.
      Item stand-in: Phenora's data is Data (6787).
-     Rewards: retail showed 1,078,490 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation).
+     Rewards: the log shows 1,078,490 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the three Effectuators of phase 1 (the busy one, his sub-process and "serious me") are three NPCs with the
-     same name and look (retail's copies looked alike), talked to in turn. In phase 2 the goons came out of the phone,
-     then two more out of the computer, and the Effectuator appeared after the fight; in phase 3 they poured out of the
-     mainframe. We can't spawn hostiles or NPCs on a goal, so they are all there from the start, and the kill goals
-     are open from the start too (the one named goon is "the hostile"; "Eliminate the hostiles" is all of them); the
-     computer waits for the first kill and the Effectuator's talk for the second. His talk in phase 2 is goal 5 so
-     that his after line waits for it (an after line counts a goal done in any earlier phase). The phone is used by
-     standing beside it. The object screens (the phone's static, the garbled computer and mainframe, and the Flashsend
-     messages to Phenora in phase 4) can't be shown; the Operator's lines tell it. Phase 4's computer gives nothing on
-     the first search and the Data on the second, as retail's search then hack did. Lines at screenshot joins read
-     whole and are used as such. -->
+     same name and look (retail's copies looked alike), talked to in turn; the sub-process appears once the busy one
+     has spawned it ("He's multiplying..."). In phase 2 the named goon ("the hostile") comes out of the phone beside
+     the player, two more arrive once the computer is accessed, and the Effectuator appears after that fight; in phase
+     3 the goons pour out once the mainframe is accessed. Each kill goal opens when its goons arrive ("Eliminate the
+     hostiles" is all of them); the computer waits for the first kill and the Effectuator's talk for the second. His
+     talk in phase 2 is goal 5 so that his after line waits for it (an after line counts a goal done in any earlier
+     phase). The phone is used by standing beside it. The object screens (the phone's static, the garbled computer and
+     mainframe, and the Flashsend messages to Phenora in phase 4) can't be shown; the Operator's lines tell it. Phase
+     4's computer gives nothing on the first search and the Data on the second, as retail's search then hack did.
+     Lines at screenshot joins read whole and are used as such. -->
 <mission id="305203" title="Viral Insertion" description="Investigate the virus that is sending Anome's goons through the Effectuator's network lines." plot="1"
          order="5203" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">Traceroute... Access denied... Switch to silent mode... Port scan...</say>
   </npc>
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" spawnAfter="1">
     <say after="2">Go on!</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="3">Phew, good luck!</say>
   </npc>
-  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568" spawnAfter="1" spawnAt="player">
     <say>I'm in!</say>
   </npc>
-  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" spawnAfter="4">
     <say after="5">Hey, do you think your operator's okay? He sounded like he had a really bad headache or something. Probably stress.</say>
   </npc>
   <npc id="6" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="050100b4" weapon="2568">
@@ -73,7 +72,7 @@ Anyway, some kind of new viral attack is sending Anome's goons right through pho
       <done><say>Okay, I'm getting a location feed. Get out of there before more of him show up!</say></done>
     </objective>
   </phase>
-  <phase site="Office" enemy="Zion" enemies="3">
+  <phase site="Office" enemy="Zion" enemies="2" enemiesAfter="3">
     <briefing>So, he flatters himself that Anome has dedicated another high-level hacker to foiling his pitiful networking attempts, does he? I'm not sure whether I should laugh or cry. Perhaps a little of both.
 
 If you find something, try to wrap things up a little more quickly than with the last one, would you?</briefing>
@@ -83,13 +82,13 @@ If you find something, try to wrap things up a little more quickly than with the
     <objective goal="1" text="Answer the phone" type="Use" object="1">
       <done><say>Data spike! You've got a bogey!</say></done>
     </objective>
-    <objective goal="2" text="Eliminate the hostile" type="Defeat" npc="4">
+    <objective goal="2" text="Eliminate the hostile" type="Defeat" npc="4" after="1">
       <done><say>Nice... Let's see... Looks like they've hacked another line in there--a computer this time.</say></done>
     </objective>
     <objective goal="3" text="Access the computer" type="Use" object="2" after="2">
       <done><say>Incoming! Two of them!</say></done>
     </objective>
-    <objective goal="4" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="4" text="Eliminate the hostiles" type="DefeatAll" after="3">
       <done><say>Oh great...him.</say></done>
     </objective>
     <objective goal="5" text="Talk to the Effectuator" type="Talk" npc="5" after="4">
@@ -99,14 +98,14 @@ Ready for another go? I'll get the coordinates to your operator.</say></talk>
       <done><say>Coordinates incoming...</say></done>
     </objective>
   </phase>
-  <phase site="Office" enemy="Zion" enemies="5">
+  <phase site="Office" enemy="Zion" enemies="5" enemiesAfter="1">
     <briefing>And there you go traipsing off to another of the imbecile's computer centers... This had better be going somewhere...</briefing>
     <enter><say>There's a mainframe in there; looks like it's been compromised. This could get ugly...</say></enter>
     <object id="1" kind="Mainframe" />
     <objective goal="1" text="Access the mainframe" type="Use" object="1">
       <done><say>Yow! That opened the floodgate! They're all over the place!</say></done>
     </objective>
-    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll" after="1">
       <done><say>I just got a call from you-know-who. He says he got a trace on their origin. He's sending me the coordinates now.</say></done>
     </objective>
   </phase>

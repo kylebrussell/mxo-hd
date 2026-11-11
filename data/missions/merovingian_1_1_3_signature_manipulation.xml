@@ -9,16 +9,16 @@
      Normal; "the first Machine base", an office with desks and filing cabinets in the mid-mission screenshot: Office),
      the looks and the enemy counts. Item stand-ins: the Signature Manipulator is Device (6820), the Bug Bug (6824),
      "a rather large bomb" Large_Bomb (6818), the Access Card Access_Card (6791).
-     Rewards: the log is a level-50 player's (525,000 information, no experience), so these are Zion's values for
-     chapter 1.1 (55,200 experience, 73,500 information, as Redpill Rescue paid).
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.1's values
+     (55,200 experience, 73,500 information, as Redpill Rescue paid).
      Gaps: the disguise. In phase 2 the six Agents are friendly bystanders, and their exchanges are said on getting
      near Agent West, Agent Long and Agent Miller (the operator's "Search the computer in this room" hint came with
      Agent Miller's lines, by the computer). Agent North's first line was only "..." and is left out. The computer's
      "Digital Signature verified" text has no place. In phase 3 the disguise failed after the bomb was set and the
-     Agents attacked; the Agents can't turn, so the phase's hostiles are there from the start and the operator's two
-     lines about it are said when the phase is done. The operator's "What's going on here?!" on reaching the mainframe
-     is unexplained and left out; the hint "That's the mainframe..." is the second enter line. The access card goes
-     into the computer as a Put (done with Hack). In phase 4 the attacking programs are on the floor from the start;
+     Agents attacked; the phase's hostiles arrive when the bomb is set, and the operator's two lines about it are
+     said then. The operator's "What's going on here?!" on reaching the mainframe is unexplained and left out; the hint
+     "That's the mainframe..." is the second enter line. The access card goes into the computer as a Put (done with
+     Hack). In phase 4 the attacking programs arrive once Sisyphus is talked to, and the goal to kill them opens then;
      the operator's "The device won't be safe until the attacking programs are dead." has no place. Phase 4's last
      operator line wasn't readable. -->
 <mission id="301103" title="Signature Manipulation" description="Use the Signature Manipulator to infiltrate the Machines." plot="1"
@@ -32,20 +32,20 @@
   <npc id="3" handle="Agent North" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
     <say>Agent Gray has reason to believe that these rogue programs were never Machines in the first place. These persons, or organization, might have an agenda of their own, outside of just attempting to pose as one of us.</say>
   </npc>
-  <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+  <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>I saw one of those foolish humans running from Agent Park in an illegal sector yesterday.</say>
   </npc>
   <npc id="5" handle="Agent Brown" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>Move along.</say>
   </npc>
-  <npc id="6" handle="Agent Long" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+  <npc id="6" handle="Agent Long" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
     <say>It's quite alright, Agent Brown. Christian Foster has permission to be here.</say>
   </npc>
-  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>We have been having trouble... with rogue programs recently.</say>
   </npc>
   <npc id="8" handle="Sisyphus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
-    <say after="1">I won't take the device until we are safe.</say>
+    <say after="9">I won't take the device until we are safe.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>The moment has come, {player}. You must use the Signature Manipulator as it was intended. If you are unsure of its use, I shall explain...
@@ -75,10 +75,10 @@ I've already sent you the address to the Machine base. Pick up the Access Card t
     <enter><say>This building houses the first Machine base. They think you are a program named Christian Foster. Try not to let the programs intimidate you.</say></enter>
     <object id="1" kind="Computer" />
     <object id="2" kind="Furniture" />
-    <objective goal="1" text="Retrieve the Access Card from the Machine base" type="Search" object="1" item="6791">
+    <objective goal="5" text="Retrieve the Access Card from the Machine base" type="Search" object="1" item="6791">
       <done><say>That was the card Flood was so anxious about.</say></done>
     </objective>
-    <objective goal="2" text="Plant the Bug inside the Desk" type="Put" object="2" item="6824">
+    <objective goal="6" text="Plant the Bug inside the Desk" type="Put" object="2" item="6824">
       <done>
         <say>The bug is in place.</say>
         <say>You didn't forget to turn the Bug on, did you? I'm just joking, {player}. The Bug is always on. In fact, I'm picking up a few transmissions as we speak.</say>
@@ -102,7 +102,7 @@ I've already sent you the address to the Machine base. Pick up the Access Card t
       <say npc="7">They should be removed from the system.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="8">
     <briefing>I've updated your objectives and directed you to the location that holds the mainframe. When you've made it there, put the access card to use on one of the computers which will allow you to transfer sensitive data to the mainframe.
 
 Before we can plant the bomb on the mainframe, you'll need to transfer some sensitive data to the mainframe. Without the data on the server, destroying the mainframe would be a worthless attempt.</briefing>
@@ -112,10 +112,10 @@ Before we can plant the bomb on the mainframe, you'll need to transfer some sens
     </enter>
     <object id="1" kind="Computer" />
     <object id="2" kind="Mainframe" />
-    <objective goal="1" text="Use the Access Card on the computer to transfer the data" type="Put" object="1" item="6791">
+    <objective goal="7" text="Use the Access Card on the computer to transfer the data" type="Put" object="1" item="6791">
       <done><say>The data has been transferred.</say></done>
     </objective>
-    <objective goal="2" text="Plant the bomb on the mainframe" type="Put" object="2" item="6818" after="1">
+    <objective goal="8" text="Plant the bomb on the mainframe" type="Put" object="2" item="6818" after="7">
       <done><say>The bomb is set!</say></done>
     </objective>
     <complete>
@@ -123,12 +123,12 @@ Before we can plant the bomb on the mainframe, you'll need to transfer some sens
       <say>No, no! This is impossible!</say>
     </complete>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="9">
     <briefing>What the hell happened back there? Everything was fine until the bomb was set! I don't understand... Maybe planting the bomb caused an electromagnetic pulse to break the Signature Manipulator... This disturbs me.
 
 Just get the Signature Manipulator to Sisyphus, one of the Merovingian's personal assistants. I'm sending you her address now.</briefing>
     <enter><say>Sisyphus is your final contact. See to it that the device makes it into her hands.</say></enter>
-    <objective goal="1" text="Talk to Sisyphus" type="Talk" npc="8">
+    <objective goal="9" text="Talk to Sisyphus" type="Talk" npc="8">
       <talk>
         <say npc="8">Flood informed me of the complications that seem to have destroyed the device. This is quite unfortunate. The Merovingian will be quite displeased to hear of this...
 
@@ -136,10 +136,10 @@ Wait... I hear something in the other room. Find out what that insidious sound i
         <say>We have a problem, {player}. It appears that a group of programs has located your position, and they want you dead. Put a stop to the programs.</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill the attacking programs" type="DefeatAll">
+    <objective goal="10" text="Kill the attacking programs" type="DefeatAll" after="9">
       <done><say>That's all of them.</say></done>
     </objective>
-    <objective goal="3" text="Give the Signature Manipulator to Sisyphus" type="Give" npc="8" item="6820" after="2">
+    <objective goal="11" text="Give the Signature Manipulator to Sisyphus" type="Give" npc="8" item="6820" after="10">
       <talk><say npc="8">You handled that extremely well, better than I or anyone would have expected... I'll take the Signature Manipulator now.</say></talk>
       <done>
         <say>Nice work.</say>

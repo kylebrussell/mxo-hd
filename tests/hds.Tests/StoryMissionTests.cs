@@ -136,6 +136,17 @@ public class StoryMissionTests
             {
                 Assert.True(npc.at > 0, file + ": " + npc.handle + " isn't placed (at) in a generated mission");
             }
+
+            if (npc.spawnAfter >= 0)
+            {
+                // It arrives when a goal of its phase completes (any phase's, for an NPC placed by x, y, z); a Protect goal
+                // only completes as its phase ends
+                IEnumerable<MissionObjective> goals = npc.at > 0
+                    ? mission.phases[npc.at - 1].missionObjectives
+                    : mission.phases.SelectMany(p => p.missionObjectives);
+                Assert.True(goals.Any(o => o.goal == npc.spawnAfter && o.type != MissionGoalType.Protect),
+                    file + ": " + npc.handle + " arrives after goal " + npc.spawnAfter + ", which its phase doesn't have");
+            }
         }
 
         for (int p = 0; p < mission.phases.Count; p++)
@@ -146,6 +157,13 @@ public class StoryMissionTests
             {
                 Assert.Contains(phase.site, Sites);
                 Assert.True(phase.enemies == 0 || Enemies.Contains(phase.enemy ?? ""), where + ": enemy '" + phase.enemy + "'");
+            }
+
+            if (phase.enemiesAfter >= 0)
+            {
+                Assert.True(phase.site != null && phase.enemies > 0, where + ": enemiesAfter without generated enemies");
+                Assert.True(phase.missionObjectives.Any(o => o.goal == phase.enemiesAfter && o.type != MissionGoalType.Protect),
+                    where + ": the enemies arrive after goal " + phase.enemiesAfter + ", which the phase doesn't have");
             }
 
             Assert.NotEmpty(phase.missionObjectives);
@@ -169,11 +187,8 @@ public class StoryMissionTests
                 Assert.False(string.IsNullOrWhiteSpace(goal.description), what);
                 if (goal.afterGoal >= 0)
                 {
+                    // A kill goal may wait: a kill made before it opens completes it when it does (MissionRuntime.Complete)
                     Assert.Contains(phase.missionObjectives, o => o.goal == goal.afterGoal);
-
-                    // A kill only counts for a goal that is open when it happens
-                    Assert.False(mission.id >= 100000 && (goal.type == MissionGoalType.Defeat || goal.type == MissionGoalType.DefeatAll),
-                        what + ": a kill goal that waits for another can miss its kill");
                 }
 
                 switch (goal.type)
@@ -235,8 +250,14 @@ public class StoryMissionTests
 
                 if (goal.type == MissionGoalType.Escort)
                 {
-                    Match to = Regex.Match(goal.escortTo, @"^(exit|hardline|npc:(\d+))$");
+                    Match to = Regex.Match(goal.escortTo, @"^(exit|hardline|npc:(\d+)|object:(\d+))$");
                     Assert.True(to.Success, what + ": to=\"" + goal.escortTo + "\"");
+                    if (to.Groups[3].Success)
+                    {
+                        ushort target = ushort.Parse(to.Groups[3].Value);
+                        Assert.True(phase.objects.Any(o => o.id == target), what + ": no object " + target + " in this phase");
+                    }
+
                     if (to.Groups[2].Success)
                     {
                         ushort target = ushort.Parse(to.Groups[2].Value);
@@ -247,6 +268,107 @@ public class StoryMissionTests
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// An NPC's own line with after="n" plays once goal n is done in any phase (MissionRuntime.LatestLine), so goal ids
+    /// restarting in each phase can set it off early. Its goal has to be one of its own phase's or a later one's, with no
+    /// earlier phase using the same id. after= on any other line does nothing, a line's speaker has to be one of the
+    /// mission's NPCs, and every phase needs a goal that has to be done.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void LinesWaitOnTheGoalTheyMean(string file)
+    {
+        List<string> problems = GoalReferenceProblems(Load(file));
+        Assert.True(problems.Count == 0, file + ": " + string.Join("; ", problems));
+    }
+
+    [Fact]
+    public void TheChecksCatchALineSetOffByAnEarlierPhase()
+    {
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(@"<mission id=""1"" title=""T""><npc id=""1"" handle=""A"" type=""FRIENDLY"" rsi=""1"" at=""2""><say after=""1"">Done</say></npc>
+            <phase site=""Normal""><object id=""1"" kind=""Computer"" /><objective goal=""1"" text=""Use"" type=""Use"" object=""1"" /></phase>
+            <phase site=""Normal""><objective goal=""1"" text=""Talk"" type=""Talk"" npc=""1"" /></phase></mission>");
+        Mission mission = MissionXml.Parse(doc.DocumentElement!);
+
+        // As the runtime sees it: phase 2's talk isn't done, but the line already counts as due
+        MissionProgress progress = new MissionProgress(mission);
+        progress.Complete(mission.phases[0].missionObjectives[0]);
+        progress.NextPhase();
+        Assert.False(progress.IsDone(1));
+        Assert.True(progress.WasDoneInAnyPhase(mission.npcs[0].lines[0].afterGoal));
+
+        Assert.Single(GoalReferenceProblems(mission));
+        mission.phases[1].missionObjectives[0].goal = 2;
+        mission.npcs[0].lines[0].afterGoal = 2;
+        Assert.Empty(GoalReferenceProblems(mission));
+    }
+
+    private static List<string> GoalReferenceProblems(Mission mission)
+    {
+        List<string> problems = new List<string>();
+        List<int> PhasesWith(int goal) => Enumerable.Range(1, mission.phases.Count)
+            .Where(p => mission.phases[p - 1].missionObjectives.Any(o => o.goal == goal)).ToList();
+
+        foreach (MissionNpc npc in mission.npcs)
+        {
+            foreach (MissionLine line in npc.lines.Where(l => l.afterGoal >= 0))
+            {
+                string what = npc.handle + "'s line after goal " + line.afterGoal;
+                List<int> phases = PhasesWith(line.afterGoal);
+                if (phases.Count == 0)
+                {
+                    problems.Add(what + ": no phase has that goal");
+                }
+                else if (npc.at == 0 && phases.Count > 1)
+                {
+                    // Present for the whole mission: the id has to be the mission's only one
+                    problems.Add(what + ": phases " + string.Join(", ", phases) + " all have it");
+                }
+                else if (npc.at > 0 && phases.All(p => p < npc.at))
+                {
+                    problems.Add(what + ": only phases before the NPC's have it");
+                }
+                else if (npc.at > 0 && phases.Any(p => p < npc.at))
+                {
+                    problems.Add(what + ": phase " + phases.First(p => p < npc.at) + "'s goal of that id sets it off in phase " + npc.at);
+                }
+            }
+        }
+
+        List<MissionLine> others = new List<MissionLine>();
+        foreach (MissionPhase phase in mission.phases)
+        {
+            others.AddRange(phase.enterLines);
+            others.AddRange(phase.completeLines);
+            others.AddRange(phase.triggers.SelectMany(t => t.lines));
+            others.AddRange(phase.missionObjectives.SelectMany(o => o.talkLines.Concat(o.doneLines)));
+        }
+
+        foreach (MissionLine line in others)
+        {
+            if (line.afterGoal >= 0)
+            {
+                problems.Add("after= on \"" + line.text.Substring(0, Math.Min(40, line.text.Length)) + "\" does nothing: only an NPC's own lines wait");
+            }
+
+            if (line.speaker == MissionSpeaker.Npc && !mission.npcs.Any(n => n.id == line.npcId))
+            {
+                problems.Add("a line is said by NPC " + line.npcId + ", who isn't in the mission");
+            }
+        }
+
+        for (int p = 0; p < mission.phases.Count; p++)
+        {
+            if (!mission.phases[p].missionObjectives.Any(o => !o.optional && o.type != MissionGoalType.Protect))
+            {
+                problems.Add("phase " + (p + 1) + " has no goal that has to be done, so it ends as it starts");
+            }
+        }
+
+        return problems;
     }
 
     /// <summary>An NPC from an earlier phase is still with the player when an earlier phase had them follow.</summary>
@@ -306,8 +428,22 @@ public class StoryMissionTests
 
     private static bool CanDo(MissionObjective goal, HashSet<uint> held, MissionProgress? progress = null)
     {
+        // An NPC that arrives late (spawnAfter) can't be talked to, killed or led before it has arrived
+        if (progress != null && goal.type != MissionGoalType.Protect && goal.Npcs.Any(id => id != 0 && !progress.HasArrived(id)))
+        {
+            return false;
+        }
+
+        if (progress != null && goal.escortTo.StartsWith("npc:") && !progress.HasArrived(ushort.Parse(goal.escortTo.Substring(4))))
+        {
+            return false;
+        }
+
         switch (goal.type)
         {
+            case MissionGoalType.DefeatAll:
+                // Late hostiles have to arrive before everyone can be dead
+                return progress == null || !progress.HostilesStillToArrive();
             case MissionGoalType.Talk:
                 // Talking to a friendly NPC settles the first open goal that names it (MissionRuntime.OnTalk), so a
                 // Talk listed after that NPC's Protect never completes
@@ -375,6 +511,20 @@ public class StoryMissionTests
             Assert.True(text.All(c => c == '\n' || c == '\r' || (c >= ' ' && c < 127)), file + ": not plain ASCII: " + text);
             Assert.True(text.Length < 1000, file + ": too long for one line: " + text.Substring(0, Math.Min(60, text.Length)));
         }
+    }
+
+    [Fact]
+    public void TheChecksCatchAGoalWhoseNpcHasNotArrived()
+    {
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(@"<mission id=""1"" title=""T""><npc id=""1"" handle=""A"" type=""FRIENDLY"" rsi=""1"" spawnAfter=""2"" />
+            <phase>
+              <objective goal=""1"" text=""Talk to A"" type=""Talk"" npc=""1"" />
+              <objective goal=""2"" text=""Then this"" type=""Talk"" npc=""1"" after=""1"" />
+            </phase></mission>");
+        MissionProgress progress = new MissionProgress(MissionXml.Parse(doc.DocumentElement!));
+
+        Assert.False(progress.OpenObjectives().Any(o => o.type != MissionGoalType.Protect && CanDo(o, new HashSet<uint>(), progress)));
     }
 
     [Fact]

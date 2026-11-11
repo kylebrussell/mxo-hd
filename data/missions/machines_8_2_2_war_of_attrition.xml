@@ -11,11 +11,11 @@
      information, shown on completing this mission.
      Gaps: the hardline junction box isn't a known object; it is a Computer here. The Operator's "definitely
      malfunctioning" line came on reaching the box and "Looks like that did the trick" once it was fixed, so the box is
-     checked and then fixed (two Use goals on the one object). The Holographic Projection appeared at the box only
-     after the fix; here it stands there from the start and its talk opens after the fix. Graciela Hungerford's second
-     line wasn't captured. Gray's closing words came as one long entry (or two: no header was visible between them)
-     too long for one line, so the first paragraph is said when the last phase's goals are done and the second is the
-     closing line. The two Machine Mechanics each say one of the two lines seen in Team chat. -->
+     checked and then fixed (two Use goals on the one object). The Holographic Projection appears at the box once it
+     is fixed, and its talk opens then. Graciela Hungerford's second line wasn't captured. Gray's closing words came as
+     one long entry (or two: no header was visible between them) too long for one line, so the first paragraph is said
+     when the last phase's goals are done and the second is the closing line. The two Machine Mechanics each say one of
+     the two lines seen in Team chat. -->
 <mission id="208202" title="War of Attrition" description="Investigate a rash of utility failures and gang attacks across the city." plot="1"
          order="8202" org="2" contact="Agent Gray" exp="384825" info="63000">
   <npc id="1" handle="Corey Bailie" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
@@ -30,8 +30,8 @@
   <npc id="4" handle="Graciela Hungerford" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
     <say display="5">Actually, I get paid whether or not I fix it, so...whatever.</say>
   </npc>
-  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
-  <npc id="6" handle="The Auditor" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" spawnAfter="2" />
+  <npc id="6" handle="The Auditor" type="FRIENDLY" at="4" rsi="240d0098" weapon="2568">
     <say>I am unable to conduct a more detailed analysis given the data at my disposal. I am certain that an audit of your own code records will enable you to identify the problem precisely.</say>
   </npc>
   <npc id="7" handle="Machine Mechanic" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">

@@ -14,9 +14,9 @@
      Gaps: the data extraction team "doing their thing" on Chant isn't shown; the phase ends once the disk is taken.
      At the recruiting center the Operator's "a hefty amount of data on the machine in that room" came after the
      player had hacked a computer with a message from Captain Niobe; so "Search the area" is that first computer, and
-     the disk goes into a second. In Zia the pursuing Zionites came after the upload; we can't spawn hostiles
-     mid-phase, so they are on the floor from the start (no kill goal was shown). A hostile "Furies Tormentor" fought
-     on the street before Zia is likely unrelated and isn't placed. -->
+     the disk goes into a second. In Zia the pursuing Zionites arrive after the upload, on the floor's spots
+     rather than "on your tail" (no kill goal was shown). A hostile "Furies Tormentor" fought on the street before Zia
+     is likely unrelated and isn't placed. -->
 <mission id="208104" title="Potential" description="Subdue the Zion recruiter Chant and steal the data of Zion's recruiting teams." plot="1"
          order="8104" org="2" contact="Agent Gray" exp="374340" info="63000">
   <npc id="1" handle="Chant" type="HOSTILE" at="1" rsi="d8040058" weapon="2568">
@@ -67,7 +67,7 @@ I am sending you to the location that passes for Chant's private residence. You 
       <done><say>Good. Grab the disk, and hit the streets!</say></done>
     </objective>
   </phase>
-  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Zia">
+  <phase site="Office" enemy="Zion" enemies="3" enemiesAfter="1" neighbourhoods="Zia">
     <briefing>Well done, operative. Proceed to the indicated location, and upload the data at the terminal you find there.</briefing>
     <enter>
       <say>Almost there...</say>

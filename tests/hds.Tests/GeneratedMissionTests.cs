@@ -343,7 +343,8 @@ public class GeneratedMissionTests
 
                 if (objective.type == MissionGoalType.Escort)
                 {
-                    Assert.True(objective.escortTo == "exit" || objective.escortTo == "hardline" || objective.escortTo.StartsWith("npc:"), goal);
+                    Assert.True(objective.escortTo == "exit" || objective.escortTo == "hardline" || objective.escortTo.StartsWith("npc:") ||
+                                (objective.escortTo.StartsWith("object:") && objects.Contains(ushort.Parse(objective.escortTo.Substring(7)))), goal);
                 }
             }
         }

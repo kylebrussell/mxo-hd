@@ -32,10 +32,10 @@
 Take care, {player}.</say>
   </npc>
   <npc id="2" handle="Agent Gray" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
-    <say after="1">We anticipate that this announcement will be satisfactory to the majority of our operatives.</say>
+    <say after="3">We anticipate that this announcement will be satisfactory to the majority of our operatives.</say>
   </npc>
   <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
-    <say after="2">You...know that there is some information we cannot disclose, tesoro. Responsible control of information is indispensible to the security of the System. Even our own programs are told only what is necessary to ensure successful execution of their assigned tasks. It cannot be otherwise.</say>
+    <say after="4">You...know that there is some information we cannot disclose, tesoro. Responsible control of information is indispensible to the security of the System. Even our own programs are told only what is necessary to ensure successful execution of their assigned tasks. It cannot be otherwise.</say>
   </npc>
   <npc id="4" handle="Agent Green" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say display="5">Your contributions have been appreciated.</say>
@@ -44,7 +44,7 @@ Take care, {player}.</say>
     <say display="5">The removal of the override programs means that we no longer need to rely on human operatives for vital security operations.</say>
   </npc>
   <npc id="6" handle="Cryptos" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
-    <say after="1">There is no truth that does not rest ultimately upon what is evident to us in our own experience.</say>
+    <say after="6">There is no truth that does not rest ultimately upon what is evident to us in our own experience.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="3">
     <briefing>Although we warned him that his hovercraft was likely compromised as a result of the encounter he had with Zion and E Pluribus Neo hovercraft while under Veil's guidance, Halborn has been struck down by a terrorist armed with a program provided by Carlyne. The program appears to have been designed to disrupt systems in Halborn's ship, preventing him from making further broadcasts into the Matrix. As far as we can ascertain, the program fulfilled its function; we do not expect Halborn to reappear at any time in the near future.
@@ -74,10 +74,10 @@ Huh.</say></done>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>I see. In that case, I believe a brief meeting would be appropriate. With both Carlyne and Halborn out of the simulation, our priorities will necessarily change.</briefing>
     <enter><say>Hm... Maybe we all get raises?</say></enter>
-    <objective goal="1" text="Talk to Agent Gray" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Agent Gray" type="Talk" npc="2">
       <talk><say npc="2">As you know, the stand-down order given to our Sentinels on the surface, and the reduced presence of our enforcement programs within the simulation, were measures taken in consideration of the threat posed by the override routines in Halborn's possession; as a result, it became impractical to conduct large-scale operations against terrorist forces. With the override routines removed, we will once again have our full operational strength available to combat terrorist threats.</say></talk>
     </objective>
-    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="3">
+    <objective goal="4" text="Talk to Agent Pace" type="Talk" npc="3">
       <talk><say npc="3">Several new issues have come to light recently: Pluribus Neo took advantage of the absence of Sentinel patrols to rebuild and reinforce part of the old Zion base, and, most recently, the Merovingian has been disrupting some of our systems from within the simulation, possibly as part of a scheme involving Sentinel forces commanded by the General.
 
 Now that our programs are once again free to operate, we will be able to deal with these offenses as they deserve.</say></talk>
@@ -91,7 +91,7 @@ Now that our programs are once again free to operate, we will be able to deal wi
     <enter><say>Gee, and it might be the last time we see these things... And here they said saying goodbye is hard.
 
 Got some overridden programs in there. Hang on... I'm also seeing some unknown redpill signals.</say></enter>
-    <objective goal="1" text="Kill all of the Merovingian's redpills" type="DefeatAll">
+    <objective goal="5" text="Kill all of the Merovingian's redpills" type="DefeatAll">
       <done>
         <say>Pace wasn't kidding when she said the Mervs have been making nuisances of themselves...</say>
         <say>Congrats, you're the last one standing.</say>
@@ -103,7 +103,7 @@ Got some overridden programs in there. Hang on... I'm also seeing some unknown r
     <enter><say>Third time's the charm, right? Who could possibly butt in this ti--
 
 Wha-? Override signals in there are pulling a quick fade. I've got redpills...again. Can't people mind their own business?</say></enter>
-    <objective goal="1" text="Talk to Cryptos" type="Talk" npc="6">
+    <objective goal="6" text="Talk to Cryptos" type="Talk" npc="6">
       <talk><say npc="6">Some might like to...believe that the danger of override codes fades with the departure of the two wireframed men. I am not so sure... The overrides tapped into something fundamental within this world--how else do you explain their shocking effect? Surely this vulnerability will not vanish overnight.
 
 It has occurred to me that although the Cryptos you see before you is a fusion of Machine code with a human organism, the intruder's overrides had no effect on me; possibly the human factor protected the Machine. I mean to dedicate myself to formulating an algorithm that can resist the override programs, using my own operating code as a starting point.</say></talk>
