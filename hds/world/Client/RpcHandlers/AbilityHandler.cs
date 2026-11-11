@@ -371,18 +371,6 @@ namespace hds
             }
         }
 
-        public void abilityAnimateTheTarget(object e)
-        {
-            ServerPackets pak = new ServerPackets();
-            UInt32 targetAnim = this.currentAbility.getActivationFX();
-            if (targetAnim == 0)
-            {
-                targetAnim = currentAbility.getAbilityExecutionFX();
-            }
-
-            pak.SendCastAbilityOnEntityId(currentTargetViewId, targetAnim, 150);
-        }
-
         public void processCharacterAnimationSelf(UInt16 abilityID)
         {
             ServerPackets pak = new ServerPackets();
@@ -391,23 +379,16 @@ namespace hds
             // see movementAnims.tx - its for codes something (0x31)
             if (currentAbility.getAbilityExecutionFX() > 0)
             {
-                pak.SendCastAbilityOnEntityId(2, currentAbility.getAbilityExecutionFX(), 200);
+                ServerPackets.SendPlayerAbilityEffect(Store.currentClient, currentAbility.getAbilityExecutionFX());
             }
 
             if (currentAbility.getCastingTime() > 0)
             {
                 byte[] castAnimStart = currentAbility.getCastAnimStart();
                 // Cast
-                pak.sendSystemChatMessage(Store.currentClient,
-                    "Animation Starts with Byte ID " + StringUtils.bytesToString(castAnimStart), "BROADCAST");
                 pak.sendPlayerAnimation(Store.currentClient, StringUtils.bytesToString_NS(castAnimStart));
-
-                // And Time a "Damage" or "Buff" Animation
-                int castingTime = (int) currentAbility.getCastingTime() * 1000;
-                currentTargetViewId = Store.currentClient.playerData.currentSelectedTargetViewId;
-                // On the shared timer with the caster as current client: a plain Timer ran this with no current
-                // client, threw, and took the whole server down at the end of every cast.
-                DelayedActions.AfterFor(Store.currentClient, castingTime / 1000.0, () => abilityAnimateTheTarget(null));
+                // Target visuals belong to the resolved recipients when the cast lands. The old demo timer
+                // read a later selection, broadcast the caster as the target and dealt an extra 150 NPC damage.
             }
         }
 

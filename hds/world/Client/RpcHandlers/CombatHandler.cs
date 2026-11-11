@@ -109,6 +109,14 @@ namespace hds
         public void ProcessCombatStance(ref byte[] packet)
         {
             byte mode = packet.Length > 0 && packet[0] != 0 ? CombatantModeReady : CombatantModeIdle;
+            if (mode == CombatantModeIdle)
+            {
+                // The native client's Escape/holster path sends 3d 00, without RPC 44. A ranged attack
+                // must stop here too; holstering must not let a player bypass an interlock withdrawal.
+                pvpGunfire?.Stop();
+                if (currentSession?.Type == CombatSession.CombatType.Ranged)
+                    StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            }
             client.playerInstance.CombatantMode.setValue(mode);
             client.messageQueue.addObjectMessage(ServerPackets.BuildCombatantModeUpdate(mode), false);
             client.FlushQueue();

@@ -17,111 +17,28 @@ namespace hds
             Store.currentClient.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }
 
-        public void SendCastAbilityOnEntityId(UInt16 viewId, UInt32 animationId, UInt16 value)
+        /// <summary>An effect on its actual player recipient, including their own fully framed view 2.</summary>
+        public static void SendPlayerAbilityEffect(WorldClient recipient, UInt32 effect)
         {
-            ClientView theView = Store.currentClient.viewMan.getViewById(viewId);
-
-            if (viewId == 0)
+            if (effect == 0) return;
+            byte counter;
+            lock (recipient.playerData)
             {
-                viewId = 2;
+                counter = (byte)(recipient.playerInstance.EffectCounter.getValue()[0] + 1);
+                recipient.playerInstance.EffectID.setValue(effect);
+                recipient.playerInstance.EffectCounter.setValue(counter);
             }
+            recipient.messageQueue.addObjectMessage(BuildPlayerAbilityEffect(effect, counter, true), false);
+            recipient.FlushQueue();
+            PvpFlag.ToWatchers(recipient, BuildPlayerAbilityEffect(effect, counter, false));
+        }
 
-            UInt32 theGoID = 0;
-            if (theView != null)
-            {
-                theGoID = theView.GoID;
-            }
-
-            PacketContent myselfStateData = new PacketContent();
-            myselfStateData.AddUint16(2, 1);
-            PacketContent viewStateOtherData = new PacketContent();
-
-            switch (theGoID)
-            {
-                case 599:
-
-                    // Its more a demo - we "one hit" the mob currently so we must update this 
-                    lock (WorldServer.mobs.SyncRoot)
-                    {
-                        for (int i = 0; i < WorldServer.mobs.Count; i++)
-                        {
-                            Mob thismob = (Mob) WorldServer.mobs[i];
-                            if (theView != null && thismob.getEntityId() == theView.entityId)
-                            {
-                                thismob.HitEnemyWithDamage(value, animationId);
-
-                                if (thismob.getHealthC() <= 0)
-                                {
-                                    thismob.setIsDead(true);
-                                    SendNpcDies(theView.ViewID, Store.currentClient, thismob);
-
-                                    // We got some Exp for it - currently we just make a simple trick to calculate some exp
-                                    // Just take currentLevel * modifier
-                                    Random rand = new Random();
-
-                                    UInt32 expModifier = (UInt32) rand.Next(100, 500);
-                                    UInt32 expGained = thismob.getLevel() * expModifier;
-                                    // Update EXP
-                                    new PlayerHandler().IncrementPlayerExp(expGained);
-                                    thismob.setIsLootable(true);
-                                }
-
-                                WorldServer.mobs[i] = thismob;
-                            }
-                        }
-                    }
-
-                    break;
-
-                default:
-                    List<Attribute> updateAttributes = new List<Attribute>();
-                    Store.currentClient.playerInstance.EffectID.enable();
-                    Store.currentClient.playerInstance.EffectCounter.enable();
-
-                    Store.currentClient.playerInstance.EffectID.setValue(animationId);
-                    uint effectCounter = 0;
-
-                    effectCounter = (uint) Store.currentClient.playerInstance.EffectCounter.getValue()[0] + 1;
-                    Store.currentClient.playerInstance.EffectCounter.setValue(effectCounter);
-
-                    updateAttributes.Add(Store.currentClient.playerInstance.EffectID);
-                    updateAttributes.Add(Store.currentClient.playerInstance.EffectCounter);
-
-                    viewStateOtherData.AddByteArray(
-                        Store.currentClient.playerInstance.GetUpdateAttributes(updateAttributes));
-                    myselfStateData.AddByteArray(
-                        Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, false));
-
-                    String hexViewStateOther = StringUtils.bytesToString_NS(viewStateOtherData.ReturnFinalPacket());
-                    String hexMyselfStateData = StringUtils.bytesToString_NS(myselfStateData.ReturnFinalPacket());
-
-                    if (viewId == 2 || viewId == 0)
-                    {
-                        Output.WriteDebugLog("View ID Ability SelfState for View ID 2 from " +
-                                             Store.currentClient.playerData.getCharID() + " : " + hexMyselfStateData);
-                        Output.WriteDebugLog("Update Ability FX on OtherState Views from " +
-                                             Store.currentClient.playerData.getCharID() + " : " + hexMyselfStateData);
-                        Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
-                        Store.world.SendViewPacketToAllPlayers(viewStateOtherData.ReturnFinalPacket(),
-                            Store.currentClient.playerData.getCharID(),
-                            NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1),
-                            Store.currentClient.playerData.getEntityId());
-                    }
-                    else
-                    {
-                        // This should show the FX only on otherViews but on the castTarget it should be shown the SelfViewUpdate
-                        // Send selfView Packet to the Target
-                        Output.WriteDebugLog("View ID Ability SelfState for View ID " + viewId + " from " +
-                                             Store.currentClient.playerData.getCharID() + " : " + hexMyselfStateData);
-                        Store.world.SendSelfViewUpdateToTarget(myselfStateData, viewId, Store.currentClient);
-                        Store.world.SendViewPacketToAllPlayers(viewStateOtherData.ReturnFinalPacket(),
-                            Store.currentClient.playerData.getCharID(),
-                            NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1),
-                            Store.currentClient.playerData.getEntityId());
-                    }
-
-                    break;
-            }
+        public static byte[] BuildPlayerAbilityEffect(UInt32 effect, byte counter, bool ownView)
+        {
+            return ownView
+                ? PlayerViewAttributes.BuildSelf((32, PlayerViewAttributes.U32(effect)), (33, PlayerViewAttributes.U8(counter)))
+                : PlayerViewAttributes.Build((PlayerViewAttributes.OtherEffectId, PlayerViewAttributes.U32(effect)),
+                    (PlayerViewAttributes.OtherEffectCounter, PlayerViewAttributes.U8(counter)));
         }
 
         public void SendHyperSpeed(UInt16 innerStrength)

@@ -100,6 +100,10 @@ public static partial class Scenarios
 
         Cast(caster, 315, victimView.ViewId);
         await victim.WaitForRpcAsync(ModPattern(315, 102), TimeSpan.FromSeconds(10));
+        await victim.WaitForViewUpdateAsync(2, "02 80 80 80 80 30 04 09 00 28 ??");
+        await caster.WaitForViewUpdateAsync(victimView.ViewId, "02 80 80 80 0c 04 09 00 28 ??");
+        Check.Equal(0, CountViewUpdate(caster, 2, "02 80 80 80 80 30 04 09 00 28"),
+            "The target's stun effect is never attached to the caster");
         int shotsAtStun = context.Server.DebugLog().Split('\n').Count(l => l.Contains("Victim fires"));
         Cast(victim, 967);
         await victim.WaitForTextAsync("cannot act while stunned");
@@ -121,10 +125,12 @@ public static partial class Scenarios
         // then has a 100% break chance on the next damage event (stored Deactivate MinValue -100).
         Cast(caster, 1135, rootView.ViewId);
         await rooted.WaitForRpcAsync(ModPattern(1135, 99), TimeSpan.FromSeconds(10));
+        var rootStarted = System.Diagnostics.Stopwatch.StartNew();
         Cast(rooted, 967); // root permits abilities
         await rooted.WaitForRpcAsync("80 bd 01 c7 03");
         Cast(caster, 329, rootView.ViewId);
-        await rooted.WaitForRpcAsync(ModPattern(1135, 99, true), TimeSpan.FromSeconds(10));
+        await rooted.WaitForRpcAsync(ModPattern(1135, 99, true), TimeSpan.FromSeconds(5));
+        Check.That(rootStarted.Elapsed < TimeSpan.FromSeconds(7), "Damage breaks the root before its eight-second expiry");
         Check.Equal(0, victim.World.Problems.Count + rooted.World.Problems.Count, "Control protocol problems");
     }
 

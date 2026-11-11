@@ -415,7 +415,10 @@ namespace hds
                     AbilityMessages.AbilityGameObject(abilityId), AbilityMessages.TypeGameObject, casterName, targetName, damage, 0));
                 caster.FlushQueue();
             }
-            if (Damage(target, damage, fx))
+            // A non-damaging control still has an activation effect on its victim. Send that effect to the
+            // victim and their watchers; the caster's execution animation is a separate view update.
+            ServerPackets.SendPlayerAbilityEffect(target, fx);
+            if (Damage(target, damage))
             {
                 Defeated(target, caster);
             }

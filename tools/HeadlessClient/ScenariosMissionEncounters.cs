@@ -49,7 +49,17 @@ public static partial class Scenarios
         byte[] at = witness.Attributes["Position"], target = mainframe.Attributes["Position"];
         double dx = BitConverter.ToDouble(at, 0) - BitConverter.ToDouble(target, 0);
         double dz = BitConverter.ToDouble(at, 16) - BitConverter.ToDouble(target, 16);
-        Check.That(dx * dx + dz * dz < 400 * 400, "The delayed witness arrives beside the object");
+        // Runtime arrivals may use a site NPC spot when the object's origin has no reachable floor nearby.
+        // The old fixed four-metre assertion depended on which random mission site was allocated.
+        hds.SectorProperties.Load(Path.Combine(context.RepositoryRoot, "data", "sector_properties.csv"));
+        hds.NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot, "data", "navmesh"));
+        double[] placed = PositionOf(witness), reference = PositionOf(turncoat);
+        Check.That(hds.NavMesh.Locate(1, placed[0], placed[1], placed[2], out var floor) &&
+            Math.Abs(placed[1] - floor.floorY - 95) < 0.01, "The delayed witness stands on walkable floor");
+        Check.That(hds.NavMesh.Project(1, placed[0], placed[1], placed[2], out _, 1, reference),
+            "The delayed witness is reachable from the site's original NPC");
+        Check.That(dx * dx + dz * dz < 800 * 800 || context.Server.DebugLog().Contains("Arrival uses a walkable site NPC spot"),
+            "The delayed witness arrives near the object or uses the walkable site fallback");
         player.SendRpc($"80 c7 {MissionNpcId(witness)} 09 00");
         await player.WaitForTextAsync("Encounter fixture second area.");
         await player.WaitForRpcAsync("80 9e 00");
