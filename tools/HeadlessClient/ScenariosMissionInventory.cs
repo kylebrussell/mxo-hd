@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using System.Globalization;
 using hds;
 
 namespace HeadlessClient;
@@ -48,11 +49,23 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("5f 60 00 01");
     }
 
+    private static async Task<ViewCreation> VisitMissionNpc(ScenarioContext context, HeadlessPlayer player, string name)
+    {
+        string pattern = @"\[MISSION\] Spawned (?:friendly|hostile) NPC " + Regex.Escape(name) + @" at ([^,\r\n]+),([^,\r\n]+),([^\r\n]+)";
+        await player.WaitUntilAsync(() => Regex.IsMatch(context.Server.DebugLog(), pattern),
+            name + " placement", TimeSpan.FromSeconds(15));
+        Match placement = Regex.Matches(context.Server.DebugLog(), pattern).Last();
+        await MoveForMissionTest(player,
+            double.Parse(placement.Groups[1].Value, CultureInfo.InvariantCulture) + 100,
+            double.Parse(placement.Groups[2].Value, CultureInfo.InvariantCulture),
+            double.Parse(placement.Groups[3].Value, CultureInfo.InvariantCulture));
+        return await player.WaitForViewNamedAsync(name, TimeSpan.FromSeconds(30));
+    }
+
     private static async Task FullBagMissionGet(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "machines_02_watchful_eyes.xml");
-        player.SendChat("?missionfloor");
-        ViewCreation herschel = await player.WaitForViewNamedAsync("Herschel");
+        ViewCreation herschel = await VisitMissionNpc(context, player, "Herschel");
         player.SendRpc($"80 c7 {MissionNpcId(herschel)} 0d 00");
         await player.WaitForTextAsync("Make room in your inventory");
         await CheckFullBagUnchanged(context, player);
@@ -68,8 +81,7 @@ public static partial class Scenarios
     {
         HeadlessPlayer player = await StartFullBagMission(context, "zion_arc_03_just_another_pretty_face.xml");
         await player.WaitForTextAsync("Make room in your inventory");
-        player.SendChat("?missionfloor");
-        ViewCreation maia = await player.WaitForViewNamedAsync("Maia");
+        ViewCreation maia = await VisitMissionNpc(context, player, "Maia");
         player.SendRpc($"80 c7 {MissionNpcId(maia)} 0e 00");
         byte[] position = maia.Attributes["Position"];
         await MoveForMissionTest(player, BitConverter.ToDouble(position, 0), BitConverter.ToDouble(position, 8),
@@ -131,8 +143,7 @@ public static partial class Scenarios
     private static async Task FullBagMissionLoot(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "merovingian_1_3_2_network_connections.xml");
-        player.SendChat("?missionfloor");
-        await DefeatMissionNpc(player, await player.WaitForViewNamedAsync("Binary"));
+        await DefeatMissionNpc(player, await VisitMissionNpc(context, player, "Binary"));
         player.SendRpc("81 1f");
         await player.WaitForTextAsync("Make room in your inventory");
         RpcRecord reply = await player.WaitForRpcAsync("81 20");

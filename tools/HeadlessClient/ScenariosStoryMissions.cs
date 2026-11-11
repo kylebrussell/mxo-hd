@@ -42,7 +42,7 @@ public static partial class Scenarios
             player.SendRpc("80 9b 07 00 01");
             await player.WaitForRpcAsync("80 9c");
             await player.WaitForRpcAsync("80 9e 00");
-            player.SendChat("?missionfloor");
+            await EnterMissionArea(player);
 
             switch (index)
             {
@@ -71,13 +71,13 @@ public static partial class Scenarios
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("She what?!");
         await player.WaitForRpcAsync("80 9e 00");
-        player.SendChat("?missionfloor");
+        await EnterMissionArea(player);
         await TalkToMissionNpc(player, "Tesarova");
         await player.WaitForTextAsync("little floating man");
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("It's nice to know");
         await player.WaitForRpcAsync("80 9e 00");
-        player.SendChat("?missionfloor");
+        await EnterMissionArea(player);
         foreach (string name in new[] { "Machine Vector", "Machine Despoiler", "Machine Karate Master" })
         {
             await DefeatMissionNpc(player, await player.WaitForViewNamedAsync(name));
@@ -98,7 +98,7 @@ public static partial class Scenarios
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("our contact's source location");
         await player.WaitForRpcAsync("80 9e 00");
-        player.SendChat("?missionfloor");
+        await EnterMissionArea(player);
         await player.WaitUntilAsync(() => player.ViewsOfGoid(599).Count(view => view.Name == "Override Function") >= 3,
             "Three Override Functions", TimeSpan.FromSeconds(15));
         foreach (ViewCreation npc in player.ViewsOfGoid(599).Where(view => view.Name == "Override Function").TakeLast(3))
@@ -118,7 +118,7 @@ public static partial class Scenarios
         await LeaveMissionArea(player);
         await player.WaitForTextAsync("traceback from another position");
         await player.WaitForRpcAsync("80 9e 00");
-        player.SendChat("?missionfloor");
+        await EnterMissionArea(player);
         await DefeatMissionNpc(player, await player.WaitForViewNamedAsync("Override Executable"));
     }
 
@@ -136,11 +136,23 @@ public static partial class Scenarios
         await player.WaitForTextAsync("Teleported to 0/0");
     }
 
-    private static async Task LeaveMissionArea(HeadlessPlayer player)
+    private static Task LeaveMissionArea(HeadlessPlayer player)
+    {
+        byte[] waypoint = player.Received("80 9e 00").Last().Bytes;
+        double x = BitConverter.ToDouble(waypoint, 3);
+        double y = BitConverter.ToDouble(waypoint, 11);
+        double z = BitConverter.ToDouble(waypoint, 19);
+        // The phase can advance before the teleport acknowledgment. Keep its briefing in the receive cursor.
+        player.SendChat(FormattableString.Invariant($"?tp {x} {y} {z} 0 0 0"));
+        return Task.CompletedTask;
+    }
+
+    private static async Task EnterMissionArea(HeadlessPlayer player)
     {
         byte[] waypoint = player.Received("80 9e 00").Last().Bytes;
         await MoveForMissionTest(player, BitConverter.ToDouble(waypoint, 3), BitConverter.ToDouble(waypoint, 11),
             BitConverter.ToDouble(waypoint, 19));
+        player.SendChat("?missionfloor");
     }
 
     private static async Task DefeatMissionNpc(HeadlessPlayer player, ViewCreation npc)

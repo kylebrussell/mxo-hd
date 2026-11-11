@@ -484,8 +484,8 @@ public static partial class Scenarios
         }))[0];
 
         // A request with no active dialog and malformed requests cannot consume items.
-        player.SendRpc("81 16 00 00 00");
-        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        player.World.SendRpcs(WireFormat.FromHex("81 16 00 00 00"),
+            WireFormat.FromHex("80 c8 3d 03 90 28 01 00"));
         await player.WaitForRpcAsync("81 13");
         foreach (string payload in new[] { "", "00", "01 00 00", "00 01 00 00", "00 00 00 00" })
         {
