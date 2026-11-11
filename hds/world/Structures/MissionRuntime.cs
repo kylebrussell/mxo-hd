@@ -1465,7 +1465,8 @@ namespace hds
             double sz = double.IsNaN(z) ? npc.z : z;
             NavPoint onFloor;
             if (placement.HasValue) onFloor = placement.Value;
-            else if (!MissionPlacement.ForSpawn(client, sx, sy, sz, npc.arrival.AtPlayer && !sideChange, out onFloor)) return null;
+            else if (!MissionPlacement.ForSpawn(client, sx, sy, sz, npc.arrival.AtPlayer && !sideChange, out onFloor,
+                replacingNpc: sideChange ? npc.id : (ushort)0)) return null;
             x = onFloor.x; y = onFloor.y; z = onFloor.z;
             if (!double.IsNaN(x) || (friendly != null && friendly.Value != npc.friendly))
             {

@@ -95,6 +95,16 @@ fallback. Without a safe point the arrival waits and retries. A wave is planned 
 members spawn, and kill-all goals wait for failed placements. A side change retains a walkable
 position and the NPC's health. Follower catch-up placements use the same floor projection.
 
+Site NPCs stay inside the allocated area's bounds. Before the player arrives, the area's own floor
+anchors the connected component. Projected positions are reserved with one metre of separation,
+including earlier members of a planned wave; if offsets converge at a wall, a local search tries
+nearby walkable positions before another site spot. Player-relative arrivals can follow the player
+outside that rectangle. These spacing distances are implementation choices.
+
+[Native QA on 2026-11-11](MISSION-ARRIVAL-QA.md) checked wall-edge player arrivals, both side changes,
+hold-out completion and deadline failure. It also exposed a combat animation fault outside the
+placement code. Timed goals show objective text but still have no countdown.
+
 A phase with `site` is placed when it starts instead of at fixed positions. The server picks a floor of a building from the world's own mission markup (see below), puts the phase's NPCs on its NPC spawners, spawns its hostiles and objects, and makes the floor's elevator door the waypoint.
 
 ```xml

@@ -31,9 +31,13 @@ public static partial class Scenarios
         await player.WaitUntilAsync(() => player.World.CreationSnapshot().Count(v => v.Name == "Zion Soldier") == 2,
             "Object-relative wave", TimeSpan.FromSeconds(15));
         List<ViewCreation> soldiers = player.World.CreationSnapshot().Where(v => v.Name == "Zion Soldier").ToList();
+        List<double[]> occupied = new() { start };
         foreach (ViewCreation npc in new[] { security, courier, machine }.Concat(soldiers))
         {
             double[] at = PositionOf(npc);
+            Check.That(occupied.All(p => Math.Pow(p[0] - at[0], 2) + Math.Pow(p[2] - at[2], 2) >= 9999),
+                npc.Name + " does not overlap another projected arrival");
+            occupied.Add(at);
             Check.That(NavMesh.Locate(1, at[0], at[1], at[2], out NavLocation location), npc.Name + " has a walkable polygon");
             Check.That(Math.Abs(at[1] - location.floorY - 95) < 0.01, npc.Name + " stands at floor height");
             Check.That(Math.Abs(location.floorY - floor.floorY) < 1, npc.Name + " stays on the same floor");

@@ -116,6 +116,36 @@ public class NavMeshProjectionTests
         Assert.InRange(Math.Abs(point.y - fallback[1]), 0, 1);
     }
 
+    [Fact]
+    public void FallbacksDoNotStackActorsOnTheSameProjectedPoint()
+    {
+        Load();
+        double[] fallback = { 60216.1, 2495, 32968.4 };
+        double[] unavailable = { 9999999, 2495, 9999999 };
+        Assert.True(MissionPlacement.Resolve(1, unavailable, null, new[] { fallback }, false,
+            out NavPoint first, out _));
+        Assert.True(MissionPlacement.Resolve(1, unavailable, first.Position, new[] { fallback }, false,
+            out NavPoint second, out _, new[] { first.Position }));
+        Assert.True(Math.Pow(first.x - second.x, 2) + Math.Pow(first.z - second.z, 2) >= 10000);
+        Assert.True(NavMesh.Project(1, second.x, second.y, second.z, out _, 1, first.Position));
+    }
+
+    [Fact]
+    public void SiteArrivalsStayInsideTheAllocatedAreaEvenWhenMoreOfTheFloorIsWalkable()
+    {
+        Load();
+        // Native QA: this walkable logged NPC spot was outside the rectangle that starts the area's timers.
+        var site = new MissionSite { floorY = 2149, minX = 10497.5, maxX = 10897.5, minZ = -8970, maxZ = -8570 };
+        double[] adjacent = { 9314.69335938, 2095, -8735.30664062 };
+        Assert.True(NavMesh.Locate(1, adjacent[0], adjacent[1], adjacent[2], out _));
+        double[] reference = MissionPlacement.ReferenceFor(1, site, new double[] { 13300, 2095, 6250 }, false);
+        Assert.NotNull(reference);
+        Assert.True(MissionPlacement.Resolve(1, adjacent, reference, new[] { adjacent }, false, out NavPoint placed, out _, site: site));
+        Assert.True(NavMesh.Project(1, placed.x, placed.y, placed.z, out _, 1, reference));
+        Assert.InRange(placed.x, site.minX - 400, site.maxX + 400);
+        Assert.InRange(placed.z, site.minZ - 400, site.maxZ + 400);
+    }
+
     private static void Load()
     {
         string dir = AppContext.BaseDirectory;

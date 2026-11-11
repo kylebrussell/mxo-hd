@@ -277,7 +277,7 @@ namespace hds
             List<NavPoint> floor = new List<NavPoint>();
             foreach (double[] spot in spots)
             {
-                if (!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out NavPoint placed))
+                if (!MissionPlacement.ForSpawn(client, spot[0], spot[1], spot[2], wave.arrival.AtPlayer, out NavPoint placed, reserved: floor))
                 {
                     progress.pendingWavePlacements.Add(wave.id);
                     return false;
