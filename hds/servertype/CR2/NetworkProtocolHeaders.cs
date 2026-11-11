@@ -71,6 +71,8 @@ namespace hds
         // BuddyList
         CLIENT_ADD_FRIEND = 0xd6,
         CLIENT_REMOVE_FRIEND = 0xda,
+        CLIENT_ADD_IGNORE = 0xe0,              // 80 e0 <name offset> <sized name>: /ignore
+        CLIENT_REMOVE_IGNORE = 0xe2,
 
         // MarketPlace
         CLIENT_MP_LIST_ITEMS = 0x124,
@@ -101,6 +103,23 @@ namespace hds
         CLIENT_EMOTE = 0x30,
         CLIENT_ANIMATION_START = 0x33,
         CLIENT_ANIMATION_STOP = 0x34,
+
+        // Login handshake (docs/CLIENT-ACTIONS.md): sent together once the client is in the world
+        CLIENT_LOADING_COMPLETE = 0x0c,        // 0c 01: LoadingComplete; retail answered nothing
+        CLIENT_FEATURES_REQUEST = 0x148,       // 81 48 (no body): retail answered 81 49, the feature list
+
+        // Email (client's persistent messages, docs/CLIENT-ACTIONS.md)
+        CLIENT_LONG_STRING_HEADER = 0x1ab,     // 81 ab <total u32> <chunk size u32> <wide> <multi> <chunk index>
+        CLIENT_LONG_STRING_CHUNK = 0x1ac,      // 81 ac <array offset> ...: part of that chunk
+        CLIENT_MAIL_SEND = 0x1e5,
+        CLIENT_MAIL_GET_HEADERS = 0x1ea,
+        CLIENT_MAIL_READ = 0x1f0,
+        CLIENT_MAIL_SET_STATUS = 0x1f4,
+        CLIENT_MAIL_CHANGE_ALL_STATUS = 0x1f6,
+        CLIENT_MAIL_CLASSIFY = 0x1f8,
+        CLIENT_MAIL_DELETE_OLDER = 0x1fa,
+        CLIENT_MAIL_TAKE_ATTACHMENTS = 0x1fc,
+        CLIENT_MAIL_DELETE = 0x1fe,
 
         // Faction and crew
         CLIENT_FACTION_INFO = 0xf4,
