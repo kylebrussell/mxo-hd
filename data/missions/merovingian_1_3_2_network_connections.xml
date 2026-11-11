@@ -6,21 +6,24 @@
      network for information on Morpheus' murder", "Take the Recording from the Computer" and "Give the Recording to
      Anhui". Ours: the description (the Summary tab was never opened), the other objective texts, the sites (phase 1 a
      ZionOutpost for the Zion base, phase 2 Normal for the Exile hideout, phase 3 an Office as the screenshots show),
-     the enemy counts and every NPC's look (the Bluepill's sex isn't shown). Item stand-ins: the Card is Access_Card
-     (6791), the Recording is Recording (6784), the Medicine is Medicine (6808), Daren's package is Package (6817) and
-     the Computer Parts are Computer_Parts (6827). Rewards: the log shows 525,000 information and no experience (a
-     level-50 player's). These are Zion 1.3's values (308,750 experience, 94,500 information, as Miracle Man paid).
+     the enemy counts (the ambush's three among them) and every NPC's look (the Bluepill's sex isn't shown). Item
+     stand-ins: the Card is Access_Card (6791), the Recording is Recording (6784), the Medicine is Medicine (6808),
+     Daren's package is Package (6817) and the Computer Parts are Computer_Parts (6827). Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.3's values (308,750 experience, 94,500
+     information, as Miracle Man paid).
      Gaps: how the Card was got isn't shown; here it is looted from Binary, the one named Zion hostile. Using the Zion
-     computer set off an ambush in retail ("You've got company!"); here the phase's generated Zion operatives are
-     already there, and the Operator's ambush lines and "Search the computer!" are said when the computer is used.
-     The Operator's line about the computer being in this room is said when the Card is looted. Retail showed only
-     "Give the Recording to Anhui" while the errand chain (Daren Swager, Ampell, Homer, Leon) ran; here each step is a
-     goal of its own, in the order the log has them. Lines said twice at once in the log (Daren's, Ampell's and
-     Homer's second lines) are said with their talk. Two Leon lines weren't captured and are left out. The GhettOS
-     "Access denied!" text on a phase 2 computer and the Morpheus_045.recording computer text can't be shown. In
-     phase 3 the laptop that "isn't even connected to the network" is an optional Use; the Tactical Security guards
-     who shouted "Freeze!" on the way out are the phase's generated Machine enemies. The Niobe recording in the Details
-     popup isn't from this mission and isn't used. -->
+     computer set off an ambush in retail: "I think you just pissed them off." came on using it and "You've got company!"
+     nine seconds later. Here the phase's generated Zion operatives are there from the start, and the ambush is a wave of
+     three more that arrives nine seconds (the gap in the log) after the computer is used, with "You've got company!" and
+     "Search the computer!". Retail said the second two minutes later, just before the Recording was taken; nothing marks
+     that moment, so it comes with the ambush. The Operator's line about the computer being in this room is said when the
+     Card is looted. Retail showed only "Give the Recording to Anhui" while the errand chain (Daren Swager, Ampell,
+     Homer, Leon) ran; here each step is a goal of its own, in the order the log has them. Lines said twice at once in
+     the log (Daren's, Ampell's and Homer's second lines) are said with their talk. Two Leon lines weren't captured and
+     are left out. The GhettOS "Access denied!" text on a phase 2 computer and the Morpheus_045.recording computer text
+     can't be shown. In phase 3 the laptop that "isn't even connected to the network" is an optional Use; the Tactical
+     Security guards who shouted "Freeze!" on the way out are the phase's generated Machine enemies. The Niobe recording
+     in the Details popup isn't from this mission and isn't used. -->
 <mission id="301302" title="Network Connections" description="Steal Zion's latest information on Morpheus." plot="1"
          order="1302" org="3" contact="Flood" exp="308750" info="94500">
   <npc id="1" handle="Binary" type="HOSTILE" at="1" rsi="c9020058" weapon="2568" />
@@ -48,6 +51,10 @@
 Break into the Zion base, search their network for recent information on Morpheus, and then... steal it.</briefing>
     <enter><say>This place is wall to wall with Zion operatives; I don't think they'll be happy to see you here.</say></enter>
     <object id="1" kind="Computer" />
+    <wave count="3" after="2" delay="9">
+      <say>You've got company!</say>
+      <say>Search the computer!</say>
+    </wave>
     <objective goal="1" text="Get the Card from Binary" type="Loot" npc="1" item="6791">
       <done>
         <say>That Card should give you access to the Zion network on site.</say>
@@ -55,11 +62,7 @@ Break into the Zion base, search their network for recent information on Morpheu
       </done>
     </objective>
     <objective goal="2" text="Search the Zion network for information on Morpheus' murder" type="Use" object="1" after="1">
-      <done>
-        <say>I think you just pissed them off.</say>
-        <say>You've got company!</say>
-        <say>Search the computer!</say>
-      </done>
+      <done><say>I think you just pissed them off.</say></done>
     </objective>
     <objective goal="3" text="Take the Recording from the Computer" type="Search" object="1" item="6784" after="2">
       <done>

@@ -9,22 +9,23 @@
      header between them and are taken as one entry each, with a paragraph break. "rock and roll" and "my" were in
      italics. Ours: the description (the Summary tab only said "Datalink established."), the other objective texts,
      the sites (all Normal; the third area was in Mara), the looks (Malphas's, the Effectuator's and the projection's
-     are those of earlier missions) and the enemy count. No item was shown.
+     are those of earlier missions), the enemy count and one Commando for the commandos. No item was shown.
      Rewards: the log shows 395,640 experience and 129,500 information (a level-37 player's archive replay). These are
      the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
      shows chapter 7's.
-     Gaps: retail's goals in the first, second and last areas weren't shown. In the first and last areas the
-     Effectuator arrives late ("there's the tourist", "look who just showed up"): he arrives once Malphas has been
-     talked to, and his Talk opens then. The projection's line at 12:53:59 wasn't captured (perhaps the cut Team line
-     "...objective. If they are to survive outside of the System, they will have to become more...flexible."). The NPCs'
-     lines a few seconds after the first area's goals are said when they are talked to again, the Effectuator's "Then
-     it's time to...rock and roll!" as the area completes. The second area ("secure that terminal") is built as killing
-     the Machines' Tactical Security, then using the computer; hostile NPCs' lines may not show here (see Known gaps).
-     In the third area the commandos arrived through the terminal 27 s after the player did; here the Commando stands
-     there from the start. The player used the computer there while "Talk to the Commando" was open, but the tab showed
-     no other goal, so using it isn't one. The Commando's own lines weren't captured. Entries may be missing between
-     1:03:11 and 1:03:48. The Blood Noble is a bystander at the end spot; his four Team lines are said in turn as the
-     last area's goals are done. -->
+     Gaps: retail's goals in the first, second and last areas weren't shown. In the first and last areas the Effectuator
+     arrives late ("there's the tourist", "look who just showed up"): he arrives once Malphas has been talked to, and
+     his Talk opens then. The projection's line at 12:53:59 wasn't captured (perhaps the cut Team line "...objective. If
+     they are to survive outside of the System, they will have to become more...flexible."). The NPCs' lines a few
+     seconds after the first area's goals are said when they are talked to again, the Effectuator's "Then it's time
+     to...rock and roll!" as the area completes. The second area ("secure that terminal") is built as killing the
+     Machines' Tactical Security, then using the computer; hostile NPCs' lines may not show here (see Known gaps). In
+     the third area the commandos arrived through the terminal 27 s after the player did (1:01:12 to 1:01:39); here one
+     Commando appears beside the area's computer 27 s after the player reaches the floor, and "We have commandos" is
+     said when the player is near him. The player used the computer there while "Talk to the Commando" was open, but the
+     tab showed no other goal, so using it isn't one: the computer is only where the Commando comes in. The Commando's
+     own lines weren't captured. Entries may be missing between 1:03:11 and 1:03:48. The Blood Noble is a bystander at
+     the end spot; his four Team lines are said in turn as the last area's goals are done. -->
 <mission id="307101" title="Logistics" description="Help the Effectuator bring the General's commandos into the Matrix through the Merovingian's transport terminals." plot="1"
          order="7101" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
@@ -37,7 +38,7 @@
     <say after="2">Your controller will know how to contact me, should any unexpected situation arise.</say>
   </npc>
   <npc id="4" handle="Tactical Security" type="HOSTILE" at="2" rsi="38000024" weapon="2568" />
-  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" spawnAfter="enter" spawnDelay="27" spawnAt="object:1" />
   <npc id="6" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
     <say after="6">What's your name, soldier? You handled those Machines well.</say>
   </npc>
@@ -89,6 +90,7 @@ A two-way holographic broadcast is being arranged. You'll be part of the confere
 
 We're going to try this again. Try not to let anyone follow you, hmm?</briefing>
     <enter><say>Seems fair to me, as long as they tell us what Pace's size is... Oh yeah, I just went there...&#10;&#10;This spot looks clear so far. Terminal is up and running.</say></enter>
+    <object id="1" kind="Computer" />
     <objective goal="5" text="Talk to the Commando" type="Talk" npc="5">
       <done><say>Guess they're good to go. I like that--low maintenance.</say></done>
     </objective>
