@@ -495,7 +495,7 @@ public static partial class Scenarios
     /// </summary>
     private static async Task DuelBotGunAndPvp(ScenarioContext context)
     {
-        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice") { Level = 20, Organization = 1 }))[0];
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice") { Level = 20 }))[0];
 
         player.SendChat("?duelbot gun");
         ViewCreation bot = await player.WaitForViewNamedAsync("DuelBot");
@@ -511,6 +511,10 @@ public static partial class Scenarios
         await player.WaitForRpcAsync($"56 02 00 {HandleOf(bot)}");
 
         // No duel: flagged, and of another organisation than the player's
+        player.SendChat("?org 1");
+        await player.WaitForViewUpdateAsync(2, "02 80 02 01");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT alignment FROM characters WHERE charId={player.CharId}"),
+            "The dev organisation change reaches the database as well as the own view");
         player.SendChat("?duelbot pvp");
         await player.WaitUntilAsync(() => player.World.CreationSnapshot().Count(c => c.Name == "DuelBot") == 2, "the flagged bot", TimeSpan.FromSeconds(10));
         ViewCreation flagged = player.World.CreationSnapshot().Last(c => c.Name == "DuelBot");

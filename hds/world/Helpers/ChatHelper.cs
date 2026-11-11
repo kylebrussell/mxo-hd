@@ -86,19 +86,16 @@ namespace hds
                         Console.WriteLine(ex);
                     }
 
-                    if (orgId < 6)
+                    if (orgId >= 0 && orgId < 6)
                     {
                         Store.dbManager.WorldDbHandler.SetOrgId(Store.currentClient.playerData.getCharID(), orgId);
-                        List<Attribute> updateAttributes = new List<Attribute>();
-                        Store.currentClient.playerInstance.OrganizationID.setValue(orgId);
-                        updateAttributes.Add(Store.currentClient.playerInstance.OrganizationID);
-
-                        PacketContent myselfStateData = new PacketContent();
-                        myselfStateData.AddByteArray(
-                            Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
-                        Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                        // The field is one byte. A signed int selects setValue(float), whose low byte is 0 for 1..5.
+                        Store.currentClient.playerInstance.OrganizationID.setValue((byte)orgId);
+                        Store.currentClient.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf(
+                            (PlayerViewAttributes.SelfOrganizationId, PlayerViewAttributes.U8((byte)orgId))), false);
                         // Other players' clients decide by it whether this one can be fought (OrganizationID, other-view 4)
                         PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherOrganizationId, PlayerViewAttributes.U8((byte)orgId))));
+                        Store.currentClient.FlushQueue();
                     }
                 }
 

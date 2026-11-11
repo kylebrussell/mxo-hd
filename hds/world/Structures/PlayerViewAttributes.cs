@@ -15,7 +15,7 @@ namespace hds
     public static class PlayerViewAttributes
     {
         // Own view (Object12.setSelfViewAttributes)
-        public const int SelfMaxHealth = 14, SelfIsDuelDeath = 20, SelfIsDead = 21, SelfInnerStrength = 25, SelfHealth = 27,
+        public const int SelfOrganizationId = 8, SelfMaxHealth = 14, SelfIsDuelDeath = 20, SelfIsDead = 21, SelfInnerStrength = 25, SelfHealth = 27,
             SelfDuelId = 35, SelfDeathPenalty = 38, SelfConditionStateFlags = 42, SelfCombatantMode = 43;
 
         // Another player's view (Object12 AddAttribute's second index)

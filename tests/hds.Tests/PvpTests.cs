@@ -8,6 +8,12 @@ namespace hds.Tests;
 public class PvpTests
 {
     [Fact]
+    public void OwnOrganizationUsesItsOwnViewMaskAndAByte()
+    {
+        Assert.Equal("02 00 02 80 02 01", H(PlayerViewAttributes.BuildSelf(
+            (PlayerViewAttributes.SelfOrganizationId, PlayerViewAttributes.U8(1)))));
+    }
+    [Fact]
     public void AnotherPlayersShotUsesTheObject12StatePartFromRetail()
     {
         // died_in_pvp: the target sees the shooter on view 0f, shooting its own view 2/spawn d3.
