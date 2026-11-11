@@ -18,9 +18,9 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 41 | 23 | 113 |
+| Handled | 49 | 44 | 23 | 116 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 0 | 11 | 37 | 48 |
+| Ignored | 0 | 8 | 37 | 45 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 2 |
 | **Total** | 49 | 54 | 61 | 166 |
@@ -29,9 +29,9 @@ Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first
 
 The biggest gaps left, by impact:
 
-1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-2. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-3. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+1. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+2. **Compiling code** (`60`, `81 2e`, `81 31`): Codex's area (crafting).
+3. **Stance sites** (stance 1, benches): entered through `80 c8`; not done.
 
 ## Login and world entry
 
@@ -78,10 +78,10 @@ The biggest gaps left, by impact:
 |---|---|---|---|---|
 | `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 is a room line (`/room room text`) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
 | `29` | Tell (TargetName, Text, bEchoOnly, ChatHandle) | D, C 81 | handled | high |
-| `30` | Emote (EmoteID, TargetID) | D, C 24 | handled | medium |
-| `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | ignored | medium |
-| `33` | Animation stance start (Stance: `19` 249 times, `0a` 33). Guess: sitting, leaning and the like. Retail sent no RPC back | D, C 302 | ignored | medium |
-| `34` | Animation stance stop (Stance) | D, C 21 | ignored | medium |
+| `30` | Emote (EmoteID, TargetID): every emote; an interactive one (`/hug` and 16 more) asks the target | D, C 24 | handled: the player's own view, and now other players' views (new); a paired one sends `31` to the target (new) | medium |
+| `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | handled (new): `32` to the requester, then its accepted animation | medium |
+| `33` | Leave a stance (the current Stance): `/stand`, or moving out of one. Retail's `19` (249 times) was a stance the server imposed and never released | D, C 302 | handled (new): stance 0 to the own view and everyone else's | medium |
+| `34` | Enter a stance (Stance): `/sit` `0a`, `/dance` `11`..`15` | D, C 21 | handled (new): the stance to the own view and everyone else's, sitting with ConditionStateFlags 0x00200000 | medium |
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
 | `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | ignored | low |
 | `3b` | No fields; two senders, one in the slash command handler (0x62256760). Purpose not determined | D | ignored | low |
@@ -543,6 +543,123 @@ A bot has no character row, so its crew membership is kept in memory only. If it
 
 A bot can't captain a crew of its own, so faction ranks and removing a crew need a second player. The headless scenario `faction-ranks-and-removing-a-crew` plays that part.
 
+## Emotes and stances in detail
+
+Retail sent no RPC back for a stance or a plain emote. Everything is in the view updates: the player's own view (view 2), and every other player's view of them.
+
+### The animation block
+
+A view update's state part is `01 <flags>`, with one field per flag, in the order 0x20, 0x01, 0x02, 0x04, 0x08:
+
+| Flag | Field |
+|---|---|
+| 0x20 | The animation block, below |
+| 0x01 | A u16 |
+| 0x02 | The action byte |
+| 0x04 | The yaw |
+| 0x08 | The position, three f32 |
+
+The block is `<counter> <kind> <stance> <25 <action u16> | 00> 00 10`. It is followed by the partner u32 for kinds 01 and 02, and kind 02 then adds four f32: 0, 0, 140, pi. Those four floats are the same in every capture.
+
+| Kind | Meaning | Retail example |
+|---|---|---|
+| `40` | A plain emote or a stance | /clap `40 00 25 04 00 00 10`; sitting `40 0a 00 00 10` |
+| `01` | A paired emote's request (the 'Beckon' action) | `01 00 25 d5 00 00 10 17 00 96 00` |
+| `02` | The accepted paired animation | `02 00 25 d6 00 00 10 <partner> <16 bytes>` |
+
+No client.dll reader for the block was found, so these are retail templates.
+
+**Own view and other views.**
+- The own view uses `28` (block, position), followed by a u32 sim time in ms.
+- Other views use `2a` (block, a `00` action byte, position) and have no time.
+- A sit or stand also carries ConditionStateFlags bit 0x00200000. In the own view it goes in the sub-view `03` attribute part as attribute 42 (`80 80 80 80 80 80 01 <u32>`); in other views as attribute 30 (`80 80 80 80 04 <u32>`).
+
+Retail examples:
+
+| Capture | Bytes |
+|---|---|
+| WhiteHallwaysWarboyTeleportDoors | `04 00 03 2a 0b 40 0a 00 00 10 00 <pos> 80 80 80 80 04 00 00 20 00` |
+| entilsar, own view | `02 00 03 28 12 40 0a 00 00 10 <pos> <time> 80 80 80 80 80 80 01 00 00 28 01` |
+
+**The counter** is one per character and the same in every view. The client echoes it back as the first field of its own update. In retail `01 28 08 <pos>` followed the server's `01 28 08 40 13 ...`, and `22 01 98`, `22 02 98`, `22 03 74` count up.
+
+That fixes the field order in client updates, which the server had wrong (action first): it is the counter, then the action, then the yaw. The echo is no longer forwarded to other players, whose clients would read it as the start of an animation block.
+
+### Paired emotes
+
+The 17 interactive emotes are in the client's Python `emotes` module: `addInteractiveEmote`, in `research/client-scripts/emotes.py`.
+
+Each one gets three action ids from `createActionID` in turn: request, accepted, refused. /shakehands is 189/190/191, and the list runs up to /bangbang at 237/238/239. /manhug is 213/214, which matches retail's `d5`/`d6`.
+
+The ids are per viewer: `<u16 view as that client sees the player> <spawn id> 00`, and a client's own character is view 2.
+
+| Record | Layout | Notes |
+|---|---|---|
+| `30` (C, 9) | EmoteID u32, TargetID u32 | Every emote. Before sending, the client checks the player is standing and has a target |
+| `31` (S, 9) | EmoteID, RequesterID | Handler 0x62252c50. The client must already see the requester. It answers by itself with Result 7 if it ignores them, 4 if a request is already pending, and 2 under its auto-decline check. Otherwise it shows the yes/no dialog "Interactive Emote" |
+| `32` (both, 15) | Result u8, EmoteID, Partner, WaitTime f32, IsRequester u8 | The target's client sends Result 1 (accept) or 2 (refuse), with WaitTime 0 and IsRequester 0. The requester's client prints only when IsRequester is 1 |
+
+`32` Result values, printed for the requester:
+
+| Result | Message |
+|---|---|
+| 1 | "%s agrees to a hug." |
+| 0, 2 | The refusal text |
+| 3 | "You cannot reach %s..." |
+| 4 | "%s cannot perform an interactive emote with you." |
+| 5 | "...not a player" |
+| 6 | "You must wait..." |
+| 7 | "%s is ignoring you" |
+| 8 | "...with an opponent." |
+
+**Retail, both sides of a /manhug (two-person capture):**
+1. The requester sends `30 f5 0d 00 58 17 00 96 00`.
+2. Its own view gets the request animation. The target gets `31 f5 0d 00 58 0f 00 51 00` and sees the requester beckon.
+3. The target sends `32 01 ... 00`.
+4. Seven seconds after the request, the requester gets `32 01 f5 0d 00 58 17 00 96 00 00 00 00 00 01` and the accepted animation, in its own view and the target's.
+5. The target never gets a `32`, and its own view gets nothing.
+
+**What the server does.**
+
+The rules are retail's flow; the checks are ours:
+- A plain emote now plays in other players' views too, not only the player's own.
+- A paired request is refused at once with `32`, IsRequester 1, in these cases:
+  - Result 5 when the target is no player.
+  - Result 3 when the target is more than 1500 units away (the client's limit is 1200).
+  - Result 4 when the target isn't standing, or either player already has a request open.
+- On acceptance, only the requester's view animates, as retail.
+- A refusal or a client-side answer (4, 7) is passed to the requester.
+- With no answer in 20 s (the client's EmoteQueryDurationMS), the requester gets Result 0, which prints the refusal text. That timeout is ours: the client never sends one.
+- No refused animation is played; no capture has a refusal.
+
+### Stances
+
+`docs/CLIENT-ACTIONS.md` used to have these the wrong way round.
+
+**`34 <stance>` enters a stance.**
+- /sit sends `34 0a`.
+- /dance and /dance1–5 send `34 11`–`34 15`.
+
+**`33 <current stance>` leaves one.** The client sends it for /stand, for /sit while sitting, and once when the player moves out of a locked stance. It keeps resending `33` until it sees stance 0: in the shutdown capture (ProxyM2_m2_packets6) the server imposed stance `19` and never released it, and the client sent `33 19` 1,906 times.
+
+**Other values.**
+- Stance 1 is a stance-site object such as a bench, entered by using it (`80 c8`).
+- Free-moving stances are 0, 9, 0x0b, 0x0c and 0x1a (0x6266b7e0).
+
+**The server.**
+- `34` stores the stance and sends it to the own view and everyone else's. Sitting sets ConditionStateFlags 0x00200000 and sends it with the stance.
+- `33` sends stance 0 and clears the bit.
+- Not done: a player who comes into view later sees the sitter standing, because the view creation doesn't carry the stance; and the stance-site objects.
+
+### Dev helper
+
+SocialBot (`?socialbot`) accepts any paired emote a second after it is asked.
+
+| Command | What SocialBot does |
+|---|---|
+| `?socialbot hug [emote id hex]` | Asks you for a paired emote (a hug by default) |
+| `?socialbot sit`, `?socialbot dance`, `?socialbot stand` | Takes that stance, so you see another player's stance |
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -653,3 +770,14 @@ The crew window's Remove, Make Captain and Make First Mate are right-click menu 
 3. Make Captain on SocialBot. Expect "SocialBot is now the captain of your crew.". Then `?socialbot leader`: "You are now the captain ...".
 4. Remove on SocialBot. Expect "SocialBot has left the crew.".
 5. `?socialbot off` while SocialBot is captain. Expect the crew to be yours after a relog.
+
+### Emotes and stances
+
+1. `/sit`. Expect your character to sit. `/stand`: it stands. `/sit`, then walk forward (W): it stands up and walks, and the server log shows `[EMOTE] ... stance 00` once, not a stream of them.
+2. `/dance`. Expect a dance; walking stops it.
+3. `?socialbot`, then `?socialbot sit`. Expect SocialBot to sit where it stands. `?socialbot dance`: it dances. `?socialbot stand`: it stands.
+4. Click SocialBot to target it, then `/hug`. Expect your character to beckon, and a second later "SocialBot agrees to a hug." with the hug playing between you.
+5. `?socialbot hug`. Expect the "Interactive Emote" dialog asking whether you accept a hug from SocialBot. Click Yes: SocialBot plays the hug with you. Do it again and click No: nothing plays.
+6. `/clap` with SocialBot nearby. Your own clap should look as before.
+7. `/hug` with no target: the client's own message. `/hug` on an NPC: "...not a player".
+8. Note whether the hug lines the two characters up, or plays with them apart. The four floats after the partner (0, 0, 140, pi) are copied from retail, and their meaning (offset and facing) is a guess.

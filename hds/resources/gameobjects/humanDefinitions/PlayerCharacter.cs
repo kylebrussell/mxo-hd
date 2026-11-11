@@ -78,7 +78,11 @@ namespace hds
 
 				// Other players see this player through a view of their own; the update goes there unchanged.
 				// This used to copy to the end of the packet, which also forwarded the client's RPCs.
-				ForwardStateToOthers(state.ToForwardedUpdate(buffer));
+				byte[] forwarded = state.ToForwardedUpdate(buffer);
+				if (forwarded != null)
+				{
+					ForwardStateToOthers(forwarded);
+				}
 			}
 
 			if (entry.LastName != null)

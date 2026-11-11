@@ -735,6 +735,7 @@ namespace hds
             }
 
             Groups.RemoveSeeker(client.playerData.getCharID());
+            EmoteHandler.PlayerLeftWorld(client);
             try
             {
                 ChatRoomHandler.PlayerLeftWorld(client);

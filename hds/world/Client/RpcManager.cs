@@ -317,7 +317,16 @@ namespace hds{
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_EMOTE:
-		            new PlayerHandler().processEmote(ref rpcData);
+		            EmoteHandler.ProcessEmote(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_EMOTE_ANSWER:
+		            EmoteHandler.ProcessEmoteAnswer(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_STANCE_ENTER:
+		            EmoteHandler.ProcessStanceStart(Store.currentClient, rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_STANCE_LEAVE:
+		            EmoteHandler.ProcessStanceStop(Store.currentClient, rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_REGION_LOADED:

@@ -108,8 +108,9 @@ namespace hds
         // Currently unhandled but maybe useful
         // http://code.google.com/p/mxo-singularity/wiki/RpcPacketMap
         CLIENT_EMOTE = 0x30,
-        CLIENT_ANIMATION_START = 0x33,
-        CLIENT_ANIMATION_STOP = 0x34,
+        CLIENT_STANCE_LEAVE = 0x33,            // 33 <stance>: /stand, or moving out of a stance (EmoteHandler)
+        CLIENT_STANCE_ENTER = 0x34,            // 34 <stance>: /sit (0a), /dance (11..15)
+        CLIENT_EMOTE_ANSWER = 0x32,            // 32 <result> <emote> <partner> <wait f32> <is requester>
 
         // Login handshake (docs/CLIENT-ACTIONS.md): sent together once the client is in the world
         CLIENT_LOADING_COMPLETE = 0x0c,        // 0c 01: LoadingComplete; retail answered nothing

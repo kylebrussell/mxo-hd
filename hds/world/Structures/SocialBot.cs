@@ -211,6 +211,19 @@ namespace hds
                     return null;
                 case "leader":
                     return GiveBackLead(bot, owner) ? null : Name + " leads neither your team nor your crew.";
+                case "hug":
+                    // The bot asks the owner for a paired emote: the owner's client shows the yes/no dialog
+                    EmoteHandler.RequestEmote(bot, owner, args.Length > 1 && TryEmote(args[1], out UInt32 emote) ? emote : EmoteHandler.Hug);
+                    return null;
+                case "sit":
+                    EmoteHandler.SetStance(bot, AnimationPackets.StanceSitting);
+                    return null;
+                case "dance":
+                    EmoteHandler.SetStance(bot, 0x11);
+                    return null;
+                case "stand":
+                    EmoteHandler.SetStance(bot, AnimationPackets.StanceStanding);
+                    return null;
                 case "seek":
                     SocialGroups.Instance.AddSeeker(SocialHandler.SeekerOf(bot));
                     return Name + " is looking for a team.";
@@ -219,7 +232,28 @@ namespace hds
             }
         }
 
-        public const string Usage = "?socialbot [off|room <name> [password]|say <room> <text>|leave <room>|leader|seek]";
+        public const string Usage = "?socialbot [off|room <name> [password]|say <room> <text>|leave <room>|leader|seek|hug [emote id hex]|sit|dance|stand]";
+
+        private static bool TryEmote(string hex, out UInt32 emote) =>
+            UInt32.TryParse(hex.StartsWith("0x") ? hex.Substring(2) : hex, System.Globalization.NumberStyles.HexNumber, null, out emote) &&
+            EmoteHandler.Paired.ContainsKey(emote);
+
+        /// <summary>A paired emote asked of the bot: it accepts a second later.</summary>
+        public static void OnEmoteRequested(WorldClient target, UInt32 emoteId)
+        {
+            if (!IsBot(target))
+            {
+                return;
+            }
+
+            DelayedActions.After(AnswerDelaySeconds, () =>
+            {
+                if (IsBot(target))
+                {
+                    EmoteHandler.Answer(target, EmoteHandler.ResultAccepted, emoteId);
+                }
+            });
+        }
 
         /// <summary>The rpcData of 81 c2 (or of 81 c7 with no password): RoomName at +2, Password at +4.</summary>
         private static byte[] RoomRequest(string room, string password)

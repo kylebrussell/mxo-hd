@@ -7,6 +7,8 @@ namespace hds.Tests;
 
 // Chat rooms: the rules are ours (no retail capture has a room); the record layouts are client.dll's
 // (docs/CLIENT-ACTIONS.md, "Chat rooms in detail").
+// ChatAddress.WorldName is static: the tests that set it run one at a time.
+[Collection("ChatAddress")]
 public class ChatRoomTests
 {
     private static string H(byte[] bytes) => Convert.ToHexString(bytes);
