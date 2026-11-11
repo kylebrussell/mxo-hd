@@ -261,6 +261,7 @@ namespace hds
             CombatTacticType playerType = player.playerData.combatTacticType;
             bool stunned = mob.IsStunned(now);
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
+            if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
             if (!ControlActions.CanUseAbilities(player)) ability = null;
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
@@ -499,8 +500,8 @@ namespace hds
         public const UInt32 DefaultAbilityHitFx = 0x280001b7;
 
         /// <summary>
-        /// An attack ability used on the player's current close-combat target hits it. Returns false when the
-        /// target isn't the one being fought (the ability then only costs Inner Strength, as before).
+        /// Apply an ability to its NPC, using the current session when it matches and the shared death/reward
+        /// path otherwise. Area effects and independent DOTs do not replace the caster's current fight.
         /// </summary>
         public bool ApplyAbilityToNpc(Mob mob, UInt16 viewId, UInt16 damage, UInt32 fxId)
         {
@@ -540,6 +541,7 @@ namespace hds
 
         public void ProcessRequestCloseCombat(ref byte[] packet, bool npcStarted = false)
         {
+            if (!npcStarted && ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects)) return;
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Close combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
 #endif
@@ -993,6 +995,7 @@ namespace hds
         /// </summary>
         public void ProcessRangeCombatRequest(ref byte[] packet)
         {
+            if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(client).Effects)) return;
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Range combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
 #endif
@@ -1376,7 +1379,8 @@ namespace hds
         /// </summary>
         public void ProcessLeaveCloseCombat(ref byte[] rpcData)
         {
-            if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
+            if ((pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee) &&
+                !ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
             Output.WriteDebugLog("[COMBAT] Leave combat requested");
 
             // Against another player: gunfire just stops; an interlock is left the way retail let a player leave one

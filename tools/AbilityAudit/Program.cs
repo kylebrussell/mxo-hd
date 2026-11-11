@@ -18,8 +18,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         buff_stats = buff ? b.Modifiers.Select(m => new { stat = m.Stat, value = m.Value }).ToArray() : null,
         timed = timed ? t.Mods.Select(m => new { state = m.Proc == TempMods.Proc.State ? m.Target : 0,
             stat = m.Proc == TempMods.Proc.Stat ? m.Target : 0, proc = m.Proc.ToString(), seconds = m.Seconds,
-            chance = m.Chance, breaks = m.Break.ToString(), break_chance = m.BreakChance, ignore_first_damage = m.IgnoreFirstDamage }).ToArray() : null,
-        damage = hit ? new { min = damage.MinDamage, max = damage.MaxDamage } : null,
+            chance = m.Chance, breaks = m.Break.ToString(), break_chance = m.BreakChance, protect_first_health_change = m.ProtectFirstHealthChange }).ToArray() : null,
+        damage = hit ? new { min = damage!.MinDamage, max = damage.MaxDamage } : null,
         healing = e.Healing, direct_damage = e.DirectDamage, dot = e.DamageOverTime,
         grants = AbilityProgression.GrantsOf(e.Id)
     };

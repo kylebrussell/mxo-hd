@@ -45,6 +45,8 @@ public class NpcSpawnScopeTests
     public void PublicIndoorHostsAreRetainedButUnassignedInteriorSightingsAreNotAmbient()
     {
         Assert.Equal(NpcSpawnScope.Scope.PublicInterior, NpcSpawnScope.Classify(1, "Club Guard", true));
+        Assert.Equal(NpcSpawnScope.Scope.PublicInterior, NpcSpawnScope.Classify(2, "Override Function", true));
+        Assert.Equal(NpcSpawnScope.Scope.PublicInterior, NpcSpawnScope.Classify(2, "Override Function", true, true));
         Assert.Equal(NpcSpawnScope.Scope.MissionInterior, NpcSpawnScope.Classify(1, "Building Security", true));
         Assert.Equal(NpcSpawnScope.Scope.OpenWorld, NpcSpawnScope.Classify(1, "Building Security", false));
         Assert.False(NpcSpawnScope.LoadAmbient(NpcSpawnScope.Scope.MissionInterior));

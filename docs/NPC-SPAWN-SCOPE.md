@@ -5,14 +5,16 @@
 | Scope | Rows | Ambient loading |
 |---|---:|---|
 | OpenWorld | 8,976 | yes |
-| PublicInterior | 346 | yes |
+| PublicInterior | 352 | yes |
 | Unresolved | 592 | yes |
-| MissionInterior | 872 | no |
+| MissionInterior | 866 | no |
 | InstanceInterior | 855 | no |
 | Instance | 880 | yes, restricted by the existing district visibility |
 | Encounter | 620 | no |
 
 This is an explicit reconstruction policy, not a claim to have recovered the original mission owner of each sighting. City indoor/outdoor context comes from the shipped navmesh. Unassigned indoor sightings go to MissionInterior; named public club guards and hosts remain public. Missing navmesh context stays Unresolved and is retained. Non-city districts keep their populations separately so the split does not empty constructs.
+
+The public Override Function populations are retained, including six sightings whose city navmesh is indoors. Their Function Data collector loot is established public content; a generic interior rule must not remove it. The full Function Data, full-bag world loot and retained-corpse headless checks protect that exception.
 
 Corrupted and Special Agent are encounter families. The repeated starts at exactly 4 m in captures support treating their historical sightings as arrivals; that distance is not asserted for every row. Runtime mission and encounter spawns still come from mission definitions, with their own ownership and cleanup.
 

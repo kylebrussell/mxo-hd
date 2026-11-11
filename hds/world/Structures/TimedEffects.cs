@@ -41,7 +41,7 @@ namespace hds
             public TempMods.Proc Proc;
             public TempMods.BreakRule Break;
             public int BreakChance;
-            public bool IgnoreFirstDamage;
+            public bool ProtectFirstHealthChange;
             public double Interval = TempMods.DotIntervalSeconds;
             public UInt16 RecordId;
             /// <summary>States: the state's own record (the state ability as parent, 0 s), sent after the state's.</summary>
@@ -209,9 +209,10 @@ namespace hds
                     {
                         bool reduced = damageTaken > 0 && belowMaximum;
                         bool breaks = a.Break == TempMods.BreakRule.HealthChange || a.Break == TempMods.BreakRule.Damage && reduced;
-                        if (a.Break == TempMods.BreakRule.Chance && damageTaken > 0)
+                        if (a.Break == TempMods.BreakRule.Chance)
                         {
-                            if (a.IgnoreFirstDamage) a.IgnoreFirstDamage = false;
+                            // The script flips a negative proc value after any health callback, including healing.
+                            if (a.ProtectFirstHealthChange) a.ProtectFirstHealthChange = false;
                             else if (reduced && a.BreakChance > rng.Next(100)) breaks = true;
                         }
                         if (breaks) parents.Add(a.Parent);
@@ -379,7 +380,7 @@ namespace hds
                     value = m.MaxValue > m.MinValue ? random.Next(m.MinValue, m.MaxValue + 1) : m.MinValue;
                 }
                 mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc,
-                    Break = m.Break, BreakChance = m.BreakChance, IgnoreFirstDamage = m.IgnoreFirstDamage, Interval = m.Interval });
+                    Break = m.Break, BreakChance = m.BreakChance, ProtectFirstHealthChange = m.ProtectFirstHealthChange, Interval = m.Interval });
             }
             return mods;
         }
@@ -832,8 +833,8 @@ namespace hds
             {
                 return false;
             }
-            // The tick lands through the caster's fight with this NPC (death, experience and loot go the usual way);
-            // when that fight is over the damage over time ends, as AbilityTargets' ticks did.
+            // Each target keeps its DOT even when the caster's current fight changes. Death claiming and rewards
+            // use the same path as a direct ability, so a secondary target cannot award its kill twice.
             if (!CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob, mod.TargetView, (UInt16)Math.Min(damage, UInt16.MaxValue),
                     TempMods.VirusCrashFx))
             {

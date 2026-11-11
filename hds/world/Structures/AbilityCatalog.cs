@@ -90,7 +90,7 @@ namespace hds
                     int value = (int)chance.Number("MinValue");
                     mod.Break = TempMods.BreakRule.Chance;
                     mod.BreakChance = Math.Abs(value);
-                    mod.IgnoreFirstDamage = rootChance || value < 0;
+                    mod.ProtectFirstHealthChange = rootChance || value < 0;
                 }
                 mods.Add(mod);
             }

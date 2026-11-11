@@ -11,8 +11,8 @@ namespace hds
         public static bool CanUseAbilities(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.PowerlessAbility);
         public static bool CanUseWeapons(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.DisarmedAbility);
         public static bool CanWithdraw(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.EnrageAbility);
-        public static bool CanUseAbilities(WorldClient client) => !client.playerData.isDead && CanUseAbilities(TimedEffects.ForPlayer(client).Effects);
-        public static bool CanMove(WorldClient client) => !client.playerData.isDead && CanMove(TimedEffects.ForPlayer(client).Effects);
+        public static bool CanUseAbilities(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanUseAbilities(TimedEffects.ForPlayer(client).Effects);
+        public static bool CanMove(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanMove(TimedEffects.ForPlayer(client).Effects);
 
         public static void CorrectPosition(WorldClient client)
         {

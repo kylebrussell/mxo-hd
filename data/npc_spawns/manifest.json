@@ -5,9 +5,9 @@
   "policy": "NpcSpawnScope.Classify; unknown city nav is retained; historical mission/encounter samples require explicit runtime ownership.",
   "counts": {
     "OpenWorld": 8976,
-    "PublicInterior": 346,
+    "PublicInterior": 352,
     "Unresolved": 592,
-    "MissionInterior": 872,
+    "MissionInterior": 866,
     "InstanceInterior": 855,
     "Instance": 880,
     "Encounter": 620
@@ -25503,7 +25503,7 @@
     },
     {
       "line": 2395,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 51,
@@ -25514,7 +25514,7 @@
     },
     {
       "line": 2396,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 51,
@@ -25965,7 +25965,7 @@
     },
     {
       "line": 2437,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 51,
@@ -106245,7 +106245,7 @@
     },
     {
       "line": 10411,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 33,
@@ -106542,7 +106542,7 @@
     },
     {
       "line": 10438,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 51,
@@ -106553,7 +106553,7 @@
     },
     {
       "line": 10439,
-      "scope": "MissionInterior",
+      "scope": "PublicInterior",
       "nav": {
         "sector": 649,
         "region": 33,

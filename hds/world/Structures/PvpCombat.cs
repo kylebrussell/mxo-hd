@@ -221,16 +221,18 @@ namespace hds
             {
                 return false;
             }
-            UInt16 health;
+            UInt16 health, before;
             lock (victim.playerData)
             {
-                UInt16 before = HealthOf(victim);
+                before = HealthOf(victim);
                 health = (UInt16)Math.Max(0, before - damage);
                 victim.playerInstance.Health.setValue(health);
             }
             victim.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(health), false);
             victim.FlushQueue();
             PvpFlag.ToWatchers(victim, OtherHealthUpdate(victim, health, fx));
+            TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), before - health,
+                health < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
             return health == 0;
         }
 
@@ -357,6 +359,13 @@ namespace hds
                 return false;
             }
             UInt32 handle = HandleOf(caster, target);
+            double range = AbilityCatalog.Find(ability.getAbilityID())?.Number("Ability/SelectionRange") ?? 0;
+            if (range > 0 && MetresBetween(caster, target) > range)
+            {
+                caster.messageQueue.addRpcMessage(BuildCombatRefused(RefusedOutOfRange, false, handle));
+                caster.FlushQueue();
+                return true;
+            }
             PvpRules.Verdict verdict = Check(caster, target);
             if (verdict != PvpRules.Verdict.Allowed)
             {
@@ -369,6 +378,7 @@ namespace hds
 
         public static void LandAbilityOn(WorldClient caster, AbilityItem ability, WorldClient target)
         {
+            if (!ControlActions.CanUseAbilities(caster)) return;
             UInt16 abilityId = ability.getAbilityID();
             UInt16 damage;
             UInt32 fx;
@@ -381,7 +391,7 @@ namespace hds
                 }
                 else
                 {
-                    damage = TempMods.Retail.TryGetValue(abilityId, out TempMods.Effect timed) && timed.Virus
+                    damage = TempMods.TryGet(abilityId, out TempMods.Effect timed) && timed.Virus
                         ? (UInt16)0
                         : AbilityHandler.AbilityDamage(ability, random);
                     fx = ability.getActivationFX();

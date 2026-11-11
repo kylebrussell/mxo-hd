@@ -131,7 +131,7 @@ namespace hds
             public float Chance = 1;
             public BreakRule Break;
             public int BreakChance;
-            public bool IgnoreFirstDamage;
+            public bool ProtectFirstHealthChange;
             public double Interval = DotIntervalSeconds;
 
             public override string ToString()
@@ -337,7 +337,7 @@ namespace hds
                 mods.Add(new Mod { Kind = m.Kind, Target = m.Target, MinValue = m.MinValue, MaxValue = m.MaxValue,
                     Seconds = m.Seconds, Proc = m.Proc, Chance = rule?.Chance ?? m.Chance,
                     Break = rule?.Break ?? (m.Target == MezAbility ? BreakRule.Damage : m.Break),
-                    BreakChance = rule?.BreakChance ?? m.BreakChance, IgnoreFirstDamage = rule?.IgnoreFirstDamage ?? m.IgnoreFirstDamage,
+                    BreakChance = rule?.BreakChance ?? m.BreakChance, ProtectFirstHealthChange = rule?.ProtectFirstHealthChange ?? m.ProtectFirstHealthChange,
                     Interval = m.Interval });
             }
             effect = new Effect { Ability = id, Mods = mods.ToArray(), Virus = captured.Virus, ImmunitySeconds = captured.ImmunitySeconds };

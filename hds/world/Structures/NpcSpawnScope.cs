@@ -13,7 +13,10 @@ namespace hds
         private static readonly HashSet<string> PublicInteriorNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Club Guard", "Club Tough", "Club Sphinx", "Succubus", "Blood Noble", "Lupine Lieutenant",
-            "Merovingian", "The Merovingian", "Ammit", "Scarlett", "Watchman", "Alex"
+            "Merovingian", "The Merovingian", "Ammit", "Scarlett", "Watchman", "Alex",
+            // The public Function Data population near Azuna and the second Downtown site. The indoor
+            // nav classification alone does not make this collector-loot content a mission instance.
+            "Override Function"
         };
 
         public static Scope Classify(ushort district, string name, bool? indoors, bool instanceModel = false)

@@ -106,7 +106,7 @@ namespace hds
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
 
-            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(Store.currentClient).Effects))
+            if (data.isDead || data.duelDeath || ControlActions.Incapacitated(TimedEffects.ForPlayer(Store.currentClient).Effects))
             {
                 Deny(AbilityID, "You cannot act while stunned or pacified.");
                 return;
@@ -119,17 +119,13 @@ namespace hds
                 return;
             }
 
-            // The Code Writer's Compile (a guess: no capture shows it).
-            if (AbilityID == CraftingHandler.CompileActivateAbility && new CraftingHandler().HandleCompileRequest(packet))
-            {
-                return;
-            }
-
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            // The Code Writer's Compile (a guess: no capture shows it).
+            if (AbilityID == CraftingHandler.CompileActivateAbility && new CraftingHandler().HandleCompileRequest(packet)) return;
             bool support = AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
@@ -218,7 +214,7 @@ namespace hds
             Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);
         }
 
-        /// <summary>Restore Health / Repair RSI and Emergency Repairs heal the caster.</summary>
+        /// <summary>Legacy healing magnitude retained until the native value function is reconstructed.</summary>
         public static bool IsSelfHeal(AbilityItem ability)
         {
             string name = ability.getAbilityName() ?? "";
@@ -547,6 +543,7 @@ namespace hds
 
         public void processHyperJumpCancel(ref byte[] rpcData)
         {
+            if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
             double xDest = 0;
             double yDest = 0;
             double zDest = 0;

@@ -275,24 +275,42 @@ namespace hds
                 return client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
         }
 
-        private static void ApplyVitals(WorldClient client, Buff buff, int direction, int previousHealth = 0, int previousIS = 0)
+        public static UInt16 UnbuffedMaximum(WorldClient client, UInt16 stat)
+        {
+            lock (client.playerData.activeBuffs)
+            {
+                int value = NumericalUtils.ByteArrayToUint16((stat == 106 ? client.playerInstance.MaxHealth : client.playerInstance.InnerStrengthMax).getValue(), 1);
+                return (UInt16)Math.Clamp(value - (stat == 106 ? client.playerData.buffHealthMaximumDelta : client.playerData.buffISMaximumDelta), 1, UInt16.MaxValue);
+            }
+        }
+
+        public static void RefreshVitals(WorldClient client)
         {
             var changed = new List<Attribute>();
+            UInt16 previousHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
+            lock (client.playerData.activeBuffs)
             foreach (var (stat, maximum, current) in new[]
             {
                 ((UInt16)106, client.playerInstance.MaxHealth, client.playerInstance.Health),
                 ((UInt16)109, client.playerInstance.InnerStrengthMax, client.playerInstance.InnerStrengthAvailable)
             })
             {
-                int delta = direction * VitalValue(buff, stat) - (stat == 106 ? previousHealth : previousIS);
-                if (delta == 0) continue;
-                UInt16 max = (UInt16)Math.Clamp(NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) + delta, 1, UInt16.MaxValue);
-                maximum.setValue(max);
-                changed.Add(maximum);
+                int baseline = UnbuffedMaximum(client, stat);
+                UInt16 max = (UInt16)Math.Clamp(baseline + VitalTotal(client, stat), 1, UInt16.MaxValue);
+                if (stat == 106) client.playerData.buffHealthMaximumDelta = max - baseline;
+                else client.playerData.buffISMaximumDelta = max - baseline;
+                if (NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) != max) { maximum.setValue(max); changed.Add(maximum); }
                 if (NumericalUtils.ByteArrayToUint16(current.getValue(), 1) > max) { current.setValue(max); changed.Add(current); }
             }
             if (changed.Count > 0)
+            {
+                UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
+                if (health != previousHealth) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), previousHealth - health,
+                    health < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
                 client.messageQueue.addObjectMessage(SocialPackets.SelfViewUpdate(client.playerInstance.GetSelfUpdateAttributes(changed, false)), false);
+                byte[] other = client.playerInstance.GetUpdateAttributes(changed);
+                if (other[0] > 0) PvpFlag.ToWatchers(client, SocialPackets.OtherViewUpdate(other));
+            }
         }
 
         public static bool IsActive(WorldClient client, UInt16 abilityId)
@@ -350,10 +368,8 @@ namespace hds
                     }
                 }
             }
-            int previousHealth = 0, previousIS = 0;
             foreach (UInt16 other in replaced)
             {
-                if (TryGet(other, out Buff previous)) { previousHealth += VitalValue(previous, 106); previousIS += VitalValue(previous, 109); }
                 // A movement buff put straight back on keeps its speed: don't send the speed reset in between.
                 Remove(client, other, false, other == abilityId, keepVitals: true);
             }
@@ -382,7 +398,7 @@ namespace hds
             {
                 client.messageQueue.addRpcMessage(record);
             }
-            ApplyVitals(client, buff, 1, previousHealth, previousIS);
+            RefreshVitals(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (buff.Seconds > 0)
@@ -419,7 +435,7 @@ namespace hds
                 data.activeBuffs.Remove(abilityId);
             }
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
-            if (!keepVitals) ApplyVitals(client, buff, -1);
+            if (!keepVitals) RefreshVitals(client);
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {

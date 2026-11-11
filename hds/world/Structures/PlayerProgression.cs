@@ -89,8 +89,13 @@ namespace hds
             client.playerInstance.EffectID.setValue(LevelUpEffect);
             client.playerInstance.EffectCounter.setValue(effectCounter);
 
-            UInt16 savedMaxHealth = (UInt16)Math.Max(1, maxHealth - AbilityBuffs.VitalTotal(client, 106));
-            UInt16 savedMaxIS = (UInt16)Math.Max(1, maxInnerStrength - AbilityBuffs.VitalTotal(client, 109));
+            AbilityBuffs.RefreshVitals(client);
+            maxHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+            maxInnerStrength = NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthMax.getValue(), 1);
+            health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
+            innerStrength = NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthAvailable.getValue(), 1);
+            UInt16 savedMaxHealth = AbilityBuffs.UnbuffedMaximum(client, 106);
+            UInt16 savedMaxIS = AbilityBuffs.UnbuffedMaximum(client, 109);
             Store.dbManager.WorldDbHandler.SaveLevel(client.playerData.getCharID(), newLevel, Math.Min(health, savedMaxHealth), savedMaxHealth,
                 Math.Min(innerStrength, savedMaxIS), savedMaxIS);
 

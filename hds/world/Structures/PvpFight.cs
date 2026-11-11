@@ -357,6 +357,7 @@ namespace hds
         /// <summary>An instant ability on the opponent becomes the player's next move. False when the target isn't the opponent.</summary>
         public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId)
         {
+            if (!ControlActions.CanUseAbilities(client)) return false;
             lock (sync)
             {
                 Side side = SideOf(client);
@@ -374,6 +375,7 @@ namespace hds
         /// <summary>RPC 44: the player wants out. It is tried at each round until their roll beats the opponent's.</summary>
         public void RequestWithdraw(WorldClient client)
         {
+            if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
             lock (sync)
             {
                 Side side = SideOf(client);
@@ -413,6 +415,8 @@ namespace hds
                 }
 
                 // The roles of CombatRules.Resolve: its "player" may withdraw, so a withdrawing defender takes that role
+                foreach (Side side in new[] { Attacker, Defender })
+                    if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(side.Client).Effects)) side.Withdrawing = false;
                 bool bothWithdraw = Attacker.Withdrawing && Defender.Withdrawing && !opening;
                 Side p = Defender.Withdrawing && !Attacker.Withdrawing && !opening ? Defender : Attacker;
                 Side n = p.Other;
@@ -421,6 +425,8 @@ namespace hds
                 CombatTactic pTactic = p.Client.playerData.combatTactic, nTactic = n.Client.playerData.combatTactic;
                 CombatTacticType pType = p.Client.playerData.combatTacticType, nType = n.Client.playerData.combatTacticType;
                 AbilityItem pAbility = opening ? null : p.QueuedAbility, nAbility = opening ? null : n.QueuedAbility;
+                if (!ControlActions.CanUseAbilities(p.Client)) pAbility = null;
+                if (!ControlActions.CanUseAbilities(n.Client)) nAbility = null;
                 if (!opening)
                 {
                     p.QueuedAbility = null;
@@ -432,13 +438,19 @@ namespace hds
                 Int16 absorbedByN, absorbedByP;
                 lock (rng)
                 {
-                    pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType);
-                    nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType);
+                    pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
+                        AbilityStats.Attack(p.Client, false), AbilityStats.Defense(n.Client, false)) &&
+                        !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
+                    nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
+                        AbilityStats.Attack(n.Client, false), AbilityStats.Defense(p.Client, false)) &&
+                        !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects);
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
-                    pDamage = CombatCalculator.CloseCombatDamage(rng, pLevel, nLevel, pTactic, out absorbedByN, pType);
+                    pDamage = CombatCalculator.CloseCombatDamage(rng, pLevel, nLevel, pTactic, out absorbedByN, pType,
+                        AbilityStats.Player(p.Client, 1142), AbilityStats.Toughness(n.Client, false));
                     pDamage = (UInt16)Math.Round(pDamage * PvpCombat.IncomingDamageMultiplier(n.Client));
-                    nDamage = CombatCalculator.CloseCombatDamage(rng, nLevel, pLevel, nTactic, out absorbedByP, nType);
+                    nDamage = CombatCalculator.CloseCombatDamage(rng, nLevel, pLevel, nTactic, out absorbedByP, nType,
+                        AbilityStats.Player(n.Client, 1142), AbilityStats.Toughness(p.Client, false));
                     nDamage = (UInt16)Math.Round(nDamage * PvpCombat.IncomingDamageMultiplier(p.Client));
                     pFirst = CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == Attacker, () => rng.Next(2) == 0);
                 }

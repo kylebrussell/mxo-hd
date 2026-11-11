@@ -74,7 +74,8 @@ namespace hds
         public static bool Land(WorldClient client, AbilityItem ability, UInt16 targetViewId)
         {
             Mob primary = FindMob(client, targetViewId, out _);
-            if (primary == null || primary.getIsDead() || primary.isFriendly) return false;
+            if (primary == null) return PvpCombat.LandAbility(client, ability, targetViewId);
+            if (primary.getIsDead() || primary.isFriendly) return false;
             var definition = AbilityCatalog.Find(ability.getAbilityID());
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
