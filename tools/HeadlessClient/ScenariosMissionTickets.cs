@@ -126,8 +126,8 @@ public static partial class Scenarios
         HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
         player.SendRpc("65 01 00 60 00");
         await player.WaitForRpcAsync("65 01 00 60 00");
-        await EnterMissionArea(player);
-        await PlayHothouse(player);
+        await EnterMissionArea(context, player);
+        await PlayHothouse(context, player);
         await FillTicketCompletionBag(context, player);
         await context.Database.ExecuteAsync($"UPDATE inventory SET count=2 WHERE charId={player.CharId} AND slot=96");
         await LeaveMissionArea(player);

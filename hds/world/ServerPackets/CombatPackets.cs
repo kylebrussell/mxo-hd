@@ -19,19 +19,23 @@ namespace hds
         {
             // Original hex: "020003010C00808400808080800100001000"
             // Structure: [ViewID:2][UpdateType:1][AttributeMask][CombatantMode]
-            PacketContent pak = new PacketContent();
-            pak.AddUint16(2, 1);              // View ID 2 (player's self view)
-            pak.AddByte(0x03);                // Update type (attribute update)
             // 01 0c 00 | NoiseLevel 0 | ConditionStateFlags: in combat (0x00100000), with the player's PvP flag kept
             client.playerData.conditionStateFlags |= PvpFlag.InCombatBit;
             UInt32 flags = PvpFlag.FlagsOf(client);
             client.playerInstance.ConditionStateFlags.setValue(flags);
-            pak.AddHexBytes("010C00808400808080800100");
-            pak.AddUint32(flags, 1);
-
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            client.messageQueue.addObjectMessage(BuildEnterCombatMode(flags), false);
             // Everyone who sees the player: retail's views of other players carried the in-combat bit too
             PvpFlag.ToWatchers(client, PvpFlag.BuildOtherFlags(flags));
+        }
+
+        /// <summary>Retail own-view combat state plus NoiseLevel and ConditionStateFlags. The final group mask
+        /// 01 is followed immediately by the u32 flags; an extra zero shifts the following view ID by a byte.</summary>
+        public static byte[] BuildEnterCombatMode(UInt32 flags)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("020003010C008084008080808001");
+            pak.AddUint32(flags, 1);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -72,19 +76,14 @@ namespace hds
         }
 
         /// <summary>
-        /// The master-view record that links the two fighters to the combat view: <c>01 00 02 a7 00 &lt;combat view&gt; 01
-        /// &lt;centre f64 x 3&gt; 01 00 00 00 03 00 00 00 &lt;attacker&gt; &lt;defender&gt; 01 01 02</c>, the fighters as the receiving
-        /// client knows them. The attacker is always first: a player attacked by another player got
-        /// <c>... 05 00 f8 00 02 00 d3 00 01 01 02</c>, the attacker's view and then their own (retail, died_in_pvp).
+        /// The sized master-view record that links fighter slots to the combat view. Its u16 offset includes
+        /// its own two bytes: 167 (a7 00) with one 121-byte entry, 46 without an entry. The attacker is always
+        /// first, including on the attacked player's client (died_in_pvp 19:41:11).
         /// </summary>
-        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender)
+        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender,
+            CombatRoundEntry firstEntry = null)
         {
             PacketContent pak = new PacketContent();
-
-            // Header: Master view update with combat init message type
-            pak.AddUint16(1, 1);              // View ID 1 (master view)
-            pak.AddByte(0x02);                // Update type
-            pak.AddUint16(0x00A7, 1);         // Message type (167 = combat init)
 
             // Combat handler reference
             pak.AddUint16(combatViewId, 1);   // Combat handler view ID
@@ -93,13 +92,20 @@ namespace hds
             pak.AddByteArray(centre);
 
             // Combat relationship data
-            pak.AddUint32(1, 1);              // Attacker slot/round (1)
-            pak.AddUint32(3, 1);              // Combat type (3 = melee?)
+            pak.AddUint32(1, 1);              // Update counter
+            pak.AddUint32(3, 1);              // Changed fighter slots 1 and 2
 
             pak.AddUint32(attacker, 1);
             pak.AddUint32(defender, 1);
-            pak.AddHexBytes("010102");                             // State flags
-            return pak.ReturnFinalPacket();
+            pak.AddByte(firstEntry == null ? (byte)0 : (byte)1);
+            if (firstEntry != null) pak.AddByteArray(firstEntry.Serialize());
+            byte[] body = pak.ReturnFinalPacket();
+            PacketContent wrapper = new PacketContent();
+            wrapper.AddUint16(1, 1); // master view
+            wrapper.AddByte(2); // sized view message
+            wrapper.AddUint16(checked((ushort)(body.Length + 2)), 1); // offset includes this length field
+            wrapper.AddByteArray(body);
+            return wrapper.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -235,19 +241,30 @@ namespace hds
         }
 
         /// <summary>
-        /// Combat view (ILCombatHandler) part 01 closing the fight. Retail ticks were
-        /// <c>01 &lt;centre f64×3&gt; &lt;counter u32&gt; 00000000 00</c> (no round entries); the last one set flags bit 31,
-        /// added a u32 result of 2 and carried the finishing round entry. We send it without the entry.
+        /// Combat view part 01 ending this two-fighter interlock. Bit 31 introduces a fighter-removal mask,
+        /// not a result code (client.dll 6263ac39..6263acd1). Retail's 2 detaches slot 2; ending the whole
+        /// handler here detaches both slots (3), including a withdrawing or defeated slot-1 player.
         /// </summary>
-        public static byte[] BuildCombatViewFinalRecord(byte[] centre, UInt32 counter)
+        public static byte[] BuildCombatViewFinalRecord(byte[] centre, UInt32 counter, UInt32 removedFighterSlots = 3)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x01);
             pak.AddByteArray(centre);
             pak.AddUint32(counter, 1);
             pak.AddUint32(0x80000000, 1);
-            pak.AddUint32(2, 1);
+            pak.AddUint32(removedFighterSlots, 1);
             pak.AddByte(0x00); // round entries
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>ILCombatHandler subview 1: centre, update counter, fighter-change mask, entry count and packed entries.</summary>
+        public static byte[] BuildCombatViewRound(byte[] centre, uint counter, CombatRoundEntry entry)
+        {
+            if (centre == null || centre.Length != 24) throw new ArgumentException("Combat centre must be three doubles");
+            PacketContent pak = new PacketContent();
+            pak.AddByte(1); pak.AddByteArray(centre); pak.AddUint32(counter, 1);
+            pak.AddUint32(0, 1); // no change to the init's fighter slots
+            pak.AddByte(1); pak.AddByteArray(entry.Serialize());
             return pak.ReturnFinalPacket();
         }
 

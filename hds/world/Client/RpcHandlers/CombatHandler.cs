@@ -331,6 +331,8 @@ namespace hds
                 (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime(),
                 withdrawing && !opening ? playerAttack - npcAttack : 0));
             session.RoundRecord++;
+            session.Presentation?.Round(outcome.PlayerWins, outcome.Flags, playerTactic, npcTactic,
+                playerAttack, npcAttack, opening);
 
             if (outcome.Withdrew)
             {
@@ -661,8 +663,8 @@ namespace hds
             SendCombatEffectOn(currentSession);
             targetMob.SetInCombat(true);
 
-            // Send the combat state data (still using hardcoded blob until we understand it better)
-            SendCombatStateBlob(client);
+            // Share the decoded combat view with fighters and observers.
+            currentSession.Presentation = new CombatPresentation(client, null, targetMob, ilCombatHandler, currentEntityId);
 
             client.FlushQueue();
 
@@ -725,32 +727,6 @@ namespace hds
 
             Output.WriteDebugLog($"[COMBAT] No mob found with entityId={entityId}");
             return null;
-        }
-
-        /// <summary>
-        /// Sends the complex combat state blob (still hardcoded until understood).
-        /// </summary>
-        internal static void SendCombatStateBlob(WorldClient client)
-        {
-            client.messageQueue.addObjectMessage(CombatStateBlob(), false);
-        }
-
-        /// <summary>
-        /// The rest of the combat init record (<see cref="ServerPackets.BuildCombatInitialize"/>): it goes out as the
-        /// next object message and continues that record, so nothing may come between the two.
-        /// </summary>
-        internal static byte[] CombatStateBlob()
-        {
-            PacketContent pak = new PacketContent();
-
-            // COMBAT DATA BLOB - Captured from original game, structure partially known:
-            // See detailed comments in docs/COMBAT-SYSTEM-ROADMAP.md
-            //
-            // TODO: Replace with dynamically built packet using actual combat state
-            pak.AddByteArray(StringUtils.hexStringToBytes(
-                "0703070300bafc42000020c1801baf4200803e40000020c1e0b319430000010013010000f40134059a02233c5200008b0b0024145200008b0b0024262000008b0b00240000000000000000000000000000000021000000700000000010001000000000000000000000000000010000022b600000000000"));
-
-            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -890,6 +866,7 @@ namespace hds
         /// </summary>
         private void HandleCombatEnd(CombatSession session, CombatSession.CombatEndReason reason)
         {
+            session.Presentation?.End();
             Output.WriteDebugLog($"[COMBAT] Combat ended: {reason}");
 
             isCombatRunning = false;

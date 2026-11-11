@@ -7,7 +7,7 @@ public static partial class Scenarios
     private static async Task ContainerAndCorpseLoot(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "machines_01_the_end_of_the_beginning.xml");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         const string placement = @"\[MISSION\] Object 1 \(Safe\) is a (\d+)";
         await player.WaitUntilAsync(() => Regex.IsMatch(context.Server.DebugLog(), placement),
             "Safe placement", TimeSpan.FromSeconds(15));

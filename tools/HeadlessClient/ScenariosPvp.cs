@@ -73,14 +73,14 @@ public static partial class Scenarios
         await alice.WaitForRpcAsync($"46 {bobForAlice} 01");
         await alice.WaitForRpcAsync("47 00 03 ?? 01 01 ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 1a 00 04 00 00 00");
         RpcRecord aliceOpening = await alice.WaitForRpcAsync("45 00 00 01 00");
-        await alice.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {SelfHandle(alice)} {bobForAlice} 01 01 02");
+        await alice.WaitForViewUpdateAsync(1, $"02 2e 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {SelfHandle(alice)} {bobForAlice} 00");
 
         // The attacked player's side: their own first move with the has-ability byte 0, then 40 and 46 naming the attacker
         await bob.WaitForRpcAsync("47 00 00 ?? 01 01 ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 1a 00 04 00 00 00");
         await bob.WaitForRpcAsync($"40 {aliceForBob} 00 6b");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
         RpcRecord bobOpening = await bob.WaitForRpcAsync("45 00 00 01 00");
-        await bob.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {aliceForBob} {SelfHandle(bob)} 01 01 02");
+        await bob.WaitForViewUpdateAsync(1, $"02 2e 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {aliceForBob} {SelfHandle(bob)} 00");
 
         // One round, seen from both ends
         Check.Equal(89, aliceOpening.Bytes.Length, "RPC 45 length");
@@ -239,8 +239,8 @@ public static partial class Scenarios
         alice.SendRpc($"40 {bobForAlice} 01 6b");
         await alice.WaitForRpcAsync($"46 {bobForAlice} 01");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
-        await alice.WaitForViewUpdateAsync(1, "02 a7 00");
-        await bob.WaitForViewUpdateAsync(1, "02 a7 00");
+        await alice.WaitForViewUpdateAsync(1, "02 2e 00");
+        await bob.WaitForViewUpdateAsync(1, "02 2e 00");
 
         // The loser lies down: IsDuelDeath, IsDead, Health 0 and DuelID 0 on their own view, and flags without the
         // in-combat bit (retail: the PvP flag alone); no death
@@ -321,18 +321,20 @@ public static partial class Scenarios
         return player.World.ViewSnapshot().Count(s => a.Occurs(s) && b.Occurs(s));
     }
 
-    /// <summary>The combat view of the player's latest interlock, from its combat init (<c>01 00 02 a7 00 &lt;view&gt; 01 ...</c>).</summary>
+    /// <summary>The combat view of the player's latest interlock, from its combat init (<c>01 00 02 2e 00 &lt;view&gt; 01 ...</c>).</summary>
     private static ushort CombatViewOf(HeadlessPlayer player)
     {
-        byte[] needle = WireFormat.FromHex("010002a700");
+        byte[] needle = WireFormat.FromHex("010002");
         ushort view = 0;
         foreach (byte[] section in player.World.ViewSnapshot())
         {
             for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
             {
-                if (at + needle.Length + 2 <= section.Length)
+                if (at + 49 <= section.Length && section[at + 7] == 1 &&
+                    BitConverter.ToUInt32(section, at + 36) == 3 &&
+                    at + 3 + BitConverter.ToUInt16(section, at + 3) <= section.Length)
                 {
-                    view = BitConverter.ToUInt16(section, at + needle.Length);
+                    view = BitConverter.ToUInt16(section, at + 5);
                 }
             }
         }
@@ -389,7 +391,7 @@ public static partial class Scenarios
         // /duel stop in a duel is a surrender: nobody falls
         alice.SendRpc($"40 {bobForAlice} 01 6b");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
-        await bob.WaitForViewUpdateAsync(1, "02 a7 00");
+        await bob.WaitForViewUpdateAsync(1, "02 2e 00");
         ushort bobCombatView = CombatViewOf(bob);
         bob.SendRpc("50 00 00 00 00");
         // The duel's end first (DuelID 0, 56), the interlock a second later in packets of its own
@@ -486,7 +488,7 @@ public static partial class Scenarios
         player.SendRpc($"50 {HandleOf(winner)}");
         await player.WaitForRpcAsync($"55 {HandleOf(winner)}", TimeSpan.FromSeconds(10));
         await player.WaitForRpcAsync($"46 {HandleOf(winner)} 01", TimeSpan.FromSeconds(15));
-        await player.WaitUntilAsync(() => SectionOf(player, 1, "02 a7 00", from) >= 0, "the combat init", TimeSpan.FromSeconds(5));
+        await player.WaitUntilAsync(() => SectionOf(player, 1, "02 2e 00", from) >= 0, "the combat init", TimeSpan.FromSeconds(5));
         ushort combatView = CombatViewOf(player);
         player.SendChat("?health 1");
         await player.WaitForViewUpdateAsync(2, UnflaggedDuelDeath, TimeSpan.FromSeconds(120));
@@ -617,3 +619,4 @@ public static partial class Scenarios
         Check.Equal(0, alice.World.Problems.Count + bob.World.Problems.Count, "Protocol problems");
     }
 }
+

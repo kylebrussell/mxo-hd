@@ -26,7 +26,7 @@ public static partial class Scenarios
     private static async Task MissionWavesSidesAndTimers(ScenarioContext context)
     {
         HeadlessPlayer player = await StartEncounterFixture(context, "EncounterPass");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         ViewCreation turncoat = await player.WaitForViewNamedAsync("Turncoat");
         ViewCreation first = await player.WaitForViewNamedAsync("Machine Program");
         Check.That(!turncoat.Attributes.ContainsKey("IsEnemy"), "The turncoat is initially talkable");
@@ -63,7 +63,7 @@ public static partial class Scenarios
         player.SendRpc($"80 c7 {MissionNpcId(witness)} 09 00");
         await player.WaitForTextAsync("Encounter fixture second area.");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(player);
+        await EnterMissionArea(context, player);
         ViewCreation defector = await player.WaitForViewNamedAsync("Defector");
         Check.That(defector.Attributes.ContainsKey("IsEnemy"), "The defector initially offers combat");
         seen = player.World.CreationSnapshot().Count;
@@ -79,7 +79,7 @@ public static partial class Scenarios
         HeadlessPlayer late = await StartEncounterFixture(context, "EncounterLate");
         await Task.Delay(11000); // Longer than the ten-second limit: loading/travel must not use the goal's clock.
         Check.Equal(0, late.Received("80 a2").Count, "The deadline waits for the player to reach the generated area");
-        await EnterMissionArea(late);
+        await EnterMissionArea(context, late);
         await late.WaitForTextAsync("You ran out of time.", TimeSpan.FromSeconds(20));
         Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={late.CharId} AND missionId=399902"),
             "A timed-out mission records no completion");

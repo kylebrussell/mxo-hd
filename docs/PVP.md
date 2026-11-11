@@ -2,7 +2,7 @@
 
 Players can fight each other in close combat (the interlock) and with guns and abilities, die by it and respawn; who may attack whom follows the client's own rule; and duels work from the challenge to the loser standing up again.
 
-**Checked so far:** 3,438 combined unit tests and all 51 headless scenarios pass at 94667f5 (426.1 s, four disposable servers at once). The real 7.6005 client passed the duel flow at f3894ef, including placement, both sides of defeat, reconstruction, the selection lock clearing, the challenge dialog and surrender. Native follow-up found and fixed two more faults: player shots used an NPC state marker, corrupting the shooter's appearance; and `?org` changed the database but left the live organisation at zero. See "Real-client QA" for evidence and remaining limits.
+**Current combined validation:** 3,497 unit tests pass in Debug and Release; all 60 headless scenarios pass at 0e7892a (502.5 s, four disposable servers at once). Native round-entry, withdrawal/re-entry and Enrage checks pass; see [combat round evidence](COMBAT-ROUND-ENTRIES.md). Earlier PvP validation: 3,438 units and 51 scenarios passed at 94667f5. The real 7.6005 client passed the duel flow at f3894ef, including placement, both sides of defeat, reconstruction, the selection lock clearing, the challenge dialog and surrender. Native follow-up found and fixed two more faults: player shots used an NPC state marker, corrupting the shooter's appearance; and `?org` changed the database but left the live organisation at zero. See "Real-client QA" for evidence and remaining limits.
 
 ## Where it comes from
 
@@ -127,7 +127,9 @@ The rules are the ones NPC fights use, from retail's own scripts (`CombatRules`,
 
 - A player whose client is gone or reloading its world (teleport, Loading Area, disconnect) gets nothing; the other side gets the teardown.
 
-**Not done:** more than two players in one interlock; the combat view and init for onlookers (retail sent both to every bystander, and nothing else); the round entries on the combat view; stuns keeping a player from hitting (NPC stuns do).
+Combat views now carry shared, timed round entries for both fighters and bystanders. Visibility updates admit late observers and remove their combat views when they leave; no participant RPC45/47 or own combat state leaks to observers. Stuns suppress player hits through the shared control gates. See [combat round evidence and limits](COMBAT-ROUND-ENTRIES.md).
+
+**Not done:** more than two players in one interlock; full fighting-style and special-ability choreography; complete timed result-tail semantics.
 
 ### Health, conditions
 
@@ -278,7 +280,7 @@ The native retest at 94667f5 passed: `?org 1` followed by `?duelbot pvp` showed 
 
 - **What happened.** The bot stood still, facing away, while damage numbers showed.
 - **Facing: fixed.** The bot now spawns facing the player (D). When an interlock starts, it turns to its opponent on everyone's view with the state record other players' views get (`<view> 01 0c <yaw> <x y z f32>`). The byte layout is retail's (died_in_pvp, view 03: `01 0c e6 1e 6a 8c 46 00 80 f7 43 65 0e 95 44`).
-- **Animations: not done.** In retail, a player opponent was animated through the combat view's round entries. lastday2 21:54:49 has an entry on the combat view (`… 01 01 02 00 00 00 00 <one fighter's offset from the centre, 3 × f32> <the other's, mirrored> 00 00 0a 00 ed 93 …`), which places both fighters about 0.7 m either side of the centre, followed by what looks like animation fields. The server sends no round entries, for NPC fights or PvP ("Not done" under Fights). NPCs animate without them; another player apparently does not. Decoding the entry is the next step.
+- **Basic exchanges: fixed and native-verified.** The client consumes packed 121-byte entries referencing moves from the shipped ILDB. The server sends sourced Self-Defense exchanges to NPC/PvP fighters and observers. Native QA on 2026-11-11 showed DuelBot approaching and exchanging repeated punches/kicks/recoils with CSR110 over 18 rounds, followed by a clean surrender to idle. A Blackwoods fight showed exchanges and ended in corpse/loot. A native bystander also saw two headless fighters approach, punch and recoil. The participant-only prelude had an extra zero that shifted the next view ID to 256; removing it and calculating the sized init boundary were both necessary. Other styles and special moves use the documented fallback. Full field layout, binary/capture evidence and remaining limits are in [COMBAT-ROUND-ENTRIES.md](COMBAT-ROUND-ENTRIES.md).
 
 ### D. `?duelbot` put the bot inside a wall
 

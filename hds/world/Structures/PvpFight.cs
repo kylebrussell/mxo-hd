@@ -87,6 +87,7 @@ namespace hds
         private GameObject handlerObject;
         private UInt64 handlerEntity;
         private byte[] centre;
+        private CombatPresentation presentation;
 
         private PvpFight(WorldClient attacker, WorldClient defender)
         {
@@ -208,23 +209,18 @@ namespace hds
                 }
             }
             IsActive = true;
+            presentation = new CombatPresentation(attacker, defender, null, handler, handlerEntity);
             timer = new Timer(CombatInterlock.RoundMs) { AutoReset = true };
             timer.Elapsed += (s, e) => OnRoundTimer();
             timer.Start();
         }
 
         /// <summary>
-        /// The combat init with the rest of its record (the fixed block NPC fights send after it), as one message: the
-        /// two halves are one record and nothing may come between them.
+        /// A complete sized combat init, without a captured exchange from an unrelated fight.
         /// </summary>
         private byte[] CombatInit(UInt16 handlerViewId, UInt32 first, UInt32 second)
         {
-            byte[] init = ServerPackets.BuildCombatInitialize(handlerViewId, centre, first, second);
-            byte[] rest = CombatHandler.CombatStateBlob();
-            byte[] record = new byte[init.Length + rest.Length];
-            Array.Copy(init, record, init.Length);
-            Array.Copy(rest, 0, record, init.Length, rest.Length);
-            return record;
+            return ServerPackets.BuildCombatInitialize(handlerViewId, centre, first, second);
         }
 
         /// <summary>
@@ -481,6 +477,9 @@ namespace hds
                     outcome.DamageToNpc, outcome.NpcAbsorbed, opening, p.Withdrawing && !opening ? pAttack - nAttack : 0);
                 SendRound(n, nDecided, pDecided, !outcome.PlayerWins, outcome.Flags, outcome.DamageToNpc, outcome.NpcAbsorbed,
                     outcome.DamageToPlayer, outcome.PlayerAbsorbed, opening, 0);
+                presentation.Round(p == Attacker ? outcome.PlayerWins : !outcome.PlayerWins, outcome.Flags,
+                    p == Attacker ? pTactic : nTactic, p == Attacker ? nTactic : pTactic,
+                    p == Attacker ? pAttack : nAttack, p == Attacker ? nAttack : pAttack, opening);
 
                 bool special = (outcome.Flags & CombatRules.SpecialMove) != 0;
                 Output.WriteDebugLog($"[PVP] Round {Rounds}{(opening ? " (opening)" : "")}: {PvpFlag.Name(p.Client)} {pTactic} ({pAttack}/{pDefense}) vs " +
@@ -582,6 +581,7 @@ namespace hds
                     return;
                 }
                 IsActive = false;
+                presentation?.End(delay);
                 timer?.Stop();
                 timer?.Dispose();
                 timer = null;
