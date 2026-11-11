@@ -40,6 +40,18 @@ public class CombatRoundEntryTests
     }
 
     [Fact]
+    public void MasterInitLengthIncludesItsOwnFieldAndAllEntries()
+    {
+        byte[] empty = ServerPackets.BuildCombatInitialize(6, new byte[24], 1, 2);
+        byte[] withEntry = ServerPackets.BuildCombatInitialize(6, new byte[24], 1, 2, new CombatRoundEntry());
+        Assert.Equal((ushort)46, BitConverter.ToUInt16(empty, 3));
+        Assert.Equal((ushort)167, BitConverter.ToUInt16(withEntry, 3)); // captured a7 00
+        Assert.Equal(empty.Length - 3, BitConverter.ToUInt16(empty, 3));
+        Assert.Equal(withEntry.Length - 3, BitConverter.ToUInt16(withEntry, 3));
+        Assert.Equal(0, empty[48]); Assert.Equal(1, withEntry[48]);
+    }
+
+    [Fact]
     public void AnimationIdsResolveToShippedNamesAndAllTacticOutcomesHaveMoves()
     {
         Assert.Equal("AikidoAbility KickRevBlowout", CombatAnimations.All.Single(m => m.Id == 748).Name);

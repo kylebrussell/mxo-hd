@@ -72,19 +72,14 @@ namespace hds
         }
 
         /// <summary>
-        /// The master-view record that links the two fighters to the combat view: <c>01 00 02 a7 00 &lt;combat view&gt; 01
-        /// &lt;centre f64 x 3&gt; 01 00 00 00 03 00 00 00 &lt;attacker&gt; &lt;defender&gt; 01 01 02</c>, the fighters as the receiving
-        /// client knows them. The attacker is always first: a player attacked by another player got
-        /// <c>... 05 00 f8 00 02 00 d3 00 01 01 02</c>, the attacker's view and then their own (retail, died_in_pvp).
+        /// The sized master-view record that links fighter slots to the combat view. Its u16 offset includes
+        /// its own two bytes: 167 (a7 00) with one 121-byte entry, 46 without an entry. The attacker is always
+        /// first, including on the attacked player's client (died_in_pvp 19:41:11).
         /// </summary>
-        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender)
+        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender,
+            CombatRoundEntry firstEntry = null)
         {
             PacketContent pak = new PacketContent();
-
-            // Header: Master view update with combat init message type
-            pak.AddUint16(1, 1);              // View ID 1 (master view)
-            pak.AddByte(0x02);                // Update type
-            pak.AddUint16(0x00A7, 1);         // Message type (167 = combat init)
 
             // Combat handler reference
             pak.AddUint16(combatViewId, 1);   // Combat handler view ID
@@ -93,13 +88,20 @@ namespace hds
             pak.AddByteArray(centre);
 
             // Combat relationship data
-            pak.AddUint32(1, 1);              // Attacker slot/round (1)
-            pak.AddUint32(3, 1);              // Combat type (3 = melee?)
+            pak.AddUint32(1, 1);              // Update counter
+            pak.AddUint32(3, 1);              // Changed fighter slots 1 and 2
 
             pak.AddUint32(attacker, 1);
             pak.AddUint32(defender, 1);
-            pak.AddByte(0); // entry count; complete entries follow on the combat view, never a captured tail
-            return pak.ReturnFinalPacket();
+            pak.AddByte(firstEntry == null ? (byte)0 : (byte)1);
+            if (firstEntry != null) pak.AddByteArray(firstEntry.Serialize());
+            byte[] body = pak.ReturnFinalPacket();
+            PacketContent wrapper = new PacketContent();
+            wrapper.AddUint16(1, 1); // master view
+            wrapper.AddByte(2); // sized view message
+            wrapper.AddUint16(checked((ushort)(body.Length + 2)), 1); // offset includes this length field
+            wrapper.AddByteArray(body);
+            return wrapper.ReturnFinalPacket();
         }
 
         /// <summary>

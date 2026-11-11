@@ -216,8 +216,7 @@ namespace hds
         }
 
         /// <summary>
-        /// The combat init with the rest of its record (the fixed block NPC fights send after it), as one message: the
-        /// two halves are one record and nothing may come between them.
+        /// A complete sized combat init, without a captured exchange from an unrelated fight.
         /// </summary>
         private byte[] CombatInit(UInt16 handlerViewId, UInt32 first, UInt32 second)
         {

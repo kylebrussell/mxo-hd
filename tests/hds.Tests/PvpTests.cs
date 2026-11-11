@@ -276,7 +276,7 @@ public class PvpTests
         // died_in_pvp 19:41:11, the attacked player's: ... 05 00 f8 00 02 00 d3 00 01 01 02
         byte[] centre = B("00 00 00 00 00 9a d0 40 00 00 00 00 00 90 7f 40 00 00 00 00 00 f8 a1 40");
         byte[] record = ServerPackets.BuildCombatInitialize(6, centre, 0x00f80005, 0x00d30002);
-        Assert.Equal("01 00 02 a7 00 06 00 01 00 00 00 00 00 9a d0 40 00 00 00 00 00 90 7f 40 00 00 00 00 00 f8 a1 40 " +
+        Assert.Equal("01 00 02 2e 00 06 00 01 00 00 00 00 00 9a d0 40 00 00 00 00 00 90 7f 40 00 00 00 00 00 f8 a1 40 " +
                      "01 00 00 00 03 00 00 00 05 00 f8 00 02 00 d3 00 00", H(record));
     }
 

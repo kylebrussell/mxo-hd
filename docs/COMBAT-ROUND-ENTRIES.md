@@ -11,7 +11,7 @@ Client 7.6005 `client.dll`:
 - `625f7350` deduplicates/sorts by the entry sequence at offset 32 and dispatches to `625f6580`, which schedules approach, transition, main exchange, recovery and timed result commands.
 - `625f47f0` resolves each 64-bit animation reference by move ID and database resource ID. `62649920` loads the ILDB in file order; `62649a4a` assigns the move ID from the per-resource counter, whose initial value at `629ccb84` is 255.
 
-The round record is `<combat view u16> 01 <centre f64 x3> <update counter u32> <fighter-change mask u32> <entry count u8> <entries>`. The init's master-view record supplies slots 1 and 2 and now ends with count zero; a complete dynamic exchange follows on the combat view. No fixed exchange tail is appended.
+The round record is `<combat view u16> 01 <centre f64 x3> <update counter u32> <fighter-change mask u32> <entry count u8> <entries>`. The init's master-view record supplies slots 1 and 2 and now ends with count zero; a complete dynamic exchange follows on the combat view. No fixed exchange tail is appended. The init prefix `01 00 02 a7 00` contains a sized-message offset, not a fixed combat opcode: 167 includes the two-byte offset and a body with one 121-byte entry. Without an entry the offset is 46 (`2e 00`). The builder computes this from the complete body and tests both forms.
 
 | Entry offset | Width | Meaning |
 |---|---|---|
@@ -41,4 +41,6 @@ Observers get the handler creation, init, live rounds, final record and deletion
 
 ## Validation
 
-The exact retail fixture, framing and animation lookup checks pass. The fresh-server `combat-rounds-and-observers` scenario passed in 57.4s: NPC and PvP rounds, both participants, bystander equality, late arrival, no participant RPC leakage, and cleanup after stop/death. Native motion checks and final combined validation are pending; this document will record their observed outcome.
+The exact retail fixture, framing and animation lookup checks pass. All 3,469 unit tests passed in Debug and Release; all 57 headless scenarios passed in 517.2s before the native framing follow-up. The strengthened combat scenario passed in 53.4s, adding observer departure/return to NPC/PvP participants, bystander equality, late arrival, no participant RPC leakage and cleanup after stop/death.
+
+Native session b exposed a malformed init after the captured tail was removed: the prefix still declared its former 167-byte size. Damage landed but DuelBot remained idle. The sized-message builder and headless init parser now calculate/validate the complete boundary. Native retest and combined validation of this follow-up remain pending. Session b closed and the harness reset CSR110 to Mara, full health, PvP off and mission986 only before releasing the lock.
