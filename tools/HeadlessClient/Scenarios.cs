@@ -441,7 +441,7 @@ public static partial class Scenarios
     {
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
             Items = new (int, uint, int)[] { (1, 48150, 4), (2, 48150, 5), (97, 48150, 1) }
         }))[0];
 
@@ -449,6 +449,8 @@ public static partial class Scenarios
         RpcRecord location = await player.WaitForRpcAsync("81 15");
         RpcRecord dialog = await player.WaitForRpcAsync("81 13");
         Check.Equal(51, location.Bytes.Length, "Collector position record");
+        Check.Equal(-146195d, BitConverter.ToDouble(location.Bytes, 18), "Collector window uses Azuna's observed client X");
+        Check.Equal(50682d, BitConverter.ToDouble(location.Bytes, 34), "Collector window uses Azuna's observed client Z");
         Check.Equal("c3060004c3060004c3060004c0060004", WireFormat.ToHex(dialog.Bytes[18..]), "Azuna's dialogue IDs");
         Check.Equal(WireFormat.ToHex(location.Bytes[2..18]), WireFormat.ToHex(dialog.Bytes[2..18]), "Collector session");
         for (int item = 0; item < 10; item++)
@@ -496,7 +498,7 @@ public static partial class Scenarios
         var items = Enumerable.Range(1, 96).Select(slot => (slot, slot == 1 ? 48150u : NpcLoot.CodeBit1, slot == 1 ? 11 : 1)).ToArray();
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200, Items = items
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682, Items = items
         }))[0];
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForRpcAsync("81 13");
@@ -520,7 +522,7 @@ public static partial class Scenarios
     {
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
             Items = new[] { (1, 48150u, 10) }
         }))[0];
 
@@ -532,7 +534,7 @@ public static partial class Scenarios
         {
             player.SendRpc("81 16 " + payload);
         }
-        player.SendChat("?tp -145900 -55 50200 0 0 0");
+        player.SendChat("?tp -145195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
             "Malformed requests leave the data intact");
@@ -544,7 +546,7 @@ public static partial class Scenarios
             "The trade checks the current position");
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForTextAsync("Move closer to Azuna to trade.");
-        player.SendChat("?tp -146900 -55 50200 0 0 0");
+        player.SendChat("?tp -146195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForRpcAsync("81 13");

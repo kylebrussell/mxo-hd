@@ -27,6 +27,15 @@ namespace hds
         private const UInt32 OfferText = 0x040006c3;
         private const UInt32 ClosingText = 0x040006c0;
 
+        private static (double X, double Y, double Z) InteractionPosition(StaticWorldObject collector)
+        {
+            // Retail-client QA on 2026-11-11 placed the player beside Azuna here. Her drawn position
+            // is about 8.5 m from the static's CSV origin, beyond the collector interaction radius.
+            return collector.metrId == 2 && collector.mxoStaticId == AzunaStaticId
+                ? (-146195, -55, 50682)
+                : (collector.pos_x, collector.pos_y, collector.pos_z);
+        }
+
         public static bool TryOpen(WorldClient client, StaticWorldObject collector)
         {
             if (collector?.mxoStaticId != AzunaStaticId || collector.metrId != 2)
@@ -112,8 +121,10 @@ namespace hds
             }
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            return Math.Abs(y - collector.pos_y) <= InteractionDistance &&
-                   HorizontalDistanceSquared(x, z, collector) <= InteractionDistance * InteractionDistance;
+            var position = InteractionPosition(collector);
+            double dx = x - position.X, dz = z - position.Z;
+            return Math.Abs(y - position.Y) <= InteractionDistance &&
+                   dx * dx + dz * dz <= InteractionDistance * InteractionDistance;
         }
 
         public static bool DropsFunctionData(Mob mob)
@@ -141,7 +152,8 @@ namespace hds
             PacketContent packet = new PacketContent();
             packet.AddHexBytes("8115");
             packet.AddByteArray(session);
-            packet.AddDoubleLtVector3d(collector.pos_x, collector.pos_y, collector.pos_z);
+            var position = InteractionPosition(collector);
+            packet.AddDoubleLtVector3d(position.X, position.Y, position.Z);
             packet.AddFloat(InteractionDistance, 1);
             packet.AddHexBytes("0000000000"); // visible trade and requirements, all required, fixed prizes, first set
             return packet.ReturnFinalPacket();
