@@ -219,6 +219,9 @@ public static partial class Scenarios
         Check.That(!context.Server.DebugLog().Contains("Security arrives"), "Security arrives only after the talk");
         Check.That(!player.World.CreationSnapshot().Any(view => view.Name == "Security" || view.Name == "Machine Program"),
             "No hostiles before the talk");
+        // The talk can finish the escort immediately on a small floor and stage phase 4 before we
+        // have observed the arrivals. Capture the object cursor before that action, not after it.
+        int seen = player.World.CreationSnapshot().Count;
         player.SendRpc($"80 c7 {MissionNpcId(tarka)} 09 00");
         await player.WaitForTextAsync("Did you feel something?");
         await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("[MISSION] Security arrives") &&
@@ -231,7 +234,6 @@ public static partial class Scenarios
 
         // Leading Tarka out ends the phase without a "find the exit", and phase 4's briefing follows at once. Phase 4's
         // mainframe is spawned as the phase starts.
-        int seen = player.World.CreationSnapshot().Count;
         await LeaveMissionArea(player);
         await player.WaitUntilAsync(() => player.Received(GoalsCompleteLine).Count == 1, "Goals for this mission phase are complete!",
             TimeSpan.FromSeconds(15));
