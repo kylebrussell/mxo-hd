@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Burnt Toast, Merovingian story mission 10.3.3. Source: research/missions/transcripts/Merv10-3-3.md (one live run,
+     given by Flood: 21 screenshots, one during play in area 1 with the Objectives window open, the rest of the log
+     after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names, phase 1's objective text
+     "Search the Computer" (the Objectives window) and the Ouroboros Security line beginning "Who in the hell could have"
+     (Team chat only). The log's player was Briseus; his name is {player} here. The italics are dropped, and the
+     Merovingian's "cotes de la barriere" lose their accents. Ours: the description (the Summary tab only said
+     "Datalink established."), the other objective texts, the sites (the two Ouroboros offices are Office, the rest
+     Normal), the looks and the enemy counts: area 1's hostiles were Ouroboros Security, so they are two named
+     hostile guards here and no generated enemies; no other area shows a fight.
+     Item stand-ins: the Merovingian's letter is Letter (6793).
+     Cut joins read as contiguous: "Now / get in there", "Security / personnel", "headache I / feel coming on", "And I
+     think / Ouroboros", "Hmhmhm... The Machines do not have" (overlap), "national security. I / am not inclined"; read as
+     paragraph breaks: "can buy! / Man, sometimes", "mail this one in, operative. / No, they aren't", "peaceful-like. /
+     Hm, wonder".
+     Rewards: Zion's only chapter 10 mission, Blip (10.2.5): 352,000 experience, 525,000 information. The log shows
+     the run paid 22,000 experience and 80,500 information.
+     Gaps: phase 1's guard line and the Operator's answer to it are said on getting near the guards (here a near
+     trigger on the first guard); they came three seconds before the computer. Phase 2's place and goal aren't
+     described: the Operator's "Some joker put a slug through that thing" reads as the computer there, so it is a
+     Search for nothing; Flood's second line (46 s after his briefing) is the arrival line here, and anything else
+     said between 1:33:19 and 1:34:03 is hidden between two shots. Spring Belmont's and Anibal Ibach's lines came
+     27 to 38 s after phase 2's area was done; here they follow the Operator's line when the computer is searched.
+     The Merovingian handing over the letter is a Get (his speech when talked to, his follow-up when it completes).
+     In phase 4 Velvet Woolery and Agent Lee's exchange is said on getting near Velvet; Erin Allen's two lines and
+     the last Agent Lee and Velvet lines (three seconds later) are said when the letter is given. A short entry may
+     hide between two shots after Agent Lee's "Hmh." and after Erin Allen's second line. -->
+<mission id="310303" title="Burnt Toast" description="Get some worthwhile data out of Ouroboros' network, then deliver the Merovingian's letter to Ouroboros." plot="1"
+         order="10303" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="38000024" weapon="2568" />
+  <npc id="2" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="35000024" weapon="2568" />
+  <npc id="3" handle="Spring Belmont" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="4" handle="Anibal Ibach" type="FRIENDLY" at="2" rsi="d8040058" weapon="0" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0" />
+  <npc id="6" handle="Erin Allen" type="FRIENDLY" at="4" rsi="61000040" weapon="0" />
+  <npc id="7" handle="Velvet Woolery" type="FRIENDLY" at="4" rsi="3c000040" weapon="0" />
+  <npc id="8" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568" />
+  <npc id="9" handle="Ouroboros Security" type="FRIENDLY" at="4" rsi="38000024" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Our lack of progress in finding the supposed pot of gold in Ouroboros' network is in danger of becoming a serious irritation, operative. We have passwords to their system, so I really don't see what the problem is. Now get in there, and don't come out without some worthwhile data.</briefing>
+    <enter><say>Uh-oh, Flood's in one of his regular moods.&#10;&#10;Aaaand here's "uh-oh" number two: it looks like there's already an alert at that Ouroboros office. Security personnel are running around in there like it's a two-for-one donut sale.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>What? Our passwords are the best that kidnapping and torture can buy!&#10;&#10;Man, sometimes I just don't know what this world is coming to.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Who in the hell could have--&#10;&#10;You!</say>
+      <say>Well, we could have, but we didn't. So who's been mucking around in there?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>That is a very weak excuse, {player}, and if it wasn't for this headache I feel coming on, I'd berate you properly. If you're going to be foiled by a child pulling a fire alarm, then--Oh, never mind. Stop simpering, and make yourself useful.</briefing>
+    <enter><say contact="1">By the way, you can expect a real talking-to once I'm through with this migraine. If I forget, remind me.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>Oh, man, what have they been doing in there? Some joker put a slug through that thing. Great, just great.</say>
+        <say npc="3">I don't know! I think it's a cyber-narc or something.</say>
+        <say npc="4">Oh! I'd better dele-- Uh...&#10;&#10;Oops, look at that, I'm late for a meeting. Gotta run!</say>
+        <say npc="4">Oh crap, oh crap...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Damn, I thought I had this thing on "vibrate"...&#10;&#10;Oh, it's you, operative. What's your excuse this time? Mm-hm... Yes, I know you didn't do it. The pain... Why am I talking...&#10;&#10;Go see the Merovingian. Nnn... I'm hanging up now.</briefing>
+    <enter><say>Did you hear about how we had some people try posing as Agents to get into Ouroboros and "confiscate" data? Yeah, didn't work. Apparently they were given some lip from the Ouroboros guards about "jurisdiction."</say></enter>
+    <objective goal="3" text="Get the letter from the Merovingian" type="Get" npc="5" item="6793">
+      <talk><say npc="5">Evidently, the Machines, while doing their best to keep us out of Ouroboros, are themselves personae non gratae inside that company's walls. Rather remarkable... And I think Ouroboros would be interested to hear about, oh, the Machines hiring Cypherites to break into their offices, not to mention having some of their own operatives tampering with security systems there.&#10;&#10;It is all described in this letter I've prepared. Be so kind as to deliver it to Ouroboros. I think they'll find it...enlightening.</say></talk>
+      <done><say npc="5">See to it that you deliver it to their official personally.&#10;&#10;Hmhmhm... The Machines do not have as much practice at playing les deux cotes de la barriere, n'est-ce pas?</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>You're taking the letter to a high-ranking Ouroboros lickspittle that calls itself Erin Allen. Everything's arranged, so you can all but mail this one in, operative.&#10;&#10;No, they aren't supposed to know who it's from, you--&#10;&#10;Oh gods, my head...</briefing>
+    <enter><say>I've got a lot of signals in there, but if Flood's right about this, they should be all peaceful-like.&#10;&#10;Hm, wonder how many people have ended up with "If Flood's Right About This" as their epitaph.</say></enter>
+    <objective goal="4" text="Give the letter to Erin Allen" type="Give" npc="6" item="6793">
+      <done>
+        <say npc="6">Hm... Mm...&#10;&#10;We'll check into it. Not that we have anything to hide.</say>
+        <say npc="6">Of course. And you're just a concerned voter, right?</say>
+        <say npc="8">This is absurd. I demand to see Ms. Allen immediately.</say>
+        <say npc="7">Agent Lee, if you insist on being disruptive, I'll have to ask you to wait in the hall.</say>
+      </done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">You'll have to be patient, Agent Lee. She's in a very important meeting.</say>
+      <say npc="8">This is a matter of national security. I am not inclined to wait much longer.</say>
+      <say npc="7">Excuse me, but you'll have to--&#10;&#10;Oh. Yes, of course.</say>
+      <say npc="8">Hmh.</say>
+    </near>
+  </phase>
+  <finish>Obviously they know more than they're saying, operative. So do we, and we wouldn't be there if they didn't.&#10;&#10;Ohh, I can't explain this to you now. Go ask Malphas.&#10;&#10;Why isn't my foot bath ready? ... Don't pretend you didn't hear me!</finish>
+</mission>

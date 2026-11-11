@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Chasm Between Two Contradictions, Merovingian story mission 10.3.4. Source:
+     research/missions/transcripts/Merv10-3-4.md (one logged live run given by Flood, plus play shots of an earlier run
+     whose log wasn't kept: 32 screenshots, seven during play with the Objectives window open, the rest of the log after
+     the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names (the logged run's; the office
+     workers had other names in the earlier run), every objective text ("Search the Computer", "Search the next
+     Computer", "Talk to the Effectuator": the Objectives window), the Ouroboros Security lines (Team chat only) and
+     two office-worker lines seen only in the earlier run's chat ("Good thing there was never..." and "Some people are
+     just determined to be dull.", said there by the men and women who said Sammy Krampton's and Bridgett Diodorus's
+     lines). The log's player was Briseus; his name is {player} here. The italics are dropped. Ours: the description
+     (the Summary tab only said "Datalink established."), the sites (every area is an Ouroboros office or part of its
+     network, all Office), the looks and the enemy counts: the hostiles seen were Ouroboros Security (areas 1 and 4)
+     and Building Security (area 3), so they are named hostile NPCs here and no generated enemies.
+     Item stand-ins: none (every computer gives nothing; area 4's finance records are only sent off by the Operator).
+     Cut joins read as contiguous: "numerous computers / hacked by Mauser", "hack their / corporate web site", "close
+     connection to / a secured terminal", "send it / off to the bean counters"; read as paragraph breaks: "I've got
+     squat. / Eeesh...".
+     Rewards: Zion's only chapter 10 mission, Blip (10.2.5): 352,000 experience, 525,000 information. The log shows
+     the run paid 21,780 experience and 80,500 information.
+     Gaps: the guards' and workers' chatter is said on getting near them (near triggers); in area 2 the second group
+     (Rod Valvo to Bridgett's "... Nerd.") spoke after the computer, here whenever the player reaches them. In area 3
+     the Operator's "There's the computer." (two seconds before the search) is part of the search's done lines, and
+     his "no network in that room" and "two connections" lines, six seconds apart, are both the done lines of the
+     next computer: the empty room between them isn't a goal. The Effectuator's "Meet you there" move to the other
+     room isn't done: his lines there are the done lines of his Talk, with the Operator's. Of his three lines after the
+     area was done, "Guess it's just me" follows those, and "What? This place seems perfectly fine." and "Wake me when
+     something cool happens." (two seconds apart) are one line said when clicked afterwards. In area 4 Darell Friesen
+     warned twice with the guard's "Hey! What" line between; here he warns once, on getting near him. The Operator said
+     "you've got this place all to yourself" in area 3, yet two Building Security guards attacked; they are kept. A
+     short entry may hide between two shots after Flood's first and third briefings, after the Operator's 11:30:53 and
+     11:33:48 lines and after Bridgett's "... Nerd.". -->
+<mission id="310304" title="The Chasm Between Two Contradictions" description="Follow Mauser's trail through Ouroboros' network, one hacked computer at a time." plot="1"
+         order="10304" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="38000024" weapon="2568" />
+  <npc id="2" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="35000024" weapon="2568" />
+  <npc id="3" handle="Bridgett Diodorus" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="4" handle="Sammy Krampton" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="5" handle="Rod Valvo" type="FRIENDLY" at="2" rsi="d8040058" weapon="0" />
+  <npc id="6" handle="Twila Padman" type="FRIENDLY" at="2" rsi="a5060090" weapon="0" />
+  <npc id="7" handle="Kenneth Kiske" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="8" handle="Christy Raybourn" type="FRIENDLY" at="2" rsi="61000040" weapon="0" />
+  <npc id="9" handle="Building Security" type="HOSTILE" at="3" rsi="38000024" weapon="2568" />
+  <npc id="10" handle="Building Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" />
+  <npc id="11" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say after="5">What? This place seems perfectly fine.&#10;&#10;Wake me when something cool happens.</say>
+  </npc>
+  <npc id="12" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="38000024" weapon="2568" />
+  <npc id="13" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568" />
+  <npc id="14" handle="Darell Friesen" type="FRIENDLY" at="4" rsi="d8040058" weapon="0">
+    <say after="6">I knew that was a bad idea.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Now that some very convenient business scandals have called away Machine attention from our affairs, we should finally be able to do some real digging into Ouroboros' network. We've still got numerous computers hacked by Mauser to investigate, so get moving, operative.</briefing>
+    <enter><say>Hm... See, the problem with following Ouroboros' own security records of Mauser's break-in is that...well, their security has a record of it. You're gonna have to convince some of them to look the other way in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Don't see anything interesting on that thing. Let's see what it connects to...</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Cap, do you think I could just check my email real quick?</say>
+      <say npc="2">Don't touch that computer, you idiot! They're still running audits on this entire network section.</say>
+      <say npc="1">Cap!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>You might as well just hack their corporate web site and leave a blinking message saying "You've been hacked by the Merovingian," {player}. Try to be a little less obvious, hm?</briefing>
+    <enter><say>Ah, Flood--always the morale booster.&#10;&#10;Doesn't look like they've got much of a security presence in that office, for a change.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>Huh, just another empty link. Looks like it hooks into another system Mauser hacked. Jeez, I hope he wasn't just going in circles when he broke in here, or this'll all be a big waste of time--again!</say>
+        <say npc="4">Hey! You aren't supposed to-- How did you access-- Aw, jeez, how'm I gonna explain that came from my computer?</say>
+      </done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">Did you hear the latest about Wright Research?</say>
+      <say npc="4">Yeah, I guess. Not like it matters much. They haven't actually produced anything interesting since Wright died.</say>
+      <say npc="4">Good thing there was never a "Mr." or "Ms." Ouroboros.</say>
+      <say npc="3">Some people are just determined to be dull.</say>
+    </near>
+    <near npc="5" radius="1000">
+      <say npc="5">No, no, no... You can't carry that voltage on that circuit! Are you crazy? You're going to kill people!</say>
+      <say npc="6">I can do it, I tell you! I'll show you--I'll show all of you!</say>
+      <say npc="5">Insanity--pure insanity!</say>
+      <say npc="7">The mob, the government... I don't know which is worse!</say>
+      <say npc="6">This is going to be the best mouse ever!</say>
+      <say npc="8">Don't you have papers of your own to shuffle?</say>
+      <say npc="3">... Nerd.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Whether or not Mauser found anything in there, the links we found in their system to the data pulled from the Oligarch Network in the no-fly zone show that someone has been up to something at Ouroboros, operative, so I'll hear no excuses about what some Zionite may or may not have failed to do.</briefing>
+    <enter><say>I think you've got this place all to yourself. The computer Mauser hit is showing up on the local network in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>There's the computer.</say>
+        <say>Okay, that's the one Mauser hacked. Or, wait... Actually, the Ouroboros security report we acquired shows that he tried to hack it, but it looks like he wasn't successful. Our password worked, though, so let's see...&#10;&#10;This is showing a close connection to a secured terminal--should be a computer in the next room.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Search the next Computer" type="Search" object="2" item="0" after="3">
+      <done>
+        <say>What th-? There's no network in that room at all; I'm not even reading any cables running through. Then what the hell was that connection reading we just got?&#10;&#10;Uhh... Try the room after that one, I guess. Weird...</say>
+        <say>Jeez, that one shows two connections, and one's back to the dead room you just came through.&#10;&#10;This makes like no sense, so I'm calling in an expert. Hold on a sec...</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Talk to the Effectuator" type="Talk" npc="11" after="4">
+      <talk><say npc="11">You don't say? Hm, let's see what we've got here...&#10;&#10;Looks perfectly normal to me!&#10;&#10;What, the other room? Well, all right. Meet you there.</say></talk>
+      <done>
+        <say npc="11">Seeya!</say>
+        <say npc="11">Well, that's-- But it came through-- Uhh...&#10;&#10;Somethin' screwy going on... There are live data links into here, but actually in here, I've got squat.&#10;&#10;Eeesh... I'm getting goosebumps. Do you feel all tingly, too?</say>
+        <say>Hm... Then we'll just have to move on. We can try checking the outgoing connection from the second computer.</say>
+        <say npc="11">Guess it's just me.&#10;&#10;Maybe I shouldn't stand around in here too long...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Keep moving, operative; you've got a lot of network to cover. And don't call in the Effectuator to waste your time. I'm not going to shoehorn him into my operating budget, that's for sure.</briefing>
+    <enter><say>Okay... I think you might have a few security guards to deal with, but nothing major.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Now that I check, it looks like we've moved into a part of their network where they didn't register any hacking attacks by Mauser.&#10;&#10;Hey, we've got something here. Let's see... Corporate finances... Records of their shares, investor data, etc... Hm... Et cetera...&#10;&#10;Well heck, I'm not gonna go through all this myself. I'll zip it up and send it off to the bean counters.</say></done>
+    </objective>
+    <near npc="14" radius="1000">
+      <say npc="14">I wouldn't go in there if I were you.&#10;&#10;Don't say I didn't warn ya.</say>
+    </near>
+    <near npc="12" radius="1000">
+      <say npc="12">Hey! What--?</say>
+    </near>
+  </phase>
+  <finish>Stop complaining, {player}. It may not be flashy, but laborious pouring through reams of data is how real research and analysis actually works. What, did you expect to be the hero who would find some kind of cosmic smoking gun in a file cabinet?&#10;&#10;I keep telling the Merovingian that the Effectuator is a bad influence on the operatives, but does anyone listen to me when I'm right? Nooo...</finish>
+</mission>

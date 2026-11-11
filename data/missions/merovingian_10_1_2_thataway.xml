@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Thataway, Merovingian story mission 10.1.2. Source: research/missions/transcripts/Merv10-1-2.md (one live retail
+     run, given by Flood: 22 tight crops of the Log tab scrolled top to bottom at the end of the mission). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Halborn, Beirn and Merovingian line, and the names. The player's
+     name is blacked out in the log; it is {player} here. The asterisks in "*still*" and "*have*" are retail's own; the
+     italics ("be", "we", "Quid pro quo.", the Merovingian's second paragraph) are dropped. "They may have snatched
+     useful." is missing a word in retail's own text and stays so. Ours: the description (the Summary tab only said
+     "Datalink established."), every objective text (the Objectives tab was never opened), the Zionite's handle, the
+     sites (phase 2 GenericApt, the apartment the access card is registered to; the others Normal: none is described),
+     the looks (Halborn and the Merovingian as in chapter 9; Beirn as in Machines 7.1.5, Transit) and the enemy
+     counts.
+     Item stand-ins: the access card is Access_Card 6791; the removable media in the dresser is Data_CD 6831.
+     Joins between crops read as contiguous: "forthcoming" / "with details", "Maybe" / "we can pick up", "tap into for"
+     / "information.", "Oh, the foul bits" / "of data", "information produced" / "some interesting results", "in the
+     mean" / "time, got it?", "if he expects further" / "assistance", "I can give out" / "any more information",
+     "in the first place was" / "because", "get the information from the" / "Machines.". Read as paragraph breaks
+     falling between crops: "who wrote it." / "He may be clueless", "fluff missions to..." / "But I'm getting ahead",
+     "they're clever." / "Upload that to me".
+     Rewards: the log shows none; Zion's only chapter 10 mission is Blip (10.2.5), so its values: 352,000 experience,
+     525,000 information.
+     Gaps: what the goals were isn't shown. Phase 1 had "override activity" as well as Zionite redpills; only the
+     Zionites are built (one of them, carrying the access card, is placed so the Operator's Zionites line can
+     fire on getting near him; retail's came six and a half minutes in). The Operator's 2:14:05 entry may run on past
+     the bottom of its crop. In phase 2 the dresser is searched after the computer, as in the log (ten seconds apart);
+     retail's phase ended at the upload with "Goals for this mission phase are complete!", ours with the runtime's own
+     line. Phase 3's hostiles ("overrides", Halborn's "Oracle-lovers") are built as Zionites, and the Operator's
+     "Finally." is the done line of the fight before Halborn is talked to; what retail's "Finally." marked isn't
+     shown. In phase 4 Beirn's "No-o problems" came between the two Talks, when he was clicked; it is his line after
+     goal 8. Lines logged after a goal (Halborn's "I said I'll be there" and "Huh. I could", Beirn's "inferiority
+     complex", the Merovingian's "That is a conversation for another time") are what each says when clicked
+     afterwards. -->
+<mission id="310102" title="Thataway" description="Track down Halborn and bring him to a meeting with the Merovingian." plot="1"
+         order="10102" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Zionite" type="HOSTILE" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="7">I said I'll be there. Move it along!</say>
+  </npc>
+  <npc id="3" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+    <say after="9">Huh. I could. They'll probably try to--&#10;&#10;What? Northwest. Look, mind your own business. I've got to handle this myself. He'd see you clowns coming a mile off, anyway.</say>
+  </npc>
+  <npc id="4" handle="Beirn" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say after="8">No-o problems. We're just like peas in a pod here.</say>
+    <say after="9">He's got a bit of an inferiority complex, if you ask me.</say>
+  </npc>
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+    <say after="9">That is a conversation for another time, yes? We would not want to...distract our guest.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Funny thing about that Halborn: he's *still* determined to get the program he's been after, even though everyone's told him that it isn't even in the Matrix--not to mention that he just killed the woman who wrote it.&#10;&#10;He may be clueless, but he hasn't let that stop him yet. He's begun ratcheting things up by attacking Carlyne directly; might have got somewhere with it, too, except that operatives bailed Carlyne out.&#10;&#10;Poor Halborn. Finding himself in these rather desperate straits, Halborn might be a little more forthcoming with details about the program. The trick is finding him; he hasn't exactly stayed in touch. Override programs are still appearing here and there, though, so we'll start with those, hm?</briefing>
+    <enter><say>I've got override activity in there, as well as redpill readings. They aren't ours.</say></enter>
+    <near npc="1" radius="1500"><say>Zionites--lovely. And no Halborn. Hm... We'd better finish them off. They may have snatched useful.</say></near>
+    <objective goal="1" text="Kill the Zionites" type="DefeatAll" />
+    <objective goal="2" text="Take the access card from the Zionite" type="Loot" npc="1" item="6791">
+      <done><say>An access card? Let me check this thing out... Uh-huh... Okay, I think we've got a match for the place that uses the code on that thing. Maybe we can pick up some juicy info.</say></done>
+    </objective>
+  </phase>
+  <phase site="GenericApt" enemy="Zion" enemies="0">
+    <briefing>If you keep coming up with results, I may have to find someone else to give all the fluff missions to...&#10;&#10;But I'm getting ahead of myself. You still have plenty of time to screw this up.</briefing>
+    <enter><say>The Merv's records say the access card is registered to an apartment there. I'm reading some computer activity, so maybe they have a system we can tap into for information.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Furniture" />
+    <objective goal="3" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>Hmm... Nope.</say></done>
+    </objective>
+    <objective goal="4" text="Search the dresser" type="Search" object="2" item="6831" after="3">
+      <done><say>Ooh. Now that's what I'm talking about. Hiding their removable media in the dresser--oh, they're clever.&#10;&#10;Upload that to me, and I'll rifle through it.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the removable media at a hardline" type="Upload" item="6831" after="4" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Ugh, what is this mess you've uploaded, {player}? Oh, the foul bits of data I have to sort through when dealing with operatives...&#10;&#10;Hm... Intelligence reports... They *have* been trying to locate Halborn... Let me see...&#10;&#10;Ah. Their intelligence was limited--naturally--but correlating it with our own information produced some interesting results. Try there.</briefing>
+    <enter><say>Picking up overrides in the area... Could be money.</say></enter>
+    <objective goal="6" text="Kill the Zionites" type="DefeatAll">
+      <done><say>Finally.</say></done>
+    </objective>
+    <objective goal="7" text="Talk to Halborn" type="Talk" npc="2" after="6">
+      <talk><say npc="2">Damn it, I've got Oracle-lovers and that skinny prat all over me, and you want to chat?&#10;&#10;So, maybe you did help me out before. ...&#10;&#10;All right, but you make damn sure you keep them off my back in the mean time, got it?</say></talk>
+      <done><say>I didn't actually think it was possible for him to get any more rude than he was before...but he's proven me wrong!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I don't think Halborn properly understands his situation. He only succeeded in finding the Oracle because we got him away from Carlyne. Terminating the Oracle was useful to us, but if he expects further assistance, he'll have to give as well as receive, mm? Quid pro quo.</briefing>
+    <enter><say>The meeting's going down. Halborn better mind his P's and Q's around the boss.</say></enter>
+    <objective goal="8" text="Talk to Halborn" type="Talk" npc="3">
+      <talk><say npc="3">You're nuts if you think I can give out any more information about it with Carlyne around trying to use anything he can find against me. I'm going to have to take him down... It's the only way, now. And I think I know how to do it. I just have to find his damn ship.&#10;&#10;He isn't so smart. Only reason he got the jump on me in the first place was because he was just 800 miles away from here...</say></talk>
+      <done><say>Huh? Who was where, now?</say></done>
+    </objective>
+    <objective goal="9" text="Talk to the Merovingian" type="Talk" npc="5" after="8">
+      <talk><say npc="5">Interesting...&#10;&#10;As you say, monsieur. We will leave him in your capable hands. The man who killed the Oracle can easily deal with a pest like him. And of course, if you do need to locate his...eh...ship, it would be a simple matter for you to get the information from the Machines.</say></talk>
+    </objective>
+  </phase>
+  <finish>Bah. I don't know why we even bother trying to talk with the man. He's obviously determined to go it alone, so why should we lift a finger?&#10;&#10;And frankly, I wouldn't put much faith in his so-called facts and figures. He's about as reliable as the internet when it comes to factual data.</finish>
+</mission>

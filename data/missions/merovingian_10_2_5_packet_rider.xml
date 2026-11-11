@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Packet Rider, Merovingian story mission 10.2.5. Source: research/missions/transcripts/Merv10-2-5.md (a run of
+     [Merovingian Archive 10.2.5] given by [Archived]Flood; 19 screenshots: two during play in phase 2 with the
+     Objectives window and Team chat, the rest of the Log tab after the mission ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Holographic Projection, Jasper Weisbrod, Sarita Huang, Bessel,
+     Pigeon and Ookami line, Nightmare's line (Team chat only), the Ouroboros guards' bark (Team chat only), the names,
+     and phase 2's objective texts "Put the Data in the Computer" and "Talk to Huang". The log's player was TiAmo; that
+     name is {player} here. Huang's italic "sure" can't be carried. Ours: the description (the Summary tab only said
+     "Datalink established."), the other objective texts, the sites (the last is "a rented office": Office; the rest
+     Normal), the looks (the Holographic Projection, Ookami, Bessel, Pigeon and Ouroboros Security as other files have
+     them), the two named guards and no other hostiles.
+     Item stand-ins: none; the data is Data (6787), and the runtime hands it over at phase 2's start.
+     Joins between screenshots are read as contiguous: "In other news from the outside, the / General", "Go see that it
+     / arrives safely", "the last of the / captured data now.", "but if you really / must satisfy", "so far has been /
+     of at least", "instead of you, / operative.", "I should provide you / with an escort", "the right address this /
+     time...". The Team chat confirms Weisbrod's and Huang's.
+     Rewards: Zion's only chapter 10 mission, Blip (10.2.5): 352,000 experience, 525,000 information. The log's run
+     paid 362,670 experience and 63,000 information.
+     Gaps: how the data reached the player in phase 1 isn't shown; the talk with the projection is the goal, and phase 2
+     hands the data over. Weisbrod's first line is said on getting near him. Nightmare's line was only in Team chat,
+     between Weisbrod's two log lines; it is said when the data is put in. Huang's second line came 4 seconds after her
+     first and follows it here. Bessel's and Pigeon's greetings are said on getting near them, and Ookami's second
+     line when he is clicked again. Retail ended phase 3 with "Goals for this mission phase are complete!" 20 seconds
+     after Ookami spoke, with no exit; here Bessel and Pigeon are led out and then follow the player into phase 4.
+     The friendly Commandos in phase 2 said nothing and aren't placed. Phase 4's goals aren't shown: the guards were
+     fought (bodies searched), and the player targeted a computer just before the end, so here the guards are killed
+     and the computer searched for nothing; the Operator's line about the guards is said on getting near one. The
+     guards' "What are you doing here? Stop!" are hostile lines, which may not show. -->
+<mission id="310205" title="Packet Rider" description="See the General's captured data home, then follow its packet headers to the corporation they point to." plot="1"
+         order="10205" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="2" handle="Jasper Weisbrod" type="FRIENDLY" at="2" rsi="d8040058" weapon="0" />
+  <npc id="3" handle="Nightmare" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Sarita Huang" type="FRIENDLY" at="2" rsi="a5060090" weapon="0" />
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+    <say after="4">If you mean to test my patience, you won't have long to wait.</say>
+  </npc>
+  <npc id="6" handle="Bessel" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
+  <npc id="7" handle="Pigeon" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="8" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="38000024" weapon="2568">
+    <say>What are you doing here? Stop!</say>
+  </npc>
+  <npc id="9" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568">
+    <say>What are you doing here? Stop!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>That despicable thief Mauser has jacked out of the simulation. Oh, well. We'll find his jack-in location sooner or later, I'm sure.&#10;&#10;In other news from the outside, the General is heading home through the storm with his tail between his legs, and quite a few less Sentinels than he left with, thanks to those missile bombardments he ran into in the no-fly zone. Still, he--or, I should say, his Sentinels--did succeed in pulling some data out of the network they found out there. He's due to transmit the last of it shortly. Go see that it arrives safely, mm?</briefing>
+    <enter><say>The General's men have that place covered for his broadcast.</say></enter>
+    <objective goal="1" text="Talk to the Holographic Projection" type="Talk" npc="1">
+      <talk><say npc="1">Visibility is low, but the storm seems to be keeping the Machines off our backs. We're sending the last of the captured data now.</say></talk>
+      <done><say npc="1">End transmission.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Try not to lose that data, operative. It did come from the General, but despite appearances, it might actually be worth something.</briefing>
+    <enter><say>See the head technician, Weisbrod, about what to do with the data.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Put the Data in the Computer" type="Put" object="1" item="6787">
+      <done>
+        <say npc="3">The data is extremely complex. We simply don't have the tools to process it effectively. Full comprehension could take...years.</say>
+        <say npc="2">Very good.&#10;&#10;What? Hm... I wouldn't hope for a miracle decryption, but if you really must satisfy your curiosity, go ask Huang. She's just through there.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Talk to Huang" type="Talk" npc="4" after="2">
+      <talk><say npc="4">Are you sure you kept that data free of contaminants? The analysis is picking up standard circa 1999 packet headers in there. That can't be right; the stuff we've seen from the foreign network so far has been of at least Machine-level complexity.</say></talk>
+      <done>
+        <say>What? But those headers are ancient... The Machines only use those in simulated human networks inside the Matrix.</say>
+        <say npc="4">Let me ask you something: how many hack routines do you have loaded right now? Uh-huh... And you don't think those present a contamination risk?</say>
+      </done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Ah, more "Oligarch Network" data. Yes, just dump that in the computer over there.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>For once, I think it was someone else screwing up instead of you, operative. Those network packets they found in the data point to a private corporate provider. Why they would be referenced in data flowing through an advanced network outside of the Matrix, I have no idea. So you'll just be paying them a visit to find out, won't you?&#10;&#10;Hm... I suppose I should provide you with an escort to make sure you stay on task. Pick them up while we finish tracking those network addresses.</briefing>
+    <enter><say>Ookami should be in there with your reinforcements.</say></enter>
+    <objective goal="4" text="Talk to Ookami" type="Talk" npc="5">
+      <talk><say npc="5">Whoever it is...has no business here. The Matrix is ours.&#10;&#10;Take these with you and get out.</say></talk>
+    </objective>
+    <objective goal="5" text="Lead Bessel and Pigeon out of the area" type="Escort" npc="6,7" to="exit" after="4" />
+    <near npc="6" radius="1000">
+      <say npc="6">Who're you supposed to be?</say>
+      <say npc="7">Hmrrr... What can I do for you, little human?</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>It's a rented office of some sort, operative. You'll just have to go figure out who owns it.&#10;&#10;Oh, we could probably find the information somewhere, but it would be more time-consuming and expensive than just sending you to kick the door in.&#10;&#10;Just try to get the right address this time...</briefing>
+    <enter><say>That's supposed to be the spot. I'm getting some active readings.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Kill the Ouroboros security guards" type="DefeatAll" />
+    <objective goal="7" text="Search the computer" type="Search" object="1" item="0" after="6" />
+    <near npc="8" radius="1500">
+      <say>Those are Ouroboros security guards! Does that mean the Ouroboros Corporation is involved in this?</say>
+    </near>
+  </phase>
+  <finish>The Ouroboros Corporation? But why would that electronics company be mixed up with--&#10;&#10;Bah, why am I speculating with you around, {player}? The echo always gets so annoying...</finish>
+</mission>

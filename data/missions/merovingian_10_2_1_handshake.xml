@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Handshake, Merovingian story mission 10.2.1. Source: research/missions/transcripts/Merv10-2-1.md (a live run given
+     by Flood, not an archive replay: 20 screenshots of the Log tab scrolled top to bottom and 18 NPC popups taken
+     during play; no chat, HUD or Objectives window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Holographic Projection and Malphas line, the Commando's, Blood
+     Nobles' and Bluepills' popup lines, and the names. The log's player was Briseus; his name is {player} here.
+     Retail's italics ("sans", "sarcasm,", "certain", "Quelle surprise.") can't be carried, and the accents of
+     "communique" and "creme de la creme" are dropped. The asterisks in the Blood Noble's "*that.*" are retail's own.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (the "professional scene" with its phones and email is an Office; the party and
+     the other two places aren't described: Normal), the looks (the Commando, Holographic Projection and Malphas as
+     the 9.x Merovingian files have them; the Blood Nobles' and bluepills' are ours) and the enemy counts: none in any
+     phase (the program "won't be disruptive enough to their systems to alert the Machines", and no fight is logged).
+     Which popups belong to which phase is read from their order: the Commando's after the broadcast, the three Blood
+     Noble lines at Malphas's place (whether one, two or three nobles said them isn't shown: three here), the first
+     eight bluepills at the party ("eight more points of light"), the last six at the office.
+     Joins between screenshots read as contiguous: "he could / at least fend", "I think / Flood may throw", "obviously
+     taken / up religion", "Unfortunately, certain / members", "and that / humans in our virtual city", "by
+     electroencephalographic / wiring", "will have / a pod within range", "on this working, / but I expect", "so rotten
+     that you're / only worthwhile". The Operator's "Ooh, professional scene this time." / "Ready to do some
+     networking?" is read as a paragraph break (a plain line wrap can't be excluded).
+     Rewards: the log shows none. Zion's only chapter 10 mission is Blip (10.2.5), so these are its values (352,000
+     experience, 525,000 information).
+     Gaps: retail's bluepills were touched ("momentary contact"), not talked to; here each is a friendly NPC with a
+     Talk goal, and its popup is what it says. Phase 4's count of six is the popups', not a logged number. Flood's
+     "Are you actually doing anything" came 24 seconds into phase 4; it is said on nearing the office's first
+     bluepill. The Operator's last line is cut off by the screenshots after "a few of those coppertops" (the word's
+     bottom is cut; "coppertops" is the reading) and ends there with "..."; the rest of it, and whatever closed phase
+     4, is lost. Lines that may be hidden at two screenshot joins (after the Operator's "Flood's gonna eat this up."
+     and after "He's talking about using EEGs as antennae?") are read as the areas' completion lines. -->
+<mission id="310201" title="Handshake" description="Help Malphas turn bluepills into a broadcast line to the General in the no-fly zone." plot="1"
+         order="10201" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Commando" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+    <say display="5" after="2">... Apparently the Merovingian's broadcast equipment is too weak to maintain a connection, sir.</say>
+  </npc>
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="4" handle="Blood Noble" type="FRIENDLY" at="2" rsi="ec020058" weapon="0">
+    <say display="5">No, no. Even with elongated canines, biting someone is harder than you would think. Don't try it if you don't know what you're doing.</say>
+  </npc>
+  <npc id="5" handle="Blood Noble" type="FRIENDLY" at="2" rsi="a5060090" weapon="0">
+    <say display="5">Bats... I'm glad we don't have to do *that.* Ugh.</say>
+  </npc>
+  <npc id="6" handle="Blood Noble" type="FRIENDLY" at="2" rsi="d8040058" weapon="0">
+    <say display="5">That skinny one, "Carlyne" I think it was--he hasn't turned up for weeks now. That means no more overrides. Mm... I'm so pleased, I could almost lick a Zionite.</say>
+  </npc>
+  <npc id="7" handle="Bluepill" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
+  <npc id="8" handle="Bluepill" type="FRIENDLY" at="3" rsi="61000040" weapon="0" />
+  <npc id="9" handle="Bluepill" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="10" handle="Bluepill" type="FRIENDLY" at="3" rsi="3c000040" weapon="0" />
+  <npc id="11" handle="Bluepill" type="FRIENDLY" at="3" rsi="e4050024" weapon="0" />
+  <npc id="12" handle="Bluepill" type="FRIENDLY" at="3" rsi="5a000040" weapon="0" />
+  <npc id="13" handle="Bluepill" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
+  <npc id="14" handle="Bluepill" type="FRIENDLY" at="3" rsi="a5060090" weapon="0" />
+  <npc id="15" handle="Bluepill" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="16" handle="Bluepill" type="FRIENDLY" at="4" rsi="61000040" weapon="0" />
+  <npc id="17" handle="Bluepill" type="FRIENDLY" at="4" rsi="3c000040" weapon="0" />
+  <npc id="18" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
+  <npc id="19" handle="Bluepill" type="FRIENDLY" at="4" rsi="5a000040" weapon="0" />
+  <npc id="20" handle="Bluepill" type="FRIENDLY" at="4" rsi="e4050024" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Hmph. Apparently the General is still alive in that no-fly zone, and trying to contact us. He's so needy. If he could return data from a remote line that led to our discovery of a large foreign network, you'd think he could at least fend for himself in an area where the Machines won't even try to get close to him.&#10;&#10;Go see what he wants, operative. Just give it back to me sans the drill sergeant bravado and bluster.</briefing>
+    <enter><say>If the General ever does buy it, I think Flood may throw the first party of his life.&#10;&#10;One of the General's commandos should be standing by in there to hook you up to the General's transmission.</say></enter>
+    <objective goal="1" text="Talk to the commando" type="Talk" npc="1">
+      <done><say>Signal coming in now... There it is.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Holographic Projection" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Sol-- ... ...</say></talk>
+      <done><say>Oh, swell. Too bad the signal's too weak for us to tell him to try replacing that rubber beret with a tin foil hat.&#10;&#10;Flood's gonna eat this up.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Why, this is the best communique we've ever received from the General. He's outdone himself. If we assume that was Morse code, with those horrible bleeps and bloops he's uttered the timeless declaration "solms." Mm... Yes, like many of those affected by senility and the fear of impending death, he's obviously taken up religion.&#10;&#10;No, that was sarcasm, operative; I doubt the General even knows Morse code.&#10;&#10;If it was up to me, I'd leave him out there to find his god--a rock in a particularly ludicrous shape, for instance. Unfortunately, certain members of this organization think he's still worth salvaging.</briefing>
+    <enter><say>Dot-dash-dot-dot, dash-dash-dash, dot-dash-dot-dot at Flood...&#10;&#10;Apparently Malphas has some sort of scheme cooked up.</say></enter>
+    <objective goal="3" text="Talk to Malphas" type="Talk" npc="3">
+      <talk><say npc="3">The potential of the massive network discovered by the General merits further investigation. This will require a functional line of communication.&#10;&#10;Our experiments some months ago on the Machine pod system revealed that pod clusters are dotted regularly across the planet's surface, and that humans in our virtual city tend to be held in pods relatively close to the Machine city--the MacHenry woman was an example of that. There should be some fairly close to the General's position.&#10;&#10;We also know that humans in the pods are connected to the Matrix in part by electroencephalographic wiring. These arrays--and the human body--can be used as makeshift transmitters. We will use this to our advantage.</say></talk>
+      <done><say>He's talking about using EEGs as antennae? I thought that was just a crackpot theory.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Ha-ha. Do you know what you have to do, operative? You have to go glad-hand bluepills to fire this program of Malphas' back into their pods, where it's supposed to enlist their wiring and flabby bodies as a low-power, wide area broadcast system to the General. The chance that any one person you hit will have a pod within range of the General is relatively low, but the theory goes that the futility of one operative will add up to strategic gold when combined with that of our other operatives out there doing the same thing.&#10;&#10;So get out there and press the flesh, {player}! I don't count on this working, but I expect I'll thoroughly enjoy watching it unfold.</briefing>
+    <enter><say>All right, I've got Malphas' program loaded. You only have to make momentary contact with each bluepill. Supposedly this won't be disruptive enough to their systems to alert the Machines.</say></enter>
+    <objective goal="4" text="Make contact with a bluepill" type="Talk" npc="7">
+      <talk><say npc="7" display="5">Whoa-oh!&#10;&#10;Hey... Do that again.</say></talk>
+    </objective>
+    <objective goal="5" text="Make contact with a bluepill" type="Talk" npc="8">
+      <talk><say npc="8" display="5">Ew! Pervert!</say></talk>
+    </objective>
+    <objective goal="6" text="Make contact with a bluepill" type="Talk" npc="9">
+      <talk><say npc="9" display="5">Ow! Jeez, you shocked me! Lift up your feet when you're walking across carpet, man.</say></talk>
+    </objective>
+    <objective goal="7" text="Make contact with a bluepill" type="Talk" npc="10">
+      <talk><say npc="10" display="5">Nothing ever happens at these parties.&#10;&#10;...&#10;&#10;Sorry, you say something?</say></talk>
+    </objective>
+    <objective goal="8" text="Make contact with a bluepill" type="Talk" npc="11">
+      <talk><say npc="11" display="5">Mm... You just bought yourself a lawsuit, honey.</say></talk>
+    </objective>
+    <objective goal="9" text="Make contact with a bluepill" type="Talk" npc="12">
+      <talk><say npc="12" display="5">Ooh... I knew I shouldn't have mixed maple syrup in with that...</say></talk>
+    </objective>
+    <objective goal="10" text="Make contact with a bluepill" type="Talk" npc="13">
+      <talk><say npc="13" display="5">Oh!&#10;&#10;H-hi.</say></talk>
+    </objective>
+    <objective goal="11" text="Make contact with a bluepill" type="Talk" npc="14">
+      <talk><say npc="14" display="5">Poked, prodded--just another piece of meat on display. Why do I come to these things? Do I enjoy degrading myself?!</say></talk>
+    </objective>
+    <complete><say>Well... In theory, that's eight more points of light to bring us the General's wisdom.&#10;&#10;Get any phone numbers while you were at it?</say></complete>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>I always knew you were grabby, {player}.&#10;&#10;Try to contain yourself. I doubt the Machines would look kindly on you feeling up their batteries.</briefing>
+    <enter><say>Ooh, professional scene this time.&#10;&#10;Ready to do some networking?</say></enter>
+    <objective goal="12" text="Make contact with a bluepill" type="Talk" npc="15">
+      <talk><say npc="15" display="5">What is that, a joy buzzer? Wow, that was cool...in 1950.</say></talk>
+    </objective>
+    <objective goal="13" text="Make contact with a bluepill" type="Talk" npc="16">
+      <talk><say npc="16" display="5">Affirmative. ... Sorry, sugar. I can't talk right now.</say></talk>
+    </objective>
+    <objective goal="14" text="Make contact with a bluepill" type="Talk" npc="17">
+      <talk><say npc="17" display="5">Finally, someone who remembered. Nobody else did. I sent an email yesterday reminding everyone. I'm 30 today.&#10;&#10;I hate this place.</say></talk>
+    </objective>
+    <objective goal="15" text="Make contact with a bluepill" type="Talk" npc="18">
+      <talk><say npc="18" display="5">Hey, did th-- Ooh! Did the phone get fixed?</say></talk>
+    </objective>
+    <objective goal="16" text="Make contact with a bluepill" type="Talk" npc="19">
+      <talk><say npc="19" display="5">Busy, busy, busy...</say></talk>
+    </objective>
+    <objective goal="17" text="Make contact with a bluepill" type="Talk" npc="20">
+      <talk><say npc="20" display="5">Oof... Sorry... I think I feel a migraine coming on.</say></talk>
+    </objective>
+    <near npc="15" radius="1000">
+      <say contact="1">Are you actually doing anything, operative? We're still getting no signal. I knew this was a foolish idea...and it hasn't been nearly as amusing as I'd hoped.</say>
+    </near>
+    <complete><say>Okay, they should all be functioning as human antennas. We still don't seem to be getting much except background noise, though...&#10;&#10;Well, you'd better get out of there, anyway. I don't think the Machines are onto us yet, but I didn't like the looks of a few of those coppertops...</say></complete>
+  </phase>
+  <finish>Thousands of humans transformed into transmitters, and what do we get from it? Nothing but static. Quelle surprise. You're too weak, {player}: too dense, too unfocused, too contaminated... Malphas has been fed for so long on the creme de la creme of your species, he's forgotten that most of you are so rotten that you're only worthwhile as disposable lightning rods. What the Machines keep all of you around for, I can't imagine.&#10;&#10;I suppose it's too much to hope that we can just let the General achieve nirvana out there after this...</finish>
+</mission>
