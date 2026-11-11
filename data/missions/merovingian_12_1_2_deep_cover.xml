@@ -36,7 +36,7 @@ Looks quiet in there--real quiet.</say></enter>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>...
 
-Operative, I'm going to try, very calmly, to direct you to what was, to the best of my knowledge, our contact's source location. I'm sure this is all some sort of commonplace mistake on your part, and she'll be there, with the very valuable information well in hand.
+Operative, I'm going to try, very calmly, direct you to what was, to the best of my knowledge, our contact's source location. I'm sure this is all some sort of commonplace mistake on your part, and she'll be there, with the very valuable information well in hand.
 
 ...</briefing>
     <enter><say>I don't know about this. I'm not showing anyone at home.</say></enter>

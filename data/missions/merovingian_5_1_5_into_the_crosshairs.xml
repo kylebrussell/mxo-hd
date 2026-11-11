@@ -39,9 +39,7 @@ It looks like the remaining Exiles are locked in a room in there. Better finish 
     <objective goal="1" text="Kill all of the attackers" type="DefeatAll" />
   </phase>
   <phase site="Normal" enemy="Zion" enemies="5">
-    <briefing>Let's not even act surprised now.
-
-Yes, more of them attacking. Really, you'd think they'd learn, but no...
+    <briefing>Let's not even act surprised now. Yes, more of them attacking. Really, you'd think they'd learn, but no...
 
 The area has been evacuated; however, I believe they may be after some sort of data. Destroy them all.</briefing>
     <enter><say>Definitely no allies in here, so have at it!</say></enter>
