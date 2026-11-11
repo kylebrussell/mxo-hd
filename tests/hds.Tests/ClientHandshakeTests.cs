@@ -6,11 +6,26 @@ namespace hds.Tests;
 public class ClientHandshakeTests
 {
     [Fact]
-    public void FeatureListIsRetails()
+    public void FeatureListHasTwoInBoundsEntriesAndTerminatedStrings()
     {
-        // Every Rajko capture answers the 81 48 with these bytes
-        Assert.Equal("8149100000000000000000000000000000020000c80000000e0000c90000001c001300636f756e745b305d206163746976655b315d001300636f756e745b305d206163746976655b315d00",
-            Convert.ToHexString(ServerPackets.BuildFeatureList()).ToLowerInvariant());
+        // client.dll 62120680: stride 7, relative string offset at +5. A previous literal had a zero at +16,
+        // making the count 512 and crashing the native client at 621206bb while terminating an out-of-bounds string.
+        byte[] packet = ServerPackets.BuildFeatureList();
+        Assert.Equal(74, packet.Length);
+        int start = BitConverter.ToUInt16(packet, 2);
+        Assert.Equal(16, start);
+        Assert.Equal(2, BitConverter.ToUInt16(packet, start));
+        for (int i = 0; i < 2; i++)
+        {
+            int row = start + 2 + i * 7;
+            Assert.Equal((uint)(200 + i), BitConverter.ToUInt32(packet, row + 1));
+            int text = row + BitConverter.ToUInt16(packet, row + 5);
+            int size = BitConverter.ToUInt16(packet, text);
+            Assert.InRange(text, start + 16, packet.Length - 2);
+            Assert.True(text + 2 + size <= packet.Length);
+            Assert.Equal(0, packet[text + 1 + size]);
+            Assert.Equal("count[0] active[1]", System.Text.Encoding.ASCII.GetString(packet, text + 2, size - 1));
+        }
     }
 }
 
