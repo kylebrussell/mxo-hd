@@ -58,6 +58,15 @@ public static partial class Scenarios
         await late.EnterWorldAsync(); await late.WaitForViewNamedAsync("RoundAlice");
         ushort lateNpc = await WaitForCombatView(late); await WaitForEntry(late,lateNpc);
         VerifySharedEntry(alice,aliceNpc,late,lateNpc);
+        // Losing the fighter views removes the observer's combat view; returning creates a fresh one.
+        static void MoveObserver(HeadlessPlayer player, float x, float z) => player.World.SendViewList(
+            WireFormat.FromHex("02 00 01 08").Concat(BitConverter.GetBytes(x)).Concat(BitConverter.GetBytes(495f))
+                .Concat(BitConverter.GetBytes(z)).Concat(new byte[] { 0, 0 }).ToArray());
+        MoveObserver(late,100000,100000);
+        await late.WaitForViewUpdateAsync(1,$"01 01 00 {Le(lateNpc)}");
+        MoveObserver(late,25100,-1498);
+        lateNpc = await WaitForCombatView(late,lateNpc); await WaitForEntry(late,lateNpc);
+        VerifySharedEntry(alice,aliceNpc,late,lateNpc);
         alice.SendRpc("44 00");
         await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(carolNpc)}");
         await late.WaitForViewUpdateAsync(1,$"01 01 00 {Le(lateNpc)}");

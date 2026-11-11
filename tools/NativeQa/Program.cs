@@ -16,11 +16,12 @@ const uint nativeId = 110;
 Directory.CreateDirectory(qaRoot);
 Directory.CreateDirectory(Path.Combine(qaRoot, "requests"));
 Directory.CreateDirectory(Path.Combine(qaRoot, "responses"));
-using FileStream clientLock = new(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-clientLock.SetLength(0);
+// Other agents use an existence-based text reservation. CreateNew respects both that convention and
+// exclusive open handles; OpenOrCreate could overwrite their text lock and delete it on shutdown.
+using FileStream clientLock = new(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 await clientLock.WriteAsync(Encoding.UTF8.GetBytes($"Codex native ability QA {Environment.ProcessId}, CSR_Tester 110, {commit}"));
 await clientLock.FlushAsync();
-await File.AppendAllTextAsync(handoff, $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Took mxo-client.lock for PR95 native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database; helper players are headless QA fixtures. Main110 will be reset to Mara, full health, flag0 and mission986 only before release.\n");
+await File.AppendAllTextAsync(handoff, $"\nUpdate {DateTime.Now:HH:mm} ET (Codex): Took mxo-client.lock for native QA, build {commit}. Native account {account} exposes only CSR_Tester110 copied into a disposable database; helper players are headless QA fixtures. Main110 will be reset to Mara, full health, flag0 and mission986 only before release.\n");
 using ThrowawayDatabase database = await ThrowawayDatabase.CreateAsync(root, "native_ability");
 ServerInstance? server = null;
 var helpers = new Dictionary<string, HeadlessPlayer>(StringComparer.OrdinalIgnoreCase);

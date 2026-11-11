@@ -8,7 +8,7 @@ Build `hds` and this project in Debug first. Run from this checkout:
 dotnet tools/NativeQa/bin/Debug/net8.0/NativeQa.dll <checkout> <new-output-directory> <build-label> [npc]
 ```
 
-It exclusively holds `C:/Users/russe/Developer/mxo-client.lock`, records acquisition/release in the shared handoff, snapshots the server binaries, and uses native ports 11000/10000. The account `CSR_AbilityQA` accepts a placeholder password and exposes only a disposable copy of CSR_Tester (110), with level-50 abilities. The optional `npc` argument starts beside the test NPC cluster; otherwise it starts at Mara. No other main-database character is read or modified.
+It creates `C:/Users/russe/Developer/mxo-client.lock` atomically with CreateNew and exclusively holds it, respecting both other agents' text reservations and open handles. An existing reservation stops startup before database or server work; coordinate through the handoff rather than deleting it. It records acquisition/release in the shared handoff, snapshots the server binaries, and uses native ports 11000/10000. The account `CSR_AbilityQA` accepts a placeholder password and exposes only a disposable copy of CSR_Tester (110), with level-50 abilities. The optional `npc` argument starts beside the test NPC cluster; otherwise it starts at Mara. No other main-database character is read or modified.
 
 Wait for `state.json`, launch the existing client with `-nopatch -noeula`, and enter as CSR_Tester. Create an empty `helpers` file in the output directory to connect QAFriend, QAFar, QAOther and QAEnemy. The enemy is durable enough for control/gunfire checks; it must issue `?pvpflag on` after entering the world.
 
