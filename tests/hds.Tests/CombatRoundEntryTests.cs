@@ -7,6 +7,18 @@ public class CombatRoundEntryTests
     private static byte[] B(string hex) => StringUtils.hexStringToBytes(hex);
     private static float F(string hex) => BitConverter.ToSingle(B(hex));
 
+    [Theory]
+    [InlineData(0x00100000u, "00001000")]
+    [InlineData(0x01100000u, "00001001")]
+    public void ParticipantCombatPreludeMatchesRetailAndPreservesNextViewBoundary(uint flags, string tail)
+    {
+        // mxopackets1_luizoe_margins_Syntax 15436: the next view starts immediately after the flags.
+        byte[] packet = ServerPackets.BuildEnterCombatMode(flags);
+        Assert.Equal(B("020003010c008084008080808001" + tail), packet);
+        Assert.Equal(18, packet.Length);
+        Assert.Equal(flags, BitConverter.ToUInt32(packet, 14));
+    }
+
     [Fact]
     public void LastdayDuelEntrySerializesExactly()
     {

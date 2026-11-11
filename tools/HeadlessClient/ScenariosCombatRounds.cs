@@ -23,6 +23,23 @@ public static partial class Scenarios
         await player.WaitUntilAsync(() => CombatEntries(player, view).Any(e => BitConverter.ToUInt16(e, 32) >= minimumSequence),
             "a complete combat round entry", TimeSpan.FromSeconds(10));
     }
+    private static void VerifyParticipantPrelude(HeadlessPlayer player)
+    {
+        // Independent retail fixture: the state and attribute record consumes exactly 18 bytes. Its next
+        // record is master-view creation (1), not 256. Searching for a later init alone missed this corruption.
+        byte[] prefix = WireFormat.FromHex("02 00 03 01 0c 00 80 84 00 80 80 80 80 01");
+        bool found = false;
+        foreach (byte[] section in player.World.ViewSnapshot())
+        {
+            int at = BytePattern.IndexOf(section, prefix, 0);
+            if (at < 0) continue;
+            found = true;
+            Check.That(at + 20 <= section.Length, "Participant prelude followed by combat-view creation");
+            Check.That((BitConverter.ToUInt32(section, at + 14) & 0x00100000) != 0, "Participant in-combat flag");
+            Check.Equal((ushort)1, BitConverter.ToUInt16(section, at + 18), "Next view begins at retail's byte boundary");
+        }
+        Check.That(found, "Participant received retail combat prelude");
+    }
     private static void VerifySharedEntry(HeadlessPlayer a, ushort av, HeadlessPlayer b, ushort bv)
     {
         var ae = CombatEntries(a, av); var be = CombatEntries(b, bv);
@@ -51,6 +68,7 @@ public static partial class Scenarios
         alice.SendRpc($"40 {HandleOf(mob)} 01 6b");
         ushort aliceNpc = await WaitForCombatView(alice), carolNpc = await WaitForCombatView(carol), bobNpc = await WaitForCombatView(bob);
         await WaitForEntry(alice,aliceNpc,2); await WaitForEntry(carol,carolNpc,2);
+        VerifyParticipantPrelude(alice);
         VerifySharedEntry(alice,aliceNpc,carol,carolNpc);
 
         // Someone arriving during a fight gets its creation/init and the next live round.
@@ -78,6 +96,7 @@ public static partial class Scenarios
         alice.SendRpc($"40 {HandleOf(bobView)} 01 6b");
         ushort av=await WaitForCombatView(alice,aliceNpc), bv=await WaitForCombatView(bob,bobNpc), cv=await WaitForCombatView(carol,carolNpc);
         await WaitForEntry(alice,av,2); await WaitForEntry(bob,bv,2); await WaitForEntry(carol,cv,2);
+        VerifyParticipantPrelude(alice); VerifyParticipantPrelude(bob);
         VerifySharedEntry(alice,av,bob,bv); VerifySharedEntry(alice,av,carol,cv);
         // A death retains the combat view for the native defeat presentation, then cleans observers too.
         bob.SendChat("?health 1");

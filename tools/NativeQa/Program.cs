@@ -8,7 +8,8 @@ string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentD
 string qaRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Path.Combine(Path.GetTempPath(), "mxo-native-ability-qa"));
 string commit = args.Length > 2 ? args[2] : "local";
 bool npcStart = args.Length > 3 && args[3] == "npc";
-int nativeX = npcStart ? 24800 : 23828, nativeZ = npcStart ? -1498 : 13984;
+bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
+int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
 const string account = "CSR_AbilityQA";
@@ -119,10 +120,11 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
                 string result = "sent";
                 if (q.TryGetProperty("delayMs", out var delay)) await Task.Delay(Math.Clamp(delay.GetInt32(), 0, 30000));
                 if (action == "chat") actor.SendChat(q.GetProperty("text").GetString()!);
-                else if (action == "cast" || action == "ranged")
+                else if (action == "cast" || action == "ranged" || action == "melee")
                 {
                     var target = await actor.WaitForViewNamedAsync(q.GetProperty("target").GetString()!);
                     if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
+                    else if (action == "melee") actor.SendRpc($"40 {Le(target.ViewId)} {target.SpawnId:x2} 00 01 6b");
                     else actor.SendRpc($"41 {Le(target.ViewId)} {target.SpawnId:x2} 00");
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
@@ -145,7 +147,7 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
             }
         }
         string[] lines = server.DebugLog().Split('\n');
-        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[ABILITY]","[BUFF]","[EFFECTS]"}.Any(l.Contains)))
+        foreach (string line in lines.Skip(seen).Where(l => new[]{"[PVP","[DUEL","[DEV]","[COMBAT]","[COMBAT-VIEW]","[ABILITY]","[BUFF]","[EFFECTS]"}.Any(l.Contains)))
             await File.AppendAllTextAsync(Path.Combine(qaRoot,"events.jsonl"), JsonSerializer.Serialize(new { At=DateTime.UtcNow, Line=line.Trim() })+"\n");
         seen = Math.Max(0,lines.Length-1);
         await File.WriteAllTextAsync(Path.Combine(qaRoot,"server.log"),server.FullOutput());

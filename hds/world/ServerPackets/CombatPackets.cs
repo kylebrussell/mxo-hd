@@ -19,19 +19,23 @@ namespace hds
         {
             // Original hex: "020003010C00808400808080800100001000"
             // Structure: [ViewID:2][UpdateType:1][AttributeMask][CombatantMode]
-            PacketContent pak = new PacketContent();
-            pak.AddUint16(2, 1);              // View ID 2 (player's self view)
-            pak.AddByte(0x03);                // Update type (attribute update)
             // 01 0c 00 | NoiseLevel 0 | ConditionStateFlags: in combat (0x00100000), with the player's PvP flag kept
             client.playerData.conditionStateFlags |= PvpFlag.InCombatBit;
             UInt32 flags = PvpFlag.FlagsOf(client);
             client.playerInstance.ConditionStateFlags.setValue(flags);
-            pak.AddHexBytes("010C00808400808080800100");
-            pak.AddUint32(flags, 1);
-
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            client.messageQueue.addObjectMessage(BuildEnterCombatMode(flags), false);
             // Everyone who sees the player: retail's views of other players carried the in-combat bit too
             PvpFlag.ToWatchers(client, PvpFlag.BuildOtherFlags(flags));
+        }
+
+        /// <summary>Retail own-view combat state plus NoiseLevel and ConditionStateFlags. The final group mask
+        /// 01 is followed immediately by the u32 flags; an extra zero shifts the following view ID by a byte.</summary>
+        public static byte[] BuildEnterCombatMode(UInt32 flags)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("020003010C008084008080808001");
+            pak.AddUint32(flags, 1);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
