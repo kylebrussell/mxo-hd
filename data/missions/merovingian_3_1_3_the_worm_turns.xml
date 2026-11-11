@@ -8,8 +8,8 @@
      joined. Ours: the description (the Summary tab was never opened), every objective text (nor was the Objectives
      tab), the sites (phase 1 is "a Zion base": ZionOutpost; the rest Normal), the looks and the enemy counts. Item
      stand-in: Downlink's notes with the strike team's address are Document_Location_Notes (6855; no item name was
-     shown). Rewards: the log shows 79,416,249 experience and 1,039,500 information, which is what a level-50 player got
-     and not a normal reward; we use Zion 3.1's values instead (308,000 experience, 101,500 information).
+     shown). Rewards: the log shows 79,416,249 experience and 1,039,500 information. These are Zion 3.1's values
+     (308,000 experience, 101,500 information, as Dire Connection paid).
      Gaps: the terminal could be hacked or opened with an access code; here it is a plain Use (a hack) of the computer,
      and the Operator's "There's the terminal" line is said on reaching the floor, since a line can't follow an object.
      Its "security system" isn't expressible. Downlink is friendly at first in retail and turns hostile once he has

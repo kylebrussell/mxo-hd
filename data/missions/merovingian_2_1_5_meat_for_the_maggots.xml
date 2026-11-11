@@ -10,8 +10,9 @@
      "wall to wall with Machines") and the looks; the Assassin has no model of his own here and wears an Exile's.
      Item stand-ins: Ether's blowflies (the "evidence") are Bug (6824), Wasat's live blowflies are Pet_Carrier (6819),
      the Assassin's package is Severed_Head (6830), as the Operator says it is. Rewards: the log shows 79,416,249
-     experience and 1,039,500 information, a level 50 player's, so these are Zion chapter 2.1's values (297,000
-     experience and 98,000 information). The Tabloid Clipping looted from a Zion Ballista is generic loot and isn't
+     experience and 1,039,500 information (a level-50 player's). These are Zion 2.1's values (297,000 experience,
+     98,000 information, as Chemical Fear paid). The Tabloid Clipping looted from a Zion Ballista is generic loot and
+     isn't
      used.
      Gaps: Ether and Wasat are dead; dead NPCs aren't spawned, so their bodies are Furniture objects to search, and the
      Operator's line on finding Ether is said on arrival. The Zion Ballista's line was half hidden and isn't used. The

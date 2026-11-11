@@ -11,8 +11,8 @@
      safe, so it is an Office; the others Normal), the looks and the enemy count (4 of Boury's guards, Exiles, as he is
      an Exile outside the Merovingian's employ). Item stand-ins: Prudentia's unnamed item is Package (6817), Boury's
      "fragments" are Frags (6785), the key disk from the computer is Data_CD (6831) and Hypatia's book is Book (6814).
-     Rewards: the player was level 50 and the reward shown (512,177 experience, 525,000 information) is a level-50 one,
-     so these are Zion 4.2's 341,000 experience and 112,000 information.
+     Rewards: the log shows 512,177 experience and 525,000 information (a level-50 player's). These are Zion 4.2's
+     values (341,000 experience, 112,000 information, as Between Waking and Sleeping paid).
      Gaps: the log never says how the fragments reached the player; here Boury hands them over when talked to after the
      fight ("Stop... agree... fragments... computer... key..."), then they go in the computer (a Put, done with Hack) and
      the key disk comes out of the same computer. Two short gaps in the log are joined: Flood's phase-2 briefing may

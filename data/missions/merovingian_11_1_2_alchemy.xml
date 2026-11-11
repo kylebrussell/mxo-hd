@@ -15,8 +15,9 @@
      was quite happy", "and applying / pressure to a certain Camon", "so don't kill him, / but do whatever", "at rate,
      I / wouldn't want you", "the city / that would have", "with a disease; / is it Saturday morning", "you /
      geocentrist.", "duly compensated for / the use of my expertise", "You only have to know / people, my friend."
-     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
-     115,500 information). The log's run paid 241,780 experience and 80,500 information.
+     Rewards: the log shows 241,780 experience and 80,500 information. These are Zion 11.1's values (352,000
+     experience, 115,500 information, as The Spider paid). The log's run paid 241,780 experience and 80,500
+     information.
      Gaps: phase 1 is read as: talk to Yong ("Eeek! Helllp!"), kill his Exiles (the Operator's "Nice." when they are
      down), talk to him again, then he goes along; retail ended that phase with "Goals for this mission phase are
      complete!" instead of the usual line, which our runtime doesn't send. Yong follows the player into phase 2 (his

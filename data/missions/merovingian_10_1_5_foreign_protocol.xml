@@ -17,8 +17,9 @@
      been incredibly massive".
      Item stand-ins: the General's data from the commando is Data (6787); the data grabbed from the Machine d-base is
      Data_CD (6831).
-     Rewards: the log shows none. Zion's only chapter 10 mission is Blip (10.2.5), so these are its values (352,000
-     experience, 525,000 information).
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
      Gaps: phase 1 ended 74 seconds after the broadcast, with nothing logged in between; it is read as getting the
      data from "that other commando". The commando who hooked up the broadcast never speaks; he stands there. The
      computers' screens (the terminal's "[0] match(es) found", the d-base's full data recursion and its record on

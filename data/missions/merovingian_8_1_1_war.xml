@@ -14,8 +14,8 @@
      missions; Mr. Black's is his neighbourhood contact's from data/mission_contact_npcs.csv) and the enemy counts
      (none: no fight anywhere in the log, as the web summary says). Item stand-in: the General's stolen code ("that
      data", "that chunk of digits") is Data (6787; no item name was shown).
-     Rewards: the log showed none (the images have no chat); no Zion 8.1 mission is built, so these are Zion 8.3's
-     values (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the log's top (Mission Started and the first briefing) wasn't captured. The Operator's "Upload that chunk of
      digits to me at..." is cut at the bottom of a screenshot and the next starts a minute later, so the search's done
      line is only its whole first sentence, and the upload's done line and the end of the second area are missing; the

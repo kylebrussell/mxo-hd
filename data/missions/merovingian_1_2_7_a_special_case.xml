@@ -4,8 +4,8 @@
      Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
      the objective texts, the sites (Sharmaine Tarn's workplace: Office; her apartment: SlumApt), the looks and the
      Protect goals. Sena's affiliation isn't shown; she is given an Exile look. Items: retail's "You received
-     Documents." is the Documents item (6794). Rewards: the log is a level-50 player's (525,000 information, no
-     experience), so this pays Zion 1.2's 68,750 experience and 91,000 information.
+     Documents." is the Documents item (6794). Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: Sena locks the apartment door and comes on to the player; doors can't be locked, so she waits for the player
      (attacksOnSight="0"): finding her is a Talk that plays her lines, then she is killed (the log doesn't show the
      fight, but the Operator's reaction follows it). A hidden line at a scroll seam in Sharmaine's first line is read as

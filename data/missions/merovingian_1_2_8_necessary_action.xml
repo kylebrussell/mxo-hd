@@ -4,8 +4,8 @@
      Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
      the objective texts, the sites (unnamed buildings: Normal), the looks and the enemy count (the Agents behind "You've
      got company!" are the first phase's generated Machines). Item stand-in: Turso's vial of truth serum is Medicine
-     (6808). Rewards: the log is a level-50 player's (525,000 information, no experience), so this pays Zion 1.2's
-     68,750 experience and 91,000 information.
+     (6808). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
+     values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: in retail Dora is friendly while held, is led out of the building and to Alphonse ("If Dora dies on the way
      there..."), then turns hostile and is killed. NPCs can't switch sides, and a follower stays with the player, so
      Dora isn't led out: the Dora of the second phase is a hostile who waits beside Alphonse (attacksOnSight="0"); finding

@@ -15,8 +15,9 @@
      / "Yes, there was something" as a paragraph break, "with that program he's desperate for sitting / there in your
      RSI", "Your readings / look normal", "You'll be / meeting up", "those phone / booths for once", "They've got the
      mainframe / in there all prepped", and "Is it the interface program?" / "Man, this is weird" as a paragraph break.
-     Rewards: Zion has no chapter 11.1 mission but The Spider (11.1.5), so these are its values (352,000 experience,
-     115,500 information). The log's run paid 253,000 experience and 84,000 information.
+     Rewards: the log shows 253,000 experience and 84,000 information. These are Zion 11.1's values (352,000
+     experience, 115,500 information, as The Spider paid). The log's run paid 253,000 experience and 84,000
+     information.
      Gaps: the interface program is never an item: it rides in the player's signal from phase 1 to 3 and in Tarka's
      after that. Phase 1 is a Use of the mainframe, whose done line is the Operator's "What th-?!". The Operator's
      "Uh-oh, you've got Machines on your tail!" has no visible header (a second paragraph or a hidden entry); it comes

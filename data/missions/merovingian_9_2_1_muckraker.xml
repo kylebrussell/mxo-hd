@@ -10,8 +10,8 @@
      Machines'; phase 3's are the Network's corporate security guards, an Exile's men, so Merovingian.
      Agent Pace greeted the player by the character's own first and last name ("Ms... Napilitano", "the System,
      Marie"); the engine only knows the handle, so all three are {player}.
-     Rewards: the log is a level 36 player's live run and paid 385,000 experience and 126,000 information; these are
-     the same-numbered Zion mission 9.2.1's values (362,835 experience, 63,000 information).
+     Rewards: the log shows 385,000 experience and 126,000 information (a level-36 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
      Gaps: the computers' screens (the four-line "Intruder [Engagement Protocol]" in phases 1 and 2, five results of
      "CENSORED" in phase 3) aren't shown. Phase 3's terminal was locked down (hack it or find an access code); the
      Operator's line about that, said on reaching it, is a second arrival line here, and the hack's "That'll work."
@@ -23,7 +23,7 @@
      across screenshots where a hidden row is possible (phase 1's and phase 2's Operator lines, phase 3's
      briefing). -->
 <mission id="309201" title="Muckraker" description="Dig up whatever the Machines know about the intruder." plot="1"
-         order="9201" org="3" contact="Flood" exp="362835" info="63000">
+         order="9201" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Agent West" type="FRIENDLY" at="4" rsi="3600004e" weapon="2564">
     <say display="5">...</say>
   </npc>

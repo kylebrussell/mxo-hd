@@ -10,9 +10,8 @@
      phase they appear in.
      Item stand-ins: the data key, which retail showed as a book, is Book (6814); the disk with the component is
      Data_CD (6831).
-     Rewards: retail showed 1,347,500 experience and 525,000 information, but the log is a level-50 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation), used for all of Merovingian 5.1.
+     Rewards: the log shows 1,347,500 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the book turned up only once the Crushers were beaten; we can't spawn an item on a goal, so it is in a box
      searched after the fight. Retail sent the player back to the Effectuator's and Digger's places; a phase never
      reuses a site, so they are elsewhere the second time. Lines at screenshot joins read whole and are used as such

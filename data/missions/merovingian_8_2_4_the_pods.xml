@@ -18,9 +18,8 @@
      Merovingian's are those of earlier missions; Sunshine's is her contact's from data/mission_contact_npcs.csv), and
      the enemy kind and count (Machines "all over the place": five). No item was shown: the General's figures are only
      in the lines, so there are no item stand-ins.
-     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid), the nearest built: no Zion 8.1 or 8.2
-     mission is.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: no "Mission Started!" entry was captured. Malphas's talk in the first area and the Merovingian's in the last
      had no Operator line before the goals completed, so they have no done line. In the second area the Machines took
      6.5 minutes to clear and the transmission came 11 s after the last fell, so killing them all is a goal and the

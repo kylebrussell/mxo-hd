@@ -194,6 +194,31 @@ in Westview, level 40 and reputation 40 in Downtown, and level 50 and reputation
 The token is consumed on completion and retained on abort. The current reconstruction offers these
 missions through Flood's story sequence. Collector-issued entry tokens and their gates still need implementation.
 
+### Merovingian rewards
+
+Most of the Merovingian logs are level-50 archive replays. They paid 525,000 or 1,039,500 information and capped or
+no experience, which isn't a normal reward. So each section of the Merovingian story pays one pair of values,
+taken from another log, and every file's header says it the same way: "Rewards: the log shows ... These are ...".
+
+| Section | Experience | Information | From |
+|---|---|---|---|
+| 1.1 | 55,200 | 73,500 | Zion 1.1 (Redpill Rescue's log) |
+| 1.2 | 68,750 | 91,000 | Zion 1.2 (Confiscation's log) |
+| 1.3 | 308,750 | 94,500 | Zion 1.3 (Miracle Man's log) |
+| 2.1, 2.2 | 297,000 | 98,000 | Zion 2.1 and 2.2 (Chemical Fear's and In Exile's logs) |
+| 2.3 | 308,000 | 98,000 | Zion 2.3 (Free Your Mind's log) |
+| 3.1 | 308,000 | 101,500 | Zion 3.1 (Dire Connection's log) |
+| 4.1, 4.2 | 341,000 | 112,000 | Zion 4.1 and 4.2 (Demonstration of Force's and Between Waking and Sleeping's logs) |
+| 4.3 | 352,000 | 115,500 | Zion 4.3 (Shakedown's log) |
+| 5 | 286,000 | 94,500 | Machines 5 (Deviation's log): no Zion log shows chapter 5's |
+| 6 to 9.2 | 363,000 | 63,000 | Zion 9.2 (1313's log), as the Zion files also have them for 7.2 and 8.3 |
+| 9.3 | 374,000 | 63,000 | Zion 9.3 (Senseless's log) |
+| 10 | 352,000 | 525,000 | Zion 10 (Blip, Zion's only chapter 10 file) |
+| 11.1 | 352,000 | 115,500 | Zion 11.1 (The Spider's log) |
+| 11.2 | 352,000 | 175,000 | Zion 11.2 (Mara's information, The Spider's experience) |
+| 11.3 | 352,000 | 525,000 | Zion 11.3 (Resistance's information, The Spider's experience) |
+| 12.1 | 239,105 | 105,000 | Hothouse's own log, a level-30 player's |
+
 ### Recurring characters' looks
 
 The screenshot logs don't show RSIs, so the story files give their NPCs stand-in looks. A character who comes back

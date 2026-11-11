@@ -12,8 +12,8 @@
      no hostile is named and no kill is logged anywhere, so no phase has any. The Merovingian and the two Twins are
      at the meeting and again at Carlyne's place, so they are two NPCs each. Which Twin said which line isn't shown;
      they alternate here.
-     Rewards: the log is a level-37 player's live run (395,820 experience and 66,500 information), so these are the
-     same-numbered Zion mission's, 9.3.1 Mistrust (363,000 experience, 63,000 information).
+     Rewards: the log shows 395,820 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.3's values (374,000 experience, 63,000 information, as Senseless paid).
      Gaps: phase 1's goal completed on reaching Stacey Ashford (her "Help!", the Operator's "Nope, not him." and the
      area's completion share one second); here she is talked to. What the "strange things" Flood then mentions were
      isn't in the log. The Operator's "Oh, goody." in phase 2 had no visible cause; it is said on getting near the
@@ -26,7 +26,7 @@
      afterwards. Two cut joins are read as paragraph breaks: "Oh, thank goodness you" / "Wait..." and "it's
      "Halborn."" / "The guy's a real piece of work." -->
 <mission id="309301" title="Duality" description="Find the intruder for the Merovingian, then greet the wireframed man who is stalking him." plot="1"
-         order="9301" org="3" contact="Flood" exp="363000" info="63000">
+         order="9301" org="3" contact="Flood" exp="374000" info="63000">
   <npc id="1" handle="Stacey Ashford" type="FRIENDLY" at="1" rsi="6e060040" weapon="0">
     <say after="1">Oh, thank goodness you--&#10;&#10;Wait... Where are you going?</say>
   </npc>

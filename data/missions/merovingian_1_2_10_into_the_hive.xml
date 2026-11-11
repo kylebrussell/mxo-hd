@@ -7,8 +7,8 @@
      generated Machines; the Machine Captain is placed with a bark he had in Team chat). Item stand-ins: the hit list is
      Document_Hit_List (6854), Annita Barrows's access card is Access_Card (6791), the key the Operator spots after the
      apartment's goals are done is Access_Code (6782), an optional search, and the hardline junction box is a Box that
-     is used. Rewards: the log is a level-50 player's (525,000 information, no experience), so this pays Zion 1.2's
-     68,750 experience and 91,000 information.
+     is used. Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
+     values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: Agent Park greets the player before the fight; he waits for the player (attacksOnSight="0"): finding him is a
      Talk that plays his line and the Operator's, then he is killed and the hit list looted from his body. Annita
      Barrows flashed hostile for one line in retail; she is friendly here, and the access card is taken from her with a

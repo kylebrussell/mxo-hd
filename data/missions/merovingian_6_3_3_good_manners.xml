@@ -13,9 +13,9 @@
      Hypatia's "private library" wasn't seen: Normal; the Network's was an office), the looks of the Merovingian and
      Malphas (the Bartender's, Hypatia's and the Network's are their own, from data/mission_contact_npcs.csv) and
      the number of guards. The Network's guards are Exile programs, so Merovingian. No item was shown.
-     Rewards: the log shows 1,012,000 experience and 493,500 information, a level-47 player's archive replay and not a
-     normal reward; we use Zion 7.2's values (363,000 experience, 63,000 information), the nearest Zion chapter built (Machines 6's retail logs paid 363,000 and 59,500),
-     since no Zion chapter 6 exists.
+     Rewards: the log shows 1,012,000 experience and 493,500 information (a level-47 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
      Gaps: each NPC's second line came a few seconds after the first, when they were talked to again; here it is
      their line once their goal is done. The Network's far door was sealed until his guards were beaten ("The other
      door just unlocked. Was that some kind of test?"); here the talk with him opens once the guards are dead, and

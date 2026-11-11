@@ -10,9 +10,8 @@
      Machine programs (Machine Enforcers). Emmert and the Holographic Projection (the General's transmission) are each
      in two places, so each is two NPCs. The Commando is the friendly program that stood by the Intruder ("some
      program of his"); he said nothing.
-     Rewards: the log showed 396,000 experience and 129,500 information for a level 37 player's live run; these are
-     the same-numbered Zion mission 9.2.4's values (362,835 experience, 63,000 information), as the other Merovingian
-     missions use Zion's because most of their logs are level-50 players'.
+     Rewards: the log shows 396,000 experience and 129,500 information (a level-37 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
      Gaps: "Search the area" was done at the computer beside Emmert (its screen: a search for "sati", 0 results, isn't
      shown); here it is a Search of that computer that gives nothing. Agent Johns came in after the search to take
      Emmert, and the player left; nothing arrives here, so he stands in phase 2 from the start, hostile but waiting to
@@ -23,7 +22,7 @@
      level G.") isn't used. Entries may be missing from the log between 11:27:42 and 11:27:59, 11:29:21 and 11:32:12,
      and 11:33:09 and 11:33:21. -->
 <mission id="309204" title="Heart's Desire" description="Find the General's old files on Sati for the intruder." plot="1"
-         order="9204" org="3" contact="Flood" exp="362835" info="63000">
+         order="9204" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Emmert" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
     <say after="1">Good luck, sir! I'm sure it must be very important!</say>
   </npc>

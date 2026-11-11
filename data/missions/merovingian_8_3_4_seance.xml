@@ -16,8 +16,8 @@
      "that blood-drinker", "the possessed vamp"), the enemy kinds and counts (Machine programs in the two terminal
      areas; none was killed for a goal) and the item stand-ins (Data, 6787, for both the first terminal's data and the
      caretaker program's activity history; no item was named).
-     Rewards: the log shows no reward line (every image is cropped to the Mission window). These are Zion 8.3's values
-     (363,000 experience, 63,000 information, as Evacuation, zion_8_3_4, paid).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
      Gaps: the Operator's "I'm getting a promising data signature..." came 22 s after arriving, as the terminal came
      near; objects can't carry a near trigger, so it follows the arrival line. Picking up the data and being told to
      take it to a hardline were 13 s apart in phase 1 and 81 s apart in phase 3 (the hack, then the pickup); here one

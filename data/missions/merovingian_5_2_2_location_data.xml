@@ -11,9 +11,8 @@
      missions. Each fighting phase has one named Unlimit Reactor; the three barks (dead end, Niobe, power) came in phases 2 to 4 without a clear order, so each takes one.
      Item stand-ins: the two halves of the encoded file are File (6800) and Data (6787); the location data from the
      goon's pockets is Map_Disk (6783).
-     Rewards: retail showed 1,056,000 experience and 514,500 information, but the log is a level-49 player's, whose
-     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
-     Deviation).
+     Rewards: the log shows 1,056,000 experience and 514,500 information (a level-49 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the three Effectuators are three NPCs with the same name and look (retail's copies looked alike); the
      first is the one to talk to, and the other two say their after lines. Their "Amigo!" and "Compadre!" came on
      coming near and are said with the Operator's "three at once". In phase 2 the second half of the file came after
