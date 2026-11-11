@@ -16,9 +16,10 @@
      problem follows), kill the Agent and the guards, take the file from the same computer, and upload it at a
      hardline; the guards are on the floor from the start, and the Agent arrives once the computer has been used
      ("You've got an Agent problem!"), when the kill goal opens. The Operator's "Head's up. I'm picking up overridden
-     code" is said on the upload; the accelerated program that went after the player between the two areas isn't
-     spawned. In phase 2 the "Machine reinforcements" that arrived at the terminal aren't spawned either: the Operator's
-     "That's the Right terminal" and "More goons incoming!" come together when the terminal is searched. -->
+     code" is said on the upload. The accelerated program that went after the player between the two areas is one
+     generic Machine hostile beside the player when phase 2 starts, out on the street; nothing names its kind. In phase
+     2 the Operator's "That's the Right terminal" is said when the terminal is searched, and the "Machine
+     reinforcements" (three, our count) arrive beside the terminal then, with "More goons incoming!". -->
 <mission id="311302" title="The Mechanical Man" description="Hunt for data matching the android the General's men recovered, from a looted Ouroboros network to a Machine facility in Maribeau." plot="1"
          order="11302" org="3" contact="Flood" exp="352000" info="525000">
   <npc id="1" handle="Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" spawnAfter="1" />
@@ -41,11 +42,10 @@
     <briefing>Now why would overridden programs be after you, {player}? That's just hubris.&#10;&#10;It looks like the Machines confiscated the Ouroboros data we were after. The Merovingian wants his android functional, so you'll just have to march into the Machine facility in Maribeau and get that data back.</briefing>
     <enter><say>Hey, did you get a look at that accelerated program that was after you? What the heck was that?&#10;&#10;Uh... Okay, the Machines aren't slacking on security in there. Keep your finger on the trigger while you're getting that data.</say></enter>
     <object id="1" kind="Computer" />
+    <wave count="1" spawnAt="player" />
+    <wave count="3" after="5" spawnAt="object:1"><say>More goons incoming! Get out of there!</say></wave>
     <objective goal="5" text="Get the data from the terminal" type="Search" object="1" item="6787">
-      <done>
-        <say>That's the Right terminal. Give me a second here...</say>
-        <say>More goons incoming! Get out of there!</say>
-      </done>
+      <done><say>That's the Right terminal. Give me a second here...</say></done>
     </objective>
   </phase>
   <finish>Hm... The data you liberated from the Machines does appear to have commonalities with the android's hardware. That strongly suggest that it is an Oligarch device. Now, the question is, what is it for, and how did they manage to lose it? ... Yes, fine, that's two questions.&#10;&#10;Oh, by the by, the strange program that approached you between Vauxton and Maribeau seems to be a new breed of "accelerated" program created by Wright's overrides. I'm told that Cypherites think they carry valuable bits of information.&#10;&#10;I realize this is all very distracting to you, operative. See our contact in Hampton again once you've worked things out.</finish>

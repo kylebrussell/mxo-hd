@@ -10,11 +10,11 @@
      Flood's "Don't" was in italics; here it is plain. Kaplan's "sah" is retail's. Ours: the description (the Summary
      tab only said "Datalink established."), the other objective texts, the sites (all Normal: phase 2's computer stood
      in a bare carpeted room in Mara, phase 4's mainframe in a carpeted office in Achan), the looks and the enemy
-     counts. Phase 2's hostiles are Machine programs (Tactical Security, four bodies searched); phase 4's "one guard"
-     is a Machine program too.
-     Joins across screenshots read as contiguous: Flood's "resourceless individual, and / won't stop bothering me",
-     the Projection's "to cut my transmission to avoid / detection" and "so I can only / conclude", and the Operator's
-     "The commandos think that we can / search Machine records".
+     counts (phase 4's swarm is four). Phase 2's hostiles are Machine programs (Tactical Security, four bodies
+     searched); phase 4's "one guard" is a Machine program too. Joins across screenshots read as contiguous: Flood's
+     "resourceless individual, and / won't stop bothering me", the Projection's "to cut my transmission to avoid /
+     detection" and "so I can only / conclude", and the Operator's "The commandos think that we can / search Machine
+     records".
      Rewards: the log shows 396,000 experience and 129,500 information (a level-37 player's live run). These are Zion
      9.2's values (363,000 experience, 63,000 information, as 1313 paid).
      Gaps: the Projection's lines came ten seconds after Dryhurst's with no click shown; here the Projection is talked
@@ -23,14 +23,15 @@
      Royal and Roberts, the "Elite Commando programs" of phase 3 ("rally them up and bring them outside"), follow into
      phase 4, as they did in retail. The two computers' screens ("> stalingrad ... _null Link terminated. Security
      override." in phase 2; in phase 4 a fragment: "...prior to entering the System in the vicinity of Ascension
-     Monument, subject cited alleged remote tracking of System forces to structure code-name "Stalingrad" as the
-     event precipitating his visit...") aren't shown. Phase 2's trace being detected isn't a mechanic. The Operator's
-     "incoming transmission" lines in phase 3 are said on getting near the Projection. The swarm that arrived after
-     phase 4's mainframe (Watchman, Tactical Security, Machine Enforcer) isn't spawned: only the one guard is there.
-     An NPC entry between 11:05:10 and 11:05:34 is lost (probably the commandos' chat lines), and so is the log
-     between 11:15:55 and 11:20:35. The hostiles' Team chat barks ("Security alert, sector 57-G!", "You've made a poor
-     choice, Ms...whatever your name is.", "Oy yoy-yoy!", "Neutralizing intrusion.") are the generic hostiles' and
-     aren't set. -->
+     Monument, subject cited alleged remote tracking of System forces to structure code-name "Stalingrad" as the event
+     precipitating his visit...") aren't shown. Phase 2's trace being detected isn't a mechanic. The Operator's
+     "incoming transmission" lines in phase 3 are said on getting near the Projection. Phase 4 starts with the one
+     guard; the swarm that arrived after its mainframe (Watchman, Tactical Security, Machine Enforcer) is a wave of
+     generic Machine hostiles that comes when the mainframe is searched, as the Operator warns of it, while the player
+     leaves. The log shows no goal to kill them. An NPC entry between 11:05:10 and 11:05:34 is lost (probably the
+     commandos' chat lines), and so is the log between 11:15:55 and 11:20:35. The hostiles' Team chat barks ("Security
+     alert, sector 57-G!", "You've made a poor choice, Ms...whatever your name is.", "Oy yoy-yoy!", "Neutralizing
+     intrusion.") are the generic hostiles' and aren't set. -->
 <mission id="309202" title="Down to a Sunless Sea" description="Find out what the Machines told the intruder about the General's base, Stalingrad." plot="1"
          order="9202" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Dryhurst" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
@@ -86,6 +87,7 @@
     <briefing>I don't care what sort of freaks you have to work with, operative; just get it taken care of.</briefing>
     <enter><say>Okay... I'm not picking up much... Maybe one guard, and some kind of networked system.</say></enter>
     <object id="1" kind="Mainframe" />
+    <wave count="4" after="7" />
     <objective goal="7" text="Search the Mainframe" type="Search" object="1" item="0">
       <done><say>"Ascension Monument"... Is that about the intruder? He was spying on the Machines when they went after Stalingrad? But why--&#10;&#10;Uh-oh. I've got a swarm of blips on my screen, and they do not look happy.</say></done>
     </objective>

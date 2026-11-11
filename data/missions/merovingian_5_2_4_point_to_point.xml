@@ -8,22 +8,22 @@
      "Leave the area now!"), the sites (the last hub was a run-down apartment: SlumApt; the others aren't described:
      Normal), the looks and the enemy counts. Anome's code-corrupted goons are redpills modified by his cheat codes;
      they have no org of their own, so they are the nearest, Zion, as rogue redpills, as in the Machines chapter 5
-     missions. Phase 4's named Unlimit Reactor is ours (the name Anome's goons carry in this chapter's logs), to carry
-     the Operator's second wave line. No mission items.
+     missions. No mission items.
      Rewards: the log shows 1,078,000 experience and 525,000 information (a level-50 player's). These are Machines
      chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
      Gaps: the Effectuator is one NPC per phase he appears in; in phases 2 and 4 he arrives after the fight, and his
      talk opens then. The lupines Wolf, Pheasant and Brorfelde fought beside the player (the target window called them
      Dire Lupine Bane); we have no allies who fight, so they are talked to and then led out, and follow the player to
-     the later phases. Pheasant and Brorfelde show up once Persephone has been talked to ("They should be showing up
-     in a room nearby"). Nothing shows the mission failing if they die, so there is no Protect. The goons' second wave
-     in phase 4 ("more of them just appeared") is there from the start; the Operator's line is said on coming near the
-     named goon. Pheasant's and Brorfelde's lines after the last fight are said with the kill goal's done line. The log
-     shows a computer hacked at the end of phase 4, right after the Effectuator's line, which came twice; here the
-     computer is used after the talk, and the second copy of his line is its done line. The hacked computer's
-     corrupted verse can't be shown. The barks "Hrrr?" and "Sssmoked." (from Dire Lupine Bane, so no one lupine) and
-     the cut-off "zone, operrrative." (speaker not shown) aren't used. Lines at screenshot joins read whole and are
-     used as such. -->
+     the later phases. Pheasant and Brorfelde show up once Persephone has been talked to ("They should be showing up in
+     a room nearby"). Nothing shows the mission failing if they die, so there is no Protect. In phase 4 the Operator's
+     "Don't pat yourself on the back just yet; more of them just appeared on my screen!" came five minutes after the
+     area's first line and four before the last kill; here it comes with a second wave of three goons, who arrive once
+     the first five are dead, each wave with a kill goal of its own. Pheasant's and Brorfelde's lines after the last
+     fight are said with the second kill goal's done line. The log shows a computer hacked at the end of phase 4, right
+     after the Effectuator's line, which came twice; here the computer is used after the talk, and the second copy of
+     his line is its done line. The hacked computer's corrupted verse can't be shown. The barks "Hrrr?" and "Sssmoked."
+     (from Dire Lupine Bane, so no one lupine) and the cut-off "zone, operrrative." (speaker not shown) aren't used.
+     Lines at screenshot joins read whole and are used as such. -->
 <mission id="305204" title="Point to Point" description="Clear Anome's forces from the network hubs blocking the Effectuator's trace on Niobe." plot="1"
          order="5204" org="3" contact="Flood" exp="286000" info="94500">
   <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
@@ -38,8 +38,7 @@
   </npc>
   <npc id="5" handle="Pheasant" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" spawnAfter="6" />
   <npc id="6" handle="Brorfelde" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="6" />
-  <npc id="7" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="ec020058" weapon="2568" />
-  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" spawnAfter="10" />
+  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" spawnAfter="11" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>That bungler, the Effectuator, claims that he's finally getting somewhere in his half-witted attempts to rescue Zion's leader. And he'd better be, since we hunted down and eliminated Phenora, his last excuse.
 
@@ -103,7 +102,9 @@ Hey... Just got a call from the Effectuator for real, this time. He said he's se
     <briefing>I see he gave you some more of his playthings.</briefing>
     <enter><say>That place is a total mess of corrupt code. This is gonna be a war.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="10" text="Eliminate the hostiles" type="DefeatAll">
+    <wave count="3" after="10"><say>Don't pat yourself on the back just yet; more of them just appeared on my screen!</say></wave>
+    <objective goal="10" text="Eliminate the hostiles" type="DefeatAll" wave="0" />
+    <objective goal="11" text="Eliminate the rest of the hostiles" type="DefeatAll" wave="1" after="10">
       <done>
         <say>Code's clearing up... I think that's all of 'em, finally.
 
@@ -112,15 +113,12 @@ Your buddy just popped into the computer room there.</say>
         <say npc="6">Finished. They arrrre...disgusting.</say>
       </done>
     </objective>
-    <objective goal="11" text="Talk to the Effectuator" type="Talk" npc="8" after="10">
+    <objective goal="12" text="Talk to the Effectuator" type="Talk" npc="8" after="11">
       <talk><say npc="8">That's done it! I'm running the final trace on Niobe's construct now. We'll have her out of there in no time!</say></talk>
     </objective>
-    <objective goal="12" text="Hack the computer" type="Use" object="1" after="11">
+    <objective goal="13" text="Hack the computer" type="Use" object="1" after="12">
       <done><say npc="8">That's done it! I'm running the final trace on Niobe's construct now. We'll have her out of there in no time!</say></done>
     </objective>
-    <near npc="7" radius="1000">
-      <say>Don't pat yourself on the back just yet; more of them just appeared on my screen!</say>
-    </near>
   </phase>
   <finish>He thinks he's done it, does he? He'd better not screw this up. We need Niobe in one piece.
 
