@@ -18,21 +18,20 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 30 | 10 | 89 |
+| Handled | 49 | 35 | 21 | 105 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 0 | 21 | 49 | 70 |
+| Ignored | 0 | 17 | 39 | 56 |
 | Wrong | 0 | 0 | 1 | 1 |
 | Not sent by this client | | | | 2 |
-| **Total** | 49 | 53 | 60 | 164 |
+| **Total** | 49 | 54 | 61 | 166 |
 
-Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items").
+Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled.
 
 The biggest gaps left, by impact:
 
 1. **Animation stances** (`33`, `34`, sent 302 and 21 times in the captures): probably sitting, leaning and the like. Retail answered with nothing over RPC, so the effect, if any, is in other players' views (protocol 03), not decoded.
-2. **Chat rooms** (`81 c2` to `81 e1`): `/roomcreate`, `/roomenter`, the channel list.
-3. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
-4. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
+2. **Paired emotes** (`32`, the answer to a two-person emote such as `/hug`).
+3. **Combat style at world entry** (`3e`, U 232): Codex's area (combat), not touched here.
 
 ## Login and world entry
 
@@ -77,7 +76,7 @@ The biggest gaps left, by impact:
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle) | D, C 1052 | handled | high |
+| `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 is a room line (`/room room text`) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
 | `29` | Tell (TargetName, Text, bEchoOnly, ChatHandle) | D, C 81 | handled | high |
 | `30` | Emote (EmoteID, TargetID) | D, C 24 | handled | medium |
 | `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | ignored | medium |
@@ -91,24 +90,26 @@ The biggest gaps left, by impact:
 
 ## Chat rooms (custom channels)
 
-All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175). The server has no rooms; none are in the captures. The pairing of request to command is read from the field names; which of `81 c7` and `81 c9` is leave and which destroy is a guess.
+All from the slash commands `/roomcreate` .. `/roomtopic` (strings 0x02000160..0x02000175); no window sends them. The command handler (0x62256760) switches on the command's string id. No capture has a room, so the records are client.dll's and the rules ours: see "Chat rooms in detail".
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
-| `81 c2` | Enter a room (RoomName, Password) | D, S | ignored | medium |
-| `81 c7` | RoomName: leave (guess) | D, S | ignored | medium |
-| `81 c9` | RoomName: create or destroy (guess) | D, S | ignored | medium |
-| `81 cd` | Invite (PlayerNameToInvite, RoomName) | D, S | ignored | low |
-| `81 cf` | Uninvite | D, S | ignored | low |
-| `81 d1` | Kick | D, S | ignored | low |
-| `81 d3` | Ban | D, S | ignored | low |
-| `81 d5` | Unban | D, S | ignored | low |
-| `81 d7` | Make moderator (IsTemporaryModerator) | D, S | ignored | low |
-| `81 d9` | Remove moderator | D, S | ignored | low |
-| `81 db` | Set owner | D, S | ignored | low |
-| `81 dd` | Give voice | D, S | ignored | low |
-| `81 df` | Remove voice | D, S | ignored | low |
-| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/rooms`, `/roomfind` | D, S | ignored | medium |
+| `81 c0` | Create (RoomName, Topic, Password, IsPrivate .. IsGameLocal, MaxOccupancy): `/roomcreate room[:password] [topic]`. Missing from `client-rpc-classes.txt` (vtable 0x6288e7d0, sender 0x622461f0) | D, S | handled (new): `81 c1` | medium |
+| `81 c2` | Enter (RoomName, Password): `/roomenter room[:password]` | D, S | handled (new): `81 c3` to the room; a private room's knock is `81 c5` to its moderators | medium |
+| `81 c5` | Let a waiting player in (PlayerName, RoomName, Allow, never set): `/roomallow room player`. The same class as the server's "%s is requesting entry" | D, S | handled (new): `81 c6`, then `81 c3` | low |
+| `81 c7` | Leave (RoomName): `/roomleave` | D, S | handled (new): `81 c8` | medium |
+| `81 c9` | Destroy (RoomName): `/roomdestroy` | D, S | handled (new): `81 ca` | medium |
+| `81 cd` | Invite (PlayerNameToInvite, RoomName): `/roominvite room player` | D, S | handled (new): `81 ce` | low |
+| `81 cf` | Uninvite | D, S | handled (new): `81 d0` | low |
+| `81 d1` | Kick | D, S | handled (new): `81 d2` | low |
+| `81 d3` | Ban | D, S | handled (new): `81 d4` | low |
+| `81 d5` | Unban | D, S | handled (new): `81 d6` | low |
+| `81 d7` | Make moderator (IsTemporaryModerator, sent as 0) | D, S | handled (new): `81 d8` | low |
+| `81 d9` | Remove moderator (IsTemporaryModerator before RoomName) | D, S | handled (new): `81 da` | low |
+| `81 db` | Set owner | D, S | handled (new): `81 dc` | low |
+| `81 dd` | Give voice | D, S | handled (new): `81 de` (kept, but no room can be moderated: see below) | low |
+| `81 df` | Remove voice | D, S | handled (new): `81 e0` | low |
+| `81 e1` | Find rooms (StartingNodeName, SearchFilter): `/roomfind [node] [filter]`, both words as typed. `/rooms` sends nothing | D, S | handled (new): `81 e2`, then `81 e3` per room | medium |
 
 ## Friends, ignore list, who and character info
 
@@ -357,6 +358,107 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 
 The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. So there is nothing to implement for them, and the server keeps Take All as the only way to loot.
 
+## Chat rooms in detail
+
+No capture has a room. The records are client.dll's. Who gets which record, and the rules, are ours.
+
+**Addresses.** Before sending, the client rewrites room arguments (0x6224ff40) and player arguments (0x6224f880) into chat addresses. Dots become `+`, and `SOE+MXO+<WorldPrefix>+` goes in front, so `/roomenter my.room` sends `SOE+MXO+Recursion+my+room`. For display, the client strips its own world's prefix again (0x6224f020 for rooms, 0x6224e810 for players). The server keeps the name after the prefix (`my+room`), compares names without case, and echoes full addresses back.
+
+**Requests.** Strings are `<u16 offset from the record's first byte>` fields, as everywhere else. A string the sender never set keeps offset 0.
+
+| Request | Layout | Command |
+|---|---|---|
+| `81 c0` (0x11) | +2 RoomName, +4 Topic, +6 Password, +8 IsPrivate, +9 IsModerated, +a IsPersistent, +b IsWorldLocal, +c IsGameLocal, +d MaxOccupancy u32 | `/roomcreate room[:password] [topic]`. IsPrivate is 1 only with a password; the other flags and MaxOccupancy are always 0 |
+| `81 c2` (6) | +2 RoomName, +4 Password | `/roomenter room[:password]` |
+| `81 c7`, `81 c9` (4) | +2 RoomName | `/roomleave`, `/roomdestroy` |
+| `81 cd` .. `81 df` (6) | +2 player, +4 RoomName | `/roominvite`, `/roomuninvite`, `/roomkick`, `/roomban`, `/roomunban`, `/roomvoice`, `/roomunvoice` |
+| `81 d7` (7) | +2 player, +4 RoomName, +6 IsTemporaryModerator (0) | `/roommod` |
+| `81 d9` (7) | +2 player, +4 IsTemporaryModerator (0), +5 RoomName | `/roomunmod` |
+| `81 db` (0xa) | +2 player, +4 RoomName, +6 Status (0) | `/roomsetowner` |
+| `81 c5` (7) | +2 PlayerName, +4 RoomName, +6 Allow (0) | `/roomallow` (its usage line says `/roomallowenter`) |
+| `81 e1` (6) | +2 StartingNodeName, +4 SearchFilter | `/roomfind [node] [filter]`, both words as typed |
+| `28` (8) | +1 ChatType 18, +2 bShout 0, +3 Text (up to 255 characters), +5 RoomName, +7 ChatHandle | `/room room text` (0x6216aff0) |
+
+Five commands send nothing. `/rooms` is accepted and dropped. `/roomsize`, `/roomprivate`, `/roompassword` and `/roomtopic` fall to the client's "not a command" path. The only check the client makes is for missing arguments ("usage: /roomX room player").
+
+**Answers.** Each handler prints one System chat line and keeps no state. A status without the success bit is a failure ("Failed to ... Reason: %s."). Where a record names a player, a name left out (offset 0) means "you". `81 c3` without a name prints "You entered chat room %s."; with a name it prints "%s entered chat room %s.".
+
+| Record | Layout | Prints |
+|---|---|---|
+| `81 c1` | +2 RoomName, +4 Status | "Created chat room %s." |
+| `81 c3`, `81 c8`, `81 ca` | +2 PlayerName, +4 RoomName, +6 Status | entered / left / destroyed ("Destroy chat room successful." without a name) |
+| `81 c5` | +2 PlayerName, +4 RoomName, +6 Allow | "%s is requesting entry into chat room %s." |
+| `81 c6` | +2 PlayerName, +4 RoomName, +6 Status | "You allow entry into chat room %s." |
+| `81 c4` | +2 RoomName, +4 Status | "You were denied entry into chat room %s." Unused, since no command denies entry |
+| `81 ce` .. `81 e0` | +2 target, +4 actor, +6 RoomName, +8 Status | "%s kicks you ..." (no target), "You kick %s ..." (no actor), "%s kicks %s ..." (both) |
+| `81 d8`, `81 da` | +2 target, +4 actor, +6 RoomName, +8 IsTemporaryModerator, +9 Status | the same three forms, with "temporary " when the flag is set |
+| `81 dc` | +2 PlayerNameGainingOwnership, +4 RoomName, +6 Status | "%s gains ownership of chat room %s." |
+| `81 e2` | +2 NumRoomsFound u32, +6 Status | "Found %i matching rooms" |
+| `81 e3` (0x17) | +2 RoomName, +4 RoomTopic, +6 private, +7 moderated, +8 persistent, +9 world-local, +a game-local, +b CurrentOccupancy u32, +f MaxOccupancy u32, +13 RoomIndex u32 | "  Room %s (%i occupants)", then the topic and the flags. MaxOccupancy and RoomIndex are not shown |
+| `81 bf` | +2 ChatHandle, +3 Status | "Failed to send room message.  Reason: %s." |
+| `2e` | ChatType 18, SenderName (+7), RoomName (+9), Text (+b) | "[room] Name: text", in every tab that shows type 8 (the default tab does, 0x62249930). The client does not print its own line |
+
+**Status codes** (`LTOBJSRV_SOECHAT_*`, category 0x0e):
+
+| Code | Name |
+|---|---|
+| `0x8e000084` | SUCCESS |
+| `41` | DESTAVATARDOESNTEXIST |
+| `42` | ADDRESSDOESNTEXIST (no such room) |
+| `48` | ROOM_DESTNOTINROOM |
+| `49` | ROOM_BANNEDAVATAR |
+| `4c` | ROOM_NOTINROOM |
+| `4d` | ROOM_NOPRIVILEGES |
+| `55` | ROOM_ALREADYEXISTS |
+| `5b`, `5c`, `5d` | ROOM_DESTAVATARNOTMODERATOR, NOTINVITED, NOTBANNED |
+| `5e`, `5f`, `60` | ROOM_DUPLICATEBAN, DUPLICATEMODERATOR, DUPLICATEINVITE |
+| `61` | ROOM_ALREADYINROOM |
+| `6e` | INVALIDNODENAME |
+| `7e` | ROOM_DESTAVATARNOTENTERING |
+| `80` | ROOM_WAITINGFORENTRY |
+
+There is no wrong-password code.
+
+The text after "Reason:" is not settled. It comes from a map in the chat manager (+0x100), and nothing in client.dll seems to fill that map, so it is probably empty ("Reason: .").
+
+### What the server does (ours, not retail's)
+
+**Rooms.**
+- Rooms live in memory (`ChatRooms`), not the database. A room goes when it is destroyed, or when its last occupant leaves. It also goes when its owner leaves the world if nobody ever entered it.
+- Creating a room doesn't enter it. The creator becomes the owner and enters with `/roomenter`.
+- Names are 1 to 64 characters. Topics are cut at 255.
+
+**Private rooms** (`/roomcreate room:password`).
+- These let in the owner, moderators, invited players and anyone with the password.
+- Anyone else is told ROOM_WAITINGFORENTRY and put on the room's waiting list. The owner and moderators get `81 c5`.
+- `/roomallow` lets a waiting player in: `81 c6` goes to the moderator, and `81 c3` to the newcomer and the room.
+
+**Who is told.**
+- Entering, leaving and destroying go to the player ("You ...") and to everyone in the room ("%s ...").
+- Kick, ban, unban, invite, uninvite, voice and moderator changes go to the actor, to the player they were done to, and to the room.
+- Leaving the world takes a player out of every room, and the others there get "%s left chat room %s.".
+
+**Who may do what.**
+- Moderators and the owner may invite, uninvite, kick, ban, unban, voice and allow.
+- Only the owner makes and unmakes moderators, gives the room away and destroys it.
+- A ban takes the player out of the room and keeps them out.
+- Naming a handle nobody has gives DESTAVATARDOESNTEXIST.
+
+**Room lines.** The speaker must be in the room; otherwise they get ROOM_NOTINROOM in `81 bf`. A line goes to everyone in the room, the speaker included. The client never sets IsModerated, so no room is moderated and voice changes nothing yet.
+
+**`/roomfind`.** The filter is matched inside room names; with only one word, that word is the filter. `81 e2` with the count comes first, then one `81 e3` per room, sorted by name.
+
+### Dev helper
+
+`?socialbot` (`MXO_DEV_COMMANDS=1`) puts SocialBot, a player played by the server, next to you. `?socialbot off` sends it away.
+
+For rooms:
+- `?socialbot room <name> [password]` makes it try to enter the room and say "Hello from SocialBot.".
+- `?socialbot say <room> <text>` makes it speak.
+- `?socialbot leave <room>` makes it leave.
+
+It can be invited, kicked, banned, and made a moderator or the owner, like anyone else.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -419,3 +521,29 @@ A split starts from the item's right-click menu, not a modifier key. client.dll'
 6. Merge: drag one of the two stacks (plain left drag) and drop it on the other stack's slot. That is the only way to get `67`: the drop handler (0x620a0504) sends it when the destination slot holds the same item. Expect one stack with the total and the other slot empty; the log shows `[INVENTORY] Merged slot ... into ...`.
 7. Drag a stack onto a different item. Expect the client's usual swap (`65`), not a merge.
 8. Note anything the client shows that the server didn't confirm, such as a count that jumps back or a stack that reappears.
+
+### Chat rooms
+
+Everything here is typed in the chat box.
+
+1. `/roomcreate Lounge Talk here`. Expect "Created chat room Lounge.".
+2. `/roomcreate Lounge` again. Expect "Failed to create chat room.  Reason: ...". Note what follows "Reason:".
+3. `/roomenter Lounge`. Expect "You entered chat room Lounge.".
+4. `/room Lounge hello`. Expect `[Lounge] <your name>: hello` in the default chat tab.
+5. `?socialbot room Lounge`. Expect "SocialBot entered chat room Lounge." and `[Lounge] SocialBot: Hello from SocialBot.`.
+6. `/roomkick Lounge SocialBot`. Expect "You kick SocialBot from chat room Lounge.". `?socialbot say Lounge hi` then answers "SocialBot is not in Lounge.".
+7. `/roomban Lounge SocialBot`, then `?socialbot room Lounge`. Expect "You ban SocialBot ..." and no "entered" line.
+8. `/roomunban Lounge SocialBot`, then `?socialbot room Lounge`. Expect it to enter.
+9. `/roommod Lounge SocialBot`. Expect "You grant moderator status to SocialBot for chat room Lounge.".
+10. `/roomunmod Lounge SocialBot`. Expect "You revoke moderator status ...".
+11. `/roomfind`. Expect "Found 1 matching rooms" and "  Room Lounge (2 occupants)", with "Topic: Talk here".
+12. `/roomfind xyz`. Expect "Found 0 matching rooms".
+13. Private room:
+    1. `/roomcreate Den:secret`, then `/roomenter Den` (the owner needs no password).
+    2. `?socialbot room Den wrong`. Expect "SocialBot is requesting entry into chat room Den.".
+    3. `/roomallow Den SocialBot`. Expect "You allow entry into chat room Den." and "SocialBot entered chat room Den.".
+    4. `/roomfind Den`. Expect it listed with "Attributes: private".
+14. `/roomleave Lounge`. Expect "You left chat room Lounge.".
+15. `/roomdestroy Den`. Expect "Destroy chat room successful.". Then `/roomenter Den` should print a failure line.
+16. `/roomenter Lounge`, then `/roomsetowner Lounge SocialBot`. Expect "SocialBot gains ownership of chat room Lounge.". `/roomdestroy Lounge` should then fail.
+17. Note any line that differs from these, and the text after "Reason:" in the failures.

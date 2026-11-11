@@ -699,6 +699,15 @@ namespace hds
             {
                 Output.WriteDebugLog("[SOCIAL] Team cleanup failed: " + e.Message);
             }
+
+            try
+            {
+                ChatRoomHandler.PlayerLeftWorld(client);
+            }
+            catch (Exception e)
+            {
+                Output.WriteDebugLog("[SOCIAL] Chat room cleanup failed: " + e.Message);
+            }
         }
 
         // ---- chat ---------------------------------------------------------------------------------------------

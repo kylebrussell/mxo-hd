@@ -407,6 +407,19 @@ namespace hds
                         "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                 }
 
+                if (command.Equals("?socialbot"))
+                {
+                    // Dev command: a player played by the server for rooms, teams, crews, paired emotes and stances, so
+                    // one client can see the other side (docs/CLIENT-ACTIONS.md). ?socialbot off sends it away.
+                    string reply = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
+                        ? SocialBot.Command(Store.currentClient, commands.Skip(1).ToArray())
+                        : "?socialbot is a dev command (start the server with MXO_DEV_COMMANDS=1).";
+                    if (reply != null)
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?pvpflag") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
                 {
                     // Dev command: the PvP flag itself, whatever the server type allows /pvp to do

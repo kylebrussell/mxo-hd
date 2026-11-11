@@ -346,6 +346,26 @@ namespace hds{
 		            MailHandler.Handle(Store.currentClient, header, rpcData);
 		            break;
 
+		        // Chat rooms (/roomcreate .. /roomfind)
+		        case ChatRoomHandler.Create:
+		        case ChatRoomHandler.Enter:
+		        case ChatRoomHandler.Allow:
+		        case ChatRoomHandler.Leave:
+		        case ChatRoomHandler.Destroy:
+		        case ChatRoomHandler.Invite:
+		        case ChatRoomHandler.Uninvite:
+		        case ChatRoomHandler.Kick:
+		        case ChatRoomHandler.Ban:
+		        case ChatRoomHandler.Unban:
+		        case ChatRoomHandler.AddModerator:
+		        case ChatRoomHandler.RemoveModerator:
+		        case ChatRoomHandler.SetOwner:
+		        case ChatRoomHandler.GiveVoice:
+		        case ChatRoomHandler.RemoveVoice:
+		        case ChatRoomHandler.Find:
+		            ChatRoomHandler.Handle(Store.currentClient, header, rpcData);
+		            break;
+
 
 		        default:
 		            //PASS :D
