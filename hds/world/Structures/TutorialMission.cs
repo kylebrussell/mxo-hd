@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using hds.shared;
 
@@ -621,12 +622,27 @@ namespace hds
             itemSlots[goId] = slot;
         }
 
+        public void OnInventoryItemMoved(UInt16 fromSlot, UInt16 toSlot)
+        {
+            foreach (var item in itemSlots.ToList())
+            {
+                if (item.Value == fromSlot)
+                {
+                    itemSlots[item.Key] = toSlot;
+                }
+            }
+        }
+
         private void TakeItem(UInt32 goId)
         {
             if (itemSlots.TryGetValue(goId, out UInt16 slot))
             {
-                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, client.playerData.getCharID());
-                new ServerPackets().sendInventoryItemDelete(slot, client);
+                UInt32 charId = client.playerData.getCharID();
+                if (Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Any(item => item.Slot == slot && item.Goid == goId))
+                {
+                    Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+                    new ServerPackets().sendInventoryItemDelete(slot, client);
+                }
                 itemSlots.Remove(goId);
             }
         }

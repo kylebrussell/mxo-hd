@@ -36,6 +36,7 @@ public static partial class Scenarios
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
+        new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
     };
 
@@ -345,6 +346,36 @@ public static partial class Scenarios
 
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("80 a2 08");
+    }
+
+    private static async Task MovedMissionItem(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice") { X = 58800, Y = 2495, Z = 31900 });
+        await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions " +
+            "(charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId)); " +
+            $"INSERT INTO char_missions (charId, missionId) VALUES ({player.CharId}, 2201)");
+        await player.EnterWorldAsync();
+        player.SendRpc("80 94 05 00 02");
+        await player.WaitForTextAsync("Watchful Eyes");
+        await player.WaitForRpcAsync("80 97 05 00");
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForRpcAsync("80 99");
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9e 00");
+        player.SendChat("?missionfloor");
+        ViewCreation herschel = await player.WaitForViewNamedAsync("Herschel");
+        player.SendRpc($"80 c7 {Le(herschel.ViewId)} {Le((ushort)herschel.SpawnId)} 0d 00");
+        await player.WaitForRpcAsync("5e 01 00 a9 1a 00 00");
+        player.SendRpc("65 01 00 05 00");
+        await player.WaitForRpcAsync("65 01 00 05 00 00");
+        await context.Database.ExecuteAsync($"INSERT INTO inventory (charId, goid, slot, count) VALUES ({player.CharId}, 7332, 1, 1)");
+        player.SendRpc("80 a6");
+        await player.WaitForRpcAsync("5f 05 00 01");
+        await player.WaitForRpcAsync("80 a2 08");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6825"),
+            "A moved quest item is removed on abort");
+        Check.Equal(7332L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "The replacement item stays in the old slot");
     }
 
     private const byte Team = 3, Crew = 2;

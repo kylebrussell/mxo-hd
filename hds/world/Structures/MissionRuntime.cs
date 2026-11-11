@@ -522,12 +522,32 @@ namespace hds
             return 0;
         }
 
+        public static void OnInventoryItemMoved(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
+        {
+            MissionProgress progress = client.playerData.missionProgress;
+            if (progress == null)
+            {
+                return;
+            }
+            foreach (var item in progress.itemSlots.ToList())
+            {
+                if (item.Value == fromSlot)
+                {
+                    progress.itemSlots[item.Key] = toSlot;
+                }
+            }
+        }
+
         private static void TakeItem(WorldClient client, MissionProgress progress, UInt32 goId)
         {
             if (progress.itemSlots.TryGetValue(goId, out UInt16 slot))
             {
-                Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, client.playerData.getCharID());
-                new ServerPackets().sendInventoryItemDelete(slot, client);
+                UInt32 charId = client.playerData.getCharID();
+                if (Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Any(item => item.Slot == slot && item.Goid == goId))
+                {
+                    Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+                    new ServerPackets().sendInventoryItemDelete(slot, client);
+                }
                 progress.itemSlots.Remove(goId);
             }
         }
