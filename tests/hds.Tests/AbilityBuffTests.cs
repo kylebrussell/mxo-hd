@@ -65,7 +65,7 @@ public class AbilityBuffTests
         Assert.Equal(25, AbilityCosts.Cost(184));    // Hyper-Sprint
         Assert.Equal(40, AbilityCosts.Cost(217));    // Evade Combat
         Assert.Equal(11, AbilityCosts.Cost(329));    // Logic Blast 3.0
-        Assert.Equal(20, AbilityCosts.Cost(77));     // Repair RSI 1.0: no retail measurement
+        Assert.Equal(10, AbilityCosts.Cost(77));     // Repair RSI 1.0: shipped base cost, no retail override
         Assert.Equal(20f, AbilityBuffs.Retail[327].Seconds); // Overclock
         Assert.Equal(600f, AbilityBuffs.Retail[12].Seconds); // Hyper-Speed
         Assert.Equal(0f, AbilityBuffs.Retail[217].Seconds);  // Evade Combat: until replaced
@@ -77,6 +77,11 @@ public class AbilityBuffTests
         // Only the queue and player data, and a last flush far in the future so FlushQueue always defers:
         // the tests read what was queued.
         client.playerData = new ClientData();
+        client.playerInstance = new PlayerCharacter();
+        client.playerInstance.MaxHealth.setValue((UInt16)500);
+        client.playerInstance.Health.setValue((UInt16)500);
+        client.playerInstance.InnerStrengthMax.setValue((UInt16)200);
+        client.playerInstance.InnerStrengthAvailable.setValue((UInt16)200);
         client.messageQueue = new MessageQueue();
         typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .SetValue(client, long.MaxValue);

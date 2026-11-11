@@ -39,6 +39,10 @@ namespace hds
             public Int32 Value;
             public float Seconds;
             public TempMods.Proc Proc;
+            public TempMods.BreakRule Break;
+            public int BreakChance;
+            public bool IgnoreFirstDamage;
+            public double Interval = TempMods.DotIntervalSeconds;
             public UInt16 RecordId;
             /// <summary>States: the state's own record (the state ability as parent, 0 s), sent after the state's.</summary>
             public UInt16 LinkedRecordId;
@@ -51,15 +55,15 @@ namespace hds
             public UInt16 TargetView;
 
             /// <summary>Damage of one damage-over-time tick before resistances (<see cref="TempMods.DotTick"/>).</summary>
-            public int TickDamage => TempMods.DotTick(Value, Seconds, TempMods.DotIntervalSeconds);
+            public int TickDamage => Proc == TempMods.Proc.Hot ? TempMods.HotTick(Value, Seconds, Interval) : TempMods.DotTick(Value, Seconds, Interval);
 
             /// <summary>When the next damage-over-time tick is due, or +inf when there is none left.</summary>
             public double NextTick
             {
                 get
                 {
-                    double at = (Ticks + 1) * TempMods.DotIntervalSeconds;
-                    return Proc == TempMods.Proc.Dot && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
+                    double at = (Ticks + 1) * Interval;
+                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
             }
         }
@@ -187,6 +191,34 @@ namespace hds
                 lock (active)
                 {
                     return active.Exists(a => a.Parent == parent);
+                }
+            }
+
+            public bool HasAt(UInt16 target, double now)
+            {
+                lock (active) return active.Exists(a => a.Target == target && a.Proc == TempMods.Proc.State && now < a.Expires);
+            }
+
+            /// <summary>Script health procs deactivate the whole parent ability, not just its state record.</summary>
+            public List<Active> HealthChanged(int damageTaken, bool belowMaximum, Random rng)
+            {
+                lock (active)
+                {
+                    var parents = new HashSet<UInt16>();
+                    foreach (Active a in active)
+                    {
+                        bool reduced = damageTaken > 0 && belowMaximum;
+                        bool breaks = a.Break == TempMods.BreakRule.HealthChange || a.Break == TempMods.BreakRule.Damage && reduced;
+                        if (a.Break == TempMods.BreakRule.Chance && damageTaken > 0)
+                        {
+                            if (a.IgnoreFirstDamage) a.IgnoreFirstDamage = false;
+                            else if (reduced && a.BreakChance > rng.Next(100)) breaks = true;
+                        }
+                        if (breaks) parents.Add(a.Parent);
+                    }
+                    List<Active> removed = active.FindAll(a => parents.Contains(a.Parent));
+                    active.RemoveAll(a => parents.Contains(a.Parent));
+                    return removed;
                 }
             }
         }
@@ -343,9 +375,11 @@ namespace hds
                 Int32 value;
                 lock (random)
                 {
+                    if (m.Chance < 1 && random.NextDouble() >= m.Chance) continue;
                     value = m.MaxValue > m.MinValue ? random.Next(m.MinValue, m.MaxValue + 1) : m.MinValue;
                 }
-                mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc });
+                mods.Add(new Active { Kind = m.Kind, Target = m.Target, Value = value, Seconds = m.Seconds, Proc = m.Proc,
+                    Break = m.Break, BreakChance = m.BreakChance, IgnoreFirstDamage = m.IgnoreFirstDamage, Interval = m.Interval });
             }
             return mods;
         }
@@ -427,6 +461,13 @@ namespace hds
             }
         }
 
+        public static void HealthChanged(Subject subject, int damageTaken, bool belowMaximum)
+        {
+            List<Active> removed;
+            lock (random) removed = subject.Effects.HealthChanged(damageTaken, belowMaximum, random);
+            if (removed.Count > 0) WithClient(subject.Context, () => subject.Ended(removed));
+        }
+
         // ---- subjects ----
 
         private static readonly ConditionalWeakTable<WorldClient, PlayerEffects> players = new ConditionalWeakTable<WorldClient, PlayerEffects>();
@@ -445,7 +486,7 @@ namespace hds
         /// <summary>The ability lands on an NPC: its tempmods go on (<see cref="TempMods.Retail"/>). False when it has none.</summary>
         public static bool ApplyToMob(WorldClient caster, Mob mob, UInt16 targetView, UInt16 abilityId)
         {
-            if (!TempMods.Retail.TryGetValue(abilityId, out TempMods.Effect effect) || mob == null || mob.getIsDead())
+            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect) || mob == null || mob.getIsDead())
             {
                 return false;
             }
@@ -456,7 +497,7 @@ namespace hds
         /// <summary>An ability (an NPC's, another player's) lands on a player: its records go to them.</summary>
         public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName)
         {
-            if (!TempMods.Retail.TryGetValue(abilityId, out TempMods.Effect effect))
+            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect))
             {
                 return false;
             }
@@ -660,9 +701,16 @@ namespace hds
             {
                 return false;
             }
+            if (mod.Proc == TempMods.Proc.Hot)
+            {
+                AbilityHandler.HealSelf(client, (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue));
+                Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " heals " + Name + " for " + damage);
+                return true;
+            }
             UInt16 health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
             UInt16 next = (UInt16)Math.Max(0, health - damage);
             client.playerInstance.Health.setValue(next);
+            TimedEffects.HealthChanged(this, health - next, next < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
             client.messageQueue.addObjectMessage(BuildSelfTickUpdate(next, TempMods.VirusCrashFx, counter), false);
             client.messageQueue.addRpcMessage(AbilityMessages.Damage(false, mod.Parent, mod.CasterName ?? "", Name, damage, 0));
@@ -735,10 +783,6 @@ namespace hds
                 }
                 switch (m.Target)
                 {
-                    case TempMods.StunAbility:
-                    case TempMods.MezAbility:
-                        mob.Stun(m.Expires);
-                        break;
                     case TempMods.DazeAbility:
                         mob.ApplyCondition(CombatInterlock.ConditionBit(CombatTactic.Speed), m.Seconds);
                         break;
@@ -781,7 +825,7 @@ namespace hds
             }
             // The tick lands through the caster's fight with this NPC (death, experience and loot go the usual way);
             // when that fight is over the damage over time ends, as AbilityTargets' ticks did.
-            if (!CombatManager.GetHandler(caster).ApplyAbilityToTarget(mod.TargetView, (UInt16)Math.Min(damage, UInt16.MaxValue),
+            if (!CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob, mod.TargetView, (UInt16)Math.Min(damage, UInt16.MaxValue),
                     TempMods.VirusCrashFx))
             {
                 return false;
@@ -794,7 +838,8 @@ namespace hds
 
         internal override void Ended(List<TimedEffects.Active> ended)
         {
-            // Stuns and conditions run out on the NPC by themselves; nothing is sent.
+            // Damage may have broken a hold; expired controls no longer keep a damaged passive NPC idle.
+            if (mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM()) MobAggro.Retaliate(lastCaster, mob);
         }
     }
 }

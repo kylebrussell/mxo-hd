@@ -65,7 +65,8 @@ namespace hds
 
         public bool IsStunned(double now)
         {
-            return now < stunnedUntil;
+            return now < stunnedUntil || TimedEffects.ForMob(this).Effects.HasAt(TempMods.StunAbility, now) ||
+                TimedEffects.ForMob(this).Effects.HasAt(TempMods.MezAbility, now);
         }
 
         // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
@@ -579,6 +580,11 @@ namespace hds
 
         public void DoMobUpdate(object e)
         {
+            if (!ControlActions.CanMove(TimedEffects.ForMob(this).Effects))
+            {
+                mobUpdateTimer = new Timer(DoMobUpdate, this, 1000, 0);
+                return;
+            }
             if (isUpdateable)
             {
                 var nextMoveTime = 5;
@@ -620,6 +626,7 @@ namespace hds
 
         public void HitEnemyWithDamage(ushort hitValue, uint hitFxId)
         {
+            ushort before = healthC;
             // Change to combat so that he isnt moving anymore
             currentState = (int) statusList.COMBAT;
             if (healthC - hitValue <= 0)
@@ -627,6 +634,7 @@ namespace hds
             else
                 healthC -= hitValue;
             hitCounter++;
+            if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
 
             var hitPacket = new PacketContent();
             hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));
@@ -764,6 +772,8 @@ namespace hds
 
             // Update player's health attribute
             victim.playerInstance.Health.setValue(newHealth);
+            TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
+                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
 
             // Increment hit counter for animation sequencing
             mobHitCounter++;

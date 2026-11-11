@@ -176,10 +176,22 @@ namespace hds
             DelayedActions.AfterFor(client, 0, () => Attack(client, mobToAttack, viewToAttack, px, pz));
         }
 
+        public static void Retaliate(WorldClient client, Mob mob)
+        {
+            if (client == null || mob.getIsDead() || mob.isFriendly || client.playerData.isDead ||
+                CombatManager.GetHandler(client).isCombatRunning || ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
+            ClientView view = client.viewMan.FindViewForEntity(mob.getEntityId());
+            if (view == null || !view.viewCreated) return;
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            Attack(client, mob, view, x, z);
+        }
+
         private static void Attack(WorldClient client, Mob mob, ClientView view, double px, double pz)
         {
+            if (ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
             double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
-            if (OpensFire(mob.getWeapon(), Math.Sqrt(dx * dx + dz * dz)))
+            if (OpensFire(mob.getWeapon(), Math.Sqrt(dx * dx + dz * dz)) && ControlActions.CanUseWeapons(TimedEffects.ForMob(mob).Effects))
             {
                 Output.WriteDebugLog("[AGGRO] " + mob.getName() + " opens fire on " + client.playerData.getCharID() +
                                      " (view " + view.ViewID + ")");
@@ -187,6 +199,8 @@ namespace hds
                 client.FlushQueue();
                 return;
             }
+
+            if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects)) return;
 
             // The NPC closes in and faces the player
             StopPoint(px, pz, mob.getXPos(), mob.getZPos(), MeleeDistanceUnits, out double x, out double z);

@@ -161,7 +161,7 @@ namespace hds
             }
 
             double now = TimeUtils.GetSimTimeSeconds();
-            if (data.isDead || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
                 (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
             {
                 Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");

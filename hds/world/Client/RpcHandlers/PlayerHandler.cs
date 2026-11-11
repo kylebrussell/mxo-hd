@@ -140,6 +140,15 @@ namespace hds
                 DataLoader.getInstance().getAbilityByID(AbilityProgression.AwakenedAbility).getGOID(), charId);
             Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
                 AbilityProgression.SelfDefenseAbility, awakened, AbilityProgression.HiddenSlot));
+            foreach (var loaded in Store.dbManager.MarginDbHandler.LoadAbilities((int)charId))
+                if (loaded.getLoaded())
+                {
+                    UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
+                    if (id == AbilityProgression.AwakenedAbility) continue;
+                    foreach (UInt16 grant in AbilityProgression.GrantsOf(id))
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                            AbilityProgression.GrantLevel(id, loaded.getLevel()), AbilityProgression.HiddenSlot));
+                }
 
 
             /*
@@ -356,21 +365,18 @@ namespace hds
             List<UInt16> abilitySlots = new List<UInt16>();
             foreach (AbilityProgression.LoadoutEntry entry in entries)
             {
-                UInt16? grant = AbilityProgression.GrantOf(entry.Ability);
+                List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
                 if (unload)
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(entry.Ability));
-                    if (grant.HasValue)
-                    {
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant.Value));
-                    }
+                    foreach (UInt16 grant in grants) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                 }
                 else
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, entry.Level, entry.Slot));
-                    if (grant.HasValue)
+                    foreach (UInt16 grant in grants)
                     {
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant.Value,
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(entry.Ability, entry.Level), AbilityProgression.HiddenSlot));
                     }
                 }

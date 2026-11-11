@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -220,7 +221,78 @@ namespace hds
 
         public static bool IsBuff(UInt16 abilityId)
         {
-            return Retail.ContainsKey(abilityId);
+            return TryGet(abilityId, out _);
+        }
+
+        private static readonly Lazy<Dictionary<UInt16, Buff>> catalogBuffs = new Lazy<Dictionary<UInt16, Buff>>(() =>
+        {
+            var buffs = new Dictionary<UInt16, Buff>();
+            foreach (var entry in AbilityCatalog.All.Values)
+            {
+                if (entry.Number("Ability/CastDirectObjects", -1) != 1 && !entry.FriendlyTarget || entry.Healing) continue;
+                var mods = entry.Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2).ToList();
+                if (mods.Count == 0 || mods.Any(m => m.Target == 0 || m.Target == 108 || m.State != 0 ||
+                    !m.Has("MinValue") || m.Number("MinValue") != m.Number("MaxValue") || m.Has("ValueScale") ||
+                    m.Number("ValueFunction") != 0 || !string.IsNullOrEmpty(m.Text("StatModInitFunc")) ||
+                    !string.IsNullOrEmpty(m.Text("StatModUpdateFunc")) || !string.IsNullOrEmpty(m.Text("StatModTermFunc")) ||
+                    !string.IsNullOrEmpty(m.Text("StatModHealthChangedFunc")) ||
+                    m.Number("DurationType", -1) != 0 && m.Number("DurationType", -1) != 2)) continue;
+                var durations = mods.Select(m => m.Number("DurationType") == 2 ? 0 : m.Number("Duration")).Distinct().ToList();
+                if (durations.Count != 1) continue;
+                int stacking = (int)entry.Number("Ability/StackingType");
+                buffs[entry.Id] = new Buff { Seconds = (float)durations[0], Exclusive = durations[0] == 0,
+                    Toggle = entry.Number("Ability/IsAToggleAbility") == 1 && stacking != 37,
+                    Family = stacking == 37 ? FamilyClassBuff : stacking == 0 ? 0 : 1000 + stacking,
+                    Modifiers = mods.Select(m => Stat(m.Target, (int)m.Number("MinValue"))).ToArray(),
+                    MovementScale = (float)(mods.FirstOrDefault(m => m.Target == 115)?.Number("MinValue") ?? 0) / 100 };
+            }
+            return buffs;
+        });
+
+        /// <summary>Captured values take precedence over unscaled stored constants; native scaling remains a parity gap.</summary>
+        public static bool TryGet(UInt16 id, out Buff buff)
+        {
+            id = AbilityCatalog.Canonical(id);
+            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff);
+        }
+
+        public static int Total(WorldClient client, UInt16 stat)
+        {
+            int total = 0;
+            lock (client.playerData.activeBuffs)
+                foreach (UInt16 id in client.playerData.activeBuffs.Keys)
+                    if (TryGet(id, out Buff buff))
+                        foreach (Modifier m in buff.Modifiers)
+                            if (m.Kind == KindStat && m.Stat == stat) total += m.Value;
+            return total + TimedEffects.ForPlayer(client).Effects.Total(stat);
+        }
+
+        private static int VitalValue(Buff buff, UInt16 stat) => buff.Modifiers.Where(m => m.Kind == KindStat && m.Stat == stat).Sum(m => m.Value);
+
+        public static int VitalTotal(WorldClient client, UInt16 stat)
+        {
+            lock (client.playerData.activeBuffs)
+                return client.playerData.activeBuffs.Keys.Sum(id => TryGet(id, out Buff buff) ? VitalValue(buff, stat) : 0);
+        }
+
+        private static void ApplyVitals(WorldClient client, Buff buff, int direction, int previousHealth = 0, int previousIS = 0)
+        {
+            var changed = new List<Attribute>();
+            foreach (var (stat, maximum, current) in new[]
+            {
+                ((UInt16)106, client.playerInstance.MaxHealth, client.playerInstance.Health),
+                ((UInt16)109, client.playerInstance.InnerStrengthMax, client.playerInstance.InnerStrengthAvailable)
+            })
+            {
+                int delta = direction * VitalValue(buff, stat) - (stat == 106 ? previousHealth : previousIS);
+                if (delta == 0) continue;
+                UInt16 max = (UInt16)Math.Clamp(NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) + delta, 1, UInt16.MaxValue);
+                maximum.setValue(max);
+                changed.Add(maximum);
+                if (NumericalUtils.ByteArrayToUint16(current.getValue(), 1) > max) { current.setValue(max); changed.Add(current); }
+            }
+            if (changed.Count > 0)
+                client.messageQueue.addObjectMessage(SocialPackets.SelfViewUpdate(client.playerInstance.GetSelfUpdateAttributes(changed, false)), false);
         }
 
         public static bool IsActive(WorldClient client, UInt16 abilityId)
@@ -234,13 +306,13 @@ namespace hds
         /// <summary>A toggle buff (Evade Combat) that is on: using it again switches it off.</summary>
         public static bool IsToggledOn(WorldClient client, UInt16 abilityId)
         {
-            return Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle && IsActive(client, abilityId);
+            return TryGet(abilityId, out Buff buff) && buff.Toggle && IsActive(client, abilityId);
         }
 
         /// <summary>Whether the ability's cooldown starts when it is used (false for toggles: when they end).</summary>
         public static bool CooldownStartsOnUse(UInt16 abilityId)
         {
-            return !(Retail.TryGetValue(abilityId, out Buff buff) && buff.Toggle);
+            return !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
 
         /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
@@ -260,7 +332,7 @@ namespace hds
         /// </summary>
         public static bool Apply(WorldClient client, UInt16 abilityId)
         {
-            if (!Retail.TryGetValue(abilityId, out Buff buff))
+            if (!TryGet(abilityId, out Buff buff))
             {
                 return false;
             }
@@ -272,16 +344,18 @@ namespace hds
                 foreach (UInt16 other in data.activeBuffs.Keys)
                 {
                     if (other == abilityId ||
-                        (buff.Family != 0 && Retail.TryGetValue(other, out Buff o) && o.Family == buff.Family))
+                        (buff.Family != 0 && TryGet(other, out Buff o) && o.Family == buff.Family))
                     {
                         replaced.Add(other);
                     }
                 }
             }
+            int previousHealth = 0, previousIS = 0;
             foreach (UInt16 other in replaced)
             {
+                if (TryGet(other, out Buff previous)) { previousHealth += VitalValue(previous, 106); previousIS += VitalValue(previous, 109); }
                 // A movement buff put straight back on keeps its speed: don't send the speed reset in between.
-                Remove(client, other, false, other == abilityId);
+                Remove(client, other, false, other == abilityId, keepVitals: true);
             }
 
             Active active;
@@ -308,6 +382,7 @@ namespace hds
             {
                 client.messageQueue.addRpcMessage(record);
             }
+            ApplyVitals(client, buff, 1, previousHealth, previousIS);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (buff.Seconds > 0)
@@ -325,9 +400,9 @@ namespace hds
         /// that a later use replaced does nothing). Returns whether the buff was on.
         /// </summary>
         public static bool Remove(WorldClient client, UInt16 abilityId, bool log = true, bool keepMovement = false,
-            int generation = -1)
+            int generation = -1, bool keepVitals = false)
         {
-            if (!Retail.TryGetValue(abilityId, out Buff buff))
+            if (!TryGet(abilityId, out Buff buff))
             {
                 return false;
             }
@@ -344,6 +419,7 @@ namespace hds
                 data.activeBuffs.Remove(abilityId);
             }
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
+            if (!keepVitals) ApplyVitals(client, buff, -1);
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
             {

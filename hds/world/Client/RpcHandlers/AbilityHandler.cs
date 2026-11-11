@@ -66,11 +66,10 @@ namespace hds
             // Retail order: 80 e7 (-cost), 80 e4 (new cash), the hidden ability again at its new level, 80 b8.
             packets.SendInfoDelta(client, -(long)cost, ServerPackets.InfoReasonAbilityUpgrade);
             packets.SendInfoCurrent(client, (UInt32)newCash, ServerPackets.InfoReasonAbilityUpgrade);
-            UInt16? grant = AbilityProgression.GrantOf(request.Ability);
-            if (grant.HasValue)
+            foreach (UInt16 grant in AbilityProgression.GrantsOf(request.Ability))
             {
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant.Value));
-                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant.Value,
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                     AbilityProgression.GrantLevel(request.Ability, (UInt16)newLevel), AbilityProgression.HiddenSlot));
             }
             client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUpgraded(request.Ability, (UInt16)newLevel));
@@ -83,12 +82,15 @@ namespace hds
         {
             PacketReader reader = new PacketReader(packet);
             UInt16 AbilityID = reader.ReadUInt16(1);
+            AbilityID = AbilityCatalog.Canonical(AbilityID);
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
 
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
+            var definition = AbilityCatalog.Find(AbilityID);
+            if (definition?.Has("Ability/CastingTime") == true) currentAbility.setCastingTime(definition.CastSeconds);
 
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + currentAbility.getAbilityName() + ") on view " +
                                  currentTargetViewId);
@@ -104,6 +106,12 @@ namespace hds
             data.lastAbilityId = AbilityID;
             data.lastAbilityTime = now;
 
+            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(Store.currentClient).Effects))
+            {
+                Deny(AbilityID, "You cannot act while stunned or pacified.");
+                return;
+            }
+
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
             if (itemSlot.HasValue && new InventoryHandler().UseItem(itemSlot.Value, AbilityID))
@@ -114,6 +122,23 @@ namespace hds
             // The Code Writer's Compile (a guess: no capture shows it).
             if (AbilityID == CraftingHandler.CompileActivateAbility && new CraftingHandler().HandleCompileRequest(packet))
             {
+                return;
+            }
+
+            if (!ControlActions.CanUseAbilities(Store.currentClient))
+            {
+                Deny(AbilityID, "You cannot use abilities while powerless.");
+                return;
+            }
+            bool support = AbilitySupport.Handles(AbilityID);
+            if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
+            {
+                Deny(AbilityID, "Choose a living friendly target within range.");
+                return;
+            }
+            if (!AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID) && CurrentInnerStrength(Store.currentClient) < AbilityCosts.Cost(AbilityID))
+            {
+                Deny(AbilityID, "You do not have enough Inner Strength.");
                 return;
             }
 
@@ -154,25 +179,19 @@ namespace hds
             // cooldown starts and buffs go on.
             WorldClient client = Store.currentClient;
             AbilityItem ability = currentAbility;
-            bool selfTarget = currentTargetViewId <= 2;
             DelayedActions.AfterFor(client, ability.getCastingTime(), () =>
             {
-                if (selfTarget && IsSelfHeal(ability))
-                {
-                    HealSelf(client, HealAmount(client));
-                }
+                if (!ControlActions.CanUseAbilities(client)) return;
+                if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
-                if (AbilityBuffs.Apply(client, ability.getAbilityID()))
-                {
-                    client.FlushQueue();
-                }
             });
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !currentAbility.getIsBuff() && !AbilityBuffs.IsBuff(AbilityID))
+            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
+                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
@@ -184,18 +203,26 @@ namespace hds
                     !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView))
                 {
                     DelayedActions.AfterFor(client, ability.getCastingTime(),
-                        () => AbilityTargets.Land(client, ability, targetView));
+                        () => { if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, targetView); });
                 }
             }
         }
 
         public const double DuplicateAbilityWindowSeconds = 0.5;
 
+        private static void Deny(UInt16 id, string message)
+        {
+            Store.currentClient.messageQueue.addRpcMessage(AbilityCooldowns.BuildDenied(id, AbilityCooldowns.DeniedBusy));
+            new ServerPackets().sendSystemChatMessage(Store.currentClient, message, "BROADCAST");
+            Store.currentClient.FlushQueue();
+            Output.WriteDebugLog("[ABILITY] Denied " + id + ": " + message);
+        }
+
         /// <summary>Restore Health / Repair RSI and Emergency Repairs heal the caster.</summary>
         public static bool IsSelfHeal(AbilityItem ability)
         {
             string name = ability.getAbilityName() ?? "";
-            return name.StartsWith("RestoreHealth") || name.StartsWith("EmergencyRepairs");
+            return AbilityCatalog.Find(ability.getAbilityID())?.Healing == true || name.StartsWith("RestoreHealth") || name.StartsWith("EmergencyRepairs");
         }
 
         /// <summary>
@@ -222,6 +249,7 @@ namespace hds
 
             UInt16 healed = (UInt16)Math.Min(max, current + amount);
             client.playerInstance.Health.setValue(healed);
+            if (healed != current) TimedEffects.HealthChanged(TimedEffects.ForPlayer(client), current - healed, healed < max);
             client.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(healed), false);
             client.FlushQueue();
             Output.WriteDebugLog("[ABILITY] Healed " + current + " -> " + healed);
@@ -234,6 +262,8 @@ namespace hds
         /// </summary>
         public static UInt16 AbilityDamage(AbilityItem ability, Random random)
         {
+            var source = AbilityCatalog.Find(ability.getAbilityID());
+            if (source != null && !source.DirectDamage) return 0;
             int from = ability.getValueFrom();
             int to = ability.getValueTo();
             if (from > 0 && to >= from)
@@ -397,6 +427,7 @@ namespace hds
 
         public void ProcessJump(ref byte[] rpcData)
         {
+            if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
             double xDest = 0;
             double yDest = 0;
             double zDest = 0;

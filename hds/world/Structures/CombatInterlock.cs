@@ -158,13 +158,14 @@ namespace hds
         /// fits the rolls of retail's tutorial fight). A fighter on Block doesn't hit (retail: handleBlock).
         /// </summary>
         public static bool RollHit(Random rng, CombatTactic attacker, int attackerLevel, CombatTactic defender, int defenderLevel,
-            out UInt16 attackRoll, out UInt16 defenseRoll, CombatTacticType attackerType = CombatTacticType.Normal)
+            out UInt16 attackRoll, out UInt16 defenseRoll, CombatTacticType attackerType = CombatTacticType.Normal,
+            int attackBonus = 0, int defenseBonus = 0)
         {
             CombatTactics.Tactic a = CombatTactics.Get(attacker);
             CombatTactics.Tactic d = CombatTactics.Get(defender);
-            int attackBase = (int)(attackerLevel * (100 + a.TacticPercent) / 100 * CombatTactics.TypeAttackRollMultiplier(attackerType));
+            int attackBase = (int)(Math.Max(0, attackerLevel + attackBonus) * (100 + a.TacticPercent) / 100 * CombatTactics.TypeAttackRollMultiplier(attackerType));
             attackRoll = TacticRoll(rng, attackBase, AttackRollRange);
-            defenseRoll = TacticRoll(rng, defenderLevel * (100 + d.DefensePercent) / 100, DefenseRollRange);
+            defenseRoll = TacticRoll(rng, Math.Max(0, defenderLevel + defenseBonus) * (100 + d.DefensePercent) / 100, DefenseRollRange);
             return attacker != CombatTactic.Block && attackRoll > defenseRoll;
         }
 
