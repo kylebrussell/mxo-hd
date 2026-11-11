@@ -54,6 +54,35 @@ namespace hds
             return view == null ? null : MissionRuntime.FindMissionMob(Store.currentClient.playerData, view.entityId);
         }
 
+        /// <summary>
+        /// Client 66 &lt;Slot u8&gt; &lt;TargetID u32&gt;: a bag item dragged onto an NPC (client.dll 0x621eb080, the trade
+        /// sender's branch for objects that take items). The client sends it only for a mission item whose key matches
+        /// the NPC's, prints "You hand over the %s." itself and leaves the slot alone; otherwise it prints "The NPC will not
+        /// accept your trade request." and sends nothing. No capture has one, so it gets the same answer as the NPC menu's
+        /// Give (80 c7 ... 0e), which retail answered with 5f, 81 22 and the goal (80 a0). TargetID is
+        /// &lt;view u16&gt; &lt;spawn id&gt; 00, as for trades.
+        /// </summary>
+        public static void ProcessGiveToNpc(WorldClient client, byte[] rpcData)
+        {
+            if (rpcData.Length < 5)
+            {
+                return;
+            }
+
+            byte slot = rpcData[0];
+            UInt16 viewId = (UInt16)(rpcData[1] | (rpcData[2] << 8));
+            ClientView view = client.viewMan.getViewById(viewId);
+            Mob npc = InteractedMissionMob(view);
+            Output.WriteDebugLog("[MISSION] Item in slot " + slot + " dragged onto view " + viewId + (npc != null ? " (" + npc.getName() + ")" : ""));
+            bool taken = MissionRuntime.OnGive(client, npc);
+            TutorialMission.Of(client)?.OnGive(InteractedTutorialMob(view));
+            if (!taken && TutorialMission.Of(client) == null)
+            {
+                // Ours: the client already said it handed the item over, and the item is still in the bag
+                new ServerPackets().sendSystemChatMessage(client, "They don't want that.", "SYSTEM");
+            }
+        }
+
         public void processTarget(ref byte[] packet)
         {
             byte[] viewBytes = {packet[0], packet[1]};

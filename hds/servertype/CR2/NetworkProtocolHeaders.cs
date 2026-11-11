@@ -61,6 +61,7 @@ namespace hds
         CLIENT_ITEM_MOUNT_RSI = 0x63,
         CLIENT_ITEM_UNMOUNT_RSI = 0x64,
         CLIENT_ITEM_MOVE_SLOT = 0x65,
+        CLIENT_ITEM_GIVE_TO_NPC = 0x66,        // 66 <slot u8> <target u32>: a mission item dragged onto an NPC
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_ITEM_MERGE_STACKS = 0x67,       // 67 <slot1 u16> <slot2 u16> <central storage u8> (StackHandler)
         CLIENT_ITEM_SPLIT_STACK = 0x68,        // 68 <source u8> <dest u8> <amount u32> <central storage u8>

@@ -18,12 +18,12 @@ Opcodes are as on the wire: one byte below `80`, otherwise `80 xx` or `81 xx`. O
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 49 | 44 | 23 | 116 |
+| Handled | 49 | 45 | 23 | 117 |
 | Partial | 0 | 2 | 0 | 2 |
-| Ignored | 0 | 8 | 37 | 45 |
+| Ignored | 0 | 6 | 37 | 43 |
 | Wrong | 0 | 0 | 1 | 1 |
-| Not sent by this client | | | | 2 |
-| **Total** | 49 | 54 | 61 | 166 |
+| Not sent by this client | | | | 3 |
+| **Total** | 49 | 53 | 61 | 166 |
 
 Counts are rows of the tables below (`81 47` and `81 4a` share a row). The first audit found 15 handled rows that had been ignored: email (11 rows, including the long-string records `81 ab`/`81 ac`), the ignore list (2), and the world-entry `81 48` and `0c`. Since then the subway (`81 3b`, `81 3c`, `81 3d`) and stack splitting and merging (`68`, `67`) are handled, and `81 1b`/`81 1d` turned out never to be sent (see "Looting single items"). The chat rooms (16 rows, two of them new: `81 c0` create was missing from the class list, and `81 c5` is also sent by `/roomallow`) are handled, and so are booting and promoting in teams and crews, first mates, faction ranks, removing a crew from a faction, the crew creation window (`80 84` turned out not to be a faction invite) and the team seekers list.
 
@@ -197,10 +197,10 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `68` | Split a stack (SourceSlot u8, DestSlot u8, AmountToSplitOff u32, IsCentralStorageItem u8): the split dialog's amount dropped on a slot or a bag page | D | handled (new): `69` for the source, `5e` (or `69`) for the destination | medium |
 | `67` | Merge stacks (Slot1 u16, Slot2 u16, IsCentralStorageItem u8): a stack dropped on a stack of the same item | D | handled (new): `69` for the destination, `69` or `5f` for the source | medium |
 | `62` | SourceSlot, DestinationSlot, PersonalInventoryItem: between the bag and central storage (the drop handler sends it for central-storage drags) | D | ignored: the server has no central storage | low |
-| `5b` | ItemHandle | D | ignored | low (purpose unknown) |
-| `5c` | Slot, PersonalInventoryItem; two senders, one in the item menu | D | ignored | medium (purpose unknown) |
-| `60` | Use an item on an object (ObjectID, Slot, PersonalInventoryItem, InvSlotOfToolUsed, FromCrafting) | D | ignored | medium |
-| `66` | Slot, TargetID: the give-to-NPC path SECURE-TRADE.md found (0x621eb080) | D | ignored | medium |
+| `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
+| `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | ignored: the server has no luggable objects | low |
+| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | ignored; code compiling is Codex's area | medium |
+| `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
 | `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | ignored (pills work through `80 b9`) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
@@ -660,6 +660,43 @@ SocialBot (`?socialbot`) accepts any paired emote a second after it is asked.
 | `?socialbot hug [emote id hex]` | Asks you for a paired emote (a hug by default) |
 | `?socialbot sit`, `?socialbot dance`, `?socialbot stand` | Takes that stance, so you see another player's stance |
 
+## Item requests in detail
+
+None of `5b`, `5c`, `60`, `61`, `66` or `80 c6` appears in the 339 captures, so all of this comes from client.dll.
+
+**`66 <Slot u8> <TargetID u32>`: giving a mission item by dragging it.**
+- The trigger is a bag item dropped on a world object (drop handler destination 0). That goes to the trade sender 0x621eb790, which takes this path (0x621eb080) instead of `81 82` when the target lists interface 0x31.
+- Before sending, the client checks two things. The target must also have interface 0x25 and the component 0x1000035. The bag entry's second dword must have bit 31 set and its low bits must equal the NPC's key. That dword is the descriptor `BuildMissionItemAdd` writes.
+- If the checks pass, the client prints "You hand over the %s." and sends `66`, leaving the slot alone. If they fail, it prints "The NPC will not accept your trade request." and sends nothing.
+- TargetID is `<view u16> <spawn id> 00`, as for trades.
+
+**What the server does with `66`.** It runs the NPC menu's Give (`80 c7 ... 0e`) for that NPC: the mission's Give goal takes the item (`5f`) and completes (`80 a0`). For the menu's Give, retail sent `5f 07 00 01`, `81 22`, then the goal.
+
+If no Give goal wants the item from that NPC, the server says "They don't want that." That text is ours: the client has already said it handed the item over, and the item is still in the bag.
+
+**`60`: compile.**
+- Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
+- It comes from the Compile window's button, which an `80 bc` for ability 969 opens, and from the Loading Area storage window's compile. PersonalInventoryItem 0 means the slot is a code storage slot.
+- The answer is `61 <ResultCode u8>`. The client acts on it only while the Compile window is open:
+
+| ResultCode | The client shows |
+|---|---|
+| 0 | placed in the inventory |
+| 1 | failed |
+| 2 | ends the session |
+| 3 | inventory full |
+| 4 | not enough information |
+| 5 | singleton |
+
+- This is code compiling, Codex's area, so it is left alone here.
+
+**`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
+- It is sent when a dragged bag item is released over the world.
+- The client refuses anything that isn't luggable before sending: "You can only drop luggable objects in the world."
+- Offline, the client spawns the object itself. Online, it waits for the server, which has no luggable objects.
+
+**`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
+
 ## Check in the real client
 
 Start the server with `MXO_DEV_COMMANDS=1`. One client is enough.
@@ -781,3 +818,11 @@ The crew window's Remove, Make Captain and Make First Mate are right-click menu 
 6. `/clap` with SocialBot nearby. Your own clap should look as before.
 7. `/hug` with no target: the client's own message. `/hug` on an NPC: "...not a player".
 8. Note whether the hug lines the two characters up, or plays with them apart. The four floats after the partner (0, 0, 140, pi) are copied from retail, and their meaning (offset and facing) is a guess.
+
+### Giving a mission item by dragging it
+
+1. Take a mission with a Give goal, for example Tyndall's "Computer Crackdown" (the data disk to Alcor), and play it until the disk is in your bag.
+2. With Alcor in view, left-drag the disk from the bag onto Alcor and release.
+3. Expect "You hand over the Data CD." (the client's own line), the disk gone from the bag, and the goal "Give the data disk to Alcor" done.
+4. Drag any other bag item onto an NPC. Expect "The NPC will not accept your trade request." from the client, and nothing from the server.
+5. If the hand-over line appears but the goal doesn't complete, note it, and note whether "They don't want that." followed.

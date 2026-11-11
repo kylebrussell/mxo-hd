@@ -239,6 +239,10 @@ namespace hds{
 		            new InventoryHandler().processItemMove(ref rpcData);
 		            break;
 
+		        case (int) RPCRequestHeader.CLIENT_ITEM_GIVE_TO_NPC:
+		            ObjectInteractionHandler.ProcessGiveToNpc(Store.currentClient, rpcData);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_ITEM_RECYCLE:
 		            new InventoryHandler().processItemDelete(ref rpcData);
 		            break;
