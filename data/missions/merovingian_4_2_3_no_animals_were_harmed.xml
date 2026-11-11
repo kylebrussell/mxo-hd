@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No Animals Were Harmed, Merovingian story mission 4.2.3. Source: research/missions/transcripts/Merv4-2-3.md (the
+     archive replay of [Merovingian Archive 4.2.3]; 17 screenshots, three in the field, the rest scrolling the log
+     afterwards). The contact was [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     Two runs show in the screenshots with different names for the same people (the escort Agematsu or Hyene, and
+     their three companions). The names here are those of the run in the log: Hyene, Serafina Harvey, Chloe
+     Franguiadakis, Avery Norment.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name, and the objectives "Lead
+     Hyene out of the area", "Get Hyene to Raccoon" and "Don't let Hyene die". Ours: the description (only the phase-1
+     briefing showed in the Status tab), the other objective texts, the sites (the pick-up in Midian Park was a small
+     apartment, so SlumApt; Raccoon's place is "one of our labs", so an Office; the two test sites Normal), the looks
+     and the enemy counts (5 commandos at each test site, for "a ton of signals"). The General's commandos are Exile
+     programs, so enemy="Merovingian". Hyene's companions and the lab people are the Merovingian's scientists and
+     unarmed. No items. Rewards: the player was level 50 and the reward shown (525,000 information) is a level-50 one,
+     so these are Zion 4.2's 341,000 experience and 112,000 information.
+     Gaps: in retail the EMCP device Hyene carries killed the commandos and its feedback hurt him; here the player kills
+     them while keeping Hyene alive, and the Operator's "Hyene got hit" is said when they are dead. Hyene's "One more to
+     go" came with the third briefing and "Are we there yet?" on the way to Raccoon; both are said on arriving. The
+     companions' chatter is said as bystander lines; whether they followed is not known, so they stay at the pick-up.
+     Flood's last line (keep three inventory slots open for "a little surprise") came when Hyene reached Raccoon and is
+     said there; the surprise itself is not in the log and isn't given, and no closing Flood line was captured, so
+     there is no finish. Two Operator entries are cut in the screenshots: "I'm reading a ton of signals in there" is
+     joined to "Keep on your toes!", and one entry around 10:17 PM is missing. The flavour computers (test reports, an
+     activity log) aren't placed. -->
+<mission id="304203" title="No Animals Were Harmed" description="Escort Hyene and the EMCP prototypes to test them on the General's commandos." plot="1"
+         order="4203" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Hyene" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Serafina Harvey" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say display="5">This reminds me of some work I did with Silver. Fun times!</say>
+  </npc>
+  <npc id="3" handle="Chloe Franguiadakis" type="FRIENDLY" at="1" rsi="a5060090" weapon="0">
+    <say display="5">Don't worry, I'm quite certain we've taken care of that little feedback problem.</say>
+  </npc>
+  <npc id="4" handle="Avery Norment" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="0">
+    <say display="5">Careful with the merchandise!</say>
+  </npc>
+  <npc id="5" handle="Raccoon" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" />
+  <npc id="6" handle="Gavin Roberts" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="0" />
+  <npc id="7" handle="Sherwood Lukas" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>I have excellent news for you, {player}. My invention is ready for testing. The EMCP device shall reveal the true weakness of the General and his men.&#10;&#10;Now, I need you to pick up Hyene. He has some of the prototypes, ready for testing.</briefing>
+    <enter><say>Meet up with Hyene and lead him out of here.</say></enter>
+    <objective goal="1" text="Talk to Hyene" type="Talk" npc="1">
+      <talk><say npc="1">Hey, {player}. Show the way, and we'll open a can of EMCP lovin' on those tin soldiers.</say></talk>
+      <done><say npc="1">Lead on, man.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Hyene out of the area" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Don't let Hyene die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Now that you have Hyene in tow, proceed to the indicated location. We've tracked some of those commandos there; I think they're just waiting for someone to come ruin their days. Hop to it!</briefing>
+    <enter><say>I'm reading a ton of signals in there. Keep on your toes!</say></enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll" />
+    <objective goal="2" text="Don't let Hyene die" type="Protect" npc="1" />
+    <complete><say contact="1">Magnificent! Did you see them go down? Just as planned...&#10;&#10;All right, I need you to get Hyene on to another location. Get him out of there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Just a little further testing, and my little devices will be ready for real use!&#10;&#10;Get over to the next location and let them have it.</briefing>
+    <enter>
+      <say npc="1">One more to go... let's find 'em and let loose with this thing!</say>
+      <say>Looks pretty much like the last phase -- plenty of signals.</say>
+    </enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll">
+      <done>
+        <say>Nice, looks like... whoa! Looks like Hyene got hit by that one too! You'd better get him out of there!</say>
+        <say npc="1">Damn! That smarted...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Don't let Hyene die" type="Protect" npc="1" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>Come to think of it, one of the scientists did mention something about "feedback"... very interesting. You'd better get Hyene over to one of our labs, for study of the, ah, things that... ah...&#10;&#10;Well, you probably wouldn't understand. Just take him to Raccoon, all right?</briefing>
+    <enter>
+      <say npc="1">Are we there yet? I feel kinda weak...</say>
+      <say>According to my readings, Raccoon is on site.</say>
+    </enter>
+    <objective goal="1" text="Get Hyene to Raccoon" type="Escort" npc="1" to="npc:5">
+      <done><say contact="1">Well, I'm sure they can work out the details. Before you get out of there, make sure you have at least three inventory slots open... I have a little surprise for you.</say></done>
+    </objective>
+    <objective goal="2" text="Don't let Hyene die" type="Protect" npc="1" />
+    <near npc="5" radius="1000">
+      <say npc="5">Did Hyene make it? Is he with you?</say>
+    </near>
+    <complete>
+      <say npc="6">We'll be sure to put a note in the user manual about this little issue.</say>
+      <say npc="7">I suspect this was nothing more than user error.</say>
+      <say npc="1">I... I don't think I did anything wrong! It just went off...</say>
+      <say npc="5">I'll have the scientists take a look at that feedback issue.</say>
+    </complete>
+  </phase>
+</mission>

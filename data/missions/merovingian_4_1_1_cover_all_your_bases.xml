@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cover All Your Bases, Merovingian story mission 4.1.1. Source: research/missions/transcripts/Merv4-1-1.md (the
+     archive replay of [Merovingian Archive 4.1.1], given by [Archived]Flood; 9 screenshots, all taken after it ended,
+     scrolling the log). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and Rabbit line, and the names Rabbit and Tactical
+     Security. The player's name (TiAmo) is {player}. Ours: the description (the Summary tab was never opened), every
+     objective text (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the looks and the
+     enemy counts. The first site's attackers are never named; they are Zion, like the "foolish Zion invaders" of the
+     second. Tactical Security ("Your presence here is unauthorized.", Team chat) is placed with the Machines of the
+     third site, as the toasters' line; the log doesn't say where it was. Item stand-in: Rabbit's disk is Data_CD
+     (6831). Rewards: the log showed 808,500 experience and 525,000 information, a level-50 player's amounts; we use
+     341,000 and 112,000, Zion chapter 4.1's values.
+     Gaps: the first briefing is cut between "Some of the" and "Merovingian's loyal programs are under attack"; it is
+     read as one sentence. The loyal programs of the first site died in retail without failing the mission ("it would
+     have been nicer if you had saved those other programs"); they had no names or lines and aren't placed. Rabbit had
+     to reach a computer to write the disk; an NPC can't be led to an object, so the player uses the computer for him
+     once he has asked for help, then gets the disk from him. Flood's "What!?" and "It never rains but it pours" may be
+     one entry or two; they are one briefing here. Flood's "get there a little quicker" hints at a timer, which we
+     don't have. -->
+<mission id="304101" title="Cover All Your Bases" description="Defend the Merovingian's programs and bases from Zion and Machine attackers." plot="1"
+         order="4101" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Rabbit" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Tactical Security" type="HOSTILE" at="3" rsi="8f080058" weapon="2568">
+    <say>Your presence here is unauthorized.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Well, {player}, it would appear that your services are needed. Time to get off your lazy...&#10;&#10;Good. Now proceed to the location I've pointed out. Some of the Merovingian's loyal programs are under attack.</briefing>
+    <enter><say>I'm reading plenty of activity in here.</say></enter>
+    <objective goal="1" text="Kill the attackers" type="DefeatAll">
+      <done><say>The attackers are taken care of; you can get out of there now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Well, it would have been nicer if you had saved those other programs. No matter.&#10;&#10;It seems our assets are coming under rather extensive attack. Go to the next location, and destroy the foolish Zion invaders.</briefing>
+    <enter><say>This is the spot, and plenty of bad guys. Have at it!</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Zion invaders" type="DefeatAll" />
+    <objective goal="2" text="Talk to Rabbit" type="Talk" npc="1">
+      <talk><say npc="1">You have to help me... I must get to the... the computer... this disk...</say></talk>
+      <done><say>Sounds like Rabbit could use some help!</say></done>
+    </objective>
+    <objective goal="3" text="Use the computer for Rabbit" type="Use" object="1" after="2" />
+    <objective goal="4" text="Get the disk from Rabbit" type="Get" npc="1" item="6831" after="3">
+      <talk><say npc="1">There... that will do... now take this! The Merovingian must get this data...</say></talk>
+      <done>
+        <say>Get that disk to a hardline and I'll take a look at it.</say>
+        <say npc="1">Go!</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Upload the disk at a hardline" type="Upload" item="6831" after="4" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Well, that data is quite interesting. It would seem that... What!?&#10;&#10;It never rains but it pours, {player}... apparently the toasters felt left out. Now they're assaulting one of our bases. Get over there and get things under control!</briefing>
+    <enter><say>From the signals, it looks like the fighting here has almost died down. Keep your eyes open...</say></enter>
+    <objective goal="1" text="Kill the Machine attackers" type="DefeatAll">
+      <done><say>That's it... looks like this place is pretty cleaned out.</say></done>
+    </objective>
+  </phase>
+  <finish>Next time, see if you can get there a little quicker, okay? Would that be too hard for you?&#10;&#10;Bah... I'll contact you when I see fit.</finish>
+</mission>

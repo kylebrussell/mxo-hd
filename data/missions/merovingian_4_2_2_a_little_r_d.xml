@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Little R & D, Merovingian story mission 4.2.2. Source: research/missions/transcripts/Merv4-2-2.md (the archive
+     replay of [Merovingian Archive 4.2.2]; 16 screenshots, all taken after it ended, scrolling the log). The contact
+     was [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name (Abanderada, Ether,
+     Joshua Ivkovic). Flood's "he's a feeling a little anxious" is retail's own typo, kept. Ours: the description (the
+     Summary tab was never opened), every objective text (the Objectives tab was never opened), the sites (Dr. Ivkovic's
+     place is "one of our labs", so an Office; the rest Normal), the looks and the enemy counts (4 guards with
+     Abanderada, 4 Exiles with Ether, who shouts "Get them!"). Abanderada, Ether and their men are Exiles; Ivkovic is a
+     scientist and unarmed. No items. Rewards: the player was level 50 and the reward shown (525,000 information) is a
+     level-50 one, so these are Zion 4.2's 341,000 experience and 112,000 information.
+     Gaps: Abanderada is met in phase 1 and again at the safe location in phase 3, so he is two NPCs with one name
+     (ids 1 and 4), as an NPC is placed in one phase only. In retail phase 3 ended as soon as he joined; here he is led
+     out of the area so that he follows to Ivkovic's lab. The Operator's "Kill the guards" is said on coming near
+     Abanderada, and Ivkovic's greeting on coming near him. A log entry of Abanderada's at the start of phase 3 is cut
+     off in the screenshots and missing. -->
+<mission id="304202" title="A Little R &amp; D" description="Convince the Exile Abanderada to help develop a portable EMCP device." plot="1"
+         order="4202" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Abanderada" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="2">What are you waiting for? Bring me Ether's head, and I will join your research efforts.</say>
+  </npc>
+  <npc id="2" handle="Ether" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Joshua Ivkovic" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <npc id="4" handle="Abanderada" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>You know, {player}, it's lucky I hold you in such high esteem. Some of your friends are still busy with their little delivery tasks, but I have something a little more interesting in mind for you.&#10;&#10;I assume you remember the EMCP device which I invented? Some details must have lodged themselves somewhere in your tiny brain, somewhere? No matter. What is important is this: Following up on my brilliant discovery, the Merovingian's scientists are working to miniaturize it. Imagine, a device you can carry with you, that will disable those foolish commandos instantly... You are forced to admit my genius, I am afraid.&#10;&#10;Now, we're going to need the help of a specific Exile, named Abanderada. He hasn't agreed to help yet. This is where you come in. Go talk to him. Do whatever it takes to convince him.</briefing>
+    <enter><say>All right, Abanderada should be in here somewhere. You heard Flood, do whatever it takes.</say></enter>
+    <objective goal="1" text="Kill Abanderada's guards" type="DefeatAll" />
+    <objective goal="2" text="Talk to Abanderada" type="Talk" npc="1" after="1">
+      <talk><say npc="1">Oh, all right, all right. Stop this foolishness. I know who you've been sent by. I even know why you're here.&#10;&#10;An EMCP device, a portable one? Very intriguing. I could very well help you develop this. The General's commandos have caused me no end of trouble, I can assure you.&#10;&#10;But first, I want some payment in advance. A guarantee of your good will, if you prefer. There is an Exile named Ether. You need know nothing of the history between he and I, save the extent of my hatred. I want his head.&#10;&#10;No, wait... on second thought, just kill him. I just always wanted to say that.</say></talk>
+      <done><say contact="1">I would have you kill Abanderada, or break his fingers... but the Merovingian needs him alive, and intact. Get out of there and I'll give you directions to Ether.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Okay, what does the old Merovingian rulebook say about this situation... Oh yeah, of course. Kill the guards.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Follow the little green circles and kill Ether. You can manage that, can't you?</briefing>
+    <enter><say>You heard Flood. Take Ether down, clean and simple.</say></enter>
+    <objective goal="1" text="Kill Ether" type="Defeat" npc="2">
+      <done><say>Ether's down. Time to get out of here.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Get them!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Abanderada is going to meet us at a safe location. He'll need an escort from there to one of our labs... apparently he's a feeling a little anxious with no guards to watch him.</briefing>
+    <enter><say>Time for some escort duty, {player}.</say></enter>
+    <objective goal="1" text="Talk to Abanderada" type="Talk" npc="4">
+      <talk>
+        <say npc="4">I hope, for your sake, that you can keep me safe, {player}.</say>
+        <say npc="4">Well? Are we going or not?</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Abanderada out of the area" type="Escort" npc="4" to="exit" after="1" />
+    <objective goal="3" text="Do not let Abanderada die" type="Protect" npc="4" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>All right, now just keep him alive until you reach the safe zone. You'll be dropping him with one of our scientists, Dr. Ivkovic.</briefing>
+    <enter><say>All right, looks like you made it. Just drop him with Dr. Ivkovic and you can be on your way.</say></enter>
+    <objective goal="1" text="Lead Abanderada to Dr. Ivkovic" type="Escort" npc="4" to="npc:3">
+      <done><say npc="4">Just show me the way.</say></done>
+    </objective>
+    <objective goal="2" text="Do not let Abanderada die" type="Protect" npc="4" />
+    <near npc="3" radius="1000">
+      <say npc="3">The Merovingian told us you would be coming, {player}. Is Abanderada with you?</say>
+    </near>
+    <complete>
+      <say npc="3">I have much to discuss with Abanderada. I wonder, will we be able to overcome the multiple polarization issue? Will we?</say>
+      <say npc="4">Gee, thanks. Looks like Ivkovic is going to be more fun than a barrel of monkeys.</say>
+    </complete>
+  </phase>
+  <finish>Once again, my favorite lackey finishes the mission. Well, favorite is such a strong word...&#10;&#10;We'll be in touch, {player}.</finish>
+</mission>

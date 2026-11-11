@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- String Pulling, Merovingian story mission 4.1.2. Source: research/missions/transcripts/Merv4-1-2.md (the archive
+     replay of [Merovingian Archive 4.1.2], given by [Archived]Flood; 12 screenshots, all taken after it ended,
+     scrolling the log). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name (Wallaby, Finsen,
+     Akiyama, Francis). The player's name (TiAmo) is {player}. Ours: the description (the Summary tab was never
+     opened), every objective text (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the
+     looks and the enemy counts. Wallaby (she) and Finsen (he) are the Merovingian's people disguised as Zion
+     operatives, so they have redpill looks; Akiyama and Francis are Exiles at the Merovingian's base. The Cypherites
+     have no org of their own: they are Zion here. Item stand-in: the Data Disk from the Cypherite bodies is Data_CD
+     (6831). Rewards: the log showed 1,347,745 experience and 525,000 information, a level-50 player's amounts; we use
+     341,000 and 112,000, Zion chapter 4.1's values.
+     Gaps: in retail the first phase ended as soon as Wallaby and Finsen were talked to; here they are led out of the
+     area so that they follow into the next sites. NPCs don't fight here, so they don't join the attack on the
+     Cypherites. Akiyama's and Francis' lines came when the two were brought to Akiyama and are said when that
+     escort ends; Francis also says his when talked to. The bodies of the dead Cypherites can't be spawned: looking
+     around is an empty search of one piece of furniture, and the body with the disk is another. The second area's
+     "Goals for this area are complete" was logged twice at the same moment; it is one goal here. -->
+<mission id="304102" title="String Pulling" description="Lead the Merovingian's agents, disguised as Zion operatives, against the Cypherites." plot="1"
+         order="4102" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Wallaby" type="FRIENDLY" at="1" rsi="60010058" weapon="2564" />
+  <npc id="2" handle="Finsen" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Akiyama" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+    <say>There you are, {player}... so where's this crack team of Zion commandos the boss was talkin' about?</say>
+  </npc>
+  <npc id="4" handle="Francis" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+    <say display="5">Exiles can smell fear, human.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Time to put those unruly Zion pests in their place, {player}. I think it's time to call in the Cypherites.&#10;&#10;Go meet with Wallaby. She and her people are disguised as Zion operatives... I never do get tired of these charades, you know.</briefing>
+    <enter><say>Okay, Wallaby and Finsen are in here. Gather them up and get out of there.</say></enter>
+    <objective goal="1" text="Talk to Wallaby" type="Talk" npc="1">
+      <talk><say npc="1">Let's get out of here, {player}.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Finsen" type="Talk" npc="2">
+      <talk><say npc="2">Uh... I fight for... uh... Niobe!</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Wallaby out of the area" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="4" text="Lead Finsen out of the area" type="Escort" npc="2" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Wallaby and Finsen will assist you in an attack on the Cypherites. This really is too pleasant, crushing them and then watching them go after those cave monkeys.</briefing>
+    <enter><say>I'm reading a lot of enemies in here. Keep an eye on Finsen -- he's not exactly, uh... confidence-inspiring...</say></enter>
+    <objective goal="1" text="Kill all of the Cypherites" type="DefeatAll">
+      <done><say>That's the last of them! Now get Wallaby and Finsen out of there.</say></done>
+    </objective>
+    <objective goal="2" text="Lead Wallaby and Finsen out of the area" type="Escort" npc="1,2" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Time to drop off your merry band of followers. Swing by our local base and drop them off with Akiyama. They certainly served their purpose, eh?</briefing>
+    <enter><say>Akiyama is on site here.</say></enter>
+    <objective goal="1" text="Lead Wallaby and Finsen to Akiyama" type="Escort" npc="1,2" to="npc:3">
+      <done>
+        <say npc="3">There you are, {player}... so where's this crack team of Zion commandos the boss was talkin' about?</say>
+        <say npc="4">Exiles can smell fear, human.</say>
+        <say>These guys still give me the creeps. You can get out of there now.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>According to our monitoring, it looks like we've started a little brawl between Zion and the Cypherites! Oh, {player}, I do so love a fight... watching it, I mean.&#10;&#10;Get over to that location, and see if you can lend a hand to those poor, downtrodden masked freaks.</briefing>
+    <enter><say>I think you might be too late; looks like the fighting has died down. Better have a look around.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Have a look around" type="Search" object="1" item="0">
+      <done><say>Hmm... looks like the Cypherites didn't do so well. Be sure and check all of these bodies for anything useful.</say></done>
+    </objective>
+    <objective goal="2" text="Search the Cypherite bodies" type="Search" object="2" item="6831" after="1">
+      <done><say>A disk, huh? Better get that to a hardline.</say></done>
+    </objective>
+    <objective goal="3" text="Upload the disk at a hardline" type="Upload" item="6831" after="2" />
+  </phase>
+  <finish>Very disappointing. You just can't count on good help from misled fools these days...&#10;&#10;I'll have my people take a look at that disk. We'll be in touch, {player}. It's one of the sacrifices my job requires.</finish>
+</mission>
