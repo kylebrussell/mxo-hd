@@ -65,7 +65,7 @@
     <say after="5">Not the brightest-looking fellow, is he?</say>
   </npc>
   <npc id="12" handle="Elite Commando" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="13" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" />
+  <npc id="13" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
   <npc id="14" handle="Elite Commando" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
   <phase site="Office" enemy="Machines" enemies="0">
     <briefing>It is becoming apparent that we must attract the General's attention in order to begin a discussion with him. The Merovingian has a certain plan to this end in which you will play a small part.</briefing>
