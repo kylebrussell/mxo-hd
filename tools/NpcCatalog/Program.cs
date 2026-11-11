@@ -40,5 +40,9 @@ byte[] canonicalSource = System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(sou
 var manifest = new { source = "data/mob_parsed.csv", source_hash_format = "UTF-8, LF line endings",
     source_sha256 = Convert.ToHexString(SHA256.HashData(canonicalSource)).ToLowerInvariant(),
     policy = "NpcSpawnScope.Classify; unknown city nav is retained; historical mission/encounter samples require explicit runtime ownership.",
-    counts = groups.ToDictionary(g => g.Key.ToString(), g => g.Value.Count), rows = provenance };
-File.WriteAllText(Path.Combine(output, "manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
+    counts = groups.ToDictionary(g => g.Key.ToString(), g => g.Value.Count) };
+string metadata = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
+// Keep provenance line-oriented: a policy change should show only the affected source sightings.
+string provenanceRows = string.Join(",\n", provenance.Select(row => "    " + JsonSerializer.Serialize(row)));
+File.WriteAllText(Path.Combine(output, "manifest.json"), metadata.Substring(0, metadata.LastIndexOf('}')).TrimEnd() +
+    ",\n  \"rows\": [\n" + provenanceRows + "\n  ]\n}\n");

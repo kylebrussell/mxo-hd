@@ -1,5 +1,7 @@
 # Native checks for the ability audit
 
+Automated validation at runtime commit `531e5a6`: all 3,465 unit tests passed in Debug and Release; all 56 headless scenarios passed in 432.2 seconds with four disposable servers. This includes the four new ability scenarios, NPC scope, Function Data loot, missions and the merged PvP/duel regressions. Subsequent generated-JSON compaction was checked for exact semantic equality and the catalog/scope unit checks were rerun. Native ability presentation remains pending.
+
 Headless passes establish server behavior and packet structure. These checks still need the 7.6005 native client. Use the normal native QA harness, `mxo-client.lock`, and CSR_Tester (110) only. Keep this branch separate from the validated PvP integration until these checks are recorded. The ability audit's current `partial` labels remain appropriate even if these pass: native value scaling, summons, stealth, prerequisites and several callbacks remain unresolved.
 
 Use a disposable level-50 CSR_Tester copy with sufficient IS and the required abilities. Have the harness seed a second friendly player or team bot for support checks. The real client's target selection, range checks and UI determine what must be observed; bypassing those with forged requests is headless coverage only.

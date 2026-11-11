@@ -25,5 +25,5 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-File.WriteAllText(output, JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true }) + "\n");
+File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(row))) + "\n]\n");
 Console.WriteLine("Wrote " + output);

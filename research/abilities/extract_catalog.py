@@ -104,5 +104,8 @@ if __name__ == '__main__':
     options = parser.parse_args()
     result = extract(options.client)
     options.output.parent.mkdir(parents=True, exist_ok=True)
-    options.output.write_text(json.dumps(result, indent=2, ensure_ascii=True) + '\n', encoding='utf-8')
+    metadata = json.dumps({key: value for key, value in result.items() if key != 'abilities'}, indent=2, ensure_ascii=True)
+    # One generated template per line keeps diffs reviewable without discarding any decoded fields.
+    rows = ',\n'.join('    ' + json.dumps(row, ensure_ascii=True, separators=(',', ':')) for row in result['abilities'])
+    options.output.write_text(metadata[:-2] + ',\n  "abilities": [\n' + rows + '\n  ]\n}\n', encoding='utf-8')
     print(f"Exported {len(result['abilities'])} canonical templates to {options.output}")
