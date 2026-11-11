@@ -16,6 +16,9 @@ public sealed record CharacterSeed(string Handle)
     public int Health { get; init; } = 500;
     public int CrewId { get; init; }
 
+    /// <summary>OrganizationID (the alignment column): 0 none, 1 Zion, 2 Machines, 3 Merovingian.</summary>
+    public int Organization { get; init; }
+
     /// <summary>Bag or worn items: slot, goid, and a stack count where it matters.</summary>
     public IReadOnlyList<(int Slot, uint Goid, int Count)> Items { get; init; } = Array.Empty<(int, uint, int)>();
 }
@@ -70,7 +73,7 @@ INSERT INTO characters (charId, userId, worldId, status, handle, firstName, last
     healthC, healthM, innerStrC, innerStrM, level, profession, alignment, pvpflag, conquest_points, exp, cash,
     district, districtId, factionId, crewId, is_deleted, is_online, created)
   VALUES ({id}, {id}, 1, 0, '{seed.Handle}', 'First', 'Last', '', {seed.X}, {seed.Y}, {seed.Z}, 0,
-    {seed.Health}, 500, 200, 200, {seed.Level}, 2, 0, 0, 0, {seed.Experience}, {seed.Info},
+    {seed.Health}, 500, 200, 200, {seed.Level}, 2, {seed.Organization}, 0, 0, {seed.Experience}, {seed.Info},
     '{seed.District}', {seed.DistrictId}, 0, {seed.CrewId}, 0, 0, NOW());
 CREATE TEMPORARY TABLE rsi_copy AS SELECT * FROM rsivalues WHERE charid = {TemplateCharacter};
 UPDATE rsi_copy SET charid = {id};

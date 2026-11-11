@@ -116,7 +116,7 @@ namespace hds
         private static void CheckClient(WorldClient client, Dictionary<ushort, SpatialGrid<Mob>> mobGrids, double now)
         {
             ClientData data = client?.playerData;
-            if (data == null || !client.Alive || !data.getOnWorld() || data.waitForRPCShutDown || data.isDead ||
+            if (data == null || data.isBot || !client.Alive || !data.getOnWorld() || data.waitForRPCShutDown || data.isDead || data.duelDeath ||
                 data.DistrictIsLA() || now - data.lastAggroAt < RetrySeconds)
             {
                 return;

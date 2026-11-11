@@ -22,10 +22,16 @@ namespace hds
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);              // View ID 2 (player's self view)
             pak.AddByte(0x03);                // Update type (attribute update)
-            pak.AddHexBytes("010C00808400808080800100001000"); // Attribute mask + combat mode
-            // TODO: Build this properly using CombatantMode attribute
+            // 01 0c 00 | NoiseLevel 0 | ConditionStateFlags: in combat (0x00100000), with the player's PvP flag kept
+            client.playerData.conditionStateFlags |= PvpFlag.InCombatBit;
+            UInt32 flags = PvpFlag.FlagsOf(client);
+            client.playerInstance.ConditionStateFlags.setValue(flags);
+            pak.AddHexBytes("010C00808400808080800100");
+            pak.AddUint32(flags, 1);
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            // Everyone who sees the player: retail's views of other players carried the in-combat bit too
+            PvpFlag.ToWatchers(client, PvpFlag.BuildOtherFlags(flags));
         }
 
         /// <summary>
@@ -39,9 +45,15 @@ namespace hds
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);              // View ID 2 (player's self view)
             pak.AddByte(0x03);                // Update type
-            pak.AddHexBytes("01000080808080808001" + "00000000");
+            // The PvP flag (0x01000000) isn't a combat state: it stays
+            client.playerData.conditionStateFlags = 0;
+            UInt32 flags = PvpFlag.FlagsOf(client);
+            client.playerInstance.ConditionStateFlags.setValue(flags);
+            pak.AddHexBytes("01000080808080808001");
+            pak.AddUint32(flags, 1);
 
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            PvpFlag.ToWatchers(client, PvpFlag.BuildOtherFlags(flags));
         }
 
         /// <summary>
@@ -51,6 +63,21 @@ namespace hds
         /// <param name="combatViewId">View ID of the ILCombatHandler object</param>
         /// <param name="targetViewSpawnId">Combined view+spawn ID of the target</param>
         public void SendCombatInitialize(WorldClient client, UInt16 combatViewId, UInt32 targetViewSpawnId)
+        {
+            // Combatant IDs. Retail (player-started fight): 02 00 44 00 | 2f 00 22 00 = attacker (player, view 2)
+            // first, then the defender. This used to send the target first, telling the client the NPC attacked.
+            UInt32 self = (UInt32)(2 | (client.playerData.selfSpawnIdCounter << 16));
+            client.messageQueue.addObjectMessage(BuildCombatInitialize(combatViewId,
+                client.playerInstance.Position.getValue(), self, targetViewSpawnId), false);
+        }
+
+        /// <summary>
+        /// The master-view record that links the two fighters to the combat view: <c>01 00 02 a7 00 &lt;combat view&gt; 01
+        /// &lt;centre f64 x 3&gt; 01 00 00 00 03 00 00 00 &lt;attacker&gt; &lt;defender&gt; 01 01 02</c>, the fighters as the receiving
+        /// client knows them. The attacker is always first: a player attacked by another player got
+        /// <c>... 05 00 f8 00 02 00 d3 00 01 01 02</c>, the attacker's view and then their own (retail, died_in_pvp).
+        /// </summary>
+        public static byte[] BuildCombatInitialize(UInt16 combatViewId, byte[] centre, UInt32 attacker, UInt32 defender)
         {
             PacketContent pak = new PacketContent();
 
@@ -63,21 +90,16 @@ namespace hds
             pak.AddUint16(combatViewId, 1);   // Combat handler view ID
             pak.AddByte(0x01);                // Flag
 
-            // Player position
-            pak.AddByteArray(client.playerInstance.Position.getValue());
+            pak.AddByteArray(centre);
 
             // Combat relationship data
             pak.AddUint32(1, 1);              // Attacker slot/round (1)
             pak.AddUint32(3, 1);              // Combat type (3 = melee?)
 
-            // Combatant IDs. Retail (player-started fight): 02 00 44 00 | 2f 00 22 00 = attacker (player, view 2)
-            // first, then the defender. This used to send the target first, telling the client the NPC attacked.
-            pak.AddUint16(2, 1);                                   // Player view ID
-            pak.AddUint16(client.playerData.selfSpawnIdCounter, 1); // Player spawn ID
-            pak.AddUint32(targetViewSpawnId, 1);                  // Target view+spawn ID
+            pak.AddUint32(attacker, 1);
+            pak.AddUint32(defender, 1);
             pak.AddHexBytes("010102");                             // State flags
-
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -169,7 +191,7 @@ namespace hds
         /// <param name="client">The player whose combat is ending</param>
         /// <param name="combatViewId">View ID of the ILCombatHandler to delete</param>
         public void SendCombatEnd(WorldClient client, UInt16 combatViewId, UInt32 targetViewSpawnId,
-            byte[] combatCentre = null, UInt32 rounds = 0)
+            byte[] combatCentre = null, UInt32 rounds = 0, bool releaseTarget = true)
         {
             // Retail releases the attacker with a final record on the combat view, RPC 46 <target> 00, an own-view
             // position handoff and then the delete of the combat view; the out-of-combat reset follows ~10 s
@@ -184,7 +206,11 @@ namespace hds
                 client.messageQueue.addObjectMessage(final.ReturnFinalPacket(), false);
             }
 
-            client.messageQueue.addRpcMessage(BuildCombatTargetFlag(targetViewSpawnId, 0x00));
+            // A duel's loser got no 46 00 (niobe3dualduality 03:04:00: only the final record and the delete)
+            if (releaseTarget)
+            {
+                client.messageQueue.addRpcMessage(BuildCombatTargetFlag(targetViewSpawnId, 0x00));
+            }
 
             // Delete the combat view and hand the player back their position in the same packet, as retail did
             // (01 00 01 01 00 <view> followed by 02 00 01 0c <yaw> <pos> <time>).
@@ -263,7 +289,8 @@ namespace hds
         /// tutorial fight all ten shots (five each way) match the hit/miss result of their 81 68 combat-log line.
         /// </summary>
         public static byte[] BuildRangedShot(byte actionCounter, UInt32 targetViewSpawnId, float x, float y, float z,
-            UInt32 simMs, byte noiseLevel, bool firstShot, bool hit = true, byte attackClass = RangedWeapons.ClassPistol)
+            UInt32 simMs, byte noiseLevel, bool firstShot, bool hit = true, byte attackClass = RangedWeapons.ClassPistol,
+            UInt32 flags = CombatInterlock.InCombatFlag)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
@@ -280,7 +307,8 @@ namespace hds
             {
                 pak.AddHexBytes("8084");
                 pak.AddByte(noiseLevel);
-                pak.AddHexBytes("80808080" + "03" + "00001000");
+                pak.AddHexBytes("80808080" + "03");
+                pak.AddUint32(flags, 1);
                 pak.AddByte(CombatHandler.CombatantModeReady);
             }
             else
@@ -347,6 +375,19 @@ namespace hds
             pak.AddByte(0x00);
             pak.AddFloatLtVector3f(x, y, z);
             return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>
+        /// Object12 player views use state part 03; NPC Object599 uses 02. The action body is shared.
+        /// died_in_pvp: 0f 00 03 2a 71 01 0c 37 81 00 02 00 d3 00 00 followed by the shooter's position.
+        /// Sending 02 to a player view instead parses 2a as an attribute mask and corrupts its appearance.
+        /// </summary>
+        public static byte[] BuildOtherPlayerRangedShot(byte counter, byte attackClass, bool hit, UInt32 targetViewSpawnId,
+            float x, float y, float z)
+        {
+            byte[] shot = BuildNpcRangedShot(counter, attackClass, hit, targetViewSpawnId, x, y, z);
+            shot[0] = 0x03;
+            return shot;
         }
 
         /// <summary>RPC 4e 00, sent by retail with every shot the player fired (meaning unknown).</summary>

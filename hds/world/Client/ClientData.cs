@@ -84,6 +84,17 @@ namespace hds
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
 
+		// PvP (docs/PVP.md): the flag is ConditionStateFlags bit 0x01000000; conditionStateFlags holds the other bits
+		// last sent (in combat, tactic conditions). duelId pairs two duelists (even and odd); duelDeath is the loser
+		// lying down until they stand up (81 4c).
+		public bool pvpFlag = false;
+		public UInt32 conditionStateFlags = 0;
+		public UInt32 duelId = 0;
+		public bool duelDeath = false;
+		public double lastDuelEndedAt = -1000;
+		public bool isBot = false;
+		public readonly Dictionary<UInt32, int> conditionTokens = new Dictionary<UInt32, int>();
+
 		// Sim time (s) an NPC last attacked this player on its own (MobAggro)
 		public double lastAggroAt = -1000;
 		public bool respawnPending = false;

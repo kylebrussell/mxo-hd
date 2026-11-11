@@ -130,7 +130,12 @@ namespace hds
             }
 
             Mob mob = FindMob(client, targetViewId, out ClientView view);
-            if (mob == null || mob.getIsDead())
+            if (mob == null)
+            {
+                // Another player: PvpCombat decides whether they can be hit
+                return PvpCombat.LandAbility(client, ability, targetViewId);
+            }
+            if (mob.getIsDead())
             {
                 return false;
             }

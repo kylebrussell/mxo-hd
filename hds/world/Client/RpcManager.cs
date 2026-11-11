@@ -171,6 +171,18 @@ namespace hds{
 				    new TeleportHandler().processGameFinish(ref rpcData);
 				    break;
 
+		        case (int) RPCRequestHeader.CLIENT_DUEL_REQUEST:
+		            DuelHandler.ProcessChallenge(Store.currentClient, rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_DUEL_RESPONSE:
+		            DuelHandler.ProcessResponse(Store.currentClient, rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_PVP_FLAG:
+		            PvpFlag.ProcessToggle(Store.currentClient);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_RESPAWN_REQUEST:
 		            new TeleportHandler().ProcessRespawnRequest();
 		            break;

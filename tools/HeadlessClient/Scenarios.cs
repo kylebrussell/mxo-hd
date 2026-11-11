@@ -79,6 +79,14 @@ public static partial class Scenarios
             ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0", ["MXO_TUTORIAL_WARP"] = "21"
         }),
         new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
+        new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
+        new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
+        new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
+        new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
+        new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
+        new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
+        new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
+        new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)
@@ -950,7 +958,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
 
     /// <summary>
     /// A bystander sees another player's shots. Retail form, for a player's view (RajkoPacketsNearTheEnd
-    /// PacketsMaraCThenTimeDOut): `7a 00 02 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;`, with the target as the
+    /// PacketsMaraCThenTimeDOut): `7a 00 03 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;`, with the target as the
     /// bystander's own view and spawn id.
     /// </summary>
     private static async Task OtherViewGunfire(ScenarioContext context)
@@ -961,7 +969,7 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         shooter.SendRpc("3d 01");
         shooter.SendRpc($"41 {Le(mobForShooter.ViewId)} {Le((ushort)mobForShooter.SpawnId)}");
 
-        string shot = $"02 2a ?? 01 0c ?? ?? ?? {Le(mobForWatcher.ViewId)} {Le((ushort)mobForWatcher.SpawnId)} 00";
+        string shot = $"03 2a ?? 01 0c ?? ?? ?? {Le(mobForWatcher.ViewId)} {Le((ushort)mobForWatcher.SpawnId)} 00";
         await watcher.WaitForViewUpdateAsync(shooterView.ViewId, shot, TimeSpan.FromSeconds(15));
     }
 

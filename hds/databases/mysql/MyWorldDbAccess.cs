@@ -580,7 +580,8 @@ namespace hds.databases{
    				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(dr.GetValue(10)));
 				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(dr.GetValue(11)));
 
-				//data.setPlayerValue("pvpFlag",(int)Convert.ToDecimal(dr.GetValue(12)));
+				// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
+				Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(dr.GetValue(12)) != 0;
 				Store.currentClient.playerInstance.RealFirstName.setValue(dr.GetString(13));
 				Store.currentClient.playerInstance.RealLastName.setValue(dr.GetString(14));
 
@@ -684,6 +685,12 @@ namespace hds.databases{
 	        OpenConnection();
 	        string sqlQuery = "UPDATE characters SET alignment = " + orgId + " WHERE charId= " + charId + " LIMIT 1";
 	        ExecuteNonResultQuery(sqlQuery);
+        }
+
+        public void SetPvpFlag(uint charId, bool flagged)
+        {
+	        OpenConnection();
+	        ExecuteNonResultQuery("UPDATE characters SET pvpflag = " + (flagged ? 1 : 0) + " WHERE charId= " + charId + " LIMIT 1");
         }
 
         public Hashtable GetCharInfoByHandle(string handle)

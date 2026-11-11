@@ -495,13 +495,14 @@ namespace hds
         }
 
         /// <summary>An ability (an NPC's, another player's) lands on a player: its records go to them.</summary>
-        public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName)
+        public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName, WorldClient caster = null)
         {
             if (!TempMods.TryGet(abilityId, out TempMods.Effect effect))
             {
                 return false;
             }
-            Apply(ForPlayer(client), effect, TimeUtils.GetSimTimeSeconds(), null, casterName);
+            // The casting player, when there is one, is who a death by the damage over time is owed to (PvpCombat)
+            Apply(ForPlayer(client), effect, TimeUtils.GetSimTimeSeconds(), caster, casterName);
             return true;
         }
 
@@ -697,7 +698,7 @@ namespace hds
 
         internal override bool Ticked(TimedEffects.Active mod, int damage)
         {
-            if (client.playerData.isDead)
+            if (client.playerData.isDead || client.playerData.duelDeath)
             {
                 return false;
             }
@@ -711,6 +712,7 @@ namespace hds
             UInt16 next = (UInt16)Math.Max(0, health - damage);
             client.playerInstance.Health.setValue(next);
             TimedEffects.HealthChanged(this, health - next, next < NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1));
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(next))));
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
             client.messageQueue.addObjectMessage(BuildSelfTickUpdate(next, TempMods.VirusCrashFx, counter), false);
             client.messageQueue.addRpcMessage(AbilityMessages.Damage(false, mod.Parent, mod.CasterName ?? "", Name, damage, 0));
@@ -718,7 +720,14 @@ namespace hds
             Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " ticks on " + Name + " for " + damage + ": " + health + " -> " + next);
             if (next == 0)
             {
-                CombatHandler.HandlePlayerDeath(client);
+                if (mod.Caster != null && mod.Caster != client)
+                {
+                    PvpCombat.Defeated(client, mod.Caster); // another player's virus: a PvP death, or a duel lost
+                }
+                else
+                {
+                    CombatHandler.HandlePlayerDeath(client);
+                }
                 return false;
             }
             return true;
