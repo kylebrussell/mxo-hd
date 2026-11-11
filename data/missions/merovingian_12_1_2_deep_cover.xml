@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flood's 12.1.2, from research/missions/transcripts/Merv12-1-2.md. The two areas and dialogue are from the
+     typed retail log. The goal names, generated sites, Override Function count and rewards are reconstructed.
+     Search a furnishing in place of inspecting corpses. Near dialogue marks the ambush at the second site,
+     where the Functions are placed when the floor loads. Azuna's museum exchange was an outdoor follow-up. -->
+<mission id="312102" title="Deep Cover" description="Find Azuna and investigate the Oligarch programs at her source's location." plot="1"
+         order="12102" org="3" contact="Flood" exp="239105" info="105000">
+  <npc id="1" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />
+  <npc id="2" handle="Override Function" type="HOSTILE" at="2" rsi="ef0e0004" weapon="2568" />
+  <npc id="3" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The Merovingian feels that exploiting the Oligarch Tesarova's softer side may lead to us scoring information on their override programs, and whatever else it is that makes the Machines bow and scrape to them.
+
+We went to no small expense to place a contact of ours, Azuna, in a place where she could pick up intimate details on the activities of Tesarova here in the Matrix; suffice it to say that the Machines and others have useful resources in this area with whom we have some sway.
+
+Azuna should have her information collected and ready to hand over. What I'm trying to say is: don't screw this up.</briefing>
+    <enter><say>I'm pretty sure that "Don't screw this up" is going to be Flood's epitaph--or ours.
+
+Looks quiet in there--real quiet.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search for signs of Azuna" type="Search" object="1" item="0">
+      <done><say>Uh-oh. Machines, and no Azuna: definitely not according to plan.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>...
+
+Operative, I'm going to try, very calmly, to direct you to what was, to the best of my knowledge, our contact's source location. I'm sure this is all some sort of commonplace mistake on your part, and she'll be there, with the very valuable information well in hand.
+
+...</briefing>
+    <enter><say>I don't know about this. I'm not showing anyone at home.</say></enter>
+    <near npc="1" radius="1800">
+      <say>What--?
+
+I don't know what those are, but they don't look like they're on our side!</say>
+    </near>
+    <objective goal="1" text="Eliminate the Override Functions" type="DefeatAll">
+      <done><say>Those must have been Oligarch programs. So Azuna could have been on to something--but where is she now?
+
+Oops, I'm getting an alert from Flood. Maybe this is where he gives us our walking papers.</say></done>
+    </objective>
+  </phase>
+  <finish>When I saw from your readout that you were making the expected negative progress, I did some checking, and found that Azuna has taken cover in an old hiding place on the second sublevel of the Creston Heights Museum. We've got programs on the way, but I'm seeing readings similar to what you've got there, as well as buzzing from Machines in the area, so maybe you'd better get to Creston ASAP, hmm?</finish>
+</mission>

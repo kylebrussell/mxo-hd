@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flood's 12.1.1, from research/missions/transcripts/Merv12-1-1.md. The screenshots give the dialogue and
+     Briseus's level-30 rewards. The objective names, generated sites and redpill count are reconstructed.
+     Ookami leads in the log. The mission engine stages her with its existing escort and carries her to the second site.
+     The outdoor South Vauxton search is referenced in Flood's closing call. The next chapter mission follows
+     through the ordinary story sequence. -->
+<mission id="312101" title="Hothouse" description="Follow Ookami's lead on the interface program and intercept a Machine patrol." plot="1"
+         order="12101" org="3" contact="Flood" exp="239105" info="105000">
+  <npc id="1" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Tesarova" type="FRIENDLY" at="2" rsi="fc0e0004" weapon="2564" />
+  <npc id="3" handle="Machine Vector" type="HOSTILE" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="4" handle="Machine Despoiler" type="HOSTILE" at="3" rsi="ec020058" weapon="2568" />
+  <npc id="5" handle="Machine Karate Master" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I trust you've already reviewed the latest "intel" feed, operative, so-- No, wait. I shouldn't say that I believe you've actually done your homework before coming to me, because that would be highly unusual for you.
+
+However, I like to practice positive reinforcement; i.e., I pretend you've come prepared, and thus encourage you to make this a reality.
+
+In any case, I'm sure you're aware that there have been some interesting developments on the "interface program" front. Let's just say that it was caught "interfacing," so to speak... Ahem. And more of those so-called "Oligarchs" have cropped up, chasing the program, of course. With this much power in play, there could be profitable consequences. Get on that program's trail.</briefing>
+    <enter><say>What Flood didn't quite mention is that Ookami overheard a conversation between Ghost and the interface program, where the interface program pretty much acted like Trinity, come back from the dead--in a sense. Although, if she was a program, then she wouldn't really have been "dead"; then again, maybe she's only a program now, but wasn't before... Or maybe it's all just year's worth of pent-up frustration and wishful thinking on Ghost's part.
+
+Anyway... Uh... Oh, right. We got a blip in there that might've been the program, so you're heading in to check it out.</say></enter>
+    <near npc="1" radius="600">
+      <say>Hm, maybe you should ask her about it.</say>
+    </near>
+    <objective goal="1" text="Talk to Ookami" type="Talk" npc="1">
+      <talk><say npc="1">Hmh. It was here. Come on; follow me.</say></talk>
+    </objective>
+    <objective goal="2" text="Leave the area with Ookami" type="Escort" npc="1" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>She what?! You're follow--
+
+No, no. Don't mind me, operative. Follow her nose if you like; just don't go thinking you're being paid for this wasted time.</briefing>
+    <enter><say>I hope she's really picked up on something, 'cause I don't show squat on my screen.</say></enter>
+    <near npc="2" radius="600">
+      <say>Yahh! What in the pink hell--
+
+Oh. Oh, wait. That's one of the Oligarch people Ookami ran into earlier, isn't it?</say>
+    </near>
+    <objective goal="1" text="Talk to Tesarova" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Why, isn't this a nice surprise! Ohh, and you brought your pet program! She's a pretty one, isn't she? Hewwo, you!
+
+I hope you don't mind my butting in like this, but I thought I'd just let you know--since the program isn't here, that is why you came, isn't it?--that there's a group of others like you not far from here who've been snooping after me--and I think they're trying to find the interface program, too!
+
+Well, no, they're not quite like you, I suppose. I think they work for the Machines, as strange as that sounds. I'll send their location to that little man you have floating out there.</say>
+        <say>Uhh... Hey, I'm getting a data feed here.
+
+Wait, that was me she was calling a "little floating man," wasn't it?!</say>
+        <say npc="2">Oh, she's just darling. And those nails! Marvelous! Can I keep her?</say>
+        <say npc="1">Hrr... Interfering hussy...</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>It's nice to know you've caught up with the rest of us, operative. Yes, and there's another one, too, and his name is "Helian," or something to that effect. Such barbaric names these people have...
+
+Suffice it to say that she isn't exactly a trustworthy source. I see that she's neatly deflected you into going after some stalking Machinists.
+
+Well, play her little game. We wouldn't want to ruin her affectionate image of us just yet. And we don't need the Machines getting any closer to the program, either.</briefing>
+    <enter><say>Little floating... Hmph!
+
+Yeah, yeah, redpills. Those are probably the Machinists that...person mentioned.</say></enter>
+    <objective goal="1" text="Eliminate the Machine operatives" type="DefeatAll" />
+  </phase>
+  <finish>I wish I could say that's the end of it, operative, but something tells me that the Merovingian isn't going to let us forget this...delicate flower of an Oligarch you've made friends with.
+
+As if he wasn't already more interested in this whole "Trinity" development than a responsible business leader should be...
+
+Oh, I almost forgot. We've lost contact with four groups of our programs in South Vauxton. Be a lamb and find them for me, hm?</finish>
+</mission>
