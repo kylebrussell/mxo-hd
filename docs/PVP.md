@@ -2,7 +2,7 @@
 
 Players can fight each other in close combat (the interlock) and with guns and abilities, die by it and respawn; who may attack whom follows the client's own rule; and duels work from the challenge to the loser standing up again.
 
-**Checked so far:** unit tests (byte for byte against retail records), eight headless scenarios with one to three players, and one round in the real 7.6005 client with `?duelbot` (PR 94 QA at 7380df8). That round found four faults. "Real-client QA" below says what each was and what changed. The changes have not been back in the real client yet; the steps for that are at the end.
+**Checked so far:** 3,438 combined unit tests and all 51 headless scenarios pass at 94667f5 (426.1 s, four disposable servers at once). The real 7.6005 client passed the duel flow at f3894ef, including placement, both sides of defeat, reconstruction, the selection lock clearing, the challenge dialog and surrender. Native follow-up found and fixed two more faults: player shots used an NPC state marker, corrupting the shooter's appearance; and `?org` changed the database but left the live organisation at zero. See "Real-client QA" for evidence and remaining limits.
 
 ## Where it comes from
 
@@ -48,7 +48,7 @@ No capture has a client attacking a player outside a duel, `/pvp` (81 9e), a sur
   - The record builder was wrong before (one header byte, a length where the offset goes, the key without its 0). Nothing sent it with the default configuration.
   - `MXO_PVP_SERVER=1` and `MXO_PVP_MAX_SAFE_LEVEL=n` override the configuration for one process (tests).
 - **The flag**, on the player's own view (attribute 42, `02 00 02 80 80 80 80 80 80 01 <flags>`), on everyone's view of them (attribute 30, `<view> 02 80 80 80 80 04 <flags>`), and in the creation record others get. Retail carried it in all three.
-- **`OrganizationID`** was already in creation records; `?org` now also updates other players' views.
+- **`OrganizationID`** was already in creation records; `?org` now updates the live byte-sized value and both the player's own view (attribute 8) and other players' views (attribute 4).
 - **PvP sectors** are the client's own data (`sector_properties.csv`, `pvp_zone`: the archive and combat constructs only). The server looks up where each player stands (`SectorProperties.IsPvpZone`).
 
 ### What is ours
@@ -142,7 +142,7 @@ RPC 41 at a player. As against an NPC the server fires for the shooter at the gu
 | To | Record | Retail |
 |---|---|---|
 | The shooter | own-view shot `02 00 03 28 <ctr> 01 0c <class> <81 00 hit / 00 10 miss> <target> <pos> <time> …` and `4e 00` | the NPC gunfights; a player target in died_in_pvp: `02 00 03 3d 30 01 0c c3 81 00 05 00 f8 00 …` (an ability shot) |
-| Everyone who sees the shooter | `<shooter's view> 02 2a <ctr> 01 0c <class> <hit> <target as they know it> 00 <pos>`; for the target itself that is `02 00 <self spawn>` | `0f 00 03 2a 71 01 0c 37 81 00 02 00 d3 00 00 …` (died_in_pvp) |
+| Everyone who sees the shooter | `<shooter's view> 03 2a <ctr> 01 0c <class> <hit> <target as they know it> 00 <pos>`; for the target itself that is `02 00 <self spawn>` | `0f 00 03 2a 71 01 0c 37 81 00 02 00 d3 00 00 …` (died_in_pvp) |
 | Shooter and target | an `81 68` combat-log line each, attacker-is-you 1 and 0 | `81 68 2d 00 1d 00 03 00 00 00 65 00 0a 00 9a 00 66 00 … 0e 00 AfterWhoruNeo 09 00 f1rewa11` |
 
 - The 40 the client sends with every 41 is left unanswered, as for NPCs.
@@ -243,6 +243,20 @@ For the winner (lastday2): own DuelID 0, the loser's view IsDead 1, Health 0, Du
 
 At 7380df8, CSR_Tester (level 1, no organisation) against `?duelbot` in the Mara apartment lobby. Challenges, both sides of the interlock, and the messages of winning and losing all worked. Four things did not.
 
+The follow-up at f3894ef passed A, B and D, the challenge dialog and surrender. C's facing is correct; its interlock animation limitation remains.
+
+### E. A gunshot corrupted the player's appearance
+
+The native follow-up on the combined PR85/PR94 tree (6128ab8) showed the bot disappearing on its first shot and returning with a different appearance after the duel. Player shots had reused the NPC builder's `02 2a` prefix. On an Object12 player, `02` begins an attribute update, so the client read the shot body as attributes. Retail's other-player shot uses `03 2a` (died_in_pvp, 19:38:35). `BuildOtherPlayerRangedShot` now uses that prefix, while NPC shots retain `02`. Both PvP and the broadcast of a player's shots at NPCs use the player builder.
+
+At 46bfd06, the native retest passed: the bot remained visible with its pistol, firing animation, tracers and hit reactions; Free Fire returned fire, both health bars and combat-log lines worked, and surrender stopped both shooters. The test gun was added as the Free Fire selection without equipping it, so CSR_Tester's hand model remained empty. This does not establish equipped-weapon appearance parity.
+
+### F. `?org 1` left the player without a live organisation
+
+The duel-less native check initially showed the bot as friendly Zion. `?org` passed a signed integer to an attribute with no signed-integer setter; overload resolution chose the float setter, whose first byte was zero. Its own-view update also omitted the player-view framing. At 94667f5 the command sets an explicit byte and sends own attribute 8 with full view framing. The headless bot scenario now starts without an organisation, runs `?org 1`, checks the own-view bytes and persisted alignment, then attacks the opposing flagged bot without a duel.
+
+The native retest at 94667f5 passed: `?org 1` followed by `?duelbot pvp` showed a red Machines opponent and "[DuelBot] is hostile." Native Free Fire killed it without a duel and printed "DuelBot was just killed by CSR_Tester." Firing stopped and the bot returned with full health. The packet log pins death at 11:33:09 ET and the clear-IsDead/full-health update at 11:33:19 ET on 2026-11-11. The flag on/off check also passed its native messages and portrait indicator. QA used only CSR_Tester (110), copied into disposable databases with a dedicated account exposing no other characters. The client lock was held throughout, then released after resetting the main CSR_Tester through the harness to Mara (23828,495,13984), full health, PvP flag 0 and mission 986 only.
+
 ### A. The loser didn't fall, and /reconstruct was refused
 
 - **What happened.** After `?duelbot attack`, `/duel` and `?health 20`, the bot won. The messages were right. The player's health bar emptied but the character kept standing, and `/reconstruct` gave the client's own "You cannot /reconstruct, you are not dead." So the client never stored IsDead.
@@ -327,7 +341,7 @@ Start the server with `MXO_DEV_COMMANDS=1`. One client is enough. In order of ho
 1. **Does the bot look like a player?** `?duelbot`. A character named DuelBot should stand next to you and be selectable. If the client drops it, everything below fails and the spawn is the place to look.
 2. **The challenge.** Select DuelBot, type `/duel`. Expect "You have challenged DuelBot to a duel!" (54) and a second later "You are now in a duel to the death with DuelBot." (55). The bot should now show as an opponent (hostile selection colour, Close Combat offered): that is the DuelIDs working. Selecting anything else should be refused by the client.
 3. **The attacker's side.** Double-click the bot. The interlock should start as with an NPC: camera, both characters fighting, damage numbers both ways, the bot's health bar falling. Change tactics from the Actions window.
-4. **Winning.** `?duelbot` again for a fresh one if needed; fight it down (it has your maximum health; `?tactic power` helps). Expect "You have defeated DuelBot! The duel is now over.", the area line "TheNeo has defeated DuelBot in a dueling challenge!", and the bot lying down, then up again after five seconds. Your interlock ends about 8 s after the duel's end, as in retail.
+4. **Winning.** `?duelbot` again for a fresh one if needed; fight it down (it has your maximum health; `?tactic power` helps). Expect "You have defeated DuelBot! The duel is now over.", the area line "CSR_Tester has defeated DuelBot in a dueling challenge!", and the bot lying down, then up again after five seconds. Your interlock ends about 8 s after the duel's end, as in retail. Use CSR_Tester (110) for native QA.
 5. **The attacked side.** `?duelbot attack`, `/duel`. Three seconds after the duel begins the bot attacks: the interlock must start without any request from the client. This is the side only captures describe, so it is the likeliest to need fixing: watch for a client error, a fight with no camera, or no fight at all.
 6. **Losing.** In that fight, `?health 20`. Expect your character to fall, "DuelBot has defeated you! The duel is now over." and "You have been defeated in a duel. Type /reconstruct to stand up." Then `/reconstruct`: you should stand up where you are with 1 health and stay in the world. Try it once within 8 s of falling and once after.
    - **After a duel** (B). Win or lose a duel, then `?duelbot off` and `?duelbot attack`. You should be able to select the new bot and `/duel` it. Also take the bot away mid-duel (`?duelbot off`): expect "Your duel has been stopped because your target's RSI could not be found in the matrix." and selection free again.
