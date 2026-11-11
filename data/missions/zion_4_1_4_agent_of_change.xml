@@ -10,13 +10,12 @@
      is the Machines' redpill operative (sex not given). Item stand-in: the disk of weapon codes for the Machines
      (unnamed in the log; the General's in 4.1.3 was a Data Disk) is Data_CD (6831). Rewards: the 340,845 experience
      and 112,000 information shown right after this mission completed.
-     Gaps: the Exiles at the exchange showed up only after Ymodem spoke ("Huh? What's that?"): here they are on the
-     floor from the start, as a kill goal can't wait for a talk, and Ymodem's alarm and the Agent's reply are said when
-     Ymodem is talked to. Agent Norris fought the Exiles in retail; NPCs don't fight here. The disk can be handed over
-     only once the Exiles are dead ("Don't hand that disk over until the area is secure!"). The General's other men in
-     the first phase and the Zion Doctor and Zion Artillerist at the debrief had no lines and aren't placed. One of
-     Ghost's lines (11:06:09) was cut off in the log and isn't said; the Operator's "Hey, it's Ghost!" is said on
-     arrival. -->
+     Gaps: the Exiles at the exchange arrive once Ymodem has spoken ("Huh? What's that?"), and the kill goal opens
+     then; Ymodem's alarm and the Agent's reply are said when Ymodem is talked to. Agent Norris fought the Exiles in
+     retail; NPCs don't fight here. The disk can be handed over only once the Exiles are dead ("Don't hand that disk
+     over until the area is secure!"). The General's other men in the first phase and the Zion Doctor and Zion
+     Artillerist at the debrief had no lines and aren't placed. One of Ghost's lines (11:06:09) was cut off in the log
+     and isn't said; the Operator's "Hey, it's Ghost!" is said on arrival. -->
 <mission id="104104" title="Agent of Change" description="Deliver the General's anti-Exile weapon codes to the Machines' operative." plot="1"
          order="4104" org="1" contact="Tyndall" exp="340845" info="112000">
   <npc id="1" handle="Hungerford" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
@@ -42,7 +41,7 @@
       <done><say>Area scans clean. Let's check in with Anome and see if they're ready to do the weapon transfer now.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="4">
+  <phase site="Normal" enemy="Merovingian" enemies="4" enemiesAfter="3">
     <briefing>You know, it would just be a real shame if, with your natural clumsiness, you, say, tripped and shattered that disk of weapon codes before you could hand them off to those bloody Machines.&#10;&#10;Bah. Okay, no, I didn't say anything.&#10;&#10;The Machine redpill operative you're meeting is named "Ymodem"; just give them the disk. Maybe the General put a virus on it for them, but I doubt it. He seems to be almost as soft as the Council.</briefing>
     <enter><say>I've got an Agent and redpill in there. Looks like the place. Watch yourself around that Agent.</say></enter>
     <objective goal="3" text="Talk to Ymodem" type="Talk" npc="3">
@@ -53,7 +52,7 @@
         <say npc="2">We must destroy the Exile programs.</say>
       </done>
     </objective>
-    <objective goal="4" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="4" text="Kill all of the Exiles" type="DefeatAll" after="3">
       <done>
         <say>It looks like that takes care of all the hostiles in the area. Time to go hand over those codes.</say>
         <say npc="2">Hostiles eliminated.</say>

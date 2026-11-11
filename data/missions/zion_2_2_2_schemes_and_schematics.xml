@@ -13,12 +13,11 @@
      phase 3, so she is three NPCs, one per phase. Her card is a Get (retail's log showed no "You received" line for
      it). In phase 2 her friends attack on sight from the start rather than on her "Take them down!", she stays
      friendly instead of being beaten until she gives in, and "Leave Astronomia alive" is a Protect; her notes are a
-     Get once her friends are dead, then uploaded. In phase 3 she is there from the start, waiting to be attacked,
-     rather than tracked to the player after the schematic is taken; her "Hands off my schematic!" is said when the
-     schematic is taken. Checking the computer and taking the schematic are a Use then a Search of the same computer.
-     The end of Anome's 11:04:55 line was cut off: "back to her." is our best reading. Rigil's 11:19:37 line wasn't
-     captured. Zion Selective Phage and Zion Network Hacker spoke only in Team chat; their lines are kept, the
-     Phage's as the reply to Rigil's first line. -->
+     Get once her friends are dead, then uploaded. In phase 3 she arrives beside the player once the schematic is taken
+     ("Astronomia has been tracked to your location"), with her "Hands off my schematic!". Checking the computer and
+     taking the schematic are a Use then a Search of the same computer. The end of Anome's 11:04:55 line was cut off:
+     "back to her." is our best reading. Rigil's 11:19:37 line wasn't captured. Zion Selective Phage and Zion Network
+     Hacker spoke only in Team chat; their lines are kept, the Phage's as the reply to Rigil's first line. -->
 <mission id="102202" title="Schemes and Schematics" description="Recover the Machines' &quot;flit gun&quot; schematic for Zion." plot="1"
          order="2202" org="1" contact="Tyndall" exp="187650" info="98000">
   <npc id="1" handle="Astronomia" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
@@ -27,7 +26,7 @@
   <npc id="2" handle="Astronomia" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
     <say after="3">Ha! Good luck getting the schematic from the Machines on your own, chump! We could have had a deal, but you blew it!</say>
   </npc>
-  <npc id="3" handle="Astronomia" type="HOSTILE" at="3" rsi="58010058" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Astronomia" type="HOSTILE" at="3" rsi="58010058" weapon="2568" spawnAfter="2" spawnAt="player" />
   <npc id="4" handle="Rigil" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
   <npc id="5" handle="Zion Selective Phage" type="FRIENDLY" at="4" rsi="60010058" weapon="2564">
     <say display="5">Shutting up now, sir!</say>
@@ -83,7 +82,7 @@
         <say npc="3">Bastard! Hands off my schematic!</say>
       </done>
     </objective>
-    <objective goal="3" text="Kill Astronomia" type="Defeat" npc="3">
+    <objective goal="3" text="Kill Astronomia" type="Defeat" npc="3" after="2">
       <done><say>Good. Now get out of there before more programs show up.</say></done>
     </objective>
   </phase>

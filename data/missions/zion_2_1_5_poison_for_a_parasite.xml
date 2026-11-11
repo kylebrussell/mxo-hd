@@ -13,13 +13,14 @@
      Gaps: the Assassin's victims aren't spawned: searching each body is a Search of a filing cabinet, desk or dresser
      (nothing at the first two sightings, the live flies at the third), and the Operator's lines on reaching the rooms
      are said on arrival. The Exiles' barks ("Hah! You're too late, human!") aren't said. The third sighting's
-     cleanup crew arrives in retail after the flies are found; here it is on the floor from the start. At Alden's test
-     site retail had two boxes, two computer test apparatus and a box to dump the dead flies in; a phase keeps to
-     three objects and an emptied box can't be used again, so both tests are run at one computer apparatus (Alden
-     still calls it the second for the white test), Alden doesn't follow the player to it (leading her there is a Use
-     of the apparatus once the insecticide is in), and the last favour (taking the Dead Blowflies from her and dumping
-     them in the white insecticide's box) is left out with the last paragraph of her line asking for it. Her duplicate
-     red test line and two lines not captured in the log are left out. -->
+     cleanup crew arrives once the flies are found. At Alden's test site retail had two boxes, two computer test
+     apparatus and a box to dump the dead flies in; a phase keeps to three objects and an emptied box can't be used
+     again, so both tests are run at one computer apparatus (Alden still calls it the second for the white test).
+     Leading Alden to it for the red test ("You are now following Alden.") is an escort that ends beside it and
+     starts the test; for the white test she is already there, so starting it is a Use of the apparatus. The last
+     favour (taking the Dead Blowflies from her and dumping them in the white insecticide's box) is left out with the
+     last paragraph of her line asking for it. Her duplicate red test line and two lines not captured in the log are
+     left out. -->
 <mission id="102105" title="Poison for a Parasite" description="Collect live flies from the Assassin and test the new insecticides on them." plot="1"
          order="2105" org="1" contact="Tyndall" exp="246240" info="98000">
   <npc id="1" handle="Alden" type="FRIENDLY" at="4" rsi="58010058" weapon="2564">
@@ -51,7 +52,7 @@
     </objective>
   </phase>
 
-  <phase site="Normal" enemy="Merovingian" enemies="3">
+  <phase site="Normal" enemy="Merovingian" enemies="3" enemiesAfter="1">
     <briefing>Assassin sightings don't grow on trees, operative. And every failure here costs lives.&#10;&#10;Unfortunately for his victims, and fortunately for you--how ironic, don't you think?--he seems to be on a bit of a rampage today. We've got another hot tip--don't blow this one.</briefing>
     <enter>
       <say>I'm picking up live signals inside--redpills.</say>
@@ -80,7 +81,7 @@
     <objective goal="3" text="Put the red insecticide in the test apparatus" type="Put" object="3" item="6804" after="2">
       <done><say npc="1">Great. I have to concentrate on managing these live blowflies, so I need your help. Lead me over to that computer apparatus.</say></done>
     </objective>
-    <objective goal="4" text="Start the red insecticide test at the apparatus" type="Use" object="3" after="3">
+    <objective goal="4" text="Start the red insecticide test at the apparatus" type="Escort" npc="1" to="object:3" after="3">
       <done><say npc="1">Exposing half of the captive blowfly population to the red insecticide...now.&#10;&#10;And...nothing. I see increased movement, but it isn't killing them--just making them angry. So much for the red insecticide. Let's try the white. Get our test supply from the other box here.</say></done>
     </objective>
     <objective goal="5" text="Get the white insecticide from the other box" type="Search" object="2" item="6808" after="4">

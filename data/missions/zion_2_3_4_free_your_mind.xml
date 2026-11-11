@@ -6,10 +6,10 @@
      texts (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the looks and the enemy counts
      ("Lots of them" and "a whole mess of Exiles": 5). No mission items. Rewards: the 308,000 experience and 98,000
      information shown right after this mission completed. The commandos are an Exile group and have Exile looks.
-     Gaps: at the first meeting the Exiles burst in while Zubkin was speaking; there is no ambush spawn, so the phase's
-     Exiles are on the floor from the start and attack on sight, and Zubkin's interrupted greeting, the Operator's
-     warning and Zubkin's alarm are said on talking to him. Zubkin is placed again at the second meeting (phase 4), as
-     he was a different spawn there. Retail's other commandos at the second meeting had no lines and aren't placed. -->
+     Gaps: at the first meeting the Exiles burst in while Zubkin was speaking. They arrive once he is talked to, and
+     his interrupted greeting, the Operator's warning ("Bogies coming your way!") and Zubkin's alarm are said then;
+     the kill goal opens with them. Zubkin is placed again at the second meeting (phase 4), as he was a different spawn
+     there. Retail's other commandos at the second meeting had no lines and aren't placed. -->
 <mission id="102304" title="Free Your Mind" description="Represent Zion at a meeting with the commandos." plot="1"
          order="2304" org="1" contact="Tyndall" exp="308000" info="98000">
   <npc id="1" handle="Zubkin" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
@@ -27,7 +27,7 @@
     <enter><say>I'm picking up Exile programs in there. Lots of them.</say></enter>
     <objective goal="1" text="Kill the Exiles" type="DefeatAll" />
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="4">
+  <phase site="Normal" enemy="Merovingian" enemies="4" enemiesAfter="1">
     <briefing>Nicely done, Warrior. Now, proceed to the meeting location. The commando contingent has already arrived: their primary representative is Zubkin. You are to listen to their proposals politely, but make it clear to them that our decision will only be made following due consideration by the Zion Council.</briefing>
     <enter><say>Reading some commando programs in there; otherwise, all clear.</say></enter>
     <objective goal="1" text="Talk to Zubkin" type="Talk" npc="1">
@@ -37,7 +37,7 @@
         <say npc="1">Exiles? Here? Red alert! We've got a situation!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill the attacking Exiles" type="DefeatAll">
+    <objective goal="2" text="Kill the attacking Exiles" type="DefeatAll" after="1">
       <done><say>That's all of the attackers. Tyndall's signaling me to cut the meeting short. Head outside and we'll see what she wants.</say></done>
     </objective>
   </phase>

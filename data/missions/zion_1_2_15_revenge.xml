@@ -6,11 +6,10 @@
      first two unnamed buildings are Normal; the "extraction point" is RedPillExtraction), the looks and the enemy
      counts. Rewards: the 243,750 experience and 91,000 information shown right after this mission completed.
      Gaps: Fissure is barricaded behind a door she unlocks once the Exiles are dead; here she stands on the floor and
-     her Talk opens once the Exiles are dead, and the Operator's line about the far door is said on arrival. The repair
-     is an automatic event once she reaches the junction box, which an Escort can't target: the junction box is a
-     Computer the player uses ("Bring Fissure to the junction box"), and the repair lines play when it is done. The
-     ambush ("multiple hostile programs converging on your position") can't spawn on an event, so phase 2's Machine
-     hostiles are there from the start, between the player and the way out. An Operator line after Fissure's rescue
+     her Talk opens once the Exiles are dead, and the Operator's line about the far door is said on arrival. The
+     junction box is a Computer, and bringing Fissure to it ("Bring Fissure to the junction box") is an escort that
+     ends beside it; the repair is automatic, and its lines play then. Phase 2's Machine hostiles arrive once the box
+     is fixed ("multiple hostile programs converging on your position"). An Operator line after Fissure's rescue
      wasn't captured. Fissure casting Negative Condition Sweep on the player is flavour only. Fissure follows the player
      from phase 1 to the end. -->
 <mission id="101215" title="Revenge" description="Protect a hardline repair operative while she fixes a junction box." plot="1"
@@ -37,11 +36,11 @@
     <objective goal="3" text="Lead Fissure out of the building" type="Escort" npc="1" to="exit" after="2" />
     <objective goal="4" text="Do not let Fissure die" type="Protect" npc="1" />
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="1">
     <briefing>All right, I'm updating your waypoint with the damaged box's waypoint. Please see that Fissure gets there safely.</briefing>
     <enter><say>The junction box is in that building.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Bring Fissure to the junction box" type="Use" object="1">
+    <objective goal="1" text="Bring Fissure to the junction box" type="Escort" npc="1" to="object:1">
       <done>
         <say>There's the junction box.</say>
         <say contact="1">Fissure has got the box fixed up. Please escort her out of there and... Uh-oh. Watch out, Warrior, I'm picking up multiple hostile programs converging on your position! Get Fissure out of there, now!</say>

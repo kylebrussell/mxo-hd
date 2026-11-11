@@ -10,14 +10,14 @@
      the player "Mr. DeNiro" (the player's surname); here it is "Mr. {player}". Item stand-in: the data is Data
      (6787). Rewards: none were shown; the information is Resistance's (11.3.2, 525,000) and the experience The
      Spider's (11.1.5, 352,000).
-     Gaps: in retail Agent Park appeared when the computer was first searched. Here he stands on the floor from the
-     start and waits to be attacked (attacksOnSight="0"), and his cut-off line and the Operator's reply are said when
-     the search is done; "Get the Data from the Computer" opens once he is dead. The computer's readouts ("Soon." on
-     the first search, "#####" on the second) can't be shown. The Operator's emphasis on "just" (italics) is dropped.
-     The Corrupted the player fought after the mission ended were ambient hostiles and aren't part of it. -->
+     Gaps: Agent Park arrives beside the player when the computer is first searched (image 74 shows him next to the
+     player), and his cut-off line and the Operator's reply are said then; "Eliminate the Agent" opens with him, and
+     "Get the Data from the Computer" once he is dead. The computer's readouts ("Soon." on the first search, "#####" on
+     the second) can't be shown. The Operator's emphasis on "just" (italics) is dropped. The Corrupted the player fought
+     after the mission ended were ambient hostiles and aren't part of it. -->
 <mission id="111303" title="Gut Check" description="Search Park East for the interface program while Wright and the Machines fight it out." plot="1"
          order="11303" org="1" contact="Tyndall" exp="352000" info="525000">
-  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" attacksOnSight="0" />
+  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" spawnAfter="1" spawnAt="player" />
   <npc id="2" handle="Decelerator" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
   <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
     <say after="4">That's just how it is.</say>
@@ -33,7 +33,7 @@
         <say>Oh, now that's just what we needed.</say>
       </done>
     </objective>
-    <objective goal="2" text="Eliminate the Agent" type="Defeat" npc="1">
+    <objective goal="2" text="Eliminate the Agent" type="Defeat" npc="1" after="1">
       <done><say>See if there's any data left intact on the computer.</say></done>
     </objective>
     <objective goal="3" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="2">
