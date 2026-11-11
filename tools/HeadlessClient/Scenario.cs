@@ -42,12 +42,13 @@ public sealed class ScenarioContext : IAsyncDisposable
         Server = server;
     }
 
-    public static async Task<ScenarioContext> StartAsync(string repositoryRoot, string label, IReadOnlyDictionary<string, string>? environment = null)
+    public static async Task<ScenarioContext> StartAsync(string repositoryRoot, string label,
+        IReadOnlyDictionary<string, string>? environment = null, string? missionFixture = null)
     {
         ThrowawayDatabase database = await ThrowawayDatabase.CreateAsync(repositoryRoot, label);
         try
         {
-            ServerInstance server = await ServerInstance.StartAsync(repositoryRoot, database.Name, environment);
+            ServerInstance server = await ServerInstance.StartAsync(repositoryRoot, database.Name, environment, missionFixture);
             return new ScenarioContext(repositoryRoot, database, server);
         }
         catch
@@ -110,7 +111,7 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
 
     /// <summary>What the server's own output says went wrong: handlers that threw, a visibility pass that failed.</summary>
     public IEnumerable<string> ServerProblems() =>
-        new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception" }
+        new[] { "Packet handling failed", "Visibility pass failed", "Unhandled exception", "[MISSION] Tick failed" }
             .SelectMany(Server.OutputLines)
             .Select(line => line.Length > 300 ? line[..300] : line);
 
@@ -153,4 +154,5 @@ public static class Check
     public static string Hex(long value) => value.ToString("x", CultureInfo.InvariantCulture);
 }
 
-public sealed record Scenario(string Name, Func<ScenarioContext, Task> Run, IReadOnlyDictionary<string, string>? Environment = null);
+public sealed record Scenario(string Name, Func<ScenarioContext, Task> Run,
+    IReadOnlyDictionary<string, string>? Environment = null, string? MissionFixture = null);

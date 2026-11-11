@@ -115,11 +115,20 @@ public sealed class ServerInstance : IDisposable
         WorkingDirectory = workingDirectory;
     }
 
-    public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName, IReadOnlyDictionary<string, string>? extraEnvironment = null)
+    public static async Task<ServerInstance> StartAsync(string repositoryRoot, string databaseName,
+        IReadOnlyDictionary<string, string>? extraEnvironment = null, string? missionFixture = null)
     {
         string serverDll = FindServerDll(repositoryRoot);
         string workingDirectory = Path.Combine(Path.GetTempPath(), "mxo-headless", Guid.NewGuid().ToString("N")[..12]);
         Directory.CreateDirectory(workingDirectory);
+        if (missionFixture != null)
+        {
+            // A fixture replaces only this disposable server's mission catalog. Production data stays untouched.
+            string missions = Path.Combine(workingDirectory, "data", "missions");
+            Directory.CreateDirectory(missions);
+            File.Copy(Path.Combine(repositoryRoot, "tools", "HeadlessClient", "Fixtures", missionFixture),
+                Path.Combine(missions, missionFixture));
+        }
 
         ServerAddress address = new(Host, FreeTcpPort(), FreeTcpPort(), FreeUdpPort());
         ProcessStartInfo start = new("dotnet")

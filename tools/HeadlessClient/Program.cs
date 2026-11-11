@@ -70,7 +70,7 @@ foreach (Scenario scenario in selected)
         try
         {
             string label = "run_" + run;
-            await using ScenarioContext context = await ScenarioContext.StartAsync(root, label, scenario.Environment);
+            await using ScenarioContext context = await ScenarioContext.StartAsync(root, label, scenario.Environment, scenario.MissionFixture);
             try
             {
                 await scenario.Run(context).WaitAsync(TimeSpan.FromMinutes(6));
