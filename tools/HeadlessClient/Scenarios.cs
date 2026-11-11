@@ -66,6 +66,7 @@ public static partial class Scenarios
         {
             ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0", ["MXO_TUTORIAL_WARP"] = "21"
         }),
+        new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
     };
 
     private static async Task OrderedRpcBurst(ScenarioContext context)

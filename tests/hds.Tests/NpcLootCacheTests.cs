@@ -13,6 +13,22 @@ public class NpcLootCacheTests
     }
 
     [Fact]
+    public void OpeningAContainerClosesTheNpcWindowAndKeepsItsUnclaimedContents()
+    {
+        var cache = new NpcLootCache();
+        cache.Add(Corpse(1), 500, 0, new uint[] { 7332 });
+        Assert.True(cache.WindowOpen);
+        cache.Close();
+        Assert.False(cache.WindowOpen);
+        Assert.Null(cache.Current);
+        Assert.Equal(500u, cache.Select(1)!.Info);
+        Assert.True(cache.WindowOpen);
+        cache.Select(2);
+        Assert.True(cache.WindowOpen);
+        Assert.Null(cache.Current);
+    }
+
+    [Fact]
     public void ASecondKillPreservesTheFirstCorpsesRemainingContents()
     {
         var cache = new NpcLootCache();

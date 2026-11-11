@@ -297,12 +297,16 @@ namespace hds
 
         public void ProcessLootAccepted()
         {
+            if (NpcLoot.TryTakeAll(Store.currentClient))
+            {
+                return;
+            }
             if (TutorialMission.Of(Store.currentClient)?.OnTakeAll() == true || MissionRuntime.OnTakeAll(Store.currentClient))
             {
                 return;
             }
 
-            NpcLoot.TakeAll(Store.currentClient);
+            new ServerPackets().SendLootAccepted(Store.currentClient);
         }
 
         public void ProcessPlayerGetDetails(ref byte[] rpcData)

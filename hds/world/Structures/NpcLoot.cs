@@ -100,17 +100,21 @@ namespace hds
         }
 
         /// <summary>Grants the selected corpse once, retaining every item that does not fit.</summary>
-        public static void TakeAll(WorldClient client)
+        public static bool TryTakeAll(WorldClient client)
         {
             Mob emptied = null;
             ServerPackets packets = new ServerPackets();
             lock (client.playerData.loot)
             {
+                if (!client.playerData.loot.WindowOpen)
+                {
+                    return false;
+                }
                 NpcLootCache.Corpse corpse = client.playerData.loot.Current;
                 if (corpse == null)
                 {
                     packets.SendLootAccepted(client);
-                    return;
+                    return true;
                 }
 
                 if (corpse.Info > 0)
@@ -151,6 +155,7 @@ namespace hds
             {
                 TutorialMission.Of(client)?.OnCorpseLooted(emptied);
             }
+            return true;
         }
 
         /// <summary>Removes each granted item immediately, so a later failure cannot grant it again on retry.</summary>

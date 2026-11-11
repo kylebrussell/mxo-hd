@@ -338,6 +338,14 @@ namespace hds
 
                 if (objective.type == MissionGoalType.Search)
                 {
+                    lock (client.playerData.loot)
+                    {
+                        client.playerData.loot.Close();
+                    }
+                    foreach (MissionObjectState container in progress.objects.Values)
+                    {
+                        container.lootOpen = false;
+                    }
                     state.lootOpen = true;
                     ushort instance = client.playerData.missionInstanceCounter;
                     client.messageQueue.addRpcMessage(ServerPackets.BuildContainerLoot(MissionStaging.TitleFor(state.def.kind),

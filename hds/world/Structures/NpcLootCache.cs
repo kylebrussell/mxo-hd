@@ -29,6 +29,7 @@ namespace hds
 
         private readonly Dictionary<UInt64, Corpse> corpses = new Dictionary<UInt64, Corpse>();
         private Corpse current;
+        public bool WindowOpen { get; private set; }
 
         // Callers hold this cache's lock while changing the selected corpse or granting its contents.
         public Corpse Current => current != null && current.Available ? current : null;
@@ -44,13 +45,21 @@ namespace hds
             }
             current = new Corpse(source, info, missionItem, items);
             corpses[source.getEntityId()] = current;
+            WindowOpen = true;
             return current;
         }
 
         public Corpse Select(UInt64 entity)
         {
             corpses.TryGetValue(entity, out current);
+            WindowOpen = true;
             return Current;
+        }
+
+        public void Close()
+        {
+            current = null;
+            WindowOpen = false;
         }
 
         public void Forget(Mob source)

@@ -173,7 +173,8 @@ lines 80-81 and another Take All request at line 100. The client's class at 0x62
 fields. The server retains unclaimed pending drops for another Take All and credits the money once.
 NPC loot is held per killer and corpse until the corpse despawns or the player disconnects. The native
 `80 c7 ... 05` interaction reopens its remaining contents after another kill or a partial claim. Money
-is credited once. A respawn starts a new death generation, and ending a mission clears its corpses.
+is credited once. Loot from a previous life expires when the NPC respawns, and ending a mission clears its corpses.
+Take All applies to the selected corpse or container when their loot windows are opened in succession.
 The tutorial's corpse-loot objective waits until both the revolver and letter fit in the bag.
 
 ### Chapter 12 reconstruction

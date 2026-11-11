@@ -753,6 +753,10 @@ namespace hds
             }
 
             wardrobeOpen = true;
+            lock (client.playerData.loot)
+            {
+                client.playerData.loot.Close();
+            }
             CompleteGoal(CONTAINER_GOAL);
             client.messageQueue.addRpcMessage(ServerPackets.BuildContainerLoot(WardrobeTitle, 5, instance, 2, new[]
             {
