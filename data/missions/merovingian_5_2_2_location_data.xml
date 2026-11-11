@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Location Data, Merovingian story mission 5.2.2. Source: research/missions/transcripts/Merv5-2-2.md (the archive
+     replay of [Merovingian Archive 5.2.2], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and Effectuator line, the objective text "Search the area", and
+     the name Unlimit Reactor with its three barks. Flood called the player by handle ("TiAmo"); that is {player}. The
+     Effectuator's "Donde esta el cuarto de bano?" loses its accents. "Floodsie-wudsie" and "Can-do?" are as shown.
+     Ours: the description (the Summary tab was never opened), every objective text but "Search the area", the sites
+     (phase 2 is a computer center: Office; phase 3 was a run-down bedroom: SlumApt; the others aren't described:
+     Normal), the looks and the enemy counts. Anome's code-corrupted goons are redpills modified by his cheat codes;
+     they have no org of their own, so they are the nearest, Zion, as rogue redpills, as in the Machines chapter 5
+     missions. Each fighting phase has one named Unlimit Reactor; the three barks (dead end, Niobe, power) came in phases 2 to 4 without a clear order, so each takes one.
+     Item stand-ins: the two halves of the encoded file are File (6800) and Data (6787); the location data from the
+     goon's pockets is Map_Disk (6783).
+     Rewards: retail showed 1,056,000 experience and 514,500 information, but the log is a level-49 player's, whose
+     rewards are scaled up; these are the Machines chapter 5 retail values (286,000 and 94,500, as in Machines 5.2.1
+     Deviation).
+     Gaps: the three Effectuators are three NPCs with the same name and look (retail's copies looked alike); the
+     first is the one to talk to, and the other two say their after lines. Their "Amigo!" and "Compadre!" came on
+     coming near and are said with the Operator's "three at once". In phase 2 the second half of the file came after
+     the first ("Ooh, looks like you just got more company!"); we can't spawn hostiles on a goal, so the goon who
+     carries it is there from the start and the goal to loot it is open from the start too, as is phase 4's. The
+     log shows no kill goal, so the goons need not all be beaten. Phase 3's computer screens (the data feed to
+     70972.3272.79493.022:0232 and "Remote user maxson override in progress") can't be shown; the Operator's lines
+     tell it. The Operator's "A hardline junction box? ... Hey, and a computer." came on approach and is said on arrival; the
+     junction box had no goal and isn't placed. The searches of phases 3 and 4 turn up nothing, as in the log. Lines
+     at screenshot joins read whole and are used as such. -->
+<mission id="305202" title="Location Data" description="Raid the computer center of Anome's hacker, Maxson, and recover his data." plot="1"
+         order="5202" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say after="1">No, no, don't thank me; I just have your career advancement at heart.</say>
+  </npc>
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say>Compadre!</say>
+    <say after="1">Donde esta el cuarto de bano?</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say>Compadre!</say>
+    <say after="1">Vaya con dios!</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="58010058" weapon="2568">
+    <say>Dead end--for you.</say>
+  </npc>
+  <npc id="5" handle="Unlimit Reactor" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
+    <say>How's Niobe?</say>
+  </npc>
+  <npc id="6" handle="Unlimit Reactor" type="HOSTILE" at="4" rsi="c9020058" weapon="2568">
+    <say>Power is all that matters.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Oh, he's so tiresome... No, no, not you, {player}.
+
+Well, yes, you too. But I was referring initially to the Effectuator. He's making excuses again about not being able to track Niobe because of interference from one of Anome's hackers or other. And I don't care to hear about mysterious code-corrupted goons! I'm tired of his excuses, and I want you to go...facilitate his efforts somewhat. Understood?</briefing>
+    <enter><say>Do we have to talk to him? Can't we just tell Flood we told him to shape up or else? Who's to know?</say></enter>
+    <objective goal="1" text="Talk to the Effectuator" type="Talk" npc="1">
+      <talk><say npc="1">Aw, Floodsie-wudsie's all worried about me? I'm touched, I really am.
+
+So look, this Maxson guy working for Anome... Operatives recovered some data pointing to what we think is one of his computer centers. My plan is that you bust in there, and, you know, kick butt and get clues and stuff. Can-do?</say></talk>
+      <done><say>Okay, that's enough. No need to talk to him any more, just head outside.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Oh great, three at once...</say>
+      <say npc="1">Amigo!</say>
+      <say npc="2">Compadre!</say>
+      <say npc="3">Compadre!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>I don't care about excuses, operative; I just want to know when the Effectuator has found that blasted Niobe. Is that clear?</briefing>
+    <enter><say>Maxson's supposed computer center is in there. If this guy's working for Anome, then I think we know who to expect...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the encoded file from the computer" type="Search" object="1" item="6800">
+      <done><say>That looks like it could be useful data...but it seems to be only half of an encoded file. You'd better check around there to see if they have the other half of the file, too.
+
+Ooh, looks like you just got more company!</say></done>
+    </objective>
+    <objective goal="2" text="Get the other half of the file from the Unlimit Reactor" type="Loot" npc="4" item="6787">
+      <done><say>That's it! I'll need you to upload those to me at a hardline.
+
+Hey, I just picked up more corrupt code signals in there. Be careful!</say></done>
+    </objective>
+    <objective goal="3" text="Upload the first half of the file at a hardline" type="Upload" item="6800" after="2" />
+    <objective goal="4" text="Upload the other half of the file at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="3">
+    <briefing>Hm, more data. It seems to indicate a certain location. And I suppose I should be impressed? Have you found this person who's making even more of a laughingstock of the Effectuator than usual? Hm?</briefing>
+    <enter>
+      <say>That's the spot. Not much on the scope, though, aside from a little network activity.</say>
+      <say>A hardline junction box? That's funny. Hey, and a computer. See what's on it.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Someone's re-routing the data feed from that hardline junction box--and it's got to be our buddy Maxson. What's he up to?
+
+I think I can track that address. Head outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>A hardline junction box? What am I, the phone company? Call someone who cares.
+
+And if you need something to do in the meantime, how about--oh, I don't know--finding that hacker?</briefing>
+    <enter><say>Corrupt code readings in there... The place is hot...</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1" item="0">
+      <done><say>Nothing doing... I have a feeling they cleared out quick. Maybe one of the goons there stuffed something in their pockets?</say></done>
+    </objective>
+    <objective goal="2" text="Get the location data from the Unlimit Reactor" type="Loot" npc="6" item="6783">
+      <done><say>Ooh, looks like location data... Multiple zones...
+
+Get that uploaded to me at a hardline, stat!</say></done>
+    </objective>
+    <objective goal="3" text="Upload the location data at a hardline" type="Upload" item="6783" after="2" />
+  </phase>
+  <finish>A list of locations? I suppose this is what you call tangible results? At least it beats last time, when you only came up with his name.
+
+Yes, congratulations, {player}. My expectations for you are so low that the slightest improvement over your previous miserable failings passes for a positive accomplishment.
+
+We'll just see about these locations of yours...</finish>
+</mission>

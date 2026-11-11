@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Persuasion, Merovingian story mission 5.3.3. Source: research/missions/transcripts/Merv5-3-3.md (the archive
+     replay of [Merovingian Archive 5.3.3], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the names Persephone and The
+     Merovingian. The Merovingian's italic French ("Merci", "non", "Morbleu!") is plain text. Ours: the description
+     (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the sites (none is
+     described: Normal), the looks and the enemy counts (no one was fought). Item stand-in: the Merovingian's written
+     orders are Documents (6794). Persephone and the Merovingian are placed again in each phase they appear in.
+     Rewards: the log's 927,907 experience and 452,160 information were paid to a level-48 player; these are the
+     Machines chapter 5 retail values (286,000 experience and 94,500 information), used for this whole sub-chapter.
+     Gaps: a half-cut line in Persephone's "Flood is a rat" line (after "This is") and one at the top of the image
+     after the Operator's "That's about how I thought she'd take 'em..." couldn't be read; the lines are used as they
+     read. In the last phase the Merovingian apologized to Persephone in a scene the player watched; here Persephone
+     and then the Merovingian are talked to. -->
+<mission id="305303" title="Persuasion" description="Convince Persephone to serve as bait for the Unlimit commander Beirn." plot="1"
+         order="5303" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>As you know, in order to obtain our own cheat codes, we need a fluid sample from someone who has used one. The Unlimit leader Beirn, who seems to have an inexplicable obsession with the Merovingian's wife, is a promising candidate, but he has thus far proven elusive. We need a powerful bait--namely, Persephone.
+
+Since the Merovingian has more important matters to attend to, you'll be informing Persephone of her upcoming role in this operation.</briefing>
+    <enter><say>Yeah, I'm sure she'll be down with this. I mean, who wouldn't want to be dangled as bait for a super-powered, homicidal pervert? Just give her a little sweet-talkin', and she'll be ready to play ball.</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="1">
+      <talk><say npc="1">I see... So Flood and my husband expect me to put myself in the path of one of our most powerful enemies. And where will my husband be? By his wife's side?
+
+No, I am not so stupid. You may tell my husband, or his poodle, that he will have to find himself a different bit of meat to dangle in the jaws of the beast.</say></talk>
+      <done>
+        <say>How did I know this wasn't gonna be easy?</say>
+        <say npc="1">Flood is a rat...a scavenger! This is just like him... And my husband, of course, has not the slightest qualm about it!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The impertinence of that woman! I tried to do this the nice way...
+
+There's nothing for it, you're just going to have to get written orders from the Merovingian himself. That will force her hand.</briefing>
+    <enter><say>Oh man. He's in there...</say></enter>
+    <objective goal="1" text="Get the documents from the Merovingian" type="Get" npc="2" item="6794">
+      <talk>
+        <say npc="2">Take this to my wife. She will know what to do with it...or suffer the consequences.</say>
+        <say>All right, get those documents from him.</say>
+      </talk>
+      <done>
+        <say npc="2">Here is an errand for you to perform. It should be a simple matter for you. Take these documents, and show them to my wife.</say>
+        <say npc="2">Merci. I trust she will give me no further trouble in this business.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I trust she will be willing to listen to reason now. Show her those documents, and stand for no further shilly-shallying!</briefing>
+    <enter><say>How do we always get in the middle of these things? No matter what happens, one of them is going to hate us.</say></enter>
+    <objective goal="1" text="Give the documents to Persephone" type="Give" npc="3" item="6794">
+      <talk>
+        <say npc="3">Why did you take so long? No matter, you are here now. I know what he has had you do. You may as well proceed.</say>
+        <say npc="3">You have his confidence, but not his trust. There are others he will get to insult me, if you do not do it for him. Get it over with.</say>
+      </talk>
+      <done>
+        <say>That's about how I thought she'd take 'em...</say>
+        <say npc="3">What gives him the right to command me? He thinks that I am his slave, not his wife! He goes too far! It will not be so easy for him! He must ask me respectfully if he wants me to do this favor for him!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hmph! Ignoring a written order! The very nerve! Why he puts up with her I just don't know.
+
+He's going along with her caprice; he'll give her the order in person. I want you there to, er, make sure that she doesn't try to make some kind of horrid scene.</briefing>
+    <enter><say>This could get ugly...</say></enter>
+    <objective goal="1" text="Talk to Persephone" type="Talk" npc="4">
+      <talk>
+        <say npc="4">I will not move a muscle until he apologizes.</say>
+        <say npc="4">Do not think you can frighten me. I know exactly what my husband is capable of.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Talk to the Merovingian" type="Talk" npc="5" after="1">
+      <talk><say npc="5">She is the most beautiful woman I have ever seen, and the most troublesome. The two seem to go hand in hand...
+
+Very well, Persephone! I am sorry, eh? You know, it was stupid, so busy... But, ehhh... You will assist me in this little matter, non? I promise you, you will be perfectly safe! What? Do you think I would put my greatest jewel at risk? Morbleu! Come, my dear, say you will help me.
+
+Please?</say></talk>
+      <done>
+        <say npc="5">My wife is a conniving bitch, but she has...other advantages, once she is brought around. The operation may proceed.</say>
+        <say npc="4">You must be strong, and a little selfish, to get what you want. I suppose I learned that from him. Hmph. Well, we shall see.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Ah. There, I knew she would see reason. Women are always uselessly dragging things out like that. Her way of getting attention, I suppose.
+
+Still, we have the bait. Now we must prepare the trap.</finish>
+</mission>
