@@ -28,14 +28,14 @@
      afterwards. -->
 <mission id="310103" title="No Fly" description="Get the Machines' data on a blank spot on the map to the General, then clear his way past the Sentinels." plot="1"
          order="10103" org="3" contact="Flood" exp="352000" info="525000">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="2564">
     <say after="1">Guard it carefully, operative. There is something here that the Machines do not want found.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="2">Non, I do not know what we will find there. It is where the man Carlyne came from, if Halborn is to be believed. They have told us next to nothing about themselves; now, we find the answers for ourselves.</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
   <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>If you'll recall, Halborn let slip something about Carlyne being 800 miles northwest of the Machine city. Topographic data purloined from the Machines shows that the area is mountainous, which any fool with an atlas knows, but also that the regular grid of Machine pods and power lines breaks there, leaving a wide area apparently clear of Machine activity.&#10;&#10;This data is obviously highly sensitive. For some reason, you've been chosen to handle a copy. I sense disaster.</briefing>

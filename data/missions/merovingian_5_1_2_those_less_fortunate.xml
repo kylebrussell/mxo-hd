@@ -27,7 +27,7 @@
 
 I don't know what you're waiting around here for, {player}.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Now you get perhaps a glimpse of why it is that I have outlasted so many others, so many instances of this simulation, non? Others inevitably seek to remove you from power, but you never take it personally. A la fin, it is all business.
 
 Wait them out, bide your time, until fate brings you the instrument of your salvation.

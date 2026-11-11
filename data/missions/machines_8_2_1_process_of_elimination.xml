@@ -26,10 +26,10 @@
   <npc id="2" handle="Rueben Ellis" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
     <say display="5">Our only goal is to ensure that faulty code is detected and fixed before it is given widespread distribution throughout the simulation, leading to further faults and destabilization. We have no political affiliation.</say>
   </npc>
-  <npc id="3" handle="The Auditor" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+  <npc id="3" handle="The Auditor" type="FRIENDLY" at="2" rsi="240d0098" weapon="2568">
     <say>And what shall I tell the Merovingian if he inquires as to the reason behind my cessation of service?</say>
   </npc>
-  <npc id="4" handle="Hypatia" type="HOSTILE" attacksOnSight="0" at="3" rsi="a8060090" weapon="2568" />
+  <npc id="4" handle="Hypatia" type="HOSTILE" attacksOnSight="0" at="3" rsi="4b0a0058" weapon="2568" />
   <npc id="5" handle="Agent Clark" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
     <say after="2">Subject secured.</say>
   </npc>

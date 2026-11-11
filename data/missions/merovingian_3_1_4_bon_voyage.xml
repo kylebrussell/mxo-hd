@@ -22,9 +22,9 @@
      here (see Known gaps), so the Zion operatives' lines may not appear. -->
 <mission id="303104" title="Bon Voyage" description="Meet the Effectuator and stop Zion from learning the location of one of the Merovingian's construct portals." plot="1"
          order="3104" org="3" contact="Flood" exp="308000" info="101500">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="4" handle="Zion Howitzer" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
     <say>Okay... I know this... just try the-- Hey!</say>
   </npc>

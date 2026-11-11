@@ -39,7 +39,7 @@
   </npc>
   <npc id="8" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
   <npc id="9" handle="Elite Commando" type="HOSTILE" at="3" rsi="8f080058" weapon="2568" />
-  <npc id="10" handle="Beirn" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="10" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568" />
   <npc id="11" handle="Agent Gray" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say after="1">Always concentrate on the task at hand, operative.</say>
   </npc>

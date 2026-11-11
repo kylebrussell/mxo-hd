@@ -23,7 +23,7 @@ He causin' some kind of trouble?
 
 Well, I don't believe it. He's a good boy.</say>
   </npc>
-  <npc id="2" handle="Morpheus" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+  <npc id="2" handle="Morpheus" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
     <say after="2">Oh? Have you asked them?
 
 More importantly: did you believe?</say>
@@ -42,7 +42,7 @@ More importantly: did you believe?</say>
 
 We will have to report our failure to Agent Gray.</say>
   </npc>
-  <npc id="7" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="7" handle="Morpheus" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say after="3">I wish to do what I believe to be right...but along which path right may lie, I do not know.</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="4">

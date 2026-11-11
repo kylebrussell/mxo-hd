@@ -32,16 +32,16 @@
   <npc id="3" handle="Agent North" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
     <say>Agent Gray has reason to believe that these rogue programs were never Machines in the first place. These persons, or organization, might have an agenda of their own, outside of just attempting to pose as one of us.</say>
   </npc>
-  <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+  <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>I saw one of those foolish humans running from Agent Park in an illegal sector yesterday.</say>
   </npc>
   <npc id="5" handle="Agent Brown" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>Move along.</say>
   </npc>
-  <npc id="6" handle="Agent Long" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+  <npc id="6" handle="Agent Long" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
     <say>It's quite alright, Agent Brown. Christian Foster has permission to be here.</say>
   </npc>
-  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
     <say>We have been having trouble... with rogue programs recently.</say>
   </npc>
   <npc id="8" handle="Sisyphus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">

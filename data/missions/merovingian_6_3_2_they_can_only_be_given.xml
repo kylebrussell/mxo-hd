@@ -25,7 +25,7 @@
   <npc id="1" handle="The Oracle" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
     <say>I knew you were coming. As you can see, I've decided to be unreasonable. I wouldn't want to make things too easy for your boss, you know.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="c6020058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0">
     <say>Salope! This stupid, meddlesome old crone! She will give them to me, one way or the other! This stubbornness of hers will only end up costing her dearly!</say>
   </npc>
   <npc id="3" handle="Alligator" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />

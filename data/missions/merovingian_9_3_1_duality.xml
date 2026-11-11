@@ -36,28 +36,28 @@
   <npc id="3" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
     <say after="3">Hmh. Not that I don't appreciate the gesture, but he isn't going to be that easy to deal with--not for you, anyway.</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0">
     <say after="3">Yes, operative. Tell Malphas to put all of our agencies to work on this Carlyne problem, hm?</say>
   </npc>
-  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568">
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say after="4">We ought to invite them both over for a spot of tea.</say>
   </npc>
-  <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568">
+  <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say after="4">This should be interesting.</say>
   </npc>
-  <npc id="7" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2564">
     <say after="4">Strive to make a good first impression, operative. If it goes well, the Merovingian will arrive to greet him personally.</say>
   </npc>
-  <npc id="8" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="8" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
     <say after="6">I must say, this is very encouraging. I'd hardly dared to hope that the Merovingian would take a personal interest in my case.&#10;&#10;Yes, I do believe this marks the beginning of a very promising partnership.</say>
   </npc>
-  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="6">Merci, {player}. You see, there was no cause for concern about my safety. We are dealing with an eminently reasonable man.</say>
   </npc>
-  <npc id="10" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="10" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="6">Hm... Enthusiastic.</say>
   </npc>
-  <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="6">Seems all right.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

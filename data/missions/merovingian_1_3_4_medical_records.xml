@@ -24,7 +24,7 @@
   <npc id="2" handle="Elite Guard" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say display="5">On my way here, I was ambushed by a group of masked men. They must be stopped!</say>
   </npc>
-  <npc id="3" handle="Cheeta" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="3" handle="Cheeta" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="4" handle="Crucic" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
     <say>Tell Zion that I appreciate the help. It's good to be a part of Zion, isn't it?</say>
   </npc>

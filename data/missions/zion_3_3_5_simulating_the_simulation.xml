@@ -23,7 +23,7 @@
   <npc id="1" handle="Fly" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
     <say>I get a little confused sometimes... But I know that we have to fight for the real world, too, and not just this one.</say>
   </npc>
-  <npc id="2" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+  <npc id="2" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="0">
     <say>EG LoopMon shutdown detect 10:52:30.</say>
   </npc>
   <npc id="3" handle="Cryptos" type="FRIENDLY" at="4" rsi="050100b4" weapon="0" />

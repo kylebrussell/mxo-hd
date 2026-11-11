@@ -52,7 +52,7 @@
   <npc id="11" handle="Hilton" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="12" handle="Psyche" type="FRIENDLY" at="3" rsi="5a000040" weapon="2568" />
   <npc id="13" handle="Prymno" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="14" handle="Ookami" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+  <npc id="14" handle="Ookami" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
     <say after="4">A weakling. I'll have to be careful with him.</say>
   </npc>
   <npc id="15" handle="Maxwell Boren" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />

@@ -30,7 +30,7 @@
   <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
     <say after="2">The situation will be monitored. Thank you, operative.</say>
   </npc>
-  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
     <say after="1">Aw, too bad. Good luck then, honey. You've got my number if you want a little professional help.</say>
   </npc>
   <npc id="4" handle="EPN Operative" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />

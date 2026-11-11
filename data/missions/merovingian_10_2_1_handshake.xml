@@ -34,7 +34,7 @@
     <say display="5" after="2">... Apparently the Merovingian's broadcast equipment is too weak to maintain a connection, sir.</say>
   </npc>
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="2564" />
   <npc id="4" handle="Blood Noble" type="FRIENDLY" at="2" rsi="ec020058" weapon="0">
     <say display="5">No, no. Even with elongated canines, biting someone is harder than you would think. Don't try it if you don't know what you're doing.</say>
   </npc>

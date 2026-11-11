@@ -28,13 +28,13 @@
   <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
     <say after="1">I care little for weather of any sort, operative. Now, do not waste any more of your time or mine.</say>
   </npc>
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="3">Of course I know that my husband thinks he will never be called to account for all of the things he owes me.&#10;&#10;I delight in confounding his expectations. A good wife must keep her marriage exciting, after all.</say>
   </npc>
   <npc id="3" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
     <say after="5">Oh, I'll deliver it; don't you worry. Run along now. I have things to do.</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="6">You will find, I think, that the Apothecary takes her business very seriously. She plays, comme ils disent, "for keeps." She does lack a sense of humor, but laughter, mon ami, will not slay the beast we are hunting, eh?</say>
   </npc>
   <npc id="5" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">

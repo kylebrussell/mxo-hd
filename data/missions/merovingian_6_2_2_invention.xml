@@ -22,7 +22,7 @@
      four lines at the second visit are said on getting near them. -->
 <mission id="306202" title="Invention" description="Have a little chat with Mercury about the workers he is sending into the subway, and check up on the Blackwoods in Magog." plot="1"
          order="6202" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="4f0a0058" weapon="2568">
     <say after="1">Uh... I'll just get back to work on my device, then...</say>
   </npc>
   <npc id="2" handle="Hyman Jobst" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
@@ -47,7 +47,7 @@
   <npc id="9" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>I got a little bored watching Mercury, you know.</say>
   </npc>
-  <npc id="10" handle="Mercury" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+  <npc id="10" handle="Mercury" type="FRIENDLY" at="4" rsi="4f0a0058" weapon="2568">
     <say after="6">Gah! I can't get any work done with you people dragging your knuckles through here.</say>
   </npc>
   <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">

@@ -29,7 +29,7 @@
      are what each says when clicked afterwards. -->
 <mission id="311104" title="Zoochemy" description="Carry the biological interface program to Silver in your own signal, then see it passed on to Tarka and safely into a new mainframe." plot="1"
          order="11104" org="3" contact="Flood" exp="352000" info="115500">
-  <npc id="1" handle="Silver" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+  <npc id="1" handle="Silver" type="FRIENDLY" at="2" rsi="750a0058" weapon="2564">
     <say after="2">What is that pithy saying you gutbowls came up with? Oh, yes: "Keep it in your pants."</say>
   </npc>
   <npc id="2" handle="Tarka" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">

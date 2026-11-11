@@ -23,7 +23,7 @@
   <npc id="2" handle="Alligator" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
   <npc id="3" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
   <npc id="4" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="5" handle="Desayd" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="Desayd" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say after="8">Splendid. Send a signal to Flood that his faith in me is well-founded.</say>
   </npc>
   <npc id="6" handle="Blood Drunk" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">

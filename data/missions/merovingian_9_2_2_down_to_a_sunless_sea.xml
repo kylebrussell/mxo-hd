@@ -35,7 +35,7 @@
 <mission id="309202" title="Down to a Sunless Sea" description="Find out what the Machines told the intruder about the General's base, Stalingrad." plot="1"
          order="9202" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Dryhurst" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
-  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="58010058" weapon="2568" />
+  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
   <npc id="3" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
   <npc id="4" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
   <npc id="5" handle="Royal" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568" />

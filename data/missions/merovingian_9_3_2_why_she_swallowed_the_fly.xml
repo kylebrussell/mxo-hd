@@ -45,7 +45,7 @@
   <npc id="4" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
     <say after="6">Yeah, yeah, I heard about the cookies...</say>
   </npc>
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="7">What he does when he meets her is not our affair, is it?</say>
   </npc>
   <npc id="6" handle="Merovingian Gunman" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />

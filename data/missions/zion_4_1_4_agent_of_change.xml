@@ -24,7 +24,7 @@
     <say>The human, Ymodem, is your contact for this exchange. I am merely here to provide security.</say>
   </npc>
   <npc id="3" handle="Ymodem" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
-  <npc id="4" handle="Ghost" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564">
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say after="1">William James also said "We must cheat our foe, politically circumvent his action, not try to change his nature." We won't change the Machines. But we can outmaneuver them, if we are careful. There is much about us that they do not understand. This truce might just prove to be their own undoing--or the making of them, depending on your point of view.&#10;&#10;You've done well today. Go now.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

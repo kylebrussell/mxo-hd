@@ -26,7 +26,7 @@
   <npc id="5" handle="Ms. Boots" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">Don't even think about it.</say>
   </npc>
-  <npc id="6" handle="Argon" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="Argon" type="FRIENDLY" at="4" rsi="350a0058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>Greetings, {player}. It seems that a certain case containing items of...significant value was stolen from our couriers as they transported it through Kedemoth. It is of the greatest importance that this case be retrieved with its contents intact.
 

@@ -33,7 +33,7 @@ Oh. Yessir. Carry on.</say>
     <say after="2">No trouble at all, officer. Good luck out there.</say>
   </npc>
   <npc id="4" handle="Euboea" type="HOSTILE" attacksOnSight="0" at="2" rsi="d8040058" weapon="2568" />
-  <npc id="5" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564" />
+  <npc id="5" handle="Morpheus" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564" />
   <phase site="Warehouse" enemy="Zion" enemies="0">
     <briefing>As predicted, the Merovingian attempted to transport the General out of the simulation. Unfortunately, the attempt succeeded, although the Trainman was critically wounded by our forces. The General is believed to be outside of the simulation, but his exact location is unknown.
 

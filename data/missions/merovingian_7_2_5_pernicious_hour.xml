@@ -38,19 +38,19 @@
   <npc id="6" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
     <say after="6">You ask too many questions. What's your game?</say>
   </npc>
-  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say after="6">Psst! I'm not so sure about this guy! I think he's lost a few sprockets lately, if ya know what I mean!</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say>I don't see how you could put anything past the Machines at this point.</say>
   </npc>
   <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say>Quite simple, you know: they couldn't face the fact that he's gone, so they've invented him again. Easiest thing in the world, when people really want to believe it.</say>
   </npc>
-  <npc id="10" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="10" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
     <say>Yes... He will betray everyone, and everything. I learned that long ago. Now...I depend upon it.</say>
   </npc>
-  <npc id="11" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <npc id="11" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0" />
   <npc id="12" handle="Elite Guard" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
     <say>The old man shouldn't have messed with the kid. That was his big mistake right there.</say>
   </npc>

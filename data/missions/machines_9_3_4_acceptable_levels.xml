@@ -25,7 +25,7 @@
      or the end of "I'm in the red here"; it is said after it. Gray's broken closing line is retail's. -->
 <mission id="209304" title="Acceptable Levels" description="Attend Halborn's meeting with the Machines, then keep Zion off his trail as Carlyne closes in." plot="1"
          order="9304" org="2" contact="Agent Gray" exp="396000" info="129500">
-  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="8f080058" weapon="2564">
     <say after="1">... Giving me a whole lot of crap I already know. I can't believe the incompetence...
 
 Damn it, just more of my time they've wasted.</say>
@@ -42,11 +42,11 @@ Damn it, just more of my time they've wasted.</say>
   <npc id="5" handle="Agent Long" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
     <say after="2">Confirmed. Operative is leaving the building.</say>
   </npc>
-  <npc id="6" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564">
     <say after="1">When I'm done with this, you can bet your ass that I'll be having another talk with the old man and his little harem. I'll have all the time in the world then to make damn sure they're playing me square.</say>
   </npc>
   <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
-  <npc id="8" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="8" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2564">
     <say>I see you still haven't learned. I won't let you off as easily this time.</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="0">

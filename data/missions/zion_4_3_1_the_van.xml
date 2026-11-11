@@ -25,7 +25,7 @@
   <npc id="2" handle="Reggie Bosung" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
     <say after="1">It was those Bells... They took everything from the van. I am so bummed right now, man.</say>
   </npc>
-  <npc id="3" handle="Yttri" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+  <npc id="3" handle="Yttri" type="FRIENDLY" at="4" rsi="250d0098" weapon="0">
     <say after="1">Are you...certain that you do not simply pursue a selfish means to power?</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="3">

@@ -30,24 +30,24 @@
          order="9105" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="Buchwald" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
   <npc id="2" handle="Nekkar" type="FRIENDLY" at="2" rsi="58010058" weapon="2568" />
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="c9020058" weapon="0">
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
     <say after="2">Let us hope that it goes well.</say>
   </npc>
-  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
-  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="000100b4" weapon="2568" />
+  <npc id="4" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
   <npc id="6" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
     <say after="3">If I'd known all along that that was who your boss looked like... Hah!</say>
   </npc>
-  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="3" rsi="58010058" weapon="0">
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0">
     <say after="4">Non, merci.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="5">Not that I'm really worried, mind you.</say>
   </npc>
-  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="5">Minor blip on the radar.</say>
   </npc>
-  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="5">All men have a weakness. This one is no different.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="4">

@@ -29,19 +29,19 @@
      and the second to the new one. The two hands are never handed over in the log, and aren't here. -->
 <mission id="306105" title="Catching Up" description="Track down the rest of the second Twin with his ailing brother's help." plot="1"
          order="6105" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Twin" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
-  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say>I tried to cheer him up with twins of myself, but no-go. He's miserable, poor thing. We'll probably just have to take him out back and shoot him.</say>
   </npc>
   <npc id="3" handle="Half Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
-  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2568">
     <say>Right of salvage, meatbag--these pieces landed in my backyard. You won't get out of this neighborhood with your tender skin intact.</say>
   </npc>
-  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>Off you go. We'll catch up.</say>
   </npc>
-  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
-  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say>We are...not well.</say>
   </npc>
   <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />

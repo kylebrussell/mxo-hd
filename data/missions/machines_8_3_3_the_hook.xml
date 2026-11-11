@@ -22,7 +22,7 @@
     <say>Welcome.</say>
     <say after="1">He has visited us a number of times. Sometimes he asks many questions; sometimes, none.</say>
   </npc>
-  <npc id="2" handle="The Oracle" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+  <npc id="2" handle="The Oracle" type="FRIENDLY" at="1" rsi="3c000040" weapon="0">
     <say after="1">Well, I'm sure you'll figure something out. Don't you worry about it too much; you'll have a lot of other things to think about soon enough.</say>
   </npc>
   <npc id="3" handle="E Pluribus Neo Fighter" type="HOSTILE" at="2" rsi="000100b4" weapon="2568" />

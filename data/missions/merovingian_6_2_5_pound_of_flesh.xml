@@ -23,7 +23,7 @@
      (see Known gaps), so Naantali's and the 88 Eightball's may not appear. -->
 <mission id="306205" title="Pound of Flesh" description="Track down Anti M. through Mercury, Thallia and Beryl, and find out who paid for the distractions in Mara." plot="1"
          order="6205" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="d8040058" weapon="0">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="1" rsi="4f0a0058" weapon="0">
     <say after="1">N-no, I'm through with the whole thing, I swear! I just want to get back to my mechanical work. I knew it was a mistake to work with that woman...</say>
   </npc>
   <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -32,7 +32,7 @@
   <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>Oh, I should think he'll be quite amenable now.</say>
   </npc>
-  <npc id="4" handle="Thallia" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+  <npc id="4" handle="Thallia" type="FRIENDLY" at="2" rsi="780a0058" weapon="0">
     <say after="2">Yeah, yeah. Get it over with.</say>
   </npc>
   <npc id="5" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
@@ -44,13 +44,13 @@
   <npc id="7" handle="Naantali" type="HOSTILE" at="3" rsi="ec020058" weapon="2568">
     <say>Hey, look, a stupid human.</say>
   </npc>
-  <npc id="8" handle="Beryl" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
+  <npc id="8" handle="Beryl" type="FRIENDLY" at="3" rsi="360a0058" weapon="0">
     <say after="4">Remember, don't hurt her! You promised!</say>
   </npc>
   <npc id="9" handle="88 Eightball" type="HOSTILE" at="4" rsi="38000024" weapon="2568">
     <say>You'd better head out the back, Miss M. We'll handle this.</say>
   </npc>
-  <npc id="10" handle="Anti M." type="FRIENDLY" at="4" rsi="60010058" weapon="0" />
+  <npc id="10" handle="Anti M." type="FRIENDLY" at="4" rsi="340a0058" weapon="0" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Anti M.? Anti M.?! Investigating the Blackwoods showed that she's behind all this? Little Miss straight and narrow businesswoman? I suppose I should have known, considering what we know of her relationship with Beryl...&#10;&#10;She is not, of course, answering her phone, so I'm putting you in charge of finding her, {player}.&#10;&#10;What? There's only so many places she can be hiding. Might I suggest starting with Mercury, who we now know for certain was lying to us...</briefing>
     <enter><say>Looks like the Twins beat us there.</say></enter>

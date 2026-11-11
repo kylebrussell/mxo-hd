@@ -34,7 +34,7 @@
   <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
   <npc id="3" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="9">It is strange to think of it, my friend: your entire world, blackened and dead, on and on, mile after mile... Quel dommage, eh? Such a waste...&#10;&#10;Of course, I knew what had happened, but you like to think "ah, there must be something else that survived." But for the scout to travel 6000 miles, and see nothing but devastation... Zut alors!&#10;&#10;But then, we are fortunate to have this place, non? The Machines who made it cannot be so bad, hm? Ah, well... We will see.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

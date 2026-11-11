@@ -30,14 +30,14 @@
      killed. The EPN boss waits to be attacked and has no goal; the EPN redpills are Zion. -->
 <mission id="308203" title="The Price" description="Raid Wright Research for something to use against E Pluribus Neo, and get the Merovingian's doctored code into EPN's hands." plot="1"
          order="8203" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">Of course, mademoiselle. Another time... I look forward to a more extended...interview.</say>
   </npc>
-  <npc id="2" handle="Veil" type="FRIENDLY" at="1" rsi="60010058" weapon="0">
+  <npc id="2" handle="Veil" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
     <say>Oh, dear, I'm just flat-out bushed! Oh!</say>
   </npc>
-  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="3" rsi="c6020058" weapon="0" />
-  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say>Get him out of here.</say>
   </npc>
   <npc id="5" handle="Binomi" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />

@@ -28,7 +28,7 @@
      captured. -->
 <mission id="306303" title="Good Manners" description="Ask three powerful Exiles for a kill code for the Oracle." plot="1"
          order="6303" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">She has tasted my vengeance once before... I do not think she is foolish enough to want to feel it again.</say>
   </npc>
   <npc id="2" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">

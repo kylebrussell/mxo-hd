@@ -26,7 +26,7 @@
      after the phase ended; here it is said when the phase's goals complete. -->
 <mission id="306304" title="Beret" description="Hunt for a way to reach the General through his commandos and the computer systems they use." plot="1"
          order="6304" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Eh, what are you standing about for, bete? You must go find him!</say>
   </npc>
   <npc id="2" handle="Commando" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568">

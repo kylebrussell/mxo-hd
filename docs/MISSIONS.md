@@ -190,6 +190,70 @@ in Westview, level 40 and reputation 40 in Downtown, and level 50 and reputation
 The token is consumed on completion and retained on abort. The current reconstruction offers these
 missions through Flood's story sequence. Collector-issued entry tokens and their gates still need implementation.
 
+### Recurring characters' looks
+
+The screenshot logs don't show RSIs, so the story files give their NPCs stand-in looks. A character who comes back
+keeps one look in all three story sets (`zion_*`, `machines_*`, `merovingian_*`). The look is chosen in this order:
+
+1. **A neighbourhood contact** wears the look the server gives them on their street corner
+   (`data/mission_contact_npcs.csv`).
+2. **The Merovingian, Persephone and Tesarova** wear their own client models, which the 12.1 files already used.
+3. **Anyone else** wears the look the Zion and Machine files agree on. If they don't agree, it is the look most
+   files used.
+
+Two limits apply to every choice:
+
+- **Sex.** A look must be of the character's sex. Sexes come from the logs' pronouns, and each look's sex comes from
+  the client's model list (`client-data/npc_appearances.tsv` in the research folder). Several characters had been
+  given female recruit looks (`c6020058`, `58010058`): the Merovingian, the Effectuator, Malphas, Carlyne, Beirn,
+  Desayd, Serpentis, Pemberton, Chrysothemis and Brent. Ookami had been given male ones, though she is "she".
+- **No twins by accident.** Two named characters in the same area never share a look. For that reason, Veil and
+  the General take their second-most-used looks, and Kaplan, Wolf (5.2.4) and Zion's Craven take other looks.
+
+Names that the logs reuse for different people keep separate looks: Serpentis, Alpha, Bohrmann, Wallaby, Calvinia,
+Alligator, Cellino, Chimay, Churyumov, Downlink, Eos, Rabbit and Pigeon in the Merovingian files. The Zion and
+Machine files' Abanderada, Anza, Brent, Chrysothemis, Dobrovoleva, Fissure, Ophiuchi and Zverev are also
+different people from the Merovingian ones.
+
+| Character | RSI | Model | Client's own model, not used yet |
+|---|---|---|---|
+| The Merovingian | `57050004` | Merovingian/MerovingianBlack | |
+| Persephone | `5c050004` | Persephone/PersephoneCreme | |
+| Tesarova | `fc0e0004` | oligarchs/og04 | |
+| Malphas | `35000024` | NPCMpedCasual06 (M) | |
+| The Effectuator | `9b0000b4` | recruit-03b (M), retail's male "Merovingian Soldier" | |
+| Twin, Half Twin | `9c0000b4` | recruit-03c (M) | `2c01004e` Twins01 |
+| Seraph | `9c0000b4` | recruit-03c (M) | `92010058` Seraph |
+| The General | `9b0000b4` | recruit-03b (M) | `9400004e` NPCM_General |
+| Holographic Projection (the General's) | `8f080058` | ZeroOne robot-2-1 | `2c030004` General_holo |
+| Flood | `9b0000b4` | recruit-03b (M) | `d4020090` Flood |
+| The Oracle | `3c000040` | Pedestrians-female2_1 | `3302009c` OracleNPC |
+| Danielle Wright, and 11.1.5's "???" | `60010058` | lieutenant-02 (F) | `ec050004` daniellewright |
+| Carlyne | `d8040058` | hacker-lieutenant-01b (M) | |
+| Halborn | `8f080058` | ZeroOne robot-2-1 | |
+| Beirn | `c9020058` | recruit-02b (M) | `30030004` unlimit/beirn |
+| Trainman | `ec020058` | captain-01 (M) | `ad040004` trainman |
+| Ookami | `a8060090` | succubus2 (F) | |
+| Veil | `58010058` | lieutenant-01b (F) | `c0030008` veil |
+| Niobe | `60010058` | lieutenant-02 (F) | `b1070040` Naobi |
+| Ghost | `050100b4` | goatee-lieutenant-01 (M) | `e1010058` NPCMGhost |
+| Morpheus | `050100b4` | goatee-lieutenant-01 (M) | `41020090` NPCMorph |
+| Desayd and his clones | `c9020058` | recruit-02b (M) | |
+| Kaplan | `d8040058` | hacker-lieutenant-01b (M) | |
+| Cheeta | `9c0000b4` | recruit-03c (M) | |
+| Apothecary | `5a000040` | Pedestrians-female1_4 | |
+| Ebony | `5a000040` | Pedestrians-female1_4 | |
+| Strenlo | `d8040058` | hacker-lieutenant-01b (M) | |
+| Earnest Hungerford | `35000024` | NPCMpedCasual06 (M) | |
+| 88 Eightball | `38000024` | NPCMpedCasual07 (M) | |
+| Blackwood Duffy, Elwop, Killer | `ec020058`, `c9020058`, `8f080058` | | |
+| Agents Long, Park (Merovingian files) | `9b000090` | Agent03 | |
+| Agents Miller, West, Wilson, Wong (Merovingian files) | `3600004e` | Agent01 | |
+| Contacts: Hypatia, Silver, Mercury, Thallia, Raini, Cerulean, Nicky G., The Coroner, Dame White, Anti M., The Jeweler, Argon, The Bag Lady, Beryl, Digger, Sister Margaret, Yttri, Lotus, The Sculptress, Madame T., The Chef, The Auditor, Sunshine, The Bartender, The Network, Mr. Black | their `rsi` in `data/mission_contact_npcs.csv` | their street look | |
+
+The client's own models in the last column would be truer to retail, but nobody has seen them on a mission NPC in
+the client yet. The 12.1 files' own models for the Merovingian, Persephone and Tesarova are also untried there.
+
 ## Contacts
 
 The client ships retail's contact list: `resource/missions/definitions/sponsors.xml`, the "Missile" mission system's 67 contacts. `data/mission_contacts.csv` is that file (`research/missions/gen_mission_contacts.py` writes it), and `MissionContacts` reads it.

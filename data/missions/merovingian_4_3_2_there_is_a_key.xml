@@ -22,7 +22,7 @@
   <npc id="2" handle="Ehrsson" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
     <say>Remember me to the Frenchman!</say>
   </npc>
-  <npc id="3" handle="Serpentis" type="HOSTILE" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Serpentis" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Camon Heights">
     <briefing>Jane the Ripper. Leader of the Slashers, in Camon Heights. You have to be careful dealing with them... they have this whole disturbing family thing going. It's creepy, it really is.&#10;&#10;Go talk to Jacqueline. She'll get you more information.</briefing>
     <enter><say>I guess Jacqueline is a Merovingian program working undercover in the Slashers. Nothing like some inside information to make a job go easier!</say></enter>

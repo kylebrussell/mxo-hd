@@ -45,18 +45,18 @@
   <npc id="4" handle="Seymour Knickle" type="HOSTILE" attacksOnSight="0" at="2" rsi="9c0000b4" weapon="2568">
     <say>How about this weather we're having?</say>
   </npc>
-  <npc id="5" handle="Silver" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+  <npc id="5" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2564">
     <say after="7">This is Flood's doing, isn't it? It's practically dripping with his pomade.</say>
   </npc>
-  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="750a0058" weapon="2564">
     <say>Oh, shove off.</say>
     <say after="8">Hrmph.</say>
   </npc>
-  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="8">Ah, the Machines... Let Silver worry; it will help keep his toes on the line, eh? The Machines would like to take the program from us, of course... But it is not one of their programs, and I do not think they have any more understanding of it than we do; in fact, I believe their narrow point of view puts them at a distinct disadvantage in this affair.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568" />
-  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568" />
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>After a spectacular failure in getting anything from the interface program, the powers-that-be in this organization have finally realized what I could have told them long ago: we need experience. Unfortunately, the only person available is that insufferable know-it-all, Silver; he's spent a frightful amount of time engaged in biological research, and he worked on advanced bio interface designs with that other insufferable know-it-all, Danielle Wright. Just remember, {player}: nobody likes a know-it-all, and it's no surprise those two were both killed; I can tell you that I was quite happy about it.&#10;&#10;Of course, we brought Silver back, because he has his uses. He's still troublesome, though, and in fact at the moment he's in hiding somewhere; apparently Zion was looking for him when they were going after Wright's company. We know him far better than they do, however, and applying pressure to a certain Camon lickspittle of his, Yong, should yield results.</briefing>
     <enter><say>Silver employs Exiles of his own, and it looks like there are more than one of them in there. You're looking for a certain one, Yong, who's supposed to know where Silver is, so don't kill him, but do whatever you need to about the others.</say></enter>

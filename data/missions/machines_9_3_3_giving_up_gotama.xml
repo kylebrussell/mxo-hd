@@ -34,12 +34,12 @@ This situation relies very much upon human reactions, and that makes it difficul
     <say>Hi.</say>
     <say after="3">Yeah, I'm sure it will work out all right. See you.</say>
   </npc>
-  <npc id="4" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+  <npc id="4" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2564">
     <say after="1">That smug idiot? Huh. He's pretty desperate if he's got these saps trying to do his dirty work.
 
 Now, get out of here. When I want something from the Machines, you'll know.</say>
   </npc>
-  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="34050040" weapon="0">
+  <npc id="5" handle="The Oracle" type="FRIENDLY" at="4" rsi="3c000040" weapon="0">
     <say after="1">We've all got to do what we've got to do... Isn't that right, {player}?</say>
   </npc>
   <npc id="6" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0">

@@ -39,7 +39,7 @@
     <say after="1">End transmission.</say>
   </npc>
   <npc id="3" handle="Commando" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
-  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="4">Well, I can't really say they don't bite. I think it's kind of cute, though. There was this one time that Ookami--&#10;&#10;Oh, the data? Couldn't really say. Nobody's ever tapped into anything like this. Pretty exciting, huh?</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

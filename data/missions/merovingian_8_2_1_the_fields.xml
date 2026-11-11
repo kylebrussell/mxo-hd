@@ -29,7 +29,7 @@
      they are talked to again. -->
 <mission id="308201" title="The Fields" description="Gather birth and death rates so the Merovingian can count the humans grown in the Fields." plot="1"
          order="8201" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="1">That should be enough for Flood.&#10;&#10;The process is cold, and sterile...but you need not tell him that.</say>
   </npc>
   <npc id="2" handle="Steffanie Boon" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
@@ -40,10 +40,10 @@
   </npc>
   <npc id="4" handle="Blossom Hendrickson" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
   <npc id="5" handle="Christoper Leiden" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
-  <npc id="6" handle="The Coroner" type="FRIENDLY" at="3" rsi="c9020058" weapon="0" />
+  <npc id="6" handle="The Coroner" type="FRIENDLY" at="3" rsi="7d0a0058" weapon="0" />
   <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
   <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
-  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="9" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="8">But we already knew that Smith was a dupe of his own System, n'est-ce pas?&#10;&#10;Well... Don't worry about the Machines, mon ami. They may not like us lifting their skirts, but they have many other difficulties at the moment. If they forget, we can always remind them, non?</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

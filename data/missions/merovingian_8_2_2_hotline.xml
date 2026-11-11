@@ -26,10 +26,10 @@
      "Get away from me!" may not appear. -->
 <mission id="308202" title="Hotline" description="Track down the E Pluribus Neo thief who ate the Merovingian's cake, and get back the maps they stole." plot="1"
          order="8202" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">Eh? What are you still doing here? Go!</say>
   </npc>
-  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say after="1">'E's gettin' soft!</say>
   </npc>
   <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">

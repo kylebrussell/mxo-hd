@@ -32,13 +32,13 @@
      are said when these NPCs are clicked again. -->
 <mission id="309103" title="Maneuvers" description="Help the Merovingian and the General stage a show of force for the intruder." plot="1"
          order="9103" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="2">Merci, {player}. Let's give our guest a good show, eh?</say>
   </npc>
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
     <say after="2">The usual arrangements will be made for the transfer.</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
     <say after="3">This is gonna be good.</say>
     <say after="4">Yesss! No casualties!</say>
   </npc>

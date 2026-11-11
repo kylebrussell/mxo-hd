@@ -23,20 +23,20 @@
      the mouth, should we?", start and speaker not captured) is left out. -->
 <mission id="309205" title="Behold a Pale Horse" description="Find out who or what could be the biological interface program the intruder wants." plot="1"
          order="9205" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">Of course, she may not see it in the correct light if her husband brings up such a topic with her... This task demands a trusted intermediary such as yourself, does it not?</say>
   </npc>
-  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say after="1">Oh, yes... Very generous...</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="000100b4" weapon="2568">
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say after="1">She won't be pleased...</say>
   </npc>
-  <npc id="4" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="0" />
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="2">He hates himself. His hate has consumed him... He cannot love; he can only hate everything around him, everything that reminds him of who he is.</say>
   </npc>
-  <npc id="6" handle="Silver" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+  <npc id="6" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2564">
     <say after="3">Not very good at taking a hint, are you, meatbag?</say>
   </npc>
   <npc id="7" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">

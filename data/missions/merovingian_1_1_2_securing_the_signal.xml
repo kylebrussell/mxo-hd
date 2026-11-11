@@ -23,7 +23,7 @@
   <npc id="1" handle="Alvin Typpo" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
     <say after="2">This thing is better off in the hands of Serpentis as I haven't been able to extract any of the information that the Merovingian wanted. I'm afraid that it's simply impossible to replicate the device! I fear the Merovingian won't be pleased... Wait! Did you hear that? There's someone in the other room!</say>
   </npc>
-  <npc id="2" handle="Serpentis" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="Serpentis" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say after="1">I thank you... Now be off, I have work to do! You shall be summoned again by Flood when you are needed.</say>
   </npc>
   <npc id="3" handle="Blood Drunk" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">

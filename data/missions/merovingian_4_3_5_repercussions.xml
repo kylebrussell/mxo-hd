@@ -15,7 +15,7 @@
      to, and the two named Zion fighters say theirs on coming near them, among the generated Zionites. -->
 <mission id="304305" title="Repercussions" description="Face the Merovingian's displeasure, then lead Aeschylus and Osiris in a strike against Zion." plot="1"
          order="4305" org="3" contact="Flood" exp="352000" info="115500">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Flood will give you the information you require. Now go!</say>
   </npc>
   <npc id="2" handle="Blood Noble" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">

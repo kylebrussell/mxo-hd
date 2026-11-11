@@ -26,7 +26,7 @@
      screenshot. -->
 <mission id="308104" title="Eyes" description="Find the Oracle in Mara so the Merovingian can ask her why the Machines have not struck back." plot="1"
          order="8104" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0" />
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0" />
   <npc id="2" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
     <say>Hrr... Questions--a waste of time. We have everything we need...</say>
   </npc>
@@ -34,7 +34,7 @@
     <say>The Machine response thus far has been less than overwhelming. This raises certain...questions.</say>
   </npc>
   <npc id="4" handle="Seraph" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2564" />
-  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">Hmm...</say>
   </npc>
   <npc id="6" handle="The Oracle" type="FRIENDLY" at="4" rsi="3c000040" weapon="0">

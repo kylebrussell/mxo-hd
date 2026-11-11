@@ -30,12 +30,12 @@
   <npc id="1" handle="5 Points Partier" type="HOSTILE" at="1" rsi="34050040" weapon="2568">
     <say>Whoa, chill out!</say>
   </npc>
-  <npc id="2" handle="Nicky G." type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+  <npc id="2" handle="Nicky G." type="FRIENDLY" at="2" rsi="530a0058" weapon="0">
     <say after="2">Come see me at Club Paradise in Hampton Green some day, sugar; I'll be sure to make it worth your while. I know what the Merv pays you.</say>
   </npc>
   <npc id="3" handle="Corporate Security Paladin" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
   <npc id="4" handle="Corporate Security Paladin" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
-  <npc id="5" handle="Raini" type="FRIENDLY" at="3" rsi="60010058" weapon="0" />
+  <npc id="5" handle="Raini" type="FRIENDLY" at="3" rsi="560a0058" weapon="0" />
   <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>A little resistance isn't always a bad thing.</say>
   </npc>
@@ -45,7 +45,7 @@
   <npc id="8" handle="5 Points Magister" type="HOSTILE" at="3" rsi="38000024" weapon="2568">
     <say>Oh, so you're so tough?</say>
   </npc>
-  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say>Raini just can't get enough of ol' Effy. And who can blame her?</say>
   </npc>
   <npc id="10" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568">

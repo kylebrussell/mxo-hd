@@ -23,16 +23,16 @@
      read whole and are used as such. -->
 <mission id="305205" title="The Vial" description="Retrieve an empty cheat code vial for the Merovingian." plot="1"
          order="5205" org="3" contact="Flood" exp="286000" info="94500">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
     <say after="1">Flood will give you the information you require. See that you follow his instructions precisely.</say>
   </npc>
   <npc id="2" handle="Unlimit Reactor" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
     <say>Drop it!</say>
   </npc>
-  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say after="2">Oh, sure, that's cool. I'll check back with you later. I can get a rain check on this, right? {player}?</say>
   </npc>
-  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" />
   <npc id="5" handle="Blood Noble" type="FRIENDLY" at="4" rsi="a5060090" weapon="2568">
     <say display="5">Interesting...</say>
   </npc>

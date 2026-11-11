@@ -34,7 +34,7 @@ Did you hear something?</say>
   <npc id="3" handle="Cryptos" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
     <say after="1">Those who cannot bear the awful power of knowledge must be protected from those who have proven themselves unworthy of it.</say>
   </npc>
-  <npc id="4" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
+  <npc id="4" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
   <npc id="5" handle="Agent Pace" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
     <say after="1">The Merovingian has a long history of offenses against public and...System resources. His function is one of commanding a degree of order among programs who have rebelled against us; it could also be argued that he presents an important check against the spread of Zionite influence in the less-patrolled areas of the simulation. But when he makes a direct attack against government forces, public institutions, or legally held private entities, he must be brought to heel...and I do not think I say this only because of his attack against me.
 

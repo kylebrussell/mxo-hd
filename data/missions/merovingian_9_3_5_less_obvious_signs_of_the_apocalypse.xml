@@ -32,17 +32,17 @@
   </npc>
   <npc id="2" handle="Ophiuchi" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
   <npc id="3" handle="Eos" type="FRIENDLY" at="1" rsi="34050040" weapon="2564" />
-  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
     <say after="2">You'd better hurry, {player}. Poor Halborn always has been a fragile creature. No telling how long he'll be able to hold up.</say>
   </npc>
   <npc id="5" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
     <say after="3">The old woman's close... I know it.</say>
   </npc>
-  <npc id="6" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="6" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568" />
   <npc id="7" handle="Agent Wilson" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say after="4">Carlyne, you are ordered to come with us. The System requires information concerning your activities.</say>
   </npc>
-  <npc id="8" handle="Agent Park" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+  <npc id="8" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
     <say after="4">Hey, {player}! It's me, Eos! Pretty good disguise, huh?</say>
   </npc>
   <npc id="9" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">

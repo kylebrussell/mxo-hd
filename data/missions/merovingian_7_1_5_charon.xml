@@ -29,7 +29,7 @@
   <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
     <say after="1">As a human, you must exercise great caution when dealing with the Trainman. Remember always that he sees in you his potential demise.</say>
   </npc>
-  <npc id="2" handle="Beirn" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="Beirn" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568">
     <say after="1">Don't you worry 'bout ol' Beirn. I just want to try turning an Agent inside-out, then I'll get back to the palace--Scout's honor.</say>
   </npc>
   <npc id="3" handle="Trainman" type="FRIENDLY" at="3" rsi="ec020058" weapon="0">
@@ -44,7 +44,7 @@
   <npc id="6" handle="Trainman" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
     <say after="2">Hear that? Clock's ticking... They know what I'm here to do. They'll be after me. It isn't safe here...&#10;&#10;Damn the Merovingian! We had a deal. The fly man was supposed to be the last...</say>
   </npc>
-  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0" />
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>That ingrate, the Trainman, has been traced to the Abandoned Subway in Rogers Way. He isn't there, of course--he must be shut up in his subway construct. But even he has to come out for supplies once in a while.
 

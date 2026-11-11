@@ -23,7 +23,7 @@
   <npc id="1" handle="Avarice" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
     <say after="1">You sure you know how to use that thing?</say>
   </npc>
-  <npc id="2" handle="Desayd" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Desayd" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="Blood Drunk" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Well, if it isn't everyone's favorite operative. It seems my earlier guess was correct -- Desayd has found a way to copy himself. He is spreading these clones around the Matrix like a bad rash. And I think you have some experience with rashes, no?

@@ -29,22 +29,22 @@
      "Mission Completed!" entry wasn't captured. -->
 <mission id="307301" title="Furlough" description="Find the General, dispose of two of his commandos, and bring him to meet the Merovingian." plot="1"
          order="7301" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
-  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
   <npc id="3" handle="Verdick" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="4" handle="Machine Program" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
-  <npc id="5" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="5" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say after="6">We should take separate routes, soldier.</say>
   </npc>
   <npc id="6" handle="Commando" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
-  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="5" rsi="c6020058" weapon="0">
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="5" rsi="57050004" weapon="0">
     <say after="8">We must do everything we can to preserve our valuable ally, n'est-ce pas?</say>
   </npc>
-  <npc id="8" handle="The General" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568">
+  <npc id="8" handle="The General" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568">
     <say after="8">Arrangements will have to be made for transportation.</say>
   </npc>
   <npc id="9" handle="Twin" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568" />
-  <npc id="10" handle="Twin" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568" />
+  <npc id="10" handle="Twin" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568" />
   <npc id="11" handle="Commando" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568">
     <say>Just a flesh wound... I'll manage, sir.</say>
   </npc>

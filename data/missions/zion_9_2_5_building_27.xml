@@ -29,7 +29,7 @@
   <npc id="2" handle="Adan Durden" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
     <say after="2">N-no, I don't know how to get in. I don't have any clearance.&#10;&#10;Please don't tell anyone I talked to you!</say>
   </npc>
-  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
   <npc id="4" handle="Anacost" type="FRIENDLY" at="2" rsi="60010058" weapon="2564" />
   <npc id="5" handle="Ajax" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
   <npc id="6" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">

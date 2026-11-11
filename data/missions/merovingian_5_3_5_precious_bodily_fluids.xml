@@ -24,7 +24,7 @@
          order="5305" org="3" contact="Flood" exp="286000" info="94500">
   <npc id="1" handle="Beirn" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="2" handle="Shantell Quicksey" type="FRIENDLY" at="1" rsi="a5060090" weapon="2568" />
-  <npc id="3" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+  <npc id="3" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="2568">
     <say>Get this creature away from me!</say>
   </npc>
   <npc id="4" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">

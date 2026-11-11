@@ -32,10 +32,10 @@
   <npc id="2" handle="Ebony" type="FRIENDLY" at="2" rsi="5a000040" weapon="2568">
     <say>...</say>
   </npc>
-  <npc id="3" handle="Dame White" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="3" handle="Dame White" type="FRIENDLY" at="2" rsi="460a0058" weapon="0">
     <say after="2">Oh, the Black Widow, the Apothecary and I go way back. I was something of a wild-child in my younger days.&#10;&#10;Hm! You could ask Persephone about it, if you really want to know.</say>
   </npc>
-  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say after="4">If only you had come to the Matrix a long time ago, you would understand...&#10;&#10;Do not forget: she will test you.</say>
   </npc>
   <npc id="5" handle="Tana Giddings" type="FRIENDLY" at="4" rsi="60010058" weapon="0" />

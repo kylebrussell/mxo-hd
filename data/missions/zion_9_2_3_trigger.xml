@@ -27,7 +27,7 @@
   <npc id="2" handle="Colt" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
     <say after="2">Mauser and I were crewmates under Roland. Mauser was a good man--a good friend. I figured he'd gone down with the Hammer when the Machines wiped Zion's mainframe. Then there were rumors that Mervs had spotted him in Zion during the Sentinel attack... And now it turns out that he *was* alive, saving Lock's commissioned butt, and getting killed for it.&#10;&#10;Just... Damn it.</say>
   </npc>
-  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
     <say after="1">You'd better get going, operative. Those programs aren't just waiting around.</say>
   </npc>
   <npc id="4" handle="Acamar" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />

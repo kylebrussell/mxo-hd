@@ -22,7 +22,7 @@
      there. The Elite Guards attacked in retail but weren't an objective; they are the last phase's hostiles. -->
 <mission id="306201" title="Silver Tongue" description="Find out from the Bag Lady why revenue from the Slums is falling off, and follow the trail to Silver." plot="1"
          order="6201" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Bag Lady" type="FRIENDLY" at="1" rsi="60010058" weapon="0">
+  <npc id="1" handle="The Bag Lady" type="FRIENDLY" at="1" rsi="7a0a0058" weapon="0">
     <say after="1">Hey, tell the Merv that if he wants to show his gratitude, he could decrease garbage collection around here. They're taking away perfectly good trash before I can get to it! There's so much to go through these days...</say>
   </npc>
   <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
@@ -37,7 +37,7 @@
   <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>We simply can't abide incivility.</say>
   </npc>
-  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">
+  <npc id="6" handle="Silver" type="FRIENDLY" at="4" rsi="750a0058" weapon="2568">
     <say after="4">The Merovingian wasn't paying attention, meatbag! Messing with cheat codes, Twins, Anome--someone's got to look after number one, and if he's not going to do it, I will!
 
 All right, so he's back. Yes, I believe you've made that sufficiently clear.</say>

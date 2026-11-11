@@ -26,9 +26,9 @@
 <mission id="302205" title="Perfect Enemy" description="Find who killed an Exile leader and why, and cut Zion off from the Assassin's lair." plot="1"
          order="2205" org="3" contact="Flood" exp="297000" info="98000">
   <npc id="1" handle="JC" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
-  <npc id="2" handle="Brent" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Brent" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="Shedar" type="HOSTILE" at="3" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="Persephone" type="FRIENDLY" at="5" rsi="a8060090" weapon="0">
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="5" rsi="5c050004" weapon="0">
     <say after="1">My husband is a pompous ass. He thinks he can do whatever he wants. Sometimes he forgets that I am the Queen, and we all know the Queen is the only piece with real power.
 
 You think about that, my sweet.</say>

@@ -24,7 +24,7 @@
     <say after="1">I do have a reason, soldier: because you whine like a baby!</say>
   </npc>
   <npc id="2" handle="Stephens" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
-  <npc id="3" handle="Pemberton" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Pemberton" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
   <npc id="4" handle="Rasalgethi" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
   <npc id="5" handle="Aurelio" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="6" handle="Alpha" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">

@@ -32,10 +32,10 @@
   <npc id="1" handle="Intruder" type="FRIENDLY" at="1" rsi="050100b4" weapon="0">
     <say after="1">This is not what I came here for.</say>
   </npc>
-  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
     <say after="2">There is nothing of a young man's blood in this one's body or mind.</say>
   </npc>
-  <npc id="3" handle="The Chef" type="FRIENDLY" at="3" rsi="c9020058" weapon="0">
+  <npc id="3" handle="The Chef" type="FRIENDLY" at="3" rsi="320a0058" weapon="0">
     <say after="4">Christeen! Throw this out! Yes, all of it! It's trash! Bah! Bring the melanzane! We'll whip something up!</say>
   </npc>
   <npc id="4" handle="Christeen Westwater" type="FRIENDLY" at="3" rsi="34050040" weapon="0">
@@ -44,13 +44,13 @@
   <npc id="5" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="0">
     <say after="5">I'll take no more stuffing from this program.</say>
   </npc>
-  <npc id="6" handle="The Jeweler" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
+  <npc id="6" handle="The Jeweler" type="FRIENDLY" at="4" rsi="7d0b0058" weapon="0">
     <say after="6">I can work with this guy.</say>
   </npc>
-  <npc id="7" handle="The Sculptress" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="7" handle="The Sculptress" type="FRIENDLY" at="4" rsi="8a0a0058" weapon="0">
     <say after="7">That bubble skin of his is interesting... I'll have to ask him about that.</say>
   </npc>
-  <npc id="8" handle="Lotus" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+  <npc id="8" handle="Lotus" type="FRIENDLY" at="4" rsi="4c0a0058" weapon="0">
     <say after="8">I wouldn't want him hanging around, anyway.</say>
   </npc>
   <npc id="9" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="0">

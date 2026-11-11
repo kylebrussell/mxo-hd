@@ -34,7 +34,7 @@
   <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
     <say after="4">Well done. Unfortunately, it looks like the attack had the effect they wanted.</say>
   </npc>
-  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2564" />
   <npc id="4" handle="Commando" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
     <say after="4">Thank you for helping defend the General's broadcast point, sir.</say>
   </npc>

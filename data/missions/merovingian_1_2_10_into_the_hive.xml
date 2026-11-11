@@ -17,7 +17,7 @@
      there! Freeze!") and Taylor Zato's "Are you new here?" aren't said (one line per NPC). -->
 <mission id="301210" title="Into the Hive" description="Strike an Agent cell and follow its hit list to the phone company." plot="1"
          order="1210" org="3" contact="Flood" exp="68750" info="91000">
-  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="6e060040" weapon="2568" attacksOnSight="0" />
+  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" attacksOnSight="0" />
   <npc id="2" handle="Annita Barrows" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
     <say>They insisted that I give them my access card or my key, but I refused.</say>
   </npc>

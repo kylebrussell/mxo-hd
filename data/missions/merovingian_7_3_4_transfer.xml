@@ -33,7 +33,7 @@
   <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
     <say after="3">Mm... The loss of the Trainman complicates the transfer of the commandos considerably. Unfortunate.</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="3">Ah, bon. I have no doubt that this can be arranged. Contact Flood, mon ami, and see to it, eh? Merci.</say>
   </npc>
   <npc id="3" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
@@ -47,7 +47,7 @@
     <say>Sorry, no clue.</say>
   </npc>
   <npc id="7" handle="Club Guard" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
-  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
   <npc id="9" handle="Machine Exterminator" type="HOSTILE" at="4" rsi="ec020058" weapon="2568">
     <say>You are in violation of System protocols concerning the download of illegal programs.</say>
   </npc>

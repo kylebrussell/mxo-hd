@@ -21,7 +21,7 @@
   <npc id="1" handle="Alvan Hirsch" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
     <say after="2">Uhh... This is not going to look good when the cops get here.</say>
   </npc>
-  <npc id="2" handle="Seraph" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="Seraph" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say after="1">The Oracle lived in many places. To wander is the lot of the exile.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="4">

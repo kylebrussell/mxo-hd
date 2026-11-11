@@ -34,10 +34,10 @@
   <npc id="3" handle="Danielle Wright" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
     <say after="3">I imagine you'd like to get it as well, yes? Hm.... We'll see.</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">Missile attacks forced the General to retreat from his first foray into the zone, but we kept some of his men hidden nearby for just such an occasion.&#10;&#10;Mm, we never did discover who fired those missiles...only that the flight recorders of the downed Sentinels showed a ship nearby, of the type used by Halborn and Carlyne.</say>
   </npc>
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
     <say after="4">What is it to me? Go off and kill.</say>
   </npc>
   <npc id="6" handle="Succubus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">

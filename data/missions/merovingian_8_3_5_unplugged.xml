@@ -35,7 +35,7 @@
      and 19 s after the goals completed) are said when they complete. -->
 <mission id="308305" title="Unplugged" description="Trace Persephone's memory of a human taken from the pods through Hypatia's Archivist Society, and recover the old records the Machines are hiding." plot="1"
          order="8305" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="a8060090" weapon="0" />
+  <npc id="1" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0" />
   <npc id="2" handle="Hypatia" type="FRIENDLY" at="1" rsi="4b0a0058" weapon="0">
     <say after="2">I do appreciate the Merovingian helping me get away from the Machines. Now we're even.</say>
   </npc>

@@ -19,10 +19,10 @@
      the Machines. The signal locking and tracing, and any time pressure, have no mechanic here. -->
 <mission id="108304" title="Evacuation" description="Lead veteran operatives whose signals the Machines can trace to safety through hardlines." plot="1"
          order="8304" org="1" contact="Tyndall" exp="363000" info="63000">
-  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
     <say>I'll be back as soon as I can. Keep cool and don't take crap from anyone--especially the Machines!</say>
   </npc>
-  <npc id="2" handle="Ghost" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+  <npc id="2" handle="Ghost" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
     <say>A lot of people are going to be counting on you. To help them, you'll have to learn to count on yourself.</say>
   </npc>
   <npc id="3" handle="Colt" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">

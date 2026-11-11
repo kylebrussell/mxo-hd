@@ -31,7 +31,7 @@
     <say display="5">Actually, I get paid whether or not I fix it, so...whatever.</say>
   </npc>
   <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
-  <npc id="6" handle="The Auditor" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="6" handle="The Auditor" type="FRIENDLY" at="4" rsi="240d0098" weapon="2568">
     <say>I am unable to conduct a more detailed analysis given the data at my disposal. I am certain that an audit of your own code records will enable you to identify the problem precisely.</say>
   </npc>
   <npc id="7" handle="Machine Mechanic" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568">

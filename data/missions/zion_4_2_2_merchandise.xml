@@ -23,7 +23,7 @@
   <npc id="1" handle="Arnold Cheng" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
     <say after="2">Funny thing is, it never seemed to work. Hey, uh... Could I get a receipt for that?</say>
   </npc>
-  <npc id="2" handle="The Jeweler" type="FRIENDLY" at="2" rsi="e4050024" weapon="0">
+  <npc id="2" handle="The Jeweler" type="FRIENDLY" at="2" rsi="7d0b0058" weapon="0">
     <say after="2">Hey, I'm on the clock here, pudding! I've got a business to run! Go check in with Jason Xavier.</say>
     <say after="5">Check back any time, baby! I got some diamond-studded piercings you would kill for!</say>
   </npc>

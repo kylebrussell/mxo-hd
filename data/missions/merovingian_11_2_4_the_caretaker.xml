@@ -36,25 +36,25 @@
 <mission id="311204" title="The Caretaker" description="Learn where the interface program's human host is held from a Zionite's access card, then get Persephone to a Machine terminal to free it." plot="1"
          order="11204" org="3" contact="Flood" exp="352000" info="175000">
   <npc id="1" handle="Zion Gunman" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" />
-  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
-  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="2" rsi="58010058" weapon="0">
+  <npc id="2" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="2" rsi="57050004" weapon="0">
     <say after="4">Ehh... You know it will be dangerous, my dear. But, if you are really determined to take this rash step...&#10;&#10;Yes? Es-tu sure? Well, then we will do it.&#10;&#10;{player}, contact Flood. He will guide you to the Machine terminal you must secure for my wife.</say>
   </npc>
-  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0">
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
     <say after="4">Do as my husband tells you.</say>
   </npc>
-  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
     <say after="6">Well? Where is it? Where?!</say>
   </npc>
-  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="9">The joys of wedlock.</say>
   </npc>
-  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="000100b4" weapon="2568">
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
     <say after="9">Oh. That's all, is it?</say>
   </npc>
   <npc id="9" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
-  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="10" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="9">She has always been headstrong, but this--! It is going too far. What will they say of me if my wife gets herself killed so, hm?&#10;&#10;Non, non... She is forgetting her responsibilities. Hmh...</say>
   </npc>
   <phase site="Normal" enemy="Zion" enemies="0">

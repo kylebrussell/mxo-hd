@@ -26,9 +26,9 @@
      s after the last goals completed; here it follows that line as the goal completes. -->
 <mission id="308303" title="The Disputed Death of Mary MacHenry" description="Compare three versions of a dead woman's last phone call for the Coroner, who believes the Machines make people disappear." plot="1"
          order="8303" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Coroner" type="FRIENDLY" at="1" rsi="c9020058" weapon="0" />
+  <npc id="1" handle="The Coroner" type="FRIENDLY" at="1" rsi="7d0a0058" weapon="0" />
   <npc id="2" handle="Brandi Junge" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
-  <npc id="3" handle="The Coroner" type="FRIENDLY" at="4" rsi="c9020058" weapon="0" />
+  <npc id="3" handle="The Coroner" type="FRIENDLY" at="4" rsi="7d0a0058" weapon="0" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, the Merovingian is still not satisfied that we understand the Machine motivation for using you feeble humans as batteries. He's been poring over all those numbers we gathered for him, and he's come back to the nagging issue of the death rate: records in the Matrix indicate that the birth rate exceeds the death rate, for a healthy, growing population, but under that scenario, so necessary to the fragile happiness of your kind, the Matrix would be far from a stable system.
 

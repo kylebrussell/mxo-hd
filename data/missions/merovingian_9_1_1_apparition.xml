@@ -23,10 +23,10 @@
      head and the sync errors are only in the Operator's words. -->
 <mission id="309101" title="Apparition" description="Find out what walked down the Ascension Monument and flattened seven Agents." plot="1"
          order="9101" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="2564">
     <say after="1">I can't say that I have any idea at the moment.</say>
   </npc>
-  <npc id="2" handle="Cerulean" type="FRIENDLY" at="4" rsi="34050040" weapon="0" />
+  <npc id="2" handle="Cerulean" type="FRIENDLY" at="4" rsi="450a0058" weapon="0" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Something's been bollocksed in the Barrens, operative, and considering that seven Agents were flattened in the process, I suppose I can't blame it on you. Nevertheless, you're going to help deal with it. Malphas should have more details for you, if he's been sniffing about as he's supposed to.</briefing>
     <enter><say>Ah, the joys of working for someone who's bitter about living in the wrong century.&#10;&#10;Malphas should be in there. No hostiles in sight.</say></enter>

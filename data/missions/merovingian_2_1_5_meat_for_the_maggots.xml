@@ -23,7 +23,7 @@
          order="2105" org="3" contact="Flood" exp="297000" info="98000">
   <npc id="1" handle="Zion Duelist" type="HOSTILE" at="1" rsi="c9020058" weapon="2564" />
   <npc id="2" handle="Zion Upgrade Master" type="HOSTILE" at="1" rsi="60010058" weapon="2564" />
-  <npc id="3" handle="Chrysothemis" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="3" handle="Chrysothemis" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
     <say after="1">Come on, come on. I haven't got all day! The Merovingian is throwing a party tonight and I have to pick up a few things beforehand.</say>
     <say after="3">Maybe if you're real nice, the Merovingian will invite you to his next party -- I wouldn't count on it, though.</say>
   </npc>

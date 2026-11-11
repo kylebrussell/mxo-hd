@@ -29,20 +29,20 @@
   <npc id="1" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="2568">
     <say>This must be conducted in the utmost secrecy, understand?</say>
   </npc>
-  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="2" rsi="57050004" weapon="2568">
     <say after="2">Morpheus... The name makes me want to vomit! It was when he disabled my two assistants in such a cowardly fashion that I decided I would have to have him killed one day...</say>
   </npc>
   <npc id="3" handle="Machine Captain" type="HOSTILE" at="3" rsi="6e060040" weapon="2568">
     <say>You are interfering with official government business. You are ordered to desist, and surrender yourself immediately!</say>
   </npc>
   <npc id="4" handle="Tactical Security" type="HOSTILE" at="3" rsi="3600004e" weapon="2568" />
-  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say after="6">Eh... Doesn't hurt to have an extra pair of legs around, does it?</say>
   </npc>
-  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say after="6">Eh... Doesn't hurt to have an extra pair of legs around, does it?</say>
   </npc>
-  <npc id="7" handle="Half Twin" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <npc id="7" handle="Half Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Damn the Machines! They found out about our synthesized cheat codes. They've closed the coding sequence we were using to make them, and destroyed all the stock that we had--except for two.
 

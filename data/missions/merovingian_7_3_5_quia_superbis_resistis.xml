@@ -33,7 +33,7 @@
      times..." are said when they are talked to again. -->
 <mission id="307305" title="Quia Superbis Resistis" description="Set up a relay so the Merovingian can speak to the General, and be there when the General's broadcast comes in." plot="1"
          order="7305" org="3" contact="Flood" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
     <say after="1">Eh? Why are you still here? Allez!</say>
   </npc>
   <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -56,7 +56,7 @@
   <npc id="11" handle="Angelic Oyler" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
   <npc id="12" handle="Clarencia Overend" type="FRIENDLY" at="3" rsi="60010058" weapon="0" />
   <npc id="13" handle="Brittaney Myers" type="FRIENDLY" at="3" rsi="5a000040" weapon="0" />
-  <npc id="14" handle="The Merovingian" type="FRIENDLY" at="4" rsi="c6020058" weapon="0">
+  <npc id="14" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="5">There are times, mon ami, when it is necessary to take matters in hand. Certainement, monsieur le General has been...disappointing, but I think you must agree that as the head of a squadron under our command outside the Matrix, he may still have his uses, n'est-ce pas?</say>
   </npc>
   <npc id="15" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">

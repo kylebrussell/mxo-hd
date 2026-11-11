@@ -21,11 +21,11 @@
      lines don't show on screen here (see Known gaps) and nothing is said on death. Seraph never appears. -->
 <mission id="306301" title="Fallen Angel" description="Slaughter the Oracle's neighbors to learn whether Seraph is truly gone." plot="1"
          order="6301" org="3" contact="Flood" neighbourhoods="Mara" exp="363000" info="63000">
-  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="c6020058" weapon="0" />
-  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0" />
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>It appears that the wingless wonder forgot he couldn't fly.</say>
   </npc>
-  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
     <say>The good die young, as they say.</say>
   </npc>
   <npc id="4" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">

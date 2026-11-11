@@ -23,7 +23,7 @@
      into holy water, wooden stakes and silver bullets at a Zion Researcher is outside the mission. -->
 <mission id="104103" title="Firepower" description="Help the General's commandos scan the Exiles, guard his coders, and collect the enhanced weapon codes." plot="1"
          order="4103" org="1" contact="Tyndall" exp="352000" info="115500">
-  <npc id="1" handle="Craven" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="1" handle="Craven" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="2" handle="Warren" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
   <npc id="3" handle="Hentzel" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say>Sir! Diodorus is in charge here, sir!</say>
@@ -44,7 +44,7 @@
   <npc id="8" handle="Lou Carson" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
     <say after="3">Piece of cake, as you people say.</say>
   </npc>
-  <npc id="9" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+  <npc id="9" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
     <say after="1">Use them strategically, soldier, and the codes on that disk will polish off a whole platoon of those beasts in no time.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

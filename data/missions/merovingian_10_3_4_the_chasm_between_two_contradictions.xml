@@ -42,7 +42,7 @@
   <npc id="8" handle="Christy Raybourn" type="FRIENDLY" at="2" rsi="61000040" weapon="0" />
   <npc id="9" handle="Building Security" type="HOSTILE" at="3" rsi="38000024" weapon="2568" />
   <npc id="10" handle="Building Security" type="HOSTILE" at="3" rsi="35000024" weapon="2568" />
-  <npc id="11" handle="The Effectuator" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
+  <npc id="11" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say after="5">What? This place seems perfectly fine.&#10;&#10;Wake me when something cool happens.</say>
   </npc>
   <npc id="12" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="38000024" weapon="2568" />

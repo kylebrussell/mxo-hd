@@ -13,7 +13,7 @@
      address he gives (13806, 500, 2980) is only flavour: any computer on the site gives the data. -->
 <mission id="204105" title="Interrogation" description="Interrogate the captured Effectuator at the Machines' stronghold." plot="1"
          order="4105" org="2" contact="Agent Gray" neighbourhoods="Tabor Park" exp="341000" info="112000">
-  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>We have a most important task for you, {player}. Someone with a reputation less... impressive than yours would not have been given this mission.
 

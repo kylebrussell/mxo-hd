@@ -25,10 +25,10 @@
          order="1216" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Agent Miller" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
   <npc id="2" handle="Cocodrillo" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
-  <npc id="3" handle="Agent Wong" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
+  <npc id="3" handle="Agent Wong" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
     <say>You have no choice in the matter.</say>
   </npc>
-  <npc id="4" handle="Agent Wilson" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" />
+  <npc id="4" handle="Agent Wilson" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" />
   <npc id="5" handle="Imposter Agent" type="HOSTILE" at="4" rsi="9b000090" weapon="2568" />
   <npc id="6" handle="Morpheus" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564" />
   <npc id="7" handle="Zion Ravager" type="FRIENDLY" at="5" rsi="d8040058" weapon="2564">

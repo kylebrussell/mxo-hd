@@ -22,19 +22,19 @@
      entry at 9:43:02 PM is hidden by the scroll; it is taken as the standard area-complete line. -->
 <mission id="311101" title="Tasseomancy" description="Take a sample of the biological interface program's code to the Merovingian's specialists and report what they make of it." plot="1"
          order="11101" org="3" contact="Flood" exp="352000" info="115500">
-  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="c9020058" weapon="2564">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="2564">
     <say after="1">Our own studies, of course, will continue.</say>
   </npc>
   <npc id="2" handle="Ethereal 2" type="FRIENDLY" at="2" rsi="d8040058" weapon="0">
     <say after="2">Please deposit the payment into our usual account.&#10;&#10;My thanks to you.</say>
   </npc>
-  <npc id="3" handle="Madame T." type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+  <npc id="3" handle="Madame T." type="FRIENDLY" at="3" rsi="4d0a0058" weapon="0">
     <say after="3">Leave me now! Ah, I am overcome! O fates, spare your poor servant!</say>
   </npc>
-  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="58010058" weapon="0">
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
     <say after="4">To tell the truth, it intrigues me more and more. A new type of program, impervious to standard modes of analysis! Who knows what it might be capable of?</say>
   </npc>
-  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="a8060090" weapon="2564">
     <say after="4">Hmh. I only showed him a few of my claws.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

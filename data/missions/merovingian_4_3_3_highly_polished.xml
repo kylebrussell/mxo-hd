@@ -23,7 +23,7 @@
 <mission id="304303" title="Highly Polished" description="Follow the encrypted data back to Silver, break into his network with Polyxena, and find out what he has done with the key." plot="1"
          order="4303" org="3" contact="Flood" exp="352000" info="115500">
   <npc id="1" handle="Polyxena" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
-  <npc id="2" handle="Silver" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+  <npc id="2" handle="Silver" type="FRIENDLY" at="4" rsi="750a0058" weapon="2568">
     <say>Think it over, meatbag. Who am I kidding... let your boss think it over. You're not qualified.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">

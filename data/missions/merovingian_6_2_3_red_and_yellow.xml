@@ -39,10 +39,10 @@
   <npc id="7" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
     <say>We've just been getting to know this delicate flower.</say>
   </npc>
-  <npc id="8" handle="Thallia" type="FRIENDLY" at="3" rsi="34050040" weapon="2568">
+  <npc id="8" handle="Thallia" type="FRIENDLY" at="3" rsi="780a0058" weapon="2568">
     <say after="5">You damn Mervs are too busy stuffing yourselves with cake to see what's going on right under all your chins.</say>
   </npc>
-  <npc id="9" handle="Mercury" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+  <npc id="9" handle="Mercury" type="FRIENDLY" at="4" rsi="4f0a0058" weapon="2568">
     <say after="6">No, no, Raini's got nothing to do with any of this.</say>
   </npc>
   <npc id="10" handle="Hunter Ackley" type="FRIENDLY" at="4" rsi="38000024" weapon="0">

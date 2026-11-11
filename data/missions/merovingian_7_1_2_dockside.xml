@@ -27,7 +27,7 @@
      2:18:19 PM and at 2:25:30 PM weren't captured (very likely the standard goals-complete line). -->
 <mission id="307102" title="Dockside" description="Track down the Machine cheat code lost under the Uriah wharf." plot="1"
          order="7102" org="3" contact="Flood" neighbourhoods="Uriah Industrial Park" exp="363000" info="63000">
-  <npc id="1" handle="Mercury" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="2" rsi="4f0a0058" weapon="2568">
     <say after="2">B-business? Good... It's good. T-thanks for asking. Uh... See you around.</say>
   </npc>
   <npc id="2" handle="Jack the Hack" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
