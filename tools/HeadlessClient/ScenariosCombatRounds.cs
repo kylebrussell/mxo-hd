@@ -97,11 +97,34 @@ public static partial class Scenarios
 
         var bobView=await alice.WaitForViewNamedAsync("RoundBob");
         bob.SendChat("?pvpflag on"); await bob.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
+        alice.SendChat("?pvpflag on");
+        await alice.WaitForViewUpdateAsync(2,"02 80 80 80 80 80 80 01 00 00 ?? 01"); // NPC combat bit may still be up.
         alice.SendRpc($"40 {HandleOf(bobView)} 01 6b");
         ushort av=await WaitForCombatView(alice,aliceNpc), bv=await WaitForCombatView(bob,bobNpc), cv=await WaitForCombatView(carol,carolNpc);
         await WaitForEntry(alice,av,2); await WaitForEntry(bob,bv,2); await WaitForEntry(carol,cv,2);
         VerifyParticipantPrelude(alice); VerifyParticipantPrelude(bob);
         VerifySharedEntry(alice,av,bob,bv); VerifySharedEntry(alice,av,carol,cv);
+
+        // Enrage must reject a withdrawal request while exchanges continue, then release that gate on expiry.
+        var aliceForBob = await bob.WaitForViewNamedAsync("RoundAlice");
+        Cast(bob,588,aliceForBob.ViewId);
+        await alice.WaitForRpcAsync(ModPattern(588,93),TimeSpan.FromSeconds(10));
+        alice.SendRpc("44 01");
+        await Task.Delay(1500);
+        Check.That(!context.Server.DebugLog().Contains("RoundAlice is withdrawing"),"Enrage rejects native-style RPC44");
+        await alice.WaitForRpcAsync(ModPattern(588,93,true),TimeSpan.FromSeconds(15));
+        alice.SendRpc("44 01");
+        await alice.WaitUntilAsync(() => context.Server.DebugLog().Contains("RoundAlice withdraws"),
+            "Withdrawal succeeds after Enrage expires",TimeSpan.FromSeconds(35));
+        await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(cv)}");
+
+        // A new fight after withdrawal gets fresh fighter/observer views and live entries, not the old exchange.
+        alice.SendRpc($"40 {HandleOf(bobView)} 01 6b");
+        ushort nextA=await WaitForCombatView(alice,av), nextB=await WaitForCombatView(bob,bv), nextC=await WaitForCombatView(carol,cv);
+        await WaitForEntry(alice,nextA,2); await WaitForEntry(bob,nextB,2); await WaitForEntry(carol,nextC,2);
+        VerifyParticipantPrelude(alice); VerifyParticipantPrelude(bob);
+        VerifySharedEntry(alice,nextA,bob,nextB); VerifySharedEntry(alice,nextA,carol,nextC);
+        cv=nextC;
         // A death retains the combat view for the native defeat presentation, then cleans observers too.
         bob.SendChat("?health 1");
         await bob.WaitForViewUpdateAsync(2,OwnDeath,TimeSpan.FromSeconds(35));
