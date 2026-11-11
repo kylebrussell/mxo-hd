@@ -492,7 +492,12 @@ public class PvpTests
         Assert.True(NavMesh.Locate(district, x, y, z, out NavLocation owner));
         for (int yaw = 0; yaw < 256; yaw += 32)
         {
-            DuelBot.Spot(district, x, y, z, (byte)yaw, out double bx, out double by, out double bz);
+            Assert.True(DuelBot.Spot(district, x, y, z, (byte)yaw, out double bx, out double by, out double bz, out NavLocation spot));
+            Assert.Equal(owner.indoors, spot.indoors);
+            if (owner.indoors)
+            {
+                Assert.Equal(owner.region, spot.region);
+            }
             double distance = Math.Sqrt((bx - x) * (bx - x) + (bz - z) * (bz - z));
             Assert.InRange(distance, 140.0, 310.0);
             Assert.True(NavMesh.Locate(district, bx, by, bz, out NavLocation at), $"yaw {yaw}: off the mesh at {bx}, {by}, {bz}");
@@ -515,9 +520,48 @@ public class PvpTests
         LoadNavMesh();
         foreach (byte yaw in new byte[] { 0, 64, 128, 192 })
         {
-            DuelBot.Spot(district, x, y, z, yaw, out double bx, out _, out double bz);
+            DuelBot.Spot(district, x, y, z, yaw, out double bx, out _, out double bz, out _);
             Assert.Equal(yaw, MobAggro.YawTowards(x, z, bx, bz));
             Assert.InRange(Math.Sqrt((bx - x) * (bx - x) + (bz - z) * (bz - z)), 249.0, 251.0);
         }
+    }
+
+    [Fact]
+    public void DuelBotStaysOutOfTheMaraLobbysElevator()
+    {
+        // PR 94 re-test: in the Mara apartment lobby (sector 209, indoor region 84, polygon 3, floor 400), facing the
+        // elevator, the bot went 2.5 m ahead into the car (region 87, another prefab) behind its closed doors: there is
+        // floor all the way, but it is another region's. Whichever way the player faces, the bot stays in the lobby.
+        LoadNavMesh();
+        double x = 23828, y = 495, z = 13984;
+        Assert.True(NavMesh.Locate(1, x, y, z, out NavLocation lobby));
+        Assert.Equal((ushort)209, lobby.sector);
+        Assert.Equal((ushort)84, lobby.region);
+        // The car is straight ahead at yaw 144: floor of region 87 from about 1.75 m on
+        double ahead = 144 * 2 * Math.PI / 256;
+        Assert.True(NavMesh.Locate(1, x + 250 * Math.Sin(ahead), y, z + 250 * Math.Cos(ahead), out NavLocation car));
+        Assert.Equal((ushort)87, car.region);
+        for (int yaw = 0; yaw < 256; yaw += 8)
+        {
+            Assert.True(DuelBot.Spot(1, x, y, z, (byte)yaw, out double bx, out double by, out double bz, out NavLocation spot));
+            Assert.Equal((ushort)84, spot.region);
+            Assert.True(NavMesh.Locate(1, bx, by, bz, out NavLocation check));
+            Assert.Equal((ushort)84, check.region);
+            Assert.Equal(400.0, by - 95, 1);
+        }
+    }
+
+    [Fact]
+    public void ElevatorCarIsNotOpenFromTheLobby()
+    {
+        LoadNavMesh();
+        double x = 23828, y = 495, z = 13984, ahead = 144 * 2 * Math.PI / 256;
+        Assert.True(NavMesh.Locate(1, x, y, z, out NavLocation lobby));
+        Assert.True(NavMesh.Locate(1, x + 250 * Math.Sin(ahead), y, z + 250 * Math.Cos(ahead), out NavLocation car));
+        Assert.False(NavMesh.OpenBetween(1, lobby, car));
+        // Two lobby polygons the probe walked across (3 and 1, towards the car) do share an open edge
+        Assert.True(NavMesh.Locate(1, x + 150 * Math.Sin(ahead), y, z + 150 * Math.Cos(ahead), out NavLocation nearDoor));
+        Assert.Equal((ushort)84, nearDoor.region);
+        Assert.True(NavMesh.OpenBetween(1, lobby, lobby));
     }
 }

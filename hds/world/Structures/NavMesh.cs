@@ -14,6 +14,8 @@ namespace hds
         public UInt16 polygon; // the polygon's index within the region's nav mesh
         public double floorY;  // the polygon's floor at the position; retail's y is this + 95
         public bool indoors;
+        /// <summary>The sector's corner (its min x and min z in sector_properties.csv): outdoor polygons are relative to it.</summary>
+        public double originX, originZ;
 
         /// <summary>
         /// The 7 bytes between the first byte and the position in retail's 03 02 00 01 1c &lt;u8&gt; ... &lt;x y z f32&gt;:
@@ -248,7 +250,10 @@ namespace hds
                     if (Better(distance, outside, ref best, ref bestOutside))
                     {
                         found = true;
-                        location = new NavLocation { sector = info.sector, region = (UInt16)g, polygon = (UInt16)k, floorY = floor };
+                        location = new NavLocation
+                        {
+                            sector = info.sector, region = (UInt16)g, polygon = (UInt16)k, floorY = floor, originX = info.minX, originZ = info.minZ
+                        };
                     }
                 }
             }
@@ -289,13 +294,92 @@ namespace hds
                         location = new NavLocation
                         {
                             sector = info.sector, region = (UInt16)(sector.regions.Length + k), polygon = (UInt16)i, floorY = floor,
-                            indoors = true
+                            indoors = true, originX = info.minX, originZ = info.minZ
                         };
                     }
                 }
             }
 
             return found;
+        }
+
+        /// <summary>
+        /// Whether a walker can step straight from one polygon to the other: the same polygon, or two polygons of one mesh
+        /// with an edge in common for at least <see cref="MinOpenEdge"/> units. One mesh is the outdoors (all outdoor
+        /// regions, across sector sides too: the client's edges cross them) or one floor prefab placement. An edge with no polygon on its other side is a wall. The
+        /// packed meshes keep no neighbour list (the client's .nav/INAV edges name one; docs/WORLD-DATA.md), so the shared
+        /// edge is found from the outlines. Different indoor regions are different prefabs (a room and an elevator car,
+        /// two floors): never open, since doors and portals join them.
+        /// </summary>
+        public static bool OpenBetween(UInt16 metrId, NavLocation a, NavLocation b)
+        {
+            if (a.indoors != b.indoors || (a.indoors && (a.sector != b.sector || a.region != b.region)))
+            {
+                return false;
+            }
+            if (a.sector == b.sector && a.region == b.region && a.polygon == b.polygon)
+            {
+                return true;
+            }
+            District district = Load(metrId);
+            if (!district.sectors.TryGetValue(a.sector, out Sector sa) || !district.sectors.TryGetValue(b.sector, out Sector sb))
+            {
+                return false;
+            }
+            Polygon pa = PolygonOf(district, sa, a), pb = PolygonOf(district, sb, b);
+            // Outdoors into world coordinates (sectors differ in origin); one prefab's polygons share its frame
+            double dx = a.indoors ? 0 : b.originX - a.originX, dz = a.indoors ? 0 : b.originZ - a.originZ;
+            return pa != null && pb != null && SharedEdgeLength(pa, pb, dx, dz) >= MinOpenEdge;
+        }
+
+        /// <summary>How much edge two polygons must share to be walked between (half a body's width).</summary>
+        public const double MinOpenEdge = 30;
+
+        private static Polygon PolygonOf(District district, Sector sector, NavLocation at)
+        {
+            List<Polygon> polys;
+            if (!at.indoors)
+            {
+                if (at.region >= sector.regions.Length) return null;
+                polys = sector.regions[at.region];
+            }
+            else
+            {
+                int k = at.region - sector.regions.Length;
+                if (k < 0 || k >= sector.placements.Length) return null;
+                polys = district.prefabs[sector.placements[k].prefab];
+            }
+            return at.polygon < polys.Count ? polys[at.polygon] : null;
+        }
+
+        /// <summary>The longest stretch along which an edge of one polygon lies on an edge of the other (collinear, overlapping).</summary>
+        private static double SharedEdgeLength(Polygon p, Polygon q, double qdx, double qdz)
+        {
+            double best = 0;
+            int n = p.xz.Length / 2, m = q.xz.Length / 2;
+            for (int i = 0; i < n; i++)
+            {
+                double ax = p.xz[i * 2], az = p.xz[i * 2 + 1];
+                double bx = p.xz[(i + 1) % n * 2], bz = p.xz[(i + 1) % n * 2 + 1];
+                double ex = bx - ax, ez = bz - az, length = Math.Sqrt(ex * ex + ez * ez);
+                if (length < 1e-6) continue;
+                ex /= length;
+                ez /= length;
+                for (int j = 0; j < m; j++)
+                {
+                    double cx = q.xz[j * 2] + qdx, cz = q.xz[j * 2 + 1] + qdz;
+                    double dx = q.xz[(j + 1) % m * 2] + qdx, dz = q.xz[(j + 1) % m * 2 + 1] + qdz;
+                    // Both ends of q's edge on p's edge line (within the slack players stand outside edges by)
+                    if (Math.Abs(ex * (cz - az) - ez * (cx - ax)) > EdgeSlack || Math.Abs(ex * (dz - az) - ez * (dx - ax)) > EdgeSlack)
+                    {
+                        continue;
+                    }
+                    double t0 = ex * (cx - ax) + ez * (cz - az), t1 = ex * (dx - ax) + ez * (dz - az);
+                    double overlap = Math.Min(length, Math.Max(t0, t1)) - Math.Max(0, Math.Min(t0, t1));
+                    best = Math.Max(best, overlap);
+                }
+            }
+            return best;
         }
 
         /// <summary>The nearer floor wins; on the same floor, the polygon the position is further inside, and on a shared edge or

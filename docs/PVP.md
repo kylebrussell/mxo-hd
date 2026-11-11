@@ -270,6 +270,10 @@ At 7380df8, CSR_Tester (level 1, no organisation) against `?duelbot` in the Mara
 
 It stood 3 m along +x. It now stands on walkable floor about 2.5 m in front of the player, facing them (see Dev commands).
 
+- **Re-test of 7975b15: still wrong in the Mara lobby.** In sector 209, indoor region 84, polygon 3, at about 23828, 495, 13984, facing the elevator, the bot went into the elevator car behind its closed doors. The car is region 87, another prefab placement. Its floor is at the lobby's height and starts about 1.75 m ahead, so a check that only looked for floor along the way let the bot through.
+- **Now** every step of the line must cross polygon edges that are open (`NavMesh.OpenBetween`). Indoors it must also stay in the player's own region. A unit test pins the lobby: for every facing the bot stays in region 84, and the car is not open from the lobby.
+- **What the data offers.** The client's `.nav` and `INAV` edges name their neighbour, with `0xffff` for a wall. The packed `data/navmesh` files keep only outlines, so an open edge is found as one the two polygons share. Doors and portals join different prefabs, that is, different indoor regions. A sector side outdoors is open.
+
 ## Dev commands
 
 All need `MXO_DEV_COMMANDS=1`.
@@ -288,8 +292,10 @@ All need `MXO_DEV_COMMANDS=1`.
 
 **Where the bot stands** (`DuelBot.Spot`):
 
-- It first tries 2.5 m along the player's facing, then the same distance turned 22.5°, 45°, and so on either way, then 2 m, 3 m and 1.5 m.
-- It takes the first spot where the nav mesh (`data/navmesh`) has floor at the spot and every 25 cm on the way to it, with no step more than 40 units high.
+- It first tries 2.5 m along the player's facing, then the same distance turned 22.5°, 45°, and so on either way, then 2 m, 3 m, 1.5 m and 1 m.
+- It takes the first spot reached by a straight line that, every 10 cm, has nav-mesh floor (`data/navmesh`), climbs no more than 40 units at a step, and moves from one polygon to the next only over an edge both share for at least 30 units (`NavMesh.OpenBetween`). Outdoors that includes crossing to the next sector. Indoors the line stays in the player's own region, never into another prefab such as an elevator car or a room behind a door.
+- Failing all of those, 3 m along +x (the old spot) if that is in the player's own region; failing that, where the player stands.
+- The `[DUELBOT] Summoned` log line gives the spot, its sector, region and polygon, and where the player stood and faced.
 - It stands on that floor (the floor's height + 95), facing the player.
 - Where a district has no nav mesh, it stands 2.5 m ahead without these checks.
 - It used to stand 3 m along +x, which was inside a wall in the Mara apartment lobby (sector 1118).

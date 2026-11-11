@@ -88,7 +88,7 @@ namespace hds
             me.RealFirstName.setValue("Duel");
             me.RealLastName.setValue("Bot");
             byte ownerYaw = them.YawInterval.getValue()[0];
-            Spot(owner.playerData.getDistrictId(), x, y, z, ownerYaw, out double bx, out double by, out double bz);
+            bool onMesh = Spot(owner.playerData.getDistrictId(), x, y, z, ownerYaw, out double bx, out double by, out double bz, out NavLocation spot);
             me.Position.setValue(NumericalUtils.doublesToLtVector3d(bx, by, bz));
             // Facing the owner: in an interlock the bot doesn't turn by itself (see docs/PVP.md)
             me.YawInterval.setValue(MobAggro.YawTowards(bx, bz, x, z));
@@ -128,7 +128,11 @@ namespace hds
                     watchdog = new System.Threading.Timer(_ => Watch(), null, 2000, 2000);
                 }
             }
-            Output.WriteDebugLog("[DUELBOT] Summoned for " + PvpFlag.Name(owner) + " (" + mode + ")");
+            Output.WriteDebugLog("[DUELBOT] Summoned for " + PvpFlag.Name(owner) + " (" + mode + ") at " +
+                                 $"{bx:0},{by:0},{bz:0}, " + (onMesh
+                                     ? $"sector {spot.sector}, region {spot.region}, polygon {spot.polygon}{(spot.indoors ? " (indoors)" : "")}"
+                                     : "no nav mesh here") +
+                                 $"; the owner at {x:0},{y:0},{z:0} facing {ownerYaw}");
 
             if (mode == Mode.Challenge)
             {
@@ -139,56 +143,76 @@ namespace hds
         }
 
         /// <summary>How far in front of the owner the bot stands (world units, 100 to the metre), nearest first.</summary>
-        private static readonly double[] Distances = { 250, 200, 300, 150 };
+        private static readonly double[] Distances = { 250, 200, 300, 150, 100 };
 
         /// <summary>Which way from the owner's facing to try, in yaw steps (256 to the turn): ahead first, then around.</summary>
         private static readonly int[] Turns = { 0, 16, -16, 32, -32, 48, -48, 64, -64, 96, -96, 128 };
 
+        /// <summary>The steps along the line from the owner to a spot (world units): thinner than any nav polygon.</summary>
+        private const double LineStep = 10;
+
+        /// <summary>Highest step up or down between two points of the line (world units).</summary>
+        private const double MaxStep = 40;
+
         /// <summary>
-        /// Where the bot stands: on walkable floor about 2.5 m in front of the owner, with walkable floor all the way
-        /// between them (so not through a wall), on the floor's height. Where the district has no nav mesh, 2.5 m ahead
-        /// as it is. The yaw is the owner's YawInterval, in the convention of <see cref="MobAggro.YawTowards"/>
-        /// (0 is +z, a quarter turn is 64 towards +x).
+        /// Where the bot stands: where the owner can see it and walk to it. It tries about 2.5 m in front of the owner,
+        /// then turned either way and nearer or further, and takes the first spot reached by a straight line that never
+        /// leaves the nav mesh, never climbs more than <see cref="MaxStep"/> at once, and only crosses from one polygon
+        /// to another over an edge they share (<see cref="NavMesh.OpenBetween"/>): never through a wall, and never into
+        /// another indoor region (another prefab: a room behind a door, an elevator car). Failing that, 3 m along +x
+        /// (where the bot used to go) if that is in the owner's own region; failing that, where the owner stands.
+        /// Where the district has no nav mesh, 2.5 m ahead as it is. Returns where the spot is on the mesh, if it is.
+        /// The yaw is the owner's YawInterval, in the convention of <see cref="MobAggro.YawTowards"/> (0 is +z, a
+        /// quarter turn is 64 towards +x).
         /// </summary>
-        public static void Spot(uint district, double x, double y, double z, byte yaw, out double bx, out double by, out double bz)
+        public static bool Spot(uint district, double x, double y, double z, byte yaw, out double bx, out double by, out double bz,
+            out NavLocation at)
         {
-            NavLocation here;
-            bool mesh = NavMesh.Locate((UInt16)district, x, y, z, out here);
+            UInt16 metr = (UInt16)district;
+            if (!NavMesh.Locate(metr, x, y, z, out NavLocation here))
+            {
+                double ahead = yaw * 2 * Math.PI / 256;
+                bx = x + Distances[0] * Math.Sin(ahead); by = y; bz = z + Distances[0] * Math.Cos(ahead);
+                at = new NavLocation();
+                return false;
+            }
             foreach (double distance in Distances)
             {
                 foreach (int turn in Turns)
                 {
                     double angle = (yaw + turn) * 2 * Math.PI / 256;
                     double tx = x + distance * Math.Sin(angle), tz = z + distance * Math.Cos(angle);
-                    if (!mesh)
+                    if (WalkableLine(metr, here, x, z, tx, tz, out at))
                     {
-                        bx = tx; by = y; bz = tz;
-                        return;
-                    }
-                    if (WalkableLine((UInt16)district, x, y, z, tx, tz, here.floorY, out double floor))
-                    {
-                        bx = tx; by = floor + 95; bz = tz;
-                        return;
+                        bx = tx; by = at.floorY + 95; bz = tz;
+                        return true;
                     }
                 }
             }
-            // Nowhere walkable around: right beside the owner, where they stand
-            bx = x + 50; by = y; bz = z;
+            if (NavMesh.Locate(metr, x + 300, y, z, out at) && at.sector == here.sector && at.region == here.region && at.indoors == here.indoors)
+            {
+                bx = x + 300; by = at.floorY + 95; bz = z;
+                return true;
+            }
+            bx = x; by = y; bz = z;
+            at = here;
+            return true;
         }
 
-        /// <summary>Floor all along the line, each step within a step's height of the last. Gives the floor at its end.</summary>
-        private static bool WalkableLine(UInt16 district, double x, double y, double z, double tx, double tz, double startFloor, out double floor)
+        /// <summary>The line from the owner to the spot, a <see cref="LineStep"/> at a time: see <see cref="Spot"/>.</summary>
+        private static bool WalkableLine(UInt16 district, NavLocation from, double x, double z, double tx, double tz, out NavLocation end)
         {
-            floor = startFloor;
-            const int steps = 10;
+            end = from;
+            int steps = (int)Math.Ceiling(Math.Sqrt((tx - x) * (tx - x) + (tz - z) * (tz - z)) / LineStep);
             for (int i = 1; i <= steps; i++)
             {
                 double px = x + (tx - x) * i / steps, pz = z + (tz - z) * i / steps;
-                if (!NavMesh.Locate(district, px, floor + 95, pz, out NavLocation at) || Math.Abs(at.floorY - floor) > 40)
+                if (!NavMesh.Locate(district, px, end.floorY + 95, pz, out NavLocation step) || Math.Abs(step.floorY - end.floorY) > MaxStep ||
+                    !NavMesh.OpenBetween(district, end, step))
                 {
                     return false;
                 }
-                floor = at.floorY;
+                end = step;
             }
             return true;
         }
