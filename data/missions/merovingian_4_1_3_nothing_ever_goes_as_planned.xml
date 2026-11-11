@@ -11,9 +11,9 @@
      player's). These are Zion 4.1's values (341,000 experience, 112,000 information, as Demonstration of Force paid).
      Gaps: the first two sites were empty, and their goals completed after a minute or so inside, most likely on
      reaching a spot; we have no goal for that, so each is an empty search of a piece of furniture. The Operator's
-     "Flood is such an ass..." line (said on the way to the third site; a line of it may be hidden between two
-     screenshots) is said on arrival, before the "signals all over the place" line. Flood's closing line is cut between "We received a message
-     from Veil" and "while you were fighting"; it is read as one sentence. -->
+     "Flood is such an ass..." line (said on the way to the third site) is said on arrival, before the "signals all
+     over the place" line. Flood's closing line is cut between "We received a message from Veil" and "while you were
+     fighting"; it is read as one sentence. -->
 <mission id="304103" title="Nothing Ever Goes As Planned" description="Find the Cypherites and patch up the Merovingian's deal with them." plot="1"
          order="4103" org="3" contact="Flood" exp="341000" info="112000">
   <npc id="1" handle="Cypherite Hacker" type="HOSTILE" at="3" rsi="c9020058" weapon="2568">
