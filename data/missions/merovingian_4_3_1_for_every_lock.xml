@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- For Every Lock..., Merovingian story mission 4.3.1. Source: research/missions/transcripts/Merv4-3-1.md (the
+     archive replay of [Merovingian Archive 4.3.1]; 21 screenshots, one in the first apartment after its goals were
+     done, the rest of the log after the mission ended). The contact was [Archived]Flood. Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name (Abe Jefferies, Denny
+     Valvo, Gordon Beeman, Earnest Hungerford, Ariel Ocampo, Bling Bling, Bell Janet). Flood called the player
+     Vesuveus; that is {player}. Ours: the description (the Summary tab was never opened), every objective text (the
+     Objectives tab was never opened), the sites (the roommates' apartment and Earnest's home, where Ariel scolds him
+     for bringing work home, are SlumApt, the first in Achan as the briefing and the map say; Bling Bling's place is
+     Normal), the looks (three male bluepills share the apartment and there are two bluepill looks, so Gordon has a
+     plain redpill look, unarmed). The Bells are a street gang, friendly here. No fighting and no items.
+     Rewards: these logs are a level 50 player's (525,000 information, no experience shown), so the 352,000
+     experience and 115,500 information are Zion chapter 4.3's values.
+     Gaps: the first apartment's goals completed only when Gordon, the third roommate, had spoken, so all three are
+     talked to; each one's second line is what he says when talked to again. Ariel's scolding and the couple's
+     exchange came seconds after Earnest's line and are said when his goal is done. The hackable computer in the first
+     apartment was used after its goals were done and isn't built. Bell Janet's line showed only in team chat, in a gap
+     of the log, and is her bystander line. Flood's line after Earnest may have had more text where the log has a gap. -->
+<mission id="304301" title="For Every Lock..." description="Track down the van seen leaving the scene and find out who has the missing key." plot="1"
+         order="4301" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Abe Jefferies" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">Hey, don't take anything out of the fridge... Denny gets a little weird about it.</say>
+  </npc>
+  <npc id="2" handle="Denny Valvo" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say after="2">Feel free to chill with us if you want!</say>
+  </npc>
+  <npc id="3" handle="Gordon Beeman" type="FRIENDLY" at="1" rsi="050100b4" weapon="0">
+    <say after="3">Don't bug me when I'm pissed!</say>
+  </npc>
+  <npc id="4" handle="Earnest Hungerford" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>Aw, baby, don't you worry none. They're just leavin'... aren't ya?</say>
+  </npc>
+  <npc id="5" handle="Ariel Ocampo" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>Damn right they're leavin'...</say>
+  </npc>
+  <npc id="6" handle="Bling Bling" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say>Now scram! Ya got it?</say>
+  </npc>
+  <npc id="7" handle="Bell Janet" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568">
+    <say display="5">You heard the boss. Ain't no reason for you to be here, is there?</say>
+  </npc>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0" neighbourhoods="Achan">
+    <briefing>So, a little key has gone missing, thanks to Anome's incompetence. It must be horribly difficult having an incompetent henchman always screwing things up. How fortunate that we're standing by, ready to profit from his mistake.&#10;&#10;Get out and track down whatever leads you can on this automobile seen leaving the area. Try looking in Achan first. The van apparently has some sort of fabulous painting on the side... tracking it down shouldn't be too hard, even for someone like you.</briefing>
+    <enter><say>This building is near the site of the meeting between Niobe and the General. Time to start making some inquiries with the bluepills.</say></enter>
+    <objective goal="1" text="Talk to Abe Jefferies" type="Talk" npc="1">
+      <talk><say npc="1">You must be that old roommate Denny was talking about. Didn't expect you here so soon! Have a seat, want some pizza?&#10;&#10;What's that? Oh, sure, I know that van. Hard to miss with the big barbarian on the side and all. I seen it pulling into a parking garage down the street. Might want to look there... why d'you want to know about it, though?</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Denny Valvo" type="Talk" npc="2">
+      <talk><say npc="2">Hey, what are you doing here? Are you a friend of Abe's? Yeah? That's cool. Just don't touch anything in the fridge, 'kay?&#10;&#10;What's that? A van, with a crazy painting on the side? Yeah, I know that one. I see it driving around here all the time. Couldn't tell ya where to find it though.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Gordon Beeman" type="Talk" npc="3">
+      <talk><say npc="3">You ever made it to the ninth level on Super Pwn Monkey? I just made it a couple minutes ago... It just starts the damn game over. I about smashed the TV.</say></talk>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>Ridiculous isn't it? Here we are, vastly powerful -- well, at least I am -- and yet we're wasting our time shooting the breeze with these brain-dead meat batteries. So humiliating... But I suppose it could be worse. I could be you.&#10;&#10;Speaking of which, I've located the night worker from the parking garage down the street. Go talk to him, find out about this van, track down the key, and give it to me.</briefing>
+    <enter><say>Find the garage worker in this place.&#10;His name is Earnest Hungerford.</say></enter>
+    <objective goal="1" text="Talk to Earnest Hungerford" type="Talk" npc="4">
+      <talk><say npc="4">You what? You wanna know somethin' about last night at the garage? Usually stuff like this goes through corp'rate, but, whatever.&#10;&#10;Yeah, there were some hooligans broke inta the garage last night. Seemed like they was focused on this one van, this crazy van with a big old painting on the side. Not sure what they got off it, and you know, the company ain't 'sponsible for any theft or damage to vehicles!&#10;&#10;The hooligans? Yeah, they was from that girl gang what's always runnin' around here. The ding dongs, or somethin'.</say></talk>
+      <done>
+        <say npc="5">Damn it Earnest, you swore you weren't takin' any more work home with you!</say>
+        <say npc="4">Aw, baby, don't you worry none. They're just leavin'... aren't ya?</say>
+        <say npc="5">Damn right they're leavin'...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>"The ding dongs?" I swear, my talents are being wasted, {player}...&#10;&#10;Obviously the Bells were behind this. I'm sending you straight to the top, to the leader of the Bells. Bling Bling.&#10;&#10;No, I'm not making that name up.</briefing>
+    <enter><say>Hah! Flood had to set up a meeting with someone named Bling Bling... that's too funny.&#10;&#10;Okay, you should find you-know-who in here. Chat her up, get the key, and let's get outta here.</say></enter>
+    <objective goal="1" text="Talk to Bling Bling" type="Talk" npc="6">
+      <talk><say npc="6">So just 'cause the Merv pulls all the strings in this town, he thinks he can strut you in, doin' whatever ya want, askin' whatever ya want, takin'... whatever? I don't think so!&#10;&#10;This is my turf! My part of town! I'm a god here, ya understand? Programs live or die based on what I say, 'cause I'm the boss here. We got that straight? Yeah? Good!&#10;&#10;Anyhow I don't have that key any more. I sold it to Jane. You know, Jane the Ripper?</say></talk>
+      <done><say>Gimme a break! What a blowhard.&#10;Anyhow, sounds like we have some more work on our hands.</say></done>
+    </objective>
+  </phase>
+  <finish>These two-bit hoods are driving me insane, {player}. Thank goodness I don't actually have to deal with them.&#10;&#10;Give me a chance to set something up, and then we'll pay Jane a little visit.</finish>
+</mission>

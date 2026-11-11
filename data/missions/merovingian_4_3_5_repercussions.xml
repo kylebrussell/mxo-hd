@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Repercussions, Merovingian story mission 4.3.5. Source: research/missions/transcripts/Merv4-3-5.md (the archive
+     replay of [Merovingian Archive 4.3.5]; 11 screenshots, all of the log after the mission ended). The contact was
+     [Archived]Flood; the Merovingian himself speaks in phase 1. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator, Merovingian and NPC line, and the names Blood Noble,
+     Aeschylus, Osiris, Zion Network Attacker and Zion Destroyer. Flood, the Merovingian, the Operator and Osiris
+     called the player Vesuveus; that is {player}. Ours: the description (the Summary tab was never opened), every
+     objective text (the Objectives tab was never opened), the sites (all Normal; where the Merovingian receives the
+     player and the Zion-held place have no site style of their own), the looks and the enemy counts. No items.
+     Rewards: these logs are a level 50 player's (525,000 information, no experience shown), so the 352,000
+     experience and 115,500 information are Zion chapter 4.3's values.
+     Gaps: Aeschylus and Osiris joined the player when talked to and fought beside them; here they are led out of the
+     area so that they follow into the fight, but NPCs don't fight here and killing them doesn't fail the mission.
+     Blood Noble's line and the Zion fighters' "For Zion!" showed only in team chat; Blood Noble says his when talked
+     to, and the two named Zion fighters say theirs on coming near them, among the generated Zionites. -->
+<mission id="304305" title="Repercussions" description="Face the Merovingian's displeasure, then lead Aeschylus and Osiris in a strike against Zion." plot="1"
+         order="4305" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">Flood will give you the information you require. Now go!</say>
+  </npc>
+  <npc id="2" handle="Blood Noble" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say display="5">Do you realize how lucky you are, fool?</say>
+  </npc>
+  <npc id="3" handle="Aeschylus" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Osiris" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="5" handle="Zion Network Attacker" type="HOSTILE" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="6" handle="Zion Destroyer" type="HOSTILE" at="3" rsi="ec020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>With the case still in Zion's possession, and now... well... something else has happened...&#10;&#10;The boss wants to talk to you, {player}.</briefing>
+    <enter><say>I've never heard Flood so quiet before. Watch your back in there.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">I can be a very rewarding patron, {player}. Provided that you bring me results, yes? But you bring me nothing. No case, and now we receive more news: The Key has been stolen from Silver's associates, by Zion operatives.&#10;&#10;I was going to steal that key. When they stole that key from Silver, they stole it from me. Each link of action builds a chain, non? And at the end of the chain, you. My agent of vengeance.&#10;&#10;You shall strike a blow against Zion, {player}. You shall teach them not to steal what is rightfully mine for the taking.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Well! You certainly came out of that much more... intact than I expected!&#10;&#10;Back to the business at hand. Aeschylus and Osiris have been called to readiness. Go in and pick them up, and prepare to deal a blow to Zion that they won't soon forget!</briefing>
+    <enter><say>Aeschylus and Osiris are on site.&#10;&#10;Oh, and {player}... I'm glad you're still in one piece.</say></enter>
+    <objective goal="1" text="Talk to Aeschylus" type="Talk" npc="3">
+      <talk><say npc="3">Let's do this.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Osiris" type="Talk" npc="4">
+      <talk><say npc="4">Locked and loaded, {player}. Time to share some pain.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Aeschylus and Osiris out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>This is it. Wipe them all out. Let them remember this day forever.&#10;&#10;And whatever you do, don't screw this up.</briefing>
+    <enter><say>Looks like a nice crowd in there. No need to be fancy in there: just get the job done.</say></enter>
+    <objective goal="1" text="Kill all of the Zion operatives" type="DefeatAll" />
+    <near npc="5" radius="1000">
+      <say npc="5">For Zion!</say>
+    </near>
+    <near npc="6" radius="1000">
+      <say npc="6">For Zion!</say>
+    </near>
+  </phase>
+  <finish>Well, at least you didn't bungle that... You should probably still lie low for a while, though. After that business with the case and the key, I don't think the Merovingian is in a very nice mood right now.</finish>
+</mission>

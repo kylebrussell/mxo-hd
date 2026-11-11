@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Chance For Redemption, Merovingian story mission 4.1.5. Source: research/missions/transcripts/Merv4-1-5.md
+     (the archive replay of [Merovingian Archive 4.1.5], given by [Archived]Flood; 19 screenshots, seven taken during
+     the mission with the Objectives window open, the rest after it ended, scrolling the log). Placement is
+     generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name (Anamaria Maloney, Leland
+     Imray, Guillermo Ferrol, Marshall Ninemire, Commando) and the objective texts "Kill the attackers" and "Talk to
+     the scientists". The player's name (TiAmo) is {player}. Ours: the description (the Summary tab was never opened),
+     the other objective texts, the looks and the enemy counts. Both labs are offices (cubicles, desks and computers
+     in the screenshots) and both phases were in Eshean Projects, so they are Office sites there. The General's
+     commandos fight on Zion's side, so they are Zion. The scientists are the Merovingian's programs: Exile looks,
+     unarmed. No items. Rewards: the log showed 539,000 experience and 525,000 information, a level-50 player's
+     amounts; we use 341,000 and 112,000, Zion chapter 4.1's values.
+     Gaps: the first lab's scientists were talked to after the fight, when the objective was already "Leave the area
+     now!"; here those talks are optional goals that open when the commandos are dead, so each scientist can say both
+     of his or her lines. Their computers ("System locked down by Ferrol.", and Maloney, Imray, Woolery, Raybourn,
+     Tjarden) and the EMCP computer ("EMCP activated. Test run successful!") showed text we can't show, so they aren't
+     placed. In the second lab the commandos all died at once when Ninemire fired the EMCP, a scripted event we don't
+     have: the player kills them, and the Operator's EMP line is said when they are dead. In retail the scientists
+     could die (Flood: "You actually managed to save them, eh?"); a death didn't visibly fail the mission, so there is
+     no Protect goal. The first minimap read "Lamar" during the fight, then "Eshean Projects"; we use the latter. -->
+<mission id="304105" title="A Chance For Redemption" description="Protect the Merovingian's research labs from the General's commandos." plot="1"
+         order="4105" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Commando" type="HOSTILE" at="1" rsi="c6020058" weapon="2568">
+    <say>Stop yer grinnin' and drop yer linen!</say>
+  </npc>
+  <npc id="2" handle="Anamaria Maloney" type="FRIENDLY" at="1" rsi="a8060090" weapon="0" />
+  <npc id="3" handle="Leland Imray" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="0" />
+  <npc id="4" handle="Guillermo Ferrol" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="0" />
+  <npc id="5" handle="Marshall Ninemire" type="FRIENDLY" at="2" rsi="c6020058" weapon="0" />
+  <phase site="Office" enemy="Zion" enemies="5" neighbourhoods="Eshean Projects">
+    <briefing>Perhaps I was, ah... over-hasty with you earlier, {player}. Even if you did deserve it.&#10;&#10;The Merovingian has seen fit to give us both a second chance, if you will. There is a research laboratory under attack by the General's soldiers. You must go protect it. There are many secrets that we must keep to ourselves.</briefing>
+    <enter><say>There are plenty of commandos in there, and the scientists have barricaded themselves in a room inside. Get in there and bash some heads!</say></enter>
+    <objective goal="1" text="Kill the attackers" type="DefeatAll">
+      <done><say>Nice work! I'm getting an urgent message from Flood... you'd better get out of there.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Anamaria Maloney" type="Talk" npc="2" after="1" optional="1">
+      <talk>
+        <say npc="2">Thank you. I can return to my mathematics now.</say>
+        <say npc="2">If you could show me to my workstation, I would be ever so grateful.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to Leland Imray" type="Talk" npc="3" after="1" optional="1">
+      <talk>
+        <say npc="3">Those fiends said the most horrible things. One of them said he had a present, but he forgot to wrap it, or something like that... Fortunately, we were able to get the door locked.</say>
+        <say npc="3">I can't talk about it any more right now.</say>
+      </talk>
+    </objective>
+    <objective goal="4" text="Talk to Guillermo Ferrol" type="Talk" npc="4" after="1" optional="1">
+      <talk>
+        <say npc="4">You have saved us, and for that I am thankful.</say>
+        <say npc="4">Forgive me, but do you not have urgent business elsewhere?</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4" neighbourhoods="Eshean Projects">
+    <briefing>You actually managed to save them, eh? I hope you can repeat the process.&#10;&#10;Another one of our labs is under attack.</briefing>
+    <enter><say>What could the General want so badly? Whatever it is, this'll be the same drill... take out those commandos.</say></enter>
+    <objective goal="1" text="Kill the attackers" type="DefeatAll">
+      <done><say>What the-- I could've sworn I just saw a signal like an EMP going off. But those are in the real! And why did all those soldiers just die... You'd better have a chat with these scientists and find out what's up!</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the scientists" type="Talk" npc="5" after="1">
+      <talk>
+        <say npc="5">Well... that was rather drastic, wasn't it? In order to lock down the systems here, I had to discharge the EMCP machine... what? EMCP? Well, that's just our pet term until we have something better. Electro-Magnetic Code Pulse. Really, it isn't the same thing, since technically, within the Matrix we... oh, what am I doing, trying to explain this to you. Humans always interpret things so literally.</say>
+        <say>EMCP? I wonder what they're onto here... sounds like we might've stumbled onto gold!</say>
+        <say npc="5">Oh, and, ah... thanks for saving me, and all that.</say>
+      </talk>
+    </objective>
+  </phase>
+  <finish>Well, well, well. A device that could disable or destroy all of the pesky General's commandos within an area... I do believe that could be quite useful, {player}.&#10;&#10;The Merovingian will certainly be very intrigued by this development... intrigued enough to let us both off the hook, yes? I'll be in touch.</finish>
+</mission>

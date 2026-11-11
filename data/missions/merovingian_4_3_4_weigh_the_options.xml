@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Weigh the Options, Merovingian story mission 4.3.4. Source: research/missions/transcripts/Merv4-3-4.md (the
+     archive replay of [Merovingian Archive 4.3.4]; 24 screenshots, seven during phases 1 to 3 with the Objectives
+     window and the computers' screens, the rest of the log after the mission ended). The contact was
+     [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood and Operator line, and the objective texts "Search the computer"
+     and "Get the Access Code from the computer" (shown in the Objectives window). Flood and the Operator called the
+     player Vesuveus; that is {player}. Ours: the description (the Summary tab was never opened), the other objective
+     texts, the sites (the login search's plain office and the Zion offices of phases 3 and 4 are Office; the first
+     building Normal; the neighbourhoods are the map's, Zia and then Kedemoth), the looks and the enemy counts. The
+     security teams are Zion (Zion Duelist, Aikido and Kung Fu Grandmasters, Howitzer, Ravager in the chat), left to
+     the generated hostiles. Item stand-in: the level X2 access card is Access_Code (6782), the name retail's
+     objective gave it. Rewards: these logs are a level 50 player's (525,000 information, no experience shown), so
+     the 352,000 experience and 115,500 information are Zion chapter 4.3's values.
+     Gaps: in phase 1 several terminals denied the login and the bad logins alerted security; here the first computer
+     is tried twice (the Operator's "No dice", "Keep trying" and "Try the other terminals" are said then) and the
+     second one finds the case, and the security team is on the floor from the start. The Swallow login search's
+     screen and the other computer screens can't be shown; their goals' lines say what was found. The Operator's
+     "that's the one right there" in phase 2 and "Getting warm" in phase 4 came on reaching the computer and the door;
+     they are said on arrival. Phase 3's fail condition "Don't talk to anyone" can't be built and is left out; Niobe is
+     there, says nothing, and the Operator's "Niobe?!" is said on coming near her. There are no locked doors: the
+     access card is put into a computer that stands for the door's lock, and holding cell 125 is a safe that turns up
+     nothing (the case was gone). -->
+<mission id="304304" title="Weigh the Options" description="Break into Zion's network to locate the stolen case, then slip in under a borrowed code signature to take it." plot="1"
+         order="4304" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Niobe" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="4" neighbourhoods="Zia">
+    <briefing>The Merovingian and I have talked this little situation over, and we've decided to agree to Silver's deal. Or at least, appear to agree to it... Think about it. He gets the key out of his little construct, we steal the case from Zion, a little "accident" happens at our meeting with Silver and we end up with the case and the key... it couldn't be prettier, {player}.&#10;&#10;I've already let Silver know, and he's preparing to bring the key out. It's time for you to acquire some information. One of our operatives has already obtained a network login for you to use.</briefing>
+    <enter><say>Find a computer to log into here. We need to find out anything we can about the location of that case.&#10;&#10;Hopefully security will be light, with Zion chasing after the key.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Log into the computer" type="Use" object="1">
+      <done><say>No dice. Keep looking.</say></done>
+    </objective>
+    <objective goal="2" text="Try the login again" type="Use" object="1" after="1">
+      <done>
+        <say>Keep trying.</say>
+        <say>Try the other terminals...</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Search the computer" type="Search" object="2" item="0" after="2" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0" neighbourhoods="Zia">
+    <briefing>Access level X2? That's going to pose a little problem. The last operative we sent into a situation like that... well, I'm sure you'll be fine.&#10;&#10;We're going to need a little cover for you first. Go to the next location and have your operator run a specific search on logins. I'll explain more later, not that you'll understand it.</briefing>
+    <enter>
+      <say>Once you find the right computer terminal in here, I'll let you know what to do.</say>
+      <say>Okay, that's the one right there! I'm loading up the search Flood gave me right now. Just get to that computer and I'll run it.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Run the login search at the computer" type="Use" object="1">
+      <done><say>Okay, I... Oh. I think I know what Flood's planning. Funny, you don't seem like a "Swallow" to me.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Kedemoth">
+    <briefing>Okay, I'm going to lay this out for you, in steps easy enough for even you to understand. We are going to mask your code signature with an old Zion one. Swallow has been generous enough to lend us his... he hasn't logged into the Zion network in a little while, so you shouldn't be running into him on this mission.&#10;&#10;Once inside this area, you'll need to get an access card from the security computer. Whatever you do, don't talk to anyone... this code signature spoof isn't good enough to stand up to any determined scrutiny. Just get in, get the card, and get out. Think you can handle that?</briefing>
+    <enter><say>You're pretty brave to be taking on something like this, {player}. Like Flood said, don't raise any interest or talk to anyone. Just walk in, nice and calm, get the card and get out of there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>That's the computer. Use the login from before, snag the access card and get out of here!</say></done>
+    </objective>
+    <objective goal="2" text="Get the Access Code from the computer" type="Search" object="1" item="6782" after="1" />
+    <near npc="1" radius="1500">
+      <say>Niobe?! Play it cool, play it cool... Don't draw any attention...</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4" neighbourhoods="Kedemoth">
+    <briefing>Ha! That was rather entertaining -- I didn't think you were going to make it!&#10;&#10;Regardless, you managed to make it through and get the level X2 access card. Rather impressive, especially for you. Now to put it to use and get that case.</briefing>
+    <enter>
+      <say>Okay, there should be a door in here that uses that access card. Use the card to open the door, snag the case, and run as fast as you can out of there. Zion is probably going to know something's up as soon as you open the door.</say>
+      <say>Getting warm. Unlock the door over there and get in there!</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Safe" />
+    <objective goal="1" text="Unlock the door with the access card" type="Put" object="1" item="6782" />
+    <objective goal="2" text="Get the case from holding cell 125" type="Search" object="2" item="0" after="1">
+      <done><say>Okay, right there should be... Empty!?&#10;&#10;Looks like they caught wind of our plan! Get out of here now!</say></done>
+    </objective>
+  </phase>
+  <finish>Damn it! Can I just always count on you to screw things up? -- What's that? Hold on a moment, {player}.&#10;&#10;The code signature? They knew?&#10;&#10;Hm. Ah, well, maybe this is one of those times when no one is to blame. Regardless of how ingenious your idea is, there's always the chance that something will go wrong. The risk of doing business, eh? Get back to me after I have a chance to think about this, {player}.</finish>
+</mission>
