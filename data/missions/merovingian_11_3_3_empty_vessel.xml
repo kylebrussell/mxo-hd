@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty Vessel, Merovingian story mission 11.3.3, the last of chapter 11. Source:
+     research/missions/transcripts/Merv11-3-3.md (one retail run, as typed up in a post on the official forum
+     thread "11.3 missions logs/summaries/screenshots (all orgs)": two screenshots of the post; no log, objectives
+     or rewards). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Effectuator, Twin, Merovingian and Persephone line as the post
+     gives them, and the names the post uses; the post's <name> is {player} here. Italics are dropped, and
+     "enviroment" and "? it has yet" are kept as typed. Ours: the description, every objective text, the sites (the
+     central mainframe is an Office floor with a Mainframe; the Merovingian's building Normal), the looks (the
+     Machine Captains, the Effectuator, the Twins, the Merovingian and Persephone as the other files have them) and
+     the enemy counts: phase 1's hostiles are the two Machine Captains; phase 2 has none.
+     Item stand-ins: the mainframe's data is Data (6787).
+     Rewards: Zion's 11.3.3, Gut Check: 352,000 experience, 525,000 information. None are shown.
+     Gaps: the post gives the player's actions only in outline. Phase 1 is read as: try the mainframe (the alarm),
+     kill the two Machine Captains who answer it, talk to the Effectuator, then take the data from the mainframe.
+     The Captains and the Effectuator stand on the floor from the start rather than arriving, so the Captains may
+     be fought before the mainframe is tried; the extra security that the post says spawned after the
+     Effectuator's hiccup isn't spawned. Phase 2 has no arrival line in the post; the Twins' lines are said on
+     arrival, both of the Merovingian's entries when he is talked to, and Persephone's "Another lifeless husk."
+     when that is done. Flood's closing leads into chapter 12 (Hothouse) through the ordinary story order. -->
+<mission id="311303" title="Empty Vessel" description="Break into a central Machine mainframe in Park East for data on the android, then report to the Merovingian." plot="1"
+         order="11303" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Machine Captain" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="2" handle="Machine Captain" type="HOSTILE" at="1" rsi="8f080058" weapon="2568" />
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
+  <npc id="5" handle="Twin" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568" />
+  <npc id="6" handle="The Merovingian" type="FRIENDLY" at="2" rsi="58010058" weapon="0" />
+  <npc id="7" handle="Persephone" type="FRIENDLY" at="2" rsi="a8060090" weapon="0" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Time to leave half-measures behind, operative. There's only one place left where we stand a reasonable chance of finding out what the Oligarchs would have been doing with the android we captured, and that place is one of the central Machine mainframes in Park East. So strap on those steel-toed boots or whatever it'll take to boost that self-confidence of yours, and get to that mainframe, or don't bother coming back.</briefing>
+    <enter><say>Aw, I can tell Flood's worried about us.&#10;&#10;Needless to say, the Machines aren't going to be happy with us being in there, so don't waste any more time than you have to.</say></enter>
+    <object id="1" kind="Mainframe" />
+    <objective goal="1" text="Access the mainframe" type="Use" object="1">
+      <done><say>Could be a toughie... And of course it sent out a security alert.&#10;&#10;Uh-oh... Those boys look like they don't take kindly to mainframe invasions; they brought some kind of jamming along with them. I need you to put them down.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Machine Captains" type="DefeatAll">
+      <done><say>Well, look who decided to show.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to the Effectuator" type="Talk" npc="3" after="2">
+      <talk><say npc="3">Man! Did you do that? Cool.&#10;&#10;Let's see, a central Machine mainframe, you say? Allllll righty. We'll just do a little of this, and---&#10;&#10;Oops. Okay, we don't do that. So we'll just do a little of this, and...&#10;&#10;Hey, it worked.</say></talk>
+      <done>
+        <say>Mainframe access enabled. Get that data!</say>
+        <say npc="3">Nooo problem! I'm sure that little hiccup there didn't do anything bad.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Get the data from the mainframe" type="Search" object="1" item="6787" after="3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>What took so long, operative? I was starting to think I'd have to set the sprinkler system on you.&#10;&#10;The data you obtained was apparently enlightening. The Merovingian is eager to talk to you about his pet robot.</briefing>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="6">
+      <talk>
+        <say npc="6">Ah, bienvenue, mon ami. I regret that we could not meet in the more...intimate enviroment of the Hel Club, but eh, that woman is in the neighborhood, and so tedious.&#10;&#10;The information you have found about the android is quite interesting to me. It is designed, you see, to be controlled entirely by a human consciousness. Eh, so, it was an Oligarch mechanism, this means they must have controlled it themselves--a surrogate body, yes? Mm, this begins to explain many things about them.</say>
+        <say npc="6">If we carry the logic further, one of them had used the android body to fly a ship into that area, between the no-fly zone and the Machine city, and then...something destroyed their craft. Eh, and what happened to the consciousness that controlled this android? it has yet to show a spark of life.&#10;&#10;Foul play, {player}; foul play. That must be the explanation. The Machines and these people--this Danielle Wright, for instance--have tried to keep their dark deeds hidden. The interface program--fah!--that is just a tool, as is this android. What we must find is the reason, eh? The reason why. Then we will know how to deal with them.</say>
+      </talk>
+      <done><say npc="7">Another lifeless husk.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">There's no accounting for taste.</say>
+      <say npc="5">Now, now, brother. We've been in the same fix, haven't we?</say>
+    </near>
+  </phase>
+  <finish>Yes, speaking of the Hel Club, I hear that Wright has had the gall to set up shop on a rooftop nearby. Oh, I'm sure it's something to do with the interface program; that routine and its mindless quips simply weren't worth the trouble, as I said all along.&#10;&#10;Hmph, and isn't that the worst! As if that walking pestilence Wright being there wasn't bad enough, there's practically a caravan of Cypherites, Machinists, Zionites, and who knows who else packing back and forth between there and Morrell. I tell you, operative, I'm quite pleased that we've finally left that interface/override business to the small-minded.</finish>
+</mission>
