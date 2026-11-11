@@ -73,14 +73,14 @@ public static partial class Scenarios
         await alice.WaitForRpcAsync($"46 {bobForAlice} 01");
         await alice.WaitForRpcAsync("47 00 03 ?? 01 01 ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 1a 00 04 00 00 00");
         RpcRecord aliceOpening = await alice.WaitForRpcAsync("45 00 00 01 00");
-        await alice.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {SelfHandle(alice)} {bobForAlice} 01 01 02");
+        await alice.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {SelfHandle(alice)} {bobForAlice} 00");
 
         // The attacked player's side: their own first move with the has-ability byte 0, then 40 and 46 naming the attacker
         await bob.WaitForRpcAsync("47 00 00 ?? 01 01 ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 1a 00 04 00 00 00");
         await bob.WaitForRpcAsync($"40 {aliceForBob} 00 6b");
         await bob.WaitForRpcAsync($"46 {aliceForBob} 01");
         RpcRecord bobOpening = await bob.WaitForRpcAsync("45 00 00 01 00");
-        await bob.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {aliceForBob} {SelfHandle(bob)} 01 01 02");
+        await bob.WaitForViewUpdateAsync(1, $"02 a7 00 ?? ?? 01 {Wild(24)} 01 00 00 00 03 00 00 00 {aliceForBob} {SelfHandle(bob)} 00");
 
         // One round, seen from both ends
         Check.Equal(89, aliceOpening.Bytes.Length, "RPC 45 length");

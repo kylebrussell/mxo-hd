@@ -52,6 +52,7 @@ namespace hds
         /// ILCombatHandler game object instance for cleanup.
         /// </summary>
         public GameObject CombatHandlerObject { get; set; }
+        public CombatPresentation Presentation { get; set; }
 
         /// <summary>
         /// When combat started.

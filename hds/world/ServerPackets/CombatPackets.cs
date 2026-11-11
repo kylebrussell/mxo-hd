@@ -98,7 +98,7 @@ namespace hds
 
             pak.AddUint32(attacker, 1);
             pak.AddUint32(defender, 1);
-            pak.AddHexBytes("010102");                             // State flags
+            pak.AddByte(0); // entry count; complete entries follow on the combat view, never a captured tail
             return pak.ReturnFinalPacket();
         }
 
@@ -248,6 +248,17 @@ namespace hds
             pak.AddUint32(0x80000000, 1);
             pak.AddUint32(2, 1);
             pak.AddByte(0x00); // round entries
+            return pak.ReturnFinalPacket();
+        }
+
+        /// <summary>ILCombatHandler subview 1: centre, update counter, fighter-change mask, entry count and packed entries.</summary>
+        public static byte[] BuildCombatViewRound(byte[] centre, uint counter, CombatRoundEntry entry)
+        {
+            if (centre == null || centre.Length != 24) throw new ArgumentException("Combat centre must be three doubles");
+            PacketContent pak = new PacketContent();
+            pak.AddByte(1); pak.AddByteArray(centre); pak.AddUint32(counter, 1);
+            pak.AddUint32(0, 1); // no change to the init's fighter slots
+            pak.AddByte(1); pak.AddByteArray(entry.Serialize());
             return pak.ReturnFinalPacket();
         }
 

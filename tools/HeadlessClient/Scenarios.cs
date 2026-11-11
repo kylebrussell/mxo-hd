@@ -20,6 +20,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
         new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
         new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),

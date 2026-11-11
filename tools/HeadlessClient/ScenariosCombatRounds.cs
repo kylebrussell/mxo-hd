@@ -1,0 +1,81 @@
+namespace HeadlessClient;
+
+public static partial class Scenarios
+{
+    private static List<byte[]> CombatEntries(HeadlessPlayer player, ushort view)
+    {
+        var entries = new List<byte[]>();
+        byte[] marker = WireFormat.FromHex($"{Le(view)} 01");
+        foreach (byte[] section in player.World.ViewSnapshot())
+            for (int at = BytePattern.IndexOf(section, marker, 0); at >= 0; at = BytePattern.IndexOf(section, marker, at + 1))
+                if (at + 157 <= section.Length && BitConverter.ToUInt32(section, at + 31) == 0 && section[at + 35] == 1)
+                    entries.Add(section[(at + 36)..(at + 157)]);
+        return entries;
+    }
+    private static async Task<ushort> WaitForCombatView(HeadlessPlayer player, ushort previous = 0)
+    {
+        await player.WaitUntilAsync(() => CombatViewOf(player) != 0 && CombatViewOf(player) != previous,
+            "a new combat init", TimeSpan.FromSeconds(10));
+        return CombatViewOf(player);
+    }
+    private static async Task WaitForEntry(HeadlessPlayer player, ushort view, int minimumSequence = 1)
+    {
+        await player.WaitUntilAsync(() => CombatEntries(player, view).Any(e => BitConverter.ToUInt16(e, 32) >= minimumSequence),
+            "a complete combat round entry", TimeSpan.FromSeconds(10));
+    }
+    private static void VerifySharedEntry(HeadlessPlayer a, ushort av, HeadlessPlayer b, ushort bv)
+    {
+        var ae = CombatEntries(a, av); var be = CombatEntries(b, bv);
+        Check.That(ae.Any(x => be.Any(y => x.SequenceEqual(y))), "Fighters and observers share the same slot order, animation, offsets and time");
+        foreach (var e in be)
+        {
+            Check.That(e[0] is 1 or 2 && e[1] is 1 or 2 && e[0] != e[1], "Two valid fighter slots");
+            Check.Equal(0x24000b8bu, BitConverter.ToUInt32(e, 65), "Animation resource reference");
+            Check.That(BitConverter.ToUInt32(e, 61) >= 255, "Named ILDB move id");
+            float x = BitConverter.ToSingle(e, 6), z = BitConverter.ToSingle(e, 14);
+            Check.That(Math.Abs(Math.Sqrt(x*x + z*z) - 70) < 0.1, "Fighter is 70 units from centre");
+            Check.That(Math.Abs(x + BitConverter.ToSingle(e, 18)) < 0.01 && Math.Abs(z + BitConverter.ToSingle(e, 26)) < 0.01,
+                "Fighters are on opposite sides, not overlapping");
+        }
+    }
+    private static async Task CombatRoundsAndObservers(ScenarioContext context)
+    {
+        HeadlessPlayer[] players = await context.AddPlayersInWorldAsync(
+            new CharacterSeed("RoundAlice") { X=24800, Z=-1498, Level=1, Organization=1 },
+            new CharacterSeed("RoundBob") { X=24900, Z=-1498, Level=1, Organization=2 },
+            new CharacterSeed("RoundCarol") { X=25000, Z=-1498, Level=1, Organization=3 });
+        var alice=players[0]; var bob=players[1]; var carol=players[2];
+        await carol.WaitForViewNamedAsync("RoundAlice"); await carol.WaitForViewNamedAsync("RoundBob");
+        var mob = await alice.WaitForViewNamedAsync("WinterFrost");
+        await carol.WaitForViewNamedAsync("WinterFrost");
+        alice.SendRpc($"40 {HandleOf(mob)} 01 6b");
+        ushort aliceNpc = await WaitForCombatView(alice), carolNpc = await WaitForCombatView(carol), bobNpc = await WaitForCombatView(bob);
+        await WaitForEntry(alice,aliceNpc,2); await WaitForEntry(carol,carolNpc,2);
+        VerifySharedEntry(alice,aliceNpc,carol,carolNpc);
+
+        // Someone arriving during a fight gets its creation/init and the next live round.
+        var late = await context.AddPlayerAsync(new CharacterSeed("RoundLate") { X=25100,Z=-1498,Level=1 });
+        await late.EnterWorldAsync(); await late.WaitForViewNamedAsync("RoundAlice");
+        ushort lateNpc = await WaitForCombatView(late); await WaitForEntry(late,lateNpc);
+        VerifySharedEntry(alice,aliceNpc,late,lateNpc);
+        alice.SendRpc("44 00");
+        await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(carolNpc)}");
+        await late.WaitForViewUpdateAsync(1,$"01 01 00 {Le(lateNpc)}");
+        Check.Equal(0,carol.Received("45").Count,"NPC observer receives no combat UI rounds");
+        Check.Equal(0,carol.Received("47").Count,"NPC observer receives no move choices");
+
+        var bobView=await alice.WaitForViewNamedAsync("RoundBob");
+        bob.SendChat("?pvpflag on"); await bob.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
+        alice.SendRpc($"40 {HandleOf(bobView)} 01 6b");
+        ushort av=await WaitForCombatView(alice,aliceNpc), bv=await WaitForCombatView(bob,bobNpc), cv=await WaitForCombatView(carol,carolNpc);
+        await WaitForEntry(alice,av,2); await WaitForEntry(bob,bv,2); await WaitForEntry(carol,cv,2);
+        VerifySharedEntry(alice,av,bob,bv); VerifySharedEntry(alice,av,carol,cv);
+        // A death retains the combat view for the native defeat presentation, then cleans observers too.
+        bob.SendChat("?health 1");
+        await bob.WaitForViewUpdateAsync(2,OwnDeath,TimeSpan.FromSeconds(35));
+        await carol.WaitForViewUpdateAsync(1,$"01 01 00 {Le(cv)}",TimeSpan.FromSeconds(15));
+        Check.Equal(0,carol.Received("45").Count,"PvP observer receives no participant combat UI");
+        Check.Equal(0,carol.Received("47").Count,"PvP observer receives no participant move choices");
+        Check.That(context.Server.DebugLog().Contains("[COMBAT-VIEW] Round 2"),"Per-round animation records are logged");
+    }
+}

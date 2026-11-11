@@ -59,6 +59,7 @@ namespace hds
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
+                CombatPresentation.CheckObservers();
                 MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
