@@ -32,15 +32,26 @@ namespace hds
         /// <summary>Whether any packet this RPC went out in is among those the client acked.</summary>
         public bool IsRpcAckedBy(ICollection<UInt16> ackedSeqs)
         {
-            foreach (UInt16 seq in rpcPackets)
+            lock (rpcPackets)
             {
-                if (ackedSeqs.Contains(seq))
+                foreach (UInt16 seq in rpcPackets)
                 {
-                    return true;
+                    if (ackedSeqs.Contains(seq))
+                    {
+                        return true;
+                    }
                 }
             }
 
             return false;
+        }
+
+        public void RecordRpcPacket(UInt16 sequence)
+        {
+            lock (rpcPackets)
+            {
+                rpcPackets.Add(sequence);
+            }
         }
 
         /// <summary>

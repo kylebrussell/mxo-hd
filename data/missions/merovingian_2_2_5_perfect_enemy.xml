@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Perfect Enemy, Merovingian story mission 2.2.5. Source: research/missions/transcripts/Merv2-2-5.md (the archive
+     replay of [Merovingian Archive 2.2.5], given by [Archived]Flood; ten mid-mission screenshots and 25 of the log
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name, and the objectives "Get the
+     name of the killer", "Don't let Dr. Brent die", "Assassinate Shedar", "Find out who tipped off Shedar", "Find out
+     what Shedar wanted" and "Disable the hardline to the Assassin's lair". Ours: the description (the Summary tab was
+     never opened), the other objective texts, the sites (Dewitt's place and Persephone's room are unnamed buildings:
+     Normal; Dr. Brent's laptop was in an apartment kitchen: SlumApt; Shedar's residence and the hardline node were
+     offices: Office), the looks and the enemy counts. Item stand-ins: Dewitt's heart is Human_Heart (6826), Shedar's
+     access card Access_Card (6791), the Combination Document Document_Combination (6857), the Computer Virus Virus
+     (6786). Rewards: the log shows 79,416,249 experience and 1,039,500 information (a level-50 player's). These are
+     Zion 2.2's values (297,000 experience, 98,000 information, as In Exile paid).
+     Gaps: Dr. Brent asks to be led to his laptop, which is nearby; a follower can't be led to an object, so the laptop
+     is a computer on his floor that the player uses once Brent has the heart, and Brent is protected meanwhile.
+     Retail's computers showed text we can't show: the bioscan naming Dewitt, JC and Shedar; Shedar's email to Tyndall
+     about Kore and the hardline node; a note about a virus disk in the wall safe (that computer isn't placed); and the
+     mainframe's "All associated hardlines have been disabled!". Shedar's access card is looted from the body and put
+     into his computer, and the second finding is a Use of the same computer. Killing Shedar's Zion guards is optional
+     (retail listed no such goal) and carries Flood's line about the empty residence. The safe combination's source
+     wasn't shown; it is in a filing cabinet, desk or dresser, and the hidden wall safe is a Safe searched once it is
+     found. Shedar's bark is said on coming near him; the Zion soldiers' Team chat barks aren't said. Flood's order was
+     to kill Kore, who turns out to be Persephone: the goal is to find her, a talk. The Elite Guards with her are
+     bystanders with their Team chat lines. Lines at 9:05:1x, 9:14:47, 9:25:21 and 9:26:5x (probably the standard
+     ones) and between 9:11:50 and 9:13:32 weren't captured; where a line of JC's stutter may be hidden between screenshots, the visible words are kept. -->
+<mission id="302205" title="Perfect Enemy" description="Find who killed an Exile leader and why, and cut Zion off from the Assassin's lair." plot="1"
+         order="2205" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="JC" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Brent" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="3" handle="Shedar" type="HOSTILE" at="3" rsi="000100b4" weapon="2568" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="5" rsi="5c050004" weapon="0">
+    <say after="15">My husband is a pompous ass. He thinks he can do whatever he wants. Sometimes he forgets that I am the Queen, and we all know the Queen is the only piece with real power.
+
+You think about that, my sweet.</say>
+  </npc>
+  <npc id="5" handle="Elite Guard" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568">
+    <say display="5">Don't look at me like that! I'm only doing my job.</say>
+  </npc>
+  <npc id="6" handle="Elite Guard" type="FRIENDLY" at="5" rsi="c6020058" weapon="2568">
+    <say display="5">Move along.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>JC has just reported the death of an Exile leader, Dewitt. Since we would be foolish to think this was a senseless act of violence, a motive must be determined.
+
+Talk to JC and find out what the murderer wanted. The sooner we get a trace on the killer, the sooner we can exact punishment.</briefing>
+    <enter>
+      <say>This place was hit hard. Whoever made the attack needed something -- bad.</say>
+      <say>I saw JC's RSI stream by in the code a few minutes ago. He can't be far.</say>
+    </enter>
+    <objective goal="1" text="Talk to JC" type="Talk" npc="1">
+      <talk><say npc="1">Y-- y-- you...you're {player}, right? So Fla-- Fla-- Flood... got my ca-- ca-- call...after all.
+
+The-- the-- they were a ma-- ma-- monster! A foul disfig--fig--figured...beast! Not of this wo-- wo-- world...or the next! He ri-- ri-- ripped out Dewitt's heart...and ga-- ga-- gave it to me! What kind of soulless cre-- cre-- creature would do that?!</say></talk>
+      <done><say>Snag that heart from JC. We can use it to trace the killer's RSI signal.</say></done>
+    </objective>
+    <objective goal="2" text="Get Dewitt's heart from JC" type="Get" npc="1" item="6826" after="1">
+      <talk><say npc="1">A-- a-- all I have is Dewitt's heart.</say></talk>
+      <done><say>I don't know which is more disgusting: JC's sobbing or you holding a bloody heart.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>Bring that heart to Dr. Brent. He has hardware that can trace the RSI signal of anyone who has ever made contact with certain objects. Of course, this technology isn't perfect, but we get by.</briefing>
+    <enter><say>Dr. Brent is waiting. He can help you get that heart scanned. Whoever the killer is, they won't stay a mystery for long.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Give Dewitt's heart to Dr. Brent" type="Give" npc="2" item="6826">
+      <talk>
+        <say npc="2">We need to make this quick. We don't have much time if we're going to track the RSI signal from Dewitt's heart. Give it to me and we can get this started.</say>
+        <say npc="2">Come now. Give me the heart.</say>
+      </talk>
+      <done><say npc="2">Yuck! You could've at least wrapped the heart up in newspaper or something. Even a plastic container would've been nice.
+
+It matters not now. We need to get this heart scanned into my laptop. It's nearby. Just lead me to it and we can go from there.</say></done>
+    </objective>
+    <objective goal="4" text="Get the name of the killer" type="Use" object="1" after="3">
+      <done>
+        <say>Bingo! We got him! The killer's name is Shedar. I'll pass this tasty bit of intel onto Flood and start pin-pointing Shedar's location. I should've the details on Shedar's location by the time you're outside.</say>
+        <say npc="2">Shedar, huh? Can't say I know them, or even want to know them! Especially if they're the kind of person who goes around yanking hearts from ribcages! And I thought Flood was disturbing... You won't tell him I said that, right?</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Don't let Dr. Brent die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="5">
+    <briefing>Shedar's RSI signal leads us to this location. Introduce yourself, find out who tipped off Shedar, and discover their motive. If a polite conversation or interrogation shed little light onto this situation, you will need to rely on an alternate means of unraveling this mystery.</briefing>
+    <enter><say>Flood is a fool if he thinks Shedar will cough up the intel without a fight. I think you'll have better luck accessing a computer system or checking Shedar's pockets.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Assassinate Shedar" type="Defeat" npc="3" />
+    <objective goal="7" text="Get the access card from Shedar's body" type="Loot" npc="3" item="6791">
+      <done><say>Check the area for a computer and put that access card to use.</say></done>
+    </objective>
+    <objective goal="8" text="Find out who tipped off Shedar" type="Put" object="1" item="6791">
+      <done><say>Everything appears nominal. Run a search on "Shedar."</say></done>
+    </objective>
+    <objective goal="9" text="Find out what Shedar wanted" type="Use" object="1" after="8">
+      <done><say>With Shedar out of the way and the intel on Kore in our hands, you can proceed. Make your exit, {player}.</say></done>
+    </objective>
+    <objective goal="10" text="Kill Shedar's Zion guards" type="DefeatAll" optional="1">
+      <done><say contact="1">Our enemies no longer occupy that residence. Congratulations, {player}. You are a ruthless assassin. Do try not to get headstrong about it.</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">I don't know how you found me, but you won't be around to share your story after we're done killing you!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>This "Kore" person has access to extremely sensitive information. Rest assured that their demise will be the final step in your assignment, but right now the hardline requires our immediate attention.
+
+Descend upon that location, eliminate all opposition, and disable the hardline to the Assassin's lair. This will temporarily prevent Zion and Machine operatives from confronting our associate.</briefing>
+    <enter><say>You heard the man. Find all the asses you can and kick 'em!
+
+Oh, and don't forget the business with the hardline. I'll help you out in any way I can.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Safe" />
+    <object id="3" kind="Mainframe" />
+    <objective goal="11" text="Eliminate all opposition" type="DefeatAll">
+      <done><say contact="1">There are no more Machine enemies left to pummel into submission. Your thirst for combat knows no bounds. That is why I selected you for this assignment.</say></done>
+    </objective>
+    <objective goal="12" text="Find the safe combination" type="Search" object="1" item="6857">
+      <done><say>A safe combination? Check the area for a safe! It might be hidden.</say></done>
+    </objective>
+    <objective goal="13" text="Get the computer virus from the hidden safe" type="Search" object="2" item="6786" after="12">
+      <done>
+        <say>That did the trick! Now snatch the goods inside the safe.</say>
+        <say>This is almost too easy! With the computer virus we can disable the hardline by infecting the local mainframe. Just find the mainframe and put that virus to work!</say>
+      </done>
+    </objective>
+    <objective goal="14" text="Disable the hardline to the Assassin's lair" type="Put" object="3" item="6786">
+      <done><say>That's a wrap, {player}. Make like a baby and head out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Now we must complete the final step: kill Kore.
+
+Put a few extra bullets in them for me, will you?</briefing>
+    <enter><say>I have a solid lock on Kore. It's time to do the dirty deed, {player}.</say></enter>
+    <objective goal="15" text="Find Kore" type="Talk" npc="4">
+      <talk><say npc="4">I have been waiting for you... You look surprised to see me. Don't be.
+
+Yes. I am "Kore." I helped Zion find the Assassin's lair. I have my reasons for doing what I've done and I will face the consequences before my husband.</say></talk>
+      <done><say>The Merovingian is gonna be furious! I'll be surprised if Persephone gets away with this one.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>What the hell?! Persephone is in the next room! Talk to her and find out what's going on.</say>
+    </near>
+  </phase>
+  <finish>Words fail me... I will handle this, {player}. Trust in that.</finish>
+</mission>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Search for Morpheus, Merovingian story mission 1.2.1. Source: research/missions/transcripts/Merv1-2-1.md (the
+     archive replay of [Merovingian Archive 1.2.1], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Flood, operator and Siri line, and Siri's name ("Siri" in the log,
+     "Captain Siri" in the operator's line). Flood's line on the file had an illegible middle; its readable start and
+     end are joined ("Your assistance in recovering this file is quite beneficial to us."). Ours: the description, the
+     objective texts (the Objectives tab was never opened), the site (Normal), Siri's look, and the enemy count (at
+     least one Agent: "I can't believe you killed him!"). Item stand-in: the file on Morpheus is File (6800).
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's values
+     (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: the fight and Siri's second line fall in an uncaptured stretch of the log (10:41:58 to 10:43:19), so the
+     Agents are the phase's generated hostiles and Siri's first line is said on getting near her. Nothing shows
+     retail failing the mission if Siri died, but the player had saved her life and she holds the file, so she is
+     protected. The Journal Entry from Morpheus in the Details popup isn't from this mission and isn't used. -->
+<mission id="301201" title="The Search for Morpheus" description="Find a Zion captain who knows where Morpheus has been." plot="1"
+         order="1201" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Siri" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+    <say after="2">I think this is what you came for.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The man known as Morpheus is becoming a bigger problem than usual. His actions have made those subjugated programs think that we are actually helping him! The infernal machines take it out on us because of this silly little truce. Because of this, Morpheus' very existence is a personal insult to the Merovingian.
+
+We are aware that there are Zion Operatives who know where Morpheus has been when he is in the Matrix. We want you to check out these leads and start with Captain Siri. Find them and see who can be convinced to share this information with us. I don't care how you convince them, just get the information we need.</briefing>
+    <enter><say>At this address you will find Captain Siri. She might be able to tell us where we can find Morpheus, however... wait a minute... It looks like someone else has hit the area! I'm getting signals all over the place but that doesn't change a thing. We still need to see if Siri has the information we seek.</say></enter>
+    <objective goal="1" text="Kill the Agents" type="DefeatAll">
+      <done><say>Siri should be cooperative now.</say></done>
+    </objective>
+    <objective goal="2" text="Get the file from Siri" type="Get" npc="1" item="6800" after="1">
+      <talk><say npc="1">I can't believe you killed him! I'm in your debt. Listen, I had heard from my Operator that you might be coming but I wasn't going to help you... However, now that you've saved my life, I feel that I owe you. Take this file. It was worth my life.</say></talk>
+      <done>
+        <say>You found information on Morpheus. I do believe that this is what we've been looking for.</say>
+        <say contact="1">Your assistance in recovering this file is quite beneficial to us.</say>
+        <say npc="1">I think this is what you came for.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Do not let Siri die" type="Protect" npc="1" />
+    <near npc="1" radius="1000">
+      <say npc="1">Agents! There's nowhere to run!</say>
+    </near>
+  </phase>
+  <finish>We will contact you again.</finish>
+</mission>

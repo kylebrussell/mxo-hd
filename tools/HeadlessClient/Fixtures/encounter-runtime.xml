@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test-only catalog, copied into one disposable headless server's working directory. -->
+<mission id="399902" title="Encounter Runtime Fixture" description="Exercise encounter transitions."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <npc id="1" handle="Turncoat" type="FRIENDLY" at="1" rsi="a8060090" hostileAfter="1" />
+  <npc id="2" handle="Witness" type="FRIENDLY" at="1" rsi="fc0e0004" spawnAfter="3" spawnDelay="1" spawnAt="object:1" />
+  <npc id="3" handle="Defector" type="HOSTILE" at="2" rsi="ec020058" friendlyAfter="10" />
+  <npc id="4" handle="Controller" type="FRIENDLY" at="2" rsi="c9020058" />
+  <phase site="Normal" enemy="Machines" enemies="1" leave="0">
+    <briefing>Encounter fixture first area.</briefing>
+    <object id="1" kind="Mainframe" />
+    <wave enemy="Zion" count="1" after="2" delay="1" at="player"><say>Second wave arrives.</say></wave>
+    <objective goal="1" text="Talk before the deadline" type="Talk" npc="1" limit="10" />
+    <objective goal="2" text="Defeat the first wave" type="DefeatAll" wave="0" after="1" />
+    <objective goal="3" text="Defeat the second wave" type="DefeatAll" wave="1" after="2" />
+    <objective goal="4" text="Hold for two seconds" type="Survive" seconds="2" after="3">
+      <done><say>Hold-out completed.</say></done>
+    </objective>
+    <objective goal="5" text="Talk to the arriving witness" type="Talk" npc="2" after="4" />
+  </phase>
+  <phase site="Normal" leave="0">
+    <briefing>Encounter fixture second area.</briefing>
+    <objective goal="10" text="Talk to the controller" type="Talk" npc="4" />
+    <objective goal="11" text="Talk to the defector" type="Talk" npc="3" after="10" />
+    <objective goal="12" text="Hold for one second" type="Survive" seconds="1" after="11" />
+  </phase>
+  <finish>Encounter fixture completed.</finish>
+</mission>

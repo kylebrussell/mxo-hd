@@ -34,6 +34,9 @@ namespace hds
                 return;
             }
 
+            // Before the lock: ending a fight between players takes that fight's lock, and a fight starting takes this one
+            PvpCombat.OnPlayerGone(client);
+
             lock (Handlers)
             {
                 if (Handlers.TryGetValue(client, out CombatHandler handler))

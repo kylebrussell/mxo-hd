@@ -159,7 +159,8 @@ namespace hds
 
             DataLoader objectLoader = DataLoader.getInstance();
             StaticWorldObject objectValues =
-                objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectID, 1));
+                objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectID, 1),
+                    (UInt16)Store.currentClient.playerData.getDistrictId());
 
 
             // create a new System message but fill it in the switch block
@@ -167,6 +168,12 @@ namespace hds
 
             // The tutorial's wardrobe and hardline aren't in our static object data
             if (TutorialMission.Of(Store.currentClient)?.OnStaticUse(numericObjectId, (byte)objectTypeID) == true)
+            {
+                return;
+            }
+
+            if ((objectTypeID == (int)objectTypesStatic.COLLECTOR || objectTypeID == (int)objectTypesStatic.HUMAN_NPC) &&
+                CollectorHandler.TryOpen(Store.currentClient, objectValues))
             {
                 return;
             }
@@ -354,14 +361,10 @@ namespace hds
                     pak.SendSubwaymapWindow(Store.currentClient);
 
                     break;
-                case (int) objectTypesDynamic.LOOT when TutorialMission.Of(Store.currentClient)?.OnLootCorpse(InteractedTutorialMob(interactedView)) == true:
-                    break;
-
                 case (int) objectTypesDynamic.LOOT:
-                    UInt32[] theTestArrayLoots = new UInt32[2];
-                    theTestArrayLoots[0] =
-                        NumericalUtils.ByteArrayToUint32(StringUtils.hexStringToBytes("8e220000"), 1);
-                    pak.SendLootWindow(5000, Store.currentClient, theTestArrayLoots);
+                    NpcLoot.Open(Store.currentClient,
+                        interactedView != null && interactedView.spawnId == (numericObjectId >> 16)
+                            ? interactedView.entityId : 0);
                     break;
 
                 case (int) objectTypesDynamic.TALK:

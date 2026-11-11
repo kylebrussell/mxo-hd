@@ -13,14 +13,12 @@
      Rewards: 363,330 experience and 59,500 information, shown on completing this mission.
      Gaps: Agent Pace and Agent Johns stand in three places; each place has its own NPC, since an NPC is placed in one
      phase only. At the meeting the Operator counted "three redpill signals"; only Veil spoke, so only she is placed.
-     In retail the Morpheus and Niobe simulacra appeared when their computer was searched (the computer showed
-     "Running simulacrum program 7AH..." and "42KA..."), and the E Pluribus Neo attackers arrived after the second
-     computer ("unknown redpills heading your way, fast!"); we can't spawn NPCs or hostiles on a goal, and the
-     computer's screen can't be shown, so the simulacra stand there from the start with their Talk goals waiting on
-     the searches, and the attackers and the kill goal are there from the start. A Cypherite Network Hacker stood in
-     the apartment but said nothing and isn't placed. The Grandmaster's two chat lines are one line here. Lines
-     hidden at screenshot joins (Pace's "very happy to examine", the Operator's "and they got her new hairstyle",
-     Pace's "This may prove to be a difficulty") read whole and are used as such. -->
+     The Morpheus and Niobe simulacra appear when their computer is searched, with their Talk goals opening then, and
+     the E Pluribus Neo attackers and the kill goal come after the second computer ("unknown redpills heading your
+     way, fast!"); the computers' screens ("Running simulacrum program 7AH..." and "42KA...") can't be shown. A
+     Cypherite Network Hacker stood in the apartment but said nothing and isn't placed. The Grandmaster's two chat
+     lines are one line here. Lines hidden at screenshot joins (Pace's "very happy to examine", the Operator's "and
+     they got her new hairstyle", Pace's "This may prove to be a difficulty") read whole and are used as such. -->
 <mission id="206203" title="Whispers of Ones and Zeroes" description="Monitor Agent Pace's meeting with the Cypherite Veil and examine the Zion data the Cypherites offer." plot="1"
          order="6203" org="2" contact="Agent Gray" exp="363330" info="59500">
   <npc id="1" handle="Agent Johns" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
@@ -29,7 +27,7 @@
   <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
     <say>Veil is deceptive, tesoro, but as long as you are there with me, I know that we will not be fooled!</say>
   </npc>
-  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
+  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
     <say>Oh, you'll be examining our data? Marvelous, darling. I'm sure you'll get quite a kick out of it.</say>
   </npc>
   <npc id="4" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
@@ -43,10 +41,10 @@
 
 Go ahead, check them out.</say>
   </npc>
-  <npc id="7" handle="Morpheus" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+  <npc id="7" handle="Morpheus" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564" spawnAfter="1">
     <say after="3">If you are working for the Machines, then your mind was never truly free.</say>
   </npc>
-  <npc id="8" handle="Niobe" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
+  <npc id="8" handle="Niobe" type="FRIENDLY" at="3" rsi="60010058" weapon="2564" spawnAfter="2">
     <say after="4">You killed the Assassin! I can only think of a handful of people who could have pulled that off...and one of them was Morpheus.</say>
   </npc>
   <npc id="9" handle="Agent Johns" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
@@ -80,7 +78,7 @@ You are to monitor the participants, particularly Veil.</briefing>
       <done><say>Hm! Can they actually be getting along?</say></done>
     </objective>
   </phase>
-  <phase site="SlumApt" enemy="Zion" enemies="4" neighbourhoods="Moriah Projects">
+  <phase site="SlumApt" enemy="Zion" enemies="4" enemiesAfter="2" neighbourhoods="Moriah Projects">
     <briefing>It is time to test the Cypherite claims. Proceed to the indicated location. You will find some of their people there. Examine their data.</briefing>
     <enter><say>I'm reading some redpills in there, and a secure network.</say></enter>
     <object id="1" kind="Computer" />
@@ -105,7 +103,7 @@ You are to monitor the participants, particularly Veil.</briefing>
       <talk><say npc="8">I'll be damned if I'll see his good works ruined because the Council is too busy trying to please the Machines.</say></talk>
       <done><say>Ah, vintage Niobe. I wonder if she'd have that same attitude these days?</say></done>
     </objective>
-    <objective goal="5" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="5" text="Eliminate the hostiles" type="DefeatAll" after="2">
       <done><say>That's all the hostiles I had on my screen. Man, those EPN can be a pain.</say></done>
     </objective>
   </phase>

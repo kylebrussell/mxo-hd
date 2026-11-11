@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Researching the Black Arts, Merovingian story mission 1.2.12. Source: research/missions/transcripts/Merv1-2-12.md
+     (the archive replay of [Merovingian Archive 1.2.12], given by [Archived]Flood; run in a mission team with other
+     players). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and Alvaro Maloney's name. Ours: the
+     description, the objective texts, the sites (the hotel: Hotel; the Machine Storehouse: Warehouse; Alvaro Maloney's
+     lab: Normal), the looks and the storehouse's guards (three generated Machines; the log shows no fighting there).
+     Item stand-ins: the Access Card is Access_Card (6791), the Computer Parts are Computer_Parts (6827). Flood's
+     closing "for you next assignment" is kept as retail wrote it, and a possible hidden line at a scroll seam in the
+     briefing ("that you located") is read as nothing. Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: Alvaro Maloney is in his hotel room and later in his lab; he is placed in each (two NPCs of the same name).
+     The Access Card doesn't open the storehouse: the storehouse phase just follows. The empty box ("What's in the
+     box?! Nothing! Stupid!") is an optional Search that turns up nothing. Hacking the computer to unlock its case is a
+     Use of the computer, then the parts are taken from the same computer. -->
+<mission id="301212" title="Researching the Black Arts" description="Steal computer parts so a tech can research the Black Box." plot="1"
+         order="1212" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Alvaro Maloney" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">I'll meet you back at my lab once you have the computer parts.</say>
+  </npc>
+  <npc id="2" handle="Alvaro Maloney" type="FRIENDLY" at="3" rsi="35000024" weapon="0">
+    <say>Thank you. I'm going to need some time to research the Black Box. Flood will contact you when I've made progress.</say>
+  </npc>
+  <phase site="Hotel" enemy="Machines" enemies="0">
+    <briefing>The purpose behind the mysterious Black Box has eluded us thus far, however, steps are in place to remedy that as we have a tech at our disposal who has agreed to do some research on the Black Box that you located. The tech's name is Alvaro Maloney and he is waiting for you at a Hotel where he will give you an Access Card that will let you into a Machine Storehouse.</briefing>
+    <enter><say>Alvaro Maloney is staying at this hotel. I've sent you his room number. Go there now.</say></enter>
+    <objective goal="1" text="Talk to Alvaro Maloney" type="Talk" npc="1">
+      <talk>
+        <say npc="1">{player}, it's you! I was worried that those masked men might show up... but never mind that now. I have the Access Card that you will need to get into the Machine storehouse. Once you have the computer parts we need, meet me back at my lab.</say>
+        <say>Conversation logged. Now take the Access Card from Alvaro Maloney.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the Access Card from Alvaro Maloney" type="Get" npc="1" item="6791" after="1">
+      <talk><say npc="1">You'll need this Access Card.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Machines" enemies="3">
+    <briefing>Now make your way to the Machine storehouse and steal the Computer Parts.</briefing>
+    <enter><say>Inside this Machine Storehouse they have a storage of the Computer Parts that Alvaro Maloney needs to continue his research on the Black Box. Find one!</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the box" type="Search" object="1" item="0" optional="1">
+      <done><say>What's in the box?! Nothing! Stupid!</say></done>
+    </objective>
+    <objective goal="2" text="Hack the computer" type="Use" object="2">
+      <done><say>Hacking that computer disabled the locks on the case. You should be able to strip the computer parts right out of the computer itself.</say></done>
+    </objective>
+    <objective goal="3" text="Take the Computer Parts from the computer" type="Search" object="2" item="6827" after="2">
+      <done><say>You've found the computer parts that we need. Perfect!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I'm sending you the address of Alvaro Maloney's lab. Deliver the computer parts to him.</briefing>
+    <enter><say>Alvaro Maloney is waiting for you in his lab.</say></enter>
+    <objective goal="1" text="Give the Computer Parts to Alvaro Maloney" type="Give" npc="2" item="6827">
+      <talk><say npc="2">You've made it back. Do you have the computer parts that I need?</say></talk>
+      <done>
+        <say>Computer parts successfully delivered to Alvaro Maloney.</say>
+        <say npc="2">Thank you. I'm going to need some time to research the Black Box. Flood will contact you when I've made progress.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Contact me when you are ready for you next assignment.</finish>
+</mission>

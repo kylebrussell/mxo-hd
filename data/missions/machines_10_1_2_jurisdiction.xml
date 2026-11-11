@@ -30,8 +30,8 @@
   <npc id="2" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
     <say after="2">The situation will be monitored. Thank you, operative.</say>
   </npc>
-  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="60010058" weapon="2564">
-    <say after="1">Aw, too bad. Good luck then, honey. You've got my number if you want a little professional help.</say>
+  <npc id="3" handle="Veil" type="FRIENDLY" at="2" rsi="58010058" weapon="2564">
+    <say after="3">Aw, too bad. Good luck then, honey. You've got my number if you want a little professional help.</say>
   </npc>
   <npc id="4" handle="EPN Operative" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="0">
@@ -51,7 +51,7 @@ We are now enabled to turn our attention to other matters that have been too lon
 
 While the Cypherites have given us some general information about the data fragment they received from the Oracle, they have not followed that initial report with a detailed analysis. It is time to obtain further information from Veil.</briefing>
     <enter><say>Veil should be expecting you. I guess we're not supposed to club her over the head and take the darn thing from her, since the Machines still use the Cyphs for spying once in a while. Sure seems like it would simplify things, though...</say></enter>
-    <objective goal="1" text="Talk to Veil" type="Talk" npc="3">
+    <objective goal="3" text="Talk to Veil" type="Talk" npc="3">
       <talk><say npc="3">Ooh, I'd just love to help, dearie, but we still haven't been able to make any headway in decrypting that silly little thing. Thanks for offering to take a look and all, but you see, the Oracle did say that it could be dangerous to lose it, and we wouldn't want to do anything dangerous, now would we? So we'll just keep it nice and safe outside of the Matrix for now.
 
 If you want to do something, you could go make sure E Pluribus Neo is taking care of theirs; you know how irresponsible they can be. Gee, I guess I don't happen to have a suggestion about where to start, but if you wanted to make it worth my while... Interested?</say></talk>
@@ -67,14 +67,14 @@ If we accept these hypotheses, the pertinent question becomes: where has EPN sto
 To determine which of these is correct, we will incite EPN to reveal the answer.</briefing>
     <enter><say>All right, since we don't have any inside man at Zion--think the Machines have been trying to avoid employing the Cyphs?--we've got to tease the information out of the Neonates. The Machines figure that if we plant a fake message about the fragment in an EPN server, we can see how they react to it, and maybe figure something out from that. So what you're gonna do is find a computer in there, and plant a message saying that someone's swiped the fragment from an EPN hovercraft.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Plant the false message on the EPN computer" type="Use" object="1">
+    <objective goal="4" text="Plant the false message on the EPN computer" type="Use" object="1">
       <done><say>That should do it. It won't fool them for long, but it should cause a stir as it propagates across their messaging system.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Zion" enemies="3">
     <briefing>Operative, you must now infiltrate the indicated EPN stronghold, and attempt to gauge their reaction to the false report.</briefing>
     <enter><say>Okay, I've got redpill readings in there, and network activity. If they check their messages every 7.3 seconds like most net addicts, this might just work out.</say></enter>
-    <objective goal="1" text="Listen in on the EPN operatives" type="Talk" npc="4">
+    <objective goal="5" text="Listen in on the EPN operatives" type="Talk" npc="4">
       <done><say>Aha, did you hear that? Sounded like they were surprised to hear it was on a hovercraft. That might have been the clue we needed.</say></done>
     </objective>
   </phase>

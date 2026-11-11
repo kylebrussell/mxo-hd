@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logistics, Merovingian story mission 7.1.1. Source: research/missions/transcripts/Merv7-1-1.md (the archive replay
+     of [Merovingian Archive 7.1.1], given by [Archived]Flood; one screenshot during play, in the third area, and 21 of
+     the log after it ended; screenshot_381 is from something else). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Malphas, Effectuator,
+     Holographic Projection, Tactical Security and Blood Noble line, those names, and the objective text "Talk to the
+     Commando" (the Objectives tab in the third area). Flood's opening briefing, the Effectuator's "Sweet! I'm not
+     late! ... So yeah" and the Operator's "We have commandos. ... Hey, better check" span two screenshots with no
+     header between them and are taken as one entry each, with a paragraph break. "rock and roll" and "my" were in
+     italics. Ours: the description (the Summary tab only said "Datalink established."), the other objective texts,
+     the sites (all Normal; the third area was in Mara), the looks (Malphas's, the Effectuator's and the projection's
+     are those of earlier missions), the enemy count and one Commando for the commandos. No item was shown.
+     Rewards: the log shows 395,640 experience and 129,500 information (a level-37 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: retail's goals in the first, second and last areas weren't shown. In the first and last areas the Effectuator
+     arrives late ("there's the tourist", "look who just showed up"): he arrives once Malphas has been talked to, and
+     his Talk opens then. The projection's line at 12:53:59 wasn't captured (perhaps the cut Team line "...objective. If
+     they are to survive outside of the System, they will have to become more...flexible."). The NPCs' lines a few
+     seconds after the first area's goals are said when they are talked to again, the Effectuator's "Then it's time
+     to...rock and roll!" as the area completes. The second area ("secure that terminal") is built as killing the
+     Machines' Tactical Security, then using the computer; hostile NPCs' lines may not show here (see Known gaps). In
+     the third area the commandos arrived through the terminal 27 s after the player did (1:01:12 to 1:01:39); here one
+     Commando appears beside the area's computer 27 s after the player reaches the floor, and "We have commandos" is
+     said when the player is near him. The player used the computer there while "Talk to the Commando" was open, but the
+     tab showed no other goal, so using it isn't one: the computer is only where the Commando comes in. The Commando's
+     own lines weren't captured. Entries may be missing between 1:03:11 and 1:03:48. The Blood Noble is a bystander at
+     the end spot; his four Team lines are said in turn as the last area's goals are done. -->
+<mission id="307101" title="Logistics" description="Help the Effectuator bring the General's commandos into the Matrix through the Merovingian's transport terminals." plot="1"
+         order="7101" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">You may proceed, operative. Flood will have your instructions.</say>
+  </npc>
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" spawnAfter="1">
+    <say after="2">What'd I miss?</say>
+  </npc>
+  <npc id="3" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
+    <say after="2">Your controller will know how to contact me, should any unexpected situation arise.</say>
+  </npc>
+  <npc id="4" handle="Tactical Security" type="HOSTILE" at="2" rsi="38000024" weapon="2568" />
+  <npc id="5" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" spawnAfter="enter" spawnDelay="27" spawnAt="object:1" />
+  <npc id="6" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
+    <say after="6">What's your name, soldier? You handled those Machines well.</say>
+  </npc>
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="7">I believe that you will find the General's soldiers very adept at following simple commands.</say>
+  </npc>
+  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" spawnAfter="7">
+    <say after="8">It's hard being this good...but I manage somehow.</say>
+  </npc>
+  <npc id="9" handle="Blood Noble" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>And if the Wingless one could swim better than he could fly?</say>
+    <say after="6">The General's taste in clothing is...curious.</say>
+    <say after="7">Humans like to say that "life is cheap," but the Merovingian's profits suggest otherwise.</say>
+    <say after="8">They say the Guardian has fished himself out of the river. That would be...unfortunate.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The General has finally decided to take time out of his busy schedule to investigate our generous offer of assistance in transporting his soldiers.
+
+A two-way holographic broadcast is being arranged. You'll be part of the conference call, along with Malphas and the Effectuator. Just be quiet and try not to interrupt.</briefing>
+    <enter><say>That's the place. The General is due to appear via holographic projection any minute now. I guess he's chillin' at his base in the Real or something.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">Ah, operative. The General should be joining us momentarily via remote broadcast. I can't answer for the Effectuator.&#10;&#10;If all goes according to plan, you will be assisting the Effectuator by activating terminals through which the General's men arrive in the Matrix.</say></talk>
+      <done><say>Oh great, there's the tourist.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Effectuator" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Sweet! I'm not late!&#10;&#10;So yeah, this should be a piece of Merv cake. I just need the General to give me the location of his data feed, then you'll activate the receiving terminal, and zip! We'll have those commandos here safe and sound.</say></talk>
+      <done>
+        <say npc="3">Salutations. I understand you are ready to commence our trial run. My men are standing by for transport. You'll have the network address shortly.&#10;&#10;I expect this exercise to go smoothly, gentlemen.</say>
+        <say>Sounds like it's up to us to get this thing off the ground, as usual. Let's get to it. Flood should have the coordinates of the transport terminal for us in a sec.</say>
+      </done>
+    </objective>
+    <complete><say npc="2">Then it's time to...rock and roll!</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>You'll find the terminal at the indicated location, operative. Think you can manage to throw the switch all by yourself?</briefing>
+    <enter><say>The computer should be in there. You just have to-- Uh-oh. Those aren't our programs...&#10;&#10;I think the Machines are onto us, {player}. You're gonna have to secure that terminal, then get the heck out.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Kill the Machine security" type="DefeatAll" />
+    <objective goal="4" text="Secure the terminal" type="Use" object="1" after="3">
+      <done><say>Well, that's secured now, anyway. Flood better have a backup plan.</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">Intruder alert!</say>
+      <say npc="4">You are under arrest! Do not resist!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Mara">
+    <briefing>Are you sure your line's secure, operative? The Machines have spies everywhere these days. Why, I wouldn't be at all surprised if one of your crew members was reporting your underwear size to Agent Gray right now.
+
+We're going to try this again. Try not to let anyone follow you, hmm?</briefing>
+    <enter><say>Seems fair to me, as long as they tell us what Pace's size is... Oh yeah, I just went there...&#10;&#10;This spot looks clear so far. Terminal is up and running.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="5" text="Talk to the Commando" type="Talk" npc="5">
+      <done><say>Guess they're good to go. I like that--low maintenance.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>We have commandos.&#10;&#10;Hey, better check with that one in there with you, and see if they're all set.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Yes, well done, operative--it's nice to know that you can type.
+
+I suppose you'll be wanting to go over the results with the brain trust.</briefing>
+    <enter><say>You're right on time; the General's projection just popped in.</say></enter>
+    <objective goal="6" text="Talk to the Holographic Projection" type="Talk" npc="6">
+      <talk><say npc="6">That was satisfactory. I believe we can do business. I'll be meeting with your employer at our mutual convenience.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to Malphas" type="Talk" npc="7">
+      <talk><say npc="7">And thus we become the General's new method of transportation.&#10;&#10;Soon it will be his turn to fulfill his side of the bargain. The Merovingian will no doubt be pleased.</say></talk>
+      <done><say>Gee, look who just showed up. And here things were going so well.</say></done>
+    </objective>
+    <objective goal="8" text="Talk to the Effectuator" type="Talk" npc="8" after="7">
+      <talk><say npc="8">Sweet, I'm not late!&#10;&#10;Oh... Eh... Well, so he liked it, did he? Yep, I figured he would. Let's just see the Machines try to shut down my network, hm? Heh.</say></talk>
+    </objective>
+  </phase>
+  <finish>So the soldier fancies himself a business man. I have a feeling this is going to be...profitable.</finish>
+</mission>

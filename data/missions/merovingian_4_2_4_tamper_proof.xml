@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tamper Proof, Merovingian story mission 4.2.4. Source: research/missions/transcripts/Merv4-2-4.md (the archive
+     replay of [Merovingian Archive 4.2.4]; 9 screenshots, all taken after it ended, scrolling the log). The contact was
+     [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name (Jeannetta Kidney,
+     Alhambra, Agent Jones, Agent Marks, Agent Long; the last two only in team chat). Ours: the description (the
+     Summary tab was never opened), every objective text (only "Leave the area now!" was shown, which the server says
+     itself), the sites (both Normal), the looks and the enemy count (4 Machine programs at the attack). Dr. Kidney
+     and Alhambra are the Merovingian's scientist and tester and unarmed. No items: the modified EMCP device stays
+     with Alhambra. Rewards: the log shows none (a level-50 player's). These are Zion 4.2's values (341,000
+     experience, 112,000 information, as Between Waking and Sleeping paid).
+     Gaps: in retail Alhambra was to set off the device behind a door, Agents were there instead, and the phase ended as
+     the Agents attacked, leaving the player to flee. We can't stage the door or the device, so the Agents stand on the
+     floor from the start and wait to be attacked (attacksOnSight="0"); reaching Agent Jones is the goal that ends the
+     phase, with the Operator's alarm and the Agents' challenge said then, and the player leaves. The Operator's
+     "heavy signals up ahead" is said on coming near Agent Jones. The Exiles under attack ("plus the Exiles") have no
+     lines and aren't placed. "I thought this was too good to be true! Just get" and "Aw, crap!" may be one log entry;
+     they are said as two lines. The Operator's "honest full on Agents" is as shown. -->
+<mission id="304204" title="Tamper Proof" description="Escort a tester carrying a modified EMCP device into a Machine attack." plot="1"
+         order="4204" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Jeannetta Kidney" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say after="1">Was there something confusing about what I said? Take him with you and be quick about it.</say>
+  </npc>
+  <npc id="2" handle="Alhambra" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="0" />
+  <npc id="3" handle="Agent Jones" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Agent Marks" type="HOSTILE" at="2" rsi="6e060040" weapon="2568" attacksOnSight="0" />
+  <npc id="5" handle="Agent Long" type="HOSTILE" at="2" rsi="9b000090" weapon="2568" attacksOnSight="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well, EMCP devices to fight the General's men are all good and fine. However, we have an operation coming up where the devices could be put to much better use. Imagine if they were modified to disable any Machine program?&#10;&#10;I need you to meet with Dr. Kidney. She's spearheading an effort to modify the devices.</briefing>
+    <enter><say>Any Machine program? Like you could take out Agents with it? Sounds too good to be true!</say></enter>
+    <objective goal="1" text="Talk to Dr. Kidney" type="Talk" npc="1">
+      <talk><say npc="1">Ah, there you are at last.&#10;&#10;Let's cut to the chase, shall we? Tester here has one of the modified devices. This device, when activated, will disable all Machine programs within a given radius.&#10;&#10;Take him with you to the next location.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Alhambra" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Well, I'm ready when you are... I guess...</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Alhambra out of the area" type="Escort" npc="2" to="exit" after="2" />
+    <objective goal="4" text="Do not let Alhambra die" type="Protect" npc="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>You know, we truly are under constant persecution by the Machines. Let me look through the logs here... it shouldn't be hard to... ah, perfect.&#10;&#10;Machines attacking some of our poor, innocent associates. How unsurprising. Go there, and Alhambra will pull the trigger.&#10;&#10;Oh and please make sure he goes through with it. He seems to be a little, ah... reluctant. I can't imagine why.</briefing>
+    <enter><say>Plenty of Machine signals in here, plus the Exiles. Just get in there, I'll let you know when you're getting close.</say></enter>
+    <objective goal="1" text="Take Alhambra to the Machines" type="Talk" npc="3">
+      <done>
+        <say>I thought this was too good to be true! Just get--</say>
+        <say>Aw, crap! I'm reading Agents in there, honest full on Agents. Get out of there! Now!</say>
+        <say npc="3">You are not authorized in this area!</say>
+        <say npc="4">You are not authorized in this area!</say>
+        <say npc="5">You are not authorized in this area!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Do not let Alhambra die" type="Protect" npc="2" />
+    <near npc="3" radius="1000">
+      <say>I'm reading heavy signals up ahead. As soon as you open that next door, I'll have Alhambra hit the button. Get ready!</say>
+    </near>
+  </phase>
+  <finish>Well, whoever had this idea deserves to lose their job. I'm sure I'll be able to pin-- I mean, find out who was responsible.&#10;&#10;We'll be in touch once this is sorted out, {player}.</finish>
+</mission>

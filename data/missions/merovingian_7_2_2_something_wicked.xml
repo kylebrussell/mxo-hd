@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Something Wicked, Merovingian story mission 7.2.2. Source: research/missions/transcripts/Merv7-2-2.md (the archive
+     replay of [Merovingian Archive 7.2.2], given by [Archived]Flood; 28 screenshots: one during play in the first
+     area, the rest of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Apothecary, Malphas,
+     Holographic Projection, Gaston Johansen and Blood Noble line, and those names. Flood's briefings and several long
+     lines span two or three screenshots with no header between them and are taken as one entry each (the first
+     briefing's last join falls on a paragraph break). Italics dropped: "Ars Moriendi", "Blood of an innocent...",
+     "literally" and "poetry". Ours: the description (the Summary tab only said "Datalink established."), every
+     objective text (the Objectives window showed only retail's standard "Leave the area now!"), the commando guard's
+     name, the sites (all Normal; the first area was in Achan, by the minimap), the looks (the Apothecary's is a
+     female look of other files; Malphas's and the hologram's are those of earlier missions) and the enemy counts (no
+     fight in the log: the Blood Nobles are ours, the commandos the General's). Item stand-in: the data sampled from
+     Sati is Data (6787; no item name was shown).
+     Rewards: the log shows 406,630 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: in retail a Blood Noble was found dead in the first area (the Apothecary's "minor misunderstanding"); here
+     he is a corpse from the start, and the Operator's "one of our vamps down" is said on getting near him. "Yikes! Is
+     that her?" is said on getting near the Apothecary. The two Blood Nobles' Team lines are said when they are talked
+     to. Malphas's and the hologram's lines after the area's goals ("End transmission.", "An elegant solution...") are
+     said when they are talked to again. In the third area Sati is behind a sealed door and never reached, so she
+     isn't placed. The commando guard's answer ("They're not gonna let us in") wasn't in the log, so talking to him
+     has no line of his. No "Goals for this area are complete" entry was logged in the first area. In the last area the
+     Operator's "So... She's cool with that" came a second before the Apothecary's "Yes, I can use this", and both
+     are said when she is given the data, in log order; the Apothecary's "Blood of an innocent..." and Malphas's "A
+     study of the Ars Moriendi..." are said when they are talked to again. -->
+<mission id="307202" title="Something Wicked" description="Ask the Apothecary how to make the Oracle's termination code, and bring her a sample of the Oracle's code taken from Sati." plot="1"
+         order="7202" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Apothecary" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say after="1">That's your problem.</say>
+  </npc>
+  <npc id="2" handle="Blood Noble" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>Ahem... There was a minor misunderstanding. I believe it was resolved to our guest's...satisfaction.</say>
+  </npc>
+  <npc id="3" handle="Blood Noble" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say>She hasn't changed a bit...</say>
+  </npc>
+  <npc id="4" handle="Blood Noble" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" dead="1" />
+  <npc id="5" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="3">An elegant solution, I think. How convenient that our new ally already has the target's ward in his possession, mm?</say>
+  </npc>
+  <npc id="6" handle="Holographic Projection" type="FRIENDLY" at="2" rsi="8f080058" weapon="0">
+    <say after="3">End transmission.</say>
+  </npc>
+  <npc id="7" handle="Commando" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="8" handle="Gaston Johansen" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="9" handle="Apothecary" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="7">Blood of an innocent...</say>
+  </npc>
+  <npc id="10" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="8">A study of the Ars Moriendi might be appropriate at this juncture, operative. It is an oft-neglected field.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Achan">
+    <briefing>The Apothecary has been brought into the Matrix by the Trainman, {player}, and her long vacation in the Machine mainframes does not appear to have damaged her morbid attitude. One does come to prize unique personalities after having spent so many years surrounded by banal operatives...
+
+You'll find her well-guarded by our programs. You're to enquire how we should proceed with the manufacture of the Oracle's termination code, given that we already have one of the Machine cheat codes.
+
+Oh, and if you want to leave with your RSI intact, I suggest being polite.</briefing>
+    <enter><say>Got Exile programs in there... One of them's a big one. I'm thinkin' that's probably the Apothecary.&#10;&#10;So, she and Persephone used to hang out back in the day... I wonder if she's equally va-va-voom?</say></enter>
+    <objective goal="1" text="Talk to the Apothecary" type="Talk" npc="1">
+      <talk><say npc="1">I require a sample of the target's code--something they wear, make, or shed.</say></talk>
+      <done><say>I don't know if the Oracle sheds...&#10;&#10;Am I the only one a little freaked out by this chick?</say></done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>Hey, that's one of our vamps down. What's going on? I don't see any hostiles on my screen.</say>
+    </near>
+    <near npc="1" radius="1000">
+      <say>Yikes! Is that her?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Still among the living, operative? Ah... I suppose we must continue, then.
+
+Our field team brain trust has come up with an idea or two on how we can acquire some of the Oracle's code for the Apothecary, I believe; and no, it does not involve shedding.</briefing>
+    <enter><say>So, I'm just gonna throw this out there...&#10;&#10;What if she kills us all? Well, you all? I'm serious! I'm telling you, something about this feels wrong. That lady is baaad news.&#10;&#10;Hrmph. Anyway, Malphas is in there, and I think your favorite octogenarian hologram.</say></enter>
+    <objective goal="2" text="Talk to Malphas" type="Talk" npc="5">
+      <talk><say npc="5">The solution to this problem may be quite simple. The General holds captive Sati, the Oracle's ward. As everyone knows, the Oracle and Sati frequently bake together in the Oracle's apartment. The cookies they produce are known to have unique properties; they are, of course, programs written by the Oracle.&#10;&#10;Furthermore, it is known that Sati herself consumes these items frequently, executing their embedded code. The Oracle's purpose in feeding Sati a constant supply of these codes is not known, but that is not a concern at the moment. What is important is that Sati's own code structure has absorbed a significant amount of this Oracle code. Therefore, a sample taken from Sati should meet the Apothecary's requirements. The General will direct you to the child.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to the Holographic Projection" type="Talk" npc="6" after="2">
+      <talk><say npc="6">Yes, soldier. My men are escorting Sati into the Matrix as we speak. Because of her strategic value, I can keep her here only briefly. My technicians will extract the necessary sample from her, and hand it off to you. Your operator will be provided with the location as soon as you're ready to go.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I have my doubts about this "plan." Do we trust the General to operate on Sati? I suppose we have little choice at the moment--and he's kept her intact this long, hasn't he? Maybe the old warhorse has developed a soft spot in the skull for the girl.
+
+Off you trot, operative. Get that code sample for the Apothecary, and I'm sure the two of you will become great chums.</briefing>
+    <enter><say>Let's see: commandos, technician routines, and...ah! That spot of digital sunshine I see there has got to be Sati. Poor kid. It must be like getting her wisdom teeth out.</say></enter>
+    <objective goal="4" text="Talk to the commando guard" type="Talk" npc="7">
+      <done><say>What?! They're not gonna let us in to see Sati? Grrr... Seems to me the General's forgetting who's buttering his waffles these days...&#10;&#10;Fine. That technician better have something good.</say></done>
+    </objective>
+    <objective goal="5" text="Talk to Gaston Johansen" type="Talk" npc="8" after="4">
+      <talk><say npc="8">Yes, I have the data sampled from Sati here. I think you'll find it up to spec.</say></talk>
+      <done><say>Remind me not to invite these guys to any parties.&#10;&#10;Better get that data from him.&#10;&#10;At least Flood should be pleased. Wait, what am I saying?</say></done>
+    </objective>
+    <objective goal="6" text="Get the data from Gaston Johansen" type="Get" npc="8" item="6787" after="5">
+      <done><say>You know, if we're gonna be helping the commandos out, we'll need to have a serious sit-down with them about some of their "regulations." They're startin' to cramp my style...</say></done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say>Far door's sealed off. Looks like they aren't taking any chances with the Machines or Zion getting their hands on Sati. Try talking to that commando guard.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Complain about the commandos all you like, operative; it only reminds me how refreshing it is to have people around who actually know how to keep their mouths shut and follow orders.
+
+Maybe that's why the Apothecary strikes my strained sensibilities as such breath of spring air: quiet, slaughters morons, doesn't smell...</briefing>
+    <enter><say>Hey, you don't smell anywhere near as bad as Ookami does. Usually. I'll back you up on that.&#10;&#10;Okay, looks like we've got the Apothecary and Malphas as the two main blips on the radar. Now there's a cute couple...</say></enter>
+    <objective goal="7" text="Give the data to the Apothecary" type="Give" npc="9" item="6787">
+      <done>
+        <say>So... She's cool with that, right? Not gonna kill us with a glance or anything?</say>
+        <say npc="9">...&#10;&#10;Yes, I can use this.</say>
+        <say>Oh, man. She's gonna kill us. Come on, you can see it in her eyes!&#10;&#10;Look, tell Malphas. He'll know what to do.</say>
+      </done>
+    </objective>
+    <objective goal="8" text="Talk to Malphas" type="Talk" npc="10" after="7">
+      <talk><say npc="10">Mm... Our data is in the hands of an expert--an artist, even--in the medium of death. To watch her at work is inspirational...and also highly dangerous. It will not be long now before the Merovingian has the weapon he seeks.</say></talk>
+      <done><say>...Or before we're all dead!&#10;&#10;Nobody ever listens to me...</say></done>
+    </objective>
+  </phase>
+  <finish>Fascinating creature! Be still my heart.
+
+I'm speaking of the Apothecary, imbecile. And not literally. What heart I may have is mine, and mine alone.
+
+Oh, for crying out-- Have you never heard of poetry, operative? Alas, the waste I make of my time and talents...</finish>
+</mission>

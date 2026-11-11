@@ -250,6 +250,16 @@ namespace hds
         public const UInt32 InfoReasonVendorBuy = 0x08;
         public const UInt32 InfoReasonRecycle = 0x0f;
 
+        /// <summary>80 ab: organization byte followed by signed reputation. The client's mission UI reads this update.</summary>
+        internal static byte[] BuildOrganizationReputation(byte org, short reputation)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80ab");
+            pak.AddByte(org);
+            pak.AddInt16(reputation, 1);
+            return pak.ReturnFinalPacket();
+        }
+
         public void SendInfoCurrent(WorldClient client, UInt32 info, UInt32 reason = InfoReasonLoad)
         {
             client.messageQueue.addRpcMessage(BuildInfoCurrent(info, reason));
@@ -423,15 +433,18 @@ namespace hds
             createFlashTraffic(client, "http://mxo.hardlinedreams.com");
         }
 
-        public void SendPlayerSpawn(WorldClient receiverClient, WorldClient otherClient, UInt16 viewId)
+        /// <summary>Spawns another player for the receiver. Returns the spawn id of the creation record.</summary>
+        public byte SendPlayerSpawn(WorldClient receiverClient, WorldClient otherClient, UInt16 viewId)
         {
             PacketContent pak = new PacketContent();
-            byte[] spawnPaket = new BootingHelperRsi().generatePlayerSpawnPacket(otherClient, receiverClient.playerData.assignSpawnIdCounter());
+            byte spawnId = receiverClient.playerData.assignSpawnIdCounter();
+            byte[] spawnPaket = new BootingHelperRsi().generatePlayerSpawnPacket(otherClient, spawnId);
             pak.AddByteArray(spawnPaket);
             pak.AddUint16(viewId,1);
             pak.AddByte(0x00);
             receiverClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(),false);
             receiverClient.FlushQueue();
+            return spawnId;
         }
 
         public void sendSaveCharDataMessage(WorldClient client, string handle)

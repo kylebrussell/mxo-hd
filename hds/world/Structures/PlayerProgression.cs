@@ -89,8 +89,15 @@ namespace hds
             client.playerInstance.EffectID.setValue(LevelUpEffect);
             client.playerInstance.EffectCounter.setValue(effectCounter);
 
-            Store.dbManager.WorldDbHandler.SaveLevel(client.playerData.getCharID(), newLevel, health, maxHealth,
-                innerStrength, maxInnerStrength);
+            AbilityBuffs.RefreshVitals(client);
+            maxHealth = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+            maxInnerStrength = NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthMax.getValue(), 1);
+            health = NumericalUtils.ByteArrayToUint16(client.playerInstance.Health.getValue(), 1);
+            innerStrength = NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthAvailable.getValue(), 1);
+            UInt16 savedMaxHealth = AbilityBuffs.UnbuffedMaximum(client, 106);
+            UInt16 savedMaxIS = AbilityBuffs.UnbuffedMaximum(client, 109);
+            Store.dbManager.WorldDbHandler.SaveLevel(client.playerData.getCharID(), newLevel, Math.Min(health, savedMaxHealth), savedMaxHealth,
+                Math.Min(innerStrength, savedMaxIS), savedMaxIS);
 
             client.messageQueue.addObjectMessage(ServerPackets.BuildLevelUpUpdate((byte)newLevel, maxHealth,
                 maxInnerStrength, innerStrength, health, effectCounter), false);
@@ -219,7 +226,23 @@ namespace hds
 
         public static UInt16? GrantOf(UInt16 ability)
         {
-            return Grants.TryGetValue(ability, out UInt16 grant) ? grant : (UInt16?)null;
+            var grants = GrantsOf(ability);
+            return grants.Count > 0 ? grants[0] : (UInt16?)null;
+        }
+
+        public static List<UInt16> GrantsOf(UInt16 ability)
+        {
+            ability = AbilityCatalog.Canonical(ability);
+            var grants = new List<UInt16>();
+            if (Grants.TryGetValue(ability, out UInt16 captured)) grants.Add(captured);
+            var entry = AbilityCatalog.Find(ability);
+            if (entry != null)
+                foreach (var mod in entry.Modifiers)
+                {
+                    UInt16 grant = AbilityCatalog.IdOf((UInt32)mod.Number("TargetAbilityGrant"));
+                    if (grant != 0 && grant != ability && mod.Number("WhenEnabled", -1) == 0 && !grants.Contains(grant)) grants.Add(grant);
+                }
+            return grants;
         }
 
         /// <summary>Only Awakened's hidden ability follows its level; the others stayed at 0 in retail.</summary>

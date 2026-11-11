@@ -30,7 +30,7 @@
     <say after="2">Hell if I can tell what he's doing. He never did anything like this before.&#10;&#10;Hah, you know, I think he even swiped something from the Merv. I ran into Ookami and a pack of their operatives who sounded like they were pretty PO'd about something he'd done. ... Put up a pretty good fight, too.</say>
   </npc>
   <npc id="3" handle="Shimada" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
-    <say after="1">No, we aren't sure what the object was, but our readings showed that it was no larger than a mid-sized hovercraft. It was moving at approximately standard hovercraft speed, but the tunnels didn't allow us to approach it directly. We were fortunate to have picked it up at all.&#10;&#10;Yes, we will keep you informed of progress on the data in the recovered terminal. It is a known encryption type, so we expect to be able to crack it.</say>
+    <say after="6">No, we aren't sure what the object was, but our readings showed that it was no larger than a mid-sized hovercraft. It was moving at approximately standard hovercraft speed, but the tunnels didn't allow us to approach it directly. We were fortunate to have picked it up at all.&#10;&#10;Yes, we will keep you informed of progress on the data in the recovered terminal. It is a known encryption type, so we expect to be able to crack it.</say>
   </npc>
   <npc id="4" handle="E Pluribus Neo Crusader" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564">
     <say display="5">I hope you've got that old hardline system of yours under control now.</say>
@@ -62,7 +62,7 @@
       <say>Hey, there's a phone in there. But I didn't pick up a line connection... Check that thing.</say>
     </enter>
     <object id="1" kind="Phone" />
-    <objective goal="1" text="Check the phone" type="Use" object="1">
+    <objective goal="3" text="Check the phone" type="Use" object="1">
       <done><say>Yeah, it's dead. That's what I thought. It must be on an old coppertop network... A lot of areas in Westview haven't had service in years--or ever, I suppose, depending on whose theory of time and simulation you subscribe to.&#10;&#10;Weird that someone would keep a phone hooked up to a dead line. Hm... I'm gonna see if I can look up the old phone connections. Who knows, maybe it goes somewhere.</say></done>
     </objective>
     <complete><say>Those guys are real bundles of joy, huh?</say></complete>
@@ -75,10 +75,10 @@
       <say>Cypherites!&#10;&#10;Hey, it looks like they've got the door on the other side of that room locked. Now what would they be trying to hide in a place like that?</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Kill the Cypherites" type="DefeatAll">
+    <objective goal="4" text="Kill the Cypherites" type="DefeatAll">
       <done><say>No keys on those banditos. I wonder if we can pick that--&#10;&#10;Hey! That's funny... That door's unlocked now. ... Did you do that?</say></done>
     </objective>
-    <objective goal="2" text="Search the area" type="Search" object="1" item="0" after="1">
+    <objective goal="5" text="Search the area" type="Search" object="1" item="0" after="4">
       <done>
         <say>Say wha-?</say>
         <say>That's it? But... And who unlocked that door, anyway?</say>
@@ -88,7 +88,7 @@
   <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Rogers Way">
     <briefing>"Follow her eyes in the dark--"&#10;&#10;Are you sure you read that message accurately, operative?&#10;&#10;No, I... Well, it just seems very strange.&#10;&#10;Ah... If you have nothing else to check there, I need you to speak with EPN. They say they've found something.</briefing>
     <enter><say>What, they found Morpheus? That would figure.&#10;&#10;Okay... Pluribus Neo's officer Shimada is supposed to be meeting you in there.</say></enter>
-    <objective goal="1" text="Talk to Shimada" type="Talk" npc="3">
+    <objective goal="6" text="Talk to Shimada" type="Talk" npc="3">
       <talk><say npc="3">Hello. We thought you should know that we detected a blip heading north from a deep tunnel system near the old city. It left scan range before we were able to pursue it, but when we backtracked along its flight path, we found an area at the end of an old maintenance tunnel, strewn with pieces from Sentinels and hovercraft.&#10;&#10;Some of the pieces showed signs of heavy damage, but a terminal from one of the hovercraft sections was actually functional. It contained encrypted data that we're working on decoding now.</say></talk>
       <done><say>North? But that would mean whatever it is is heading right into the storm.</say></done>
     </objective>

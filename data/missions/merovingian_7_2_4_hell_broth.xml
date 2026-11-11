@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hell-Broth, Merovingian story mission 7.2.4. Source: research/missions/transcripts/Merv7-2-4.md (the archive replay
+     of [Merovingian Archive 7.2.4], given by [Archived]Flood; 23 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Apothecary and Holographic
+     Projection line, and those names. Several entries span two screenshots with no header between them and are taken
+     as one entry each (Flood's "lend a hand", "commandos we'd been transporting", "disrupting the General's troop
+     distribution plans" (a line is cut at that join) and the third briefing, whose join is read as a paragraph break;
+     the Operator's first and last-area lines; the hologram's "The rest of the unit"). Italics dropped: "She's",
+     "think" and "her". Retail's "Even so,  your" (two spaces) is written with one.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the Elites' handle (from the Operator's "those two Elites"), the sites (Normal, but the
+     third area is "the manufacturing facility", so a Warehouse; the last area was in Zia by the minimap at the end
+     spot), the looks (the Apothecary's and the hologram's are those of Something Wicked, the Elites' its commando's)
+     and the enemy counts. The search in the third area turns up nothing, as in retail: the cheat code vial was never
+     found and no item was shown; the body is a Furniture stand-in.
+     Rewards: the log shows 417,810 experience and 70,000 information (a level-39 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: 1 min 46 s of the first area wasn't captured (at least one NPC entry, probably the Apothecary's; there may
+     have been a fight, so the area has no hostiles here), nor the hologram's second entry (12:23:0?) or the Operator's
+     entry with the end of the second area (12:27:01, very likely the standard goals-complete line). Flood's "Operative,
+     spare the woman..." came the same second as the Apothecary's first line and is said when she is talked to; her
+     "That is not my problem" came twice and is said when she is talked to again. In retail the two Elites went along
+     to fight the Machines and seem to have died ("the tragic sacrifice of the General's soldiers"); here they are led
+     out of the first area and follow the player, but don't fight, and nothing requires them to live. Flood's "Body
+     counts continue to climb..." came with the end of the second area and is his line when its fight is done. How
+     retail had the player look for the vial isn't shown (the Operator gave up on it three minutes after arriving);
+     here a body is searched. The Operator's "Whoa! Looks like you just got a little helping hand from someone... That's
+     a little spooky." (third area, 25 s after arriving) has no known trigger and is left out. "Ooh... She's good." is
+     said on getting near the Apothecary in the last area, where she fought the Machines in retail; her leaving the
+     simulation isn't shown. Her "My code will function as required..." is said when she is talked to again. -->
+<mission id="307204" title="Hell-Broth" description="Get the Apothecary the security she demands, intercept the Machines closing in on her, and recover the cheat code vial." plot="1"
+         order="7204" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Apothecary" type="FRIENDLY" at="1" rsi="5a000040" weapon="0">
+    <say after="1">That is not my problem. Arrange something, and quickly.</say>
+  </npc>
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Elite" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Elite" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Apothecary" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="8">My code will function as required. I expect the Frenchman to honor the terms of the contract. I have no further duty to him or his wife.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The Apothecary has nearly completed her work on the kill-code, operative, but the Machines, with their usual flair for timing, have located her, and are making nuisances of themselves--the philistines. Go see if you can't lend a hand.</briefing>
+    <enter><say>I still think she's gonna kill us one of these days.&#10;&#10;It'll be semi-accidental-like, sort of an "oops, you stepped in the way when I meant to target that Agent over there, sorry" type of thing, and her death-stroke will feed back along your signal and blow up our ship with me in it. Yeah, I think about these things. What else am I supposed to do while you're stuffing yourself with cake?&#10;&#10;Okay... She's in there, and...bodies. Lots of bodies. I told you...</say></enter>
+    <objective goal="1" text="Talk to the Apothecary" type="Talk" npc="1">
+      <talk><say npc="1">I will not work without proper security to spare me from nuisances.</say></talk>
+      <done><say contact="1">Operative, spare the woman your own presence, and find the General's holographic projection; it should be in a room nearby. He's agreed to let us re-route a platoon of commandos we'd been transporting for him.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Holographic Projection" type="Talk" npc="2" after="1">
+      <talk><say npc="2">I can only spare these troops for a brief period, soldier, so make use of them while you can. The rest of the unit will be available as backup shortly, should they be needed.</say></talk>
+      <done><say>Doesn't really sound like letting us borrow his platoon was his number-one plan, does it? Oh well, that's his worry. Get those two Elites out of there.</say></done>
+    </objective>
+    <objective goal="3" text="Lead the Elites out of the area" type="Escort" npc="3,4" to="exit" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>I don't feel at all sorry for disrupting the General's troop distribution plans; after all, he'd hardly be able to get them anywhere nowadays without our help.
+
+We'll get the others along just as soon as we can, {player}. You'll have to make do with those two for now. Intercept the inbound Machine forces.</briefing>
+    <enter><say>Got a bunch of the gearheads in there for you to test your commandos on.</say></enter>
+    <objective goal="4" text="Kill the Machines" type="DefeatAll">
+      <done><say contact="1">Body counts continue to climb on all sides, operative. Move along before you find yourself joining them.</say></done>
+    </objective>
+  </phase>
+  <phase site="Warehouse" enemy="Machines" enemies="3">
+    <briefing>We need that kill-code completed, operative--much more than we need a platoon of the General's jar-heads. The Machines are getting far too close to the Apothecary for comfort, so we're throwing the General's precious troops to the wolves; they're nice and meaty, and should slow them down a bit.
+
+You're wondering why I expend eloquence explaining this to you? Simple: you'll be viewing it first-hand. The Machines have closed in on the manufacturing facility where we had the remains of the cheat code we used as an ingredient for the new kill-code. The cheat code vial appears to have been misplaced. You're to get it back.</briefing>
+    <enter><say>I see dead people... Lots of 'em. Hm... Maybe a few Machs still kicking in there. Haven't picked up any whiff of a cheat code vial yet.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="5" text="Search for the cheat code vial" type="Search" object="1" item="0">
+      <done><say>Ahh, nuts to this. That cheat code vial just isn't there. Wasn't the Apothecary done with it, anyway? Forget it. With the Machines closing in on her, we've got more immediate worries.</say></done>
+    </objective>
+    <objective goal="6" text="Kill the Machines" type="DefeatAll">
+      <done><say>Everyone there is dead now, except you...so far.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5" neighbourhoods="Zia">
+    <briefing>Mm, yes... Despite the tragic sacrifice of the General's soldiers, some Machines have again reached the Apothecary. If they've interrupted her work a second time, there'll be the devil to pay.
+
+You wouldn't mind looking in on her, would you, operative? Lovely.</briefing>
+    <enter><say>Death, death, death... It's inevitable... Why fight it? Haha!&#10;&#10;She's in there... I'm reading some Machine signals, too, dead and alive. Tra-la-la! What's the difference anymore?&#10;&#10;Oh hey, you aren't still mad about me giving your stuff away to that maintenance ship pilot, are you? She hasn't even called me back...</say></enter>
+    <objective goal="7" text="Kill the Machines" type="DefeatAll">
+      <done><say>I think that's all of them... It's getting hard to tell. Everything looks dead to me now. You should ask her, I guess. She's the expert.&#10;&#10;...If you won't be needing me for a bit, maybe I'll just go have a little lie-down.</say></done>
+    </objective>
+    <objective goal="8" text="Talk to the Apothecary" type="Talk" npc="5" after="7">
+      <talk><say npc="5">My work on the kill-code is complete. Its potency is sufficient to nullify the target. The remaining packaging work necessary can be completed by any competent coder.&#10;&#10;I am unimpressed by the Merovingian's security measures. I require him to transport me out of this simulation immediately, as is my right according to article 87.D of the contract that I have now fulfilled.</say></talk>
+      <done><say>She's leaving? Happy, happy day!</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say>Ooh... She's good.</say>
+    </near>
+  </phase>
+  <finish>A shame you failed to locate the cheat code vial, operative. It is so tiresome doing the paperwork necessary to dock your pay...
+
+You're just fortunate that the Apothecary had no further need of it, else the consequences for you would have been dire indeed.
+
+Even so, your incompetence has ended up driving off the only professional I've had the pleasure of working with recently. Regrettably, she did not see fit to apply the final touch to this little drama; killing you with a dismissive gesture as she left would have been the perfect parting flourish. Hm, but I suppose there's still time. You will be there to see her off, won't you?</finish>
+</mission>

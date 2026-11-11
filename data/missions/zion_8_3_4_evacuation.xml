@@ -11,18 +11,17 @@
      363,000 experience and 63,000 information are those of Zion 9.2, the nearest chapter whose transcripts show
      them.
      Gaps: the Operator's "If you're all done with the goodbyes..." followed Ghost's farewell, which came after
-     Niobe's; here the two talks are open together and his line is said when both are done. In retail the Machines
-     showed up only once Cherryl Lochead was found ("No sign of trouble in there", then "I've got signals, man,
-     all over the place"); here the phase's hostiles are on the floor from the start and attack on sight. Her line
-     and the Operator's alarm are said when she is found, followed at once by his "Keep them moving" (a minute later
-     in retail). "Do not let Cherryl Lochead die" is ours: the objectives weren't shown, but she is led out through
-     the Machines. The signal locking and tracing, and any time pressure, have no mechanic here. -->
+     Niobe's; here the two talks are open together and his line is said when both are done. The Machines arrive once
+     Cherryl Lochead is found ("No sign of trouble in there", then "I've got signals, man, all over the place"). Her
+     line and the Operator's alarm are said when she is found, followed at once by his "Keep them moving" (a minute
+     later in retail). "Do not let Cherryl Lochead die" is ours: the objectives weren't shown, but she is led out
+     through the Machines. The signal locking and tracing, and any time pressure, have no mechanic here. -->
 <mission id="108304" title="Evacuation" description="Lead veteran operatives whose signals the Machines can trace to safety through hardlines." plot="1"
          order="8304" org="1" contact="Tyndall" exp="363000" info="63000">
-  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+  <npc id="1" handle="Niobe" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
     <say>I'll be back as soon as I can. Keep cool and don't take crap from anyone--especially the Machines!</say>
   </npc>
-  <npc id="2" handle="Ghost" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564">
+  <npc id="2" handle="Ghost" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
     <say>A lot of people are going to be counting on you. To help them, you'll have to learn to count on yourself.</say>
   </npc>
   <npc id="3" handle="Colt" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564">
@@ -56,7 +55,7 @@
     <objective goal="1" text="Lead Ivo Brandt to a hardline" type="Escort" npc="4" to="hardline" />
     <objective goal="2" text="Lead Lena Sorel to a hardline" type="Escort" npc="5" to="hardline" />
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="1">
     <briefing>I have just one more evacuee for you to handle now, {player}. Most are out or on their way, but there are some we haven't been able to contact yet.</briefing>
     <enter><say>Okay, Lochead's signal looks fine. No sign of trouble in there.</say></enter>
     <objective goal="1" text="Find Cherryl Lochead" type="Talk" npc="6">

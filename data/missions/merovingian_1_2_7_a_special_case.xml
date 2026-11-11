@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Special Case, Merovingian story mission 1.2.7. Source: research/missions/transcripts/Merv1-2-7.md (the archive
+     replay of [Merovingian Archive 1.2.7], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
+     the objective texts, the sites (Sharmaine Tarn's workplace: Office; her apartment: SlumApt), the looks and the
+     Protect goals. Sena's affiliation isn't shown; she is given an Exile look. Items: retail's "You received
+     Documents." is the Documents item (6794). Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: Sena locks the apartment door and comes on to the player; doors can't be locked, so she waits for the player
+     (attacksOnSight="0"): finding her is a Talk that plays her lines, then she is killed (the log doesn't show the
+     fight, but the Operator's reaction follows it). A hidden line at a scroll seam in Sharmaine's first line is read as
+     nothing. The bystanders' second lines (Al Lange's "Excuse me...") are said once Sharmaine has been talked to, and
+     Alysha Irmen's greeting is said when Sharmaine reaches her. The 911 Transcript popup in the folder's first image
+     was taken before this mission started and isn't used. -->
+<mission id="301207" title="A Special Case" description="See a Bluepill informant safely home from work." plot="1"
+         order="1207" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Sharmaine Tarn" type="FRIENDLY" at="1" rsi="34050040" weapon="0" />
+  <npc id="2" handle="Al Lange" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say display="5">Did you see that new reality television show last night?</say>
+    <say display="5" after="1">Excuse me. I have to get back to work...</say>
+  </npc>
+  <npc id="3" handle="Nicholas Ackerman" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
+    <say display="5">I'm sorry. I'm rather busy right now.</say>
+  </npc>
+  <npc id="4" handle="Alysha Irmen" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>Sharmaine is supposed to be home. Is she with you?</say>
+  </npc>
+  <npc id="5" handle="Sena" type="HOSTILE" at="2" rsi="a8060090" weapon="2568" attacksOnSight="0" />
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>There is a Bluepill named Sharmaine Tarn who has been in contact with Morpheus on several occasions. In exchange for information on Morpheus, we have agreed to protect her from other operatives who want her silenced. It would seem that she needs protection from us right now. See to it that she makes it home from work safely. If you botch this job I don't foresee an enjoyable employment for you.</briefing>
+    <enter><say contact="1">This is where Sharmaine Tarn works. Locate her and then escort her back to her apartment. I'll send you the address once you have her out of the area.</say></enter>
+    <objective goal="1" text="Talk to Sharmaine Tarn" type="Talk" npc="1">
+      <talk><say npc="1">Are you here for the Merovingian? Good. I'm ready to go home but I need someone to watch my back. Some strange folks have been causing me trouble and I'm worried about going home all by my lonesome... This is where you come in.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Sharmaine Tarn out of the area" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Do not let Sharmaine Tarn die" type="Protect" npc="1" />
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>I'm giving you the location of Sharmaine Tarn's apartment.</briefing>
+    <enter><say>This is where Sharmaine lives. Once she is safely inside her apartment, recover the information on Morpheus from her.</say></enter>
+    <objective goal="1" text="Lead Sharmaine Tarn to her apartment" type="Escort" npc="1" to="npc:4">
+      <done><say npc="4">Sharmaine! It's good to see that you made it home safely.</say></done>
+    </objective>
+    <objective goal="2" text="Find Sena" type="Talk" npc="5">
+      <talk>
+        <say npc="5">Did you come here with Sharmaine? Well, since you're just a friend of hers, she won't mind if you sit down on the bed with me... Come on over here, cutie!</say>
+        <say npc="5">I've locked the door! You can't leave until I've had some fun with you!</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Kill Sena" type="Defeat" npc="5">
+      <done>
+        <say>What the hell was her problem?!</say>
+        <say>I can't believe she actually locked the door and tried to get it on with you... This is insane.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Get the information from Sharmaine Tarn" type="Get" npc="1" item="6794" after="1">
+      <talk><say npc="1">Now that I'm safe, I'll give you the information that we agreed upon... You may take it from me.</say></talk>
+      <done><say>Excellent! Let's get this uploaded through a hardline so I can send it to Flood.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the information at a hardline" type="Upload" item="6794" after="4">
+      <done><say>Receiving data now.</say></done>
+    </objective>
+    <objective goal="6" text="Do not let Sharmaine Tarn die" type="Protect" npc="1" />
+  </phase>
+  <finish>Things are going well enough for you, aren't they?</finish>
+</mission>

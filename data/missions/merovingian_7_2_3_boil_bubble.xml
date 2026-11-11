@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Boil, Bubble, Merovingian story mission 7.2.3. Source: research/missions/transcripts/Merv7-2-3.md (the archive replay
+     of [Merovingian Archive 7.2.3], given by [Archived]Flood; 31 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Apothecary, Persephone, Beirn,
+     Merovingian and Twin line, and those names. Long entries that span two or three screenshots with no header
+     between them are taken as one entry each; where such a join falls at a sentence start the paragraph break there
+     is our guess. Italics dropped: "non sequitur", "them", "Stick close to me, Persephone! I won't let them near
+     you!", "belies", "n'est-ce pas?", "Et puis...", "Mon ami", "non?", "is" and "adieu". Ours: the description (the
+     Summary tab only said "Datalink established."), every objective text (the Objectives tab was never opened), the
+     sites (all Normal; no neighbourhood was shown), the looks (the Apothecary's, Persephone's, Beirn's, the
+     Merovingian's, the Twins' and the Elite Guard's are those of earlier missions) and the enemy counts. No item:
+     the Apothecary takes Beirn's blood herself.
+     Rewards: the log shows 406,815 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: in the third area the Machines "came outta nowhere" once the Apothecary was talked to: they arrive then, and
+     killing them opens then too. The Operator's "No bodies yet..." is said on getting near the Apothecary, and his
+     "This is it! Goodbye, buddy!" just before her line when she is talked to (it came 4 s before it). Persephone's
+     "Ooh!" (said twice) and "I knew this would happen...", and the lines said after the third area's goals (Beirn's
+     "pretzel", the Apothecary's "I will fulfill my obligation" and Persephone's "my husband"), are said when they are
+     talked to again. The Merovingian's "Mon ami..." is said when the last area completes. The Twins' lines (also in
+     Team chat) are said when they are talked to after the Merovingian; which Twin said which wasn't shown. One log
+     entry (most likely Beirn's, about 10:17:0x PM) was cut off between two screenshots and never captured. No "Goals
+     for this area are complete" entry was logged in the first area. -->
+<mission id="307203" title="Boil, Bubble" description="Find out what trouble the Apothecary has with the cheat code, and hurry along her meeting with Beirn before the Machines close in." plot="1"
+         order="7203" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Apothecary" type="FRIENDLY" at="1" rsi="5a000040" weapon="0" />
+  <npc id="2" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
+    <say after="3">Ooh!</say>
+    <say after="5">I knew this would happen. She's delaying on purpose...</say>
+    <say after="6">I'll see to it that my husband deals with her...</say>
+  </npc>
+  <npc id="3" handle="Beirn" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="6">Looks like I won't have to turn her into a pretzel...yet.</say>
+  </npc>
+  <npc id="4" handle="Apothecary" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
+    <say after="6">...&#10;&#10;I will fulfill my obligation, and nothing more.</say>
+  </npc>
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0" />
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="7">Persephone.&#10;&#10;We've also been discussing paying a courtesy call to the Agent we put in the hospital. Flowers, a card--you know. She was such a pretty little thing. We wouldn't want to seem rude, after all.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="7">Join us in a wager? Persephone, or the Apothecary?</say>
+  </npc>
+  <npc id="8" handle="Elite Guard" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It comes to me that the Apothecary has run into some sort of difficulty with the ingredients we've provided her, operative. I'm choosing you as the lucky one who gets to go ask her for the details.
+
+I'm guessing she isn't pleased with the situation. Do bear in mind that she can kill with a wave of her hand.
+
+Why did I mention that? Oh, I don't know. I just enjoy a good non sequitur every now and again.</briefing>
+    <enter><say>I knew it. This is when it happens.&#10;&#10;We're all dead.&#10;&#10;It's been nice working with you, {player}. We really should have hung out together in Zion more, but I guess my busy social schedule kept getting in the way. Sorry about that.</say></enter>
+    <objective goal="1" text="Talk to the Apothecary" type="Talk" npc="1">
+      <talk>
+        <say>This is it! Goodbye, buddy!&#10;&#10;By the way, I gave your stuff away to that cute new maintenance ship pilot. I knew you wouldn't mind, since we won't need anything anymore, anyway.</say>
+        <say npc="1">The cheat code you gave me is weak--old. I need an injection of fresh code to bring it to full capacity. Without this, it will lack the potency necessary to terminate the target.</say>
+      </talk>
+      <done>
+        <say>Still alive... Get out of there! Hurry! Maybe we'll make it...</say>
+        <say npc="1">This explains why the preliminary code failed to terminate the feeble female Agent.</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>No bodies yet... She's been waiting for us to get there, hasn't she? She's so evil...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>O-ho! That was precious, operative. Ah, you really were frightened, weren't you? No, I can tell. Haha! What a wonderful way to keep you hopping.
+
+Since even you would figure it out eventually, I may as well have the satisfaction of telling you myself that the Apothecary is far too experienced a hand to fly into a rage over something this trivial. No... If she decides to kill you, it will be in cold blood, let me assure you.
+
+Now, regarding the fresh code she-- Hrm, one moment. ... It seems I have some nosey Machines for you to dispose of. Quickly, please.</briefing>
+    <enter><say>Er... Life is...good?&#10;&#10;Uh, so about that stuff of yours that I gave away...&#10;&#10;Oops, can't talk now! Gotta scan these Machines. Right. Hostiles in there--watch out.</say></enter>
+    <objective goal="2" text="Kill the Machines" type="DefeatAll">
+      <done><say contact="1">No dawdling in there, if you please. Events are marching on without you.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="5">
+    <briefing>The Machines are hunting the Apothecary, of course. Don't bother telling me if I'm going too fast for you--just play your log back afterwards as many times as you need for it to soak through.
+
+The only thing like "fresh" cheat code known to exist now is pumping through the over-inflated biceps of Persephone's ex-Unlimit boy-toy, Beirn. Because the Machines are pushing our timetable, we had the Apothecary meet Beirn to get a blood sample from him directly, but they're taking a little too long for comfort.
+
+Go hustle them along, would you?</briefing>
+    <enter><say>I'm picking up Her Deadliness, Beirn, and...hey, that's Persephone!&#10;&#10;Think they got distracted catching up on old times?</say></enter>
+    <objective goal="3" text="Talk to Persephone" type="Talk" npc="2">
+      <talk><say npc="2">Do not try to deny your obligation to me! You needn't use the Machines as an excuse; we can protect you from them.</say></talk>
+    </objective>
+    <objective goal="4" text="Talk to Beirn" type="Talk" npc="3" after="3">
+      <talk><say npc="3">If you think I'm getting in between those two, you're crazy!&#10;&#10;The Apothecary got her pint of blood from me--and she wasn't gentle with the weird needle she brought, let me tell you--but then she brought up security concerns in a way that didn't sit too well with the Mistress.</say></talk>
+      <done>
+        <say>Ohh boy. This is not looking good. We need to get out of this without ticking off either Persephone or you-know-who, or we can kiss our behinds adios.</say>
+        <say npc="3">I'm sure I could take down her if I have to--but that won't get us what we want from her.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Talk to the Apothecary" type="Talk" npc="4" after="4">
+      <talk><say npc="4">It is not for you to--&#10;&#10;Hm.</say></talk>
+      <done>
+        <say>Machines! Damn! They came outta nowhere!&#10;&#10;Looks like Beirn and the Apothecary can handle themselves. You'd better take out the other attackers while the two princesses sort out their tiff. Maybe a little hint of danger will inspire them to kiss and make up--at least long enough to get out of there.</say>
+        <say npc="3">Hah! Bastards!&#10;&#10;Stick close to me, Persephone! I won't let them near you!</say>
+        <say npc="4">Go about your business, and I will go about mine.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Kill the Machines" type="DefeatAll" after="5">
+      <done><say>Place looks clear, but you can bet the Machines'll have more square-jaws there faster'n you can say "Federal offense." Hang on--&#10;&#10;Okay, it sounds like the ladies have dropped it for the time being. Beirn can get them out of there; just get yourself out, and we'll report in to Flood.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hell's belies... Never mind, operative, I don't expect you to catch my sallies of wit.
+
+Persephone's involvement was clearly uncalled-for. She's jeopardizing this entire operation by taking it upon herself to chastise our death-dealer. The Merovingian will not be pleased. I--
+
+Hm... You'd enjoy reporting this matter to the Merovingian yourself, wouldn't you, operative? Oh, no, don't mention it. I do so enjoy throwing these bones to you when I can.</briefing>
+    <enter><say>All I know is, when Persephone gets mad, someone ends up taking a bullet. And this time we've also got to deal with her deadly old pal, who didn't exactly sound pleased, either.&#10;&#10;This could end up with a lot of people taking a lot of bullets. Let's just try to make sure we aren't on any of their hit lists, huh?</say></enter>
+    <objective goal="7" text="Talk to the Merovingian" type="Talk" npc="5">
+      <talk><say npc="5">Hm... Eh. Troublesome. My wife...&#10;&#10;Pity. Temper is such a dangerous thing, n'est-ce pas? However, I think this situation can be resolved to our satisfaction. It is only necessary that the Apothecary completes her work as agreed. Et puis...</say></talk>
+    </objective>
+    <complete><say npc="5">Mon ami, we are here because we are people who can live without illusions, non? Death surrounds us at every turn--it is the way of things. Without the risk of death versus the possibility of reward, life--ah, life would not be worth living at all.</say></complete>
+  </phase>
+  <finish>An eventful day, operative; how you escaped with your skin intact, I'm not exactly sure, but it will take more than luck to keep the Machines at bay until we can complete our affairs. The General's foolish idea of assassinating their pin-up model--and mark you, I knew that wasn't going to work--has only succeeded in getting them hot under their heavily starched collars. Beauty is in short supply in their organization. I wouldn't mind Persephone switching sides, personally...
+
+But I can hear the hollow sound of my ideas rebounding off your skull, operative, so I'll bid you adieu for now. Just keep those guns of which you're so fond close at hand, eh?</finish>
+</mission>

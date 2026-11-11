@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Seance, Merovingian story mission 8.3.4. Source: research/missions/transcripts/Merv8-3-4.md (the archive replay of
+     [Merovingian Archive 8.3.4], given by [Archived]Flood; 31 screenshots of the log after it ended, cropped to the
+     Mission window, and one of a computer popup). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title (its first e has an acute accent in the log, dropped here for the client's plain text),
+     every briefing, the closing line, every Flood, Operator, Persephone, Effectuator, Malphas, Alice and Merovingian
+     line, and those names. Flood's first briefing spans three screenshots with no overlapping line at either join
+     ("...on top of the pod." / "Unfortunate for us"; "...planet like that." / "The General already helped"), so a line
+     may be missing at each; it is read as one entry with paragraph breaks. Alice's three lines keep their capitals and
+     line breaks; "prizing" and "Where's that leave us?" are as the log has them. Italics dropped: Flood's "is" and
+     "that", the Merovingian's "eh, Persephone?" (as it appears) and "mon ami". The log's player was Variel; his name is
+     {player} here. Ours: the description (the Summary tab only said "Datalink established."), every objective text
+     (the Objectives tab was never opened), the sites (all Normal: no area is described beyond "a particular Machine
+     terminal" and "your rendezvous point"; no neighbourhood was named), the looks (the Effectuator's, Malphas's, the
+     Merovingian's and Persephone's are those of earlier missions; Alice's is a stand-in, a woman's, since she is
+     "that blood-drinker", "the possessed vamp"), the enemy kinds and counts (Machine programs in the two terminal
+     areas; none was killed for a goal) and the item stand-ins (Data, 6787, for both the first terminal's data and the
+     caretaker program's activity history; no item was named).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the Operator's "I'm getting a promising data signature..." came 22 s after arriving, as the terminal came
+     near; objects can't carry a near trigger, so it follows the arrival line. Picking up the data and being told to
+     take it to a hardline were 13 s apart in phase 1 and 81 s apart in phase 3 (the hack, then the pickup); here one
+     search of the terminal gives the data and says both. The computer popup (an activity log request for the
+     caretaker, its entries ending in physical conditioning and a disconnect) isn't shown. In the seance the
+     Effectuator's line, Malphas's question and the Operator's comment share a second, as do the program's refusal
+     (spoken by Alice) and the next two lines: each is a Talk goal's line and its done lines. Persephone's "..." (ten
+     seconds before the Effectuator) is said when she is talked to first; Alice's "Arr... What..." and the
+     Merovingian's, Malphas's (said twice in retail) and Persephone's lines after the goals are said when they are
+     talked to again, as are Persephone's and Malphas's last lines at the rendezvous. In phase 3 the player used a
+     wrong terminal first (Flood's "Not that one, operative!"); here that is an optional hack of a second computer. No
+     "Goals for this mission phase are complete!" was captured after phase 3, at a join between screenshots where one
+     likely sat; here the phase ends as usual. The Machines needn't be killed: no kill is logged. -->
+<mission id="308304" title="Seance" description="Track down the Machine program that tended Mary MacHenry's pod, and find out what the Machines did with her." plot="1"
+         order="8304" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Alice" type="FRIENDLY" at="2" rsi="a5060090" weapon="0">
+    <say after="4">Arr... What...&#10;&#10;Who are you?</say>
+  </npc>
+  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="2" rsi="57050004" weapon="0">
+    <say after="5">You had best be going, mon ami. The Machines may decide to terminate that program now that it has been "soiled" by contact with our dangerous band of rebels, mm?</say>
+  </npc>
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="5">As I feared... The Trainman's continued absence leaves us without a means of bringing the program here, into our power.&#10;&#10;No... I do not know. There has been no sighting of him since he fled from the Machines into his private subway network. The Machines have been seen to have continued searching for him. He could be dead.</say>
+  </npc>
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="2" rsi="5c050004" weapon="0">
+    <say>...</say>
+    <say after="5">I felt I was a slave then, but at least I touched...real people. Now all I have is this...this grand illusion.</say>
+  </npc>
+  <npc id="6" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
+    <say after="10">It is strange...but it reminds me of something... Something that happened long ago. I did not understand it then, but now...</say>
+  </npc>
+  <npc id="7" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="10">To use her as some sort of operative, perhaps?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>The sad saga of Mary MacHenry continues, operative. It seems that for some reason, the Machines saw fit to remove her "real" body from her pod--not by flushing her into the sewers from whence all you operatives sprang, but by carefully prizing her out through the gummy seal on top of the pod.
+
+Unfortunate for us that they did not simply send her swirling down the drain, because we're now tasked with finding just what they were doing with her; not that anyone in our organization cares about her personally, I hope, but it is odd for the Machines to be ferrying humans around on the surface of your mudball planet like that.
+
+The General already helped find which pod was hers. Now we're going to track down the Machine caretaker program that handled her in her pod; Persephone used to have a similar function, so we know more or less how to look this up. You just have to rub out any Machines that get in your way.</briefing>
+    <enter>
+      <say>You've just got to secure a terminal in there, and we can do the rest. I'm reading some Machine programs marching around inside, so watch yourself.</say>
+      <say>I'm getting a promising data signature near your location. Do you see a computer terminal?&#10;&#10;Whoops, heads up. More Machine signals just appeared up on my monitor.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the data from the terminal" type="Search" object="1" item="6787">
+      <done>
+        <say>There's the data!&#10;&#10;Jeez, better get it, quick; I've got more Machines incoming. New signals are popping up like rabbits...</say>
+        <say>Get it to a hardline, {player}.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Upload the data at a hardline" type="Upload" item="6787" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Right... Now, if the Trainman hadn't got himself cut to ribbons by Machines, we could simply nip into Machine city and grab the program that data identified as the caretaker of MacHenry's pod. As it is, we'll have to settle for hijacking it remotely long enough to get some information out of it.
+
+Get there quickly, please, {player}. There's no telling what trouble the Effectuator will get into if he's left unsupervised for any appreciable amount of time.</briefing>
+    <enter><say>The Effectuator's in there. Hey...so are Malphas, the Merv, and Persephone.</say></enter>
+    <objective goal="3" text="Talk to the Effectuator" type="Talk" npc="1">
+      <talk><say npc="1">Oh, hey. That data you got told us which Machine program was taking care of Mary's pod. It's...um...a little inconvenient to bring them into the Matrix right now, so we're going to try hijacking them remotely for a bit, just to talk. In fact, I think they're coming through right now...&#10;&#10;Hm? Oh. In the body of that blood-drinker, of course.</say></talk>
+      <done>
+        <say npc="4">Subroutine 000c8201-DMT3R, we seek information on the human recently removed from pod 0100:021:0257:084. The sooner you tell us what we wish to know, the sooner you can return to your duties.&#10;&#10;Why was the human removed?</say>
+        <say>A good old-fashioned soul-summoning, huh? The "possessed" vamp there doesn't seem too impressed.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Talk to Alice" type="Talk" npc="2" after="3">
+      <talk><say npc="2">Fallen Programs.&#10;I Have Nothing To Say To You.&#10;You Cannot Hold Me.</say></talk>
+      <done>
+        <say>Smoo-ooth.&#10;&#10;Well, that didn't go so great... Where's that leave us?</say>
+        <say npc="1">Ooh... Yeah. I think we lost it.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="3" after="4">
+      <talk><say npc="3">Hm... Those mothering programs are so defensive...eh, Persephone?&#10;&#10;No matter... We know that it is still active. The Machines will have records of its activity; we will simply have to take what they would not give willingly. Flood will direct you.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Somehow we always end up having to do things the hard way when you're around, {player}. I wonder why that is, hm?
+
+Now you'll have to use a particular Machine terminal to access that caretaker program's activity history.
+
+Oh, yes, I suppose they'll try and stop you. That's your affair.</briefing>
+    <enter><say>I'm reading a lot of program activity in there. It's not gonna be easy to get in and out without being seen.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="6" text="Get the activity history from the Machine terminal" type="Search" object="1" item="6787">
+      <done>
+        <say>Okay, that should be the data we need.</say>
+        <say>Plug that into a hardline for me.</say>
+      </done>
+    </objective>
+    <objective goal="7" text="Hack the other terminal" type="Use" object="2" optional="1">
+      <done><say contact="1">Not that one, operative!</say></done>
+    </objective>
+    <objective goal="8" text="Upload the activity history at a hardline" type="Upload" item="6787" after="6" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It isn't my job to interpret that gobbledygook. There are people who do that sort of thing for me.</briefing>
+    <enter><say>That's your rendezvous point. No hostiles in sight.</say></enter>
+    <objective goal="9" text="Talk to Persephone" type="Talk" npc="6">
+      <talk><say npc="6">That data shows that the woman in the pod was put through physical conditioning just before she was removed. They worked her muscles very heavily... But why?</say></talk>
+    </objective>
+    <objective goal="10" text="Talk to Malphas" type="Talk" npc="7" after="9">
+      <talk><say npc="7">Curious. We know of no use the Machines have for physically active humans--indeed, their attitude is usually one of disdain for your bodies as anything other than a passive energy source. But the effort they put into Mrs. MacHenry before unplugging her suggests that they were not simply going to kill her. They wanted her able to function in the outer world.</say></talk>
+    </objective>
+  </phase>
+  <finish>Yes... Machine efficiency at its finest, I'm sure. Apparently the pod-dwellers can now request personal massage therapy.
+
+Did it ever occur to you, {player}, that maybe MacHenry was in first class, while you flew in coach?</finish>
+</mission>

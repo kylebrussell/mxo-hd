@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I Come in Peace, Merovingian story mission 5.3.2. Source: research/missions/transcripts/Merv5-3-2.md (the archive
+     replay of [Merovingian Archive 5.3.2], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the names Strenlo, Agent Brown and Unlimit
+     Reactor, the guards' barks (from the Team chat), and the objective texts "Get information on the Unlimit field
+     commander", "Put the Access Card in the computer" and "Search the computer". Flood used the player's handle and
+     Agent Brown called the player "Ms. Napilitano"; both are {player}. The Operator's "an network uplink" is retail's
+     wording and is kept. Ours: the description (the Summary tab was never opened), the other objective texts, the
+     sites (none is described: Normal), the looks and the enemy counts. Anome's Unlimit soldiers are redpills modified
+     with his stolen code; they have no org of their own, so they are the nearest, Zion, as rogue redpills, as in the
+     Machines chapter 5 missions. Agent Brown had a friendly icon and is a friendly Agent. Item stand-in: the access
+     code is Access_Card (6791), as retail's objective named it.
+     Rewards: the log shows 1,034,000 experience and 504,000 information (a level-48 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: Firewall was already dead when the player arrived; we have no dead bodies, so he isn't placed and the
+     phase is talking to Agent Brown. In the hideout the player bluffed past a guard, a locked door opened, and the
+     self-important Unlimit turned on the player after being talked to; the Unlimit there are hostiles who wait to be
+     attacked, reaching each is the talk (optional, so killing them first doesn't block the phase), and the door is
+     the order of the goals. Hostile NPCs' lines may not show on screen. The guards' "Boo!" and "Bad move." from the
+     fight are their lines when talked to again. The mail server's access code could be hacked or found; here it is
+     hacked. The Operator's "There's the mail server." line is said on arrival. -->
+<mission id="305302" title="I Come in Peace" description="Find out who commands the Unlimit in the field, starting with Phinney's old flame Strenlo." plot="1"
+         order="5302" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Strenlo" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="2" handle="Agent Brown" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Unlimit Reactor" type="HOSTILE" attacksOnSight="0" at="3" rsi="ec020058" weapon="2568">
+    <say>Boo!</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="HOSTILE" attacksOnSight="0" at="3" rsi="60010058" weapon="2568" />
+  <npc id="5" handle="Unlimit Reactor" type="HOSTILE" attacksOnSight="0" at="3" rsi="050100b4" weapon="2568">
+    <say>What's Phinney doin' sending a little pipsqueak like you here?</say>
+    <say after="2">Bad move.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Since the attempt to synthesize a cheat code from vial residues was a remarkable failure--and I'd just like to point out that I said it was a foolish idea from the beginning--the Merovingian has decided that the best way to get a true sample of the cheat codes is to extract it from someone who's actually partaken of one.
+
+We've learned from our contacts among the Machines that a certain Unlimit field commander by the name of "Phinney" has been conducting some Aqueduct sabotage. Apparently, she has a Zionite boyfriend named "Strenlo." I'm sending you to meet this star-crossed lover. Make it clear to him that it is in his best interests to tell us where Phinney can be found.</briefing>
+    <enter><say>I've got a redpill signal in there; should be Strenlo.</say></enter>
+    <objective goal="1" text="Talk to Strenlo" type="Talk" npc="1">
+      <talk><say npc="1">Hah. I'll tell you what I told the Machinist who was just here asking the same questions: I haven't seen Phinney in weeks. She's crazy, and wants to kill me because I didn't fall for her like she did for me. Drinking that vial of Anome's probably didn't help clear her head. There's a certain scumbag informant we both know, Firewall--he'll probably know where to find her.</say></talk>
+      <done><say npc="1">I don't really want to know. Just get out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Firewall is a well-known trafficker in petty information. He is easily found. If Phinney truly relies on such a creature, she may just be the sort of fool we're looking for.</briefing>
+    <enter><say>Picking up a powerful program signal in there. Firewall could be an Exile?</say></enter>
+    <near npc="2" radius="1000">
+      <say>Uh-oh. Looks like those bastards got there before us.</say>
+    </near>
+    <objective goal="1" text="Talk to Agent Brown" type="Talk" npc="2">
+      <talk><say npc="2">The individual in question met with a regrettable accident resisting arrest, {player}. As you can see, there is nothing more for you to learn here.</say></talk>
+      <done>
+        <say>Bleepin' Agents! Flood isn't going to like this.</say>
+        <say npc="2">Thank you, {player}. We have the situation well in hand.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It is rather vexing that you failed to get there before the Machines did, operative. Remind me not to send you on any more time-critical missions. I think we can consider Phinney's potential usefulness at an end. Now you need to come up with a replacement. I suppose you'll just have to do this the hard way...
+
+I'm sending you to a little nest of Unlimits that we've been watching. Infiltrate their hideout and obtain information leading to their commander, whoever that might be.</briefing>
+    <enter><say>Sooo... I guess you're gonna be using the tried-and-true "take me to your leader" routine here, eh?</say></enter>
+    <near npc="3" radius="1000">
+      <say>Okay, the next door is locked. Think you can bluff your way in?</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say>That one looks plenty self-important. Try talking to them.</say>
+    </near>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Talk to the Unlimit Reactor at the door" type="Talk" npc="3" optional="1">
+      <done>
+        <say npc="3">Yeah? You just better not be wasting our time. Go on in, and make it quick.</say>
+        <say>Full of themselves, as usual. Looks like they've opened up the far door for you, though.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get information on the Unlimit field commander" type="Talk" npc="4" after="1" optional="1">
+      <done>
+        <say npc="4">Phinney says she needs reinforcements? What the hell? She has more people than we do. Why did she send you here?</say>
+        <say npc="4">Why you little--</say>
+        <say>Uh, nice one...
+
+The computer in there has an network uplink, but it looks like it requires a hard access code. Your uptight pal there's probably carrying it.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Kill the Unlimit Reactor" type="Defeat" npc="4">
+      <done><say>Search them for the access code!</say></done>
+    </objective>
+    <objective goal="4" text="Get the Access Card from the Unlimit Reactor" type="Loot" npc="4" item="6791">
+      <done><say>Yep, that's it! Try it in the computer!</say></done>
+    </objective>
+    <objective goal="5" text="Put the Access Card in the computer" type="Put" object="1" item="6791">
+      <done><say>All right, you should have access to that terminal now. Let's see if it can point us to their commander.</say></done>
+    </objective>
+    <objective goal="6" text="Search the computer" type="Search" object="1" item="0" after="5">
+      <done><say>Hey, a connection to their email server. If we can get into that, we can find out all kinds of stuff. I think I can trace it... Yeah, trace is going through. Get out of there and I'll route it into your HUD program.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Snooping through their email? I suppose that's right up your alley, {player}. Just try not to let yourself get distracted by the sordid details; remember, we're just looking for the identity of their field commander.</briefing>
+    <enter>
+      <say>I've got more Unlimit signals than you can shake a stick at in there, and, let's see... Yup, there's their mail server.
+
+Killing people and reading their email--now that's cold.</say>
+      <say>There's the mail server. It's access-restricted... If you can't hack it, you'll have to find the access code somewhere.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Hack the mail server" type="Use" object="1">
+      <done><say>All right, you should have full access to that system now.</say></done>
+    </objective>
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1">
+      <done><say>Hm... I think we've got enough. Let's let Flood know what we found.</say></done>
+    </objective>
+  </phase>
+  <finish>Mm hm... Not much there... Ah...
+
+This "Beirn"... Could one of Anome's commanders really be obsessed with Persephone? I don't know what everyone sees in her blatant attempts to stay attractive... Well. If this is indeed the case, it could be used to our advantage. Beirn, eh...</finish>
+</mission>

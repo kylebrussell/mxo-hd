@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Legwork, Merovingian story mission 6.1.3. Source: research/missions/transcripts/Merv6-1-3.md (the archive replay of
+     [Merovingian Archive 6.1.3], given by [Archived]Flood; 4 screenshots during play with the Objectives window, 20 of
+     the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Malphas, Merovingian,
+     Effectuator, Half Twin and Machine Captain line, the names (Tactical Security from a partly hidden target frame),
+     and the objective "Talk to the Half Twin". Flood's "before they hands fall into the wrong hands" is kept as
+     shown. Flood's briefings and the Merovingian's speech span several screenshots with no header between them and
+     are taken as one entry each. The Operator's "Great, looks like the Effectuator's split himself again..." had its
+     header cut off; it is taken as the Operator's. Ours: the description (the Summary tab was never opened), the other
+     objective texts (retail's "Get two Twin body fragments (1/2)" and "Give the Legs and Feet to the Effectuators"
+     are one counted goal each; here they are two goals each), the sites (the fragments were in offices: Office; the
+     rest Normal), the looks and the enemy count. Item stand-ins: the code drug is Drugs (6816), the Twin Legs Frag is
+     Frags (6785) and the Twin Feet Frag Computer_Parts (6827), since the two need different ids.
+     Rewards: the log shows 1,034,235 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
+     Gaps: whether the drug was handed to the Merovingian or he simply took it wasn't shown; here it is a Give.
+     Malphas' line and the Operator's "We should see what he wants us to do next." are said on getting near Malphas.
+     The Merovingian's second line is said when he is talked to again. The fragments are looted from the Machine
+     Captain and Tactical Security, who were targeted when each was found; their lines may not show (see Known gaps in
+     docs/MISSIONS.md). Entries between 10:41:26 and 10:44:41 weren't captured. The Half Twin, a walking pair of legs
+     in retail, appears once the Effectuator has both fragments ("Shazam!"), with an ordinary look here, and is talked
+     to then. The Operator's "Okay. See what he's gonna do with 'em." is said after the first give, the Effectuator's
+     "Hey, amigo!" after the second; his "Eh... Doesn't hurt..." when talked to again and "Whoops! Well, it's a start."
+     once the Half Twin is talked to. -->
+<mission id="306103" title="Legwork" description="Take a cheat code to the Merovingian and gather the fragments of his old assistants." plot="1"
+         order="6103" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="2568">
+    <say>This must be conducted in the utmost secrecy, understand?</say>
+  </npc>
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="2" rsi="57050004" weapon="2568">
+    <say after="2">Morpheus... The name makes me want to vomit! It was when he disabled my two assistants in such a cowardly fashion that I decided I would have to have him killed one day...</say>
+  </npc>
+  <npc id="3" handle="Machine Captain" type="HOSTILE" at="3" rsi="6e060040" weapon="2568">
+    <say>You are interfering with official government business. You are ordered to desist, and surrender yourself immediately!</say>
+  </npc>
+  <npc id="4" handle="Tactical Security" type="HOSTILE" at="3" rsi="3600004e" weapon="2568" />
+  <npc id="5" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="6">Eh... Doesn't hurt to have an extra pair of legs around, does it?</say>
+  </npc>
+  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="6">Eh... Doesn't hurt to have an extra pair of legs around, does it?</say>
+  </npc>
+  <npc id="7" handle="Half Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0" spawnAfter="6" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Damn the Machines! They found out about our synthesized cheat codes. They've closed the coding sequence we were using to make them, and destroyed all the stock that we had--except for two.
+
+I always knew these codes were a bad idea. They don't even grant great powers; all they do is scramble up RSI shells. Pshaw.
+
+However, for some reason, the Merovingian wants one of our two remaining codes immediately. Since we don't want the Machines finding out about it, I'm going to have you, a nobody they would never suspect, get the code drug and take it to him. Well? Go pick it up!</briefing>
+    <enter><say>I'm scanning a code-shielded safe, and some heavy Exile programs in there.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="1" text="Get the code drug from the safe" type="Search" object="1" item="6816">
+      <done><say>All right. Your perimeter looks clear. Move out.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>What are you doing contacting me?! Maintain radio silence, fool!</briefing>
+    <enter><say>The big guy's in there, along with some heavyweight bodyguards. Scanners aren't showing any Machine activity in the area.</say></enter>
+    <objective goal="2" text="Give the code drug to the Merovingian" type="Give" npc="2" item="6816">
+      <done>
+        <say npc="2">It's about time you got here. And it is high time I used this...&#10;&#10;There. Ah, I see you are wondering what this means, non? That bastard, Morpheus, blew two of my most able assistants into the stratosphere some time ago. I have detected their code, floating about, but there was no way to pull it in...until now. These codes we developed have shown the ability to pull together pieces of program self-images. That is what we will do, now, for my old assistants. Flood will have further instructions for you.</say>
+        <say>Oh, man! I remember those dudes.</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">This must be conducted in the utmost secrecy, understand?</say>
+      <say>We should see what he wants us to do next.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>It's a pity to have so much effort expended just to put together a few louts. Ah, well, I suppose not everything one does can be splendid--you know that better than anyone, eh, {player}?
+
+So, we commence. The executed cheat code has begun pulling in fragments of the dispersed shells. We can track them by their unique code signal now that they are drifting down into range.
+
+Two of them have come to rest nearby. Go gather them up, operative, before they hands fall into the wrong hands. Oho. Yes, I am feeling exceptionally droll today. Enjoy it.</briefing>
+    <enter><say>Hunting for body parts, huh? How macabre. Except... They're technically not dead, so I guess that makes it... Heck, I don't know what that makes it.&#10;&#10;Hm, careful in there. It looks like some Machine programs have come across our precious limbs. You might have to take them off Machine bodies... Uh-oh, this is getting confusing again.</say></enter>
+    <objective goal="3" text="Get the Twin Legs Frag from the Machine Captain" type="Loot" npc="3" item="6785">
+      <done><say>Now there's something you don't see every day.</say></done>
+    </objective>
+    <objective goal="4" text="Get the Twin Feet Frag from Tactical Security" type="Loot" npc="4" item="6827">
+      <done><say>Phew! Did those pick up that nasty funk from floating around all this time, or were they that way to begin with?</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">Incursion detected. Intercept.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Not the pieces I would have chosen, perhaps...
+
+You're supposed to take those to the Effectuator now. I find it hard to believe that fool can put his own shoes on the right feet, much less someone else's feet on their correct legs.</briefing>
+    <enter>
+      <say>This I have to see.</say>
+      <say>Great, looks like the Effectuator's split himself again. You'll probably have to give one fragment to each of him.</say>
+    </enter>
+    <objective goal="5" text="Give the Legs to the Effectuator" type="Give" npc="5" item="6785">
+      <done><say>Okay. See what he's gonna do with 'em.</say></done>
+    </objective>
+    <objective goal="6" text="Give the Feet to the Effectuator" type="Give" npc="6" item="6827" after="5">
+      <done>
+        <say npc="6">Hey, amigo! What a way to meet, huh? Lemme just take these and... Shazam!</say>
+        <say>Yikes! I'm scanning... What am I scanning? It looks like a partial program shell in there... Can you, uh, talk to it?</say>
+      </done>
+    </objective>
+    <objective goal="7" text="Talk to the Half Twin" type="Talk" npc="7" after="6">
+      <talk><say npc="7">...</say></talk>
+      <done>
+        <say>Whoa! Lively little guys, aren't they?</say>
+        <say npc="5">Whoops! Well, it's a start.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Lovely. Obviously, this undignified state of affairs cannot be allowed to continue. I will have more gathering to do for you, {player}, just as soon as we pick up the code signals of the other fragments.</finish>
+</mission>

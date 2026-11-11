@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Lesser Evil, Merovingian story mission 8.1.3. Source: research/missions/transcripts/Merv8-1-3.md (the archive
+     replay of [Merovingian Archive 8.1.3], given by [Archived]Flood; 25 crops of the Mission window, the log after it
+     ended, plus two crops of a Computer's target window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Holographic Projection, Cellino,
+     Malphas, Merovingian and Beirn line, and those names. Entries that span two screenshots are read as contiguous.
+     Italics dropped: Cellino's "thought" and her last paragraph ("Spitz, show the squids..."), the Merovingian's
+     "bonjour", "mon ami" and "Non", and Beirn's "Hey, who's serving the drinks around here?". Ours: the description
+     (the Summary tab only said "Datalink established."), every objective text (the Objectives tab was never opened),
+     the sites (all Normal: no place was named and the crops show no minimap), the looks (the hologram's, Malphas's,
+     the Merovingian's and Beirn's are those of earlier missions; Cellino's is a stand-in by sex), the enemies (Cellino's
+     crew are Zion, "reds") and their count (a seven-and-a-half-minute fight, so a larger group). No item was shown.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: Flood's third briefing is cut after "go chatter to Malphas if you must. He's monitoring": the rest of it and
+     the start of the next entry weren't captured, so the briefing ends at "if you must." and the arrival line is the
+     uncaptured entry's surviving end ("But what about that Zion uplink?..."), whose speaker wasn't seen (most likely
+     the Operator; Malphas's line answers it). A Computer was targeted around Malphas's area (two crops), but no log
+     line mentions it and Malphas's line completed the area, so there is no computer goal. The Operator's "Oh, there he
+     is." and "There's our huckleberry..." came on approach and are said on getting near the projection and Cellino.
+     The projection's "End transmission.", Cellino's "Just get those things off my ship." and the Merovingian's "Non,
+     not one more word about work!" are said when they are talked to again; Malphas's "Ah, excellent." when his area's
+     goals complete. Beirn spoke twice after the Merovingian's goal; an NPC has one line at a time here, so his first
+     ("Hey...uh...you. So...") is said on getting near him and his second when he is talked to. -->
+<mission id="308103" title="The Lesser Evil" description="Take the General's call for Flood, then make Cellino of the Zion hovercraft Ardeshir give up the location of Zion's emergency uplink." plot="1"
+         order="8103" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
+    <say after="1">End transmission.</say>
+  </npc>
+  <npc id="2" handle="Cellino" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+    <say after="3">Just get those things off my ship.</say>
+  </npc>
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="0" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="5">Non, not one more word about work!</say>
+  </npc>
+  <npc id="5" handle="Beirn" type="FRIENDLY" at="4" rsi="c9020058" weapon="2568">
+    <say>I know Persephone worries about me when I'm out there doin' my thing. It's touching, really. She's...you know...quite a woman. ...&#10;&#10;Hey, who's serving the drinks around here?</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>{player}, I need you to take a call for me. It's the General, and apparently it's "terribly urgent," and so forth. I really can't be bothered right now, so go find out what he wants, hm? There's a dear.</briefing>
+    <enter><say>The General's holographic broadcast is due to pop up somewhere in that area. Nothing on my screen so far.</say></enter>
+    <objective goal="1" text="Talk to the Holographic Projection" type="Talk" npc="1">
+      <talk><say npc="1">My scouts have intercepted a message from Zion hovercraft "Ardeshir"--mention of an "emergency uplink" Zion has configured. Seems to be related to a concern they have of the Machines compromising the security of their broadcast control database. I trust you will know how to act on this information.</say></talk>
+      <done><say>An emergency uplink, huh? Zion must really be sweating it. Let's go bend Flood's ear.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Oh, there he is.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="6">
+    <briefing>Oh yes, very well; the General pulls some random message out of the ether, and suddenly I'm responsible for it, hm? He's not getting out of this scot-free, though.
+
+Ardeshir, Ardeshir... Ah, there it is.
+
+Here's how we're going to play this, operative. The General will be ordered to disarm that hovercraft with a squid squad. Meanwhile, you'll track down their crew member Cellino, and let her know that she can tell you where the uplink is, or have her ship ripped apart. We could get the information out of their black box, anyway, so it's no skin off my teeth if she decides to be obstinate. If you want a good laugh, tell her this is really all for her own benefit.</briefing>
+    <enter><say>Sometimes I can't tell if Flood is being nice, or being mean; probably safer to assume he's being mean.&#10;&#10;That's where Cellino is supposed to be. I'm showing reds in there, as expected.</say></enter>
+    <objective goal="2" text="Kill Cellino's crew" type="DefeatAll">
+      <done><say>All clear. Give her the good news.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Cellino" type="Talk" npc="2" after="2">
+      <talk><say npc="2">Huh. I thought something was off when those Sentinels stopped short of splitting our hull open.&#10;&#10;You're right; they could pry the information out of our flight recorder, given time--time you may have, but we don't. The Machines are already moving in on the uplink. I need our operator to relay that to Zion Command. That makes you the lesser of two evils.&#10;&#10;Spitz, show the squids the uplink coordinates. They'll let you go. ... Do it anyway. Right.</say></talk>
+      <done><say>I'm hearing that we're getting the coordinates, but it sounds like time is short.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say>There's our huckleberry. She's probably not gonna feel like talking with the rest of her crew still around. Better make them sit in the corner.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>All right, operative. You can just stay out of the way now, while my brilliant plan unfolds.
+
+What? No. Look, go chatter to Malphas if you must.</briefing>
+    <enter><say>But what about that Zion uplink? Sounds like the Machines were going to put it out of commission. Although why we care about that, I still don't know.</say></enter>
+    <objective goal="4" text="Talk to Malphas" type="Talk" npc="3">
+      <talk><say npc="3">Mm... We've sent Beirn to the uplink. Zion needs it in order to save their broadcast control data from the Machines; without it, they will have severe problems coordinating their operatives in the Matrix, and this new war will soon end.&#10;&#10;That would not be in our interests; thus, we offer Zion this small assistance.</say></talk>
+    </objective>
+    <complete><say npc="3">Ah, excellent.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Don't think we've gone soft on the cave-dwellers, {player}. We're simply managing their affairs for our benefit. The Zionites are such a convenient target for the Machines, after all.
+
+The Merovingian, I believe, has his own words of wisdom to pass along. Try to remember what he tells you; it saves me time.</briefing>
+    <enter><say>That's where you'll find the boss-man.</say></enter>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Oh, bonjour, {player}. You know, something struck me as odd about today's affair: it was too easy.&#10;&#10;Of course, of course, we are good at what we do, but no, there is something else... The Machines. Have you noticed? Yes, they press Zion back, but it is not like the last time.&#10;&#10;Well, never mind, mon ami; I will mull it over. Go enjoy yourself, eh? You've done well.</say></talk>
+    </objective>
+    <near npc="5" radius="1000">
+      <say npc="5">Hey...uh...you. So...&#10;&#10;You know, I'm getting pretty good at this Agent-slaying business, if I do say so myself. Ah, you should'a seen me in there today; poor starched sap didn't know what hit 'im.</say>
+    </near>
+  </phase>
+  <finish>Easy? Naturally he thinks so; that's a credit to how effortlessly I handle these problems. Everyone assumes that it's easy when they see me conducting our business with such panache. They don't see the countless hours of study, of inner conflict...
+
+Yes, yes, operative--you've performed competently, for once. You know your place; I'll say that much for you. Now go fritter away your paycheck while I steer this ship of ours.</finish>
+</mission>

@@ -20,7 +20,7 @@
     <say after="1">You may continue on your way, {player}.</say>
   </npc>
   <npc id="2" handle="Gerald Gajan" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
-    <say after="1">Excellent. The transmissions should begin coming through to this terminal now.</say>
+    <say after="5">Excellent. The transmissions should begin coming through to this terminal now.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Greetings, {player}. Something has recently come to our attention; communications chatter related to the masked men has suddenly increased.
@@ -40,20 +40,20 @@ We must establish deeper surveillance of this group. Proceed to the location ind
     <enter><say>All right, see if you can sneak in and out of there. Search all of the computers until you find their comms unit, and plant the device there.</say></enter>
     <object id="1" kind="Computer" />
     <object id="2" kind="Computer" />
-    <objective goal="1" text="Find the communications computer" type="Search" object="1" item="0">
+    <objective goal="2" text="Find the communications computer" type="Search" object="1" item="0">
       <done><say>Bingo! Plant the device in there and we can get moving.</say></done>
     </objective>
-    <objective goal="2" text="Plant the listening device in the communications computer" type="Put" object="1" item="6824" after="1">
+    <objective goal="3" text="Plant the listening device in the communications computer" type="Put" object="1" item="6824" after="2">
       <done><say>Sweet! Device in place... now you can get out of there.</say></done>
     </objective>
-    <objective goal="3" text="Search the other computer" type="Search" object="2" item="0" optional="1">
+    <objective goal="4" text="Search the other computer" type="Search" object="2" item="0" optional="1">
       <done><say>Damn, just looks like generic spam.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Excellent work, {player}. Proceed to one of our laboratories for calibration of the listening signal.</briefing>
     <enter><say>There should be a Dr. Gajan in here. He needs the exact coordinates of the mission location to calibrate the device's signal.</say></enter>
-    <objective goal="1" text="Talk to Dr. Gajan" type="Talk" npc="2">
+    <objective goal="5" text="Talk to Dr. Gajan" type="Talk" npc="2">
       <talk><say npc="2">Ah, {player}. I presume you have the coordinates for me? Please direct your operator to download them to me now.</say></talk>
       <done>
         <say>Okay, I'm downloading the coords... all set. You can get out of there now!</say>

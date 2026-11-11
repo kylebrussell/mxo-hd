@@ -13,6 +13,7 @@ namespace hds.databases.interfaces{
 
         void SetReputation(UInt32 charId, string reputationColumn, int value);
         void SetOrgId(UInt32 charId, int orgId);
+        void SetPvpFlag(UInt32 charId, bool flagged);
         Hashtable GetCharInfoByHandle(string handle);
         UInt32 GetUserIdForCharId(byte[] charIdHex);
         string GetPathForDistrictKey(string key);
@@ -72,6 +73,8 @@ namespace hds.databases.interfaces{
         UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId);
         List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
         void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);
+        void EnsureTransactionalInventory();
+        CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count);
         List<CodeStorage.Entry> GetCodeStorage(UInt32 charId);
         UInt16 GetNextAbilitySlot(UInt32 charId);

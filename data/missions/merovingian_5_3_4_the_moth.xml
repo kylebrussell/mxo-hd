@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Moth, Merovingian story mission 5.3.4. Source: research/missions/transcripts/Merv5-3-4.md (the archive replay
+     of [Merovingian Archive 5.3.4], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the Unlimit guards' barks (from the Team
+     chat), the names Beirn, Unlimit Reactor, Spellmann, Aegle and Persephone, and the objective texts "Access the
+     Computer", "Secure Persephone" and "Eliminate the hostiles". Ours: the description (the Summary tab was never
+     opened), the objective texts of phases 2 and 3, the sites (the untraceable terminal was in an office conference
+     room: Office; the rest are unnamed: Normal), the looks and the enemy counts. Anome's Unlimit soldiers are redpills
+     modified with his stolen code; they have no org of their own, so they are the nearest, Zion, as rogue redpills,
+     as in the Machines chapter 5 missions. Beirn's Details gave Organization None and level 70; he is one of them, and
+     has no level here. No mission items.
+     Rewards: the log shows 1,056,000 experience and 514,500 information (a level-49 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: in Beirn's facility the player posed as a recruit among Unlimit who didn't attack; they are friendly NPCs
+     here, and the facility has no hostiles. Which two of them were the guards isn't shown, so the guards' lines are
+     the two about Beirn's important message; the other barks go to three bystanders and to the guards when talked to
+     again. Beirn is not to be engaged: talking to him is optional, and his "Scram!" is his line when talked to again.
+     Spellmann's line came twice; it is said once. Spellmann and Aegle follow the player to the ambush but don't fight,
+     since we have no allies that fight; nor are Flood's Exile ambushers placed. Several joins between screenshots
+     (Operator 11:31:00, Flood 11:33:45 and 11:36:10, Persephone 11:50:43) may hide half-cut lines; they are used as
+     they read. -->
+<mission id="305304" title="The Moth" description="Bait a trap for the Unlimit lieutenant Beirn with news of Persephone." plot="1"
+         order="5304" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568">
+    <say>You've probably heard this already, but Beirn--our commander--totally has this thing for the Merovingian's wife. So if you want to get in good with him, don't ever say anything bad about her to his face.</say>
+  </npc>
+  <npc id="2" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="60010058" weapon="2568">
+    <say>Beirn's such a crack-up! He's lost it over Persephone. They say that he used to work for the Frenchman, and his reason for signing on with Anome was so that he could become powerful enough to take her away from her husband. Oh, he thinks he'd really be doing her a favor, mind you!</say>
+  </npc>
+  <npc id="3" handle="Beirn" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568">
+    <say>Scram!</say>
+  </npc>
+  <npc id="4" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="050100b4" weapon="2568">
+    <say display="5">Beirn? Yeah, he's around.</say>
+  </npc>
+  <npc id="5" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="58010058" weapon="2568">
+    <say display="5">What do you think about true love between a human and a program? Can it really be more than skin deep? Can two such different creatures possibly share the mutual understanding necessary in a serious, lasting relationship? And what about compatibility issues? Family? Think of all the potential complications!</say>
+  </npc>
+  <npc id="6" handle="Unlimit Reactor" type="FRIENDLY" at="2" rsi="000100b4" weapon="2568">
+    <say display="5">Well... There are some hot programs out there.</say>
+  </npc>
+  <npc id="7" handle="Spellmann" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="8" handle="Aegle" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
+  <npc id="9" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="2568" />
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>As you would recall if you had an attention span over ten minutes, we are attempting to capture a certain Unlimit lieutenant, Beirn. His obsession with Persephone will be his undoing. Now, I need you to leak information to Unlimit that Persephone will be at a certain location, at a certain time. Since you recently hacked into their email system, you should have no problem accomplishing this. I'm sending you to a certain terminal that can't be traced back to the Merovingian. Your operator will have the necessary details to leak.</briefing>
+    <enter>
+      <say>Place looks clear. Let's do it...</say>
+      <say>The terminal's in there.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Access the Computer" type="Use" object="1">
+      <done><say>Okay, now we'll just see how quick Unlimit is to check their email.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>We took the liberty of inserting a small tracking virus into that email you sent, operative. It should... Ah.
+
+We have a hit; this is probably Beirn's location. He will no doubt be there with large numbers of his soldiers about, and easy exits, so you are not--I repeat, NOT--to engage him at this time.
+
+However, we need to know if he's taken the bait. Infiltrate the facility and see what you can learn.</briefing>
+    <enter><say>There are...way more Unlimit in there than you want to know about. So how are you gonna play this? The fresh wanna-be recruit looking for a step up? The curious redpill who wandered in by accident? Milkman?</say></enter>
+    <near npc="1" radius="1000">
+      <say>I'm reading a heavy power flux in the room beyond that one--probably Beirn. Try talking to those two guards; maybe they've overheard him talking about the message.</say>
+    </near>
+    <near npc="3" radius="1000">
+      <say>That's Beirn. I dunno if I'd get too close to him...</say>
+    </near>
+    <objective goal="1" text="Talk to the first Unlimit guard" type="Talk" npc="1">
+      <talk><say npc="1">Look, the commander's a little occupied right now. Normally he's all about the new recruits, but he just got a really important message, and he's got to make some plans alone. Come back tomorrow.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to the second Unlimit guard" type="Talk" npc="2">
+      <talk><say npc="2">He doesn't talk to anyone when he's...uh...planning a critical operation. Especially not this one. You'll just have to take a number.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Beirn" type="Talk" npc="3" optional="1">
+      <talk><say npc="3">What would I say to her? What if she thinks I'm stupid? I don't have anything to wear... What if--
+
+...
+
+Get lost! I'm busy!</say></talk>
+    </objective>
+    <complete><say>Sounds like he's taken the bait. Okay, get out of there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>So, the trap is set, and the bait is taken.
+
+Of course, we have Persephone's location closely monitored, and surrounded by heavy strike teams. I might as well keep you on standby if anything goes wrong, I suppose; although what you could do to help, I don't really know.
+
+Say, why don't you go gather some reinforcements? That might be useful, at least.</briefing>
+    <enter><say>You've got two Exiles, Spellmann and Aegle, waiting for you in there.</say></enter>
+    <objective goal="1" text="Talk to Spellmann" type="Talk" npc="7">
+      <talk><say npc="7">Come on, come on, let's go! I don't want to miss this.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Aegle" type="Talk" npc="8">
+      <talk><say npc="8">Infatuation backed by unearned power... This could get...messy.</say></talk>
+    </objective>
+    <objective goal="3" text="Lead Spellmann and Aegle out of the area" type="Escort" npc="7,8" to="exit" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Incompetents! Nincompoops! Beirn walked into the trap, but after seeing Persephone for just a moment, turned and ran, calling in hordes of his soldiers in his wake. One of our ambushers must have let themselves be spotted. Fool!
+
+The battle is going...badly. Well, what are you waiting for? Get in there and save Persephone, you dolt!</briefing>
+    <enter><say>I'm reading Exile and Unlimit signals all over the place in there!</say></enter>
+    <objective goal="1" text="Secure Persephone" type="Talk" npc="9" after="2">
+      <talk><say npc="9">About time you got here. That clumsy coward turned and ran when I gave him a look. I hadn't even smiled! Just a look, and poof, he was off. I don't know how he expects to get anywhere with a woman acting like that.</say></talk>
+      <done>
+        <say>Sounds like she's her usual unflappable self.</say>
+        <say npc="9">They are quite deadly--stupid, but deadly. What a mess they made of this place. How annoying... I am going to make this very expensive for my husband.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Eliminate the hostiles" type="DefeatAll">
+      <done><say>Area clear.</say></done>
+    </objective>
+  </phase>
+  <finish>So, Beirn couldn't face the object of his desire in the flesh? Hmph! Typical human hypocrisy. This complicates matters.
+
+At any rate, we've learned that he's stupid, and can't resist whatever allure she has for him. He will not be able to stay away for long.</finish>
+</mission>

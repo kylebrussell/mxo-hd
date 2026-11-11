@@ -33,6 +33,16 @@ namespace hds
             IsPvpServer = Boolean.Parse(xDoc.GetElementsByTagName("IsPvPServer")[0].InnerText);
             PvpMaxSafeLevel = UInt16.Parse(xDoc.GetElementsByTagName("PvPMaxSafeLevel")[0].InnerText);
             FixedBinkIDOverride = UInt16.Parse(xDoc.GetElementsByTagName("FixedBinkIDOverride")[0].InnerText);
+            // Per-process overrides, so a test server can be a PvP server without its own configuration file
+            string pvpServer = Environment.GetEnvironmentVariable("MXO_PVP_SERVER");
+            if (!string.IsNullOrEmpty(pvpServer))
+            {
+                IsPvpServer = pvpServer == "1";
+            }
+            if (UInt16.TryParse(Environment.GetEnvironmentVariable("MXO_PVP_MAX_SAFE_LEVEL"), out UInt16 safeLevel))
+            {
+                PvpMaxSafeLevel = safeLevel;
+            }
             XmlNodeList uploadRequired = xDoc.GetElementsByTagName("HardlineUploadRequired");
             if (uploadRequired.Count > 0)
             {

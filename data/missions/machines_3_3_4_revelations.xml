@@ -15,7 +15,7 @@
   <npc id="1" handle="Agent Johns" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568">
     <say after="1">Be careful with that data, {player}. Most human operatives would not be trusted with such... sensitive material.</say>
   </npc>
-  <npc id="2" handle="Seraph" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Seraph" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
   <npc id="3" handle="The Oracle" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
     <say after="2">You don't have to take my word for it. But you will.</say>
   </npc>

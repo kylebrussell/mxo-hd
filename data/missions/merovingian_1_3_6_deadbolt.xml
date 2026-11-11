@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deadbolt, Merovingian story mission 1.3.6. Source: research/missions/transcripts/Merv1-3-6.md (one retail run of the
+     archive replay [Merovingian Archive 1.3.6], given by [Archived]Flood; every screenshot was taken after the
+     mission, so no objective was seen). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line and the NPCs' names. Ours: the description (the Summary
+     tab was never opened), every objective text, the sites (phase 2 a ZionOutpost for the Zion base, phase 3 a
+     Derelict for the squatters' hovel, the others Normal), the enemy counts and every NPC's look (only Colin Runnels,
+     Persephone and the Merovingian have a known sex). Item stand-in: the package with the porcelain mask is Package
+     (6817). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.3's
+     values (308,750 experience, 94,500 information, as Miracle Man paid).
+     Gaps: Aksnes and Elpis are named Zion operatives among each phase's generated ones; their lines are said on
+     arrival, since a hostile has no talk. Aksnes showed as friendly until engaged, so he waits to be attacked. In
+     phase 3 Flood asks the player to talk to the homeless assassin, Colin Runnels, who fights instead: finding him (a
+     Talk that completes on reaching him) carries his lines, then he is killed and his body looted. The squatters Earle
+     Escarin, Troy Moore and Britney Harvey are hostiles who fight on sight; Earle's first line is said on arrival and
+     their other barks ("Buzz off, square.", Troy's "N-no one s'posed to be in here. This is our place!" and "Let us
+     have just this one thing! Leave us alone!", Britney's "You... I think I saw... oh...", "Whatd'ya want?" and "No!")
+     are left out. One Operator line (10:11:52) wasn't captured. In phase 4 the Merovingian's and Persephone's lines
+     from before the hand-over are said when the Merovingian is talked to. The Niobe recording in the Details popup
+     isn't from this mission and isn't used. -->
+<mission id="301306" title="Deadbolt" description="Strike back at Zion and find the man who killed Morpheus." plot="1"
+         order="1306" org="3" contact="Flood" exp="308750" info="94500">
+  <npc id="1" handle="Aksnes" type="HOSTILE" at="1" rsi="d8040058" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Elpis" type="HOSTILE" at="2" rsi="60010058" weapon="2568" />
+  <npc id="3" handle="Earle Escarin" type="HOSTILE" at="3" rsi="38000024" weapon="2568" />
+  <npc id="4" handle="Troy Moore" type="HOSTILE" at="3" rsi="35000024" weapon="2568" />
+  <npc id="5" handle="Britney Harvey" type="HOSTILE" at="3" rsi="34050040" weapon="2568" />
+  <npc id="6" handle="Colin Runnels" type="HOSTILE" at="3" rsi="38000024" weapon="2568" attacksOnSight="0" />
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="2568" />
+  <npc id="8" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="2568">
+    <say display="5">My husband is a pompous ass.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>It seems that Lock's people are trying to keep a lid on the truth. They don't want their little secret getting out.
+
+Some operatives are making a move against the Merovingian's assets. We need you to get in there and eliminate them. Here's the location.</briefing>
+    <enter>
+      <say>I don't think any of the Merovingian's forces are left. You'll have to take out the Zion operatives on your own.</say>
+      <say npc="1">I know, friend. I know. But you've got to pull yourself together. We've got a job to do.</say>
+      <say npc="1">Hey!</say>
+    </enter>
+    <objective goal="1" text="Kill all of the Zion operatives" type="DefeatAll">
+      <done><say>That's the last of them. Time to get out of there.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="ZionOutpost" enemy="Zion" enemies="5">
+    <briefing>This kind of outright attack will not be tolerated! I am sending you to the nearest Zion base. You must eliminate them before they can mount another attack on our associates.</briefing>
+    <enter>
+      <say>All right, this is the spot. Take them all out, {player}.</say>
+      <say npc="2">What the hell are you doing here?!</say>
+    </enter>
+    <objective goal="1" text="Kill all of the Zion operatives at the base" type="DefeatAll">
+      <done><say>That's it. Better get out before any reinforcements show up.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Derelict" enemy="Zion" enemies="0">
+    <briefing>While you were off playing around with your former friends from Zion, I've been busy searching for the man who was hired by Lock to kill Morpheus. And now, thanks to my hard work, he is found.
+
+The Merovingian needs evidence of this homeless assassin's crime to bring Lock out of the shadows. I've tracked the killer to a hovel some distance from here. It is imperative that you travel to his location and talk to him.</briefing>
+    <enter>
+      <say>Okay, you're finally here. The bum's somewhere in this building. I don't know how they got in here, but they've managed it.</say>
+      <say npc="3">All ya see here is all I own in this world. You ain't never gonna take it from me without a fight!</say>
+    </enter>
+    <objective goal="1" text="Find Colin Runnels" type="Talk" npc="6">
+      <done>
+        <say npc="6">I, uh... you... you got somethin' about you, like... like...
+
+Like the one wit' the FLIES! Ain't no way yer takin' me!</say>
+        <say>That's the one! See if you can get any information out of him...</say>
+        <say npc="6">Flies...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill Colin Runnels" type="Defeat" npc="6">
+      <done><say contact="1">Well, that was unfortunate. Before you leave, you must search his corpse. Maybe he's carrying something incriminating.</say></done>
+    </objective>
+    <objective goal="3" text="Search Colin Runnels' body" type="Loot" npc="6" item="6817" after="2">
+      <done><say contact="1">Magnificent. I am sure we can use that item. Now, your presence is desired elsewhere.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian has been informed of our progress and has come to this area to receive the evidence from you, personally. I do hope you understand the importance of this moment.</briefing>
+    <enter><say>The Merovingian doesn't venture out of his home very often. He must be excited about this evidence.</say></enter>
+    <objective goal="1" text="Give the package to the Merovingian" type="Give" npc="7" item="6817">
+      <talk>
+        <say npc="8">About time you got here.</say>
+        <say npc="7">Truly passionate love is not so far from hate. I know that much.</say>
+        <say npc="8">My husband is a pompous ass.</say>
+        <say npc="7">Come, come. Give me the package.</say>
+      </talk>
+      <done><say npc="7">I have been waiting for this. Do you know what this package contains?
+
+It is the porcelain mask which that... that homeless wretch wore as he killed Morpheus. Unbelievable. I am surprised that their Commander Lock would stoop to such measures.</say></done>
+    </objective>
+  </phase>
+  <finish>You know, you probably wouldn't be getting such attention from the Merovingian if not for my mentoring of you. For that: you're welcome.</finish>
+</mission>

@@ -14,16 +14,17 @@
      mission.
      Gaps: the Wright office's three secured terminals were one "Search the area"; here they are three Search goals,
      each called "Search the area" and opened by the one before, so the Objectives window shows one at a time. Each
-     Operator line on finding a terminal is said with the one after its hack. The "little more company" that turned up
-     as the player left can't arrive later, so a few hostiles are there from the start. 16 minutes of the log are
-     missing after that phase; Gray's line about Argent Biometrics is the next briefing. Hector Hendrix turned hostile
-     when his e-mail was read; here he stays friendly and says "Hey! That's my e-mail!" when the computer is searched,
-     after JC Uhrich's "You got no right!" (Team chat only). In the last phase Nightmare lay dead on the floor and the
-     computer was the "weird signal from the Exile"; Nightmare and an Elite Guard are named hostiles, and the
-     computer's search opens once the Exiles are dead. -->
+     Operator line on finding a terminal is said with the one after its hack. The "little more company" arrives on the
+     floor's spots once the third terminal is searched, as the player leaves ("Careful on your way out"). 16 minutes of
+     the log are missing after that phase; Gray's line about Argent Biometrics is the next briefing. Hector Hendrix
+     turned hostile when his e-mail was read (his icon is red at "Hey! That's my e-mail!"); here he turns hostile when
+     the computer is searched and says it then, after JC Uhrich's "You got no right!" (Team chat only). No objective was
+     shown for him, so killing him isn't one. In the last phase Nightmare lay dead on the floor and the computer was the
+     "weird signal from the Exile"; Nightmare and an Elite Guard are named hostiles, and the computer's search opens once
+     the Exiles are dead. -->
 <mission id="208204" title="Scramble" description="Search Wright Research's business dealings for the origin of her signal's encryption." plot="1"
          order="8204" org="2" contact="Agent Gray" exp="385000" info="63000">
-  <npc id="1" handle="Hector Hendrix" type="FRIENDLY" at="2" rsi="38000024" weapon="0">
+  <npc id="1" handle="Hector Hendrix" type="FRIENDLY" at="2" rsi="38000024" weapon="0" hostileAfter="1">
     <say>This is a private office!</say>
   </npc>
   <npc id="2" handle="JC Uhrich" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
@@ -35,7 +36,7 @@
   <npc id="4" handle="Nightmare" type="HOSTILE" at="4" rsi="c6020058" weapon="2568">
     <say>No! Silver said no--</say>
   </npc>
-  <phase site="Office" enemy="Zion" enemies="3" neighbourhoods="Tabor Park">
+  <phase site="Office" enemy="Zion" enemies="3" enemiesAfter="3" neighbourhoods="Tabor Park">
     <briefing>Operative, in attempting to identify the location from which Danielle Wright accesses the Matrix, we were foiled in part by the signal's unique encoding: it utilized real-time variable encryption of an order not known to be possible in human broadcast signals.
 
 While Wright herself is known to have some ability in network interface programming, the biological aspect of the interface would have posed the most significant hurdle. Given that this technology is highly exclusive--exclusive enough that we were not previously aware of it--a search of Wright's business dealings of the past several years may reveal its origin.

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Irresistible, Merovingian story mission 5.1.4. Source: research/missions/transcripts/Merv5-1-4.md (the archive
+     replay of [Merovingian Archive 5.1.4], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Malphas, Merovingian and Ghost line (retail's "That's takes care"
+     and "I...oversee" are kept as shown), and the names Malphas, the Merovingian and Ghost. Flood called the player
+     by handle ("TiAmo"); that is {player}.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (none is described: Normal), the looks and the enemy count. Phase 1's hostiles are redpills
+     loyal to Anome from among Niobe's old faithful: Zion. Ghost, Zion's representative, is friendly here. The Blood
+     Noble seen at the end said nothing and isn't placed. Malphas and the Merovingian are each two NPCs, one per phase
+     they appear in. The listening post's scanning equipment is a computer, searched for nothing.
+     Rewards: the log shows 1,078,000 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: lines that came seconds after a goal are its done lines; Ghost's "..." came after Malphas was satisfied and
+     is Ghost's line when talked to again. The Merovingian's talk at the meeting and his aside to Malphas three seconds
+     later may have had an entry between them, and Malphas's request may have run on past "presence is required.";
+     neither was visible. An Operator line at the meeting's end (10:19:28) was never visible, most likely the generic
+     goals-complete line. The Zion operative who left the meeting before the player arrived isn't placed. -->
+<mission id="305104" title="Irresistible" description="Secure the listening post and sound out Zion's representative at the meeting." plot="1"
+         order="5104" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="2568" />
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="2568" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="3" rsi="35000024" weapon="2568" />
+  <npc id="4" handle="Ghost" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say after="3">...</say>
+  </npc>
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="2568" />
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Ah, my plan is coming together, {player}. Aren't you happy for me? The trap is about to spring, and the delightful thing is that they won't even realize it until it's far too late; not that they have any alternative to walking into it, anyway. Oh, such genius! It really deserves better than to be wasted on Zionites, but, when in Rome...
+
+Are you still standing there? Didn't I tell you that I need you to secure our listening post near the meeting area? Get moving!</briefing>
+    <enter>
+      <say>The listening post is in that building. I'm picking up some redpills inside--not ours, either.</say>
+      <say>Those idiots must be some of Anome's supporters. Apparently his following among Niobe's old faithful was larger than we expected... No doubt he's lured them away with promises of vast power from the Machines' "cheat codes."</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of Anome's supporters" type="DefeatAll">
+      <done><say>That's takes care of all of the signals in the area. Stupid buggers, working for Anome like that. A fool and his RSI are soon parted...</say></done>
+    </objective>
+    <objective goal="2" text="Check the scanning equipment" type="Search" object="1" item="0">
+      <done><say>Good, looks like they didn't figure out how to mess with the scanning equipment.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Anome's followers... What a joke. It is to laugh.
+
+The meeting is coming up shortly. Too bad you'll be missing it! I'll be happy to give you all the juicy details later, though.
+
+Oh, Malphas wants to see you for some reason; I can't imagine what.</briefing>
+    <enter><say>Malphas is in there. Have you seen that guy's skin? Eesh.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">I understand you've been handling security for these meetings recently. I would like you to appear at the impending meeting with Zion, at a specific time. I wish to sound out their representative, Ghost, without appearing too curious about him myself. I want to know how confident he is in Zion's survival should Niobe perish.
+
+Flood will signal you when your presence is required.</say></talk>
+      <done>
+        <say>Wait, didn't Flood just say you weren't going to be at the meeting?</say>
+        <say npc="1">Hmph. I will handle Flood.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>{player}... It... It seems that you will be at the meeting after all, while I...oversee things from my control area.
+
+That's the way I prefer it, anyway. Meetings are so dull. I'm sure you'll be bored to tears.
+
+Run along to the meeting now.</briefing>
+    <enter><say>Two programs and one redpill in there. That should be the Merovingian, Malphas, and Ghost. There was another Zion operative, but they left just a minute ago.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="2">
+      <talk><say npc="2">It's about time you got here. Your Zionite counterpart has already come and gone.</say></talk>
+      <done><say npc="2">I see. Always rooting about for an advantage, eh, Malphas? Haha! Don't think I don't know you well, you sly devil.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Ghost" type="Talk" npc="4">
+      <talk><say npc="4">We're going to get Niobe back. And Zion is more than any one person. If you'd spent more time there, maybe you would have found that out.</say></talk>
+      <done><say>Was that what Malphas was looking for? Better check with him.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Malphas" type="Talk" npc="3" after="2">
+      <talk><say npc="3">Good work. He maintains a defiant facade, but I can smell the worry on him. Delightful.</say></talk>
+      <done><say>All right, sounds like he's happy. You're all done in there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Aha! I told you it would be a boring meeting, didn't I? Thank goodness it occurred to me to send you in my place. Yes...
+
+Before you got there, the Merovingian told Ghost that we'd save his precious Niobe for free. Hah! You should have seen Ghost try to figure out what to make of that. It was genius, I tell you. So glad I thought of it.
+
+The Merovingian wants to see you now, for some reason. Try not to waste his time, would you?</briefing>
+    <enter><say>The Merovingian is in there. I wonder what he wants?</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="5">
+      <talk><say npc="5">Cause and effect: I make a generous offer, and it is accepted. We left Zion no choice, you see?
+
+Since you will be involved in the rescue operation, I wished to impress upon you that no harm is to come to Niobe at our hands. We will return her to her caves safe and sound, and Zion will find that it no longer has an excuse for making war on us.</say></talk>
+      <done>
+        <say>Ohh! So once we rescue Niobe, she'll be obligated to call off her little war against us. Man, they're gonna be eatin' crow down in Zion for months!</say>
+        <say npc="5">You understand now. You see, you must know when to give, and when to take. I take their Morpheus, I give their Niobe. Ah, I must look like a veritable demigod to those simpletons. They are mine to manipulate as I see fit.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>What did he talk to you about? Was it about the success of my plan? It was, wasn't it? {player}?</finish>
+</mission>

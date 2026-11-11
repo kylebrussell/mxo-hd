@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Office Party, Merovingian story mission 10.3.1. Source: research/missions/transcripts/Merv10-3-1.md (a live run given
+     by Flood, not an archive replay; 26 screenshots: one during play at the end of phase 1, the rest of the Log tab
+     after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and NPC line, and the names. The log's player was Briseus; his name
+     is {player} here. Retail's italics ("count", "not", "respect", "gentleman", "don't", "Another", "am", "you") can't
+     be carried; its "listening to any this" and Boren's drunken "bashtard" are kept. Ours: the description (the
+     Summary tab only said "Datalink established."), every objective text (the Objectives tab only showed "Leave the
+     area now!"), the sites (Andreas Myers's office: Office; Rubi Brandis's and Maxwell Boren's apartments:
+     GenericApt; the drop-off: Normal), the looks (Ookami as in 9.1.2) and the enemy counts: no phase has a fight in
+     the log, so none has hostiles. Andreas Myers, Isabel Overend and Maxwell Boren appear in two places each, so they
+     are two NPCs each (Andreas's second follows the player from the party to the drop-off).
+     Item stand-ins: none.
+     Joins between screenshots are read as contiguous, the cut line at the top of the second matching the first's
+     last line: "has also / been feeding", "does more / than just", "pick up on a / way of getting at", "find out, and
+     / remember", "Andreas Myers's / co-worker", "Okay, okay. Just / don't hurt anyone". Eryn's "during the day." /
+     "It is very interesting." is read as one line with a paragraph break.
+     Rewards: the log shows 22,000 experience and 80,500 information (a level-23 player's live run). These are Zion's
+     chapter 10 values, those of Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information;
+     Blip showed the information, and the Zion file takes the experience from The Spider, 11.1.5). The log's run
+     paid 22,000 experience and 80,500 information (a level-23 player).
+     Gaps: phase 1's goal isn't shown; it completed together with Isabel's and Andreas's party talk, and the player was
+     at the office computer ("Network status: Peach", which isn't shown here), so using that computer is the goal and
+     the talk is its done line. Isabel's and Andreas's next lines (6 seconds later) and Titelbaum's grumble are said
+     when they are clicked afterwards. At the party, Boren's first line and the Operator's "There's always gotta be a
+     hero..." are said on getting near him, his repeat when he is clicked, and the guests' chatter on getting near
+     Rubi. Boren turned hostile (red) when Andreas was talked to, and so he does here (he says "C'mere!" then); nothing
+     shows him fought, so killing him isn't a goal. Retail ended phase 2 with "Goals for this mission phase are complete!"
+     16 seconds after the talk, with no exit; here Andreas is led out, which sends that line, and then follows the player.
+     An Operator line at 12:30:21 at the drop-off wasn't captured and is left out, and so may be one before Flood's phase
+     4 briefing. The drop-off's chatter is said on getting near Eryn, and Ookami's repeated line when he is clicked again.
+     In Boren's apartment his and Anahit's lines and the Operator's came in one second on finding them, and the mission
+     completed 26 seconds later; here finding them is a talk with Boren. -->
+<mission id="310301" title="Office Party" description="Get at Ouroboros network manager Andreas Myers without alerting his company, and bring him in alive." plot="1"
+         order="10301" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Andreas Myers" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="1">Three years uptime! Not too shabby, huh? Watch and learn, stranger!</say>
+  </npc>
+  <npc id="2" handle="Isabel Overend" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+    <say after="1">Hm-hm-hmm... So much to do...</say>
+  </npc>
+  <npc id="3" handle="Earle Titelbaum" type="FRIENDLY" at="1" rsi="d8040058" weapon="0">
+    <say after="1">I just know they're goofing off right now...</say>
+  </npc>
+  <npc id="4" handle="Isabel Overend" type="FRIENDLY" at="2" rsi="61000040" weapon="0" />
+  <npc id="5" handle="Andreas Myers" type="FRIENDLY" at="2" rsi="35000024" weapon="0" />
+  <npc id="6" handle="Maxwell Boren" type="FRIENDLY" at="2" rsi="38000024" weapon="0" hostileAfter="2">
+    <say>Madeline Gajan! Wa-- Wash this!&#10;&#10;Are you washing?</say>
+  </npc>
+  <npc id="7" handle="Madeline Gajan" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="8" handle="Rubi Brandis" type="FRIENDLY" at="2" rsi="34050040" weapon="0" />
+  <npc id="9" handle="Leroy Edson" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="0" />
+  <npc id="10" handle="Eryn" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
+  <npc id="11" handle="Hilton" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="12" handle="Psyche" type="FRIENDLY" at="3" rsi="5a000040" weapon="2568" />
+  <npc id="13" handle="Prymno" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="14" handle="Ookami" type="FRIENDLY" at="3" rsi="a8060090" weapon="2568">
+    <say after="4">A weakling. I'll have to be careful with him.</say>
+  </npc>
+  <npc id="15" handle="Maxwell Boren" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
+  <npc id="16" handle="Anahit" type="FRIENDLY" at="4" rsi="3c000040" weapon="2568" />
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Unless you've been living under a Zionite rock, you know that I discovered that the data flowing through the apparently massive "Oligarch Network" found in the distant Machine no-fly zone has also been feeding into a network here in our very own Matrix. That network is owned by the Ouroboros Corporation, a manufacturer of various and sundry electronic devices. Since it is unlikely that the Oligarch Network is some sort of home-shopping channel for virtual electronic appliances, the obvious conclusion is that the Ouroboros Corporation does more than just provide city vendors with automatic martini shakers and other conveniences.&#10;&#10;Of course, you're not actually listening to any this; you're simply heading at full speed toward the bright green dot on your display.</briefing>
+    <enter><say>Andreas Myers is a network manager at Ouroboros--seems like a good potential source of answers to some of our burning questions. Ouroboros tends to have a pretty heavy security detail at their offices, and we're not supposed to tip our hand just yet, so we're just going to case the joint a little, and see if we can pick up on a way of getting at Andreas Myers without alerting the whole corporation. Normally we'd just wait for him to kick back at home, but Ouroboros even wires up the homes of their important employees.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Hack the computer" type="Use" object="1">
+      <done>
+        <say npc="2">Yep, party at Rubi's tonight, Andreas! Don't let Titelbaum find out, and remember to bring the you-know-what!</say>
+        <say npc="1">No problemo! I've got it covered, cutie.</say>
+        <say>A secret party, eh? Could be just the place to get at Andreas Myers. Too bad we have to tell Flood about it...</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="GenericApt" enemy="Machines" enemies="0">
+    <briefing>Hmph. I'll have you know that I'm always invited to the parties that count, operative; I could care less about those cheap booze-ups you underlings are always wasting your time on.&#10;&#10;The party is being held at the apartment of Andreas Myers's co-worker, Rubi Brandis. She's low enough on the totem that her home is unlikely to be monitored, and blurry eyewitness accounts will only confuse any investigation.&#10;&#10;Don't worry; this won't require any social skill. Break in, make some noise, and get Myers.</briefing>
+    <enter><say>Sweet, we're actually getting paid to do this, this time.&#10;&#10;The code stream I'm seeing here has party written all over it. Should be a snap.</say></enter>
+    <objective goal="2" text="Talk to Andreas Myers" type="Talk" npc="5">
+      <talk><say npc="5">Hey, I didn't know you were coming. You must know Rubi, ri--&#10;&#10;A-hah, verrry funny.&#10;&#10;... You're serious. Okay, okay. Just don't hurt anyone, please.</say></talk>
+      <done><say npc="6">You bashtard! C'mere!</say></done>
+    </objective>
+    <objective goal="3" text="Lead Andreas Myers out of the area" type="Escort" npc="5" to="exit" after="2" />
+    <near npc="6" radius="1000">
+      <say npc="6">Madeline Gajan! Wa-- Wash this!&#10;&#10;Are you washing?</say>
+      <say>There's always gotta be a hero...</say>
+    </near>
+    <near npc="8" radius="1000">
+      <say npc="7">Who am I? Guess! Come on, guess!&#10;&#10;No! Here, watch again...</say>
+      <say npc="4">Oh, come on! He hasn't said anything to you?</say>
+      <say npc="8">Defin-- Definitely not!&#10;&#10;But... I just think it's because he doesn't want it to be--to look like he's taking advantage of his position!&#10;&#10;And I respect that.</say>
+      <say npc="9">No, I'm just...waiting for the right time to make my move.&#10;&#10;It isn't the right time yet.</say>
+      <say npc="8">He's a gentleman.</say>
+      <say npc="4">It's hopeless!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I don't need the details, operative. Just bring him in--alive.</briefing>
+    <enter><say>So far, so good. Drop him off in there, and our job is done.</say></enter>
+    <objective goal="4" text="Take Andreas Myers to Ookami" type="Escort" npc="5" to="npc:14">
+      <done><say npc="14">A weakling. I'll have to be careful with him.</say></done>
+    </objective>
+    <near npc="10" radius="1000">
+      <say npc="10">I work at an office during the day.&#10;&#10;It is very interesting.</say>
+      <say npc="11">Is this a good idea? There are so many moral implications...</say>
+      <say npc="12">Three more of these tonight, and we're already behind schedule.</say>
+      <say npc="13">Another of these?</say>
+    </near>
+  </phase>
+  <phase site="GenericApt" enemy="Machines" enemies="0">
+    <briefing>All fun and games for you, isn't it, operative? Well, maybe you didn't notice, but that drunken brawler you ran into at the "party" wasn't the average bluepill. I've done a little research on your aggressive boyfriend, Mr. Boren, and now I want you to go look around his apartment.</briefing>
+    <enter><say>It's Flood. I'm not even gonna ask.&#10;&#10;Hm... Picking up a couple signals in that apartment.</say></enter>
+    <objective goal="5" text="Look around Maxwell Boren's apartment" type="Talk" npc="15">
+      <talk>
+        <say npc="15">They're after Ouroboros, all right. Hah, I gave that operative a little surprise, though. Bet they didn't expect some nine to fiver to give--</say>
+        <say npc="16">You idiot! What'd you risk your cover for? Veil's gonna--&#10;&#10;Damn! You've been followed!</say>
+      </talk>
+      <done><say>He was a Cypherite?!&#10;&#10;Great, now Flood's gonna gloat...</say></done>
+    </objective>
+  </phase>
+  <finish>Nonsense. There's no need for me to rub it in, {player}; I'm sure the shame of allowing a narcoleptic thug to spy on you is burning your cheeks right now.&#10;&#10;I'm not surprised that the promise of the information we're after within Ouroboros is already attracting unwanted attention; I am a little surprised that someone's actually bothered watching you.</finish>
+</mission>

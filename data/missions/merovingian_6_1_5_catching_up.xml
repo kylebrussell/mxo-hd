@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Catching Up, Merovingian story mission 6.1.5. Source: research/missions/transcripts/Merv6-1-5.md (the archive
+     replay of [Merovingian Archive 6.1.5], given by [Archived]Flood; 25 screenshots: one during play, the rest of the
+     log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Effectuator, Twin, Half Twin and
+     Silver line, and the NPC names. Ours: the description (the Summary tab only said "Datalink established."), every
+     objective text (the Objectives window only showed the client's own "Leave the area now!"), the sites (all Normal;
+     retail's phases 2 and 3 were in Camon Heights), the looks and the enemy count. Silver's Exiles "don't look like
+     ours", an Exile gang, so the enemy is Merovingian as in the merged files. Item stand-in: each Twin Hand Frag is
+     Frags (6785). Flood's "told", the Operator's "are" and the Twin's "Get my brother out of here. I know how to handle
+     Silver." were in italics. Several lines span two screenshots with no header between them and are taken as one
+     entry or as the same speaker's next line (the Operator's "Man, I hope those legs...", "Camon Heights, eh?...",
+     "Got another signal in there...", "Collect the balloon and bring him outside."; the Twin's "Silver! We haven't seen
+     you in ages...").
+     Rewards: the log shows 686,360 experience and 504,000 information (a level-48 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 6's.
+     Gaps: the Operator's "Who are those guys? Wait... You're in Camon..." (11:46:21) was cut off and isn't used; the
+     Operator's entry at 11:52:03 wasn't captured (by its place, the phase's end). The restored Twin walks into
+     Silver's place once the hostiles are dead ("Got another signal in there... it's our boy"); in retail he "ghosted"
+     back to the Effectuator ahead of the player, so another Twin stands in phase 4 from the start. Silver threatens
+     the player and the Twin stays to deal with him; nothing shows Silver being fought, so he is a friendly bystander
+     here and his line and the Twin's answer are said when the Half Twin is talked to. The Operator's "Silver! So he's
+     the one..." is said on getting near him. In retail the Half Twin became the second Twin at the Effectuator's;
+     here the second Twin appears once the Half Twin has been brought, and the Half Twin stays. The Effectuator's line
+     the log repeated three times is said once, and one Effectuator stands for "an Effectuator or two". The Half
+     Twin's "We are growing concerned...", said on the way, is said on reaching the floor. Which Twin said the last two
+     lines wasn't shown: the first is given to the old Twin and the second to the new one. The two hands are never
+     handed over in the log, and aren't here. -->
+<mission id="306105" title="Catching Up" description="Track down the rest of the second Twin with his ailing brother's help." plot="1"
+         order="6105" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say>I tried to cheer him up with twins of myself, but no-go. He's miserable, poor thing. We'll probably just have to take him out back and shoot him.</say>
+  </npc>
+  <npc id="3" handle="Half Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2568">
+    <say>Right of salvage, meatbag--these pieces landed in my backyard. You won't get out of this neighborhood with your tender skin intact.</say>
+  </npc>
+  <npc id="5" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="1">
+    <say>Off you go. We'll catch up.</say>
+  </npc>
+  <npc id="6" handle="The Effectuator" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>We are...not well.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" spawnAfter="1" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Since I assume that you haven't been able to keep track, operative, allow me to remind you that we currently have one Twin fully restored, and the legs and feet of the second.&#10;&#10;Our completed Twin is not happy about this state of affairs; in fact, he's been showing increasing signs of physical illness. To dumb it down for you: at the moment he's useless in a fight. However, he is at least able to help us track down the code signal of his brother's missing parts.&#10;&#10;Go talk to him now. We need the rest of those fragments before everyone in the city starts calling us "Frog Legs," "The Footloose Gang," or something equally humiliating.</briefing>
+    <enter>
+      <say>I'm scanning a Twin, another pair of Twin legs, and an Effectuator or two in there.&#10;&#10;Man, I hope those legs have kicked the Effectuator in his immaterial shins.</say>
+    </enter>
+    <objective goal="1" text="Talk to the Twin" type="Talk" npc="1">
+      <talk><say npc="1">We're in-- Urr...&#10;&#10;Camon Heights.</say></talk>
+      <done>
+        <say>Man, he does look kind of pale. I mean, more than usual. Yeah, I didn't think it was possible, either.&#10;&#10;Camon Heights, eh? I betcha Flood can do a scan and narrow that down for us.</say>
+        <say npc="1">We-- I'll be...right behind you.</say>
+      </done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">I tried to cheer him up with twins of myself, but no-go. He's miserable, poor thing. We'll probably just have to take him out back and shoot him.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We've pinpointed a partial signal in Camon Heights. Try to hurry so that we can put this embarrassing business of missing body parts behind us.&#10;&#10;I told the Merovingian this was a bad idea. But no, he wouldn't listen...</briefing>
+    <enter><say>I've got the partial Twin signal in there; looks clear, otherwise. And the signal looks...dead.</say></enter>
+    <object id="1" kind="Box" />
+    <object id="2" kind="Furniture" />
+    <objective goal="1" text="Search the box" type="Search" object="1" item="6785">
+      <done><say>Oh man, that thing's really dead. And someone just tossed it in that box? What the heck?</say></done>
+    </objective>
+    <objective goal="2" text="Search the supply cabinet" type="Search" object="2" item="6785">
+      <done><say>Eesh, that hand is croaked; even so, is a supply cabinet really the best place for it? Gross.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>I see I have to explain this to you: the limp state of those "dead" hands you found is explained by the fact that they must already have been incorporated into a larger shell. In other words, someone has been putting our Twin together without our permission.&#10;&#10;We've been scanning the vicinity, and have picked up a more active partial Twin signal. The complete Twin has disappeared from the Effectuator's lax supervision, which probably means he's on his way to the remaining pieces of his brother, even though he's currently as weak as a Chopper. So do hurry, operative, or you'll have to answer for the loss of one and a half Twins.</briefing>
+    <enter><say>I've got the partial Twin, and a bunch of Exile programs in there. They don't look like ours. You've got to take them out so they don't hurt the Twin...er...Twins.</say></enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll">
+      <done><say>That's all of the hostiles.&#10;&#10;Got another signal in there--it's our boy. You'd better check up on him.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Half Twin" type="Talk" npc="3" after="1">
+      <talk><say npc="3">Ah... There we are.</say></talk>
+      <done>
+        <say npc="4">Right of salvage, meatbag--these pieces landed in my backyard. You won't get out of this neighborhood with your tender skin intact.</say>
+        <say npc="5">Get my brother out of here. I know how to handle Silver.&#10;&#10;Silver! We haven't seen you in ages, old man. It looks like you've forgotten the terms of our little arrangement. Let's catch up on old times, shall we?</say>
+        <say>I guess he can always just ghost out of there if he needs to. I wonder what he has on Silver?&#10;&#10;Collect the balloon and bring him outside.</say>
+        <say npc="5">Off you go. We'll catch up.</say>
+        <say npc="3">We are ready.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Lead the Half Twin out of the area" type="Escort" npc="3" to="exit" after="2" />
+    <near npc="4" radius="1000">
+      <say>Silver! So he's the one who's been hijacking our Twin!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Get that unsightly thing off the streets and back to the Effectuator immediately. And I'll be holding you responsible if the other one doesn't make it back.</briefing>
+    <enter>
+      <say npc="3">We are growing concerned...</say>
+      <say>I'm scanning the Effectuator in there, the legs, and...hey, looks like the other Twin made it back already.</say>
+    </enter>
+    <objective goal="1" text="Lead the Half Twin to the Effectuator" type="Escort" npc="3" to="npc:6">
+      <done>
+        <say>That makes two Twins. Anyone want to go for triplets?&#10;&#10;Anyway, better see if the new one's okay.</say>
+        <say npc="6">And badda-bing, badda-boom, hey-presto, ka-whammy!&#10;&#10;There.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to the new Twin" type="Talk" npc="8" after="1">
+      <talk><say npc="8">And who might you be?&#10;&#10;Brother! Time for some fun, eh?</say></talk>
+      <done>
+        <say>Sounds like he's just dandy.</say>
+        <say npc="7">We'll have to make up for a little lost time.</say>
+        <say npc="8">Ah. Now it really is like old times.</say>
+      </done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">We are...not well.</say>
+    </near>
+  </phase>
+  <finish>And so the cheat codes are all gone, and we have the pearly white Twins back, and no doubt the days of shoot first, make Flood bail you out later.&#10;&#10;Excuse me, {player}. If you need me, I'll be in the jacuzzi, trying to remember the good old days...like last month, which really wasn't that bad, in retrospect.</finish>
+</mission>

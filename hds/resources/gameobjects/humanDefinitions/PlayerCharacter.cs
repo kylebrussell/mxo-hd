@@ -55,6 +55,11 @@ namespace hds
 			SelfViewUpdate state = entry.State;
 			if (state != null)
 			{
+				if (state.HasPosition && !ControlActions.CanMove(Store.currentClient))
+				{
+					ControlActions.CorrectPosition(Store.currentClient);
+					return entry.End;
+				}
 				#if DEBUG
 				Output.WriteLine("[MPM] Parsing selfview Attributes");
 				#endif

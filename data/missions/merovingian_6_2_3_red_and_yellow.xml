@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Red and Yellow, Merovingian story mission 6.2.3. Source: research/missions/transcripts/Merv6-2-3.md (the archive
+     replay of [Merovingian Archive 6.2.3], given by [Archived]Flood; 19 screenshots, 17 of the log after it ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Twin, Thallia, Mercury,
+     assistant and Blackwood line, the names, and the objective "Talk to Thallia" (the only one shown). Lines split
+     across two screenshots are joined (Flood's second and third briefings, four Operator lines, a Twin's line);
+     Thallia's speech spans three screenshots and is taken as one entry. Ours: the description (the Summary tab only
+     said "Datalink established."), the other objective texts, the sites (Normal; the guards' place and Thallia's in
+     Magog, as the minimap showed, Mercury's in Mara as in 6.2.2), the looks and the enemy count. The Blackwoods are
+     Exiles, so Merovingian. No item was shown.
+     Rewards: the log shows 1,034,000 experience and 504,000 information (a level-48 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
+     Gaps: how the player distracted the Blackwood guards in retail isn't known: the objectives weren't shown, the
+     phase took two minutes and the Twins said "Feel free to use your imagination." The Team chat held five
+     Blackwood lines that aren't in the log and read like answers to someone walking up to them, so here the three
+     guards stand friendly and the distraction is talking to each of them, with those lines as their answers; whether
+     retail said them here or on arrival at Thallia's isn't certain. At Thallia's the Blackwoods were hostile and
+     attacked, though killing them wasn't an objective: they are that phase's hostiles. The Twins move between areas
+     and hold Thallia in retail; here each area has its own Twin NPCs, and their two lines at Thallia's are said on
+     getting near them. Lines said when an NPC was talked to again are on the NPCs (after). Hunter Ackley and Lonny
+     Satnik spoke as the player came in; here they say their lines when talked to. -->
+<mission id="306203" title="Red and Yellow" description="Distract Thallia's Blackwood guards while the Twins take her, then hear what she and Mercury have to say." plot="1"
+         order="6203" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">Feel free to use your imagination.</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>I'm sure you'll think of something.</say>
+  </npc>
+  <npc id="3" handle="Blackwood Duffy" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568">
+    <say after="2">You need help.</say>
+  </npc>
+  <npc id="4" handle="Blackwood Killer" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="Blackwood Elwop" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>Don't worry, we haven't plucked any of her petals yet.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>We've just been getting to know this delicate flower.</say>
+  </npc>
+  <npc id="8" handle="Thallia" type="FRIENDLY" at="3" rsi="780a0058" weapon="2568">
+    <say after="5">You damn Mervs are too busy stuffing yourselves with cake to see what's going on right under all your chins.</say>
+  </npc>
+  <npc id="9" handle="Mercury" type="FRIENDLY" at="4" rsi="4f0a0058" weapon="2568">
+    <say after="6">No, no, Raini's got nothing to do with any of this.</say>
+  </npc>
+  <npc id="10" handle="Hunter Ackley" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say>I wish Mercury would get over Raini. She dumped him ages ago, but he still does whatever she wants him to, hoping she'll take him back.</say>
+  </npc>
+  <npc id="11" handle="Lonny Satnik" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say>Mercury's never forgiven Thallia for telling the Merv about that one time at Le Vrai when he... Well, maybe I shouldn't say.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It would seem that Thallia is up to something with her Blackwoods. We have Mercury to thank for this "hot tip," although if you ask me that only puts him more under suspicion himself.
+
+Nevertheless, Thallia is worth investigating. We have a particular scheme in mind to trap Thallia, {player}, but don't worry, I won't burden your vapid brain with the details. For now, all you have to do is go talk to the Twins.</briefing>
+    <enter><say>I wonder if we could get the Twins to assassinate Flood? He did say some mean things about them before they were fully reconstructed...</say></enter>
+    <objective goal="1" text="Talk to the Twins" type="Talk" npc="1">
+      <talk>
+        <say npc="1">It's really quite simple. We'll find Thallia.</say>
+        <say npc="2">In the mean time, you'll create a distraction for her Blackwood guards.</say>
+      </talk>
+      <done><say>So we're the distraction while the Twins nab Thallia. Eh, gotta take one for the team, I guess.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Magog">
+    <briefing>I trust you can handle being a distraction, {player}? You usually seem capable of doing it without even trying.</briefing>
+    <enter><say>I've got programs in there--those should be our Blackwoods. Figure out what you're going to do to distract them?</say></enter>
+    <objective goal="2" text="Distract Blackwood Duffy" type="Talk" npc="3">
+      <talk>
+        <say npc="3">What are you doing here?</say>
+        <say npc="3">Who said you could come into Magog?</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Distract Blackwood Killer" type="Talk" npc="4">
+      <talk><say npc="4">Nothing. Nothing's going on.</say></talk>
+    </objective>
+    <objective goal="4" text="Distract Blackwood Elwop" type="Talk" npc="5">
+      <talk><say npc="5">You belong in the Blackwood if anyone does.</say></talk>
+    </objective>
+    <complete><say>I'm being told that the Twins have Thallia. You can get out of there.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3" neighbourhoods="Magog">
+    <briefing>Try not to keep the Twins waiting long, operative. They're liable to start cutting pieces off Thallia, and we need her conscious--for now.</briefing>
+    <enter><say>Any bets on Thallia having suddenly lost a few inches?</say></enter>
+    <objective goal="5" text="Talk to Thallia" type="Talk" npc="8">
+      <talk><say npc="8">What the hell do you think you're doing? Since when does the Frenchman interfere with how I conduct business in Magog?
+
+You listened to Mercury? The guy who's been ferrying who knows what out of Tabor's subways? Didn't figure out where they're going, did you? Did it even occur to you that both the yellow and red lines go to Apollyon? Did you ask him about Raini? You know he's never got over her, right? She's using him for some project of her own, as any imbecile with half a brain can see, and I'm stuck right between them.</say></talk>
+      <done><say>Hm... Flood's gonna want to hear this.</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">Don't worry, we haven't plucked any of her petals yet.</say>
+      <say npc="7">We've just been getting to know this delicate flower.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>Damn these scheming Elements! Pay Mercury another visit, and encourage him to be forthcoming about Raini.</briefing>
+    <enter><say>Mercury should be in there. I've got a number of programs on the scanner.</say></enter>
+    <objective goal="6" text="Talk to Mercury" type="Talk" npc="9">
+      <talk><say npc="9">Aw geez, not you again.
+
+Thallia tried to pin this on Raini? Great, there's nothing that witch won't stoop to. Yeah, Raini and I get along pretty well...but she has nothing to do with this! Look, leave her out of it. You've seen how Thallia operates! And I'm sure she's just jealous of how popular Raini is with everyone.</say></talk>
+      <done><say>Oy! I say we just let the Twins have a tea party with the lot of them.</say></done>
+    </objective>
+  </phase>
+  <finish>Mercury doth protest too much, methinks; he's a little too anxious to paint his dear Raini as the picture of innocence. There's something going on there, and I'm going to find out what it is, even if it kills you.</finish>
+</mission>

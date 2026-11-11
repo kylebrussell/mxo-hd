@@ -11,19 +11,18 @@
      the gun barrel Weapon (6811). Rewards: the 368,285 experience and 94,500 information shown right after this
      mission completed.
      Gaps: Coyote hands the three ingredients over in one go in retail; here they are three Gets from him. Each trade
-     is a Talk, a Give of the ingredient and a Get of the part. Phase 3's Exiles burst in after the casing changed hands
-     in retail; here they are on the floor from the start. Elite Guard and Machine Gunman (Team chat only during that
+     is a Talk, a Give of the ingredient and a Get of the part. Phase 3's Exiles burst in once the casing has changed
+     hands, and the kill goal opens then. Elite Guard and Machine Gunman (Team chat only during that
      fight, allegiance not shown) aren't placed. In phase 4 Wong The Exterminator (never seen; "his signature is very
-     faint") isn't placed; Franke waits to be attacked (attacksOnSight="0"), reaching him is an optional Talk that carries
-     his "Die, flesh!", and the gun barrel the Operator says he has is looted from his body (retail's log doesn't show
-     where the barrel was handed over; Agent Wong takes the last ingredient). Agent Wong "pops up" in retail after
-     Franke dies; here he is there from the start and his Talk opens once the barrel is taken. The Operator's 11:34:40
-     line (its middle cut off between screenshots; "they got to Wong The Exterminator" is our best reading) is said on
-     arrival after his 11:36:09 one, whose content comes first. Lines not captured (Coyote 11:24:39, Agent Wilson
-     11:27:03, Agent Wong 11:43:06, the Operator at 11:44:42) aren't said; one fragment of Tyndall's 11:25:04 line was
-     unreadable and is left out. Arago's safe takes the three parts as three Puts. Zion Gunman and Zion Selective
-     Phage were at Arago's location but said nothing we could read; the three Zion NPCs whose lines were in Team chat
-     are placed with them. -->
+     faint") isn't placed; Franke waits to be attacked (attacksOnSight="0"), reaching him is an optional Talk that
+     carries his "Die, flesh!", and the gun barrel the Operator says he has is looted from his body (retail's log
+     doesn't show where the barrel was handed over; Agent Wong takes the last ingredient). Agent Wong "pops up" once the
+     barrel is taken from Franke's body, and his Talk opens then. The Operator's 11:34:40 line (its middle cut off
+     between screenshots; "they got to Wong The Exterminator" is our best reading) is said on arrival after his 11:36:09
+     one, whose content comes first. Lines not captured (Coyote 11:24:39, Agent Wilson 11:27:03, Agent Wong 11:43:06,
+     the Operator at 11:44:42) aren't said; one fragment of Tyndall's 11:25:04 line was unreadable and is left out.
+     Arago's safe takes the three parts as three Puts. Zion Gunman and Zion Selective Phage were at Arago's location but
+     said nothing we could read; the three Zion NPCs whose lines were in Team chat are placed with them. -->
 <mission id="102203" title="The Flit Gun" description="Trade insecticide ingredients to the Machines for the parts of a flit gun." plot="1"
          order="2203" org="1" contact="Tyndall" exp="368285" info="94500">
   <npc id="1" handle="Coyote" type="FRIENDLY" at="1" rsi="000100b4" weapon="2564">
@@ -36,7 +35,7 @@
     <say>Operator, get me an exit! Operator? Hello?</say>
   </npc>
   <npc id="4" handle="Franke" type="HOSTILE" at="4" rsi="c6020058" weapon="2568" attacksOnSight="0" />
-  <npc id="5" handle="Agent Wong" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
+  <npc id="5" handle="Agent Wong" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" spawnAfter="2">
     <say>I suggest that you depart immediately, human. We are unable to guarantee your safety in this sector.</say>
   </npc>
   <npc id="6" handle="Arago" type="FRIENDLY" at="5" rsi="050100b4" weapon="2564">
@@ -75,7 +74,7 @@
       <done><say npc="2">Time is a limiting factor. Take the flit gun handle. Quickly.</say></done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="4">
+  <phase site="Normal" enemy="Merovingian" enemies="4" enemiesAfter="3">
     <briefing>You'll trade the second ingredient for a flit gun casing prototype. Your contact for this exchange is Dobrovoleva. The Exile presence has increased dramatically in your sector, {player}. We don't yet know if they're zeroing in on you, but it looks as though something in the area has caught their attention.</briefing>
     <enter><say>Exiles, shmexiles! They've sure been getting nosy since they killed Morpheus. I'm scanning a signal matching Dobrovoleva's reported profile in there, along with a few others. Looks quiet.</say></enter>
     <objective goal="1" text="Talk to Dobrovoleva" type="Talk" npc="3">
@@ -91,7 +90,7 @@
         <say npc="3">What's that, operator? Exiles? In the building? Aw, crap!</say>
       </done>
     </objective>
-    <objective goal="4" text="Kill the attacking Exiles" type="DefeatAll">
+    <objective goal="4" text="Kill the attacking Exiles" type="DefeatAll" after="3">
       <done><say>That's all the hostiles. You'd better get out of there with the casing prototype.</say></done>
     </objective>
   </phase>

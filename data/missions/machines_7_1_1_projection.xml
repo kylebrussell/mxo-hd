@@ -34,7 +34,7 @@ I had thought you experienced enough to realize this, but I can see that I overe
 This is Agent Pace! I edited this projection's message to illustrate the mutability of data in the Matrix. I hope this has been helpful.</say>
   </npc>
   <npc id="4" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568">
-    <say after="2">This will enable us to turn his connection to his base against him.</say>
+    <say after="10">This will enable us to turn his connection to his base against him.</say>
   </npc>
   <npc id="5" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say display="5">Agent Pace is here for your edification, operative. Do not let this educational opportunity go to waste.</say>
@@ -83,10 +83,10 @@ To extract the origin address, you will implant a special virus in the commando 
       <say>Aha, the terminal in that room should do the trick.</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+    <objective goal="4" text="Search the Computer" type="Search" object="1" item="0">
       <done><say>That's it! Damn, we're good.</say></done>
     </objective>
-    <objective goal="2" text="Kill all of the Commandos" type="DefeatAll">
+    <objective goal="5" text="Kill all of the Commandos" type="DefeatAll">
       <done><say>Aw, all the widdle soldiers faw down, go boom.</say></done>
     </objective>
   </phase>
@@ -97,13 +97,13 @@ To extract the origin address, you will implant a special virus in the commando 
       <say>Access point's in there. Stick the virus in, and watch the magic happen!</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Put the Virus in the Computer" type="Put" object="1" item="6786">
+    <objective goal="6" text="Put the Virus in the Computer" type="Put" object="1" item="6786">
       <done><say>Okay, looks like viral execution is proceeding as expected... The computer should be showing you some kind of result by now.</say></done>
     </objective>
-    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0" after="1">
+    <objective goal="7" text="Search the Computer" type="Search" object="1" item="0" after="6">
       <done><say>Man, that was one efficient virus! Looks like it got the address we needed.</say></done>
     </objective>
-    <objective goal="3" text="Kill all of the Commandos" type="DefeatAll" optional="1">
+    <objective goal="8" text="Kill all of the Commandos" type="DefeatAll" optional="1">
       <done><say>You stopped jerking all over the area, so I guess that means you cleared 'em out, huh?</say></done>
     </objective>
   </phase>
@@ -115,7 +115,7 @@ To extract the origin address, you will implant a special virus in the commando 
 Hm, looks like she's got that holographic projection of the General in there. That thing's gonna be fun at parties.</say>
       <say npc="5">{player} has arrived.</say>
     </enter>
-    <objective goal="1" text="Listen to the projection" type="Talk" npc="3">
+    <objective goal="9" text="Listen to the projection" type="Talk" npc="3">
       <talk><say npc="3">Ciao, tesoro!
 
 This is Agent Pace! I edited this projection's message to illustrate the mutability of data in the Matrix. I hope this has been helpful.</say></talk>
@@ -123,7 +123,7 @@ This is Agent Pace! I edited this projection's message to illustrate the mutabil
 
 The bony old General speaking with Pace's hot Italian voice... Oh man... I'm gonna have bad dreams about this.</say></done>
     </objective>
-    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="4">
+    <objective goal="10" text="Talk to Agent Pace" type="Talk" npc="4">
       <talk><say npc="4">Ah, you found my surprise, {player}!
 
 You see, in the Matrix, once a code structure is understood, it can usually be changed. We have a complete understanding of the General's network protocols, and now we know where his transmissions are coming from. With this information, we should be able to intercept the data he sends in and out of the Matrix, and even modify it if we like, or send our own data over his network!</say></talk>

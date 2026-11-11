@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Heart's Desire, Merovingian story mission 9.2.4. Source: research/missions/transcripts/Merv9-2-4.md (a live run of
+     [Merovingian Archive 9.2.4] by a level 37 player, given by [Archived]Flood; 24 screenshots, one during play in
+     phase 2, the rest of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Emmert, Holographic Projection, Agent Johns and Intruder line,
+     the names, and phase 2's objective text "Search the area" (the Objectives window, with "Leave the area now!",
+     which the client adds). Flood's "He never was any good" had "was" in italics. Ours: the description (the Summary
+     tab only said "Datalink established."), the other objective texts, the sites (all Normal: the Machines' data
+     repository was a small room with a desk and a computer), the looks and the enemy count. Phase 2's hostiles are
+     Machine programs (Machine Enforcers). Emmert and the Holographic Projection (the General's transmission) are each
+     in two places, so each is two NPCs. The Commando is the friendly program that stood by the Intruder ("some
+     program of his"); he said nothing.
+     Rewards: the log shows 396,000 experience and 129,500 information (a level-37 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
+     Gaps: "Search the area" was done at the computer beside Emmert (its screen: a search for "sati", 0 results, isn't
+     shown); here it is a Search of that computer that gives nothing. Agent Johns came in after the search to take
+     Emmert, and the player left; here he arrives when the search is done, hostile but waiting to be attacked, and
+     answers Emmert. Emmert isn't taken away. The Operator's "You're getting close to the commando's signal" and "Might
+     be able to get to something useful from the computer in that room" were said at places on the way; here on getting
+     near Emmert. Emmert's "Good luck, sir!" and the Intruder's "You heard what I said." are said when they are clicked
+     afterwards. The Machine Enforcers' bark ("Security breach, level G.") isn't used. Entries may be missing from the
+     log between 11:27:42 and 11:27:59, 11:29:21 and 11:32:12, and 11:33:09 and 11:33:21. -->
+<mission id="309204" title="Heart's Desire" description="Find the General's old files on Sati for the intruder." plot="1"
+         order="9204" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Emmert" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+    <say after="1">Good luck, sir! I'm sure it must be very important!</say>
+  </npc>
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Emmert" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Agent Johns" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" attacksOnSight="0" spawnAfter="2" />
+  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
+  <npc id="6" handle="Intruder" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
+    <say after="4">You heard what I said.</say>
+  </npc>
+  <npc id="7" handle="Commando" type="FRIENDLY" at="4" rsi="58010058" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General, and some equally suicidal operatives, managed to reach the intruder and discuss Sati with him. Our enraged associate--it appears he's taken an intense dislike to some trick the Machines pulled on him, although of course it shouldn't surprise anyone that they can't be trusted--pointed out to the General that the General's old files should contain plenty of information about Sati, from back when the General held her captive.&#10;&#10;Naturally, such a simple solution hadn't even occurred to the General, and now he's claiming that there's some sort of complication. He's like you, operative: he likes to make things difficult. That's why I'm sending you to go sort out whatever capricious phantom of senility is troubling him.</briefing>
+    <enter><say>I'm picking up one of the General's commando programs in there.</say></enter>
+    <objective goal="1" text="Talk to the Holographic Projection" type="Talk" npc="2">
+      <talk><say npc="2">My old files would have useful data on the Sati program. However, they've all been confiscated by the Machines. We'll have to find out where they're keeping them.&#10;&#10;You saw the commando outside... I don't like expending my men in this way, but we're going to have to use him as bait. The Machines have already been alerted to his presence, and will be here shortly. Once they've captured him, we'll track where they take him. We should be able to count on typical Machine "efficiency" to place him with other data they've captured from me.</say></talk>
+      <done>
+        <say>Ouch. Hard luck for that commando. I guess the General hasn't told him what he's in for.</say>
+        <say npc="2">End transmission.&#10;&#10;You'd better clear out as well, operative. The Machines will be here momentarily.</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Hello, sir! The General will be transmitting in the next room!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>I see the General continues to flatter himself by thinking that he's still at the top of the Machines' "most wanted" list. Yes, I'm sure all his data is neatly tucked into some Machine dustbin somewhere...&#10;&#10;At any rate, they've captured his darling soldier; now I'm supposed to send you in. No, not to rescue him; to get the General's old information on Sati.</briefing>
+    <enter><say>That's where they tracked the commando's signal. These readings look like Machine programs to me. Keep your eyes open for some sort of data repository.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the area" type="Search" object="1" item="0">
+      <done>
+        <say>It looks like data from the General's old access point terminals, but there are gaps... I don't see anything about Sati. If there was anything there about her, it must have been removed.&#10;&#10;Ooh; don't look now, but I think they've sent an Agent in after that commando. Probably a good time to make yourself scarce.</say>
+        <say npc="3">But...sir... Don't you have any orders for me?</say>
+        <say npc="4">Yes. Securing the program.</say>
+      </done>
+    </objective>
+    <near npc="3" radius="2000">
+      <say>You're getting close to the commando's signal.</say>
+    </near>
+    <near npc="3" radius="1000">
+      <say>Hm. Might be able to get to something useful from the computer in that room.</say>
+      <say npc="3">It's great to see you, sir! Are we going to stick it to these Machines now?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Why am I not surprised that the General's information turns out to be useless? He never was any good at anything except battles, and he's been losing his fair share of those ever since he left the Machines to try to go it on his own.&#10;&#10;Well, don't bother me about it, {player}. You'll just have to sort this out with the General somehow.</briefing>
+    <enter><say>The General should be broadcasting in there.</say></enter>
+    <objective goal="3" text="Talk to the Holographic Projection" type="Talk" npc="5">
+      <talk><say npc="5">Hrm... So the Machines have cut up my information--too sensitive to show even to their own programs, probably. Another fine example of suppression of the truth that we can thank them for...&#10;&#10;At this point I think our only recourse is to refer the matter to the intruder. He has command over Machine programs; possibly he can access the missing information.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The intruder is still on the war path against the Machines, but he seems to have settled into a more directed stream of hate, rather than lashing out in all directions as he was doing at first. We've been able to talk to him a little, and to keep track of him. What this means is that you'll be able to go in and try to talk to him, operative, and to give him the General's good news.&#10;&#10;Oh, wait, it isn't good news, is it? Well, possibly the intruder will understand. Alternatively, he may elect to beat you to a pulp. Which will it be? Ah, the suspense!</briefing>
+    <enter><say>I'm reading what's probably the intruder in there... There's another big packet of override code close to him--some program of his, I'd guess.</say></enter>
+    <objective goal="4" text="Talk to the Intruder" type="Talk" npc="6">
+      <talk><say npc="6">Pah! Useless. I'll-- Wait. This girl... She was taken into the outer world by the General... That was the only time? And did she have a body there, or...&#10;&#10;Hm... No... No, she couldn't be it. Bloody hell. This is taking too long. ...&#10;&#10;What I need is a biological interface program. Tell that to your boss. If he can find me one, I'll make him king of this place; Machines be damned.</say></talk>
+    </objective>
+  </phase>
+  <finish>A "biological interface program"? ...&#10;&#10;No, I don't know what that is...but it couldn't be that hard to come up with. If he'd just have mentioned this earlier he'd have saved us a lot of wasted time and effort. We'll find this...whatever it is, and then we'll see just what he's willing to pay for it...</finish>
+</mission>

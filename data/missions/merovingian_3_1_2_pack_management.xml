@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pack Management, Merovingian story mission 3.1.2. Source: research/missions/transcripts/Merv3-1-2.md (the archive
+     replay of [Merovingian Archive 3.1.2], given by [Archived]Flood; 18 screenshots of the log after it ended, none
+     during play). Ookami speaks in the log too; here she is an NPC of phase 2. Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator and Ookami line, and the Dire
+     Lupine Bane and Zion Network Attacker lines from team chat. Ours: the description (the Summary tab was never opened),
+     every objective text (nor was the Objectives tab), the names of the lupine who hands over the card and the lupine at
+     Ookami's door (neither was named: "Lupine Messenger", "Lupine Doorman"), the sites (no building was described: all
+     Normal), the looks and the enemy counts. Item stand-ins (no item name was shown): the business card is Access_Card
+     (6791) and Ookami's directions (also called notes) Document_Location_Notes (6855). Rewards: the log shows
+     79,416,249 experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500
+     information, as Dire Connection paid).
+     Gaps: phase 1's Operator line was cut at the screen's edge after "Hopefully they aren't all"; the next screenshot
+     began with "against us.", taken as its end. About three minutes of phase 1 weren't captured. The second group of
+     lupines "in a room nearby" is read as Ookami's messengers rather than more troublemakers, since they "gave" the card:
+     one friendly lupine hands it over once the troublemakers are dead. The sealed far door at Ookami's can't be sealed
+     here: handing the card to the lupine at the door comes before talking to Ookami, and the Operator's two door lines
+     are said on walking up to him. Flood's phase 3 briefing lost a line or two between "Play along with this for now,"
+     and "operative."; the two pieces are joined. The phase 3 dire lupine hides from the Operator's scans in retail; that
+     is only in the lines, which are said on walking up to him. The base's own dire lupines ("holding them off") are one
+     friendly Dire Lupine Bane standing by; his cut line "Our network mainframe is..." isn't said, and "Why did Ookami
+     send someone so loud?" (team chat, speaker's phase unknown) is his. The Zion fighters are the phase's generated
+     Zionites plus the two named in the log; hostile NPCs' lines don't show on screen here (see Known gaps). -->
+<mission id="303102" title="Pack Management" description="Put down a lupine demand for greater rewards, then answer a summons from Ookami." plot="1"
+         order="3102" org="3" contact="Flood" exp="308000" info="101500">
+  <npc id="1" handle="Lupine Messenger" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="2" handle="Lupine Doorman" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Ookami" type="FRIENDLY" at="2" rsi="a8060090" weapon="2568">
+    <say after="5">You'll help my dire lupines, then? How gallant of you. What a pity that Flood has had you all to himself.</say>
+  </npc>
+  <npc id="4" handle="Dire Lupine Bane" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Dire Lupine Bane" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say display="5">Why did Ookami send someone so loud?</say>
+  </npc>
+  <npc id="6" handle="Zion Network Attacker" type="HOSTILE" at="4" rsi="d8040058" weapon="2568">
+    <say>Where's that mainframe?</say>
+  </npc>
+  <npc id="7" handle="Zion Upgrade Master" type="HOSTILE" at="4" rsi="ec020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Well, well, look who's back. Couldn't get enough of helping out the lupines, could you? You're in luck; I've got more lupine morale-boosting lined up for you.&#10;&#10;Yes, it seems that we've still got some ingrates on our hands who've taken it into their tiny heads to demand increased rewards from the Merovingian. We can't have this sort of impertinence. Go take care of it.</briefing>
+    <enter><say>I'm picking up a pack of lupines in there. Hopefully they aren't all against us.</say></enter>
+    <objective goal="1" text="Kill the troublemaking lupines" type="DefeatAll">
+      <done><say>More lupine signals have just arrived. They're in a room nearby--better see if it's more troublemakers.</say></done>
+    </objective>
+    <objective goal="2" text="Get the business card from the lupine" type="Get" npc="1" item="6791" after="1">
+      <done>
+        <say>I guess we'd better take that card.</say>
+        <say>I should check in with Flood before you go see Ookami. Head outside.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Ookami? I'd wondered where that tramp was lurking. But it's hardly surprising that she's contacted you now, as she's most likely the one behind this little lupine rebellion. I'd have thought that she'd have learned her lesson after the Invalesco debacle. Hm. You may as well go see what she wants; there's no point in lending suspense to this farce.</briefing>
+    <enter><say>Ookami--she's notoriously unpredictable, and makes no secret of the fact that she only cooperates with the Merovingian because he's too powerful for her to defeat. You'd better watch yourself.</say></enter>
+    <near npc="2" radius="1000">
+      <say>The far door is sealed. You'll have to talk your way past those lupines.</say>
+      <say>They probably want that business card that the other lupines gave you.</say>
+    </near>
+    <objective goal="3" text="Give the business card to the lupine at the door" type="Give" npc="2" item="6791">
+      <done><say>You should be able to access that far door now.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Ookami" type="Talk" npc="3" after="3">
+      <talk><say npc="3">Mm, look what the wolves dragged in. I see you've been keeping my lupines on a short leash, operative. And you've been doing a good job... In fact, I want to ask a favor of you. A certain breed of my pack, the "dire lupines," has been assisting one of the Merovingian's henchmen, an eccentric--but useful--program known as the Effectuator. Now I hear that those annoying Zionites have been harassing him. I'd like you to give him a little assistance. You'd do that for me, wouldn't you? Here--take these directions.</say></talk>
+      <done><say>Better nod and smile. Get those notes from her.</say></done>
+    </objective>
+    <objective goal="5" text="Get the directions from Ookami" type="Get" npc="3" item="6855" after="4">
+      <talk><say npc="3">You'll need these directions if you're going to help me, operative.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Effectuator? Why haven't I heard--&#10;&#10;Play along with this for now, operative. If Ookami or the Effectuator are up to something, we'll know soon enough.</briefing>
+    <enter><say>That's the address that Ookami gave you. I suppose we're looking to meet up with some of these "dire lupines" of hers. I'm... There's some kind of weird signal inside. It's intermittent... Are there jammers around there?</say></enter>
+    <near npc="4" radius="2000">
+      <say>You're getting close to that intermittent signal...I think.</say>
+    </near>
+    <near npc="4" radius="700">
+      <say>That's where the signal was coming from, but I don't-- Hey! What is that thing?</say>
+    </near>
+    <objective goal="6" text="Talk to the dire lupine" type="Talk" npc="4">
+      <talk><say npc="4">Hurrr... Easy to sneak up on you, human. We've got more of your kind harassing one of the Effectuator's bases. Ookami said you could lend a hand. I'll get the coordinates to your operator.</say></talk>
+      <done><say>That thing is creepy--it was hiding itself from my scans somehow. I'm getting a data upload... Looks like a coordinate set nearby. I'll put it up on your HUD when you get outside.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>I told the Merovingian that giving the Effectuator his own breed of lupines was a bad idea, but he didn't listen to me. Maybe this little plot of Ookami's will convince him otherwise.</briefing>
+    <enter><say>You're nearing the site. I've got a bunch of redpill signals in there--Zion fighters, from the looks of things. Some of the signals are intermittent... Maybe there are still some dire lupines holding them off.</say></enter>
+    <objective goal="7" text="Kill the Zion attackers" type="DefeatAll" />
+  </phase>
+  <finish>Zion seems to be targeting the Effectuator specifically. His dire lupines don't usually work well with outsiders, so it's actually a bit of luck that Ookami contacted you--though I still suspect that she did so only to get you off the scent of the little lupine rebellion she was fomenting. She seems to have a high estimation of your capabilities... But then, she always was rather stupid.&#10;&#10;I'm going to have to look into this Effectuator security issue. We can't have Zion disrupting his operations.</finish>
+</mission>

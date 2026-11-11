@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Furlough, Merovingian story mission 7.3.1. Source: research/missions/transcripts/Merv7-3-1.md (the archive replay of
+     [Merovingian Archive 7.3.1], given by [Archived]Flood; 18 screenshots of the log after it ended, none during play).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, General, Merovingian and Twin
+     line, the Blood Noble and Commando Team lines, and the names Kaplan and Verdick. Flood's first two briefings, the
+     General's first line, Flood's "Finally..." and the Operator's "both commandos and Machines" span two or three
+     screenshots with no header between them and are taken as one entry each (the line cut under "You'd better" lines
+     up with "remove them. We can't have them", so nothing is missing there). Italics dropped: "monsieur" and
+     "n'est-ce pas". Ours: the description (the Summary tab only said "Datalink established."), every objective text
+     (the Objectives tab was never opened), the Machine program's name (the server's own name for Machine hostiles),
+     the sites (all Normal: no neighbourhood was named), the looks (the General's, the Merovingian's, the Twins', the
+     commandos' and the Blood Nobles' are those of earlier missions) and the enemy counts. No item was shown.
+     Rewards: the log shows 407,000 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: the end of the first area wasn't captured (8:07:45 to 8:10:26); leading Kaplan and Verdick out is ours, from
+     the General's "get them somewhere out of the way". In retail the two were killed by the Machines in the second area
+     ("make it look accidental", then Flood's "Finally."); NPCs don't fight each other here, so they are led to a
+     Machine program and left with it (it is friendly so that killing it first can't leave the goal stuck), and the
+     Machines that came after them are phase 3, in a building of their own, with Flood's "Finally..." as its briefing
+     (retail had one area, with no arrival line for that second wave). The Operator's 8:27:06 entry is one line, his
+     answer to Flood and "That's the spot..." together, and is said on arrival. Nothing was logged for the 14 minutes
+     before the Merovingian spoke. The two Twin lines came 19 and 25 seconds after the Operator's "What? The Merv
+     wants the General back in the Real?" and are said with it, by two Twins (the log only says "Twin"). The General's
+     "We should take separate routes" and "Arrangements will have to be made", and the Merovingian's "We must do
+     everything we can", came after their areas' goals and are said when they are talked to again. The Blood Nobles'
+     and the Commando's Team lines are bystander lines at the meeting; a third Blood Noble's "..." is left out. The
+     "Mission Completed!" entry wasn't captured. -->
+<mission id="307301" title="Furlough" description="Find the General, dispose of two of his commandos, and bring him to meet the Merovingian." plot="1"
+         order="7301" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The General" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Kaplan" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="3" handle="Verdick" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="4" handle="Machine Program" type="FRIENDLY" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="6">We should take separate routes, soldier.</say>
+  </npc>
+  <npc id="6" handle="Commando" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="7" handle="The Merovingian" type="FRIENDLY" at="5" rsi="57050004" weapon="0">
+    <say after="8">We must do everything we can to preserve our valuable ally, n'est-ce pas?</say>
+  </npc>
+  <npc id="8" handle="The General" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568">
+    <say after="8">Arrangements will have to be made for transportation.</say>
+  </npc>
+  <npc id="9" handle="Twin" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568" />
+  <npc id="10" handle="Twin" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568" />
+  <npc id="11" handle="Commando" type="FRIENDLY" at="5" rsi="9b0000b4" weapon="2568">
+    <say>Just a flesh wound... I'll manage, sir.</say>
+  </npc>
+  <npc id="12" handle="Blood Noble" type="FRIENDLY" at="5" rsi="c9020058" weapon="2568">
+    <say>The Oracle's time draws near...</say>
+  </npc>
+  <npc id="13" handle="Blood Noble" type="FRIENDLY" at="5" rsi="9c0000b4" weapon="2568">
+    <say>A shame Sati repaired the weather so quickly. Some of us enjoyed the dark red skies.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>So nice of you to decide to answer the phone, {player}. Enjoying the weather? Allow me to fill you in.
+
+Zion and Seraph rescued Sati. The General has lost his surface base to the Machines, and has fled with his tail between his legs into the Matrix. He's doing his best to get himself deleted, really, and that would be a bit of a waste.
+
+He's doing an even worse job of answering his phone than you are, so I need you to go tap him on the shoulder for us.</briefing>
+    <enter><say>I'm reading a bunch of Exile programs in there. Should be the General and his commandos.</say></enter>
+    <objective goal="1" text="Talk to the General" type="Talk" npc="1">
+      <talk><say npc="1">I'm glad you've arrived, soldier. The Machines are in pursuit. I need to split up my men. I want you to take Kaplan and Verdick here, and get them somewhere out of the way until we work out a rendezvous point.</say></talk>
+      <done>
+        <say contact="1">Do as he requests, {player}.</say>
+        <say npc="1">Take good care of my men, soldier.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Kaplan and Verdick out of the area" type="Escort" npc="2,3" to="exit" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Now take those two somewhere and dispose of them, would you? It isn't as if we can hide all of those commandos of his with the Machines tracking them this closely.
+
+I don't care how you do it, so long as you make it look accidental. Oh, look, I've found you some convenient Machine programs who I'm sure would happily assist.</briefing>
+    <enter><say>I'm reading programs in there--Machines from the looks of it.</say></enter>
+    <objective goal="3" text="Lead Kaplan and Verdick to the Machines" type="Escort" npc="2,3" to="npc:4" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>Finally. Oh, it seems you're attracting more Machine attention. You'd better remove them. We can't have them tracking you all over town, now can we?</briefing>
+    <objective goal="4" text="Kill the Machines" type="DefeatAll">
+      <done><say>Looks like you're in the clear.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="5">
+    <briefing>The Machines are closing in on the General. Catch up with him, operative, and explain that the Merovingian wishes to speak with him about salvaging his remaining forces.</briefing>
+    <enter><say>Looks like we've got both commandos and Machines in there, and I'm betting they aren't just playing bridge together.</say></enter>
+    <objective goal="5" text="Kill the Machines" type="DefeatAll">
+      <done><say>I think you got all of them.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to the General" type="Talk" npc="5" after="5">
+      <talk><say npc="5">The Merovingian? Good. We need to discuss tactics. I'll proceed at once.</say></talk>
+      <done><say>Okay, I'll send him the coordinates. You just worry about getting yourself there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Since you've become such barracks buddies with the General, operative, I'm putting you in charge of making sure that he arrives safely, and behaves himself.</briefing>
+    <enter><say>Just don't let them put a uniform on you. Life expectancy for one of the General's troops has been taking a nosedive lately.&#10;&#10;That's the spot. Bunch of Exile programs on the scope.</say></enter>
+    <objective goal="7" text="Talk to the Merovingian" type="Talk" npc="7">
+      <talk><say npc="7">I'm glad to see that we are in agreement, monsieur. You will be taken to a completely secure, remote location near the surface. This is the sole means by which I can ensure your safety during this crisis. A temporary measure only, of course.</say></talk>
+      <done>
+        <say>What? The Merv wants the General back in the Real?</say>
+        <say npc="9">Too bad the old card won't be sticking around.</say>
+        <say npc="10">Not sure why anyone would want to go there. Sounds dreadfully boring, really.</say>
+      </done>
+    </objective>
+    <objective goal="8" text="Talk to the General" type="Talk" npc="8" after="7">
+      <talk><say npc="8">It's a risky move...but I can't argue with the logic. Machine defenses in the Matrix are too strong right now. They won't be expecting me to return to the Real this quickly.</say></talk>
+      <done><say>Sounds like he's going to play along. At least he can see who's buttering his bread.</say></done>
+    </objective>
+  </phase>
+  <finish>All we have to do now is work out the technicalities of moving him and his programs between the Matrix and your world, and he'll finally be out of my hair. Some programs simply don't belong in here, operative. I don't expect you to understand such things, of course.</finish>
+</mission>

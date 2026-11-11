@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Gathering Storm, Merovingian story mission 4.1.4. Source: research/missions/transcripts/Merv4-1-4.md (the
+     archive replay of [Merovingian Archive 4.1.4], given by [Archived]Flood; 11 screenshots, all taken after it ended,
+     scrolling the log). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood and Operator line, and the names Machine Upgrade Master, Machine
+     Duelist, Machine Physician and Machine Ballista with their lines (Team chat). The player's name (TiAmo) is
+     {player}. Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was
+     never opened), the sites (unnamed buildings: Normal), the looks and the enemy counts. The General's commandos of
+     the first site fight on Zion's side, so they are Zion. The log doesn't say which Machine site the four named
+     Machines were in; two are placed in each. No items. Rewards: the log shows 808,500 experience and 525,000
+     information (a level-50 player's). These are Zion 4.1's values (341,000 experience, 112,000 information, as
+     Demonstration of Force paid).
+     Gaps: the Dire Lupines of the first two sites (the Effectuator's bodyguards) were friendly and died without
+     failing the mission; they had no names or lines and aren't placed. The Effectuator was gone before the player
+     reached him, and we can't make a target vanish: he isn't spawned, and once his site's Machines are dead an empty
+     search of a piece of furniture in the far room is finding him gone. The Operator's "Getting warmer" and "Almost
+     there" came on walking towards that room; they are said when the Machines are dead. Retail may not have required
+     killing them (the player spent three minutes there), but Flood's order was to destroy them. -->
+<mission id="304104" title="The Gathering Storm" description="Save the Merovingian's Exiles from Zion and Machine attacks, and look for the Effectuator." plot="1"
+         order="4104" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Machine Upgrade Master" type="HOSTILE" at="2" rsi="8f080058" weapon="2568">
+    <say>You picked the wrong place, friend.</say>
+  </npc>
+  <npc id="2" handle="Machine Duelist" type="HOSTILE" at="2" rsi="9b000090" weapon="2568">
+    <say>You picked the wrong place, friend.</say>
+  </npc>
+  <npc id="3" handle="Machine Physician" type="HOSTILE" at="3" rsi="8f080058" weapon="2568">
+    <say>Your days are numbered.</say>
+  </npc>
+  <npc id="4" handle="Machine Ballista" type="HOSTILE" at="3" rsi="6e060040" weapon="2568">
+    <say>Your days are numbered.</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Remember when I mentioned raining and pouring? Well, it's turned into a regular deluge now. Time for some damage control!&#10;&#10;We've got an attack in progress on some of our Exiles. Go bail them out.</briefing>
+    <enter><say>There are some Dire Lupines under attack by the General's men in here. Don't let any of those commandos make it out!</say></enter>
+    <objective goal="1" text="Kill all of the commandos" type="DefeatAll">
+      <done><say>Looks like those commandos made short work of the wolves... I didn't realize they were so powerful!&#10;&#10;Anyhow, you can get out of there now.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>That certainly is unfortunate that you didn't save them, {player}. We have another location under attack, by those insipid toasters this time. Perhaps you'll show a little more, ah, initiative this time?</briefing>
+    <enter><say>Machine signals all over the place in there! You've got your work cut out for you.</say></enter>
+    <objective goal="1" text="Kill the Machine attackers" type="DefeatAll">
+      <done><say>Dire Lupines again... aren't they the Effectuator's bodyguards?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>You are beginning to displease me, {player}. I expect more... how should I say... hustle?&#10;&#10;Bah! I have no time to reprimand you properly. The Effectuator is being moved on as we speak. A team of Machine operatives is at his location. Of course there really isn't much to fear, as the Effectuator has his own methods of escape. But we cannot stand for this kind of affront to our people! Go there and destroy the toasters!</briefing>
+    <enter><say>It's always hard to read signals when the Effectuator is involved, you know... you're going to have to look around and find out what's up in there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Kill the Machine operatives" type="DefeatAll">
+      <done>
+        <say>Getting warmer... I'm reading his signal just a bit further on.</say>
+        <say>Almost there. I think he's through the far door.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Find the Effectuator" type="Search" object="1" item="0" after="1">
+      <done><say>Okay, the Effectuator should be right--&#10;&#10;What?!? Gone? I don't think he teleported out... this is not good.</say></done>
+    </objective>
+  </phase>
+  <finish>He's gone.&#10;&#10;This is it. I'm finished.&#10;&#10;I'm finished, do you hear me?!? And all because of your incompetence! I'm taking you down with me, if it's the last thing I do!</finish>
+</mission>

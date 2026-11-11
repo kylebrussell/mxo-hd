@@ -100,11 +100,12 @@ namespace hds
         /// (423 of 542).
         /// </summary>
         public static Shot Fire(Random rng, int attackerLevel, CombatTactic attackerTactic, CombatTacticType attackerType,
-            int defenderLevel, CombatTactic defenderTactic, UInt32 weaponGoid)
+            int defenderLevel, CombatTactic defenderTactic, UInt32 weaponGoid, int attackBonus = 0, int defenseBonus = 0,
+            int damageBonus = 0, double damageInfluence = 0, int toughness = 0)
         {
             Shot shot = new Shot();
             shot.Hit = CombatInterlock.RollHit(rng, attackerTactic, attackerLevel, defenderTactic, defenderLevel,
-                out shot.AttackRoll, out shot.DefenseRoll, attackerType);
+                out shot.AttackRoll, out shot.DefenseRoll, attackerType, attackBonus, defenseBonus);
             if (!shot.Hit)
             {
                 return shot;
@@ -112,8 +113,8 @@ namespace hds
             RangedWeapons.Stats stats = RangedWeapons.GetStats(weaponGoid);
             int baseDamage = stats != null ? Math.Max(1, stats.BaseDamage) : 1;
             float reuse = stats != null ? stats.ReuseSeconds : RangedWeapons.DefaultReuseSeconds(RangedWeapons.AttackClass(weaponGoid));
-            int damage = Damage(rng, DamageBonus(attackerLevel), 0, baseDamage, 0, WeaponSpeed(reuse), attackerTactic, attackerType);
-            shot.Damage = Absorb(damage, attackerLevel, defenderLevel, 0, out shot.Absorbed);
+            int damage = Damage(rng, Math.Max(0, DamageBonus(attackerLevel) + damageBonus), damageInfluence, baseDamage, 0, WeaponSpeed(reuse), attackerTactic, attackerType);
+            shot.Damage = Absorb(damage, attackerLevel, defenderLevel, toughness, out shot.Absorbed);
             return shot;
         }
     }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Poor Winners, Merovingian story mission 5.1.1. Source: research/missions/transcripts/Merv5-1-1.md (the archive
+     replay of [Merovingian Archive 5.1.1], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and Dobrovoleva line, the objective text "Search the computer",
+     and the name Dobrovoleva. Flood called the player by handle ("TiAmo"); that is {player}. Flood's italic "you've"
+     and "lot" are plain text.
+     Ours: the description (the Summary tab was never opened), phase 2's objective text, the objective texts of phase
+     3 (retail had one counted goal, "Search the three computers (1/3)", which is three Search goals here, one per
+     computer), the sites (the first was a Japanese-style apartment room, the others aren't described: all Normal),
+     the looks and the enemy counts. Phase 1's guards were Zionites (Zion Aikido and Karate Grandmasters, a Zion SMG
+     Specialist): Zion. Phase 3's guard was an Agent: Machines. Dobrovoleva is a friendly Zion operative.
+     Rewards: the log shows 808,500 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: the computers showed text popups (Tyndall's ZionOS entry #2634 sending an operative to Dobrovoleva in
+     Sector 32A, subsection D, and three Machine transmissions about Anome, the meeting and the vials); we can't show a
+     computer's text, so the searches give no item and say nothing. The guards' barks ("You! You're not supposed to be
+     here!", "Stop right there!", "You are not authorized to be here!") are the generic hostiles' and aren't set.
+     Dobrovoleva's second line came two seconds after his first, so it is said when his goal is done. -->
+<mission id="305101" title="Poor Winners" description="Dig through Zion and Machine records for the truth about the attack on Niobe." plot="1"
+         order="5101" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Dobrovoleva" type="FRIENDLY" at="2" rsi="d8040058" weapon="2564" />
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>{player}, I can't tell you how long it's been since I've been this happy. I'm sure that by now, even you've heard about this whole little Anome escapade? Delightful, isn't it? The greed, the betrayal... I almost get a little choked up just thinking about it.
+
+And poor, poor Niobe, struck down by one of her so-called allies. I can't think of anything to make this predicament any better.
+
+Well... maybe one thing. I want to know more! More details, more eyewitness accounts! And I know just the person to get them for me. I'm sending you to snoop through some Zion computer records. Be discreet.</briefing>
+    <enter><say>Well, you heard him. Find a computer in here and get the goods on that meeting.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the computer" type="Search" object="1" item="0">
+      <done><say>Sounds like this just got one step stranger!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>My, my, my! Now Niobe is trapped, and Zion can't reach her! I take back my previous statement. This could get better. It could get a lot better.
+
+I think you'd better go pay this Dobrovoleva a little visit. I do hope he proves to be talkative.</briefing>
+    <enter><say>This is where Dobrovoleva is supposed to be. Better get that info off him, however you can.</say></enter>
+    <objective goal="1" text="Talk to Dobrovoleva" type="Talk" npc="1">
+      <talk><say npc="1">Hey, I already talked to somebody about this. The elevator wouldn't go to her floor, the stairs just ended, what more do you need?</say></talk>
+      <done><say npc="1">Who are you, anyway? Tyndall didn't really mention you.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Elevators won't go to the floor, stairs just end; I wouldn't be surprised if a black cat walked by as well. It sounds just like some trick the Machines might pull, but why? What do they stand to gain from shutting Niobe off from the world?
+
+Time to extend your eavesdropping to the Toasters. I've picked out a nice little location for you; take a look at their communication logs and see what they're up to in all this.</briefing>
+    <enter><say>There should be three computers in here. Make sure you check all of them.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <object id="3" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Search" object="1" item="0" />
+    <objective goal="2" text="Search the second computer" type="Search" object="2" item="0" />
+    <objective goal="3" text="Search the third computer" type="Search" object="3" item="0" />
+  </phase>
+  <finish>Looks like a mixed bag there; an obvious statement of fact, some sort of old message, but that one about the vials? Very interesting. No wonder the Machines wanted that case back so bad -- think what someone with more imagination than that fool Anome could do with them!
+
+I would insult you, but I'm simply too happy right now to care. Call me later. I'm sure I'll be able to muster up some sort of abuse.</finish>
+</mission>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inside Job, Merovingian story mission 7.3.3. Source: research/missions/transcripts/Merv7-3-3.md (the archive replay
+     of [Merovingian Archive 7.3.3], given by [Archived]Flood; 24 screenshots: one during play in the third area, the
+     rest of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Campbell, Sau, Chong, Marcel,
+     Raymond and Wasserman line, those names, and the third area's objective texts "Search the Computer" and "Get the
+     Data from the Computer" (the Objectives window, screenshot_39). Flood's first briefing ("returned some necessary
+     data") and last briefing ("I'm making arrangements... Very well.") span two screenshots and are taken as one entry
+     each; the second may have been two Flood entries. Chong's "Touche" had an accent. Wasserman's "Stop fooling around"
+     was in italics.
+     Ours: the description (the Summary tab only said "Datalink established."), the other objective texts (the other
+     areas' objectives weren't shown; the first area's computer uses the third's two texts), the sites (all Normal; the
+     third area was in Midian Park and the fourth in Camon Heights, by the System chat), the looks (Campbell's is the
+     Campbell of The Internuncio; the party-goers' are male looks of other files, Wasserman's a female one) and the
+     enemy counts. Item stand-ins: the assassin's data (the Oracle's address) and Campbell's guard roster are both Data
+     (6787; no item name was shown, every line calls them "the data").
+     Rewards: the log shows 407,000 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: in the first area which of the Operator's two lines went with the computer and which with the data is our
+     guess; retail's alarm there is the area's guards from the start. Campbell is hostile (red icon) and waits to be
+     attacked so he can be talked to; hostile NPCs' lines may not show on screen (see Known gaps). The Operator's line
+     on spotting him is said on getting near him. Log entries between 9:16:29 and 9:19:44 weren't captured, so what
+     the Operator's "That's great, but it doesn't get the door open" answers isn't known; it and Campbell's second line
+     are said when the area completes, and the "massive hostile reinforcements" don't come. In the third area the
+     "incoming" after the data don't come either ("Looks quiet in there": no guards). Entries between 9:22:56 and
+     9:27:44 weren't captured. In the last area retail's player tried the code-word on the party-goers until Wasserman
+     answered "Amber"; here their answers are said when they are talked to, and only Wasserman's talk is a goal. An
+     entry may be missing between Sau's and Chong's lines. Wasserman's "Nice to meet you, stranger" is said when the
+     area completes. -->
+<mission id="307303" title="Inside Job" description="Collect the Oracle's whereabouts from a Zion terminal, spy on her guard captain, steal his guard roster, and pass it to the assassin's backup contact." plot="1"
+         order="7303" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Campbell" type="HOSTILE" at="2" rsi="58010058" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Sau" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say>Fresh!</say>
+  </npc>
+  <npc id="3" handle="Chong" type="FRIENDLY" at="4" rsi="ec020058" weapon="0">
+    <say>Hm. Touche. I'll see you, and raise one Archaeopteryx.</say>
+  </npc>
+  <npc id="4" handle="Marcel" type="FRIENDLY" at="4" rsi="c9020058" weapon="0">
+    <say>You take that back!</say>
+  </npc>
+  <npc id="5" handle="Raymond" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="0">
+    <say>What? No, no. If you want the step, it's elevate...twist...kick...flair. See? Anyone can do it.</say>
+  </npc>
+  <npc id="6" handle="Wasserman" type="FRIENDLY" at="4" rsi="60010058" weapon="0" />
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>That idiot General is finally out of the Matrix, and out of my hair, although his moronic foot-dragging at the station may have cost us the Trainman.
+
+While our Squiddy leader is lying low in that sludge-pit you call a world, operative, we have work to do; the Merovingian still wants the Oracle dead, after all.
+
+The kill-code has already been transferred through the Zion networks to our undercover assassin. This person has returned some necessary data. You will collect it from the Zion terminal at that location.</briefing>
+    <enter><say>Uh-oh... Looks like that place is on alert for some reason.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Use" object="1">
+      <done><say>There goes the alarm...and any cover you might have had left.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="1">
+      <done><say>Okay, get that to a hardline--pronto!</say></done>
+    </objective>
+    <objective goal="3" text="Upload the Data at a hardline" type="Upload" item="6787" after="2" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Mm, yes, Zion may have found out about the transfer of the kill-code into their network. I suppose that might have their network security somewhat on edge.
+
+The data you retrieved included the address where Zion is currently hiding the Oracle. You may be wondering why we don't try a frontal assault. Remember that we only get one shot with the kill-code; an all-out attack would be detected before we could get the Oracle in our sights. It hardly takes magical powers to anticipate such a crude maneuver.
+
+No, I'm sending you there on your own--to reconnoiter. All you have to do is identify--and get a voice print of--the Zion guard captain on duty.</briefing>
+    <enter><say>That's the place. The Oracle's probably in there somewhere. Oh, geez--what if we run into Seraph?&#10;&#10;I'm definitely reading redpills patrolling the area.</say></enter>
+    <objective goal="1" text="Get a voice print of the guard captain" type="Talk" npc="1">
+      <talk><say npc="1">Who's that? Identify yourself!</say></talk>
+      <done><say>All right, got their voice and face recorded. That's all we need.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>The far door is sealed... Aha! And judging by the chevrons, that's got to be the captain on duty: Campbell!</say>
+    </near>
+    <complete>
+      <say npc="1">You're not getting in here without clearance. This is a restricted area!</say>
+      <say>That's great, but it doesn't get the door open...and from the looks of things it's bringing massive hostile reinforcements your way. You need to get out of there.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Midian Park">
+    <briefing>The captain should have access to the roster of the Oracle's guard detail, which our assassin will need, since they'll be posing as one of her guards in order to get close to her.
+
+You'll have to break into Campbell's files. This should be easy, even for you, since our inside team who got the kill-code through their network has already cracked the security at the terminal you're about to access.</briefing>
+    <enter><say>Looks quiet in there. You should have a clear shot at that computer.&#10;&#10;I gotta say, I have a little bone to pick with the "inside team" about tipping off Zion's network security. This whole thing would'a been a lot easier without that security alert at the last terminal.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Use" object="1">
+      <done><say>Ah-ha, there we go. Grab that data, and get outta there.</say></done>
+    </objective>
+    <objective goal="2" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="1">
+      <done><say>Wuh-oh. We just did something they didn't like; you got incoming.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Camon Heights">
+    <briefing>There...do appear to have been some problems with the network sabotage team, {player}. In fact... Ah... They've been caught. Well, that does complicate this somewhat.
+
+Just a moment, please. I'm making arrangements...
+
+Very well. You are to deposit the data with our assassin's backup contact. It's unfortunate that we have to involve them so soon, but...they knew the risks. You'll find the contact at the marked location; they'll respond to the code-word "Pterodactyl" with the countersign "Amber."</briefing>
+    <enter><say>Looks like some kind of Exile party in there. Uh... I'm sure you'll fit right in.&#10;&#10;...&#10;&#10;Maybe spike your hair up a bit.</say></enter>
+    <objective goal="1" text="Find the contact who answers &quot;Amber&quot;" type="Talk" npc="6">
+      <talk><say npc="6">Amber. Watch out you don't get stuck.</say></talk>
+      <done><say>It's her! Wasserman is the contact. Give her the data.&#10;&#10;Unless "Amber" was just a random response... Na-ah... What're the odds?</say></done>
+    </objective>
+    <objective goal="2" text="Give the Data to Wasserman" type="Give" npc="6" item="6787" after="1">
+      <talk><say npc="6">Stop fooling around, and give me the data. What's the big idea with that get-up? Are you trying to blow my cover?</say></talk>
+      <done><say>All right. You should probably...uh...get out of there.</say></done>
+    </objective>
+    <complete><say npc="6">Nice to meet you, stranger. Too bad you couldn't...stick around.</say></complete>
+  </phase>
+  <finish>Well, with any luck that information will give our assassin just what they need to work their way into the Oracle's own guard detail, and then... Pow.
+
+No, operative, I was making a pistol shape with my fingers, and... Oh, never mind.</finish>
+</mission>

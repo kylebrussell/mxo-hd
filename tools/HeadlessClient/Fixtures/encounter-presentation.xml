@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mission id="399905" title="Native Sides and Timers QA" description="Native side-change and timer presentation." plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <npc id="1" handle="Controller" type="FRIENDLY" at="1" rsi="a8060090" />
+  <npc id="2" handle="Defector" type="HOSTILE" at="1" rsi="ec020058" friendlyAfter="1" attacksOnSight="0" />
+  <npc id="3" handle="Turncoat" type="FRIENDLY" at="1" rsi="c9020058" hostileAfter="3" attacksOnSight="0" />
+  <npc id="4" handle="Deadline Marker" type="FRIENDLY" at="2" rsi="a8060090" />
+  <phase site="Normal" leave="0">
+    <briefing>Inspect Defector as hostile, then talk to Controller to change it to friendly. Talk to Defector and inspect Turncoat as friendly before talking to it. Hold out for twenty seconds.</briefing>
+    <objective goal="1" text="Talk to Controller to turn Defector friendly" type="Talk" npc="1" />
+    <objective goal="2" text="Talk to the now-friendly Defector" type="Talk" npc="2" after="1" />
+    <objective goal="3" text="Talk to Turncoat to turn it hostile" type="Talk" npc="3" after="2" />
+    <objective goal="4" text="Hold out for twenty seconds" type="Survive" seconds="20" after="3">
+      <done>
+        <say>Native QA hold-out completed.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" leave="0">
+    <briefing>Allow this twenty-second deadline to expire.</briefing>
+    <objective goal="100" text="Talk to the marker within twenty seconds" type="Talk" npc="4" limit="20" />
+  </phase>
+  <finish>Native encounter QA completed.</finish>
+</mission>

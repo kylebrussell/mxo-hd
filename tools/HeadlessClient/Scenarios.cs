@@ -19,7 +19,18 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
+        new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
+        new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),
+        new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
         new Scenario("login", Login),
+        new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
+        new Scenario("organization-reputation", OrganizationReputation),
+        new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
@@ -33,8 +44,94 @@ public static partial class Scenarios
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
+        new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
+        new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
+        new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
+        new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
+        new Scenario("mission-ticket-completion-retry", MissionTicketCompletionRetry, StillNpcs),
+        new Scenario("merovingian-chapter-samples", MerovingianChapterSamples, StillNpcs),
+        new Scenario("mission-arrivals-and-escort-to-object", MissionArrivalsAndEscortToObject, StillNpcs),
+        new Scenario("mission-waves-sides-and-timers", MissionWavesSidesAndTimers, StillNpcs, "encounter-runtime.xml"),
+        new Scenario("mission-arrival-navmesh", MissionArrivalNavmesh, StillNpcs, "arrival-navmesh.xml"),
+        new Scenario("mission-waves-and-side-switch", MissionWavesAndSideSwitch, StillNpcs),
+        new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
+        new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
+        new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),
+        new Scenario("full-bag-mission-container", FullBagMissionContainer, StillNpcs),
+        new Scenario("full-bag-mission-computer", FullBagMissionComputer, StillNpcs),
+        new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
+        new Scenario("azuna-collector", AzunaCollector, StillNpcs),
+        new Scenario("legacy-inventory-startup", LegacyInventoryStartup, StillNpcs),
+        new Scenario("azuna-collector-full-bag", AzunaCollectorFullBag, StillNpcs),
+        new Scenario("azuna-collector-guards", AzunaCollectorGuards, StillNpcs),
+        new Scenario("azuna-function-data-loot", AzunaFunctionDataLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
+        new Scenario("full-bag-world-loot", FullBagWorldLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
+        new Scenario("retained-corpse-loot", RetainedCorpseLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0",
+            ["MXO_MOB_CORPSE_SECONDS"] = "300", ["MXO_MOB_RESPAWN_SECONDS"] = "600"
+        }),
+        new Scenario("full-bag-tutorial-loot", FullBagTutorialLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "test", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0", ["MXO_TUTORIAL_WARP"] = "21"
+        }),
+        new Scenario("container-and-corpse-loot", ContainerAndCorpseLoot, StillNpcs),
+        new Scenario("pvp-close-combat-to-death", PvpCloseCombatToDeath, StillNpcs),
+        new Scenario("pvp-gunfire", PvpGunfire, StillNpcs),
+        new Scenario("pvp-server-flags", PvpServerFlags, PvpServer),
+        new Scenario("pvp-flag-abilities", PvpFlagAbilities, StillNpcs),
+        new Scenario("duel-to-defeat", DuelToDefeat, StillNpcs),
+        new Scenario("duel-decline-surrender-and-distance", DuelDeclineSurrenderAndDistance, StillNpcs),
+        new Scenario("duelbot-duels", DuelBotDuels, StillNpcs),
+        new Scenario("duelbot-gun-and-pvp", DuelBotGunAndPvp, StillNpcs),
     };
+
+    private static async Task OrderedRpcBurst(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")))[0];
+        const int requests = 64;
+        for (int reputation = 1; reputation <= requests; reputation++)
+        {
+            player.SendChat("?rep mero " + reputation);
+        }
+        await player.WaitUntilAsync(() => player.Received("80 ab 03").Count == requests,
+            "All reputation changes in the burst", TimeSpan.FromSeconds(30));
+        short[] received = player.Received("80 ab 03").Select(record => BitConverter.ToInt16(record.Bytes, 3)).ToArray();
+        Check.Equal(string.Join(",", Enumerable.Range(1, requests)), string.Join(",", received),
+            "Received datagrams are dispatched to the character in arrival order");
+        Check.Equal(64L, await context.Database.LongAsync($"SELECT repMero FROM characters WHERE charId={player.CharId}"),
+            "The final request determines the saved standing");
+    }
+
+    private static async Task OrganizationReputation(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice"));
+        await player.EnterWorldAsync();
+
+        player.SendChat("?rep mero -20");
+        await player.WaitForRpcAsync("80 ab 03 ec ff");
+        player.SendChat("?rep machine 82");
+        await player.WaitForRpcAsync("80 ab 02 52 00");
+        player.SendChat("?rep zion -9");
+        await player.WaitForRpcAsync("80 ab 01 f7 ff");
+        await context.Database.ExecuteAsync($"UPDATE characters SET repCyph=-6, repNiobe=4, repEpn=5, repGM=7 WHERE charId={player.CharId}");
+
+        // A fresh server on the same test database verifies a new login without waiting for UDP timeout.
+        string username = await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING (userId) WHERE charId={player.CharId}");
+        using ServerInstance reloaded = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name);
+        using HeadlessPlayer relogged = await HeadlessPlayer.LoginAsync(reloaded.Address, username, player.Handle);
+        byte[] background = relogged.CharacterData[0x02];
+        Check.Equal("faff5200ecff04000500f7ff0700", WireFormat.ToHex(background[1141..1155]), "Saved reputation in the client order");
+        await relogged.EnterWorldAsync();
+        Check.Equal(0, relogged.World.Problems.Count, "Negative reputation loads into the world");
+    }
 
     // Where data/mob*.csv puts NPCs in the Slums, in both the Debug and Release lists
     private const double NpcX = 24499, NpcY = 495, NpcZ = -1498;
@@ -74,6 +171,23 @@ public static partial class Scenarios
         (HeadlessPlayer alice, _, ViewCreation bob, ViewCreation aliceSeen) = await TwoNearby(context, new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
         Check.That(bob.ViewId > 3, "Server view ids start at 4");
         Check.Equal(alice.CharId, BitConverter.ToUInt32(aliceSeen.Attributes["CharacterID"]), "CharacterID in the other player's spawn");
+    }
+
+    private static async Task LoginWithOrphanedCrewMember(ScenarioContext context)
+    {
+        await context.Database.ExecuteAsync(@"
+INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank,created_at)
+VALUES (9000,'LegacyCrew','CrewStartup',0,3,0,0,NOW());
+INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
+VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("CrewStartup") { CrewId = 9000 });
+        RpcRecord crew = await player.WaitForRpcAsync("80 86", TimeSpan.FromSeconds(15));
+        Check.That(Contains(crew.Bytes, "LegacyCrew") && Contains(crew.Bytes, "CrewStartup"),
+            "Login sends the crew and its existing member despite an orphaned row");
+        await player.EnterWorldAsync();
+        player.SendChat("?rep mero 30");
+        await player.WaitForRpcAsync("80 ab 03 1e 00");
+        Check.That(!context.Server.FullOutput().Contains("Packet handling failed"), "World setup completes without dropping a packet");
     }
 
     /// <summary>
@@ -259,6 +373,29 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 a2 08");
     }
 
+    private static async Task FloodStoryMission(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice") { X = 58800, Y = 2495, Z = 31900 });
+
+        // Margin character data 02 for an existing character. The intro state follows the seven reputation values.
+        Check.Equal((byte)0x07, player.CharacterData[0x02][1155], "Contacts visible on login");
+        await player.EnterWorldAsync();
+
+        player.SendRpc("80 94 05 00 03");
+        RpcRecord header = await player.WaitForRpcAsync("80 95");
+        Check.Equal("8095" + "00000000" + "0500" + "0100" + "00" + "03" + "d2070000" + "380000b4" + "e60d0028",
+            WireFormat.ToHex(header.Bytes), "List header for Flood's first mission");
+        await player.WaitForTextAsync("The End of the Beginning");
+        await player.WaitForRpcAsync("80 97 05 00");
+
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForTextAsync("Eliminate Machine opposition and steal vital info.");
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9c");
+        await player.WaitForTextAsync("I am glad to see that you have decided to take up employment");
+        await player.WaitForRpcAsync("80 9e 00");
+    }
+
     /// <summary>
     /// A neighbourhood contact stands at their static as retail spawned them; using them (80 c7 ... 02 00, as retail's
     /// client sent) gets their list under request number 0 with preview 1 and org 0; one of their generic missions accepts
@@ -296,6 +433,187 @@ public static partial class Scenarios
 
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("80 a2 08");
+    }
+
+    private static async Task MovedMissionItem(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice") { X = 58800, Y = 2495, Z = 31900 });
+        await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions " +
+            "(charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId)); " +
+            $"INSERT INTO char_missions (charId, missionId) VALUES ({player.CharId}, 2201)");
+        await player.EnterWorldAsync();
+        player.SendRpc("80 94 05 00 02");
+        await player.WaitForTextAsync("Watchful Eyes");
+        await player.WaitForRpcAsync("80 97 05 00");
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForRpcAsync("80 99");
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9e 00");
+        player.SendChat("?missionfloor");
+        ViewCreation herschel = await player.WaitForViewNamedAsync("Herschel");
+        player.SendRpc($"80 c7 {Le(herschel.ViewId)} {Le((ushort)herschel.SpawnId)} 0d 00");
+        await player.WaitForRpcAsync("5e 01 00 a9 1a 00 00");
+        player.SendRpc("65 01 00 05 00");
+        await player.WaitForRpcAsync("65 01 00 05 00 00");
+        await context.Database.ExecuteAsync($"INSERT INTO inventory (charId, goid, slot, count) VALUES ({player.CharId}, 7332, 1, 1)");
+        player.SendRpc("80 a6");
+        await player.WaitForRpcAsync("5f 05 00 01");
+        await player.WaitForRpcAsync("80 a2 08");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6825"),
+            "A moved quest item is removed on abort");
+        Check.Equal(7332L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "The replacement item stays in the old slot");
+    }
+
+    private static async Task LegacyInventoryStartup(ScenarioContext context)
+    {
+        await context.Database.ExecuteAsync("SET SESSION sql_mode=''; ALTER TABLE inventory ENGINE=MyISAM, DROP INDEX inventory_character_slot");
+        const string zeroDates = "SELECT COUNT(*) FROM inventory WHERE CAST(updated AS CHAR) LIKE '0000-%' OR CAST(created AS CHAR) LIKE '0000-%'";
+        long originalZeroDates = await context.Database.LongAsync(zeroDates);
+        using ServerInstance restarted = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name, StillNpcs);
+        Check.Equal("InnoDB", await context.Database.ScalarAsync("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory'"),
+            "Inventory is transactional before the restarted server reports ready");
+        Check.Equal(originalZeroDates, await context.Database.LongAsync(zeroDates), "Legacy zero timestamps survive startup migration");
+        Check.Equal(2L, await context.Database.LongAsync("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory' AND INDEX_NAME='inventory_character_slot'"),
+            "Legacy inventory receives the character/slot index");
+    }
+
+    private static async Task AzunaCollector(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
+        {
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
+            Items = new (int, uint, int)[] { (1, 48150, 4), (2, 48150, 5), (97, 48150, 1) }
+        }))[0];
+
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        RpcRecord location = await player.WaitForRpcAsync("81 15");
+        RpcRecord dialog = await player.WaitForRpcAsync("81 13");
+        Check.Equal(51, location.Bytes.Length, "Collector position record");
+        Check.Equal(-146195d, BitConverter.ToDouble(location.Bytes, 18), "Collector window uses Azuna's observed client X");
+        Check.Equal(50682d, BitConverter.ToDouble(location.Bytes, 34), "Collector window uses Azuna's observed client Z");
+        Check.Equal("c3060004c3060004c3060004c0060004", WireFormat.ToHex(dialog.Bytes[18..]), "Azuna's dialogue IDs");
+        Check.Equal(WireFormat.ToHex(location.Bytes[2..18]), WireFormat.ToHex(dialog.Bytes[2..18]), "Collector session");
+        for (int item = 0; item < 10; item++)
+        {
+            RpcRecord row = await player.WaitForRpcAsync("81 14");
+            Check.Equal(48150u, BitConverter.ToUInt32(row.Bytes, 19), "Required Function Data");
+            Check.Equal(item == 0 ? 48149u : 0u, BitConverter.ToUInt32(row.Bytes, 27), "One Surveillance prize");
+        }
+        RpcRecord final = await player.WaitForRpcAsync("81 14");
+        Check.Equal((byte)1, final.Bytes[35], "Last collector record");
+
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 00");
+        Check.Equal(9L, await context.Database.LongAsync($"SELECT SUM(count) FROM inventory WHERE charId={player.CharId} AND goid=48150 AND slot<97"),
+            "A refused trade leaves the bag alone");
+        await context.Database.ExecuteAsync($"INSERT INTO inventory (charId, goid, slot, count) VALUES ({player.CharId}, 48150, 3, 2)");
+
+        // A failed reward insert must roll back the already-executed item consumption.
+        await context.Database.ExecuteAsync("SET SESSION sql_mode=''; ALTER TABLE inventory ADD CONSTRAINT refuse_collector_reward CHECK (goid <> 48149)");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 00");
+        Check.Equal(11L, await context.Database.LongAsync($"SELECT SUM(count) FROM inventory WHERE charId={player.CharId} AND goid=48150 AND slot<97"),
+            "Reward failure rolls consumption back");
+        await context.Database.ExecuteAsync("SET SESSION sql_mode=''; ALTER TABLE inventory DROP CHECK refuse_collector_reward");
+
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("5f 01 00 01");
+        await player.WaitForRpcAsync("5f 02 00 01");
+        await player.WaitForRpcAsync("69 01 03 00 00 00 00 00 00 00");
+        await player.WaitForRpcAsync("5e 01 00 15 bc 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 01");
+        player.SendRpc("81 16 00 00 00");
+
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=3"), "Remainder of the third stack");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=48149"), "Exactly one reward");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=97"), "Worn item untouched");
+    }
+
+    private static async Task AzunaCollectorFullBag(ScenarioContext context)
+    {
+        var items = Enumerable.Range(1, 96).Select(slot => (slot, slot == 1 ? 48150u : NpcLoot.CodeBit1, slot == 1 ? 11 : 1)).ToArray();
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
+        {
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682, Items = items
+        }))[0];
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 00");
+        Check.Equal(11L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "A full bag refuses the exchange without consuming items");
+
+        await context.Database.ExecuteAsync($"UPDATE inventory SET count=10 WHERE charId={player.CharId} AND slot=1");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 01");
+        Check.Equal(48149L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "A full bag can reuse the completely consumed stack's slot");
+        Check.Equal(96L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId}"),
+            "Every other item is preserved");
+    }
+
+    private static async Task AzunaCollectorGuards(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
+        {
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
+            Items = new[] { (1, 48150u, 10) }
+        }))[0];
+
+        // A request with no active dialog and malformed requests cannot consume items.
+        player.World.SendRpcs(WireFormat.FromHex("81 16 00 00 00"),
+            WireFormat.FromHex("80 c8 3d 03 90 28 01 00"));
+        await player.WaitForRpcAsync("81 13");
+        foreach (string payload in new[] { "", "00", "01 00 00", "00 01 00 00", "00 00 00 00" })
+        {
+            player.SendRpc("81 16 " + payload);
+        }
+        player.SendChat("?tp -145195 -55 50682 0 0 0");
+        await player.WaitForTextAsync("Teleported to 0/0");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "Malformed requests leave the data intact");
+
+        // Walking away after opening the collector invalidates an otherwise valid trade.
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 00");
+        Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "The trade checks the current position");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForTextAsync("Move closer to Azuna to trade.");
+        player.SendChat("?tp -146195 -55 50682 0 0 0");
+        await player.WaitForTextAsync("Teleported to 0/0");
+        player.SendRpc("80 c8 3d 03 90 28 01 00");
+        await player.WaitForRpcAsync("81 13");
+        player.SendRpc("81 16 00 00 00");
+        await player.WaitForRpcAsync("81 17 00 00 00 00 01");
+        Check.Equal(48149L, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=1"),
+            "A fresh dialog can exchange normally after a refused trade");
+    }
+
+    private static async Task AzunaFunctionDataLoot(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
+        {
+            District = "dt", DistrictId = 2, X = -146900, Y = 295, Z = 50200, Level = 50
+        }))[0];
+        ViewCreation function = await player.WaitForViewNamedAsync("Override Function", TimeSpan.FromSeconds(15));
+        player.SendChat("?weaken 1");
+        player.SendRpc("3d 01");
+        player.SendRpc($"41 {Le(function.ViewId)} {Le((ushort)function.SpawnId)}");
+        RpcRecord loot = await player.WaitForRpcAsync("81 19", TimeSpan.FromSeconds(30));
+        Check.That(BytePattern.IndexOf(loot.Bytes, WireFormat.FromHex("16 bc 00 00"), 0) >= 0, "Function Data in the loot window");
+        player.SendRpc("81 1f");
+        await player.WaitForRpcAsync("5e");
+        await player.WaitUntilAsync(() => context.Server.DebugLog().Contains("[LOOT] Item 48150 into slot"), "Function Data granted", TimeSpan.FromSeconds(10));
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=48150"),
+            "Function Data is obtained through combat and Take All");
     }
 
     private const byte Team = 3, Crew = 2;
@@ -644,7 +962,7 @@ public static partial class Scenarios
 
     /// <summary>
     /// A bystander sees another player's shots. Retail form, for a player's view (RajkoPacketsNearTheEnd
-    /// PacketsMaraCThenTimeDOut): `7a 00 02 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;`, with the target as the
+    /// PacketsMaraCThenTimeDOut): `7a 00 03 2a 03 01 0c 37 00 10 67 00 5e 00 00 &lt;x y z f32&gt;`, with the target as the
     /// bystander's own view and spawn id.
     /// </summary>
     private static async Task OtherViewGunfire(ScenarioContext context)
@@ -655,7 +973,7 @@ public static partial class Scenarios
         shooter.SendRpc("3d 01");
         shooter.SendRpc($"41 {Le(mobForShooter.ViewId)} {Le((ushort)mobForShooter.SpawnId)}");
 
-        string shot = $"02 2a ?? 01 0c ?? ?? ?? {Le(mobForWatcher.ViewId)} {Le((ushort)mobForWatcher.SpawnId)} 00";
+        string shot = $"03 2a ?? 01 0c ?? ?? ?? {Le(mobForWatcher.ViewId)} {Le((ushort)mobForWatcher.SpawnId)} 00";
         await watcher.WaitForViewUpdateAsync(shooterView.ViewId, shot, TimeSpan.FromSeconds(15));
     }
 

@@ -47,6 +47,26 @@ namespace hds
             }
         }
 
+        /// <summary>The interlock with another player this player is in, and their gunfire at one (docs/PVP.md).</summary>
+        public PvpFight pvpFight;
+        public PvpGunfire pvpGunfire;
+
+        /// <summary>
+        /// Ends what the player is fighting before a fight with another player starts: an NPC fight as if they had left
+        /// it, gunfire at another player, and (unless kept) an interlock with one.
+        /// </summary>
+        public void LeaveOtherFights(bool keepInterlock = false)
+        {
+            // An interlock still up after a fight between players ended comes down before anything new starts
+            PvpFight.RunPendingTeardown(client);
+            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            pvpGunfire?.Stop();
+            if (!keepInterlock)
+            {
+                pvpFight?.End(PvpFight.EndReason.Withdrew, client);
+            }
+        }
+
         /// <summary>
         /// Drops the fight without the combat teardown packets, for a world reload (hardline teleport, Loading Area,
         /// jack-out): the client has already dropped every view, so the teardown would address views it no longer
@@ -54,6 +74,7 @@ namespace hds
         /// </summary>
         public void AbandonCombat()
         {
+            PvpCombat.OnPlayerGone(client);
             CombatSession session = currentSession;
             if (session == null)
             {
@@ -88,6 +109,14 @@ namespace hds
         public void ProcessCombatStance(ref byte[] packet)
         {
             byte mode = packet.Length > 0 && packet[0] != 0 ? CombatantModeReady : CombatantModeIdle;
+            if (mode == CombatantModeIdle)
+            {
+                // The native client's Escape/holster path sends 3d 00, without RPC 44. A ranged attack
+                // must stop here too; holstering must not let a player bypass an interlock withdrawal.
+                pvpGunfire?.Stop();
+                if (currentSession?.Type == CombatSession.CombatType.Ranged)
+                    StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            }
             client.playerInstance.CombatantMode.setValue(mode);
             client.messageQueue.addObjectMessage(ServerPackets.BuildCombatantModeUpdate(mode), false);
             client.FlushQueue();
@@ -146,6 +175,7 @@ namespace hds
             {
                 SendNextMove(session, CombatInterlock.KindNextMoveChanged);
             }
+            pvpFight?.OnTacticChanged(client);
             client.FlushQueue();
         }
 
@@ -189,6 +219,10 @@ namespace hds
         /// </summary>
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId)
         {
+            if (pvpFight != null)
+            {
+                return pvpFight.QueueAbility(client, ability, targetViewId);
+            }
             CombatSession session = currentSession;
             if (session == null || !session.IsActive || session.Type != CombatSession.CombatType.Melee ||
                 session.DefenderMob == null || session.CurrentMove == null || session.GetDefenderViewId() != targetViewId)
@@ -234,6 +268,9 @@ namespace hds
             CombatTactic playerTactic = session.AttackerTactic;
             CombatTacticType playerType = player.playerData.combatTacticType;
             bool stunned = mob.IsStunned(now);
+            bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
+            if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
+            if (!ControlActions.CanUseAbilities(player)) ability = null;
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
             UInt16 playerDamage, npcDamage;
@@ -242,12 +279,16 @@ namespace hds
             lock (roundRng)
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
-                playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType);
-                npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense) && !stunned;
+                playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
+                    AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
+                npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
+                    CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned;
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
-                playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType);
+                playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
+                    AbilityStats.Player(player, 1142), AbilityStats.Toughness(mob, false));
                 playerDamage = (UInt16)Math.Round(playerDamage * mob.IncomingDamageMultiplier());
-                npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer);
+                npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer,
+                    CombatTacticType.Normal, AbilityStats.Npc(mob, 1142), AbilityStats.Toughness(player, false));
                 playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
             }
             session.DefenderTactic = npcTactic;
@@ -467,9 +508,25 @@ namespace hds
         public const UInt32 DefaultAbilityHitFx = 0x280001b7;
 
         /// <summary>
-        /// An attack ability used on the player's current close-combat target hits it. Returns false when the
-        /// target isn't the one being fought (the ability then only costs Inner Strength, as before).
+        /// Apply an ability to its NPC, using the current session when it matches and the shared death/reward
+        /// path otherwise. Area effects and independent DOTs do not replace the caster's current fight.
         /// </summary>
+        public bool ApplyAbilityToNpc(Mob mob, UInt16 viewId, UInt16 damage, UInt32 fxId)
+        {
+            if (mob == null || mob.getIsDead()) return false;
+            if (ApplyAbilityToTarget(viewId, damage, fxId)) return true;
+            mob.HitEnemyWithDamage(damage, fxId);
+            if (mob.getHealthC() == 0 && mob.TryClaimDeath())
+            {
+                mob.setIsLootable(true);
+                mob.isUpdateable = false;
+                new ServerPackets().SendNpcDies(viewId, client, mob);
+                RewardNpcDefeat(client, mob);
+            }
+            client.FlushQueue();
+            return true;
+        }
+
         public bool ApplyAbilityToTarget(UInt16 targetViewId, UInt16 damage, UInt32 fxId)
         {
             CombatSession session = currentSession;
@@ -492,6 +549,7 @@ namespace hds
 
         public void ProcessRequestCloseCombat(ref byte[] packet, bool npcStarted = false)
         {
+            if (!npcStarted && ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects)) return;
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Close combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
 #endif
@@ -499,6 +557,12 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Close combat requested against target: {targetViewWithSpawnId}");
+
+            // Another player: PvpCombat decides whether they can be fought, and PvpFight runs the interlock
+            if (!npcStarted && PvpCombat.TryCloseCombat(client, packet, targetViewWithSpawnId))
+            {
+                return;
+            }
 
             // A 41 (fire) comes with a 40 for the same target; retail didn't answer that 40, and starting close
             // combat here would end the ranged fight the 41 just started.
@@ -517,8 +581,15 @@ namespace hds
                 Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found");
                 return;
             }
+            if (pvpFight != null)
+            {
+                // Locked in close combat with another player: the way out is a withdrawal (44), not an NPC
+                Output.WriteDebugLog("[COMBAT] Close combat with an NPC refused: in an interlock with a player");
+                return;
+            }
 
-            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            LeaveOtherFights();
+            PvpFlag.OnFightStarts(client, false);
 
             // Byte 4 of the request is ForcedInterlock (client.dll's printer for RPC 40); retail answered it with 4e 01,
             // ForcedCombat (4e 00 is what a shot gets).
@@ -591,7 +662,7 @@ namespace hds
             targetMob.SetInCombat(true);
 
             // Send the combat state data (still using hardcoded blob until we understand it better)
-            SendCombatStateBlob(client, theView.ViewID);
+            SendCombatStateBlob(client);
 
             client.FlushQueue();
 
@@ -659,7 +730,16 @@ namespace hds
         /// <summary>
         /// Sends the complex combat state blob (still hardcoded until understood).
         /// </summary>
-        private void SendCombatStateBlob(WorldClient client, UInt16 combatViewId)
+        internal static void SendCombatStateBlob(WorldClient client)
+        {
+            client.messageQueue.addObjectMessage(CombatStateBlob(), false);
+        }
+
+        /// <summary>
+        /// The rest of the combat init record (<see cref="ServerPackets.BuildCombatInitialize"/>): it goes out as the
+        /// next object message and continues that record, so nothing may come between the two.
+        /// </summary>
+        internal static byte[] CombatStateBlob()
         {
             PacketContent pak = new PacketContent();
 
@@ -670,7 +750,7 @@ namespace hds
             pak.AddByteArray(StringUtils.hexStringToBytes(
                 "0703070300bafc42000020c1801baf4200803e40000020c1e0b319430000010013010000f40134059a02233c5200008b0b0024145200008b0b0024262000008b0b00240000000000000000000000000000000021000000700000000010001000000000000000000000000000010000022b600000000000"));
 
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+            return pak.ReturnFinalPacket();
         }
 
         /// <summary>
@@ -787,7 +867,7 @@ namespace hds
         /// <summary>
         /// Inner Strength for a close-combat round: retail's combat.GetInnerStrengthUsed, which only gives Block +10.
         /// </summary>
-        private void ApplyRoundInnerStrength(WorldClient player)
+        internal static void ApplyRoundInnerStrength(WorldClient player)
         {
             byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
             if (isBytes == null || isBytes.Length < 2) return;
@@ -858,63 +938,48 @@ namespace hds
             if (defenderDied)
             {
 
-                // Award experience
-                // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
-                UInt16 mobLevel = session.DefenderMob.getLevel();
-                byte[] killerLevel = session.Attacker.playerInstance.Level.getValue();
-                UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
-                // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
-                bool inTutorial = TutorialMission.Of(session.Attacker) != null;
-                if (!inTutorial)
-                {
-                    PlayerRewards.GrantExperience(session.Attacker, expGained);
-                }
-
-                Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
-
-                MissionRuntime.OnMobDefeated(session.Attacker, session.DefenderMob);
-                UInt32 missionItem = MissionRuntime.LootItemFor(session.Attacker.playerData, session.DefenderMob);
-
-                // Retail's pocket change (rshooks.RunPocketChange): level x 5 x 0..99 info, none in the tutorial
-                Random rand = new Random();
-                UInt32 lootMoney = inTutorial ? 0 : KillExperience.PocketChange(rand, mobLevel);
-
-                // Store pending loot for when player accepts
-                session.Attacker.playerData.pendingLootMoney = lootMoney;
-                session.Attacker.playerData.hasLootPending = true;
-
-                // Loot window: the money, a mission's LOOT item when this mob carries one, and the mob's drops
-                session.Attacker.playerData.pendingLootItem = missionItem;
-                List<UInt32> drops = session.DefenderMob.missionInstance == 0
-                    ? NpcLoot.Roll(mobLevel, rand)
-                    : TutorialMission.Of(session.Attacker)?.DropsFor(session.DefenderMob) ?? new List<UInt32>();
-                lock (session.Attacker.playerData.pendingLootDrops)
-                {
-                    session.Attacker.playerData.pendingLootDrops.Clear();
-                    session.Attacker.playerData.pendingLootDrops.AddRange(drops);
-                }
-
-                List<UInt32> lootItems = new List<UInt32>();
-                List<byte> lootFlags = new List<byte>();
-                if (missionItem != 0)
-                {
-                    lootItems.Add(missionItem);
-                    lootFlags.Add(0x08);
-                }
-                foreach (UInt32 drop in drops)
-                {
-                    lootItems.Add(drop);
-                    lootFlags.Add(0x00);
-                }
-                session.Attacker.messageQueue.addRpcMessage(NpcLoot.BuildLootWindow(lootMoney, lootItems, lootFlags));
-                Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {lootItems.Count} items");
-                // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
-                // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
-                session.Attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();
+                RewardNpcDefeat(session.Attacker, session.DefenderMob);
             }
 
             session.Attacker.FlushQueue();
             currentSession = null;
+        }
+
+        private static void RewardNpcDefeat(WorldClient attacker, Mob mob)
+        {
+            // Award experience
+            // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
+            UInt16 mobLevel = mob.getLevel();
+            byte[] killerLevel = attacker.playerInstance.Level.getValue();
+            UInt32 expGained = KillExperience.ForKill(mobLevel, killerLevel != null && killerLevel.Length > 0 ? killerLevel[0] : 1);
+            // Retail gave no XP or info for the tutorial's fights: its only XP is the 501 from its script
+            bool inTutorial = TutorialMission.Of(attacker) != null;
+            if (!inTutorial)
+            {
+                PlayerRewards.GrantExperience(attacker, expGained);
+            }
+
+            Output.WriteDebugLog($"[COMBAT] Awarded {expGained} experience");
+
+            MissionRuntime.OnMobDefeated(attacker, mob);
+            UInt32 missionItem = MissionRuntime.LootItemFor(attacker.playerData, mob);
+
+            // Retail's pocket change (rshooks.RunPocketChange): level x 5 x 0..99 info, none in the tutorial
+            Random rand = new Random();
+            UInt32 lootMoney = inTutorial ? 0 : KillExperience.PocketChange(rand, mobLevel);
+
+            List<UInt32> drops = mob.missionInstance == 0
+                ? NpcLoot.Roll(mobLevel, rand)
+                : TutorialMission.Of(attacker)?.DropsFor(mob) ?? new List<UInt32>();
+            if (CollectorHandler.DropsFunctionData(mob))
+            {
+                drops.Insert(0, CollectorHandler.FunctionData);
+            }
+            NpcLoot.Drop(attacker, mob, lootMoney, missionItem, drops);
+            Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {drops.Count + (missionItem == 0 ? 0 : 1)} items");
+            // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
+            // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
+            attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();
         }
 
         /// <summary>
@@ -938,6 +1003,7 @@ namespace hds
         /// </summary>
         public void ProcessRangeCombatRequest(ref byte[] packet)
         {
+            if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(client).Effects)) return;
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Range combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
 #endif
@@ -945,6 +1011,12 @@ namespace hds
             UInt32 targetViewWithSpawnId = reader.ReadUInt32(1);
 
             Output.WriteDebugLog($"[COMBAT] Range combat requested against target: {targetViewWithSpawnId}");
+
+            // Another player: PvpGunfire fires for this one
+            if (PvpCombat.TryRangedCombat(client, targetViewWithSpawnId))
+            {
+                return;
+            }
 
             if (IsRangedFightWith(targetViewWithSpawnId))
             {
@@ -972,7 +1044,13 @@ namespace hds
                 return;
             }
 
-            StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
+            if (pvpFight != null)
+            {
+                Output.WriteDebugLog("[COMBAT] Gunfire at an NPC refused: in an interlock with a player");
+                return;
+            }
+            LeaveOtherFights();
+            PvpFlag.OnFightStarts(client, false);
 
             currentSession = new CombatSession(
                 client,
@@ -1025,6 +1103,7 @@ namespace hds
         private bool ResolveRangedShot(CombatSession session, bool firstShot)
         {
             WorldClient player = session.Attacker;
+            if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(player).Effects)) return false;
             Mob target = session.DefenderMob;
             UInt32 weapon = PlayerGun(player);
             rangedNoiseLevel = RangedWeapons.NextNoiseLevel(rangedNoiseLevel, RangedWeapons.Noise(weapon));
@@ -1033,7 +1112,10 @@ namespace hds
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, playerLevel, session.AttackerTactic, player.playerData.combatTacticType,
-                target != null ? target.getLevel() : 1, session.DefenderTactic, weapon);
+                target != null ? target.getLevel() : 1, session.DefenderTactic, weapon,
+                AbilityStats.Attack(player, true), target != null ? AbilityStats.Defense(target, true) : 0,
+                AbilityStats.Player(player, 1139), AbilityStats.Player(player, 171) / 100.0,
+                target != null ? AbilityStats.Toughness(target, true) : 0);
             bool hit = shot.Hit;
 
             byte attackClass = PlayerGunClass(player);
@@ -1091,7 +1173,7 @@ namespace hds
                 }
                 UInt32 targetId = (UInt32)targetView.ViewID | ((UInt32)targetView.spawnId << 16);
                 watcher.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(shooterView.ViewID,
-                    ServerPackets.BuildNpcRangedShot(counter, attackClass, hit, targetId, x, y, z)), false);
+                    ServerPackets.BuildOtherPlayerRangedShot(counter, attackClass, hit, targetId, x, y, z)), false);
                 watcher.FlushQueue();
             }
         }
@@ -1162,7 +1244,7 @@ namespace hds
         private static void NpcClosesIn(CombatSession session)
         {
             Mob mob = session.DefenderMob;
-            if (mob.IsStunned(TimeUtils.GetSimTimeSeconds()))
+            if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects))
             {
                 Output.WriteDebugLog($"[COMBAT] {mob.getName()} is stunned and stays put");
                 return;
@@ -1187,7 +1269,7 @@ namespace hds
         {
             WorldClient player = session.Attacker;
             Mob mob = session.DefenderMob;
-            if (mob.IsStunned(TimeUtils.GetSimTimeSeconds()))
+            if (!ControlActions.CanUseWeapons(TimedEffects.ForMob(mob).Effects))
             {
                 Output.WriteDebugLog($"[COMBAT] {mob.getName()} is stunned and holds its fire");
                 return false;
@@ -1206,7 +1288,8 @@ namespace hds
             byte[] levelBytes = player.playerInstance.Level.getValue();
             UInt16 playerLevel = levelBytes != null && levelBytes.Length > 0 ? levelBytes[0] : (UInt16)1;
             FreeAttacks.Shot shot = FreeAttacks.Fire(rangedRng, mob.getLevel(), session.DefenderTactic, CombatTacticType.Normal,
-                playerLevel, session.AttackerTactic, mob.getWeapon());
+                playerLevel, session.AttackerTactic, mob.getWeapon(), AbilityStats.Attack(mob, true), AbilityStats.Defense(player, true),
+                AbilityStats.Npc(mob, 1139), AbilityStats.Npc(mob, 171) / 100.0, AbilityStats.Toughness(player, true));
             bool hit = shot.Hit;
 
             mob.rangedActionCounter++;
@@ -1304,7 +1387,18 @@ namespace hds
         /// </summary>
         public void ProcessLeaveCloseCombat(ref byte[] rpcData)
         {
+            if ((pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee) &&
+                !ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
             Output.WriteDebugLog("[COMBAT] Leave combat requested");
+
+            // Against another player: gunfire just stops; an interlock is left the way retail let a player leave one
+            // with an NPC, by a withdrawal tried at each round
+            if (pvpGunfire != null || pvpFight != null)
+            {
+                pvpGunfire?.Stop();
+                pvpFight?.RequestWithdraw(client);
+                return;
+            }
 
             // Withdraw in close combat (44 01): retail tried it at each round until it succeeded, the fight going on
             // meanwhile (actions_combat_marketplace_abilitychangecoder 10:38:03: three failed rounds, then 0x200 at

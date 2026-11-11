@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quia Superbis Resistis, Merovingian story mission 7.3.5. Source: research/missions/transcripts/Merv7-3-5.md (the
+     archive replay of [Merovingian Archive 7.3.5], given by [Archived]Flood; 36 screenshots: five during play at the
+     computers of the second and third areas, the rest of the log after it ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Merovingian, Twin, Shalonda
+     Lagenour, Tisa Nyhart, office worker, Holographic Projection and Malphas line, those names, and the second and
+     third areas' objective "Search the Computer" (the Objectives window showed it in both). Entries that span two
+     screenshots are read as contiguous. Italics dropped: "Allez!", "Malphas!", "mon ami", "Certainement, monsieur le
+     General" and "n'est-ce pas?"; "General" there had an accent in the log. Ours: the description (the Summary tab only
+     said "Datalink established."), the first and last areas' objective texts (never shown), the sites (Normal, but the
+     media center is Office, its staff talking of "the office"; the second and third areas were in Tabor Park by the
+     minimap, and the end spot's minimap read "Tabo...", so the last area prefers it too), the looks (the Merovingian's,
+     the Twins', Malphas's and the hologram's are those of earlier missions; the data-center and media-center staff
+     have stand-in looks by sex) and the enemy counts (no fight in the log). No item: neither computer gave one (the
+     first sent an encoded message, the second opened a listen port).
+     Rewards: the log shows 406,815 experience and 133,000 information (a level-38 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: the Operator's entry after the Merovingian's first line (10:11:02) wasn't captured, so talking to him has
+     no done line (very likely it was the standard goals-complete line). An entry before Shalonda Lagenour's "No, no
+     guards" may be missing; her line and Tisa Nyhart's (said twice) are said when they are talked to, as both were
+     targeted. In retail Machines came for the data center after its goal ("Machine signals headed your way") and its
+     staff were lost off-log; here nothing comes, and Shalonda's and Tisa's last lines are said when the area's goals
+     complete. Flood's third briefing may be missing a line between its two paragraphs. The Twins' lines in the first
+     and last areas came on approach and are said on getting near the Merovingian, and again when each Twin is talked
+     to. In the media center the Operator's "Nope, wrong machine" came after using a computer in Rudy Hunter's and
+     Tiffiny Journey's office; with one computer here, it is said after their exchange on getting near Rudy Hunter.
+     The four pairs of office workers talk on getting near them (the last two pairs spoke after the goal). In the last
+     area which goals there were isn't known: the Merovingian's speech and the hologram's reply are said on talking to
+     the Merovingian, and Malphas's line, which came with the goals' completion, on talking to Malphas. The hologram's
+     "..." (Team chat only, not captured in the log), Malphas's "A Sentinel force..." and the Merovingian's "There are
+     times..." are said when they are talked to again. -->
+<mission id="307305" title="Quia Superbis Resistis" description="Set up a relay so the Merovingian can speak to the General, and be there when the General's broadcast comes in." plot="1"
+         order="7305" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">Eh? Why are you still here? Allez!</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>He's got a lot on his mind, mate.</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>Ah, well. She can't stay lucky forever.</say>
+  </npc>
+  <npc id="4" handle="Shalonda Lagenour" type="FRIENDLY" at="2" rsi="34050040" weapon="0">
+    <say>No, no guards--we're trying to stay under the radar. That's really all you can do when the Machines are on the warpath--if you want to stay alive, anyway.</say>
+  </npc>
+  <npc id="5" handle="Tisa Nyhart" type="FRIENDLY" at="2" rsi="60010058" weapon="0">
+    <say>It's a very low-power signal. It can't be used for real-time communication, but it's ideal for small messages that you don't want anyone to notice.</say>
+  </npc>
+  <npc id="6" handle="Rudy Hunter" type="FRIENDLY" at="3" rsi="38000024" weapon="0" />
+  <npc id="7" handle="Tiffiny Journey" type="FRIENDLY" at="3" rsi="5a000040" weapon="0" />
+  <npc id="8" handle="Brittanie Xander" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
+  <npc id="9" handle="Izola Smith" type="FRIENDLY" at="3" rsi="60010058" weapon="0" />
+  <npc id="10" handle="Natalie Hoyos" type="FRIENDLY" at="3" rsi="5a000040" weapon="0" />
+  <npc id="11" handle="Angelic Oyler" type="FRIENDLY" at="3" rsi="34050040" weapon="0" />
+  <npc id="12" handle="Clarencia Overend" type="FRIENDLY" at="3" rsi="60010058" weapon="0" />
+  <npc id="13" handle="Brittaney Myers" type="FRIENDLY" at="3" rsi="5a000040" weapon="0" />
+  <npc id="14" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="5">There are times, mon ami, when it is necessary to take matters in hand. Certainement, monsieur le General has been...disappointing, but I think you must agree that as the head of a squadron under our command outside the Matrix, he may still have his uses, n'est-ce pas?</say>
+  </npc>
+  <npc id="15" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Shh!</say>
+  </npc>
+  <npc id="16" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>We're expecting fireworks.</say>
+  </npc>
+  <npc id="17" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
+    <say after="5">...</say>
+  </npc>
+  <npc id="18" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="5">A Sentinel force of our own opens up a number of...strategic possibilities, as the General might have said.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>One hates to say "I told you so," so I'll just settle for giving you the news, in case you've been even more oblivious than usual for the past week.
+
+The kill-code attempt on the Oracle by an Elite Commando failed. That brat known as "The Kid" took the bullet, trying to play the hero. It doesn't appear to have killed him, unfortunately, but we can hope.
+
+The Merovingian is not in the best of moods. So, you'll be pleased to know that I'm sending you to him to carry out a task of some kind. Avoiding eye contact might help.</briefing>
+    <enter><say>That's where you're meeting the Merv. Hope we can get out of this in one piece.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">Oh, it's you. Yes, I want you to set up a relay to the General. I have something to speak with him about. Flood will know what you must do. Go.</say></talk>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">He's got a lot on his mind, mate.</say>
+      <say npc="3">Ah, well. She can't stay lucky forever.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Hmph. We had a relay set up to reach the General in the outside world, but it stopped working. I suspect that one of his Sentinels managed to give away its position. We're working on one they can't possibly get at, but I see the Merovingian wants a rush job in the meantime, with the usual risk of loss of life to his loyal followers. Then again, since it's just you, I have no real qualms about it.
+
+You'll have to establish contact via our low-band channel in order to tell them the frequency to use for the emergency broadcast. This channel can't transmit much data, but it is hard to detect. You can use it to send an encoded message from the data center you see marked on your map.</briefing>
+    <enter><say>The data center's in there--computer signals and a few low-level programs on my screen.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1">
+      <done><say>All right, that should be all you need to do there, so--&#10;&#10;Uh, so yeah, get out of there, fast. I've got Machine signals headed your way!</say></done>
+    </objective>
+    <complete>
+      <say npc="4">Oh no!</say>
+      <say npc="5">Wait, what about us?</say>
+    </complete>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>Another loss to add to the tab... Oh, well, there's a reason we keep those centers low-budget.
+
+Assuming that the General receives the notification, he'll attempt to broadcast to a receiver, which you will configure now. As the Machines will almost certainly detect this transmission and cut it off as soon as they are able, you're simply going to hack a civilian media center.</briefing>
+    <enter><say>Okay, you have to find the right terminal inside. Once you punch in, I'll be able to run the script that will override their system when it detects the General's signal.&#10;&#10;Just a bunch of blues on my screen. Should be a piece of cake.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Search the Computer" type="Search" object="1">
+      <done><say>Easy-peasy! I'll take care of getting the override script set up on that thing.</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">That's just about the stupidest thing I've ever heard, Tiffiny. What the hell gave you that idea?</say>
+      <say npc="7">Well, there was that guy who jumped from that building in Creston... I checked, and his mom was a jumper, too. So, you know, I figured it could be hereditary.</say>
+      <say npc="6">I can't believe we pay these people.</say>
+      <say npc="7">I think I'm onto something here. I'm not gonna drop this just because Hunter doesn't know what real research is.</say>
+      <say>Uh... Nope, wrong machine.</say>
+    </near>
+    <near npc="9" radius="1000">
+      <say npc="8">So I was like "Gah..." and he was like "Duh..."</say>
+      <say npc="9">Totally!</say>
+      <say npc="9">Hm? Oh, nothing. We were just laughing about the, um...joke email from last week. Funny, huh?</say>
+      <say npc="8">Can I help you?</say>
+    </near>
+    <near npc="10" radius="1000">
+      <say npc="10">I think we need to work the gun control thing. Deaths by firearms are up 89% in the last two years! Come on, that's huge!</say>
+      <say npc="11">Old news, Angelic. Nobody cares about handguns anymore. Get me biological warfare, dirty bombs--WMD anything, for crying out loud!</say>
+      <say npc="10">This city is going straight to the dogs.</say>
+      <say npc="11">I need a story with some zing! Nobody cares about the small stuff anymore.</say>
+    </near>
+    <near npc="12" radius="1000">
+      <say npc="12">Did you ever get the feeling like...like this is all just a big TV show someone else is watching?</say>
+      <say npc="13">This is a TV show. That's our job.</say>
+      <say npc="12">That wasn't what I meant... Oh, what's the use.</say>
+      <say npc="13">I really need to start getting out of the office on my lunch breaks.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Tabor Park">
+    <briefing>If you haven't screwed something up--and that is no minor caveat--the General should be in touch shortly. As the Machines are monitoring frequencies vigorously at the moment, it will likely be a short broadcast, so you'd better hurry if you're going to be there to catch it for the mission report you owe me.</briefing>
+    <enter><say>That's the place. I'm not detecting any unusual transmissions, so hopefully you're still in time for the show.</say></enter>
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="14">
+      <talk>
+        <say npc="14">Your commando failed me, General, and this is the last failure I am inclined to tolerate from you. I am taking direct command of your Sentinels. You will find that for you, failure is quite literally no longer an option.&#10;&#10;Malphas! Initiate the override program!</say>
+        <say npc="17">Don't be ridiculous. You have no command over us here. Be glad that I--&#10;&#10;...</say>
+      </talk>
+    </objective>
+    <objective goal="5" text="Talk to Malphas" type="Talk" npc="18" after="4">
+      <talk><say npc="18">We took the liberty of inserting override routines when we transferred the General and his commandos out of the Matrix. Now that we have activated these routines, the commando Sentinels are programmatically compelled to obey instructions from the Merovingian. It should make them significantly easier to manage.</say></talk>
+    </objective>
+    <near npc="14" radius="1000">
+      <say npc="15">Shh!</say>
+      <say npc="16">We're expecting fireworks.</say>
+    </near>
+  </phase>
+  <finish>Yes, well, it's about time. I was for simply deleting the old fool, but as usual my irrefutable logic was overlooked. He's an obsolete program known only for incompetence.
+
+Bah! At least he's out of the city for good.</finish>
+</mission>

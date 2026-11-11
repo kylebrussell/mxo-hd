@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Battery, Merovingian story mission 8.1.5. Source: research/missions/transcripts/Merv8-1-5.md (the archive replay
+     of [Merovingian Archive 8.1.5], given by [Archived]Flood; 31 screenshots of the Mission window's log after it
+     ended, none during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Nicky G., Merovingian, Raini,
+     Silver, Twin and Malphas line, and those names. Two entries span screenshots with no overlapping line and are
+     read as contiguous with a paragraph break: the Merovingian's "or so the story goes. / This was, of course" and
+     "and efficient? / Malphas! Take a note!". Italics dropped: "mon ami", "insists", "is", "I", "non?", the
+     Merovingian's whole "Malphas! Take a note! ..." paragraph, and "something". The player's name (Variel) is {player}.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; Flood names Apollyon for Raini and Camon for Silver, so those
+     phases prefer Apollyon and Camon Heights), the looks (as in earlier missions: Nicky G. and Raini as in 6.2.4) and
+     the enemy count. No item was shown.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: six minutes of phase 2 weren't captured (6:27:21 to 6:33:38): the far door was sealed, then "The lock on the
+     far door just disengaged." and Raini answered a minute later. What opened the door isn't known; here killing
+     Raini's 5 Points gang (the Operator warned of them) unlocks it, and talking to Raini opens after that. Raini's
+     "Oh, poo! You're no fun. All right, all right..." answers something said in the gap. The Operator's "The far door
+     is sealed" (14 seconds after arriving) is the second arrival line. An Operator entry after "Raini and Silver, oh
+     joy." wasn't captured (very likely the standard goals-complete line). Nicky G.'s "Wonderful timing..." and the
+     Twins' two lines came seconds after arriving and are said on getting near the Merovingian; both Twin entries are
+     headed "Twin", so whether one or both spoke isn't known (one line each here). Lines that came after an area's
+     goals were done (the Merovingian's "They are experts", Nicky G.'s, Raini's, Silver's, the Merovingian's "Perhaps
+     you wonder why" and Malphas's "It will not be an easy matter") are said when they are talked to again. -->
+<mission id="308105" title="Battery" description="Ask Raini about the Machines' fusion power and Silver about the human body's energy, for the Merovingian." plot="1"
+         order="8105" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="530a0058" weapon="0">
+    <say after="1">Raini's a dumb kid; no surprise the Machines didn't keep her around.</say>
+  </npc>
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">They are experts in their fields, mon ami. Their opinions will be most useful.</say>
+  </npc>
+  <npc id="3" handle="Raini" type="FRIENDLY" at="2" rsi="560a0058" weapon="0">
+    <say after="3">Not that I'd go back to the Machines if they switched back to fission or anything. Hah! No more working for The Man for this girl!</say>
+  </npc>
+  <npc id="4" handle="Silver" type="FRIENDLY" at="3" rsi="750a0058" weapon="2568">
+    <say after="4">Oh, the simulated bodies to which I have access in this place are quite accurate enough for me to judge, I assure you. Machine knowledge of your pitiful organism is incredibly thorough. They know you better than you'll ever know yourselves--thus their complete disregard for you as animals worthy of being allowed to walk about freely, you see.</say>
+  </npc>
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="5">Perhaps you wonder why I am so fascinated by this, {player}? But it is no mystery; power is both the means and the end of this game we play...and I mean to play it to the end.</say>
+  </npc>
+  <npc id="6" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="5">It will not be an easy matter; those areas are almost certainly heavily monitored. His Sentinels can be identified as rogue by sufficiently thorough scrutiny.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Pah. She probably looked all that up on the network just before you arrived.</say>
+  </npc>
+  <npc id="8" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Ah, I'd have liked to have had another...chat with Silver.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian has a bee in his bonnet, {player}, and you know how he gets when he latches onto an idea.
+
+This one is a little more complicated than his usual, and will require a certain amount of research. I realize that multi-syllabic words frighten you, but have no fear; all you need do is ask the right questions of the right people. I suppose even you can handle that, hm?
+
+The Merovingian himself will explain the details of his latest obsession to you.</briefing>
+    <enter><say>He's been talking to the Oracle, and I hear he's even talked to the Morpheus simulacrum lately. What's he got on his mind?&#10;&#10;That should be the spot. No hostiles on my screen.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="2">
+      <talk><say npc="2">The mechanical Morpheus told me a fascinating tale of nuclear fusion and human batteries: such is the way in which the Machines power this world of ours--or so the story goes.&#10;&#10;This was, of course, widely known, as it is a tale Zion likes to tell to every human they "rescue" from the pods. It is curious, however, that no real source is known. Are we to take Morpheus' word for it? Hm.&#10;&#10;I am not so trusting as that. You will question Raini about this "fusion" story, and then ask Silver about the energy potential of the human body. I will be most interested to hear what they have to tell you.</say></talk>
+      <done><say>Raini and Silver, oh joy.&#10;&#10;Well, might as well get this over with.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="1">Wonderful timing...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5" neighbourhoods="Apollyon">
+    <briefing>The usual story about Raini is that she was a program used in nuclear fission reactors, before the Machines started milking you humans for power. She was kicked aside at that point, so she wouldn't have direct knowledge of the fusion power that the Machines have supposedly developed--according to the old Morpheus story--but she might have some idea of its general scope.
+
+She is...extremely flighty, to say the least. You'll find her at one of her usual party spots in Apollyon.</briefing>
+    <enter>
+      <say>Raini should be in there. I'm reading unregistered Exile signals. Don't forget that she usually has some of her 5 Points gang hanging around.</say>
+      <say>The far door is sealed. I don't see any obvious way to open it.</say>
+    </enter>
+    <objective goal="2" text="Kill the 5 Points" type="DefeatAll">
+      <done><say>The lock on the far door just disengaged.</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Raini" type="Talk" npc="3" after="2">
+      <talk><say npc="3">Oh, poo! You're no fun. All right, all right...&#10;&#10;Lemme tell you, anyone who talks up fusion is usually a pipe-dreamer. Yeah, so fusion of deuterium produces more power than fission of an equivalent amount of uranium, results in less radioactive waste... But do you know what it takes to get fusion to work? You've got to hit the Lawson triple product, you need some kind of containment: plasma, or magnetic, maybe...&#10;&#10;Well anyway, it isn't easy! I don't see why the Machines would go with fusion over fission--it's not like they're worried about polluting or anything.</say></talk>
+      <done><say>Huh! I guess she wasn't always such an airhead.&#10;&#10;All right, now we gotta go talk to everyone's favorite creepoid, Silver.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Camon Heights">
+    <briefing>I think I need hardly remind you of Silver's eccentricities, {player}. You'll find him in Camon, no doubt knee-deep in some ghastly experiment or other. I wouldn't mind, as long as he kept such things to himself, but he insists on making dinner conversation out of them! It's simply unbearable.
+
+Nonetheless, he would know as well as anyone what may be the energy-producing capacity of the human body, and how feasible a power source your feeble frames actually are.</briefing>
+    <enter><say>That should be Silver's pad. I've got the expected Exile signals on my screen.</say></enter>
+    <objective goal="4" text="Talk to Silver" type="Talk" npc="4">
+      <talk><say npc="4">No, no, no... It doesn't matter what kind of fusion they may have come up with; even if it does utilize some type of biological reaction, there's no getting around the fact that the most perfectly--and I use that term relatively--conditioned human body is only about twenty-five percent energy-efficient; the units dredged out of the pods can hardly be said to be in peak physical condition. Even if they could siphon off most of the energy produced--and I think we can admit that they must save most of the twenty percent of it normally used for brain function--they're still losing a significant amount of power in your flabby carcasses!</say></talk>
+      <done><say>Huh. And then there's all the power that must go into running the Matrix, and the pod systems. It is kind of weird when you think about it like that.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I'm sure I don't care, operative; I'll hardly be shocked if it turns out that the Machines and-or Morpheus have been telling tall tales just to manipulate susceptible humans. Honestly, why your kind constantly assumes that anyone ever tells you the truth is beyond me.</briefing>
+    <enter><say>The Frenchman ought to be in there, eagerly awaiting your findings.</say></enter>
+    <objective goal="5" text="Talk to the Merovingian" type="Talk" npc="5">
+      <talk><say npc="5">Hm... Now, this is interesting, non? It becomes a question not only of what they are doing, but why. If they do use humans and this mysterious fusion, as is generally believed, then why do they do so, when they could use something so much more simple and efficient?&#10;&#10;Malphas! Take a note! We will have the General send some of his Sentinels to scout the fabled "fields" and pods. Let us see for ourselves what the Machines are up to, eh?</say></talk>
+      <done><say npc="6">I will see to it that the General is so instructed.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say npc="7">Pah. She probably looked all that up on the network just before you arrived.</say>
+      <say npc="8">Ah, I'd have liked to have had another...chat with Silver.</say>
+    </near>
+  </phase>
+  <finish>Oh, yes, lovely. Maybe they'll send back pictures where they're standing in the fields, waving their tentacles, with the caption "Wish You Were Here!"
+
+All just another of the Merovingian's wild code chases...
+
+Hm... On the other hand, if it results in the General being caught and disabled, that would be something.</finish>
+</mission>

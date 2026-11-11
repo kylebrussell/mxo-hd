@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Good Manners, Merovingian story mission 6.3.3. Source: research/missions/transcripts/Merv6-3-3.md (the archive
+     replay of [Merovingian Archive 6.3.3], given by [Archived]Flood; 5 screenshots during play and 21 of the log
+     after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Merovingian, Malphas,
+     Bartender, Hypatia and Network line, and the objective "Talk to the Merovingian" (the Objectives tracker showed
+     it). Malphas named the player; that is {player}. "She hordes" is kept as shown. Entries that span two
+     screenshots are read as contiguous: the Merovingian's two lines, Flood's two paragraphs about the Bartender, and
+     Hypatia's "are my fascination". One line of the Operator's "I'm picking up multiple ... readings in there" was cut
+     off and may have held a word more; it is given without it.
+     Ours: the description (the Summary tab only said "Datalink established."), the other objective texts, the sites
+     (the map showed the first area and the Bartender in Mara and the Network in Achan, so those phases prefer them;
+     Hypatia's "private library" wasn't seen: Normal; the Network's was an office), the looks of the Merovingian and
+     Malphas (the Bartender's, Hypatia's and the Network's are their own, from data/mission_contact_npcs.csv) and
+     the number of guards. The Network's guards are Exile programs, so Merovingian. No item was shown.
+     Rewards: the log shows 1,012,000 experience and 493,500 information (a level-47 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
+     Gaps: each NPC's second line came a few seconds after the first, when they were talked to again; here it is
+     their line once their goal is done. The Network's far door was sealed until his guards were beaten ("The other
+     door just unlocked. Was that some kind of test?"); here the talk with him opens once the guards are dead, and
+     the guards are on the floor from the start and attack on sight, so the Operator's "They're attacking!" is said on
+     arrival. A Corporate Security Knight was friendly beside the Network after the mission; he stands there as a
+     bystander. Hypatia's Bookwyrm guards didn't speak or fight and aren't placed. A Blood Noble stood with Malphas in
+     the first area; she is a bystander. Her Team chat line and those of a Merovingian Artillerist and a Merovingian
+     Kung Fu Master (about Pepper and Mr. Black) were on screen before the first goal was done and look left over
+     from another mission, so they aren't used. Whatever followed Flood's first briefing before 10:08:50 PM wasn't
+     captured. -->
+<mission id="306303" title="Good Manners" description="Ask three powerful Exiles for a kill code for the Oracle." plot="1"
+         order="6303" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">She has tasted my vengeance once before... I do not think she is foolish enough to want to feel it again.</say>
+  </npc>
+  <npc id="2" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">Flood will provide you with further details as you require them.</say>
+  </npc>
+  <npc id="3" handle="Blood Noble" type="FRIENDLY" at="1" rsi="60010058" weapon="2568" />
+  <npc id="4" handle="The Bartender" type="FRIENDLY" at="2" rsi="7b0a0058" weapon="0">
+    <say after="3">Tell you what, next time you stop by Club Noir, the drinks are on me, all right?</say>
+  </npc>
+  <npc id="5" handle="Hypatia" type="FRIENDLY" at="3" rsi="4b0a0058" weapon="0">
+    <say after="4">I do have certain information concerning the predecessor that the Merovingian might be interested in...&#10;&#10;Well, perhaps some other time, then.</say>
+  </npc>
+  <npc id="6" handle="The Network" type="FRIENDLY" at="4" rsi="890a0058" weapon="0">
+    <say after="6">I do not say that the Merovingian is wrong, merely that there are few who are prepared to walk that road with him.</say>
+  </npc>
+  <npc id="7" handle="Corporate Security Knight" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>Oh, it's you. I knew the day was going too well.
+
+The Merovingian wants to see you. It's about the Oracle, of course.</briefing>
+    <enter><say>If you've got a breath mint, now would be a good time to use it!</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">I've had it. So, the Oracle will not deal with me--then I will deal with her! Once I have a kill code for her current shell, she'll have to accept my terms.&#10;&#10;I do not at present have such a code, but that is a minor detail. We will procure one somewhere.</say></talk>
+      <done><say>I think that's your cue to hit up Malphas there for your instructions.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Malphas" type="Talk" npc="2" after="1">
+      <talk><say npc="2">The Machine program from whom we obtained the termination code used on the Oracle previously is very unlikely to have access to one for her current shell; in any case, Rama-Kandra has no further need of buying our services.&#10;&#10;Therefore, we must look elsewhere to find such a code. We will first approach certain powerful Exiles. You, {player}, are scheduled to meet with the Bartender, Hypatia, and the Network. Each of these has certain unique contacts which may give them access to the requisite code.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Mara">
+    <briefing>Your first meeting is with the Exile known as "The Bartender." Do not accept any drinks from her--they're positively awful.
+
+The Bartender has somehow carved out a neutral niche in the Matrix. It is generally supposed that she achieved this thanks to some kind of agreement with Deus Ex Machina. It sounds like a ridiculous rumor, if you ask me, but in any case, she may have some contact in the Machine world that would allow her to obtain a kill code for the fortune teller.</briefing>
+    <enter><say>The Bartender should be in there. I'm scanning a single strong Exile program.</say></enter>
+    <objective goal="3" text="Talk to the Bartender" type="Talk" npc="4">
+      <talk><say npc="4">You must be joking. Even if I knew where to get a kill code for her--which I don't--my interest lies in preserving the peace, not in wrecking it, and killing the author of the Truce would probably be the best way to ruin the Pax Oracula, hm?</say></talk>
+      <done><say contact="1">Bah! As I expected, a worthless program.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Now you will meet with Hypatia. She hordes a great deal of information in her private library; it is also said that she was a member, perhaps even a founding member, of the Archivist Society, which could mean that she has experience bridging constructs and servers. In any case, she may have the means to locate the code we seek.</briefing>
+    <enter><say>That's where you're supposed to meet her. I'm picking up multiple readings in there; those may be her Bookwyrm guards.</say></enter>
+    <objective goal="4" text="Talk to Hypatia" type="Talk" npc="5">
+      <talk><say npc="5">I am flattered that the Merovingian thinks I might have access to a kill code for the Oracle, but such a thing would be of little actual interest to a researcher such as myself. Facts and fictions, rather than weapons, are my fascination. I know nothing of such a code.</say></talk>
+      <done><say contact="1">I knew it; these so-called "mighty" are nothing more than masters of worthless trivia! They will never progress farther than the squalid little tracts of land they pretend to rule.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Achan">
+    <briefing>Hmph. I will admit that your next contact, the Exile called "The Network," has a certain amount of power, at least among bluepills. We know that he provides the Architect with media streams in return for his broadcast monopoly in the city. He may have the information resources and pull necessary to obtain a kill code for the Oracle, if the price is right.</briefing>
+    <enter>
+      <say>I'm reading multiple programs in there. One of them should be the Network.</say>
+      <say>Hm, the far door is sealed shut. Those guys there must be his guards. Whoops, watch it! They're attacking!</say>
+    </enter>
+    <objective goal="5" text="Defeat the Network's guards" type="DefeatAll">
+      <done><say>The other door just unlocked. Was that some kind of test?</say></done>
+    </objective>
+    <objective goal="6" text="Talk to the Network" type="Talk" npc="6" after="5">
+      <talk><say npc="6">Oh, it is you. One cannot be too careful, these days.&#10;&#10;In regards to your inquiry, I am neither interested in rendering the Frenchman such assistance, nor do I have the means to do so.&#10;&#10;If I may offer a bit of advice... I very much doubt that you will find anyone else in a position of power within the city who is willing to assist in terminating the Oracle. You would do better to look elsewhere; or, better yet, give up the endeavor entirely.</say></talk>
+      <done><say contact="1">Bloated buffoon! He is right about one thing, at least: we are wasting our time with the city's riff-raff, as I have been saying all along.</say></done>
+    </objective>
+  </phase>
+  <finish>Perhaps after these remarkable failures the Merovingian will deign to give more weight to my counsel. Malphas always thinks he knows everything... Well, he may know the city, but he has precious little conception of anything beyond that, as I'm sure even you have noticed by now.</finish>
+</mission>

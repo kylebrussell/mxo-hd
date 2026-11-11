@@ -322,7 +322,8 @@ namespace hds
         /// 80 a2: mission end, 24 bytes after the header. Retail's completed first mission (crashover2k
         /// create_char_devoted, 06:10:51): 80 a2 00 | 01000000 | 2d020000 | 08520000 | b80b0000 | 00x7 =
         /// status 00 (complete), enemy kills u16, team killed u16, seconds 557, info 21,000, EXP 3,000; then reputation i16,
-        /// two empty arrays and the intro state (01 on Zion's early missions). The client's Mission summary shows
+        /// two empty arrays and the intro state. A success replaces the client's contact mask, so send the same
+        /// organizations as on login. The client's Mission summary shows
         /// "Payment: $i info, +EXP XP" from those. Status 08 is the abort.
         /// </summary>
         public static byte[] BuildMissionComplete(UInt32 exp, UInt32 info, UInt16 kills = 1, UInt32 seconds = 0)
@@ -335,7 +336,8 @@ namespace hds
             pak.AddUint32(seconds, 1);
             pak.AddUint32(info, 1);
             pak.AddUint32(exp, 1);
-            pak.AddHexBytes("00000000000001");
+            pak.AddHexBytes("000000000000");
+            pak.AddByte(MissionContacts.StoryContactMask);
             return pak.ReturnFinalPacket();
         }
 

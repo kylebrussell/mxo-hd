@@ -69,20 +69,6 @@ namespace hds
                 byte[] finalMessage = new byte[msgLen];
                 ArrayUtils.fastCopy(buffer, finalMessage, msgLen);
 
-                EndPoint newClientEP = new IPEndPoint(IPAddress.Any, 0);
-                try
-                {
-                    socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref newClientEP,
-                        finalReceiveFrom, socket);
-                }
-                catch (SocketException ex)
-                {
-                    if (ex.ErrorCode == 10054 && currentClient != null)
-                    {
-                        currentClient.Alive = false;
-                    }
-                }
-
                 // TODO CLIENT CHECK AND HANDLING
                 string remoteKey = Remote.ToString();
                 lock (Clients)
@@ -104,7 +90,7 @@ namespace hds
 
                 if (currentClient != null)
                 {
-                    currentClient.processPacket(finalMessage);
+                    currentClient.QueuePacket(finalMessage);
                 }
 
             }
@@ -120,7 +106,25 @@ namespace hds
                     }
                 }
             }
-                
+            finally
+            {
+                // Queue this datagram before receiving another. Concurrent callbacks racing for processLock can reorder RPCs.
+                EndPoint nextClient = new IPEndPoint(IPAddress.Any, 0);
+                try
+                {
+                    socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref nextClient,
+                        finalReceiveFrom, socket);
+                }
+                catch (SocketException ex)
+                {
+                    Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The socket closed while this receive callback was finishing.
+                }
+            }
+
         }
 
         

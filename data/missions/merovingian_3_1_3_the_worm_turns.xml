@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Worm Turns, Merovingian story mission 3.1.3. Source: research/missions/transcripts/Merv3-1-3.md (the archive
+     replay of [Merovingian Archive 3.1.3], given by [Archived]Flood; 15 screenshots of the log after it ended, none
+     during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Downlink, Rastaban, Sillanpaa and
+     Aho line, and the Zion fighters' team chat line. Flood's first and last lines span two screenshots with no header
+     between them and are taken as one entry each; Sillanpaa's first line was split across two screenshots and is
+     joined. Ours: the description (the Summary tab was never opened), every objective text (nor was the Objectives
+     tab), the sites (phase 1 is "a Zion base": ZionOutpost; the rest Normal), the looks and the enemy counts. Item
+     stand-in: Downlink's notes with the strike team's address are Document_Location_Notes (6855; no item name was
+     shown). Rewards: the log shows 79,416,249 experience and 1,039,500 information. These are Zion 3.1's values
+     (308,000 experience, 101,500 information, as Dire Connection paid).
+     Gaps: the terminal could be hacked or opened with an access code; here it is a plain Use (a hack) of the computer,
+     and the Operator's "There's the terminal" line is said on reaching the floor, since a line can't follow an object.
+     Its "security system" isn't expressible. Downlink is friendly at first in retail and turns hostile once he has
+     handed over his notes; here he waits to be attacked (attacksOnSight="0"): reaching him carries his plea and Flood's
+     order, the notes are taken from him (Get), then he is killed. Kill him only after taking the notes: the Get can't be
+     done from his body. Hostile NPCs' lines don't show on screen here (see Known gaps), so his lines and the Zion
+     fighters' line may not appear. Lines between 1:28:12 and 1:33:00 weren't captured. The three dire lupines are
+     talked to and led out (Talk, then Escort to the exit) and follow the player into the strike team's building; they
+     don't fight there as they did in retail. Their three lines after the fight are said when the strike team is dead. -->
+<mission id="303103" title="The Worm Turns" description="Disrupt a Zion base, deal with a mole, and lead dire lupines against a Zion strike team." plot="1"
+         order="3103" org="3" contact="Flood" exp="308000" info="101500">
+  <npc id="1" handle="Downlink" type="HOSTILE" at="2" rsi="9b0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Rastaban" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Sillanpaa" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568" />
+  <npc id="4" handle="Aho" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Zion Aikido Grandmaster" type="HOSTILE" at="4" rsi="ec020058" weapon="2568">
+    <say>Why'd they waste a red pill on you?</say>
+  </npc>
+  <npc id="6" handle="Zion Howitzer" type="HOSTILE" at="4" rsi="d8040058" weapon="2568">
+    <say>Why'd they waste a red pill on you?</say>
+  </npc>
+  <phase site="ZionOutpost" enemy="Zion" enemies="4">
+    <briefing>How annoying... Apparently, Zion has decided to get to the Merovingian through his lackey, the Effectuator, and Ookami's dire lupines have their paws full trying to fend off the attacks. You're going to have to help them out. The Effectuator controls access to certain vital...assets that we can't have falling into Zion's hands.&#10;&#10;First, you're going to provide a little distraction by infiltrating a Zion base and disrupting their communications.</briefing>
+    <enter>
+      <say>The Zion base is in that building. Lots of redpill signals in there, and it looks like they've got a bit of a security system rigged up. Remember, you're trying to find and disrupt their communications terminal.</say>
+      <say>There's the terminal. It's got a security routine running, so you'll need to hack it or find some kind of access code.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Disrupt the communications terminal" type="Use" object="1">
+      <done>
+        <say>Nice work. You should have full access to the terminal now.</say>
+        <say>I'm reading a shutdown across their local network. That should keep them busy for a little while.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Oh, how nice. The data on that terminal you compromised has revealed the identity of a mole in our organization. It seems this "Downlink" has been feeding Zion information on the Effectuator's operations. We can't very well have that sort of thing going on, can we? How about you go kill him?</briefing>
+    <enter><say>Downlink should be in there.</say></enter>
+    <objective goal="2" text="Find Downlink" type="Talk" npc="1">
+      <done>
+        <say npc="1">N-no! Don't! I... I can help you! I know where a Zion strike team is gathering to hit one of the Effectuator's bases! Here, these notes have the address!</say>
+        <say contact="1">What's that? Get those notes from him, operative. We'll see if he's telling the truth.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Get the notes from Downlink" type="Get" npc="1" item="6855" after="2">
+      <done>
+        <say contact="1">It looks as though he really did have useful information for us. Remarkable. You may kill him now.</say>
+        <say npc="1">No! Stop! I can help you! Nooooo!</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Kill Downlink" type="Defeat" npc="1" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Mr. Downlink's data points to a Zion squad of considerable size. Considering your abilities, operative, you're going to need some backup for this. I'm directing you to a dire lupine group; gather some of them up and take them with you to assault the Zion rabble.</briefing>
+    <enter><say>Getting weird intermittent signals in there--that's gotta be a bunch of dire lupines.</say></enter>
+    <objective goal="5" text="Talk to Rastaban" type="Talk" npc="2">
+      <talk><say npc="2">All right. Let's go.</say></talk>
+    </objective>
+    <objective goal="6" text="Talk to Sillanpaa" type="Talk" npc="3">
+      <talk><say npc="3">Rrr... Ookami's asked me to cooperate with you, so I guess I don't have a choice.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to Aho" type="Talk" npc="4">
+      <talk><say npc="4">Ambush some Zion chumps? Hurr! I'm in.</say></talk>
+    </objective>
+    <objective goal="8" text="Lead Rastaban out of the area" type="Escort" npc="2" to="exit" after="5" />
+    <objective goal="9" text="Lead Sillanpaa out of the area" type="Escort" npc="3" to="exit" after="6" />
+    <objective goal="10" text="Lead Aho out of the area" type="Escort" npc="4" to="exit" after="7" />
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Eh? Don't bother me until you've dealt with that Zion group.</briefing>
+    <enter><say>I've got redpill signals in there. I hope your dire lupines are reliable.</say></enter>
+    <objective goal="11" text="Kill the Zion strike team" type="DefeatAll">
+      <done>
+        <say npc="3">Hrrr... I've done what Ookami asked, human. I don't have to take any more orders from you.</say>
+        <say npc="4">What? Did we run out of meatwads already? Rrr!</say>
+        <say npc="2">Hurr. That wasn't so hard.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Don't start patting yourself on the back just yet, operative. Those fools at Zion won't learn their lesson from this first setback. Their zeal to avenge their dead hero would almost be cute, if it weren't so irritating.&#10;&#10;Bah! Killing off Morpheus was all the Merovingian's idea. I don't see why I should have to clean up this mess he's gotten us into... You'll just have to slaughter more Zion imbeciles until they give up. I'll call on you again shortly.</finish>
+</mission>

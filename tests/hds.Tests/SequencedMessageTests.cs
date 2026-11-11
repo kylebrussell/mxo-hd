@@ -5,6 +5,30 @@ namespace hds.Tests;
 public class SequencedMessageTests
 {
     [Fact]
+    public void RpcPacketHistoryCanBeAcknowledgedWhileAnotherSendIsRecorded()
+    {
+        var message = new SequencedMessage(new byte[] { 0x01 });
+        var noAcknowledgments = new HashSet<ushort>();
+        Parallel.Invoke(
+            () =>
+            {
+                for (ushort sequence = 0; sequence < 4096; sequence++)
+                {
+                    message.RecordRpcPacket(sequence);
+                    Thread.Yield();
+                }
+            },
+            () =>
+            {
+                for (int attempt = 0; attempt < 4096; attempt++)
+                {
+                    Assert.False(message.IsRpcAckedBy(noAcknowledgments));
+                }
+            });
+        Assert.True(message.IsRpcAckedBy(new HashSet<ushort> { 4095 }));
+    }
+
+    [Fact]
     public void NewObjectMessageIsDueImmediately()
     {
         SequencedMessage message = new SequencedMessage(new byte[] {0x01});

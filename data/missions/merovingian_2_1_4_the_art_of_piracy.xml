@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Art of Piracy, Merovingian Archive 2.1.4. Source: research/missions/transcripts/Merv2-1-4.md (one retail run of
+     the archive replay, given by [Archived]Flood; every screenshot is of the log, scrolled after the mission ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line (Flood's "a matter time" kept as retail wrote it), the
+     names Altaj, Cellino, Agematsu, Armor, Coyote and Blood Drunk, and Blood Drunk's line (Team chat). Ours: the
+     description (the Summary tab showed none), every objective text (the Objectives tab was never opened), the sites
+     (Normal: the log describes none of the four places), the enemies with Altaj and Cellino (Zion, whose ingredients
+     these are) and their counts, and the looks. Item stand-ins: the three insecticide ingredients are Poison (6804,
+     Altaj's), Drugs (6816, Cellino's) and Medicine (6808, Agematsu's). Rewards: the log shows none (the player is
+     level 50 throughout these logs). These are Zion 2.1's values (297,000 experience, 98,000 information, as Chemical
+     Fear paid).
+     Gaps: the Agent the Operator warns of after Altaj's death ("run!") isn't spawned, as hostiles can't appear on a
+     trigger; the warning is still said. Agematsu and his crew are found dead; dead NPCs aren't spawned, so his body is
+     a Furniture object to search for the third ingredient, and the Operator's lines on finding the bodies are said on
+     arrival and on nearing Armor. Armor joins the player at Agematsu's site: he is led out of the area there and
+     follows into the last phase, where he is brought to Coyote. Coyote's security system isn't built. The Operator's
+     question about stealing insecticide came between phases; it is said when phase 1 is done. A line whose speaker
+     wasn't captured ("...I'll do everything I can to help you.") is left out. Image seams in four long lines
+     (stealing ... insecticide, a swirling ... mass, why does this always happen! ... Say, a slave to ... the Zion
+     Military) are joined as one line, and italics are dropped. -->
+<mission id="302104" title="The Art of Piracy" description="Kill Zion's operatives and steal their insecticide ingredients." plot="1"
+         order="2104" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Altaj" type="HOSTILE" at="1" rsi="050100b4" weapon="2564" />
+  <npc id="2" handle="Cellino" type="HOSTILE" at="2" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Armor" type="FRIENDLY" at="3" rsi="d8040058" weapon="2564" />
+  <npc id="4" handle="Coyote" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="5" handle="Blood Drunk" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say display="5">You must be important to the Merovingian if you're pulling jobs like this.</say>
+  </npc>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Zion continues to seek vengeance for the loss of their decrepit disciple: Morpheus. It was only a matter time before they decided to do more than just point fingers... Their recent actions have threatened the life of our associate. We must retaliate and sabotage Zion's plans to administer the Assassin with some sort of high-grade insecticide. It seems absurd on paper, but it just might work.&#10;&#10;Your current assignment is an important one: kill your designated targets and steal their ingredients. Start with Altaj, who can be found at this address. If you fail, your situation could become very...unpleasant.</briefing>
+    <enter><say>That's one of three locations you'll hit today. Once the target is down and the ingredient is liberated, we'll move to the next location.</say></enter>
+    <objective goal="1" text="Kill Altaj" type="Defeat" npc="1" />
+    <objective goal="2" text="Take the insecticide ingredient from Altaj" type="Loot" npc="1" item="6804" after="1">
+      <done><say>Don't celebrate just yet, {player}. I'm reading a large signal in your area and it looks exactly like an Agent! I doubt he's in the mood to ask questions -- run! Get out of there now!</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">You're not getting the insecticide ingredient. It's mine!</say>
+    </near>
+    <complete><say>I hate to pry, but why are we stealing insecticide? This seems...silly. I mean, how is this supposed to kill the Assassin? The worst it would do to me, is give me a rash.</say></complete>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>I'm sure you're curious, so I'll fill you in: the Assassin is not your run-of-the-mill Exile. His body isn't made of digital flesh, but a swirling mass of blowflies that feed off the festering flesh of the dead. While he isn't the ideal dinner guest, he is extremely difficult to kill. This makes him a powerful ally, and we must protect him.&#10;&#10;Your second target is Cellino. See to it that they are killed, and their hands are empty by the time you leave.</briefing>
+    <enter><say>I've scanned the area twice for Agents and everything appears nominal. If anything pops up, I'll scream into my headset.</say></enter>
+    <objective goal="1" text="Kill Cellino" type="Defeat" npc="2">
+      <done><say>Cellino is down. Search their body for the second ingredient.</say></done>
+    </objective>
+    <objective goal="2" text="Take the second ingredient from Cellino" type="Loot" npc="2" item="6816" after="1" />
+    <near npc="2" radius="1000">
+      <say npc="2">What the--? You're going down!</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>I've just received a new report on Zion's formula. Listen to this, "The formula will produce two variants of an extremely toxic insecticide. If this insecticide was ingested by your average human, it might make them sick or ill in the worst case scenario. If a program was exposed with the insecticide, the results would be a minor operational irritant. Theoretically, if the proper variant of the insecticide was applied to the same species of blowflies that makes up the Assassin, the result could be quite deadly."&#10;&#10;You see how important this is, don't you? You must not fail. Now, pull the third from the cold, dead hands of Agematsu. He's patiently awaiting his beating at the next address.</briefing>
+    <enter>
+      <say>Something isn't right... I was reading almost a dozen signals a few minutes ago, but now I'm only seeing one. It's like everyone moved into the same room...&#10;&#10;Watch yourself. It could be an ambush.</say>
+      <say>What the hell? Everyone's dead... Wait, wait a sec'. There's a signal on the other side of the next door, but it's not Agematsu. Be on guard, {player}.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Take the third ingredient from Agematsu's body" type="Search" object="1" item="6808">
+      <done><say>The third ingredient is accounted for. Good work.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Armor" type="Talk" npc="3">
+      <talk><say npc="3">Are you with Zion? No? Good, because I'm sick of being a slave to the Zion Military!&#10;&#10;Yes, I did it; I killed them all... I'm tired of being held back by Agematsu and Commander Lock. They don't see my true potential. I betrayed every last one of them because they refused to respect my strength.&#10;&#10;Listen, I want to come work with you. I want to join the Merovingian's organization. The Frenchman will appreciate my power. I can feel it.</say></talk>
+      <done><say contact="1">A defector? How splendid! Let us give this "Judas" a home: take Armor with you. He could become a useful asset to the Frenchman.</say></done>
+    </objective>
+    <objective goal="3" text="Lead Armor out of the area" type="Escort" npc="3" to="exit" after="2" />
+    <near npc="3" radius="1000">
+      <say>Agematsu is already dead... Ugh, why does this always happen! Say, try talking to this Armor guy -- maybe he knows something.</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>It doesn't surprise me that Armor betrayed his crew to sever his ties with Zion. That shows courage and strength -- especially when he killed so many in such a short period of time!&#10;&#10;Complete your final objective and take the ingredients to the next address. We can't have them -- or Armor for that matter -- falling back into the hands of Zion.</briefing>
+    <enter>
+      <say>Talk to Coyote and he'll have additional instructions.</say>
+      <say>A security system? Coyote must be taking extra precautions in case someone tries to steal the insecticide ingredients.</say>
+    </enter>
+    <objective goal="1" text="Bring Armor to Coyote" type="Escort" npc="3" to="npc:4" />
+    <objective goal="2" text="Give the first ingredient to Coyote" type="Give" npc="4" item="6804">
+      <talk><say npc="4">Of course we can! Don't be ridiculous... Only a fool would try to penetrate our security system--Ah, you're here! I was told you'd make an appearance. Flood told me about all you've gone through to recover these ingredients -- including your new friend. I'm impressed!</say></talk>
+    </objective>
+    <objective goal="3" text="Give the second ingredient to Coyote" type="Give" npc="4" item="6816" />
+    <objective goal="4" text="Give the third ingredient to Coyote" type="Give" npc="4" item="6808" />
+    <complete>
+      <say npc="3">I hope we get the chance to work together in the future, {player}. It was awesome to fight alongside you.</say>
+      <say npc="4">Your aid is quite welcome.</say>
+    </complete>
+  </phase>
+  <finish>I've notified the Merovingian of your success and now he's prattling on and on about how wonderful you are. I'd rather not hear it, because it can get quite tiresome... It seems he has something special in mind for your next assignment. We'll be in touch.</finish>
+</mission>

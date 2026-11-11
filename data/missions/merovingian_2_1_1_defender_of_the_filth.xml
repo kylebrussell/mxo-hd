@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Defender of the Filth, Merovingian Archive 2.1.1. Source: research/missions/transcripts/Merv2-1-1.md (one retail run
+     of the archive replay, given by [Archived]Flood; two screenshots during phase 1, the rest of the log scrolled after
+     the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line, the names Pigeon, Aksnes and Adam Giddings, the Zion
+     Ravager's shout (Team chat) and the objective text "Get details on Zion's plans". Ours: the description (the
+     Summary tab showed none), the other objective texts (only phase 1's one objective was shown, and it covers the
+     whole chain), the sites (Normal: an apartment or office floor in Dannah Heights, then two places the log doesn't
+     describe), the enemy counts (the log says "several Zion operatives" and "possibly a group") and the looks.
+     Item stand-ins: the Zion access code is Access_Code (6782), the printed mission plan ("Secret Plan") is Plan
+     (6798), the formula is Documents (6794). Rewards: the log shows 45,728,749 experience and 724,500 information (a
+     level-50 player's). These are Zion 2.1's values (297,000 experience, 98,000 information, as Chemical Fear paid).
+     The
+     Code Bit 2 the player received is generic loot and isn't used.
+     Gaps: the access code came from a searched body; here it is looted from a named Zion Ravager (his shout is from
+     the chat). The Operator's "There's a laptop in the next room" fired with the trace line in retail; here it
+     follows the access code. Pigeon sits behind a door that the laptop's hack opens; doors aren't locked here, so he
+     can be found and killed first. Part of the trace line fell on an image seam ("He's ... behind a locked door"):
+     the two halves are joined. Flood's line about the whole Morpheus thing came five minutes into phase 1 with no
+     event to tie it to; it is said on arrival. The Zion operatives arrive at Adam Giddings' once the formula is
+     handed over, with the Operator's warning about them, and the kill objective opens then. Adam Giddings' reading has
+     an image seam after "ah, yes, I", joined as one line; his repeated lines are said once. Formatting (italics on
+     Secret Plan and We) is dropped. -->
+<mission id="302101" title="Defender of the Filth" description="Find out what Niobe's Zion operatives have planned against the Merovingian's associate." plot="1"
+         order="2101" org="3" contact="Flood" exp="297000" info="98000">
+  <npc id="1" handle="Zion Ravager" type="HOSTILE" at="1" rsi="050100b4" weapon="2564" />
+  <npc id="2" handle="Pigeon" type="HOSTILE" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Aksnes" type="HOSTILE" at="2" rsi="ec020058" weapon="2564" />
+  <npc id="4" handle="Adam Giddings" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>Niobe recently paid the Merovingian an unannounced visit during a rather intimate moment with Persephone. It seems Niobe is spearheading a futile attempt to eliminate a certain associate of our employer. To ensure the safety of our associate, I need you to find out exactly what Niobe has planned.&#10;&#10;Go to this address and bring back any intel these Neo-worshipping redpills hold in their slimy little hands. Your objective has been given to you -- I really don't care how you complete it.</briefing>
+    <enter>
+      <say>I'm seeing RSI signals of several Zion operatives, but I can't get a fix on the exact number. Watch yourself, {player}.</say>
+      <say contact="1">I'm sure you have it figured out by now -- the whole Morpheus thing. I'll fill you in at the end of your assignment. We don't leave our operatives in the dark... forever.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Get the Zion access code from the Zion Ravager" type="Loot" npc="1" item="6782">
+      <done>
+        <say>You just picked up a Zion access code. I bet you a box of Tastee Wheat it's for the laptop in the other room.</say>
+        <say>There's a laptop in the next room. If you can get through its security system, search it!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get details on Zion's plans" type="Use" object="1" after="1">
+      <done><say>We need to find that mission plan. Let me do a trace on it. If it's close, I can find out where -- hey, I got a lock! It's with someone named Pigeon. He's behind a locked door, which just opened.</say></done>
+    </objective>
+    <objective goal="3" text="Kill Pigeon" type="Defeat" npc="2" />
+    <objective goal="4" text="Get the Secret Plan from Pigeon" type="Loot" npc="2" item="6798" after="3">
+      <done><say>Flood needs that. Hit a hardline and upload the secret plan. I'll make sure he gets it.</say></done>
+    </objective>
+    <objective goal="5" text="Upload the Secret Plan at a hardline" type="Upload" item="6798" after="4">
+      <done><say>You'd think they wouldn't label important documents with the words: Secret Plan! No wonder you aren't working for Zion anymore.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">You'll die for the death of Morpheus, traitor!</say>
+    </near>
+    <near npc="2" radius="1000">
+      <say npc="2">The operator said I requested another print out of the mission intel. Did someone -- hey! You're not part of our crew!</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>The Zion operatives are in the middle of their mission. Instead of wasting time listening to me prattle on, get over there and recover the formula they want so badly.</briefing>
+    <enter><say>Aksnes is in the back of this place. Unless I'm reading this code incorrectly, he has the formula.&#10;&#10;You know what to do, {player}.</say></enter>
+    <objective goal="1" text="Kill Aksnes" type="Defeat" npc="3" />
+    <objective goal="2" text="Get the formula from Aksnes" type="Loot" npc="3" item="6794" after="1">
+      <done><say>You have the formula! I'll send word to Flood.</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">Just close your eyes and think of the Oracle.</say>
+      <say npc="3">Stop!</say>
+    </near>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="1">
+    <briefing>Most intriguing. The formula has a short list of chemical ingredients. We'll need it delivered to one of our technicians so we can determine what the chemicals are for. If it's a plan to take down our associate, your further assistance will be required.&#10;&#10;Take the formula to Adam Giddings at this address... Well, what are you waiting for? Go!</briefing>
+    <enter><say>Adam Giddings is inside. Maybe he will shed some light on this formula and Assassin business.</say></enter>
+    <objective goal="1" text="Give the formula to Adam Giddings" type="Give" npc="4" item="6794">
+      <talk><say npc="4">Come in! Come in! Don't be shy... Flood told me to expect you. Said you had a bit of parchment to share with your friend Adam Giddings, don't you? Yes, yes. Come on. Give Adam Giddings the formula.</say></talk>
+      <done>
+        <say>{player}! I hate to break up your little chat, but I'm seeing an unknown signal pop up on the vid, possibly a group. It could be Zion operatives looking for their formula.</say>
+        <say npc="4">Oh, what's this...? Is that what Zion is up to? Sly, dirty, rotten... ah, yes -- I forget my place...&#10;&#10;Hm... I've seen this before. It's a formula for insecticide, a highly dangerous one at that. Two different types, no less. I know Zion wants to kill the Assassin, but it can't be possible with mere insecticide, unless... Oh no! Adam Giddings knows it now -- their plan might actually work! Those rotten, little, dirty... bastards!&#10;&#10;Flood will be interested to hear this... Alright, be on your way. Adam Giddings needs to go over this formula... Lots of tests to run! Yes, yes...</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Kill the Zion operatives" type="DefeatAll" after="1">
+      <done>
+        <say>Nicely done. That should dissuade Zion from sending more operatives -- for the time being, at least!</say>
+        <say>Things don't look good right now: the Merovingian hired the Assassin to kill Morpheus and you're under attack by Zion operatives because of it! This might get even more complicated... I wonder what Flood has to say about all of this.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>I want to clear a few things up for you: We killed Morpheus. We couldn't share the truth with you until the appropriate time. If we had openly admitted responsibility for the death of Morpheus just days after it happened, tensions would have risen well above acceptable limits. This was for your protection, {player}; you know that.</finish>
+</mission>

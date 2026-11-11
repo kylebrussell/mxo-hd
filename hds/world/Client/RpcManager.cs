@@ -67,6 +67,9 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_OBJECTINTERACTION_DYNAMIC:
 		            new ObjectInteractionHandler().processObjectDynamic(ref rpcData);
 		            break;
+                case (int)RPCRequestHeader.CLIENT_USE_MISSION_TICKET:
+                    MissionTickets.Use(Store.currentClient, rpcData);
+                    break;
 		        case (int) RPCRequestHeader.CLIENT_OBJECTINTERACTION_STATIC:
 		            new ObjectInteractionHandler().processObjectStatic(ref rpcData);
 		            break;
@@ -168,6 +171,18 @@ namespace hds{
 				    new TeleportHandler().processGameFinish(ref rpcData);
 				    break;
 
+		        case (int) RPCRequestHeader.CLIENT_DUEL_REQUEST:
+		            DuelHandler.ProcessChallenge(Store.currentClient, rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_DUEL_RESPONSE:
+		            DuelHandler.ProcessResponse(Store.currentClient, rpcData);
+		            break;
+
+		        case (int) RPCRequestHeader.CLIENT_PVP_FLAG:
+		            PvpFlag.ProcessToggle(Store.currentClient);
+		            break;
+
 		        case (int) RPCRequestHeader.CLIENT_RESPAWN_REQUEST:
 		            new TeleportHandler().ProcessRespawnRequest();
 		            break;
@@ -211,6 +226,9 @@ namespace hds{
 
 		        case (int) RPCRequestHeader.CLIENT_VENDOR_SELL:
 		            new VendorHandler().processSellItem(ref rpcData);
+		            break;
+		        case (int) RPCRequestHeader.CLIENT_COLLECTOR_EXCHANGE:
+		            CollectorHandler.Exchange(Store.currentClient, rpcData);
 		            break;
 
 		        case (int) RPCRequestHeader.CLIENT_TRADE_REQUEST:

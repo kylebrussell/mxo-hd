@@ -337,7 +337,8 @@ namespace hds.databases{
 	        List<CrewMember> crewMembers = new List<CrewMember>();
 	        OpenConnection();
 	        string query =
-		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online FROM crew_members cm LEFT JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "' ";
+		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online " +
+                "FROM crew_members cm JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "'";
 	        
 	        queryExecuter = conn.CreateCommand();
 	        queryExecuter.CommandText = query;
@@ -358,6 +359,7 @@ namespace hds.databases{
 		        member.isOnline = isOnline;
 		        crewMembers.Add(member);
 	        }
+	        dr.Close();
 	        CloseConnection();
 
 	        return crewMembers;
@@ -578,7 +580,8 @@ namespace hds.databases{
    				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(dr.GetValue(10)));
 				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(dr.GetValue(11)));
 
-				//data.setPlayerValue("pvpFlag",(int)Convert.ToDecimal(dr.GetValue(12)));
+				// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
+				Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(dr.GetValue(12)) != 0;
 				Store.currentClient.playerInstance.RealFirstName.setValue(dr.GetString(13));
 				Store.currentClient.playerInstance.RealLastName.setValue(dr.GetString(14));
 
@@ -598,13 +601,14 @@ namespace hds.databases{
 				Store.currentClient.playerInstance.CrewID.enable();
 				Store.currentClient.playerInstance.CrewID.setValue(crewId);
 
-				Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16) Convert.ToDecimal(dr.GetValue(21)));
-				Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16) Convert.ToDecimal(dr.GetValue(22)));
-				Store.currentClient.playerInstance.ReputationNiobe.setValue((UInt16) Convert.ToDecimal(dr.GetValue(23)));
-				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue((UInt16) Convert.ToDecimal(dr.GetValue(24)));
-				Store.currentClient.playerInstance.ReputationCypherites.setValue((UInt16) Convert.ToDecimal(dr.GetValue(25)));
-				Store.currentClient.playerInstance.ReputationGMOrganization.setValue((UInt16) Convert.ToDecimal(dr.GetValue(26)));
-				Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16) Convert.ToDecimal(dr.GetValue(27)));
+				// Reputation attributes carry the two's-complement bytes of the signed standings.
+				Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)dr.GetInt32(21)));
+				Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)dr.GetInt32(22)));
+				Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)dr.GetInt32(23)));
+				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)dr.GetInt32(24)));
+				Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)dr.GetInt32(25)));
+				Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)dr.GetInt32(26)));
+				Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)dr.GetInt32(27)));
 				
 
 			}
@@ -681,6 +685,12 @@ namespace hds.databases{
 	        OpenConnection();
 	        string sqlQuery = "UPDATE characters SET alignment = " + orgId + " WHERE charId= " + charId + " LIMIT 1";
 	        ExecuteNonResultQuery(sqlQuery);
+        }
+
+        public void SetPvpFlag(uint charId, bool flagged)
+        {
+	        OpenConnection();
+	        ExecuteNonResultQuery("UPDATE characters SET pvpflag = " + (flagged ? 1 : 0) + " WHERE charId= " + charId + " LIMIT 1");
         }
 
         public Hashtable GetCharInfoByHandle(string handle)
@@ -1225,6 +1235,128 @@ namespace hds.databases{
         {
 	        ExecuteNonResultQuery("UPDATE inventory SET count = '" + count + "' WHERE charId = '" + charId +
 	                              "' AND slot = '" + slotId + "' LIMIT 1");
+        }
+
+        private readonly object inventoryMigrationLock = new object();
+        private bool inventorySupportsTransactions;
+
+        /// <summary>Upgrades old inventory tables before the network listeners accept players.</summary>
+        public void EnsureTransactionalInventory()
+        {
+            using MySqlConnection connection = new MySqlConnection(connectionString);
+            connection.Open();
+            EnsureTransactionalInventory(connection);
+        }
+
+        private void EnsureTransactionalInventory(MySqlConnection connection)
+        {
+            lock (inventoryMigrationLock)
+            {
+                if (inventorySupportsTransactions)
+                {
+                    return;
+                }
+                using MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory'";
+                bool transactional = string.Equals(command.ExecuteScalar() as string, "InnoDB", StringComparison.OrdinalIgnoreCase);
+                command.CommandText = "SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='inventory' AND INDEX_NAME='inventory_character_slot'";
+                bool indexed = Convert.ToInt32(command.ExecuteScalar()) > 0;
+                if (!transactional || !indexed)
+                {
+                    // The original dump contains zero timestamps. Keep those values during the engine conversion.
+                    command.CommandText = "SELECT @@SESSION.sql_mode";
+                    string originalMode = (string)command.ExecuteScalar();
+                    List<string> modes = new List<string>(originalMode.Split(','));
+                    modes.Remove("NO_ZERO_DATE");
+                    modes.Remove("NO_ZERO_IN_DATE");
+                    command.CommandText = "SET SESSION sql_mode = @mode";
+                    command.Parameters.AddWithValue("@mode", string.Join(",", modes));
+                    command.ExecuteNonQuery();
+                    try
+                    {
+                        command.CommandText = "ALTER TABLE inventory ENGINE=InnoDB" +
+                            (indexed ? "" : ", ADD KEY inventory_character_slot (charId, slot)");
+                        command.ExecuteNonQuery();
+                    }
+                    finally
+                    {
+                        command.CommandText = "SET SESSION sql_mode = @mode";
+                        command.Parameters["@mode"].Value = originalMode;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                inventorySupportsTransactions = true;
+            }
+        }
+
+        public CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false)
+        {
+            using MySqlConnection connection = new MySqlConnection(connectionString);
+            connection.Open();
+            EnsureTransactionalInventory(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char ORDER BY slot FOR UPDATE";
+            command.Parameters.AddWithValue("@char", charId);
+
+            HashSet<int> occupied = new HashSet<int>();
+            List<(UInt32 Id, UInt16 Slot, int Remaining)> changes = new List<(UInt32, UInt16, int)>();
+            using (MySqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    if (uniqueReward && reader.GetUInt32(2) == rewardItem)
+                    {
+                        return null;
+                    }
+                    UInt16 slot = reader.GetUInt16(1);
+                    if (slot < 1 || slot > 96)
+                    {
+                        continue;
+                    }
+                    if (quantity == 0 || reader.GetUInt32(2) != requiredItem)
+                    {
+                        occupied.Add(slot);
+                        continue;
+                    }
+
+                    int count = ItemStacks.CountFromDb(reader.GetInt32(3));
+                    int consumed = Math.Min(quantity, count);
+                    quantity -= consumed;
+                    int remaining = count - consumed;
+                    changes.Add((reader.GetUInt32(0), slot, remaining));
+                    if (remaining > 0)
+                    {
+                        occupied.Add(slot);
+                    }
+                }
+            }
+
+            UInt16 rewardSlot = LowestFreeBagSlot(occupied);
+            if (quantity != 0 || rewardSlot == 0)
+            {
+                return null;
+            }
+
+            command.Parameters.AddWithValue("@row", 0u);
+            command.Parameters.AddWithValue("@remaining", 0);
+            foreach (var change in changes)
+            {
+                command.Parameters["@row"].Value = change.Id;
+                command.Parameters["@remaining"].Value = change.Remaining;
+                command.CommandText = change.Remaining == 0
+                    ? "DELETE FROM inventory WHERE invId=@row"
+                    : "UPDATE inventory SET count=@remaining WHERE invId=@row";
+                command.ExecuteNonQuery();
+            }
+
+            command.CommandText = "INSERT INTO inventory (charId, goid, slot, count) VALUES (@char, @reward, @slot, 1)";
+            command.Parameters.AddWithValue("@reward", rewardItem);
+            command.Parameters.AddWithValue("@slot", rewardSlot);
+            command.ExecuteNonQuery();
+            transaction.Commit();
+            return new CollectorExchange(rewardSlot, changes.ConvertAll(change => (change.Slot, change.Remaining)));
         }
 
         /// <summary>Adds a stack of <paramref name="count"/> items to a slot.</summary>

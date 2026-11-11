@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Killjoy, Merovingian story mission 6.2.4. Source: research/missions/transcripts/Merv6-2-4.md (the archive replay of
+     [Merovingian Archive 6.2.4], given by [Archived]Flood; 32 screenshots, 8 during play and 24 of the log after it
+     ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Nicky G., Twin, Raini,
+     Effectuator and Malphas line, the 5 Points Partier's and 5 Points Magister's team chat lines, the NPC names, and
+     the objective "Search the Computer" (the only one the Objectives window showed). Joins across screenshots read as
+     contiguous: "It's time to rein her in. / Go to Apollyon and find her.", "with whom I am forced / to deal", "the
+     Twins along, / just to make sure", and Raini's line ("...your goon squad here. / Mercury? Ha-ha!"), where a line
+     or two may be missing. Ours: the description (the Summary tab was never opened), the other objective texts, the
+     sites (all Normal: apartments and rooms in Apollyon), the looks and the enemy counts. The 5 Points are Raini's
+     Exile gang, so Merovingian-type hostiles. No item was shown.
+     Rewards: the log shows 471,456 information, the experience line scrolled off (a level-48 player's archive
+     replay). These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in
+     9.2): no Zion log shows chapter 6's.
+     Gaps: the computer is a plain Use (a hack); in retail the Operator's network hack failed on it ("This program
+     requires MOS v7.271 or later."). Raini's own first answer wasn't in the log: the first talk brings the Twins'
+     lines and Flood's "tell her that we will send in the Effectuator", and telling her so is a second Talk, which
+     gets her story. The Effectuator arrives once Raini has talked ("I'm calling the Effectuator to keep her busy")
+     and speaks then. The Twins' two lines after that (40 seconds later, on the way out) are the phase's complete
+     lines. With Malphas, the Twins' three lines came just before his and are said on getting near him; "He talks too
+     much." was logged 3 seconds before Malphas's line (an entry between may be lost) and is kept in that order.
+     Malphas's second line is said when he is talked to again, Nicky G.'s likewise. One Operator entry at 9:04:27
+     (after "little black book") wasn't captured. The Corporate Security Paladins beside Nicky G. are friendly
+     bystanders. Hostile NPCs' lines don't show on screen here (see Known gaps), so the Partier's and the Magister's
+     may not appear. NPCs don't fight here, so the Twins don't hold off the 5 Points. -->
+<mission id="306204" title="Killjoy" description="Find Raini and learn what the Elements are up to with the Blackwoods in Mara." plot="1"
+         order="6204" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="5 Points Partier" type="HOSTILE" at="1" rsi="34050040" weapon="2568">
+    <say>Whoa, chill out!</say>
+  </npc>
+  <npc id="2" handle="Nicky G." type="FRIENDLY" at="2" rsi="530a0058" weapon="0">
+    <say after="2">Come see me at Club Paradise in Hampton Green some day, sugar; I'll be sure to make it worth your while. I know what the Merv pays you.</say>
+  </npc>
+  <npc id="3" handle="Corporate Security Paladin" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568" />
+  <npc id="4" handle="Corporate Security Paladin" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568" />
+  <npc id="5" handle="Raini" type="FRIENDLY" at="3" rsi="560a0058" weapon="0" />
+  <npc id="6" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>A little resistance isn't always a bad thing.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say>I think she's warming up to us.</say>
+  </npc>
+  <npc id="8" handle="5 Points Magister" type="HOSTILE" at="3" rsi="38000024" weapon="2568">
+    <say>Oh, so you're so tough?</say>
+  </npc>
+  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" spawnAfter="4">
+    <say>Raini just can't get enough of ol' Effy. And who can blame her?</say>
+  </npc>
+  <npc id="10" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2568">
+    <say after="5">There is more to this plot than the petty ambitions of Mercury and Thallia; neither of them would be able, much less want, to hatch a scheme requiring the cooperation of their fellow Elements. There must be some specific reason, and some steadier hand, behind these "distractions" in Mara.</say>
+  </npc>
+  <npc id="11" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>There's something to be said for simply slitting someone's throat.</say>
+  </npc>
+  <npc id="12" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>He talks too much.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>I've seen enough to believe that Raini has begun taking her "bad girl" image far too seriously. This recent spate of disobedience by the other Elements has pointed to her in several ways. It's time to rein her in.&#10;&#10;Go to Apollyon and find her.</briefing>
+    <enter><say>That's a known hangout for Raini's "5 Points" gang. I'm reading an active terminal in there, so get to it and we'll see if we can track her across her network.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Use" object="1">
+      <done><say>What? Her operating system is so old that our network hack won't even run! Damn, I can't stand people who don't keep their software up to date!&#10;&#10;Looks like we're going to have to go to plan B. Um, maybe Flood will have one of those for once.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Whoa, chill out!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>For the love of--&#10;&#10;I can't waste time with these bastions of ineptitude. Fine. I'm going to have to crack open the expense account for this one, and if the Merovingian doesn't like it, he has only his own cavalier attitude toward women to blame.&#10;&#10;Nicky G. has been summoned. You're going to talk to her so that I don't have to. She'll know where to find Raini.</briefing>
+    <enter><say>Whoa, Nicky G. doesn't slink out of her ritzy room in Paradise Lost for chump change. Flood must have shelled out a pretty penny. Scuttlebutt has it that she and the Merv used to know each other... But then again, they say a lot about both of them, so who knows?</say></enter>
+    <objective goal="2" text="Talk to Nicky G." type="Talk" npc="2">
+      <talk><say npc="2">Raini? That kid? She's strictly low-class, but yeah, I know some people she parties with. I'll make a few calls. Your operator will have the information in a jiff.</say></talk>
+      <done><say>I guess it pays to know people, huh? I wonder what other numbers she's got in her little black book.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>Say what you like about Nicky G.; she is, at least, professional, unlike most of the people with whom I am forced to deal. Little wonder that she left the Merovingian's employ...&#10;&#10;Ah, and then there's you, {player}. Go see Raini. She'd better have a good explanation for her recent underhanded dealings with Mercury. Not that I expect her to.&#10;&#10;Oh, and I'm sending the Twins along, just to make sure that her 5 Points don't delay you.</briefing>
+    <enter><say>I'm reading a bunch of Exile programs in there; a couple of them look like our Twins.</say></enter>
+    <objective goal="3" text="Talk to Raini" type="Talk" npc="5">
+      <done>
+        <say npc="6">Don't be that way, love.</say>
+        <say npc="7">You treat us right, we'll treat you right.</say>
+        <say contact="1">If she continues to be obstinate, tell her that we will send in the Effectuator.</say>
+        <say npc="6">A little resistance isn't always a bad thing.</say>
+        <say npc="7">I think she's warming up to us.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Tell Raini that Flood will send in the Effectuator" type="Talk" npc="5" after="3">
+      <talk><say npc="5">Hey, what's the big idea? You can call off your goon squad here.&#10;&#10;Mercury? Ha-ha! I am so over him. If he's geeking out on me again--&#10;&#10;H-huh? No, no need for him! Uh, look, so you're saying Mercury and Thallia didn't tell you? They've been running distractions with the Blackwoods in Mara. Why? How should I know? Geez...</say></talk>
+      <done>
+        <say contact="1">An interesting story...but I'm sure she isn't telling us everything. We'll follow that up, but I'm calling the Effectuator to keep her busy. This is one call that nincompoop won't pretend to miss...</say>
+        <say npc="9">Raini! Baby! Where've you been? I've looked all over! Well, never mind; we've got a lot of catching up to do! Did I tell you about that time with the helicopter inside Hel Club? Well, that wasn't even me, but the best part was that I...</say>
+        <say npc="5">Aw, crap! Do you know how long it took me to get rid of him last time?</say>
+        <say npc="9">Raini just can't get enough of ol' Effy. And who can blame her?</say>
+      </done>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="8">Oh, so you're so tough?</say>
+    </near>
+    <complete>
+      <say npc="6">And we were getting on so beautifully.</say>
+      <say npc="7">Now that's a shame.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>This is getting ridiculous, {player}. Now I'm to believe that Mercury and Thallia, whom we have already confronted, are up to something with the Blackwoods in Mara? All I can say that I truly believe at this point is that none of the Elements has been entirely truthful with us. If it wasn't such a bother, I'd say that we should have the whole lot of them recycled...&#10;&#10;But before that, we'll have to look into this Blackwood thing. Or rather, you and Malphas will.</briefing>
+    <enter><say>Whenever Malphas shows up, you know that someone is in for it.</say></enter>
+    <objective goal="5" text="Talk to Malphas" type="Talk" npc="10">
+      <talk><say npc="10">In general, the Mara Blackwoods are thought to be independent. However, as they are in a nearly constant state of poverty, they do not hesitate to retail their services to the highest bidder--and in their case the bidding does not usually go very high.&#10;&#10;It seems to me that an interrogation of Mara Blackwoods is in order; I have found that when dealing with beings of such low understanding, pain and fear elicit the most honest response. They should not be overly difficult to break.</say></talk>
+      <done><say>I don't think I'd like to be a Blackwood in Mara about now.</say></done>
+    </objective>
+    <near npc="10" radius="1000">
+      <say npc="11">There's something to be said for simply slitting someone's throat.</say>
+      <say npc="12">There's something to be said for simply slitting someone's throat.</say>
+      <say npc="12">He talks too much.</say>
+    </near>
+  </phase>
+  <finish>Well, that's Malphas' problem, isn't it? I have better things to do than to waste my time trying to extract anything useful from Blackwoods.</finish>
+</mission>

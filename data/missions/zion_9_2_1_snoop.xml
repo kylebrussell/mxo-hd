@@ -22,7 +22,7 @@
   <npc id="2" handle="Intruder" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
     <say after="3">Yes, I know you shut it down. I'd have done the same--but the nice thing about this race is that I'm the only one who knows what the goal is.</say>
   </npc>
-  <npc id="3" handle="Ghost" type="FRIENDLY" at="4" rsi="c9020058" weapon="2564" />
+  <npc id="3" handle="Ghost" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Warrior, we've got a bit of a problem. It's the intruder; he's made his way into one of our network hubs. It isn't clear what he's doing there, but if he has some means of accessing the uplink at that location, he could compromise New Zion's security. I need you to try to draw him off.</briefing>
     <enter><say>I knew this guy was trouble. Heck, he can probably cut through our firewall like it isn't even there.</say></enter>

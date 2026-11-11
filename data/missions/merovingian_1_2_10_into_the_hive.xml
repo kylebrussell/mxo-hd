@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Into the Hive, Merovingian story mission 1.2.10. Source: research/missions/transcripts/Merv1-2-10.md (the archive
+     replay of [Merovingian Archive 1.2.10], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and every NPC name. Ours: the description,
+     the objective texts, the sites (the Agents' place: Normal; Annita Barrows's apartment: SlumApt; the phone company's
+     office: Office), the looks and the enemy counts (Agent Park's group and the office's security are the phases'
+     generated Machines; the Machine Captain is placed with a bark he had in Team chat). Item stand-ins: the hit list is
+     Document_Hit_List (6854), Annita Barrows's access card is Access_Card (6791), the key the Operator spots after the
+     apartment's goals are done is Access_Code (6782), an optional search, and the hardline junction box is a Box that
+     is used. Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
+     values (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: Agent Park greets the player before the fight; he waits for the player (attacksOnSight="0"): finding him is a
+     Talk that plays his line and the Operator's, then he is killed and the hit list looted from his body. Annita
+     Barrows flashed hostile for one line in retail; she is friendly here, and the access card is taken from her with a
+     Get. The access card doesn't open anything: the office phase just follows. The security cameras can't raise an
+     alarm; the Operator's warning is said when the office's goal is done. The Machine Captain's second bark ("You
+     there! Freeze!") and Taylor Zato's "Are you new here?" aren't said (one line per NPC). -->
+<mission id="301210" title="Into the Hive" description="Strike an Agent cell and follow its hit list to the phone company." plot="1"
+         order="1210" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Agent Park" type="HOSTILE" at="1" rsi="9b000090" weapon="2568" attacksOnSight="0" />
+  <npc id="2" handle="Annita Barrows" type="FRIENDLY" at="2" rsi="3c000040" weapon="0">
+    <say>They insisted that I give them my access card or my key, but I refused.</say>
+  </npc>
+  <npc id="3" handle="Machine Captain" type="HOSTILE" at="3" rsi="8f080058" weapon="2568">
+    <say>You're not supposed to be in here!</say>
+  </npc>
+  <npc id="4" handle="Taylor Zato" type="FRIENDLY" at="3" rsi="38000024" weapon="0">
+    <say display="5">I thought we mostly dealt in cell phones. What is this concern over old telephone booths?</say>
+  </npc>
+  <npc id="5" handle="Sharmaine Boon" type="FRIENDLY" at="3" rsi="e4050024" weapon="0">
+    <say display="5">I have no idea, but the strange men who came by were interested in our junction box.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>It seems we can rule out any efforts to be civil with the Agents. Since you and others like you have defeated them in combat, we ask you to strike against a group of them in this sector.
+
+Our attack is an attempt to recover anything useful they may be carrying. If we can find out what their agenda is, it will give us the edge in what appears to be a slowly shattering truce.</briefing>
+    <enter><say>Hit this place hard! Clear out anyone you run into and search all of your enemies for clues.</say></enter>
+    <objective goal="1" text="Find Agent Park" type="Talk" npc="1">
+      <talk>
+        <say npc="1">Not this time.</say>
+        <say>I think Agent Park is the leader of this group. Take him out!</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Agent Park" type="Defeat" npc="1">
+      <done><say>Search his body!</say></done>
+    </objective>
+    <objective goal="3" text="Get the hit list from Agent Park" type="Loot" npc="1" item="6854" after="2">
+      <done><say>A hit list, hmm... It's a series of names; Dalasi, Bohrmann, and Annita Barrows.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>I'm going to send you to the address where Annita Barrows lives and I want you to see what relation they might have had with these Agents. If they are alive, talk to them. If they have already been hit, search the place and see if you can find any clues that might help us understand why these Agents would want to harm them.</briefing>
+    <enter><say>This is where Annita Barrows lives. We need to know what the Agents wanted from her.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Talk to Annita Barrows" type="Talk" npc="2">
+      <talk>
+        <say npc="2">Did that Agent send you here? I don't know what he wanted with me, but they were quite interested in the fact that I work for the phone company.</say>
+        <say>Interesting... Annita Barrows works for the phone company so we may be heading in the right direction. Search her apartment for an access card, a key or something that will let you get into the phone company's office complex.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Get the access card from Annita Barrows" type="Get" npc="2" item="6791" after="1">
+      <talk><say npc="2">They insisted that I give them my access card or my key, but I refused.</say></talk>
+      <done>
+        <say>Hey, good idea! You can take Annita Barrows's access card. This will allow you to get past the security.</say>
+        <say>This will allow you access to Annita Barrows's office. I'll send you the address as soon as you are out of her apartment.</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Search the apartment for a key" type="Search" object="1" item="6782" after="1" optional="1">
+      <done><say>Take that key! This should allow us access to her office.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Head to this building and find Annita Barrows's office.</briefing>
+    <enter><say>This is where Annita Barrows works. Her office must be around here somewhere.</say></enter>
+    <object id="1" kind="Box" />
+    <objective goal="1" text="Inspect the hardline junction box" type="Use" object="1">
+      <done><say>This is Annita Barrows's office and it looks like she has a hardline junction box here... What would the Agents want with it? This is just like the one we saw at the first location except this junction box has been tampered with. This is all the information we need for the time being. You may leave now.</say></done>
+    </objective>
+    <complete><say>They have security cameras in place! They are going to confirm your presence!</say></complete>
+  </phase>
+  <finish>It's my guess that the Agents have been damaging the hardline junction boxes to prevent redpills from coming in and out of the Matrix, but I'm not certain of this yet. It could be that they are just as interested in the damaged hardlines as anyone else is.
+
+We need to look into this... Contact me when you are ready for your next assignment, {player}.</finish>
+</mission>

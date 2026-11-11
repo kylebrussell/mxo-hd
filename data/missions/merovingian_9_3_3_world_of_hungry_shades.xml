@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- World of Hungry Shades, Merovingian story mission 9.3.3. Source: research/missions/transcripts/Merv9-3-3.md (a run
+     of [Merovingian Archive 9.3.3] given by [Archived]Flood; 24 screenshots, one during play in phase 1, the rest of
+     the log after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Agent Wilson, Agent Johns, Reggie, Sherwood, Ja and Carlyne
+     line, the E Pluribus Neo Fighter's bark (Team chat, screenshot_51) and all the names. The log's player was TiAmo,
+     and Agent Wilson called her "Ms. Napilitano"; both are {player} here. The asterisks in "*is*" are retail's own;
+     Reggie's leading "..." is retail's (he is overheard mid-sentence). Ours: the description (the Summary tab was
+     never opened), every objective text (the Objectives tab only showed "Leave the area now!"), the sites (phase 1
+     was an office room with a desk, a computer and a filing cabinet in Achan: Office, in Achan; the others aren't
+     described: Normal; Flood sends the player after leads where Oracle hunters are "converging on Mara", so the
+     mission prefers Achan and Mara), the looks and the enemy counts. Phase 1's "unidentified redpills" were E Pluribus
+     Neo Fighters (one was named in the target window): Zion, two besides the named one. Phase 3's hostiles are
+     overridden programs (Carlyne's "my programs"): Merovingian, 4.
+     Joins between shots read as contiguous: "if he thinks he's" / "going to outwit", "so we're going" / "to have to
+     do", "some kind of" / "information feeding frenzy.", "they'll" / "have to be dealt with.", "isn't it, Agent" /
+     "Johns?", "a clear" / "idea of what", "standing around" / "for, operative?", "Uhhh boy." / "Code overrides.",
+     "Agent Wilson." / "Serve 'em right", "sends the" / "signal.", "In fact," / "I've suspected it", "He's" / "been
+     playing up"; "the contact's profile." / "The other bad news" and "you know." / "Now stop jabbering" as paragraph
+     breaks.
+     Rewards: the log shows 396,000 experience and 66,500 information (a level-37 player's live run). These are Zion
+     9.3's values (374,000 experience, 63,000 information, as Senseless paid).
+     Gaps: phase 1 completed 11 seconds after arriving, with the player at the desk computer (its window: "dir",
+     "Unspecified error", "Disk read error", "Error"); here the computer is used, and its readout, a client window,
+     isn't sent. The E Pluribus Neo Fighter's bark came only in Team chat; it is said on getting near him. In phase 2
+     a second Operator line at 12:54:23 is lost (only its header was captured), so the talk's done line is only "Intel
+     straight..."; the two bluepills the Operator mentions aren't placed (never named, no lines); Agent Johns's "A real
+     waste." and Agent Wilson's "Oh, I believe" came seven seconds after the talk, here what each says when clicked
+     afterwards. Phase 3's goal isn't shown: four minutes passed between arriving and "So much for that contact...",
+     read as a fight with the overridden programs, whose last kill says it. Flood's phase 4 briefing may have lost a
+     line at the join "I fully expect" / "unwittingly rubbing out" (the sentence names no one to do the rubbing out);
+     the cut is marked with "...". In phase 4 the Exiles' exchange, the Operator's "Uh-oh" and Ja's "No!" are said on
+     getting near Reggie; what happened to the Exiles then isn't logged (Flood calls them dead, and the player
+     searched bodies for ordinary loot), so they stay standing here: Reggie and Sherwood friendly, Ja hostile (red in
+     the log) but waiting to be attacked. Carlyne is there from the start rather than arriving. The Operator's line
+     after Carlyne's speech (1:02:02) is lost, so his talk has no done line. Carlyne's "Oh, all business" is what he
+     says when clicked afterwards. -->
+<mission id="309303" title="World of Hungry Shades" description="Follow Flood's leads on the Oracle, and find out who keeps getting to them first." plot="1"
+         order="9303" org="3" contact="Flood" exp="374000" info="63000" neighbourhoods="Achan, Mara">
+  <npc id="1" handle="E Pluribus Neo Fighter" type="HOSTILE" at="1" rsi="050100b4" weapon="2568" />
+  <npc id="2" handle="Agent Wilson" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say after="2">Oh, I believe they'll be held for questioning for quite some time.</say>
+  </npc>
+  <npc id="3" handle="Agent Johns" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say after="2">A real waste.</say>
+  </npc>
+  <npc id="4" handle="Reggie" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568" />
+  <npc id="5" handle="Sherwood" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="6" handle="Ja" type="HOSTILE" at="4" rsi="c9020058" weapon="2568" attacksOnSight="0" />
+  <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+    <say after="4">Oh, all business--of course, of course. But I am disappointed that he made the mistake of choosing...poorly. I was hoping he was more perceptive. Too bad.</say>
+  </npc>
+  <phase site="Office" enemy="Zion" enemies="2" neighbourhoods="Achan">
+    <briefing>Halborn is having difficulty locating the Oracle, even after we fed him all the information he should have needed to track her down. I can't say that I'm surprised. He's in over his wireframed head if he thinks he's going to outwit the Oracle... Still, some hold out hope that with those override routines of his, he'll manage to do something useful along the way--or turn up that interface program he's looking for, and give us a chance to relieve him of it.&#10;&#10;It's all a moot point if he doesn't get a clue, unfortunately, so we're going to have to do some Oracle hunting of our own. There are all sorts of idiots, zealots, and goose-steppers converging on Mara at the moment, so you should blend right in, {player}. The leads we have cost a fair penny, so try to get us our money's worth, hm?</briefing>
+    <enter><say>Supposedly there's an Oracle info source in there... I'm reading some kind of data cluster... Uh-oh, also got some unidentified redpills, too.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Hack the data cluster" type="Use" object="1">
+      <done><say>Oh man, that thing is toast. The access log reads like War and Peace. We've stumbled into some kind of information feeding frenzy.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">It's the eyes again, isn't it? You sons of--</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Hrm... I'll have to check our source for that one. If they're selling their information to other parties, they'll have to be dealt with. Sloppy, very sloppy.&#10;&#10;Check this next address, operative. This one came directly from a Machine d-base, so it isn't likely any cave-dwellers will have beat you to the punch.</briefing>
+    <enter><say>Okay, supposedly we can find a bluepill there who's been known to associate with the Oracle. Only... Hm...&#10;&#10;Well, the bad news is that I'm picking up two bluepills in there, but neither one looks remotely like the contact's profile.&#10;&#10;The other bad news is that I'm also picking up two Machine programs.</say></enter>
+    <objective goal="2" text="Talk to Agent Wilson" type="Talk" npc="2">
+      <talk><say npc="2">Hello, {player}. I'm afraid that the individual you're no doubt looking for was just taken in for questioning about involvement in a terrorist plot.&#10;&#10;It's a real shame, isn't it, Agent Johns? Always unfortunate to find that someone has chosen to stop being a productive member of society.</say></talk>
+      <done><say>Intel straight "from a Machine d-base," huh? ...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>What? Mm, that *is* aggravating... I wonder if the Machines have a clear idea of what they're doing. We know they're the ones who told Halborn he could get the program he wants from the Oracle; probably a lie, but in any case, if they wanted him chasing the Oracle, why would they be interfering with our search for her, when they must know we're trying to help that moron get to her?&#10;&#10;I suppose they intend to screw everyone over on this one; that would be about par for the course with them. Oh, we may be looking to do something similar; the difference is that we don't pretend to be motivated by slavish loyalty to an inefficient operating system.&#10;&#10;Well, what are you standing around for, operative? You haven't found the Oracle yet, have you? So get back to checking on those leads.</briefing>
+    <enter><say>It's getting hard to sort through all the signals in that neighborhood... Okay, getting something... Uhhh boy. Code overrides. Somehow I don't think those are the contact we're looking for.</say></enter>
+    <objective goal="3" text="Kill the overridden programs" type="DefeatAll">
+      <done><say>So much for that contact...&#10;&#10;Maybe we'll get lucky, and whatever override user tagged those programs also got Agent Wilson. Serve 'em right for sending Agents to insult us when they could've just used operatives...</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The way this is going, I fully expect... unwittingly rubbing out a contact who could have aided his search. This is what happens when we rely on limited intellects...&#10;&#10;No, {player}, I wasn't talking about you. I do have other issues to contend with aside from your own inadequacies, you know.&#10;&#10;Now stop jabbering about yourself, and go find the Oracle.</briefing>
+    <enter><say>Hm... I've got programs in that, and they don't look like Machines...but they aren't ours, either.</say></enter>
+    <objective goal="4" text="Talk to Carlyne" type="Talk" npc="7">
+      <talk><say npc="7">Oh, excuse me. Did I interrupt?&#10;&#10;Well, I couldn't help but notice my programs ran into a little hitch a few minutes ago... And I have some idea of what you were doing there. In fact, I've suspected it for some time now, but it's nice to have real proof, isn't it?&#10;&#10;You can tell the Merovingian it's become all too clear that he's backing my opponent...and I'm afraid I'll have to cancel our brunch date.</say></talk>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">...do anything until Ruhamah sends the signal.</say>
+      <say npc="5">But what about the sim? I thought he was supp--</say>
+      <say>Uh-oh... Is that who I think it is?</say>
+      <say npc="6">No!</say>
+    </near>
+  </phase>
+  <finish>Pfah! I warned the Merovingian that something like this could happen. He's been playing up to Halborn far too much. Well, we can forget about getting anywhere now with the one who actually has half a brain.&#10;&#10;Oh, what do I care what some dead Exiles were nattering about, operative? Ruhamah, simulacrum... Bah! Next you'll tell me there's some sort of underground conspiracy afoot. That's the problem with people--they'll root for trash in the muck while the real prize goes right on by. And now just look at the situation we're in!</finish>
+</mission>

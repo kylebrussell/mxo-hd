@@ -7,17 +7,16 @@
      the sites (unnamed buildings: Normal), the looks and the enemy count. The damaged junction box is a Box. Rewards:
      the 61,625 experience and 63,000 information shown right after this mission completed.
      Gaps: retail had Norris The Mechanic repair the box while three waves of Exiles arrived over several minutes. We
-     have no timers or waves: the attackers (the generated Exiles and a named Elite Guard) are on the floor from the
-     start, an Escort can't target an object, so bringing Norris to the box is a Use of the box while he follows, and
-     the repair is done when every attacker is dead. The Operator's later wave warnings ("Don't let down your guard
-     yet! I'm picking up more hostile programs headed your way." and "Watch out, a third wave of attackers is
-     entering the area now.") and the Elite Guard's Team chat bark aren't said. -->
+     have no timers or waves: Norris is led to the box, the attackers (the generated Exiles and a named Elite Guard)
+     arrive in one wave once he is there, and the repair is done when every attacker is dead. The Operator's later wave
+     warnings ("Don't let down your guard yet! I'm picking up more hostile programs headed your way." and "Watch out, a
+     third wave of attackers is entering the area now.") and the Elite Guard's Team chat bark aren't said. -->
 <mission id="201215" title="Scheduled Maintenance" description="Escort a maintenance program to a damaged junction box and guard it during the repair." plot="1"
          order="1215" org="2" contact="Agent Gray" exp="61625" info="63000">
   <npc id="1" handle="Norris The Mechanic" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
     <say>Repair complete! I'll just stick around for a while to tidy up. Thanks for your help, human.</say>
   </npc>
-  <npc id="2" handle="Elite Guard" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" />
+  <npc id="2" handle="Elite Guard" type="HOSTILE" at="2" rsi="c6020058" weapon="2568" spawnAfter="1" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Although we have nearly finished securing our hardline system against further sabotage, there are still damaged hardline systems in a number of spots in the City. You will escort a hardline maintenance program to a damaged junction box and defend it while it makes the repair.</briefing>
     <enter><say>The hardline program Norris The Mechanic is in that building. Lead him outside and wait for further directions.</say></enter>
@@ -26,17 +25,17 @@
     </objective>
     <objective goal="2" text="Lead Norris The Mechanic out of the area" type="Escort" npc="1" to="exit" />
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="5">
+  <phase site="Normal" enemy="Merovingian" enemies="5" enemiesAfter="1">
     <briefing>I am sending you a waypoint to the damaged junction box. Take Norris The Mechanic to the building indicated.</briefing>
     <enter>
       <say>The damaged junction box is in that building. Take Norris The Mechanic to it and guard him while he makes the repairs.</say>
       <say>The junction box is in that room.</say>
     </enter>
     <object id="1" kind="Box" />
-    <objective goal="1" text="Take Norris The Mechanic to the junction box" type="Use" object="1">
+    <objective goal="1" text="Take Norris The Mechanic to the junction box" type="Escort" npc="1" to="object:1">
       <done><say>I'm picking up hostile programs en-route to your location. ETA: 15 seconds. Protect Norris The Mechanic at all costs.</say></done>
     </objective>
-    <objective goal="2" text="Kill all of the attackers" type="DefeatAll">
+    <objective goal="2" text="Kill all of the attackers" type="DefeatAll" after="1">
       <done><say contact="1">There are no further hostile programs in the area. Your work is done there, operative.</say></done>
     </objective>
     <objective goal="3" text="Do not let Norris The Mechanic die" type="Protect" npc="1" />

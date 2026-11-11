@@ -25,7 +25,7 @@
      or the end of "I'm in the red here"; it is said after it. Gray's broken closing line is retail's. -->
 <mission id="209304" title="Acceptable Levels" description="Attend Halborn's meeting with the Machines, then keep Zion off his trail as Carlyne closes in." plot="1"
          order="9304" org="2" contact="Agent Gray" exp="396000" info="129500">
-  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="8f080058" weapon="2564">
     <say after="1">... Giving me a whole lot of crap I already know. I can't believe the incompetence...
 
 Damn it, just more of my time they've wasted.</say>
@@ -42,11 +42,11 @@ Damn it, just more of my time they've wasted.</say>
   <npc id="5" handle="Agent Long" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568">
     <say after="2">Confirmed. Operative is leaving the building.</say>
   </npc>
-  <npc id="6" handle="Halborn" type="FRIENDLY" at="2" rsi="ec020058" weapon="2564">
-    <say after="1">When I'm done with this, you can bet your ass that I'll be having another talk with the old man and his little harem. I'll have all the time in the world then to make damn sure they're playing me square.</say>
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="2" rsi="8f080058" weapon="2564">
+    <say after="3">When I'm done with this, you can bet your ass that I'll be having another talk with the old man and his little harem. I'll have all the time in the world then to make damn sure they're playing me square.</say>
   </npc>
   <npc id="7" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2564" />
-  <npc id="8" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="8" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2564">
     <say>I see you still haven't learned. I won't let you off as easily this time.</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="0">
@@ -76,7 +76,7 @@ Your observation of Halborn indicates increasing anxiety on his part. This canno
     <enter><say>So Halborn's cracking up, and we have front row seats to ground zero. Just another day on the job...
 
 Okay, he's supposed to be in there. I've got override activity all over the place. I've also been picking up redpill readings here and there, so we could get some party crashers.</say></enter>
-    <objective goal="1" text="Talk to Halborn" type="Talk" npc="6">
+    <objective goal="3" text="Talk to Halborn" type="Talk" npc="6">
       <talk><say npc="6">You think I don't know what's going on? Hah. Your masters don't have the balls for this. They want me to take care of it all, so they keep their hands clean.
 
 If that's the way they want to play it, fine. Isn't worth my time trying to get them to man up--not with that bastard on my tail.</say></talk>
@@ -91,7 +91,7 @@ Fortunately, Carlyne does not appear to be in that immediate area. We are contin
     <enter><say>Darn, I was kind of hoping it'd be some more EPN.
 
 Well, better than nothing. I've got the reds showing on my scan. They're all yours.</say></enter>
-    <objective goal="1" text="Stop the Zion attack force" type="DefeatAll" />
+    <objective goal="4" text="Stop the Zion attack force" type="DefeatAll" />
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0" neighbourhoods="Achan">
     <briefing>Operative, Carlyne has been detected on a direct course for Halborn. The projected interception point is marked for you.
@@ -100,7 +100,7 @@ Interference in the area is causing a delay in reaching our other units. Proceed
     <enter><say>Oh man, I'm picking up ridiculous code activity in there. Feedback's heading toward the red... Damn, there goes monitor three! Just had that one replaced, too...
 
 Better get in there and look around fast. Dunno how much longer I can hold transmission...</say></enter>
-    <objective goal="1" text="Talk to Carlyne" type="Talk" npc="7">
+    <objective goal="5" text="Talk to Carlyne" type="Talk" npc="7">
       <talk>
         <say npc="7">Be a sport, and don't run off, hm? It's been getting a little tiresome.</say>
         <say npc="8">I see you still haven't learned. I won't let you off as easily this time.</say>

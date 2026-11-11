@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Disconnect, Merovingian story mission 10.1.4. Source: research/missions/transcripts/Merv10-1-4.md (a live run given
+     by Flood, not an archive replay: 21 screenshots of the Log tab scrolled top to bottom and one computer popup; no
+     chat, HUD or Objectives window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Merovingian and Persephone line, and the names. The log's player
+     name is blacked out in the screenshot; it is {player} here. Retail's slips are kept: the Operator's "run quick a
+     diagnostic our subnet" and the Merovingian's "impetuous". Retail's italics ("supposed", "can't", "non?", Flood's
+     "I") can't be carried. Ours: the description (the Summary tab only said "Datalink established."), every objective
+     text (the Objectives tab was never opened), the sites (all Normal: the safe room is only "shielded against
+     scans"), the looks (the Accelerator, never shown, has a male look no one else here wears) and the enemy counts:
+     phases 1 and 2 have none ("not getting any active readings", "No signals in there"), phase 3 has six Machines.
+     Joins between screenshots read as contiguous: "for some of that / we haven't received", "Zion /
+     hovercraft", "any active readings / here.", "you've got the / full attention", "fifteen minutes of / fame.",
+     "while on a / mission for me.", "And I'd / rather you left", "completely free of / the weaknesses". Two are read
+     as paragraph breaks (a hidden line can't be excluded): the Merovingian's "at an end." / "Too bad..." and
+     Persephone's "dead without knowing it." / "It is the price we pay".
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
+     Gaps: what the commando squad's fate was isn't shown; the Operator's "That solves part of the mystery" is read as
+     finding them, which here is searching a Furniture object for nothing (dead NPCs aren't spawned). The computer's
+     reply ("UNAUTHORIZED ACCESS ... An alert has been sent to the administrator.") can't be shown; using it
+     completes the goal. The safe room is a safe searched for nothing, and the Machines who find the player there
+     aren't spawned in phase 2 (no hostile is logged there). Phase 2 closed with a second Operator line at 3:22:57
+     whose text is hidden, read as the area's completion. In retail the Accelerator worked by standing near it ("go
+     hang out near that thing"); here it is a friendly NPC to talk to, and Flood's line follows that. The Machines
+     are open to kill from the phase's start rather than only "outside the Accelerator's range". The Merovingian's
+     second line and Persephone's two came 3 to 6 seconds after his talk; here they are the talk's done lines, and
+     each repeats one when clicked again. -->
+<mission id="310104" title="Disconnect" description="Find out why the General's broadcasts have stopped, then shake off the System's attention." plot="1"
+         order="10104" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Accelerator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="0" />
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="6">It is said that he believes the program will cure his decaying flesh. If that is truly his condition, then he is to be pitied, non?&#10;&#10;We here tend to take for granted our freedom from such frailties. This world grants us all the benefits of physical bodies, completely free of the weaknesses suffered by man. Any weaknesses we suffer here are entirely of our own making.</say>
+  </npc>
+  <npc id="3" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
+    <say after="6">Don't worry; some get a bargain for theirs.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General seems to have thus far survived his trip toward the blackout zone 800 miles away--we can thank Zion's marvelously distracting bungle job of transferring their Commander Lock from EPN for some of that--but we haven't received his most recent update broadcast. This could mean that he's lying dead out there on some blackened, blasted rock--but let's not get our hopes up just yet. Before we start the party, you're going to go check with the commando squad in charge of relaying his transmissions, and see if they have any idea what's caused the delay.</briefing>
+    <enter><say>Yeah, I heard something about that Commander Lock thing. EPN's been taking care of him in old Zion, and he finally got well enough to be shipped over to New Zion. So there was supposed to be some kind of hand-off of him between EPN and Zion hovercraft, but Veil and some Cypherites showed up, and then some Machine ships, and I think you can guess the rest. I still haven't heard who won or what happened to Lock, though.&#10;&#10;Okay, the commando squad is... Uh... They're supposed to be in there, but I'm not getting any active readings here.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Look for the commando squad" type="Search" object="1" item="0">
+      <done><say>Ah, geez... That solves part of the mystery, anyway. Anything on their computer?</say></done>
+    </objective>
+    <objective goal="2" text="Search the commandos' computer" type="Use" object="2" after="1">
+      <done><say>Uh-oh. Um... I'm gonna run quick a diagnostic our subnet that they were hooked into. Get back to you in a minute.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well, {player}, you'll no doubt be pleased to hear that you've got the full attention of the System at the moment, and they aren't at all happy with you. Mm, no... I imagine they're a little riled up about the various hacks we've had to run on their systems to get the General past their Sentinel patrols. Of course, you can't be held responsible for more than just a very small, minor part of that...but consider this your fifteen minutes of fame.&#10;&#10;Oh, come now, operative. I thought I could count on you to be useful for once in your life, and take the fall for this like a...well, whatever you call yourself. Now you want me to save you? Oh...fine, but I'm only doing this because it would look bad on my record if you were killed while on a mission for me.&#10;&#10;Now, listen carefully. Go to the location I've marked for you, and find the room with the safe in it. It's shielded against scans. You should be perfectly fine in there.</briefing>
+    <enter><say>No signals in there... Maybe we ditched 'em.</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="3" text="Find the room with the safe" type="Search" object="1" item="0">
+      <done><say>"Shielded against scans," huh? Riiight...&#10;&#10;It's "safe" to say that your cover's blown. You'd better get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="6">
+    <briefing>For crying out loud! I can't send you any Exile backup, operative--not with all those override programs still... Hm.&#10;&#10;All right, don't say I never did anything for you. We've been tracking Halborn here and there, and it happens that I know of a spot where he's dropped one of his Accelerator programs. The Machines should give up the chase if you go hang out near that thing, since they won't want to get overridden.</briefing>
+    <enter><say>I'm reading a large override signal in there. Here's hoping this works...</say></enter>
+    <objective goal="4" text="Go to the Accelerator" type="Talk" npc="1">
+      <done><say contact="1">There, you see? Now why don't you make yourself useful by cleaning up the Machines still hanging around outside the Accelerator's range.</say></done>
+    </objective>
+    <objective goal="5" text="Kill the Machines" type="DefeatAll" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>You see? If you could follow my orders that promptly when your skin wasn't immediately at risk, you wouldn't have these problems in the first place.&#10;&#10;Now that you've managed to delouse yourself, you can go report this escapade of yours yourself. And I'd rather you left my name out of it. It's embarrassing enough as it is...</briefing>
+    <enter><say>Good thing for us Halborn's still playing irresponsibly with his override programs, I guess.&#10;&#10;All right, look sharp, 'cause the boss is expecting you in there.</say></enter>
+    <objective goal="6" text="Talk to the Merovingian" type="Talk" npc="2">
+      <talk><say npc="2">Hm. Yes, he has had his uses, but he still refuses to tell us anything about the program he wants, and now that he has removed the Oracle, he is without any impetuous that can be redirected to our own purposes. I think we can consider our business with him at an end.&#10;&#10;Too bad... With his abilities, and my guidance, he had everything he needed to rise to a commanding position here.</say></talk>
+      <done>
+        <say npc="2">It is said that he believes the program will cure his decaying flesh. If that is truly his condition, then he is to be pitied, non?&#10;&#10;We here tend to take for granted our freedom from such frailties. This world grants us all the benefits of physical bodies, completely free of the weaknesses suffered by man. Any weaknesses we suffer here are entirely of our own making.</say>
+        <say npc="3">Another of the many my husband has used and discarded over the centuries... Left an empty, purposeless husk--dead without knowing it.&#10;&#10;It is the price we pay for trust, for being reckless in our attachments. It is what comes of insatiable desire--of wanting something so badly you are willing to sell your soul to get it.</say>
+        <say npc="3">Don't worry; some get a bargain for theirs.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Well, I said long ago that we shouldn't have had anything to do with Halborn. I knew this would happen. Now we'll probably have him hanging all over us, sobbing for us to take him back.</finish>
+</mission>

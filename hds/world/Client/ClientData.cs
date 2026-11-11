@@ -52,9 +52,7 @@ namespace hds
 		public UInt32 jackoutStartTime;
 		public bool isJackoutInProgress;
 
-		// Pending loot from killed mob (cleared after accepting)
-		public UInt32 pendingLootMoney = 0;
-		public bool hasLootPending = false;
+		public readonly NpcLootCache loot = new NpcLootCache();
 
 		// Counts emotes; the own-view emote update carries it so each emote is a new one
 		public byte emoteCounter = 0;
@@ -71,6 +69,8 @@ namespace hds
 		public readonly Dictionary<UInt16, AbilityBuffs.Active> activeBuffs = new Dictionary<UInt16, AbilityBuffs.Active>();
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
+        // Actual clamped vital deltas, so removing a large negative buff restores the original maximum.
+        public int buffHealthMaximumDelta, buffISMaximumDelta;
 
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;
@@ -86,12 +86,24 @@ namespace hds
 		// Death: set when the player dies, respawnPending once they asked to respawn (81 4c)
 		public bool isDead = false;
 
+		// PvP (docs/PVP.md): the flag is ConditionStateFlags bit 0x01000000; conditionStateFlags holds the other bits
+		// last sent (in combat, tactic conditions). duelId pairs two duelists (even and odd); duelDeath is the loser
+		// lying down until they stand up (81 4c).
+		public bool pvpFlag = false;
+		public UInt32 conditionStateFlags = 0;
+		public UInt32 duelId = 0;
+		public bool duelDeath = false;
+		public double lastDuelEndedAt = -1000;
+		public bool isBot = false;
+		public readonly Dictionary<UInt32, int> conditionTokens = new Dictionary<UInt32, int>();
+
 		// Sim time (s) an NPC last attacked this player on its own (MobAggro)
 		public double lastAggroAt = -1000;
 		public bool respawnPending = false;
 
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
+        public readonly object missionSync = new object();
 		public TutorialMission tutorial;
 		public MissionSite missionPreview; public Mission missionPreviewFor; // a generated mission's first site, picked for its info
 		public StaticWorldObject elevatorPanel; // the panel last used, for the floor the player picks next
@@ -100,9 +112,7 @@ namespace hds
 		// Ids of finished missions; null until the first mission list loads them
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
-		public UInt32 pendingLootItem = 0;
-		// Items a killed NPC dropped (NpcLoot), given on Take All
-		public readonly System.Collections.Generic.List<UInt32> pendingLootDrops = new System.Collections.Generic.List<UInt32>();
+        public StaticWorldObject activeCollector;
 
 		// Doors this client has opened; DoorLifecycle closes and removes them on the retail schedule
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();

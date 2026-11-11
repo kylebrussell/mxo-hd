@@ -16,7 +16,8 @@ namespace hds
         Search,  // using the object opens it, holding the item
         Put,     // using the object while carrying the item leaves it there
         Use,     // using the object
-        Upload   // uploading at a hardline while carrying the item
+        Upload,  // uploading at a hardline while carrying the item
+        Survive  // holding out: done "seconds" after it opens (from reaching the area, in a generated phase)
     }
 
     public class MissionObjective
@@ -34,8 +35,11 @@ namespace hds
         public UInt32 item;        // gameobject id for Get, Give and Loot
         public int afterGoal = -1; // opens when this goal is done; otherwise it's open from the start of the phase
         public ushort objectId;    // MissionObjectDef.id for Search, Put and Use
-        public string escortTo = "exit"; // Escort: "exit", "npc:<id>" or "hardline"
+        public string escortTo = "exit"; // Escort: "exit", "npc:<id>", "object:<id>" or "hardline"
         public bool optional;      // the phase can end without it
+        public List<int> waves = new List<int>(); // DefeatAll: only these waves (0: the phase's own hostiles); empty: all of them
+        public double seconds;     // Survive: how long to hold out
+        public double limit;       // the mission fails if this isn't done this many seconds after it opens; 0: no limit
         public List<MissionLine> talkLines = new List<MissionLine>(); // talking to the NPC while this is open
         public List<MissionLine> doneLines = new List<MissionLine>(); // when it completes
     }

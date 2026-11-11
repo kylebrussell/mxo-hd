@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Incoming, Merovingian story mission 10.2.3. Source: research/missions/transcripts/Merv10-2-3.md (one live retail run,
+     given by Flood: 26 full-screen shots, four during play with the Computer's text window and the Objectives window
+     open, the rest of the log paged through after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Denny Ivkovic, Agent Jones, Yuette Johnson, Lowell Bosung, Agent
+     Norris and Holographic Projection line, the names, and the objective texts "Search the Computer", "Eliminate the
+     hostiles", "Don't let Ivkovic die" and "Search the area" (the Objectives window). The log's player was Briseus;
+     his name is {player} here. The asterisks in the Operator's "*That's*" are retail's own; the Holographic
+     Projection's italics are dropped. Denny Ivkovic's 1:08 line fell between two pages; its text is from Team chat
+     ("Who are you? Why are you doing this?", her line before it, said again). The Commando's "HQ! What happened?!"
+     was only in Team chat.
+     Ours: the description (the Summary tab only said "Datalink established."), the objective texts of phases 1 and 3
+     and "Lead Ivkovic to the technicians" and "Kill Agent Norris" in phase 2, the sites (all Normal: none is described
+     beyond a lab bench and a bare room), the looks (Yuette Johnson and Lowell Bosung's sexes aren't shown; Agents as
+     the other Merovingian files have them; the Holographic Projection is the General's) and the enemy counts. Phase
+     2's "More Machines!" (Tactical Security in System chat) and phase 4's A.S.P. Warrant make those phases' enemy
+     Machines.
+     Joins between pages read as contiguous: "inversion between / us and the General", "last year? / Anyway", "Get
+     that / Agent!", "no trouble from the / Machines.". Two pages start without a header ("We had a bit of a time",
+     "Let's see..."); each is the next paragraph of the entry above.
+     Rewards: the log shows 242,220 experience and 80,500 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5).
+     Gaps: Ivkovic, Agent Jones's warning and the Operator's "Grab her" came in one second on reaching her; here she
+     is talked to, and the Operator's "*That's* the mainframe?" is said on getting near her. Agent Jones is placed and
+     fights, but no goal names him (none is shown). No completion of area 1 is logged; leading her out ends it, and
+     she follows into phase 2. There the technician Lowell Bosung is killed by Agent Norris mid-sentence ("O-oh!");
+     here Agent Norris arrives when Lowell is talked to, and Lowell stays standing. Retail's "More Machines!" came
+     after the download started; the generated Machines arrive when the search is done, with the line, and the order
+     to eliminate them opens then. The neocortex download's progress ("Penetrating neocortex layer I..." to "V") and
+     phase 4's "The system has encountered an error" were the Computer's text windows, which we can't show. Ivkovic's
+     body in phase 4 isn't placed; the search is of the computer beside it. -->
+<mission id="310203" title="Incoming" description="Deliver the Machine mainframe code-named Ivkovic to the Merovingian's technicians so its data can reach the General." plot="1"
+         order="10203" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Denny Ivkovic" type="FRIENDLY" at="1" rsi="a5060090" weapon="0">
+    <say after="4">Police! Help!</say>
+    <say after="7">Nnnn!</say>
+  </npc>
+  <npc id="2" handle="Agent Jones" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" />
+  <npc id="3" handle="Yuette Johnson" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say after="7">Barbarians.</say>
+  </npc>
+  <npc id="4" handle="Lowell Bosung" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="5" handle="Agent Norris" type="HOSTILE" at="2" rsi="3600004e" weapon="2568" spawnAfter="5" />
+  <npc id="6" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
+    <say after="10">Where did that attack come from? Corporal, status report! Corporal! Blast it...&#10;&#10;Ensign! Find me an officer who's still functional! And shut off that damn broadca--</say>
+  </npc>
+  <npc id="7" handle="Commando" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="10">HQ! What happened?!</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Our seeding of the Dark Storm appears to have worked--better than expected, in fact. We've kicked up quite a maelstrom out there, and with radio waves curving through the large temperature inversion between us and the General, he's coming in loud and clear.&#10;&#10;Whether or not this is a good thing is another question, perhaps... At any rate, our job now is to feed him Machine data that will help his Sentinels decrypt the information they're pulling out of the Oligarch Network.&#10;&#10;We had a bit of a time finding the correct data type before, but our technicians have been doing more research on it in the interim, and they've already got a fresh source identified. They tell me this Machine mainframe is code-named "Ivkovic."</briefing>
+    <enter><say>Weird ident for a mainframe.&#10;&#10;Let's see... I'm reading a large data source in there; that'd be the mainframe, probably. Nothing that looks like Machine security.&#10;&#10;I heard the Machines are gunning pretty hard for some Zion operative named "Mauser." Sounds kind of familiar... Didn't we look up a Zionite with a name like that last year? Anyway, maybe that's why they don't have any guards on this mainframe right now.</say></enter>
+    <objective goal="1" text="Find the Ivkovic mainframe" type="Talk" npc="1">
+      <talk><say npc="1">What--? Who are you? I don't understand!</say></talk>
+      <done>
+        <say>They're on to you! Grab her and take off!</say>
+        <say npc="2">Step away from the civilian!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Lead Ivkovic out of the area" type="Escort" npc="1" to="exit" after="1" />
+    <objective goal="3" text="Don't let Ivkovic die" type="Protect" npc="1" />
+    <near npc="1" radius="1000">
+      <say>*That's* the mainframe? Uh... Okay... This might complicate things. We'd better get her--it--whatever--out of there.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="7">
+    <briefing>If the mainframe has legs, then you'd better get them moving, operative. We've got to get them plugged in and uploaded immediately.</briefing>
+    <enter><say>Okay, get them to the computer in there. We've got techs standing by to hook them up and download whatever data they've got.&#10;&#10;... This is still sort of weird.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Lead Ivkovic to the technicians" type="Escort" npc="1" to="npc:3">
+      <done><say npc="3">Yes, we're ready for her.</say></done>
+    </objective>
+    <objective goal="5" text="Talk to Lowell Bosung" type="Talk" npc="4" after="4">
+      <talk>
+        <say npc="1">Who are you? Why are you doing this?</say>
+        <say npc="4">Y-yes. I'll just a-activate the procedure, shall I? O-oh!</say>
+      </talk>
+      <done>
+        <say>The technician's down! Get that Agent!</say>
+        <say npc="5">Stop.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Kill Agent Norris" type="Defeat" npc="5" after="5">
+      <done><say>Okay. You're gonna have to start the download. Activate the computer over there.</say></done>
+    </objective>
+    <objective goal="7" text="Search the Computer" type="Search" object="1" item="0" after="6">
+      <done>
+        <say npc="1">Who are you? Why are you doing this?</say>
+        <say>More Machines! Keep them away from her--I mean, the mainframe!</say>
+        <say npc="1">Nnnn!</say>
+      </done>
+    </objective>
+    <objective goal="8" text="Eliminate the hostiles" type="DefeatAll" after="7" />
+    <objective goal="9" text="Don't let Ivkovic die" type="Protect" npc="1" />
+    <complete><say>The download seems to be doing okay. Let's check with Flood and see if we're good to go.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The specialized data from that mainframe's brain should be winging its way to the General right now. Get in touch with him and confirm that we've pampered him sufficiently.</briefing>
+    <enter><say>They're getting a broadcast set up in there.</say></enter>
+    <objective goal="10" text="Talk to the Holographic Projection" type="Talk" npc="6">
+      <talk><say npc="6">Yes, we've succeeded in re-opening the connection to the foreign network. We expect to start sending captured data shortly.&#10;&#10;There has been no trouble from the Machines. Our scans have not detected them within the demarcated zone, but the increase in storm activity has reduced our visibility range. We'll continue to-- What?!&#10;&#10;Incoming missiles! Cover! Prepare to return fire!</say></talk>
+      <done>
+        <say>Missiles? You mean they're under attack? Uh-oh...</say>
+        <say npc="6">Where did that attack come from? Corporal, status report! Corporal! Blast it...&#10;&#10;Ensign! Find me an officer who's still functional! And shut off that damn broadca--</say>
+        <say npc="7">HQ! What happened?!</say>
+      </done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say>There we go.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>What? Said something about missiles? But he was still alive, obviously... To blazes with the man's infernal luck!&#10;&#10;Mm... Maybe there'll be a second barrage. Yes, must think positive.&#10;&#10;...And in a strange coincidence, the data flow from the Ivkovic mainframe has stopped. I thought we'd moved her to a more secure facility. {player}, go check on this, please.</briefing>
+    <enter><say>Not reading any activity in there. I'll try to keep an eye out for Machines.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="11" text="Search the area" type="Search" object="1" item="0">
+      <done><say>... She was a good little mainframe...</say></done>
+    </objective>
+  </phase>
+  <finish>Yes, yes... But the General could be dead, operative, and at least that's worth celebrating. It isn't as though we need him, after all--any one of his officers could almost certainly do a less incompetent job than him.&#10;&#10;Hm... We'll have to see if we can scrounge one of them up.</finish>
+</mission>

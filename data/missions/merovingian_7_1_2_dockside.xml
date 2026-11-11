@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dockside, Merovingian story mission 7.1.2. Source: research/missions/transcripts/Merv7-1-2.md (the archive replay
+     of [Merovingian Archive 7.1.2], given by [Archived]Flood; 24 screenshots of the log after it ended, none during
+     play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Mercury, Jack the Hack,
+     Georgiana Smith, Leland Affleck, Ricardo Jefferies and Arlyne Bosung line, and those names. Several entries span
+     two screenshots with no header between them and are taken as one entry each (Flood's first briefing, the
+     Operator's "Ugh, I hate Uriah... See what you can find in there.", Mercury's first line, the Operator's "Mm-hm,
+     passing the buck... just on principle." (whether its second sentence starts a new line isn't clear), Jack the
+     Hack's first line, Flood's "A bluepill?" briefing, the Operator's "Did we ever find out..." and Ricardo Jefferies'
+     two lines). Ours: the description (the Summary tab only said "Datalink established."), every objective text (the
+     Objectives tab was never opened), the sites (Normal, and Office for Jason Hernandez's workplace, "one of the
+     offices right around Uriah"; every area is in Uriah, so the mission prefers Uriah Industrial Park), the looks
+     (Mercury's is that of earlier missions; the coworkers' sexes are guessed from their names) and the enemy count
+     (the Choppers took about four minutes). The Choppers are Exiles, so the hostiles are Merovingian. No item was
+     shown: the cheat code isn't found in this mission.
+     Rewards: the log shows 396,000 experience and 129,500 information (a level-37 player's archive replay). These are
+     the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion log
+     shows chapter 7's.
+     Gaps: what the player did in the first building isn't shown (46 seconds from arriving to "Figures. Going
+     door-to-door hardly ever works"); here a piece of furniture is searched and holds nothing. Whether Jack the Hack
+     fought alongside his Choppers isn't shown ("Ouch. Maybe Jack'll feel like opening up a bit now."); here he is a
+     friendly NPC who is talked to once the Choppers are dead. Which of the coworkers had to be talked to isn't known
+     (Arlyne Bosung, the last, completed the area); here all four are goals and the Operator's "Phew..." line is said
+     when the phase completes. Mercury's, Jack the Hack's, Ricardo Jefferies' and Arlyne Bosung's second lines and
+     Leland Affleck's and Georgiana Smith's repeated lines are said when they are talked to again. Entries after
+     2:18:19 PM and at 2:25:30 PM weren't captured (very likely the standard goals-complete line). -->
+<mission id="307102" title="Dockside" description="Track down the Machine cheat code lost under the Uriah wharf." plot="1"
+         order="7102" org="3" contact="Flood" neighbourhoods="Uriah Industrial Park" exp="363000" info="63000">
+  <npc id="1" handle="Mercury" type="FRIENDLY" at="2" rsi="4f0a0058" weapon="2568">
+    <say after="2">B-business? Good... It's good. T-thanks for asking. Uh... See you around.</say>
+  </npc>
+  <npc id="2" handle="Jack the Hack" type="FRIENDLY" at="3" rsi="ec020058" weapon="2568">
+    <say after="4">Hey, if you find him, remind him that he owes me a beer, huh?</say>
+  </npc>
+  <npc id="3" handle="Georgiana Smith" type="FRIENDLY" at="4" rsi="60010058" weapon="0">
+    <say after="5">Did you check the bathroom?</say>
+  </npc>
+  <npc id="4" handle="Leland Affleck" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
+    <say after="6">Hanging out down at the docks? I knew that kid was a few scoops short of a milkshake.</say>
+  </npc>
+  <npc id="5" handle="Ricardo Jefferies" type="FRIENDLY" at="4" rsi="c9020058" weapon="0">
+    <say after="7">I hope to hell you lock him up, and all those other delinquents who hang out down at the docks! It's getting so a citizen can't even use a public phone booth in parts of this city!</say>
+  </npc>
+  <npc id="6" handle="Arlyne Bosung" type="FRIENDLY" at="4" rsi="5a000040" weapon="0">
+    <say after="8">Good luck! Tell him we miss him!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>In exchange for our services in transporting his soldiers, the General has agreed to help us procure a kill code for the Oracle.
+
+According to the General, the first ingredient for this deadly brew is a Machine cheat code, the same that he originally--and imprudently--handed over to Zion. He's given us a code routine capable of tracking the unique signature of the cheat codes. It has led us to the Uriah wharf, where rumors persist that Agents, disposing of the cheat codes in the Aqueduct, clumsily allowed one to lodge under a pier.
+
+The piers themselves, however, are devoid of glowing green vials. The cheat code must be in the area. Your job is to find it.</briefing>
+    <enter><say>Ugh, I hate Uriah. It's so...noobish. And it smells like dead fish.&#10;&#10;There aren't that many buildings around Uriah, so Flood's splitting people up to check through them. See what you can find in there.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the area" type="Search" object="1">
+      <done><say>Figures. Going door-to-door hardly ever works, even for vacuum salesmen.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Tell you what then, why don't you pay a visit to our old chum, Mercury? He knows a great deal of what goes on around Uriah, and I'm sure he'll be oh-so-cooperative, considering the last...shall we say, personal...visit the Twins paid him over that Mara affair.</briefing>
+    <enter><say>I'd feel sorry for Mercury, but he just seems to be a glutton for punishment. And he lives in Uriah, for crying out loud. If that isn't a death-wish, I don't know what is.</say></enter>
+    <objective goal="2" text="Talk to Mercury" type="Talk" npc="1">
+      <talk><say npc="1">No, I haven't heard anything.&#10;&#10;No, really, I haven't! This is the first I'd heard of it, I swear!&#10;&#10;You should check with the Choppers. They're all over the wharf, twenty-four seven. If anything happened there, they'd be the most likely people to know about it.</say></talk>
+      <done><say>Mm-hm, passing the buck, as usual. We should'a brought the Twins along to visit him, just on principle.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>The Chopper leader is Jack the Hack. As the name suggests, he is of little account. However, he does have a certain "street" knowledge of the Uriah area. Consult him about our little problem, and make sure that he sees it's in his best interests to be as cooperative as possible.</briefing>
+    <enter><say>I've got Exile signals in there--should be Jack and his Choppers.</say></enter>
+    <objective goal="3" text="Defeat the Choppers" type="DefeatAll">
+      <done><say>Ouch. Maybe Jack'll feel like opening up a bit now.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Jack the Hack" type="Talk" npc="2" after="3">
+      <talk><say npc="2">Yeah, good help is hard to find, ya know?&#10;&#10;Haven't seen nor heard nothin' about a vial like that... Huh. There is a guy who sat out on the wharf around noon during the week. Business guy, must work nearby. Pretty okay guy. Anyway, reason I mention him is that one of my boys noticed him scurrying off the other day, just after he'd sat down. Didn't think much of it at the time, but he's the only guy I know who actually spent time right at the edge of the water like that. Must not have any sense of smell left...&#10;&#10;Haven't seen him since. Dunno his name. Like I said, he must work at one of the offices right around Uriah. Scrawny guy, late-twenties, weedy brown hair... Looks like a clerk or something. That's about all I got.</say></talk>
+      <done><say>Huh. Sounds like a stretch, but that's our only lead so far.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>A bluepill? Hmph. Retrieving it should be a simple matter then. Unless the ignoramus has consumed it...
+
+We do, of course, have access to comprehensive data on our fair citizens. The man described by Jack the Hack is most likely to be one Jason Hernandez, a low-level rubber-stamp at a nearby blue-collar sweatshop. I'm sending you there directly. Find him.</briefing>
+    <enter><say>Did we ever find out what happens when a bluepill drinks a cheat code?&#10;&#10;All right... I've got bluepill signals in there. Don't know which one might be Jason.</say></enter>
+    <objective goal="5" text="Talk to Georgiana Smith" type="Talk" npc="3">
+      <talk><say npc="3">Did you check the bathroom?</say></talk>
+    </objective>
+    <objective goal="6" text="Talk to Leland Affleck" type="Talk" npc="4">
+      <talk><say npc="4">Hanging out down at the docks? I knew that kid was a few scoops short of a milkshake.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to Ricardo Jefferies" type="Talk" npc="5">
+      <talk><say npc="5">Are you a cop? I've had it up to here with Hernandez' delinquency! He hasn't reported in for two weeks! When you find him, tell him he's fired!&#10;&#10;He's probably swilling it up at some trashy club or casino. Kids these days got no work ethic. It's all raves and pills and indecent exposure...</say></talk>
+    </objective>
+    <objective goal="8" text="Talk to Arlyne Bosung" type="Talk" npc="6">
+      <talk><say npc="6">Gee, I hope Jason's okay. It would be awful if something's happened to him. The city didn't used to be so dangerous...&#10;&#10;I just don't know where he could be. He sometimes talked about visiting relatives of his in the International District... Maybe he's staying with them. I hope that's it!</say></talk>
+    </objective>
+    <complete><say>Phew, aren't you glad you don't have to worry about fighting the rat race ever again?&#10;&#10;We didn't find out much, but maybe those bits his coworkers knew about him will help us track Hernandez down.</say></complete>
+  </phase>
+  <finish>Ugh. I can't stand getting involved in petty bluepill affairs. Just the thought that some simpering, pimpled little office lickspittle could at this very moment be carrying one of the most powerful codes in the Matrix really gets my dander up.
+
+Bah! This squalid affair can be handled by others. I'll be in the jacuzzi, trying to forget.</finish>
+</mission>

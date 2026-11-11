@@ -42,9 +42,9 @@ namespace hds
         {
             foreach (WorldClient thisclient in clients)
             {
-                if (thisclient == null)
+                if (thisclient == null || thisclient.IsBot)
                 {
-                    continue;
+                    continue; // a server-played player has nothing to save or resend
                 }
 
                 // An exception here used to end the timer thread and with it the whole server (e.g. a failed save).

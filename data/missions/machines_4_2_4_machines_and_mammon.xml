@@ -25,10 +25,10 @@
          order="4204" org="2" contact="Agent Gray" exp="341000" info="112000">
   <npc id="1" handle="Demon Army Member" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="2" handle="Robin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
-    <say after="3">That's all I got, copper. You can't squeeze $info from an empty drive.</say>
+    <say after="6">That's all I got, copper. You can't squeeze $info from an empty drive.</say>
   </npc>
   <npc id="3" handle="Agent Pace" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
-    <say after="1">Good luck, tesoro! I'll be monitoring your progress...closely.</say>
+    <say after="9">Good luck, tesoro! I'll be monitoring your progress...closely.</say>
   </npc>
   <npc id="4" handle="Louis Bonner" type="FRIENDLY" at="3" rsi="6e060040" weapon="2568">
     <say display="5">You should address Agent Pace, {player}.</say>
@@ -63,20 +63,20 @@ But there is a much more...accessible target available. The Demon Army gang atte
 
 The last name given, Robin, must be the individual carrying payment to the Demon Army for their services rendered to Darago. He is known Exile scum, working for the highest bidder. Question him concerning Mammon.</briefing>
     <enter><say>I've got a couple Exile signals in there.</say></enter>
-    <objective goal="1" text="Question Robin" type="Talk" npc="2">
+    <objective goal="4" text="Question Robin" type="Talk" npc="2">
       <talk><say npc="2">Who do you think you are? I ain't done no-- Agent Gray? Ohhhh crud. Oh no. No no nononono.
 
 L-look, I pick up a package from one spot, and deliver it to another. That's all I know. You want the package and the location? Good, good! I never wanted 'em! But a program's gotta make a living somehow, right? H-here, just take the damn things!</say></talk>
       <done><say>Eesh. Get the package and the location notes from him. I hope he didn't rub too much scum off on them.</say></done>
     </objective>
-    <objective goal="2" text="Get the package from Robin" type="Get" npc="2" item="6817" after="1">
+    <objective goal="5" text="Get the package from Robin" type="Get" npc="2" item="6817" after="4">
       <talk><say npc="2">Take them! Just take them already!</say></talk>
     </objective>
-    <objective goal="3" text="Get the location notes from Robin" type="Get" npc="2" item="6855" after="2">
+    <objective goal="6" text="Get the location notes from Robin" type="Get" npc="2" item="6855" after="5">
       <done><say>Ooh, that's a nice little chunk of encrypted $info, if I remember my crypto class. You'd better upload both of those items to me at a hardline.</say></done>
     </objective>
-    <objective goal="4" text="Upload the package at a hardline" type="Upload" item="6817" after="3" />
-    <objective goal="5" text="Upload the location notes at a hardline" type="Upload" item="6855" after="3" />
+    <objective goal="7" text="Upload the package at a hardline" type="Upload" item="6817" after="6" />
+    <objective goal="8" text="Upload the location notes at a hardline" type="Upload" item="6855" after="6" />
   </phase>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>You are operating at a high rate of efficiency, {player}.
@@ -88,7 +88,7 @@ In consideration of the likely opposition, we are providing you with backup unit
       <say>I've got some high-powered programs in there. I love it when Gray lets us play with his toys.</say>
       <say>Oh baby, the code stream just got cranked up to "Smokin'"! Doth mine eyes deceive me, or is Agent Pace in there? Now that's my kind of liaison.</say>
     </enter>
-    <objective goal="1" text="Talk to Agent Pace" type="Talk" npc="3">
+    <objective goal="9" text="Talk to Agent Pace" type="Talk" npc="3">
       <talk><say npc="3">Ah, tesoro. I've been looking forward to seeing you. Louis Bonner and Leopoldon Royal are at your disposal for this operation. They will aid you in Mammon's deletion, but please, be careful. We wouldn't want a human of your abilities damaged over such a trivial matter as this rogue gang leader.</say></talk>
       <done><say>I wonder if Gray would mind if we just hung out with Pace for a while?</say></done>
     </objective>
@@ -98,13 +98,13 @@ In consideration of the likely opposition, we are providing you with backup unit
 
 Proceed to the indicated area and delete Mammon. Additionally, we request that you delete any of his Demon Army programs that you encounter in the area.</briefing>
     <enter><say>I've got some beefy Exile programs in there. They match the usual Demon Army profile, only quite a bit tougher. Except for one--that's probably Mammon. Wonder how he keeps the stronger programs under his control...</say></enter>
-    <objective goal="1" text="Confront Mammon" type="Talk" npc="6" optional="1">
+    <objective goal="10" text="Confront Mammon" type="Talk" npc="6" optional="1">
       <done><say npc="6">You shall die a thousand times for this impertinence, unbeliever!</say></done>
     </objective>
-    <objective goal="2" text="Kill Mammon" type="Defeat" npc="6">
+    <objective goal="11" text="Kill Mammon" type="Defeat" npc="6">
       <done><say>One deleted Mammon: check.</say></done>
     </objective>
-    <objective goal="3" text="Kill all of the Demon Army programs" type="DefeatAll" />
+    <objective goal="12" text="Kill all of the Demon Army programs" type="DefeatAll" />
   </phase>
   <finish>Our thanks, {player}. That should serve to...dissuade any other Exile groups who may have been considering direct acts of civil disobedience. The System will not tolerate such disruptions.
 

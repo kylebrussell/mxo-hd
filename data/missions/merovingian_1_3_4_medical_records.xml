@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Medical Records, Merovingian story mission 1.3.4. Source: research/missions/transcripts/Merv1-3-4.md (one retail run
+     of the archive replay [Merovingian Archive 1.3.4], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's: the title, every Flood, Operator and NPC line, the NPCs' names, and the objective texts "Speak with
+     Crucic", "Kill Crucic" and "Get Crucic's Business Card". Ours: the description (the Summary tab was never opened),
+     the other objective texts, the sites (all Normal: none is named), the enemy counts and every NPC's look. Retail
+     had one goal each for "Search all computers in the area" (phase 1) and "Search the computers" (phase 3); here each
+     computer is a goal of its own. Cheeta's masked men are Cypherites (Cypherite Hacker, Cypherite Gunslinger), who
+     have no organisation of their own, so phase 2's enemies are Zion. Item stand-ins: Cheeta's pistol is Weapon
+     (6811), Crucic's business card is Access_Card (6791). Rewards: the log shows 525,000 information and no
+     experience (a level-50 player's). These are Zion 1.3's values (308,750 experience, 94,500 information, as Miracle
+     Man paid).
+     Gaps: in retail Crucic turns on the player in the same room in Mara once the computers are searched, and his
+     guard (the Zion Karate Grandmaster) shouts "Traitor!"; an NPC can't change sides, so phase 3 ends after the
+     search and phase 4 is a new site where Crucic stands as a hostile who waits to be attacked, with generated Zion
+     guards; Flood's order to kill him is phase 4's briefing. The computers' case file and outbox texts can't be shown.
+     Cheeta's bark "Just close your eyes and think of Zion." isn't said (a hostile has no talk). One Operator line
+     (9:23:5x) wasn't captured. -->
+<mission id="301304" title="Medical Records" description="Get the information on Morpheus held by the redpill doctor Crucic." plot="1"
+         order="1304" org="3" contact="Flood" exp="308750" info="94500">
+  <npc id="1" handle="Crucic" type="FRIENDLY" at="1" rsi="050100b4" weapon="2564">
+    <say after="3">I'll meet you when Cheeta is out of the way.</say>
+  </npc>
+  <npc id="2" handle="Elite Guard" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say display="5">On my way here, I was ambushed by a group of masked men. They must be stopped!</say>
+  </npc>
+  <npc id="3" handle="Cheeta" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Crucic" type="FRIENDLY" at="3" rsi="050100b4" weapon="2564">
+    <say>Tell Zion that I appreciate the help. It's good to be a part of Zion, isn't it?</say>
+  </npc>
+  <npc id="5" handle="Zion Karate Grandmaster" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564">
+    <say display="5">You'll find Dr. Crucic in the other room.</say>
+  </npc>
+  <npc id="6" handle="Crucic" type="HOSTILE" at="4" rsi="050100b4" weapon="2568" attacksOnSight="0" />
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>In your last mission, we discovered the name of the redpill doctor who treated Morpheus after his encounter with Agent Smith. This man is known as Crucic. At this moment, Crucic is expecting a Zion redpill to help him with a group of "masked men" that have been plaguing him. We've put an indefinite hold on Crucic's help from Zion to give you a chance to search all computers on-site. With luck, we won't need to extract any information from the good Doctor himself.</briefing>
+    <enter><say>Doctor Crucic was pulled from the pods a few years before the truce. He's been helping redpills inside and outside the Matrix since then.
+
+Crucic has a few bases of operations in the Matrix. This is one of them.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Search the first computer" type="Search" object="1" item="0">
+      <done><say>Morpheus was released from duty? I had no idea.</say></done>
+    </objective>
+    <objective goal="2" text="Search the second computer" type="Search" object="2" item="0" after="1">
+      <done>
+        <say contact="1">Well, then... The computers gave us nothing useful.
+
+This is your next step: Speak with Crucic. Tell him that you are the help from Zion and act as his aid.</say>
+        <say>A vacation construct? I hear that they're amazing. You can do anything in them, anything at all. You can be a medieval king. A cloud of air. Anything!</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Speak with Crucic" type="Talk" npc="1" after="2">
+      <talk><say npc="1">You must be the help from Zion. It is good to see you here in one piece. My friend was not so lucky. Do you still have time to do me a personal favor?
+
+Cheeta has been hampering my work inside the Matrix for quite some time now -- far too long for any respected practitioner of medicine. If you can find Cheeta and put a stop to the attacks, I'll return the favor in any way I can.</say></talk>
+      <done>
+        <say contact="1">I suppose you will just have to kill these masked men for the dear Doctor, since he can't handle his own problems. Once you're done, we'll get the information from him that could not be found on his computers.</say>
+        <say>Make your exit and Flood will follow up with the details. In the meantime, I'll see what intel I can get on these "masked men."</say>
+      </done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>As much as I don't like helping Crucic, this will give us the inside track we need. Kill Cheeta for Crucic.
+
+You can find Cheeta...here. Head to the new waypoint and carry out your task, {player}. I won't tolerate failure. I do hope you understand that.</briefing>
+    <enter><say>I'm reading several signals here. No IDs, but they're redpills from the look of their carriers.</say></enter>
+    <objective goal="1" text="Kill Cheeta" type="Defeat" npc="3">
+      <done><say>Check Cheeta's body for something of value. If he has a weapon on him, you can bring it back to Crucic as proof of his death.</say></done>
+    </objective>
+    <objective goal="2" text="Get Cheeta's pistol" type="Loot" npc="3" item="6811" after="1">
+      <done><say>This pistol should be good enough to convince Crucic that Cheeta is dead.</say></done>
+    </objective>
+    <objective goal="3" text="Kill all of the masked men" type="DefeatAll">
+      <done><say>That's the last of them.</say></done>
+    </objective>
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>Crucic has moved to a new location. Tracking him was not easy, but I've managed it -- just for you. Don't you feel special?
+
+Give Crucic the weapon as proof of Cheeta's death, and ask him about Morpheus.</briefing>
+    <enter><say>Bring Crucic Cheeta's pistol, then ask him about Morpheus.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Give Cheeta's pistol to Crucic" type="Give" npc="4" item="6811">
+      <talk><say npc="4">You made it. Is Cheeta dead? Do you have proof? Cheeta's weapon perhaps?</say></talk>
+      <done><say>Maybe we can get the information Flood needs without violence. There are two computers here that were in a reboot process. Find them and search them. At least one of them must have something useful.</say></done>
+    </objective>
+    <objective goal="2" text="Search the first computer" type="Search" object="1" item="0" after="1" />
+    <objective goal="3" text="Search the second computer" type="Search" object="2" item="0" after="1" />
+  </phase>
+
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>This is exactly the kind of information we need. Crucic has set up a meeting with another redpill... Kill Crucic and take his business card. Do not ask questions. Do it.</briefing>
+    <enter><say npc="6">Tell Zion that I appreciate the help. It's good to be a part of Zion, isn't it?</say></enter>
+    <objective goal="1" text="Kill Crucic" type="Defeat" npc="6" />
+    <objective goal="2" text="Get Crucic's Business Card" type="Loot" npc="6" item="6791" after="1">
+      <done><say>Upload the business card to me through a hardline and I'll get a copy to Flood.</say></done>
+    </objective>
+    <objective goal="3" text="Upload Crucic's Business Card at a hardline" type="Upload" item="6791" after="2">
+      <done><say>Transfer complete! I'm sending the business card to Flood.</say></done>
+    </objective>
+  </phase>
+  <finish>I have already planned out your next assignment. We'll be in touch, {player}.</finish>
+</mission>

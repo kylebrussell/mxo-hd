@@ -73,12 +73,19 @@ namespace hds
             UInt32 weapon = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(InventoryHandler.WeaponSlot);
             Store.currentClient.playerInstance.EquippedItemID.setValue(weapon);
 
+            PvpFlag.OnEnterWorld(Store.currentClient);
+
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
             //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            if (Store.currentClient.playerData.pvpFlag)
+            {
+                // Retail's PvP server sent the flag on the own view right after the spawn (some_pvp capture)
+                Store.currentClient.messageQueue.addObjectMessage(PvpFlag.BuildSelfFlags(PvpFlag.FlagsOf(Store.currentClient)), false);
+            }
 
             // Where the player stands on the client's nav mesh, as retail's record names it: without it the client has no
             // nav location until the first teleport (it lets the player through walls, and elevator panels close at once)
@@ -140,6 +147,15 @@ namespace hds
                 DataLoader.getInstance().getAbilityByID(AbilityProgression.AwakenedAbility).getGOID(), charId);
             Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(
                 AbilityProgression.SelfDefenseAbility, awakened, AbilityProgression.HiddenSlot));
+            foreach (var loaded in Store.dbManager.MarginDbHandler.LoadAbilities((int)charId))
+                if (loaded.getLoaded())
+                {
+                    UInt16 id = AbilityCatalog.IdOf(unchecked((UInt32)loaded.getAbilityID()));
+                    if (id == AbilityProgression.AwakenedAbility) continue;
+                    foreach (UInt16 grant in AbilityProgression.GrantsOf(id))
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
+                            AbilityProgression.GrantLevel(id, loaded.getLevel()), AbilityProgression.HiddenSlot));
+                }
 
 
             /*
@@ -297,52 +313,16 @@ namespace hds
 
         public void ProcessLootAccepted()
         {
+            if (NpcLoot.TryTakeAll(Store.currentClient))
+            {
+                return;
+            }
             if (TutorialMission.Of(Store.currentClient)?.OnTakeAll() == true || MissionRuntime.OnTakeAll(Store.currentClient))
             {
                 return;
             }
 
-            ClientView F = Store.currentClient.viewMan.getViewById(Store.currentClient.playerData.currentSelectedTargetViewId);
-
-            // Use pending loot amount from combat kill, or default to 0 if none
-            UInt32 value = 0;
-            if (Store.currentClient.playerData.hasLootPending)
-            {
-                value = Store.currentClient.playerData.pendingLootMoney;
-                // Clear pending loot
-                Store.currentClient.playerData.hasLootPending = false;
-                Store.currentClient.playerData.pendingLootMoney = 0;
-            }
-
-            if (value > 0)
-            {
-                UInt32 newMoneyAmount = (UInt32)Store.currentClient.playerData.getInfo() + value;
-                // Update Info in DB and player data
-                Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newMoneyAmount);
-                Store.currentClient.playerData.setInfo(newMoneyAmount);
-
-                Output.WriteDebugLog($"[LOOT] Player received {value} info. Total: {newMoneyAmount}");
-            }
-
-            ServerPackets packet = new ServerPackets();
-            packet.SendInfoCurrent(Store.currentClient, (UInt32)Store.currentClient.playerData.getInfo());
-
-            List<UInt32> drops;
-            lock (Store.currentClient.playerData.pendingLootDrops)
-            {
-                drops = new List<UInt32>(Store.currentClient.playerData.pendingLootDrops);
-                Store.currentClient.playerData.pendingLootDrops.Clear();
-            }
-            NpcLoot.GiveItems(Store.currentClient, drops);
-
-            UInt32 missionItem = Store.currentClient.playerData.pendingLootItem;
-            if (missionItem != 0)
-            {
-                Store.currentClient.playerData.pendingLootItem = 0;
-                MissionRuntime.OnMissionItemLooted(Store.currentClient, missionItem);
-            }
-
-            packet.SendLootAccepted(Store.currentClient);
+            new ServerPackets().SendLootAccepted(Store.currentClient);
         }
 
         public void ProcessPlayerGetDetails(ref byte[] rpcData)
@@ -392,21 +372,18 @@ namespace hds
             List<UInt16> abilitySlots = new List<UInt16>();
             foreach (AbilityProgression.LoadoutEntry entry in entries)
             {
-                UInt16? grant = AbilityProgression.GrantOf(entry.Ability);
+                List<UInt16> grants = AbilityProgression.GrantsOf(entry.Ability);
                 if (unload)
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(entry.Ability));
-                    if (grant.HasValue)
-                    {
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant.Value));
-                    }
+                    foreach (UInt16 grant in grants) Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityUnload(grant));
                 }
                 else
                 {
                     Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(entry.Ability, entry.Level, entry.Slot));
-                    if (grant.HasValue)
+                    foreach (UInt16 grant in grants)
                     {
-                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant.Value,
+                        Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildAbilityLoad(grant,
                             AbilityProgression.GrantLevel(entry.Ability, entry.Level), AbilityProgression.HiddenSlot));
                     }
                 }

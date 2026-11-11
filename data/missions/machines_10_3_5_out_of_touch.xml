@@ -40,7 +40,7 @@
     <say display="5">Control, do you copy?!</say>
   </npc>
   <npc id="7" handle="Seraph" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2564">
-    <say after="1">Unwitting agents are often the most reliable.</say>
+    <say after="4">Unwitting agents are often the most reliable.</say>
   </npc>
   <phase site="Office" enemy="Machines" enemies="3">
     <briefing>The Merovingian has persisted in his attacks on the Ouroboros network. We believe that we have taken what precautions we can to prevent the Oligarchs from being called into the Matrix by Ouroboros security, but now sources close to the Merovingian report that the Frenchman thinks he is closing in on data of a new and unknown nature in a sub-network connected only by indirect reference to the main Ouroboros complex.
@@ -58,14 +58,14 @@ Override programs have already been found throughout the Ouroboros system. There
 
 That broadcast came from the Ouroboros facility you see indicated on your HUD.</briefing>
     <enter><say>Got some signals in there. Code hacks... That's gotta be the Mervs.</say></enter>
-    <objective goal="1" text="Eliminate the Merovingian intruders" type="DefeatAll">
+    <objective goal="2" text="Eliminate the Merovingian intruders" type="DefeatAll">
       <done><say>Got 'em! Doesn't help those guards much, but hey.</say></done>
     </objective>
   </phase>
   <phase site="Office" enemy="Merovingian" enemies="5">
     <briefing>Damage to Ouroboros security personnel is not our object, but Ouroboros' reluctance to accept our assistance has been a primary factor in the persistence of the Merovingian incursion. Concentrate on the main objective.</briefing>
     <enter><say>The Mervs must think they're really on to something; they're going all-out on this.</say></enter>
-    <objective goal="1" text="Eliminate the hostiles" type="DefeatAll">
+    <objective goal="3" text="Eliminate the hostiles" type="DefeatAll">
       <done><say>I'd almost think these Ouroboros guys don't want to be friends anymore.</say></done>
     </objective>
     <near npc="4" radius="1000">
@@ -75,7 +75,7 @@ That broadcast came from the Ouroboros facility you see indicated on your HUD.</
   <phase site="Office" enemy="Merovingian" enemies="3">
     <briefing>No, operative, we do not know what the Merovingian hopes to find. That entire sub-network is unfamiliar to us. Based on what you have encountered so far, we could speculate that it has something to do with override programs.</briefing>
     <enter><say>Uh-oh, the Ouroboros security channel just went dead. Probably not a good sign, and it's gonna make it hard to track the Merv in there... I've got some active signals on my monitor, at least.</say></enter>
-    <objective goal="1" text="Talk to Seraph" type="Talk" npc="7">
+    <objective goal="4" text="Talk to Seraph" type="Talk" npc="7">
       <talk><say npc="7">Your path...ends here. If they find what they seek, you are not to blame.</say></talk>
       <done><say>Wuh... Did he have something to do with their security channel going down, or is he just trying to make us feel better?</say></done>
     </objective>

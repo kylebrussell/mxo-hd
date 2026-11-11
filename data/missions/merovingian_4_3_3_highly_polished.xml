@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Highly Polished, Merovingian story mission 4.3.3. Source: research/missions/transcripts/Merv4-3-3.md (the
+     archive replay of [Merovingian Archive 4.3.3]; 16 screenshots, two during phases 2 and 3 with the Objectives
+     window, the rest of the log after the mission ended). The contact was [Archived]Flood. Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the names Polyxena and Silver, and the
+     objective texts "Lead Polyxena to the main terminal", "Don't let Polyxena die", "Put the Disk in the computer" and
+     "Search the computer" (shown in the Objectives window). Flood called the player Vesuveus; that is {player}. Ours:
+     the description (the Summary tab was never opened), the other objective texts, the sites (Silver's processing
+     center, with its conference room, and his lab, desks and whiteboard, are Office sites in Camon Heights, as the map
+     showed; the rest Normal), the looks and the enemy counts. Silver's people are rogue programs: Merovingian. Item
+     stand-in: retail's Disk is Data_CD (6831). Rewards: the log shows 525,000 information and no experience (a
+     level-50 player's). These are Zion 4.3's values (352,000 experience, 115,500 information, as Shakedown paid).
+     Gaps: in retail the first phase ended as soon as Polyxena was talked to and she simply joined; here she is led out
+     of the area so that she follows into phase 2. "Lead Polyxena to the main terminal" is an escort to the terminal;
+     the Operator's "Bingo! Now get Polyxena in here" and her line about Polyxena downloading the data onto a disk
+     are said when they get there, and the disk is taken from the same computer. Polyxena "finds her own way out" in
+     retail; here she stays at the terminal. Whether phase 2 had hostiles didn't show;
+     the fail condition suggests it did, so a few are there. The SilverOS communications log that the search turned up
+     in phase 3 can't be shown; the Operator's line about it is said when the search is done. In Silver's place he
+     spoke after the fight, so talking to him waits for the kill goal. The middle of Flood's reply to Silver was hidden
+     between two screenshots; the visible start and end are joined. -->
+<mission id="304303" title="Highly Polished" description="Follow the encrypted data back to Silver, break into his network with Polyxena, and find out what he has done with the key." plot="1"
+         order="4303" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Polyxena" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Silver" type="FRIENDLY" at="4" rsi="750a0058" weapon="2568">
+    <say>Think it over, meatbag. Who am I kidding... let your boss think it over. You're not qualified.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We've been looking at that porn collection of yours, {player}. You really are the kinky one, aren't you?&#10;&#10;Anyhow, my people cracked the encryption, and determined the source: Silver. He has a hand in this somehow, and you're going to find out exactly what that is.&#10;&#10;Pick up Polyxena. She'll help you with the rest of this mission.</briefing>
+    <enter><say>Polyxena is in this building.</say></enter>
+    <objective goal="1" text="Talk to Polyxena" type="Talk" npc="1">
+      <talk>
+        <say npc="1">So you're {player}. Flood already briefed me, so let's get going.</say>
+        <say npc="1">Just show me one thing: where they are.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Lead Polyxena out of the area" type="Escort" npc="1" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="3" neighbourhoods="Camon Heights">
+    <briefing>All right, I see you and Polyxena are getting along splendidly. That puts my heart at ease, it really does.&#10;&#10;Now stop wasting time and get over to one of Silver's outposts. You've got some data collection to take care of.</briefing>
+    <enter><say>Okay, this is a major processing center of Silver's.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Lead Polyxena to the main terminal" type="Escort" npc="1" to="object:1">
+      <done>
+        <say>Bingo! Now get Polyxena in here.</say>
+        <say>Looks like Polyxena just downloaded the data you need onto a disk. Grab it from the computer and you can get out of there.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Don't let Polyxena die" type="Protect" npc="1" />
+    <objective goal="3" text="Get the Disk from the computer" type="Search" object="1" item="6831" after="1">
+      <done><say>Great. You can let Polyxena find her own way out; now on to the next location.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4" neighbourhoods="Camon Heights">
+    <briefing>Now that you have that disk, you should be able to get into Silver's communications network. I'm sending you to another lab.&#10;&#10;Don't mess this up, {player}.</briefing>
+    <enter><say>Get in there, find an active computer, pop that disk in, and do a quick scan of the info. Don't get tied down if you can avoid it.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Put the Disk in the computer" type="Put" object="1" item="6831" />
+    <objective goal="2" text="Search the computer" type="Search" object="1" item="0" after="1">
+      <done><say>He's getting the key "out"? Wonder what that means.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>So Silver wants in on this party too, eh? It's getting a little more crowded than I like.&#10;&#10;Time to bring it to him, {player}. Go into Silver's place, wreck it if you want, and certainly take him out. Just get that key before he can move it somewhere else.</briefing>
+    <enter><say>Don't be shy about knocking some heads in here, {player}! We have to show Silver who's boss.</say></enter>
+    <objective goal="1" text="Kill all of Silver's programs" type="DefeatAll" />
+    <objective goal="2" text="Talk to Silver" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Oh, look, the meatbag's here. I heard about you going through my stuff. Not very nice. And now you bust up my place... and all for no point.&#10;&#10;That's right, the key's gone, and you can't get to it. Too bad, so sad.&#10;&#10;I suppose you want to kill me now? Well stop a minute, meatbag, and consider this: How are you going to get the key if you do that? It's sitting, perfectly safe, in a tidy little construct right now, completely beyond your reach. The Merovingian can't even access it there. But maybe we can make a deal.&#10;&#10;Zion has the case, right? You get it, bring it to me, we unlock it and split what's inside. Can't beat that logic, meatbag.</say></talk>
+      <done><say contact="1">He thinks we'll make a deal? He's... bah, get out of there. I need to think.</say></done>
+    </objective>
+  </phase>
+  <finish>Get back to me, {player}. This is getting complicated.</finish>
+</mission>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fallen Angel, Merovingian story mission 6.3.1. Source: research/missions/transcripts/Merv6-3-1.md (the archive
+     replay of [Merovingian Archive 6.3.1], given by [Archived]Flood; 17 screenshots of the log after it ended, none
+     during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Twin, Merovingian and Malphas
+     line, the name Bluepill and the bluepills' cries (Team chat). Three entries span two screenshots and are read as
+     contiguous: Flood's "you are required to behave yourself", Malphas's "Understand? Good. On your way." and Flood's
+     "close to the Oracle would stand a decent chance". "Au revoir." and the Operator's "would" were in italics.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; the targets are "in the vicinity of the Oracle's apartment", which
+     the next mission puts in Mara, so the mission prefers Mara), the looks, the enemy counts and the number of
+     bluepills (seven, one for each different cry seen). The Blackwoods are Exiles, so Merovingian. No item was shown.
+     Rewards: the log shows 1,012,000 experience and 493,500 information (a level-47 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
+     Gaps: the Twins' first two lines came just before the Merovingian spoke and are said on getting near him; their
+     other two are said when they are talked to. The Merovingian's second line (five seconds after the first) is said
+     with it. Malphas's "Mm?" line is said when he is talked to again. The first area's "Goals for this area are
+     complete" entry wasn't captured. The bluepills are helpless civilians in retail; here they are hostile NPCs who
+     wait to be attacked (attacksOnSight="0"), each with one of the cries, which they say if talked to: hostile NPCs'
+     lines don't show on screen here (see Known gaps) and nothing is said on death. Seraph never appears. -->
+<mission id="306301" title="Fallen Angel" description="Slaughter the Oracle's neighbors to learn whether Seraph is truly gone." plot="1"
+         order="6301" org="3" contact="Flood" neighbourhoods="Mara" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0" />
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>It appears that the wingless wonder forgot he couldn't fly.</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say>The good die young, as they say.</say>
+  </npc>
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="2">Mm? In the event that Seraph does make an appearance, report back at once.</say>
+  </npc>
+  <npc id="5" handle="Bluepill" type="HOSTILE" at="4" rsi="38000024" weapon="0" attacksOnSight="0">
+    <say>No!</say>
+  </npc>
+  <npc id="6" handle="Bluepill" type="HOSTILE" at="4" rsi="34050040" weapon="0" attacksOnSight="0">
+    <say>Murderer!</say>
+  </npc>
+  <npc id="7" handle="Bluepill" type="HOSTILE" at="4" rsi="35000024" weapon="0" attacksOnSight="0">
+    <say>Help! Police!</say>
+  </npc>
+  <npc id="8" handle="Bluepill" type="HOSTILE" at="4" rsi="38000024" weapon="0" attacksOnSight="0">
+    <say>You bastard!</say>
+  </npc>
+  <npc id="9" handle="Bluepill" type="HOSTILE" at="4" rsi="5a000040" weapon="0" attacksOnSight="0">
+    <say>Why is this happening? What did we do?</say>
+  </npc>
+  <npc id="10" handle="Bluepill" type="HOSTILE" at="4" rsi="35000024" weapon="0" attacksOnSight="0">
+    <say>Oh no!</say>
+  </npc>
+  <npc id="11" handle="Bluepill" type="HOSTILE" at="4" rsi="34050040" weapon="0" attacksOnSight="0">
+    <say>Eeeek!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>It appears that His Majesty has had a few too many martinis; he's asking to talk to you.
+
+Needless to say, I expect you to behave yourself. Or rather, you are required to behave yourself, and I expect that you won't. Just don't forget that I'll be watching.</briefing>
+    <enter><say>Whatever this is, it must be big.&#10;&#10;Hm... I've got what looks like the Information Superhighway in there. That will be His Mervelousness.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk>
+        <say npc="1">So! You have not heard? They say that Sati has been stolen by the General in a helicopter, and that the traitor Seraph was seen plummeting into the river while trying to rescue her, and has not been seen since.&#10;&#10;Yes, I see in your eyes that you understand what this could mean. However, we must first verify that the fallen angel is well and truly gone. Malphas will have instructions for you. Au revoir.</say>
+        <say npc="1">There is something I have wanted for a long time, but the traitor has always stood in my way. If he is gone, then...</say>
+      </talk>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">Too bad. I wanted to have a go at him myself.</say>
+      <say npc="3">You would have had to have got to him before me, brother.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Off you go to see Malphas, then. Personally, I don't see what everyone's getting so worked up about with this Sati business, but apparently I'm the only one who sees that the Oracle and her brat pack are overrated and obsolete.</briefing>
+    <enter><say>You should find Malphas in there.&#10;&#10;I haven't seen the Merv that excited in quite some time. Do you think he looks forward to mixing it up with the General again?</say></enter>
+    <objective goal="2" text="Talk to Malphas" type="Talk" npc="4">
+      <talk><say npc="4">Listen carefully. You've been assigned several targets in the vicinity of the Oracle's apartment. Humans in the employ of Zion, and of the Machines, are infesting the neighborhood. You're to slay everyone in the designated areas, noisily. If Seraph is about, this kind of threat in the Oracle's proximity should bring him out of hiding.&#10;&#10;Understand? Good. On your way.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Your first target is a group of Blackwood gang members. The Oracle is known to have some sort of personal ceasefire agreement with them, and is even believed to be on fairly good terms with some of their number. Under normal circumstances, doing away with those Blackwoods in messy fashion close to the Oracle would stand a decent chance of attracting Seraph's attention.</briefing>
+    <enter><say>I'm picking up some Exile programs in there. Should be Blackwoods.</say></enter>
+    <objective goal="3" text="Kill the Blackwood gang members" type="DefeatAll">
+      <done><say>You cleaned them out. No Seraph, though. Guess we might as well go see what our next target is.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hm. Very well, it's time to up the ante. Your next target is a group of helpless, innocent bluepills, just the type that the Oracle and her guardian would never allow to be harmed. So go do some harming, would you?</briefing>
+    <enter><say>I've got bluepill signals in there.&#10;&#10;I almost wish Seraph would show up, this time.</say></enter>
+    <objective goal="4" text="Kill the bluepills" type="DefeatAll">
+      <done><say>That's all of them, and still no sign of Seraph. I guess, uh... I guess we're done.</say></done>
+    </objective>
+  </phase>
+  <finish>Hm... All that innocent blood spilled, and still no Seraph. Maybe he really is gone. He must swim about as badly as he flies.&#10;&#10;I'm sure the Merovingian will be delighted. Don't get too sauced, though; no doubt we'll have some work to do soon enough.</finish>
+</mission>

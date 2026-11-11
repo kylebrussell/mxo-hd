@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ...There Is a Key, Merovingian story mission 4.3.2. Source: research/missions/transcripts/Merv4-3-2.md (the
+     archive replay of [Merovingian Archive 4.3.2]; 14 screenshots, all of the log after the mission ended). The
+     contact was [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the names Jacqueline, Ehrsson and
+     Serpentis. Flood called the player Vesuveus; that is {player}. Ours: the description (the Summary tab was never
+     opened), every objective text (the Objectives tab was never opened), the sites (all Normal; Jacqueline's Slashers
+     and Jane's place are in Camon Heights as the briefings say), the looks and the enemy counts. Serpentis and his
+     guards, and whoever was waiting at Jane's place, are rival programs: Merovingian. Item stand-in: retail's Data CD
+     is Data_CD (6831). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are
+     Zion 4.3's values (352,000 experience, 115,500 information, as Shakedown paid).
+     Gaps: Jacqueline gave her tip as a friend and turned hostile seconds later. Here she is a hostile who waits to be
+     attacked: reaching her completes the goal and both her lines are said then; killing her isn't a goal, as retail's
+     area was done before she turned. Serpentis's "Guards!" is said on coming near him. At Jane's place the Operator's
+     three lines (the funny code stream, "this can't be good", the dead Slashers) are said on arrival; dead Slashers
+     aren't spawned, and the CD is searched for in a piece of furniture (where it lay didn't show). The fight there
+     showed only as combat lines in the chat, so a few hostiles are on the floor but killing them isn't a goal. Flood's
+     first briefing may hide a paragraph between two screenshots, and some lines may be lost in the log's gaps. -->
+<mission id="304302" title="...There Is a Key" description="Learn where Jane the Ripper is selling the key, eliminate her buyer, and find out what happened at her hideout." plot="1"
+         order="4302" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Jacqueline" type="HOSTILE" attacksOnSight="0" at="1" rsi="a8060090" weapon="2568" />
+  <npc id="2" handle="Ehrsson" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Remember me to the Frenchman!</say>
+  </npc>
+  <npc id="3" handle="Serpentis" type="HOSTILE" at="3" rsi="c9020058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0" neighbourhoods="Camon Heights">
+    <briefing>Jane the Ripper. Leader of the Slashers, in Camon Heights. You have to be careful dealing with them... they have this whole disturbing family thing going. It's creepy, it really is.&#10;&#10;Go talk to Jacqueline. She'll get you more information.</briefing>
+    <enter><say>I guess Jacqueline is a Merovingian program working undercover in the Slashers. Nothing like some inside information to make a job go easier!</say></enter>
+    <objective goal="1" text="Talk to Jacqueline" type="Talk" npc="1">
+      <done>
+        <say npc="1">So... the boss wants to know about the key, huh? I hope he's gonna make it worth my while. You know how long I've been stuck with these losers?&#10;&#10;Oh yeah, the key. I heard Jane was lookin' to flip it for a profit. In fact, she's already got a buyer lined up: Serpentis. Better get to Jane fast if you really want that key.</say>
+        <say npc="1">So, what's this info worth to the boss? Huh? Watcha lookin' at? You want a piece of me? Huh?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So, Jane thinks she's going to sell the key to Serpentis? We could try to discourage her... but you know, it would be so much easier with the other buyer out of the way.&#10;&#10;Find out where this Serpentis is. I want him out of the picture.</briefing>
+    <enter><say>In case you're wondering, I'm sending you to Ehrsson. He knows most of what goes on around Camon Heights. He should know where Serpentis is.</say></enter>
+    <objective goal="1" text="Talk to Ehrsson" type="Talk" npc="2">
+      <talk><say npc="2">So you want to track down Serpentis? I simply can't imagine why. Such a dreadful bore.&#10;&#10;Oh, all right, I'll give your operator his location.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Well, that was easy enough. Now go snuff out Serpentis before he can buy this thing out from under us.</briefing>
+    <enter><say>Serpentis is on site here. Move in, eliminate him, and get out. There's a key with your name on it in Jane's hands.</say></enter>
+    <objective goal="1" text="Kill Serpentis" type="Defeat" npc="3">
+      <done><say>Okay, Serpentis's down. Now get out of there -- even with this buyer gone, that key's still got to be a hot item.</say></done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say npc="3">What the hell do you think you're doing here? Guards!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3" neighbourhoods="Camon Heights">
+    <briefing>Ah, very nicely done, {player}. Maybe you're not destined to be a lackey forever... but it's doubtful.&#10;&#10;Now get over to Jane's location. Persuade her by any means necessary... that key will be ours.</briefing>
+    <enter>
+      <say>I'm reading something funny in the code stream. Keep your eyes open.</say>
+      <say>Uh... this can't be good.</say>
+      <say>Damn! Dead Slashers, no Jane... check around and see if you can find anything interesting in here.</say>
+    </enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search Jane's place for anything interesting" type="Search" object="1" item="6831">
+      <done><say>Bingo! Get that CD to a hardline and we'll let Flood sort this out.</say></done>
+    </objective>
+    <objective goal="2" text="Upload the Data CD at a hardline" type="Upload" item="6831" after="1" />
+  </phase>
+  <finish>The data is coming through now. Let's see... it's... a porn collection?!&#10;&#10;{player}, this may be a new low for you. I mean really--&#10;&#10;No, wait, there appears to be another layer of encryption here. I'm going to have my people look into this. Keep in touch, pervert.</finish>
+</mission>

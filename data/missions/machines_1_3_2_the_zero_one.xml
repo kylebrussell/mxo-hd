@@ -8,7 +8,7 @@
      are taken as redpills (Zverev is hunted by what he thinks are Agents). Item stand-in: Zverev's Business Card is
      Access_Card (6791). Rewards: the 278,635 experience and 70,000 information shown right after this mission
      completed.
-     Gaps: in phase 1 the imposters burst in after Zverev's first words; here they are on the floor from the start.
+     Gaps: in phase 1 the imposters burst in after Zverev's first words, and only then is killing them an objective.
      Zverev is two NPCs of one name: the one met in phase 1 stays there, and the one in phase 3 is already standing
      with Burns and Shcheglov instead of walking in after the player arrives (the Operator's "picking up multiple
      signals entering the area" is said on arrival). Retail's phase 3 ended once Zverev had talked and he joined the
@@ -16,9 +16,8 @@
      phases 4 and 5. In phase 4 Zverev killed Aaron Upson himself; we have no NPC killing another, so leading Zverev to
      Upson completes the killing (the Operator's and Zverev's lines play) but Upson stays standing, and "Put the
      Business Card on Upson's body" is a Give to Upson. Aaron Upson is two NPCs of one name too (phases 2 and 4); his
-     thanks in phase 2 is said when the imposters are down. Phase 5's "Lead Zverev to the active computer" is a Use of
-     the computer, since an escort can't end at an object. The imposters who come for Zverev at the end are only his
-     last line. -->
+     thanks in phase 2 is said when the imposters are down. Phase 5's "Lead Zverev to the active computer" is an escort
+     to the computer. The imposters who come for Zverev at the end are only his last line. -->
 <mission id="201302" title="The Zero One" description="Learn what an informant knows about the human Morpheus thought was the One before Neo." plot="1"
          order="1302" org="2" contact="Agent Gray" exp="278635" info="70000">
   <npc id="1" handle="Zverev" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
@@ -33,7 +32,7 @@
     <say display="5">Those stupid Agents won't know what hit them.</say>
   </npc>
   <npc id="6" handle="Aaron Upson" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="1">
     <briefing>You will investigate rumors of a previous "One" in Morpheus' past. While the reasons behind Morpheus' termination remain a mystery, any information about his past may assist us in tracing and eliminating the rogue agencies involved with the Assassin. We are sending you to meet with a reliable informant who claims to have first-hand knowledge of a human who Morpheus thought was the "One," before he met Mr. Anderson.</briefing>
     <enter><say>The informant, Zverev, agreed to meet in that building. He thinks you represent a rival faction. While his profile indicates that he has every incentive to cooperate, the Machines aren't absolutely sure we can trust him, so proceed with caution.</say></enter>
     <objective goal="1" text="Talk to Zverev" type="Talk" npc="1">
@@ -43,7 +42,7 @@
         <say npc="1">Oh no! Oh no! They tracked me down!</say>
       </talk>
     </objective>
-    <objective goal="2" text="Kill the imposter Agents" type="DefeatAll">
+    <objective goal="2" text="Kill the imposter Agents" type="DefeatAll" after="1">
       <done><say>That's all of the imposters in the area. Zverev should be ready to talk now.</say></done>
     </objective>
     <objective goal="3" text="Get the Business Card from Zverev" type="Get" npc="1" item="6791" after="2">
@@ -113,7 +112,7 @@
     <briefing>Zverev seems particularly pleased with himself--we trust that this will increase his lucidity regarding the history of Morpheus' earlier "One." Take him to the indicated safehouse and interrogate him.</briefing>
     <enter><say>Zverev is anxious about the status of his next payment. Lead him to the active computer in the area--he'll be able to check his account from there.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Lead Zverev to the active computer" type="Use" object="1">
+    <objective goal="1" text="Lead Zverev to the active computer" type="Escort" npc="3" to="object:1">
       <done><say>Zverev should be ready to deliver his part of the agreement now. Talk to him about Morpheus' previous "One."</say></done>
     </objective>
     <objective goal="2" text="Talk to Zverev about Morpheus' previous &quot;One&quot;" type="Talk" npc="3" after="1">

@@ -14,11 +14,11 @@
      line answered a question of the player's (the line before it was cut off) and is her line when talked to again.
      Gray's "Wright's location is not confirmed." starts the override area. The Bluepill's stammer is placed in that
      area, where the Operator's "it isn't a good day to be in a pod" is said on nearing him. At the lab the override
-     programs struck only after Pace's talk ("No overrides in sight...yet."); here a few are on the floor from the
-     start. Hendrickson's first line is said on nearing him. In retail Kroller vanished during the escort ("Unrequested
-     reinitialization of subject's image by the pod hardware"); we can't make her vanish, so she is led out of the
-     lab, Gray's "Confirm subject's status" starts a last area where she is talked to (her "impossible"), and Gray's
-     last report is the closing line. The Machine Gunman's "What happened?!" is placed in that last area. The
+     programs strike once Pace has been talked to ("No overrides in sight...yet."), arriving beside the player ("right
+     next to your position"). Hendrickson's first line is said on nearing him. In retail Kroller vanished during the
+     escort ("Unrequested reinitialization of subject's image by the pod hardware"); we can't make her vanish, so she is
+     led out of the lab, Gray's "Confirm subject's status" starts a last area where she is talked to (her "impossible"),
+     and Gray's last report is the closing line. The Machine Gunman's "What happened?!" is placed in that last area. The
      Initiate's second line ("I knew this was gonna go south fast...") has no clear place and is left out. -->
 <mission id="211204" title="Somatic" description="Keep Imelda Kroller, whose body holds the biological interface program, out of Danielle Wright's reach." plot="1"
          order="11204" org="2" contact="Agent Gray" exp="297000" info="98000">
@@ -81,7 +81,7 @@ Agent Pace is standing by with Kroller now. She will provide a situation update.
       <say>Crap, it isn't a good day to be in a pod.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="3">
+  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="1" enemiesAt="player">
     <briefing>Extraction of the interface program from Ms. Kroller's body is not proceeding as quickly as had been projected. With Wright approaching the lab's vicinity, we have no choice but to evacuate the subject. Report to Agent Pace at the lab.</briefing>
     <enter><say>I don't wanna know what Wright'd do to the lady if she got ahold of her.
 

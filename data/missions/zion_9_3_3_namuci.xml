@@ -18,7 +18,7 @@
      closing line ("despite his vast power, he" / "can be foiled."); it is joined as the best reading. -->
 <mission id="109303" title="Namuci" description="Cut down Halborn's overridden programs before he can locate the Oracle." plot="1"
          order="9303" org="1" contact="Tyndall" neighbourhoods="Mara" exp="374000" info="63000">
-  <npc id="1" handle="Carlyne" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
     <say>I have been trying to find him, but I think he knows I'm here, and is being careful to avoid me. I've also been getting some interference from awakened humans, although they don't appear to be ones that work for Zion.</say>
   </npc>
   <npc id="2" handle="Genaro Blair" type="FRIENDLY" at="3" rsi="38000024" weapon="0">

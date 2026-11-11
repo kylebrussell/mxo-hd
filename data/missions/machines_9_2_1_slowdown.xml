@@ -25,7 +25,7 @@
      Whatever was said between 2:13:47 and 2:15:38 wasn't captured. -->
 <mission id="209201" title="Slowdown" description="Terminate programs overridden by the intruder, then take a squad from Agent Pace and sweep the sites where his codes are active." plot="1"
          order="9201" org="2" contact="Agent Gray" exp="396000" info="66500">
-  <npc id="1" handle="Veil" type="FRIENDLY" at="1" rsi="60010058" weapon="2564">
+  <npc id="1" handle="Veil" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
     <say after="2">We're not saying this for our own sakes, dear--but the citizens you're supposed to be protecting are having an awfully hard time getting their forty winks with that glowing guy clonking around.</say>
   </npc>
   <npc id="2" handle="Cypherite Network Hacker" type="FRIENDLY" at="1" rsi="ec020058" weapon="2564">

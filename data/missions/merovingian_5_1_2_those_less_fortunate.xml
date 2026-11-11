@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Those Less Fortunate, Merovingian story mission 5.1.2. Source: research/missions/transcripts/Merv5-1-2.md (the
+     archive replay of [Merovingian Archive 5.1.2], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title and every Flood (contact and in person), Operator and Merovingian line. Flood and the
+     Merovingian called the player by handle ("TiAmo"); that is {player}. The Merovingian's italic "are" is plain
+     text and his "A la fin" loses its accent.
+     Ours: the description (the Summary tab was never opened), every objective text (the Objectives tab was never
+     opened), the sites (only the last place is described, as squalid: SlumApt; the others Normal), the looks and the
+     enemy count. The "rabble" at the first meeting place isn't named or shown; it is a rival gang, Merovingian. The
+     Blood Noble seen beside the Merovingian said nothing and isn't placed. Flood in person is two NPCs, one per
+     phase he appears in.
+     Rewards: the log shows 808,500 experience and 525,000 information (a level-50 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: Flood's line and the Merovingian's reply came together, on talking to the Merovingian, so both are his
+     goal's talk lines; their next lines (Flood's "Of course, I was coming to exactly the same conclusion" and the
+     Merovingian's "Remember this") came seconds apart after it and are said when each is talked to again. Three
+     screenshot joins in their lines read whole and are used as such ("looking for help saving their poor Niobe",
+     "Being in one's debt. Beholden.", "until fate brings you the instrument of your salvation. Remember this").
+     Flood's second briefing may have run on past "the payoff!", and an Operator line at the last place (8:55:56)
+     was never visible; neither is used. -->
+<mission id="305102" title="Those Less Fortunate" description="Find a safe meeting place for the Merovingian's talks with Zion." plot="1"
+         order="5102" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Flood" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="1">Of course, I was coming to exactly the same conclusion.
+
+I don't know what you're waiting around here for, {player}.</say>
+  </npc>
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2568">
+    <say after="1">Now you get perhaps a glimpse of why it is that I have outlasted so many others, so many instances of this simulation, non? Others inevitably seek to remove you from power, but you never take it personally. A la fin, it is all business.
+
+Wait them out, bide your time, until fate brings you the instrument of your salvation.
+
+Remember this, {player}. Those without patience are lost in this world.</say>
+  </npc>
+  <npc id="3" handle="Flood" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>{player}, you aren't going to believe this. Well, actually you probably will, you believe anything. Zion is asking us for help!
+
+They're coming to us, looking for help saving their poor Niobe, and they actually expect us to--
+
+Well that's odd. The boss himself wants to see... both of us.</briefing>
+    <enter><say>The Merovingian is on site! Mind your manners...</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="2">
+      <talk>
+        <say npc="1">Ah, good, I was afraid something had happened to you, {player}. We've been waiting for some time, you know.
+
+Now, on to the news. As I was telling you earlier, the foolish Zionists have come to us for help! And they think that we're going to help them! Can you--</say>
+        <say npc="2">We are going to help them, Flood.
+
+I suppose you're delighting in the irony of this situation too much to appreciate what we have to gain, non? And now we know why you aren't in charge.
+
+Obligation. Being in one's debt. Beholden. Bound by one's own conscience. Even if you don't comprehend, Flood, I believe our friend {player} understands what I am proposing. How does that go... "People who wish to be thought of as good are always weak." And none more so than our dear, eager Zionists. We shall place them in our debt -- out of the goodness of our hearts, of course -- and then we shall watch them squirm.
+
+I do believe it's time to prepare a meeting place. Go there and verify its safety, {player}.</say>
+      </talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>What a relief that the Merovingian took my advice to help the Zionists! This truly is one of my greatest ideas. True, there have been many, but the payoff!</briefing>
+    <enter>
+      <say>This is supposed to be the place, but it looks like we've got some signals in there already.</say>
+      <say>Looks like we've got some company. Take them out.</say>
+    </enter>
+    <objective goal="1" text="Kill all of the hostiles" type="DefeatAll">
+      <done><say contact="1">I don't want to deal with any rabble, I talk to you enough as it is. Get out of there, I'll find something else.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Merovingian" enemies="0">
+    <briefing>Perhaps this will be more suitable. Check for any riff raff, will you?</briefing>
+    <enter><say>I'm not reading anything in there, but you might as well take a look to be sure.</say></enter>
+    <objective goal="1" text="Talk to Flood" type="Talk" npc="3">
+      <talk><say npc="3">Ah, yes, this will do. Just squalid enough to put the cave monkeys at ease.
+
+That's all I'm going to need you for.</say></talk>
+      <done><say npc="3">You think I need you here for the meeting? Ah, how refreshingly simple of you.
+
+No, I won't be needing you. Goodbye.</say></done>
+    </objective>
+  </phase>
+  <finish>Ah, and there are the Zionist signals, right on time like good little boys and girls.
+
+I'll talk with you again, I'm sure. I always do.</finish>
+</mission>

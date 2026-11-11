@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Military Action, Merovingian story mission 2.3.3. Source: research/missions/transcripts/Merv2-3-3.md (the archive
+     replay of [Merovingian Archive 2.3.3], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator, Flood and NPC line, and every NPC name.
+     The player (Vesuveus) is {player}. Ours: the description (the Summary tab was never opened), every objective text
+     (the Objectives tab was never opened), the looks, the enemy counts and the sites (none was described: Normal;
+     the assault site is "that lot"). The commandos are military programs and have Exile looks, as elsewhere; the
+     rebel Exiles are enemy Merovingian. No mission items. Rewards: the log shows 79,416,249 experience and 1,039,500
+     information (a level-50 player's). These are Zion 2.3's values (308,000 experience, 98,000 information, as Free
+     Your Mind paid).
+     Gaps: Carson's two companions were never named and said nothing; they aren't placed. Carson's "Sector seven G"
+     came right after the phase's goal and is said then; his "whine like a baby" line is his line when talked to
+     again. In retail phase 2 ended on picking up Stephens and Pemberton; here they are led out of the area, so that
+     they follow into the assault. They fought beside the player in retail; here they only follow, and since
+     followers can't be released they keep following into phase 4 ("Don't worry about the commandos"). The
+     Operator's line on spotting the defectors is said on coming near Rasalgethi; Rasalgethi's repeated line is said
+     once. At the end Alpha and Xinjiang execute Rasalgethi; an NPC can't kill another here, so the escort ends beside
+     Alpha with Alpha's "we cannot let Rasalgethi live!", Flood's and the Operator's reactions, and Rasalgethi stays
+     standing. Flood's closing line has one hidden line between "only" and "because"; it is read without it.
+     Goals are numbered across the mission (1 to 9) so that lines waiting for a goal don't count an earlier phase's. -->
+<mission id="302303" title="Military Action" description="Bring the Merovingian's terms to the commandos and lead their squad against the rebel Exiles." plot="1"
+         order="2303" org="3" contact="Flood" exp="308000" info="98000">
+  <npc id="1" handle="Carson" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="1">I do have a reason, soldier: because you whine like a baby!</say>
+  </npc>
+  <npc id="2" handle="Stephens" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Pemberton" type="FRIENDLY" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="4" handle="Rasalgethi" type="FRIENDLY" at="3" rsi="a5060090" weapon="2568" />
+  <npc id="5" handle="Aurelio" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="6" handle="Alpha" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568">
+    <say>Well?</say>
+    <say after="9">You have done well, {player}. I am certain that the Merovingian is pleased with your loyalty.</say>
+  </npc>
+  <npc id="7" handle="Xinjiang" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say>Where are the traitors?</say>
+    <say after="9">Pathetic!</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I have news, {player}. The Merovingian has decided to agree with the commando's proposal, if they meet his request: aid us in the removal and permanent eradication of the recent uprising of rebelling Exiles. You must bring this news to Carson.
+
+If you can help it, do try and avoid getting shot. Our messengers do not perform so well when their blood is replaced with bullets.</briefing>
+    <enter><say>It looks like Carson is accompanied by two other commandos. Let's hope they don't try anything funny.</say></enter>
+    <objective goal="1" text="Talk to Carson" type="Talk" npc="1">
+      <talk><say npc="1">The Frenchman wants our help? Typical. I didn't think it'd be any different. Freakin' pansies... We can back up any claim we make. I have no problem with killing to make friends.
+
+Here's the score: I have two men prepared to engage on your rebels, they just need a captain to lead them into the hotspot. Tell your wine-sipping friend that he can find my men in sector 7-G. Their call signs are Stephens and Pemberton. Got that?</say></talk>
+      <done>
+        <say>I'm surprised. It seems the commandos are actually willing to help.
+
+Hmm, Sector 7-G? I don't have that exact location, but it's nearby. I hope Flood has the details.</say>
+        <say npc="1">Sector seven G! You got that, soldier?! Pick up those gun bunnies and kill some rebels!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Things proceed according to plan. Excellent.
+
+Stephens and Pemberton are awaiting you at the next location.</briefing>
+    <enter><say>I've confirmed the signals of Stephens and Pemberton. Get in there and pick up the commandos.</say></enter>
+    <objective goal="2" text="Talk to Stephens" type="Talk" npc="2">
+      <talk><say npc="2">We're cocked, locked and ready to rock.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Pemberton" type="Talk" npc="3">
+      <talk><say npc="3">Let's do this!</say></talk>
+    </objective>
+    <objective goal="4" text="Lead Stephens and Pemberton out of the area" type="Escort" npc="2,3" to="exit" after="3" />
+    <complete><say>I wonder if two commandos is going to be enough for the assault... Think you can handle it?</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="5">
+    <briefing>Now that the cattle are in tow, lead them to the abattoir.
+
+Revenge is costly, but thankfully it won't cost us quite as much as before.</briefing>
+    <enter><say>I'm seeing quite a few signals on that lot. I think you'll need all the help you can get for this suicide mission.
+
+Good luck in there!</say></enter>
+    <objective goal="5" text="Kill all of the rebel Exiles" type="DefeatAll">
+      <done><say>You did it! That was some serious ass kicking back there!
+
+Don't worry about the commandos. Just lead the defectors to safety.</say></done>
+    </objective>
+    <objective goal="6" text="Talk to Rasalgethi" type="Talk" npc="4">
+      <talk><say npc="4">We will come quietly and return to the Merovingian's fold. We have seen the error of our ways.</say></talk>
+    </objective>
+    <objective goal="7" text="Talk to Aurelio" type="Talk" npc="5">
+      <talk><say npc="5">I shall never betray the Merovingian again.</say></talk>
+    </objective>
+    <objective goal="8" text="Lead Rasalgethi and Aurelio out of the area" type="Escort" npc="4,5" to="exit" after="7">
+      <talk><say npc="5">We will follow you.</say></talk>
+    </objective>
+    <near npc="4" radius="1000">
+      <say>It seems that we have a pair of defectors on our hands. Maybe the Merovingian will actually want them back. Clear out the area of remaining hostiles and pick 'em up. I'll update Flood.</say>
+    </near>
+    <complete><say>I like where this is going, but my only fear is that the Merovingian will refuse the continued service of the defectors. More often than not, Exiles are not brought back into the Merovingian's fold.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Lead the two traitors to Alpha and Xinjiang.</briefing>
+    <enter><say>I pulled up some intel on your contacts. Check this out: Alpha and Xinjiang are the Merovingian's personal chateau guards.
+
+I think this spells trouble for Rasalgethi and Aurelio.</say></enter>
+    <objective goal="9" text="Lead Rasalgethi and Aurelio to Alpha and Xinjiang" type="Escort" npc="4,5" to="npc:6">
+      <done>
+        <say npc="6">You have done well, {player}, but we cannot let Rasalgethi live!</say>
+        <say contact="1">No surprise there. The Merovingian doesn't take chances -- unless it's Persephone.</say>
+        <say>Whoa! Didn't see that comin'.</say>
+      </done>
+    </objective>
+    <near npc="7" radius="1000">
+      <say npc="7">Where are the traitors?</say>
+      <say npc="6">Well?</say>
+    </near>
+  </phase>
+  <finish>I am terribly concerned about the state of Desayd. In fact, I have a theory that I will share with you -- only because I hate to see that confused look on your face. It's quite unattractive.
+
+If my sources are correct, Desayd has tapped into the ability to create copies of himself. Taking him down will not prove to be a simple task. Stay prepared, {player}.</finish>
+</mission>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sea of Serenity, Merovingian story mission 8.1.2. Source: research/missions/transcripts/Merv8-1-2.md (the archive
+     replay of [Merovingian Archive 8.1.2], given by [Archived]Flood; one screenshot of the Status tab during play,
+     25 of the log after it ended, and two crops of the Computer window). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, the description (the Status tab), every briefing but the first, the closing line, and
+     every Flood, Operator, Malphas, Effectuator, Twin, Merovingian and Holographic Projection line, and those names.
+     Entries that span two screenshots with no header between are read as contiguous (Malphas's first line, the
+     Effectuator's first and second, Flood's "get back to me", the Operator's "Sheesh ... Here we go dotting the i's",
+     the Operator's "fat data pipe", the Merovingian's first). Italics dropped: "Bonne chance", "my", "did", "you",
+     "awfully", the Merovingian's words to the General ("Welcome, General ... sufficiently clear?"), "non?",
+     "Exeunt.". Ours: every objective text (the Objectives tab was never opened), the sites (Office for the
+     "business office", Normal otherwise; no neighbourhood was named), the looks (Malphas's, the Effectuator's, the
+     Twins', the Merovingian's and the projection's are those of earlier missions) and the enemy count.
+     Item stand-in: the tunnel data downloaded from the second terminal is Map_Disk (6783; no item name was shown).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the top of the log wasn't captured: Flood's opening briefing and the first area's arrival line are missing.
+     The Status tab's description is used as the first briefing (in Mach1-2-17 the two are the same text), and the
+     first area has no arrival line. The Effectuator arrives in the middle of Malphas's line in the first area, once
+     Malphas has been talked to, and beside the player at the first terminal in the second, once it has been checked
+     ("Oh, look who's here"); his Talk opens as he arrives. The Operator's "There's the terminal" and "There be the
+     terminal in question" came on reaching each terminal (14 s and 111 s after arriving); a trigger can't be placed on
+     an object, so they are said on arrival after the first line. The Computer windows' text ("Access denied. 256-bit
+     encryption (NWZ)", the virtual drive and the coordinates) isn't sent. In the third area retail's Zionite soldiers
+     were higher-level by the web summary; ours are at the player's level, and killing them isn't a goal (no Operator
+     line for it; the search came 5 min after reaching the terminal). The first area's lines after its goals (the
+     Effectuator's Anome story, Malphas's "Bonne chance") and the last area's projection "End transmission" and the
+     Merovingian's thanks (19 and 22 s after the goal) are said when they are talked to again; the projection's first
+     answer, in the same second as the goal, is said when it completes. Which Twin said which line isn't shown; the
+     banter is said on getting near them. A log entry may be missing between 12:45:53 and 12:46:35 PM. -->
+<mission id="308102" title="Sea of Serenity" description="He's not even here anymore, and he's still causing me headaches... Oh, there you are. It seems the General needs us to bail him out once again. Malphas can provide you with the details. The Merovingian thought the old rust bucket would be useful flying around in the desert, but I'm certainly not seeing it..." plot="1"
+         order="8102" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0">
+    <say after="2">Bonne chance, operative.</say>
+  </npc>
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" spawnAfter="1">
+    <say after="2">Ooh, yeah. So Anome was all hot to get up in our constructs--this was back when he worked for Zion--and I egged him on until he had his operative grab some "data" I conveniently left for them to find, and upload it straight to him. Needless to say, the "data" was a little fun-bomb of a virus I'd whipped up just for the occasion, and it went through and deleted all the info Zion had on me! I heard he was begging for mommy! Heh! Man, there was nobody like Anome for taking bait.</say>
+  </npc>
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" spawnAfter="3" spawnAt="player" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="6">That went well, non?&#10;&#10;You have facilitated this strategic maneuver admirably, {player}. Flood will have some payment for your trouble.</say>
+  </npc>
+  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0">
+    <say after="6">... End transmission.</say>
+  </npc>
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>He's not even here anymore, and he's still causing me headaches...
+
+Oh, there you are. It seems the General needs us to bail him out once again. Malphas can provide you with the details.
+
+The Merovingian thought the old rust bucket would be useful flying around in the desert, but I'm certainly not seeing it...</briefing>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">Increased Machine patrols in the tunnels are posing a danger to the General and our own Sentinel fleet. They must be moved out of danger; the question is, to where?&#10;&#10;Zion's knowledge of the maintenance tunnel network in your world is much more extensive than our own. Thus, it is necessary that we know what they know. We will do this by-- Ah.</say></talk>
+      <done><say>Well, look who just popped in.</say></done>
+    </objective>
+    <objective goal="2" text="Talk to the Effectuator" type="Talk" npc="2" after="1">
+      <talk><say npc="2">Hey-o! Ooh, did you get a haircut? I-- Oh, yeah--the squiddie thing.&#10;&#10;Lucky for us that I think I remembered seeing something about tunnel maps back when I was helping Zion with their networks, and constructs, and that whole bit with Niobe being captured by Anome. Man, that guy was a crack-up. Did I ever tell you about the time I tricked him into uploading a virus into his own--&#10;&#10;Oh, sure, sure. Mm-kay, so I think we can look those tunnel maps up at a certain Zion terminal. No sweat.</say></talk>
+      <done><say>Sounds a little shaky... Anyway, let's find out from Flood where we're supposed to find this terminal.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="0">
+    <briefing>Oh, so the Effectuator thinks he remembers something about it, does he? I know my confidence in this operation is just skyrocketing...
+
+This supposed Zion terminal is situated inside a business office.
+
+Yes, just skyrocketing...</briefing>
+    <enter>
+      <say>I'm just reading a bunch of bluepills, but this terminal we're looking for is supposedly in there somewhere.</say>
+      <say>There's the terminal. Check it out.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Check out the terminal" type="Use" object="1">
+      <done><say>Hm... All right, that could be some sort of Zion connection. But it might take all day to--&#10;&#10;Oh, look who's here.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to the Effectuator" type="Talk" npc="3" after="3">
+      <talk><say npc="3">See? What'd I tell ya? Now, you just leave that thing to me; I'll make it sing like Sinatra.&#10;&#10;Wha? Oh, don't worry, those noobs can't see me.</say></talk>
+      <done><say>Do we really need to stick around for that?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="5">
+    <briefing>Operative, at this point I'm completely emotionally divorced from this mission. Whatever happens, that's great. Maybe the Effectuator's a genius. Maybe he's the idiot I've always supposed him to be. You go connect the dots, and get back to me.
+
+I am floating...in a sea of tranquility, free of cares...of old lunatics in shorts and loafers...</briefing>
+    <enter>
+      <say>Sheesh, maybe this war thing is getting to Flood after all.&#10;&#10;Here we go dotting the i's and crossing the t's for him, then. You're looking at several scoops of Zionite soldiers in there, {player}.&#10;&#10;The Effectuator says he's traced the tunnel info we need to one of the systems in there. Only one way to find out.</say>
+      <say>There be the terminal in question.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="5" text="Download the tunnel data from the terminal" type="Search" object="1" item="6783">
+      <done><say>Ooh, that's one fat data pipe.&#10;&#10;Coordinates... Yeah, this looks like the tunnel data, all right. We'll be able to construct a map of the tunnel system they know once we've got this all downloaded.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Tunnel coordinates... Lovely... Report to he who must be obeyed...
+
+Om...</briefing>
+    <enter><say>O-kay... For those of us who haven't checked out early: the Merv's in there. Hopefully the tunnel data puts an extra-big smile on his face.</say></enter>
+    <objective goal="6" text="Talk to the Merovingian" type="Talk" npc="4">
+      <talk><say npc="4">Ah, bon.&#10;&#10;Welcome, General. We have updated information that will allow you to continue evading detection, if you follow our directions precisely. Furthermore, I require that you stay within areas that I will delineate for you. Attempt to leave these areas, and our override will shut you down. I trust this is sufficiently clear?</say></talk>
+      <done><say npc="5">... Message received and ... acknowledged. Course of the fleet will be adjusted as requested. ... That is all.</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">Dead, most like.</say>
+      <say npc="7">Maybe, old boy... But he did get himself into his own construct. That's something. That changes the rules, you know.</say>
+      <say npc="6">Well? What do you think happened to the Trainman?</say>
+      <say npc="7">He was awfully fond of that extra-dimensional train station of his.</say>
+    </near>
+  </phase>
+  <finish>It's a technique I picked up in the Orient, {player}. Keeps the mind clear--something more of us around here could use, I dare say.
+
+So the General is saved from his just desserts for another day--a triumph of monumental proportions. The war continues, and all is well. Exeunt.</finish>
+</mission>

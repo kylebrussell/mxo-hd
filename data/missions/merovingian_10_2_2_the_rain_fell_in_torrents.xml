@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Rain Fell in Torrents, Merovingian story mission 10.2.2. Source: research/missions/transcripts/Merv10-2-2.md (one
+     live retail run, given by Flood: 35 full-screen shots, five during play with the Desk Phone's and the Computer's
+     text windows and the Objectives window open, the rest of the log paged through after the mission ended).
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Twin, Merovingian, Persephone, Jaimee Ninemire, Cruz Ellis, Casca,
+     Ma and Jurney line, the names, and the objective texts "Use the Phone" and "Search the Computer" (the Objectives
+     window). The log's player was Briseus; his name is {player} here. Retail's "on one piece" (a Twin) and "en-route"
+     are kept; the italics of the Merovingian's French and of Flood's muttering are dropped. The two Zion Gunman lines
+     were only in Team chat; the censor string "%#@$%!" is read from small glyphs.
+     Ours: the description (the Summary tab only said "Datalink established."), the objective texts of phases 1 and 3,
+     the sites (the family's home with its residential line is a GenericApt; the rest Normal: nothing describes them),
+     the looks and the enemy counts. Phase 4's hostiles are Zion Gunmen (System chat), so enemy Zion; one is named so
+     that he can speak.
+     Joins between pages read as contiguous: "fail in a new way / every day", "it was a dark and stormy / night",
+     "See what you can / find out", "so that it absolutely / can't be traced", "Better hurry, / though", "put out a /
+     call for help", "It's quite simple, you see, / Briseus", "don't know exactly / how they pulled it off", "of course,
+     except / higher up", "the lower / atmosphere", "at that spot, / operative", "the storm's / composition". The
+     Operator's "Got a few active signals in there" starts a page with no header, so it is the second paragraph of his
+     12:54:07 line.
+     Rewards: the log shows 242,000 experience and 80,500 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5).
+     Gaps: the radio show's answer on the Desk Phone (Rainy Day Dan's temperature inversion and "tropospheric
+     ducting") and the Computer's newspaper article on Operation Dark Storm were object text windows we can't show; the
+     transcript has both. The Operator's "Reversible?" answers the article. The Twins' four lines came one after
+     another as the player arrived; here they are said on getting near them, and which Twin said which isn't shown
+     (they alternate). The Merovingian's "That storm..." and Persephone's two lines came 4 to 15 seconds after the
+     Talk; they follow it here, and the last of each is said when clicked again. Jaimee Ninemire's and Cruz Ellis's
+     first lines are said on getting near them, their second lines when clicked (retail repeated them on clicks). A
+     hostile named Spark Incinerator fought the player at the family's home just before the phone was used (System
+     chat; his side isn't shown): phase 2 has two generated Zion hostiles for him. The second 12:54:30 Operator entry
+     fell between two pages and is taken to be the area's completion. -->
+<mission id="310202" title="The Rain Fell in Torrents" description="Find out whether the storm between the Merovingian and the General can carry a signal." plot="1"
+         order="10202" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">That storm... The greatest force on the planet. What are the Machines to it? Mon dieu... Just think of it...</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="0">
+    <say after="1">Do you think the universe is finite? No, not even here. You accumulate more, and still there is more that you do not have.</say>
+  </npc>
+  <npc id="5" handle="Jaimee Ninemire" type="FRIENDLY" at="2" rsi="a5060090" weapon="0">
+    <say>Can't I offer you anything to eat?</say>
+  </npc>
+  <npc id="6" handle="Cruz Ellis" type="FRIENDLY" at="2" rsi="ec020058" weapon="0">
+    <say>If you need somewhere to stay for a little while, I don't mind taking the sofa.&#10;&#10;Please--at least think about it. I know how cruel the streets can be.</say>
+  </npc>
+  <npc id="7" handle="Casca" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="3">The energy powering that storm must be incredible. You'd almost think it would have to be generating a continuous reaction of its own somehow.</say>
+  </npc>
+  <npc id="8" handle="Ma" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568">
+    <say after="4">The atmosphere's a fascinating topic, sir.</say>
+  </npc>
+  <npc id="9" handle="Jurney" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" />
+  <npc id="10" handle="Zion Gunman" type="HOSTILE" at="4" rsi="9b0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We've tried setting up relays to re-establish communication with that dunderpate, the General, but they've been foiled by various types of human weakness. There are so many, I suppose we could fail in a new way every day for years if we kept relying on you.&#10;&#10;But, droll as that might be, we'll have to come up with something better if we intend to support ourselves in the style to which we're accustomed. The Merovingian wants to pick your brain on this topic, although if there's anything in there, I've yet to see it...</briefing>
+    <enter><say>Hm... Some other way to get back in touch with the General...&#10;&#10;Wait, did we try semaphore yet?</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">Frustrant... This is not an idea! We have no ideas... We may as well begin with "it was a dark and stormy night..."&#10;&#10;Un moment... The storm... The storm is electrically charged, yes? For 800 miles from here to the General, the tempest rages unbroken... There may be a way to use this. Oui... But we must learn more.&#10;&#10;{player}, call Flood. See what you can find out about this.</say></talk>
+      <done>
+        <say npc="1">That storm... The greatest force on the planet. What are the Machines to it? Mon dieu... Just think of it...</say>
+        <say npc="4">More exploration, more exploitation... It will never end.</say>
+        <say npc="4">Do you think the universe is finite? No, not even here. You accumulate more, and still there is more that you do not have.</say>
+      </done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Oh, no, he made it, old boy.</say>
+      <say npc="3">Did he? Mm. Then you get to begin the sentences this week...again.</say>
+      <say npc="2">Why, Zion's fellow Lock, you know--got through to their new city on one piece, they say. And some of our crews even wrangled promotions out of it!</say>
+      <say npc="3">Yes, I did rather think he was bound to meet with some sort of accident en-route. There's just no counting on karma these days...</say>
+    </near>
+  </phase>
+  <phase site="GenericApt" enemy="Zion" enemies="2">
+    <briefing>Ah, yes. Obviously I would be singled out for a task such as this, requiring both technical mastery and genius-level intuition. I'll just call one of our best operatives to put my brilliant plans into motion...&#10;&#10;...&#10;&#10;Blast it, how can they all be getting their hair done? ... All right, {player}, I'll just have to make do with your rough clay. First, you're going to make an anonymous call to the popular meteorological radio call-in show, "Rainy Day Dan," and ask about using lightning storms to transmit messages. You'll call from a residential line so that it absolutely can't be traced back to us...unless you were to do something stupid like giving them your name.</briefing>
+    <enter><say>This is what Flood considers research?&#10;&#10;All right... Oops, looks like the family's at home. Better hurry, though, 'cause that show's only on for another few minutes.</say></enter>
+    <object id="1" kind="Phone" />
+    <objective goal="2" text="Use the Phone" type="Use" object="1">
+      <done><say>Man, I can see why that show's so popular.</say></done>
+    </objective>
+    <near npc="5" radius="1000">
+      <say npc="5">Darling, what's going on? Who is this person?</say>
+      <say npc="6">I don't know, dear--some poor unfortunate. Letting them put out a call for help is the least we can do.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>A temperature inversion? Why, that should be child's play, I'm sure. Let me just consult my extensive personal notes... Blast it, why is the page taking so long to load? I swear, if Ookami's downloading--&#10;&#10;Ah! Ahem. Yes, temperature inversion. It's quite simple, you see, {player}. All we'll have to do is seed the atmosphere with...hm... Eh...&#10;&#10;Tell you what, {player}. Since this may require grunt work from the General's commandos, why don't you go ask them for details on the storm's composition? There's a good operative.</briefing>
+    <enter><say>You know, I like the commando programs. They're always so polite and gung-ho. Too bad the General isn't more like them...</say></enter>
+    <objective goal="3" text="Talk to Casca" type="Talk" npc="7">
+      <talk><say npc="7">That storm was created by humans, sir. They called it "Operation Dark Storm," but we don't know exactly how they pulled it off. Why, if the Machines knew that, I expect they'd have done something to reverse it by now--don't you?</say></talk>
+    </objective>
+    <objective goal="4" text="Talk to Ma" type="Talk" npc="8">
+      <talk><say npc="8">Can't say we know that much about the atmosphere, sir. It's pretty stagnant with the surface being dead and cooled and all, of course, except higher up where the storm mixes things a bit. But oxygen breaks down real slow, and even all that lightning from the storm is only a drop in the bucket as far as ozone creation goes.</say></talk>
+    </objective>
+    <objective goal="5" text="Talk to Jurney" type="Talk" npc="9">
+      <talk><say npc="9">Low and fast, sir; that's how we do it! Go too high, and you'll get your circuits fried by the storm!</say></talk>
+    </objective>
+    <complete><say>Hm... Seems like that storm's one big mystery.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>That isn't much to go on, operative. If the composition of the lower atmosphere is sufficiently similar to what it was before the storm, then we could use standard cloud seeding techniques to cause an inversion, but that storm is a big wet wildcard that I'm not very happy with. If it was caused by humans, then we'll have to find out what they know about it.&#10;&#10;Zion has a database link at that spot, operative. See what they've got on the "Dark Storm" boondoggle.</briefing>
+    <enter><say>Well... We know Operation Dark Storm happened early in the first Man/Machine war. That was way before Zion existed. I suppose it's possible that they've dug something up.&#10;&#10;Got a few active signals in there. I think I see the terminal Flood was talking about.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>Reversible? Then there might be some way to get rid of it... That would sure put a twist on things, wouldn't it?</say>
+        <say npc="10">%#@$%! Who left the computer unlocked?!</say>
+      </done>
+    </objective>
+    <near npc="10" radius="1000">
+      <say npc="10">It's Mauser! Oh, nope.</say>
+    </near>
+  </phase>
+  <finish>Complete hogwash, operative. When did human governments ever tell the truth about what they were going to do? But why am I asking you that? You probably still believe in taxes and the tooth fairy...&#10;&#10;Since you've failed to find real information on the storm's composition, we'll just have to have some of the General's Sentinels "wing it" by throwing a variety of time-tested chemicals up into the storm along the route to the General and that silly no-fly zone. Let me see... Hm... Yes, we'll have them disperse silver iodide--I'm sure we can find boatloads of that laying around... Ah, we can whip up some dry ice... Ooh, salt mixtures might work as well...</finish>
+</mission>

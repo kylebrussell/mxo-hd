@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mismanagement, Merovingian story mission 11.3.1. Source: research/missions/transcripts/Merv11-3-1.md (one live
+     retail run, given by Flood: 22 screenshots, two at the end of the last area, the log after the mission ended,
+     and two of the Team chat). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Nicky G. and Cheryl line, the Corporate Security Sergeant's,
+     the Suit Supervisor's and the Suit Office Girl's lines (Team chat only), and the names. Flood never named the
+     log's player here. Italics are dropped; Nicky G.'s asterisks ("*I*", "*awfully*") and her "(i)isn't" are kept
+     as retail showed them. Ours: the description (the Summary tab only said "Datalink established."), every
+     objective text (only "Leave the area now!" is shown), the sites (the Historic District's secondary offices were
+     an office room with a desk and computer: Office; the rest Normal), the looks (Nicky G. as the other Merovingian
+     files have her, the rest of the right sex) and the enemy counts. Phase 2's hostiles are Exiles standing in for
+     the Accelerated Suits the Operator warns of; phases 1 and 3 have none.
+     Joins between images read as contiguous: "her intelligence has / improved", "the Suits gang has just / been
+     shot", "but really, the / complete lack", "Supposedly it's the biological / interface program", "the pipes
+     here make in / the morning", "Speaking of hovercraft issues, how / about that Veil", "areas where / overrides
+     are detected", "squished down to the size / of a melon"; Flood's "no doubt." / "We've gotten" is read as a
+     paragraph break.
+     Rewards: the log shows 76,270 experience and 105,000 information (a level-30 player's). These are Zion 11.3's
+     values (352,000 experience, 525,000 information; Resistance showed the information, and the Zion files take the
+     experience from The Spider, 11.1.5). The log's run paid 76,270 experience and 105,000 information at level 30;
+     the Code Bits 4 and 6 received with them aren't given.
+     Gaps: the Sergeant's, the Supervisor's and the Office Girl's lines were only in Team chat, not in the log.
+     Manager is never met: phase 2's goal is read as talking to the Suit Supervisor, whose "Manager and most of our
+     management team have moved" fits the Operator's "Sounds like Manager's a little sharper than Nicky", which
+     follows it; no area-complete line was logged there. The Supervisor's "The Machines and Zion" and the Office
+     Girl's line came after his talk and are what they say when clicked. A Suit Supervisor was targeted beside
+     Cheryl in phase 3, and his "The effect on the economy?" came both before and after Cheryl's talk, so a second
+     Supervisor stands there and says it when clicked. The Operator's "mini-beehive" line is said on getting near
+     Cheryl, 23 seconds before her talk. The computer's ticker popup is left out. Lines logged after a goal (Nicky
+     G.'s "Consider that a freebie", Cheryl's "You operatives") are what each says when clicked. -->
+<mission id="311301" title="Mismanagement" description="Scout Hampton Green after Danielle Wright's overrides, asking Nicky G. and the Suits gang what they know." plot="1"
+         order="11301" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Nicky G." type="FRIENDLY" at="1" rsi="530a0058" weapon="0">
+    <say after="1">Consider that a freebie, sugar. Come chat with me in Club Paradise some time--when it (i)isn't in danger of infestation by wild programs, that is.</say>
+  </npc>
+  <npc id="2" handle="Corporate Security Sergeant" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
+    <say>Me? I just get paid to follow Ms. Nicky. So... Yeah. Pretty okay job.</say>
+  </npc>
+  <npc id="3" handle="Suit Supervisor" type="FRIENDLY" at="2" rsi="c9020058" weapon="2564">
+    <say after="2">The Machines and Zion have moved into this area as well. I wouldn't suggest trying to tough it out.</say>
+  </npc>
+  <npc id="4" handle="Suit Office Girl" type="FRIENDLY" at="2" rsi="5a000040" weapon="0">
+    <say>Code prices on the local black market are skyrocketing. This is when the smart trader makes a killing.</say>
+  </npc>
+  <npc id="5" handle="Cheryl" type="FRIENDLY" at="3" rsi="a5060090" weapon="0">
+    <say after="3">You operatives were hardly in much danger from overrides in any case; even being squished down to the size of a melon only keeps you out of action for a few seconds. We programs who have been forced by the Machines to live here--and denied any real support--are the ones who are really threatened. Even the Merovingian has to be concerned about this, whether or not he will admit it to you.</say>
+  </npc>
+  <npc id="6" handle="Suit Supervisor" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564">
+    <say>The effect on the economy? Don't make me laugh.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Hmph. That Danielle Wright woman has taken herself and her annoying override codes into Hampton Green; still after the biological interface program she forced the Merovingian to release into the system, no doubt.&#10;&#10;We've gotten our important people out of the way, of course, but we won't put up with this sort of thing for long. I need you to go in and do some scouting around, operative. Your first stop is that shameless hussy, Nicky G. If anyone will know what's going on in the neighborhood, it's her...although I can't say my estimation of her intelligence has improved since she's stubbornly decided to stay there with Wright in the vicinity.</briefing>
+    <enter><say>Have you noticed that Flood always seems grumpy about women the Merovingian has associated with?</say></enter>
+    <objective goal="1" text="Talk to Nicky G." type="Talk" npc="1">
+      <talk><say npc="1">Nice of you to come keep me company; it suddenly got lonely around here...unless you count the berserk Suits running around, but *I* don't, since they're even more tight-lipped than usual.&#10;&#10;Oh, you didn't know? Well, honey, it seems to me the Suits gang has just been shot to heck with those nasty...oh, what do you call them...acceleration programs. It's *awfully* dull to have them fizzing around everywhere.</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>A woman named "Manager" leads the Suits gang; I don't mind efficiency in command structures, but really, the complete lack of flair embodied in her "name" is just depressing.&#10;&#10;Since it sounds as though her group has had a run-in with Wright, I think we ought to see if she has any useful information for us. Go brighten up her day, why don't you.</briefing>
+    <enter><say>Watch it, there could be more of those Accelerated Suits hanging around there.&#10;&#10;Hey, you know how the Merv got a weird message saying "Wake up"? Well, word has it that Zion got one at about the same time, saying "Knock, knock." Supposedly it's the biological interface program that's been leaving them. Nobody seems to know if it's trying, like, reach out and talk to us, or what.</say></enter>
+    <objective goal="2" text="Talk to the Suit Supervisor" type="Talk" npc="3">
+      <talk><say npc="3">Manager and most of our management team have moved to secondary offices in the Historic District.&#10;&#10;Crises like this are inevitable for Exiled programs. We're prepared; we'll deal with it, and once it's over, we'll take over the market space left free by those who didn't.</say></talk>
+      <done><say>Sounds like Manager's a little sharper than Nicky. Let's see if Flood wants us following her west to the Historic District.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>The Historic District, hm? Yes, yes, go on. Sometimes I almost pity the Exiles stuck in small operations, who can't afford the security offered by a private construct like our chateau.&#10;&#10;I do wish our maintenance team would get off their backsides and fix that banging sound the pipes here make in the morning, though. Really, how many people do I have to scold before things get done properly?</briefing>
+    <enter><say>Hey, that reminds me, can we get the rattle in the bulkhead next to my bunk fixed? That would be awesome.&#10;&#10;Speaking of hovercraft issues, how about that Veil getting into Shimada's ship and pulling her jack while the Kid was away? Ouch. Kind of makes you wonder if there are Cyphs out there watching our ship... Haha. ...</say></enter>
+    <near npc="5" radius="600">
+      <say>I just want to know what's up with the mini-beehive look...</say>
+    </near>
+    <objective goal="3" text="Talk to Cheryl" type="Talk" npc="5">
+      <talk><say npc="5">Yes, Wright's indiscriminate use of override codes has resulted in the loss of more than a few of our members.&#10;&#10;The Machines express concern over the codes, but they have not actually offered any assistance. Even their own Agents avoid areas where overrides are detected.&#10;&#10;I have heard of a possible remedy for their use on operatives such as yourself; there are rumors of a Cypherite in Morrell with countermeasures of some kind.</say></talk>
+      <done><say>The Cypherites are cooking up something besides pulled jacks? Huh.</say></done>
+    </objective>
+  </phase>
+  <finish>Cypherites? Hmph. Hardly a dependable group, although I'll admit they're somewhat less irritating than those golden idealists they waste so much time trying to kill off.&#10;&#10;We, on the other hand, have other things to do. See our contact in Hampton Green when you're ready to do some real work.</finish>
+</mission>

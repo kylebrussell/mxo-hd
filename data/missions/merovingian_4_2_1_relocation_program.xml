@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Relocation Program, Merovingian story mission 4.2.1. Source: research/missions/transcripts/Merv4-2-1.md (the archive
+     replay of [Merovingian Archive 4.2.1]; 17 screenshots, one taken during the vault phase, the rest scrolling the log
+     afterwards). The contact was [Archived]Flood. Placement is generated: see docs/MISSIONS.md.
+     The log stops at 6:51:24 PM, partway through the last phase: Hypatia's speech is the last captured entry. This file
+     builds only what the log shows. It ends on the vault's goal, and there is no closing Flood line (no finish), as
+     none was captured.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, every NPC name (Prudentia, Boury, Hypatia)
+     and the vault objective ("Get the item from the Vault", the only objective shown). Ours: the description (the
+     Summary tab was never opened), the other objective texts, the sites (the vault room had a desk, a computer and a
+     safe, so it is an Office; the others Normal), the looks and the enemy count (4 of Boury's guards, Exiles, as he is
+     an Exile outside the Merovingian's employ). Item stand-ins: Prudentia's unnamed item is Package (6817), Boury's
+     "fragments" are Frags (6785), the key disk from the computer is Data_CD (6831) and Hypatia's book is Book (6814).
+     Rewards: the log shows 512,177 experience and 525,000 information (a level-50 player's). These are Zion 4.2's
+     values (341,000 experience, 112,000 information, as Between Waking and Sleeping paid).
+     Gaps: the log never says how the fragments reached the player; here Boury hands them over when talked to after the
+     fight ("Stop... agree... fragments... computer... key..."), then they go in the computer (a Put, done with Hack) and
+     the key disk comes out of the same computer. Two short gaps in the log are joined: Flood's phase-2 briefing may
+     have more text before "Get the key from him", and the Operator's entry on reaching Boury's place is missing words
+     before "let's get this key". Prudentia's speech is two log entries read as one. Boury becomes "it" after the fight
+     (a change of look in retail, perhaps); his look stays. Retail's italics (on "someone" and "it") are dropped.
+     The safe in retail took Pick Lock; here it is searched. Hypatia's warning about her computer's strict security
+     names nothing the log shows, so there is no computer goal. Bookwyrm Pedant, a friendly in the vault room with no
+     lines, isn't placed. The "Hypatia!?" of the Operator is said on coming near her. -->
+<mission id="304201" title="Relocation Program" description="Collect the items the Merovingian has hidden around the Matrix." plot="1"
+         order="4201" org="3" contact="Flood" exp="341000" info="112000">
+  <npc id="1" handle="Prudentia" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568">
+    <say after="1">Well, now that you have it... can you stay a while?&#10;&#10;No? Fine. I'm sure I can find someone with some time to spare.</say>
+  </npc>
+  <npc id="2" handle="Boury" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="2">Why... bother...</say>
+    <say after="4">You... go... leave...</say>
+  </npc>
+  <npc id="3" handle="Hypatia" type="FRIENDLY" at="3" rsi="4b0a0058" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>I can assure you, {player}, that the Merovingian is very interested in those electromagnetic doodads I invented. Our scientists are working out the details as we speak.&#10;&#10;In the meantime, I have a task for you. There are a few items of interest that the Merovingian has spread throughout the Matrix, in various hiding places. He now seeks to consolidate them.&#10;&#10;Go to the location I've indicated, and talk with Prudentia. She holds one of the items.</briefing>
+    <enter><say>Prudentia should be in here with whatever this item is.</say></enter>
+    <objective goal="1" text="Get the item from Prudentia" type="Get" npc="1" item="6817">
+      <talk>
+        <say npc="1">So, you're {player}? My, my... so much more, ah... energetic than I expected. I don't suppose you'd be willing to help me with a little something?&#10;&#10;You see, I'm so curious. I have this... burning desire to know more about humans, and... oh, blast you. You're here on work, aren't you.&#10;&#10;Fine. Take this damn thing then.</say>
+        <say npc="1">Well, take it already, if you're not going to help me out!</say>
+      </talk>
+      <done><say>Okay, you can get out of there now, {player}.&#10;&#10;Ahem. {player}? Come on, get moving.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Well, I must confess I wasn't sure that I'd see you after that address. Prudentia is known for her, ah... appetites.&#10;&#10;This next task may prove a little trickier. Boury has a key to the vault containing another item. You'll have to get the key from him. Unfortunately, he isn't actually in the Merovingian's employ... which could cause some problems.&#10;&#10;Get the key from him. I expect success from you.</briefing>
+    <enter><say>Why would the Merovingian hide keys with people who don't even work for him? And more importantly, why are we gathering these things right now?&#10;&#10;I guess the less we know, the better... let's get this key.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Talk to Boury" type="Talk" npc="2">
+      <talk><say npc="2">Key... mine. You... leave... now.</say></talk>
+      <done><say>How'd this loser get to keep one of the Merovingian's keys? Well, whatever... time to crack some skulls. Take out his guards, then see how talkative he gets.</say></done>
+    </objective>
+    <objective goal="3" text="Kill Boury's guards" type="DefeatAll">
+      <done><say>Maybe he'll... uh... it will be a little more cooperative now.</say></done>
+    </objective>
+    <objective goal="4" text="Get the fragments from Boury" type="Get" npc="2" item="6785" after="3">
+      <talk><say npc="2">Stop... agree... fragments... computer... key...</say></talk>
+      <done><say>I guess those go in the computer somewhere around here, and we get the key from it? I wish the Frenchmen used lackeys who were a little easier to understand.</say></done>
+    </objective>
+    <objective goal="5" text="Put the fragments in the computer" type="Put" object="1" item="6785" after="4">
+      <done><say>Okay, now grab the key and we can ditch this place!</say></done>
+    </objective>
+    <objective goal="6" text="Get the key from the computer" type="Search" object="1" item="6831" after="5">
+      <done><say>I guess that disk must be the key. Time to go find the vault, I guess.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="0">
+    <briefing>Ugh. The level you have to stoop to when dealing with some of these cretins-- Oh, I'm sorry. I didn't intend any offense.&#10;&#10;Continue on to the vault. You probably won't come into contact with the vault's owner, which is just as well.</briefing>
+    <enter><say>The vault's owner... how mysterious. Wonder who it is?</say></enter>
+    <object id="1" kind="Safe" />
+    <objective goal="7" text="Talk to Hypatia" type="Talk" npc="3">
+      <talk><say npc="3">So... it's true. I'd heard that he was collecting his things. I had to come in person to see if it was true.&#10;&#10;But why? Where is he going? How will he get there, without his Effectuator?&#10;&#10;So many questions, and you're not the one with the answers, are you? I thought not. If you have the key, you may take the book. Be careful with that computer, however. My security is rather strict here.</say></talk>
+    </objective>
+    <objective goal="8" text="Get the item from the Vault" type="Search" object="1" item="6814" after="7" />
+    <near npc="3" radius="1000">
+      <say>Hypatia!?</say>
+    </near>
+  </phase>
+</mission>

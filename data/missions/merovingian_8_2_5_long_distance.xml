@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long Distance, Merovingian story mission 8.2.5. Source: research/missions/transcripts/Merv8-2-5.md (the archive
+     replay of [Merovingian Archive 8.2.5], given by [Archived]Flood; 27 screenshots of the log after it ended and one
+     of a computer popup). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Holographic Projection, Malphas
+     and Merovingian line, and those names. Every entry that spans two screenshots is joined by overlapping lines. The
+     hologram's first, garbled line is drawn on four lines with the words run together; the break after "nearby." is
+     read as a space. Its second line's spaced " ... " gaps are the log's. Italics dropped: "mon ami,", "Quel dommage,
+     eh?", "Zut alors!" and "non?" (the Merovingian's) and Flood's "my".
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (Normal, except "a Network Media broadcasting facility": Office; no neighbourhood
+     was named), the looks (the Holographic Projection's, Malphas's and the Merovingian's are those of earlier
+     missions), the enemy kinds and counts, and the two access keys: retail named neither, so they are an Access Card
+     (6791) and an Access Code (6782).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the Operator's "Hm... Try in there." and "There it is!" (15 s after arriving, a second apart) are said on
+     getting near the hologram. No goals-complete line is visible at the end of the first two areas (Flood's next
+     briefing came 11 s and 30 s after their last lines, at screenshot joins that may hide an entry); here they end as
+     usual. Network Media's security team is Machines here (the Network works for the Machines), and killing them isn't
+     required. How the player got the access keys isn't shown: only the first is remarked on ("An access key...", 4
+     minutes after arriving), and the second key's terminal opened 5 s after the first. Here they are two furniture
+     searches, the second opening after the first; the Operator's "multi-part security access system" line, which came
+     when the player reached the terminals in retail, is said on finding the second key. Unlocking each security
+     terminal is a Put at a computer (done with Hack), and the third terminal is a Use; its popup ("Access granted. >
+     lsdevices -t 0922 ... Device 13 function 1 saved.") isn't shown. In the third area the Machines appeared as the
+     General's transmission ended ("Oh! Watch it! Machine signals all over the place!"), and the goals completed in the
+     same second; here they are there from arrival and needn't be killed. Malphas's "300 million..." (12 s after his
+     first line) is said as his talk completes; the Merovingian's goal opens after Malphas's, and his "It is strange to
+     think of it..." (29 s after the goals completed) is said when he is talked to again. -->
+<mission id="308205" title="Long Distance" description="Hijack a Network Media transceiver to hear the General's report from far beyond the Fields, and take it to the Merovingian." plot="1"
+         order="8205" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0" />
+  <npc id="3" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="9">It is strange to think of it, my friend: your entire world, blackened and dead, on and on, mile after mile... Quel dommage, eh? Such a waste...&#10;&#10;Of course, I knew what had happened, but you like to think "ah, there must be something else that survived." But for the scout to travel 6000 miles, and see nothing but devastation... Zut alors!&#10;&#10;But then, we are fortunate to have this place, non? The Machines who made it cannot be so bad, hm? Ah, well... We will see.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General has been trying to contact us, operative, but his signal is so erratic that it's been difficult to track down.
+
+Our technicians think they've managed to locate it at last. Hurry up and try to contact it.</briefing>
+    <enter><say>Something tells me the General's getting himself into more trouble out there.&#10;&#10;All right, that's the spot. I can see some kind of signal in there, but it's really weak.</say></enter>
+    <objective goal="1" text="Find the General's signal" type="Talk" npc="1">
+      <talk><say npc="1">...scouts...another...miles...ceased...the...nearby. ...time...one...scanned...dead...only...Machine...</say></talk>
+      <done><say>Well great, I can't make anything out of that. What are we gonna tell Flood?</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Hm... Try in there.</say>
+      <say>There it is!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>Why, why can't he simply get himself deleted? Is that so much to ask?
+
+All right, operative. It's clear that the low-power transceiver we're using to communicate with the General without being detected by the Machines cannot handle communication at the range the General has reached in his pod-scouting venture. There's nothing for it but to upgrade temporarily, even though it may bring the wrath of the Machines down upon our--well, your--head.
+
+Network Media runs the most powerful transceiver equipment in the city. We know that their CEO, the Network, does work for the Machines, and has equipment capable of communicating with them directly. I'm sure he won't mind if we repurpose one of his special communication arrays momentarily.</briefing>
+    <enter><say>That's a Network Media broadcasting facility. You need to find a terminal that you can use to hijack their communication equipment.&#10;&#10;I'm picking up some of their security team members in there, so keep an eye out.</say></enter>
+    <object id="1" kind="Furniture" />
+    <object id="2" kind="Furniture" />
+    <object id="3" kind="Computer" />
+    <object id="4" kind="Computer" />
+    <object id="5" kind="Computer" />
+    <objective goal="2" text="Find an access key" type="Search" object="1" item="6791">
+      <done><say>An access key... That could come in handy.</say></done>
+    </objective>
+    <objective goal="3" text="Find the second access key" type="Search" object="2" item="6782" after="2">
+      <done><say>Hm... Looks like a multi-part security access system there. You'll need two different access keys to get to the terminal we need.</say></done>
+    </objective>
+    <objective goal="4" text="Use the Access Card on the security terminal" type="Put" object="3" item="6791" after="3">
+      <done><say>All right, now you just need a key for the other security terminal.</say></done>
+    </objective>
+    <objective goal="5" text="Use the Access Code on the other security terminal" type="Put" object="4" item="6782" after="4">
+      <done><say>Nice. It looks like you can access the third terminal now.</say></done>
+    </objective>
+    <objective goal="6" text="Hijack the communication equipment from the third terminal" type="Use" object="5" after="5">
+      <done><say>That should have us plugged through his array now. I'm sure he won't mind too much; it's not like any of his subscribers watch TV over that one. He may miss out on some special chat time with Deus Ex Machina or whoever, but hey, these little inconveniences are what add spice to life, right?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Now hurry up and get to the General's signal again before they find out we've re-routed their equipment. We don't exactly want them listening in while the General airs their dirty laundry.
+
+Hm... Then again, maybe we do.</briefing>
+    <enter><say>The General's broadcast signal is in there. Seems stronger this time; I hope that means its transmission is a little less garbled.</say></enter>
+    <objective goal="7" text="Find the General's signal again" type="Talk" npc="2">
+      <talk><say npc="2">One of my scouts followed the pattern of pod clusters to another collection of "Fields" over 6000 miles away. His signal ceased shortly thereafter, but it appeared to be roughly the same size as the other one, with a large pod cluster nearby. The power lines from the pod clusters had for some time been running the opposite direction: away from him. His report was the only ... to differ from the others; all scouts reported ... the surface area they scanned ... nothing but a ... featureless wasteland, its monotony relieved ... by dead skeletons of ... cities, Machine ... lines, and pod ...</say></talk>
+      <done><say>Broke up at the end there, but I got the part about finding another set of "Fields," anyway, and--&#10;&#10;Oh! Watch it! Machine signals all over the place!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So the senile old fool wasn't just muttering incoherently after all, hm? What a novelty.
+
+Very well, go report it to the Merovingian. If you're lucky, maybe Malphas will perform some more mathematical gymnastics for you.</briefing>
+    <enter><say>What do you suppose he meant about the power lines? If they weren't running to Machine city, then where were they going?</say></enter>
+    <objective goal="8" text="Talk to Malphas" type="Talk" npc="3">
+      <talk><say npc="3">Hm... Another set of Fields... In that case, possibly there are several more that we have not discovered... That would account for the birth rate seen in the simulation, and it would fit with our estimate of 300 million total humans connected to the pods.&#10;&#10;The General will have to be called back. We can't have him losing more Sentinels on long-range scouting--not if there is so little to see.</say></talk>
+      <done><say npc="3">300 million... They would all be taken up simulating just the United States of America of that time period. And yet, those in the simulation believe that they can travel anywhere in the world. Hm...</say></done>
+    </objective>
+    <objective goal="9" text="Talk to the Merovingian" type="Talk" npc="4" after="8">
+      <talk><say npc="4">So! If it really is only 300 million that they have... Then I must say, mon ami, that I could almost feel sorry for them. You see, based on the power sample the General took, even 300 million would barely give them enough power to supply what we can guess of the energy demands of Machine city several times over...and out of that must also come power for their Sentinels, their other defenses, the Matrix itself...&#10;&#10;It is a meager diet, I am afraid, and I see now why they harp so much on "efficiency." It explains why they have been less than overwhelming against Zion, eh? But it does not explain why it was not this way in the past... And it does not explain why they insist on using humans for power, when they must have much more enriching alternatives available.</say></talk>
+    </objective>
+  </phase>
+  <finish>I'm sure I can't imagine why the Machines bother keeping you around, operative, unless they just like torturing you. But it certainly isn't making my job any easier.
+
+And now they want to call the General back! Gad. Let him fly around your slush-pit of a world, I say. Anything's better than having him moping around here.</finish>
+</mission>

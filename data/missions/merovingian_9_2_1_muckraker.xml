@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Muckraker, Merovingian story mission 9.2.1. Source: research/missions/transcripts/Merv9-2-1.md (the archive replay
+     of [Merovingian Archive 9.2.1], given by [Archived]Flood; 23 screenshots, three during play at the three
+     computers, the rest of the log after it ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator and Agent line, the Agents' names, and the objective text "Search
+     the Computer" (the Objectives window of phases 1, 2 and 3). Retail set "you", "not", "trying", "Ciao" and "ever"
+     in italics; here they are plain. Ours: the description (the Summary tab was never opened), "Talk to Agent Pace",
+     the sites (the three computers stood in offices in Tabor Park, so Office; Agent Pace's place in Achan Normal), the
+     looks and the enemy counts. Phase 1's guards (Watchman, Bluepill) and phase 2's (Tactical Security) are the
+     Machines'; phase 3's are the Network's corporate security guards, an Exile's men, so Merovingian.
+     Agent Pace greeted the player by the character's own first and last name ("Ms... Napilitano", "the System,
+     Marie"); the engine only knows the handle, so all three are {player}.
+     Rewards: the log shows 385,000 experience and 126,000 information (a level-36 player's live run). These are Zion
+     9.2's values (363,000 experience, 63,000 information, as 1313 paid).
+     Gaps: the computers' screens (the four-line "Intruder [Engagement Protocol]" in phases 1 and 2, five results of
+     "CENSORED" in phase 3) aren't shown. Phase 3's terminal was locked down (hack it or find an access code); the
+     Operator's line about that, said on reaching it, is a second arrival line here, and the hack's "That'll work."
+     and the read-out's line are both said when the search is done. In phase 4 the Operator's two remarks came while
+     walking past the Agents: here they are said on getting near Agent West and Agent Clark, who each say their "..."
+     once; a third Agent's "..." (name not captured) is left out. The guards' own barks in Team chat ("Hey!",
+     "Control, we have an intruder.", "Wh-what? I can't do that!") are the generic hostiles' and aren't set. Whatever
+     the log held between 11:49:19 and 11:49:38 beyond the Agents' "..." wasn't captured. Three lines are joined
+     across screenshots where a hidden row is possible (phase 1's and phase 2's Operator lines, phase 3's
+     briefing). -->
+<mission id="309201" title="Muckraker" description="Dig up whatever the Machines know about the intruder." plot="1"
+         order="9201" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Agent West" type="FRIENDLY" at="4" rsi="3600004e" weapon="2564">
+    <say display="5">...</say>
+  </npc>
+  <npc id="2" handle="Agent Clark" type="FRIENDLY" at="4" rsi="3600004e" weapon="2564">
+    <say display="5">...</say>
+  </npc>
+  <npc id="3" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2564">
+    <say after="4">You can see yourself out, I think?</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>The intruder is an uncultured boor with the manners of a socially deficient macaque... Nevertheless, someone with that kind of power has many uses, particularly if they're on the stupid side of the evolutionary chart.&#10;&#10;All we need is some way to compel him to do what we want, but for that, we need information. I'm absolutely certain that the Machines know quite a few things about the fellow that they haven't bothered sharing with their loyal operatives; but where the Machines are too gutless to use their knowledge against the man, we have no such reservations. All we need to do is steal whatever they've got on him--or should I say, all you need to do...</briefing>
+    <enter><say>Okay, you're supposed to access a terminal in there and swipe whatever you can find on the intruder.&#10;&#10;I'm reading a few security guards... Looks pretty much like a cake-walk.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>That's it? Not sure if that's gonna be much help.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="5">
+    <briefing>What? Nothing but a four-line engagement protocol? Bah!&#10;&#10;You'll simply have to look harder, {player}, and that means I'll be sending you somewhere a little more dangerous...to provide you with sufficient motivation.</briefing>
+    <enter><say>Security's tighter there, but on the plus side, it should also mean you can access more sensitive information...assuming all the Machine programs don't get you first.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Uh...oh.&#10;&#10;Flood is not gonna be happy.</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Merovingian" enemies="4">
+    <briefing>Hmph! Obviously, they're making a fool of you...not that that takes much doing. ...&#10;&#10;Very well, we'll go at this from a different direction. Informants tell me that the Network was spotted having a casual chat with the Architect recently. That man controls media feeds across the city, and his meeting with the Crotchety One just after the intruder's Agent-slaughtering debut can hardly be coincidence. He must have compromising footage, or information, or something of that nature. Go get it.</briefing>
+    <enter>
+      <say>You can expect to run into the Network's corporate security guards in there if you aren't careful.</say>
+      <say>The terminal in that room is locked down. You could try hacking it, or maybe look around for an access code of some kind.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>That'll work.</say>
+        <say>*CENSORED*!&#10;&#10;Okay, this is officially not going well. It's like the Machines don't even let themselves know anything about the guy.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Are you trying to make this difficult, {player}, or are you just naturally inept? No, don't bother answering that...&#10;&#10;Wait! I've got it! Agent Pace has always been their weak link, hasn't she? All you have to do is stroll in, act like a Machine-curious operative, swear up and down that you've realized you need to join the Machines to help stop the intruder, and ask her to point you in the right direction!&#10;&#10;Don't argue, operative; it's brilliant. Now, march!</briefing>
+    <enter><say>Eh... Okay. Pace is their head liaison officer, which means that she's pretty accessible...as long as you're willing to put yourself at the mercy of a big gang of extremely protective Agents.&#10;&#10;Have fun!</say></enter>
+    <objective goal="4" text="Talk to Agent Pace" type="Talk" npc="3">
+      <talk><say npc="3">Ciao, Ms... {player}, isn't it?&#10;&#10;We are very glad to hear that you are interested in working for the System, {player}. However, I am afraid that at this time we have no openings for someone with your skill set.&#10;&#10;Oh, and Ms. {player}? Next time, just save yourself the trouble of all that breaking into our computers, and come directly to me, yes? Goodbye.</say></talk>
+      <done>
+        <say>$%#&amp;@!&#10;&#10;This was pretty much Flood's dumbest idea ever.</say>
+        <say npc="3">You can see yourself out, I think?</say>
+      </done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">...</say>
+      <say>That's...a lot of Agents.&#10;&#10;They look friendly, right? Kind of?</say>
+    </near>
+    <near npc="2" radius="1000">
+      <say npc="2">...</say>
+      <say>What are you, collecting scowls?</say>
+    </near>
+  </phase>
+  <finish>Only insecure cretins blame others for their own failures, operative.&#10;&#10;You'll just have to suck it up if you expect to get ahead in this business with the intruder...</finish>
+</mission>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enter Desayd, Merovingian story mission 2.3.1. Source: research/missions/transcripts/Merv2-3-1.md (the archive
+     replay of [Merovingian Archive 2.3.1], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator and NPC line, every NPC name, and the
+     objective texts of phase 2 ("Kill all of the Machines", "Lead Finsen to Alligator", "Steal the Package", "Don't
+     let Finsen die"; seen in the Objectives window). The Operator's "Your heard the man" is kept as retail showed it.
+     The player (Vesuveus) is {player}. Ours: the description (the Summary tab was never opened), the other objective
+     texts, the looks, the enemy counts and the sites (phase 2 was an office in Mara: Office, in Mara; phases 1 and 3
+     aren't described: Normal). Item stand-in: the unmarked package is Package (6817). Rewards: the log shows
+     79,416,249 experience and 1,039,500 information (a level-50 player's). These are Zion 2.3's values (308,000
+     experience, 98,000 information, as Free Your Mind paid).
+     Gaps: Flood's first briefing may have a hidden line between its paragraphs. "Kill Alligator" isn't in retail's
+     objective list; it is ours, to carry the Operator's line on his death. Alligator waits to be attacked
+     (attacksOnSight 0) so that Finsen can be led to him first. The two "Tactical Security" taunts were seen in team
+     chat; each is one named Machine hostile here, saying its taunt when the player comes near. The security
+     computer the player hacked in retail ("disable.hak", not in the objective list) is an optional Use goal. Desayd
+     repeats his "Splendid" line when talked to again, and Blood Drunk, a friendly Exile beside him, says his line
+     after the hand-over. Phase 2's goals are numbered 1 to 6 and phase 3's 7 and 8, so that lines waiting for the
+     hand-over (goal 8) don't count phase 1's goals. -->
+<mission id="302301" title="Enter Desayd" description="Recover an unmarked package for the Merovingian and deliver it to Desayd." plot="1"
+         order="2301" org="3" contact="Flood" exp="308000" info="98000">
+  <npc id="1" handle="Finsen" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Alligator" type="HOSTILE" at="2" rsi="9c0000b4" weapon="2568" attacksOnSight="0" />
+  <npc id="3" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="4" handle="Tactical Security" type="HOSTILE" at="2" rsi="8f080058" weapon="2568" />
+  <npc id="5" handle="Desayd" type="FRIENDLY" at="3" rsi="c9020058" weapon="2568">
+    <say after="8">Splendid. Send a signal to Flood that his faith in me is well-founded.</say>
+  </npc>
+  <npc id="6" handle="Blood Drunk" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say display="5" after="8">Your business with Desayd is over. Go.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>A coveted item is sought after by the Merovingian. While I cannot divulge the nature of the item, let us just say that you are better off not knowing what you are about to fetch. So get used to the idea.
+
+To secure the success of your assignment, I have decided to bless you with an ounce of kindness and grant you the assistance of an Exile. Meet with Finsen and do be on your best behavior. I cannot have you mess this up.</briefing>
+    <enter><say>Your heard the man: pick up Finsen and find this "coveted item," or whatever it is. I guess we'll find out soon enough. Flood can't leave us in the dark forever.</say></enter>
+    <objective goal="1" text="Talk to Finsen" type="Talk" npc="1">
+      <talk><say npc="1">What the hell is this? You're a freaking redpill! If the Merovingian is testing my patience by sending the likes of you my way, he won't be testing it for long.
+
+Let's get this over with.</say></talk>
+    </objective>
+    <objective goal="2" text="Lead Finsen out of the area" type="Escort" npc="1" to="exit" after="1" />
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3" neighbourhoods="Mara">
+    <briefing>The next part of your assignment is where things get a bit more interesting. Two tasks are required: the liberation of the coveted item, an unmarked package, and the annihilation of every Machine you find.</briefing>
+    <enter><say>I don't see how you can find an unmarked package without a better lead. I'll speak up if I think I see anything -- oh wait! I'm detecting... a small security system. Damn. No package yet. Sorry.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Kill all of the Machines" type="DefeatAll" />
+    <objective goal="2" text="Lead Finsen to Alligator" type="Escort" npc="1" to="npc:2" />
+    <objective goal="3" text="Kill Alligator" type="Defeat" npc="2">
+      <done><say>Unless I'm reading this code incorrectly, Alligator holds the package on his RSI. Search him for it -- well, his corpse, anyway.</say></done>
+    </objective>
+    <objective goal="4" text="Steal the Package" type="Loot" npc="2" item="6817">
+      <done>
+        <say>Roger that. The "egg" is in the "basket."</say>
+        <say npc="1">The death of Alligator is all I came to see. I could care less about the package -- I know it will end up in the right hands.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Disable the security system" type="Use" object="1" optional="1" />
+    <objective goal="6" text="Don't let Finsen die" type="Protect" npc="1" />
+    <near npc="1" radius="1000">
+      <say npc="1">We must find a man by the name of Alligator. He is something of a nemesis of mine, and I would most certainly like to see him die.</say>
+    </near>
+    <near npc="2" radius="1000">
+      <say npc="2">So we meet for the last time! Your ruining will be exquisite, Finsen!</say>
+      <say npc="1">We have unfinished business, Alligator!</say>
+    </near>
+    <near npc="3" radius="1000">
+      <say npc="3">I have a present for you, but I forgot to wrap it; so I put it in my gun!</say>
+    </near>
+    <near npc="4" radius="1000">
+      <say npc="4">Prepare for death.</say>
+    </near>
+    <complete><say>Who doesn't have a vendetta these days?</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>So you are alive, but do you have the package? Excellent. It seems I underestimated your abilities.
+
+Take the package to our dear friend, Desayd, but do not open it. I cannot begin to describe the horrors that would befall you if you so much as pulled back the cardboard.</briefing>
+    <enter><say>I've heard the name "Desayd" before... If I'm not mistaken, he's been under the Merovingian's wing for quite some time. The rumor I've heard is that he once slaughtered an entire hovercraft of Zion operatives before Neo was discovered.
+
+I'm just glad Desayd's on our side.</say></enter>
+    <objective goal="7" text="Talk to Desayd" type="Talk" npc="5">
+      <talk><say npc="5">Flood's favorite fetch dog, I take it? Fantastic.
+
+Perchance, did you procure the precious parcel? Perfect. Place it in my palm.</say></talk>
+      <done><say>An intelligent and poetic "Nightmare." That's something I haven't seen.</say></done>
+    </objective>
+    <objective goal="8" text="Give the Package to Desayd" type="Give" npc="5" item="6817" after="7">
+      <talk><say npc="5">All day, is not something I have. Make the mysterious contents mine.</say></talk>
+      <done><say npc="5">Splendid. Send a signal to Flood that his faith in me is well-founded.</say></done>
+    </objective>
+  </phase>
+  <finish>You performed well, {player}. You become a reliable asset when you know your place and follow the Merovingian's requests. You will be rewarded for this... someday.
+
+Another assignment will be coming your way in the near future. In the meantime, make yourself useful.</finish>
+</mission>

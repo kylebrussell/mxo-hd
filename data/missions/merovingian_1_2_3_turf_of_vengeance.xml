@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Turf of Vengeance, Merovingian story mission 1.2.3. Source: research/missions/transcripts/Merv1-2-3.md (the
+     archive replay of [Merovingian Archive 1.2.3], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, operator and NPC line (the operator's "I don't expect to get any
+     information out of Fortuna" is verbatim), the NPC names, and phase 3's objective text ("Recover information about
+     Morpheus", from the Objectives window). A possible hidden line in Flood's line about Rhett De Bonte is read as
+     contiguous. Ours: the description, the other objective texts, the sites (the first location, a kitchen, and Rhett
+     De Bonte's home with a bedroom: SlumApt; the renegade Exiles' place: Normal), the looks (Fortuna's and Chimay's
+     sex isn't stated) and the enemy count. The two who turn on the player are taken as Zion sympathisers; the
+     renegade Exiles are Merovingian, one named Elite Guard as in the chat. Item stand-ins: the disk with Morpheus'
+     recording is Audio_CD (6832), the Exile's key Access_Card (6791), the dossier Dossier (6799). Flood's line about
+     Rhett De Bonte came 39 seconds after the briefing, on arrival, so it is the enter line.
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's values
+     (68,750 experience, 91,000 information, as Confiscation paid).
+     Gaps: Fortuna and Chimay were friendly until provoked; here they are hostiles who wait to be attacked
+     (attacksOnSight 0), and their lines are said on reaching them. Killing Chimay was optional ("That wasn't
+     required"), so talking to and killing Chimay are optional goals. Chimay's "You killed Fortuna!" is said when
+     Fortuna dies. Retail's entries from 3:46:26 to 3:47:01 (taking the disk) weren't captured, so the operator's
+     "I'm going to need you to upload that to me through a hardline." is the disk's done line. The two guards at the
+     locked desk are Elite Guard and the phase's generated Exiles; the operator's line about them is said on getting
+     near Elite Guard. Both uploads, the disk and the dossier, were made at one hardline at the end, so both are phase
+     3 goals. Elite Guard's bark "It's you!" is on him but only plays if he is talked to, since he
+     attacks on sight. Rhett De Bonte's last line ("Huh?") came as the disk was taken, so it is what he says once
+     it has been. The Overheard Transmission in the Details popup isn't from this mission
+     and isn't used. -->
+<mission id="301203" title="Turf of Vengeance" description="Hunt down leads on Morpheus' whereabouts." plot="1"
+         order="1203" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Alpha" type="FRIENDLY" at="1" rsi="58010058" weapon="2564">
+    <say>Nope. I'm not saying anything.</say>
+    <say after="3">Okay, okay! I'll talk! Morpheus came through here about a week ago looking for someone. I don't know who this person was but Morpheus seems to think that they pose a threat to us all... That is all I know, I swear!</say>
+  </npc>
+  <npc id="2" handle="Fortuna" type="HOSTILE" attacksOnSight="0" at="1" rsi="60010058" weapon="2568" />
+  <npc id="3" handle="Chimay" type="HOSTILE" attacksOnSight="0" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="4" handle="Rhett De Bonte" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say after="6">My computer is in my bedroom. Just take the disk and go.</say>
+    <say after="7">Huh?</say>
+  </npc>
+  <npc id="5" handle="Elite Guard" type="HOSTILE" at="3" rsi="9b0000b4" weapon="2568">
+    <say>It's you!</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>We are attempting to track Morpheus within the Matrix and we've isolated his previous location down to a few possible candidates. We want you to make your way to each of these locations and interrogate a target. If the target is not cooperative, find a way to make them talk. We are sending you to the first possible location right now. Once you are there you will question a target about Morpheus. If they do not cooperate, feel free to use excessive force; extremely excessive.</briefing>
+    <enter><say>This is the first location. The target's name is Alpha. You have your orders, {player}. Proceed.</say></enter>
+    <objective goal="1" text="Talk to Alpha" type="Talk" npc="1">
+      <talk>
+        <say npc="1">I refuse to tell you anything about Morpheus!</say>
+        <say>I don't expect to get any information out of Fortuna, so this is what I suggest: Kill Fortuna! If you do this, I think it will put the fear into Alpha, and make her talk.</say>
+      </talk>
+    </objective>
+    <objective goal="2" text="Kill Fortuna" type="Defeat" npc="2">
+      <talk>
+        <say npc="2">Get the hell out of here!</say>
+        <say npc="2">Your presence makes me want to retch!</say>
+      </talk>
+      <done><say npc="3">You killed Fortuna!</say></done>
+    </objective>
+    <objective goal="3" text="Make Alpha talk" type="Talk" npc="1" after="2">
+      <talk><say npc="1">Okay, okay! I'll talk! Morpheus came through here about a week ago looking for someone. I don't know who this person was but Morpheus seems to think that they pose a threat to us all... That is all I know, I swear!</say></talk>
+      <done><say>I knew she would come around... You've done well. I will notify Flood of your progress.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to Chimay" type="Talk" npc="3" optional="1">
+      <talk>
+        <say npc="3">How dare you show your face around here. I refuse to tell you anything, {player}!</say>
+        <say>Don't worry about interviewing Chimay...</say>
+      </talk>
+    </objective>
+    <objective goal="5" text="Kill Chimay" type="Defeat" npc="3" optional="1">
+      <talk><say npc="3">Spin on it, {player}!</say></talk>
+      <done><say>That wasn't required, but it doesn't bother me as long as the main job gets done.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>The second location is the home of a bluepill named Rhett De Bonte. Go there now.</briefing>
+    <enter><say contact="1">Rhett De Bonte has been contacted a couple times by Morpheus in an attempt to recruit him to Zion's cause. Now, I know you once affiliated yourself with them, but it shouldn't dissuade you in completing your task. Just interrogate Rhett De Bonte and recover any information that he might have on Morpheus.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Talk to Rhett De Bonte" type="Talk" npc="4">
+      <talk>
+        <say npc="4">Uhm, excuse me. What are you doing here? Can I help you? Oh, you're here about... Morpheus? I... I don't know what to tell you, but he has been telling me some rather strange things about life. I'm a bit put off by his words and it has gotten me pretty depressed so I may be able to help you out... There is a recording on my computer that this "Morpheus" gave me. If you want it, it's yours. I couldn't understand it anyway.</say>
+        <say>Interesting... Retrieve that recording.</say>
+      </talk>
+    </objective>
+    <objective goal="7" text="Get the recording from Rhett De Bonte's computer" type="Search" object="1" item="6832" after="6">
+      <done><say>I'm going to need you to upload that to me through a hardline.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="3">
+    <briefing>The final location is housed by a group of Renegade Exiles who are operating outside of the Merovingian's control. These Exiles have been tracking Morpheus' movement as well and we need you to recover any information that they may have obtained. As with the first location, you may resort to violence if you feel it is necessary to recover the information we seek.</briefing>
+    <enter><say>Remember, these Exiles aren't working with the Merovingian, and may be irrational in their actions. Try not to get yourself killed.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="8" text="Kill Elite Guard" type="Defeat" npc="5">
+      <done><say>It appears that the Exile you just killed was carrying something... Search the body!</say></done>
+    </objective>
+    <objective goal="9" text="Get the key from Elite Guard" type="Loot" npc="5" item="6791" after="8">
+      <done><say>As I thought. I think that key unlocks the desk.</say></done>
+    </objective>
+    <objective goal="10" text="Recover information about Morpheus" type="Search" object="1" item="6799" after="9">
+      <done><say>I do believe that this is what we are looking for. I'll scan the dossier and send it off to the proper contact once you get them to me through a hardline.</say></done>
+    </objective>
+    <objective goal="11" text="Upload the recording at a hardline" type="Upload" item="6832" after="10" />
+    <objective goal="12" text="Upload the dossier at a hardline" type="Upload" item="6799" after="10" />
+    <near npc="5" radius="1500">
+      <say>I think you're getting warmer... Two guards are in the next room standing watch over a locked desk.</say>
+    </near>
+    <complete><say>Receiving the information... Got it!</say></complete>
+  </phase>
+  <finish>That is all...for now. Go about your business, {player}.</finish>
+</mission>

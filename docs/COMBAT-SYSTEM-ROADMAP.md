@@ -15,6 +15,7 @@ The combat system is functional with bidirectional combat and tactical options:
 - **Loot system** works - shows money reward on mob kill
 - **Tactics and rounds** follow retail's rules, taken from the combat scripts in the client (see "Close combat by retail's own rules" below)
 - **Inner Strength** costs nothing in a fight, as in retail; Block regains it and regen is slower
+- **Players fight players**, with the PvP flag, PvP zones and duels: see `docs/PVP.md`
 
 ### Real-client check (2026-11-07, 7.6005 client)
 
@@ -391,7 +392,8 @@ Use these scenarios to verify combat works:
 - [x] Player health decreases
 - [x] Player can die in combat
 - [x] Combat ends when leaving range
-- [ ] Multiple players can fight same mob
+- [x] Multiple players can fight same mob (each has their own fight with it; the first kill ends the others' without a second death or reward: headless scenario `two-players-fight-one-npc`)
+- [x] Players fight players, in close combat and with guns (`docs/PVP.md`; headless scenarios `pvp-*` and `duel-*`; not yet seen in the real client)
 - [x] Range combat works
 - [x] Tactic changes affect combat
 - [x] Block regains IS each round (server log and own-view packets)

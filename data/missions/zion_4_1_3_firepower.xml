@@ -14,38 +14,37 @@
      Gaps: in retail the first phase ended as soon as Craven was talked to and the commandos simply joined; here Craven
      and Warren are led out of the area so that they follow into the fight. NPCs don't fight here, so they don't join
      it, and the mission fails if one dies. Warren's "Let's get 'em, sir!" came on the way to the second site and is
-     said on arrival; the commandos' data lines are said when the Exiles are dead. The Exiles in the lab attacked only
-     after Diodorus spoke ("Red alert! We've got incoming hostiles!"): here they are on the floor from the start, as a
-     kill goal can't wait for a talk. The coders' remarks during the fight are said with Diodorus' alarm, since a
-     coder the player must protect doesn't speak; the lab team's thanks are said when talked to after the fight.
-     A line of the lab briefing may be cut off between "The" and "General's coders" in the screenshots; it is read as
-     "The General's coders". Turning the disk
-     into holy water, wooden stakes and silver bullets at a Zion Researcher is outside the mission. -->
+     said on arrival; the commandos' data lines are said when the Exiles are dead. The Exiles in the lab arrive once
+     Diodorus has spoken ("Red alert! We've got incoming hostiles!"), and the kill goal opens then. The coders'
+     remarks during the fight are said with Diodorus' alarm, since a coder the player must protect doesn't speak; the
+     lab team's thanks are said when talked to after the fight. A line of the lab briefing may be cut off between "The"
+     and "General's coders" in the screenshots; it is read as "The General's coders". Turning the disk into holy water,
+     wooden stakes and silver bullets at a Zion Researcher is outside the mission. -->
 <mission id="104103" title="Firepower" description="Help the General's commandos scan the Exiles, guard his coders, and collect the enhanced weapon codes." plot="1"
          order="4103" org="1" contact="Tyndall" exp="352000" info="115500">
-  <npc id="1" handle="Craven" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="1" handle="Craven" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="2" handle="Warren" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568" />
   <npc id="3" handle="Hentzel" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568">
     <say>Sir! Diodorus is in charge here, sir!</say>
-    <say after="3">You saved the day, sir!</say>
+    <say after="6">You saved the day, sir!</say>
   </npc>
   <npc id="4" handle="Diodorus" type="FRIENDLY" at="3" rsi="c6020058" weapon="2568">
-    <say after="3">Good work, soldier! I'll be sure to put your name in for a commendation!</say>
+    <say after="6">Good work, soldier! I'll be sure to put your name in for a commendation!</say>
   </npc>
   <npc id="5" handle="Cornell Belmont" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="0">
-    <say after="3">Our compiler's highly efficient. I wrote it myself.</say>
+    <say after="6">Our compiler's highly efficient. I wrote it myself.</say>
   </npc>
   <npc id="6" handle="Young Swadling" type="FRIENDLY" at="3" rsi="a8060090" weapon="0">
-    <say after="3">We've finished compiling that code, despite all your racket. The General will want to talk to you.</say>
+    <say after="6">We've finished compiling that code, despite all your racket. The General will want to talk to you.</say>
   </npc>
   <npc id="7" handle="Dakota Firden" type="FRIENDLY" at="3" rsi="a5060090" weapon="0">
-    <say after="3">I'm glad that's over with. I never want to see a dire lupine subroutine again.</say>
+    <say after="6">I'm glad that's over with. I never want to see a dire lupine subroutine again.</say>
   </npc>
   <npc id="8" handle="Lou Carson" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
-    <say after="3">Piece of cake, as you people say.</say>
+    <say after="6">Piece of cake, as you people say.</say>
   </npc>
-  <npc id="9" handle="The General" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
-    <say after="1">Use them strategically, soldier, and the codes on that disk will polish off a whole platoon of those beasts in no time.</say>
+  <npc id="9" handle="The General" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="7">Use them strategically, soldier, and the codes on that disk will polish off a whole platoon of those beasts in no time.</say>
   </npc>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Warrior, the General's liaison officer has notified us that while they have made progress on their enhanced Exile-killing weapons, thanks to the data you helped retrieve earlier, their database is still incomplete; they need to scan data from at least one more type of Exile.&#10;&#10;They have provided more commandos with enhanced combat scanning routines for this purpose. Pick them up at the location indicated.</briefing>
@@ -61,7 +60,7 @@
       <say npc="2">Let's get 'em, sir!</say>
       <say>Exiles ahoy! Man the decks and prepare for boarding!</say>
     </enter>
-    <objective goal="1" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="3" text="Kill all of the Exiles" type="DefeatAll">
       <done>
         <say>Good. I'm told that the General's group is receiving a data feed on those Exiles. Head outside so we can check in with Tyndall.</say>
         <say npc="2">Got some great data, sir! I'm sending it to intel now.</say>
@@ -69,10 +68,10 @@
       </done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="4">
+  <phase site="Normal" enemy="Merovingian" enemies="4" enemiesAfter="4">
     <briefing>You're doing well, operative. The General's coders have the data they need to begin writing the enhanced anti-Exile weapons.&#10;&#10;Since this is such an important initiative in our struggle against the Merovingian, the Zion Council has decided that we should provide additional security for the General's lab while they work on the codes. As you've worked with the General's programs extensively, you're a natural choice for this vital task. Proceed to the lab, coordinate with their security team, and make sure that the coders are not disturbed in their work.</briefing>
     <enter><say>The lab is in there. Looks clear of any Exiles or redpills so far.</say></enter>
-    <objective goal="1" text="Talk to Diodorus" type="Talk" npc="4">
+    <objective goal="4" text="Talk to Diodorus" type="Talk" npc="4">
       <talk><say npc="4">Good to have you here, soldier. So far everythi-- What?! Red alert! We've got incoming hostiles!</say></talk>
       <done>
         <say>I've got bogeys incoming... Exiles! Protect those coders!</say>
@@ -81,15 +80,15 @@
         <say npc="7">Garbage code coming to retrieve their garbage, huh? Cute.</say>
       </done>
     </objective>
-    <objective goal="2" text="Do not let the coders die" type="Protect" npc="5,6,7,8" />
-    <objective goal="3" text="Kill all of the Exiles" type="DefeatAll">
+    <objective goal="5" text="Do not let the coders die" type="Protect" npc="5,6,7,8" />
+    <objective goal="6" text="Kill all of the Exiles" type="DefeatAll" after="4">
       <done><say>Area scans clean now. Man, that was--whoops! Tyndall's pinging me. Head outside and I'll splice you into her line.</say></done>
     </objective>
   </phase>
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>The General wants to meet with you, Warrior. I'm told that thanks to your security efforts, his coders completed the anti-Exile weapons, and the General wishes to present them to you personally. He has them on a computer disk.</briefing>
     <enter><say>The General's in there, all right. I hope you're wearing your Sunday best.</say></enter>
-    <objective goal="1" text="Get the disk of weapon codes from The General" type="Get" npc="9" item="6831">
+    <objective goal="7" text="Get the disk of weapon codes from The General" type="Get" npc="9" item="6831">
       <talk>
         <say npc="9">You've done a hell of a job, soldier. Thanks to the data you helped my men gather, and the protection you gave my coders, we've got those enhanced weapons that will put the Merovingian's Exile programs on the run like the dogs they are. I'm proud to be able to hand your allotment of weapon codes to you personally.</say>
         <say>Get that disk of weapon codes from him, man. You're gonna need a free slot in your inventory.</say>

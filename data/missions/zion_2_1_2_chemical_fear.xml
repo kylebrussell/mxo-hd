@@ -3,25 +3,31 @@
      replay, given by [Archived]Tyndall; 19 screenshots, one taken at the mainframe, the rest of the log after the
      mission ended). Placement is generated: see docs/MISSIONS.md.
      Retail's: the title, every Tyndall, Operator and NPC line (Tyndall's "appraised" kept as retail spelled it), Ryan
-     Rosenburg's name, the objective text "Activate the Mainframe" and the rewards (297,000 experience and 98,000
-     information, shown right after this mission completed; the Forest Green Razorgirl Motorcycle Suit retail gave
-     isn't). Ours: the description (the Summary tab was never opened), the other objective texts, the sites (Office for
-     the lab and for the bolt-hole, an office room in Lucero Point; Normal for the repository and the drop point), the
-     enemy counts and the looks. Item stand-ins: the location notes are Document_Location_Notes (6855), the insecticide
-     ingredient is Poison (6804).
+     Rosenburg's and the Special Agents' names, the objective text "Activate the Mainframe" and the rewards (297,000
+     experience and 98,000 information, shown right after this mission completed; the Forest Green Razorgirl Motorcycle
+     Suit retail gave isn't). Ours: the description (the Summary tab was never opened), the other objective texts, the
+     sites (Office for the lab and for the bolt-hole, an office room in Lucero Point; Normal for the repository and the
+     drop point), the enemy counts and the looks. Item stand-ins: the location notes are Document_Location_Notes (6855),
+     the insecticide ingredient is Poison (6804).
      Gaps: retail sent two level-255 Special Agents after the player at the lab ("You shouldn't be here", addressed by
-     the player's bluepill surname) and another at the repository; they couldn't be beaten, only fled. Here the lab
-     and the repository have a few Machine hostiles at the player's level, on the floor from the start, and the
-     Agents' barks aren't said. The repository's alarm and its Security programs ("Intruder sighted!") are the
-     phase's hostiles; the Operator's alarm line is said when the ingredient is found. Hiding a few minutes behind the
-     signal jammer is only the Operator's advice. The Operator's lines on reaching a room are said on arrival. -->
+     the player's bluepill surname) and another at the repository; they couldn't be beaten, only fled. Here they are at
+     the player's level: two appear beside the player when the location notes are taken ("I'm reading an Agent in your
+     immediate vicinity!"), and one when the ingredient is found ("another Agent on your trail"). Their barks aren't
+     said. The repository's alarm goes off when the player comes within 10 m of the box holding the ingredient: four
+     Security programs (generated Machines; "Intruder sighted!" isn't said) appear beside it, and the Operator's "You're
+     close..." and "Shiznat, there goes the alarm!" (a second apart in the log, 14 s before the ingredient was found) are
+     said then. Hiding a few minutes behind the signal jammer is only the Operator's advice. The Operator's other lines
+     on reaching a room are said on arrival. -->
 <mission id="102102" title="Chemical Fear" description="Obtain one of the chemical ingredients for the insecticide that will be used against the Assassin." plot="1"
          order="2102" org="1" contact="Tyndall" exp="297000" info="98000">
   <npc id="1" handle="Ryan Rosenburg" type="FRIENDLY" at="1" rsi="38000024" weapon="0">
     <say after="2">Hey, I don't ask questions.</say>
   </npc>
+  <npc id="2" handle="Special Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" spawnAfter="2" spawnAt="player" />
+  <npc id="3" handle="Special Agent" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" spawnAfter="2" spawnAt="player" />
+  <npc id="4" handle="Special Agent" type="HOSTILE" at="3" rsi="3600004e" weapon="2568" spawnAfter="1" spawnAt="player" />
 
-  <phase site="Office" enemy="Machines" enemies="3">
+  <phase site="Office" enemy="Machines" enemies="0">
     <briefing>Hail, Warrior of Zion! Today, you are entrusted with a great duty: to obtain one of the vital ingredients for the insecticide we will use to combat Morpheus' elusive killer, the Assassin. This particular ingredient is manufactured at a certain lab in the City. Please use caution, as the lab may be guarded.</briefing>
     <enter><say>The lab in that building is supposed to have a supply of the particular insecticide ingredient we're after. This should be a cakewalk.</say></enter>
     <objective goal="1" text="Talk to Ryan Rosenburg" type="Talk" npc="1">
@@ -48,16 +54,16 @@
     </objective>
   </phase>
 
-  <phase site="Normal" enemy="Machines" enemies="4">
+  <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Commander Lock has been appraised of the situation, {player}, and he urges you to proceed to the chemical repository with the utmost caution. It is not yet clear to us why the Agents have chosen this occasion to attack. The ingredient you pursue may have some special significance to them, in which case they could consider their current action a self-defense routine, permitted under the terms of the Truce.&#10;&#10;But this only emphasizes the importance of securing the insecticide ingredient for Zion. Persevere in your mission, Warrior!</briefing>
-    <enter>
-      <say>That joint doesn't exactly look like a lab or chemical repository to me. ... And I'm reading a security system in there, too. Could the Machines be behind the sudden transfer of the ingredient earlier today? Ooh... I don't even want to think about that.</say>
-      <say>You're close... I'm picking up a trace of the chemical compound we want. It's gotta be somewhere in that room.</say>
-    </enter>
+    <enter><say>That joint doesn't exactly look like a lab or chemical repository to me. ... And I'm reading a security system in there, too. Could the Machines be behind the sudden transfer of the ingredient earlier today? Ooh... I don't even want to think about that.</say></enter>
     <object id="1" kind="Box" />
+    <wave count="4" near="object:1" radius="1000" spawnAt="object:1">
+      <say>You're close... I'm picking up a trace of the chemical compound we want. It's gotta be somewhere in that room.</say>
+      <say>Shiznat, there goes the alarm!</say>
+    </wave>
     <objective goal="1" text="Find the insecticide ingredient" type="Search" object="1" item="6804">
       <done>
-        <say>Shiznat, there goes the alarm!</say>
         <say>The good news is that you got the insecticide ingredient. The bad news is that I'm picking up another Agent on your trail! Don't those guys ever give up? Wait, what am I asking? Of course they don't. Hoof it!</say>
       </done>
     </objective>

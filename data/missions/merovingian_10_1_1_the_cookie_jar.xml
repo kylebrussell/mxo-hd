@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Cookie Jar, Merovingian story mission 10.1.1. Source: research/missions/transcripts/Merv10-1-1.md (one live
+     retail run, given by Flood: 21 tight crops of the Log tab scrolled top to bottom at the end of the mission, and two
+     crops of a computer's text window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood and Operator line (Flood speaks in person in phase 4), and the names. The
+     log's player was Briseus; his name is {player} here. The asterisks in "*wanted*" are retail's own; the italics on
+     "my" are dropped. Ours: the description (the Summary tab only said "Datalink established."), every objective text
+     (the Objectives tab was never opened), the sites (phases 1 to 3 Normal: none is described; phase 4 GenericApt, the
+     Oracle's apartment), Flood's look in person (as in zion_5_1_2_desperate_measures.xml) and the enemy counts.
+     Phase 1's hostiles are Cypherites ("Machine puppets"), so Machines; phase 2's are EPN redpills, so Zion; phase 3's
+     are overridden programs, so Machines.
+     Item stand-ins: none.
+     Joins between crops read as contiguous: "It's" / "high time", "for some reason the" / "Oracle decided", "aren't
+     gonna be" / "friendly.", "Even if we assume that the" / "fragments", "and just before her" / "own overdue demise",
+     "like they own the place. They" / "claim to be human", "is revealed:" / "the Oracle.", "the rest" / "of us.",
+     "It isn't as" / "though", "running in Westview", "something to do with that" / "program". Read as paragraph
+     breaks falling between crops: "why do you suppose that is?" / "Just before Halborn", "sanity..." / "Redpill
+     signals", "code as well." / "The Cypherites and EPN", "why not just tell them?" / "They're fighting", "later?" /
+     "Okay... Ah,".
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
+     Gaps: what the goals of phases 1 to 3 were isn't shown. Each area ended a few minutes in, in the same second as a
+     line from Flood, after the Operator warned of hostile redpills or programs, so each is a fight with Flood's line
+     as the done line. The Operator's 1:54:45 entry is hidden between two crops (most likely the area-complete line).
+     What the bluepill in phase 2 was for isn't shown; no bluepill is placed. The text of a computer somewhere in the
+     mission ("####> H doesn't want to leave", "something in mind apparently", ...) can't be shown: objects carry no
+     text, and which area it was in isn't shown. Flood's "No... She doesn't seem to have kept anything worth
+     drinking" is what he says when clicked after the Talk. -->
+<mission id="310101" title="The Cookie Jar" description="With the Oracle dead, look again at what she did before Halborn killed her." plot="1"
+         order="10101" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Flood" type="FRIENDLY" at="4" rsi="9b0000b4" weapon="2568">
+    <say after="4">No... She doesn't seem to have kept anything worth drinking around here...</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Halborn found the Oracle in Debir Court and killed her.&#10;&#10;Call me a pessimist, but I'm a little suspicious when something like this actually goes according to plan. It's high time that we revisit and review some of the more unusual circumstances leading up to this happy ending. I find it hard to believe that there isn't a rain cloud lurking somewhere.&#10;&#10;First, you'll be getting back in touch with some particularly treacherous pests that for some reason the Oracle decided were trustworthy.</briefing>
+    <enter><say>Sheesh, can't Flood just be happy that the Merv finally got her? No, I guess that's asking too much.&#10;&#10;I'm picking up redpill signals in there... From the sound of what Flood said, I'm guessing they aren't gonna be friendly.</say></enter>
+    <objective goal="1" text="Kill the Cypherites" type="DefeatAll">
+      <done><say contact="1">Ah, the Cypherites: Machine puppets who've deluded themselves into thinking they're independent of the system they still serve. They pay no lip service to the Machines, but the Machines still put up with them; gee, why do you suppose that is?&#10;&#10;Just before Halborn offed her, the Oracle gave the Cypherites a piece of encrypted code. As far as we know, nobody--not even the Cypherites--knows what it's for. Obviously she didn't choose them for their brains. So why them, and why now?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>In some ways, the Oracle's next move was predictable; in others, it seemed like the surest sign of insanity she's ever shown.</briefing>
+    <enter><say>Like Flood's one to talk about sanity...&#10;&#10;Redpill signals in there, too. Ooh, and there's a bluepill.</say></enter>
+    <objective goal="2" text="Kill the E Pluribus Neo redpills" type="DefeatAll">
+      <done><say contact="1">Pluribus Neo: blind followers of a dead fanatic. Their vision of the future amounts, at best, to wanting to blow everything up, and yet the Oracle gave them an encrypted piece of code as well.&#10;&#10;The Cypherites and EPN like to consider themselves enemies in a life and death struggle; in fact, nobody actually cares what they do to each other. Some have suggested that the Oracle chose the two groups to force them to cooperate, but would she really go to all that trouble over them? And if she wanted them to cooperate, why not just tell them?&#10;&#10;They're fighting more bitterly than ever now, and it certainly didn't take precognitive abilities to call that one.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4">
+    <briefing>Even if we assume that the fragments were given to those groups for a purpose beyond mere manipulation--which could have been achieved through much less elaborate means, anyway--there's still the question of what they're for. Considering that she made these moves soon after the intrusion of several high-powered alien elements into the Matrix, and just before her own overdue demise, it's hard to dismiss the timing as mere coincidence.&#10;&#10;Let's take a closer look at the code invaders, shall we?</briefing>
+    <enter><say>Are we gonna be tested on this later?&#10;&#10;Okay... Ah, I'm reading overridden programs in there. So that's what he was getting at.</say></enter>
+    <objective goal="3" text="Kill the overridden programs" type="DefeatAll">
+      <done><say contact="1">Ah, the override codes: wireframed men appear who can throw the Machine rulebook out the window, and boss the simulation's designers around like they own the place. They claim to be human, without bothering to explain where they're from, or how they achieve these miracles.&#10;&#10;One of them is searching desperately for what he calls a "biological interface program," and the other wants to stop him. Much sweating and bickering goes on, until finally the author of the program is revealed: the Oracle. Should we have been surprised?</say></done>
+    </objective>
+  </phase>
+  <phase site="GenericApt" enemy="Machines" enemies="0">
+    <briefing>Needless to say, the Oracle hadn't shared that little secret with the rest of us. It's probably safe to assume that she knew quite a bit about those wireframed fellows--as much as the Machines, maybe, who are equally mum on the topic. And now it seems she was determined to take the secret to the grave with her.&#10;&#10;Why don't you join me in her apartment, operative? It isn't as though she'll be needing it.</briefing>
+    <enter><say>Flood moved into the Oracle's apartment?&#10;&#10;... I wonder if there are any cookies left.</say></enter>
+    <objective goal="4" text="Talk to Flood" type="Talk" npc="1">
+      <talk><say npc="1">Obviously, the Oracle knew she was going to die. She even prepared for it. Machinists think she was making a kill-code, of all things. And let's not forget that even before she gave the encrypted fragments to the two splinter groups, there were those odd errands Seraph and the Morpheus simulacrum were running in Westview.&#10;&#10;I don't think it's so far-fetched to say that she *wanted* us to kill her, operative. That would mean that there's something happening, even now, that she planned on--something that wouldn't have worked while she was alive. Mark my words, {player}: it will have something to do with that program, or at least the men who fought over her to get it.</say></talk>
+    </objective>
+  </phase>
+  <finish>Hmh. If you people took the time to think these things through for yourselves, we wouldn't have to spend my time repainting the picture.&#10;&#10;Oh, but don't let me keep you from your party for the Oracle's death. "Huzzah, the wicked witch, etc..."&#10;&#10;Never mind that she probably wanted us to do her in this whole time...</finish>
+</mission>

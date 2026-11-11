@@ -17,6 +17,8 @@ namespace hds
             UInt16 fromSlot =  NumericalUtils.ByteArrayToUint16(sourceSlot,1);
             UInt16 toSlot   = NumericalUtils.ByteArrayToUint16(destSlot,1);
             Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
+            MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+            TutorialMission.Of(Store.currentClient)?.OnInventoryItemMoved(fromSlot, toSlot);
 
             ServerPackets pak = new ServerPackets();
             pak.sendInventoryItemMove(fromSlot, toSlot, Store.currentClient);
@@ -159,7 +161,7 @@ namespace hds
             }
 
             double now = TimeUtils.GetSimTimeSeconds();
-            if (data.isDead || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
+            if (data.isDead || ControlActions.Incapacitated(TimedEffects.ForPlayer(client).Effects) || AbilityCooldowns.IsTimerRunning(data, (UInt16)goid, now) ||
                 (consumable.Group != 0 && AbilityCooldowns.IsTimerRunning(data, consumable.Group, now)))
             {
                 Output.WriteDebugLog("[INVENTORY] Use of item " + goid + " denied: dead or its timer is running");

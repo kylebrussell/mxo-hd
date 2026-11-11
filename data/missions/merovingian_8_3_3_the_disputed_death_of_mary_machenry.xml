@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Disputed Death of Mary MacHenry, Merovingian story mission 8.3.3. Source:
+     research/missions/transcripts/Merv8-3-3.md (the archive replay of [Merovingian Archive 8.3.3], given by
+     [Archived]Flood; 26 screenshots of the log after it ended and one of a computer popup). Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Coroner and Brandi Junge line,
+     and those names. The log's player was Variel; that name is {player} here. Two entries span screenshots with no
+     overlapping line and are read as contiguous with a paragraph break, so a line may be missing at each join: Flood's
+     first briefing ("...far from a stable system." / "When we talked to him") and the Operator's arrival at the
+     apartment ("...without us." / "So, the dead Mrs. MacHenry's"), which may also be two entries. Brandi Junge's "I
+     wish she'd hadn't gone" is as the log has it. Italics dropped: the Coroner's "did not die" and Flood's "not mine".
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (Normal for the Coroner's, SlumApt for "an apartment in that building", Office
+     for "a federal records office"; no neighbourhood was named), the looks (the Coroner's is that of earlier missions;
+     Brandi Junge's is a stand-in by sex) and the enemy kind and count (the "security patrols" are Machines, since the
+     Operator calls their record "the Machine version"; three of them). No item was shown, so there are no item
+     stand-ins.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the Coroner meets the player twice, in the first and last areas, so he is two NPCs with the same look. The
+     Operator's "I'd like to see Flood try to ground us" and the arrival line are one line here, said on arrival. The
+     records office computer's popup (the search for "MacHenry, Mary" and "Junge, Brandi" and the printed call
+     transcript, in which Mary says she feels fine) isn't shown; the Operator's line on it is said when it is used.
+     Whether the player had to fight the security patrols isn't shown (116 s from arriving to the transcript), so
+     killing them isn't required. The Coroner's "Oh, no; there was a funeral..." answered the Operator's zombie line 7
+     s after the last goals completed; here it follows that line as the goal completes. -->
+<mission id="308303" title="The Disputed Death of Mary MacHenry" description="Compare three versions of a dead woman's last phone call for the Coroner, who believes the Machines make people disappear." plot="1"
+         order="8303" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Coroner" type="FRIENDLY" at="1" rsi="7d0a0058" weapon="0" />
+  <npc id="2" handle="Brandi Junge" type="FRIENDLY" at="2" rsi="5a000040" weapon="0" />
+  <npc id="3" handle="The Coroner" type="FRIENDLY" at="4" rsi="7d0a0058" weapon="0" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Operative, the Merovingian is still not satisfied that we understand the Machine motivation for using you feeble humans as batteries. He's been poring over all those numbers we gathered for him, and he's come back to the nagging issue of the death rate: records in the Matrix indicate that the birth rate exceeds the death rate, for a healthy, growing population, but under that scenario, so necessary to the fragile happiness of your kind, the Matrix would be far from a stable system.
+
+When we talked to him about this before, the Coroner started ranting on with conspiracy theories--the Machines making people "disappear" and so forth. Delusions of a sick mind, if you ask me, but the Merovingian wants it investigated, which means that you get to pay the Coroner another social call.</briefing>
+    <enter><say>That's where you're supposed to meet the Coroner. The things I keep hearing about this guy aren't very encouraging...&#10;&#10;All I'm saying is, don't eat anything he gives you.</say></enter>
+    <objective goal="1" text="Talk to the Coroner" type="Talk" npc="1">
+      <talk><say npc="1">Where shall I start... Ah: the story of a friend of mine, Mr. Reynolds. He passed recently--lead poisoning: common enough in his private investigator line, but what I found when I did some checking of my own was less easily explained.&#10;&#10;Dear Reynolds had been tapping the line of young Mrs. MacHenry, ex-wife of a jealous ex-husband. The divorcee suffered a fatal fall while cave-exploring in South America. She had called her mother the previous day. Reynolds' recording of this conversation had been erased, but I knew where he kept his hidden back-ups; in his version, MacHenry told her mother she was feeling poorly, and would cancel her next day's adventure. Strange? Wait until you hear the other two versions. Flood will know.</say></talk>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Machines" enemies="0">
+    <briefing>I have to handle assignments for many operatives, {player}; must you always be needing me to help you with yours?
+
+Oh, very well... Coroner... Coroner... Mm, here it is. This first address is supposed to be the home of some woman's mother. Go do whatever nonsense it is you're up to... Just see to it that you get something useful I can give to the Merovingian, or no allowance for you, understand?</briefing>
+    <enter><say>I'd like to see Flood try to ground us. He knows he can't get anything done without us.&#10;&#10;So, the dead Mrs. MacHenry's honorable mother, Mrs. Brandi Junge, lives in an apartment in that building. I'm guessing the Coroner wants us to hear her version of that phone call she got from her daughter the day before the fatal accident.</say></enter>
+    <objective goal="2" text="Talk to Brandi Junge" type="Talk" npc="2">
+      <talk><say npc="2">Oh...dear... I thought that was all over... Dear... Let me see...&#10;&#10;Mary called me... She said... Oh, I can't remember exactly... Maybe she did feel a little poorly... Yes, that's right, I do remember that now. But she insisted she'd still go into those horrid caves the next day. I told her she shouldn't go, but she always was stubborn... I knew I couldn't make her change her mind. What could I have done? Oh, dear... I wish she'd hadn't gone.</say></talk>
+      <done><say>Hm... Mom's version has MacHenry calling in sick, but still insisting on going caving the next day. But according to the Coroner, in the investigator's version, MacHenry told mom she'd cancelled the expedition. So do we believe this supposed buddy of the Coroner's, or the dead woman's dear old mother?</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Oh, you again. Yes, let me drop everything to feed you more information, of course...
+
+Where did I put that... Ah. Very well, here's the next location. The Coroner's note said something about finding the official transcript of something or other there.
+
+Yes, why don't you do that. Goodbye.</briefing>
+    <enter><say>That's a federal records office. I'm reading a lot of signals inside: security patrols, from the looks of 'em. Well, I guess this is where we get the Machine version of Mary MacHenry's call home.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Find the official transcript of the call" type="Use" object="1">
+      <done><say>Huh? Okay... The "official" version has Mary telling ma she feels just fine.&#10;&#10;Wait... That means that at least two of them are lying. Ma, the Coroner, and The Man... Do we trust any of them?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Of course they're all lying, {player}. Why would you assume any of them are telling you the truth?
+
+Go finish up with your trusted associate, hm?</briefing>
+    <enter><say>Looks like the Coroner's in there. I suppose he'll have a perfectly logical explanation for this...</say></enter>
+    <objective goal="4" text="Talk to the Coroner" type="Talk" npc="3">
+      <talk><say npc="3">Interesting, hm? Two lies, two deaths--or were there? Why would anyone--least of all her own mother--lie about young Mary MacHenry's death?&#10;&#10;Her life was ordinary enough--actually quite typical. Even her death, in such a far-off place, wouldn't have been remarkable in the slightest...except for that phone call.&#10;&#10;They didn't expect Mrs. MacHenry to take ill and call her mother; their plans called for her to have an "accident," alone, unseen. They changed the records, deleted Reynolds. They wanted to leave no evidence...that Mary MacHenry did not die.</say></talk>
+      <done>
+        <say>If he says she's a zombie, I swear, I'm gonna punch him right through this screen.</say>
+        <say npc="3">Oh, no; there was a funeral--even a body in the casket, resembling poor Mary in every way.&#10;&#10;Lifeless bodies are easily made; it's the living ones that are difficult.&#10;&#10;Look into it. It goes far deeper than this.</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>Oh, for--
+
+When are you going to learn that the simplest explanation is always the right one, operative?
+
+I'll send your cock and bull story on to the Merovingian...with your name on it, not mine. I wash my hands of this laughable non-murder mystery you and your delusional friend have concocted.</finish>
+</mission>

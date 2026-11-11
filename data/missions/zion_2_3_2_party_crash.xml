@@ -22,7 +22,7 @@
     <say after="1">Careful with that thing, it's delicate.</say>
   </npc>
   <npc id="2" handle="Ruchbah" type="FRIENDLY" at="3" rsi="58010058" weapon="2564">
-    <say after="1">They're probably meeting at the alternate location.&#10;&#10;What, Anome didn't tell you about that?</say>
+    <say after="3">They're probably meeting at the alternate location.&#10;&#10;What, Anome didn't tell you about that?</say>
   </npc>
   <npc id="3" handle="Brenna Quada" type="FRIENDLY" at="3" rsi="60010058" weapon="2564">
     <say display="5">You know who else we haven't spotted lately? Those masked redpills. I wonder where they went off to. Is it just coincidence that they disappeared shortly before the commandos arrived in the City?</say>
@@ -60,14 +60,14 @@
       <say>The file cabinet is in that room.</say>
     </enter>
     <object id="1" kind="Furniture" />
-    <objective goal="1" text="Put the bug in the file cabinet" type="Put" object="1" item="6824">
+    <objective goal="2" text="Put the bug in the file cabinet" type="Put" object="1" item="6824">
       <done><say>I hate to say "I told you so," but I'm picking up building security programs heading in your direction. Betcha there was a silent alarm in there. You might want to make yourself scarce.</say></done>
     </objective>
   </phase>
   <phase site="ZionOutpost" enemy="Merovingian" enemies="0">
     <briefing>Building security? Bah. Nothing to worry about. Those programs hardly have sufficient logic loops to dress themselves, let alone find that bug you planted.&#10;&#10;Head over to our monitoring station and contact Ruchbah, our local surveillance chief. She should be receiving data from the bug by the time you get there.</briefing>
     <enter><say>That's the monitoring station. Ruchbah should be in there.</say></enter>
-    <objective goal="1" text="Talk to Ruchbah" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Ruchbah" type="Talk" npc="2">
       <talk><say npc="2">I'm afraid I don't have anything for you, operative: the bug is transmitting, but no meeting is taking place at that location. It's possible that the security alert there earlier frightened them off.</say></talk>
       <done><say>Uh-oh. This is what Anome gets for taking their building security lightly. I guess we'd better go see what he thinks of this.</say></done>
     </objective>
@@ -79,10 +79,10 @@
       <say>Head's up. Looks like there's a welcoming committee.</say>
       <say contact="1">They're trying to help the Merovingian! The stinking turd lump who killed Morpheus! Destroy the Merovingians, now!</say>
     </enter>
-    <objective goal="1" text="Kill the Succubus" type="Defeat" npc="9">
+    <objective goal="4" text="Kill the Succubus" type="Defeat" npc="9">
       <done><say>I'm scanning more Exiles in nearby rooms. We'd better get them all.</say></done>
     </objective>
-    <objective goal="2" text="Kill all of the Exiles" type="DefeatAll" />
+    <objective goal="5" text="Kill all of the Exiles" type="DefeatAll" />
     <complete><say contact="1">... Cease hostilities and pull out of the mission area immediately, operative. This is... That is a direct order from Commander Lock. I repeat: cease fire and leave the area immediately.</say></complete>
   </phase>
   <finish>I apologize for the abrupt termination of the mission, soldier. The decision was...out of my hands. Commander Lock has decided that we should...bear the olive branch when dealing with the commandos. Even if they're trying to assist our enemies!&#10;&#10;I--no, never mind. Tyndall will be your controller on the next mission. That is all.</finish>

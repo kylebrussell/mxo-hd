@@ -324,13 +324,13 @@ namespace hds
         /// absorbed share comes off, at least 1 damage left. <paramref name="absorbed"/> goes in the round record.
         /// </summary>
         public static UInt16 CloseCombatDamage(Random rng, int attackerLevel, int defenderLevel, CombatTactic tactic, out Int16 absorbed,
-            CombatTacticType type = CombatTacticType.Normal)
+            CombatTacticType type = CombatTacticType.Normal, int bonus = 0, int toughness = 0)
         {
-            int damage = (int)(CloseCombatDamageBonus(attackerLevel) * CombatTactics.TypeDamageMultiplier(type));
+            int damage = (int)(Math.Max(0, CloseCombatDamageBonus(attackerLevel) + bonus) * CombatTactics.TypeDamageMultiplier(type));
             damage = GaussianClamped(rng, damage, damage / 10.0, damage / 3.0, 4.0 * damage / 3.0);
             damage = (int)(damage * TacticDamageMultiplier(tactic));
             damage = (int)(damage * 4.0);
-            absorbed = (Int16)(damage * DamageReduction(attackerLevel, defenderLevel));
+            absorbed = (Int16)Math.Clamp(damage * DamageReduction(attackerLevel, defenderLevel, toughness), Int16.MinValue, Int16.MaxValue);
             damage -= absorbed;
             return (UInt16)Math.Max(1, damage);
         }

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bon Voyage, Merovingian story mission 3.1.4. Source: research/missions/transcripts/Merv3-1-4.md (the archive replay
+     of [Merovingian Archive 3.1.4], given by [Archived]Flood; three screenshots during play with the Objectives window
+     open, and 15 of the log after it ended). The Effectuator speaks in the log too; here he is three NPCs of phase 1.
+     Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator and Effectuator line, the Zion
+     operatives' team chat lines, and the objectives "Meet with the Effectuator", "Search the computers", "Kill the Zion
+     operatives" and "Recover the Data" (seen in the Objectives window). Flood's briefing spans three screenshots with no
+     header between them and is taken as one entry. Ours: the description (the Summary tab was never opened), the other
+     objective texts, the sites (phases 1 and 2 were run-down apartments in Moriah Projects: SlumApt; phase 3 a cubicle
+     office in Tabor Park: Office), the looks and the enemy counts (phase 3 is retail's six: two named and four
+     generated). Item stand-in: "the Data" is Data (6787), which is also the game object's name. Rewards: the log
+     shows 79,416,249 experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500
+     information, as Dire Connection paid).
+     Gaps: the Effectuator appears in one room after another in retail; here he is three friendly copies with the same
+     look, each a Talk that waits for the one before, and the Operator's surprise at each is said on walking up to the
+     first and on talking to the others. His first line was split across two screenshots and is joined (a line between
+     may be missing). Phase 2's computers showed a MerOS console ("ALERT! Compromised data detected! ... System
+     locked.") and phase 3's a Zion decryption console; the console text can't be shown, and phase 2's search is one
+     computer that turns up nothing. Phase 3's data was recovered while the fight went on; the search and the kills are
+     open together, and Flood's call to upload is said when the data is taken. Hostile NPCs' lines don't show on screen
+     here (see Known gaps), so the Zion operatives' lines may not appear. -->
+<mission id="303104" title="Bon Voyage" description="Meet the Effectuator and stop Zion from learning the location of one of the Merovingian's construct portals." plot="1"
+         order="3104" org="3" contact="Flood" exp="308000" info="101500">
+  <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="4" handle="Zion Howitzer" type="HOSTILE" at="2" rsi="d8040058" weapon="2568">
+    <say>Okay... I know this... just try the-- Hey!</say>
+  </npc>
+  <npc id="5" handle="Zion Kung Fu Grandmaster" type="HOSTILE" at="2" rsi="ec020058" weapon="2568">
+    <say>We have hostile ops!</say>
+  </npc>
+  <npc id="6" handle="Zion Ballista" type="HOSTILE" at="2" rsi="60010058" weapon="2568">
+    <say>Boot to the groin!</say>
+  </npc>
+  <npc id="7" handle="Zion Network Attacker" type="HOSTILE" at="2" rsi="c9020058" weapon="2568">
+    <say>Who are you?!</say>
+  </npc>
+  <npc id="8" handle="Zion Duelist" type="HOSTILE" at="3" rsi="050100b4" weapon="2568">
+    <say>Okay, the decryption program is loadin-- Crap! We've got incoming!</say>
+  </npc>
+  <npc id="9" handle="Zion SMG Specialist" type="HOSTILE" at="3" rsi="58010058" weapon="2568">
+    <say>Okay, the decryption program is loadin-- Crap! We've got incoming!</say>
+  </npc>
+  <phase site="SlumApt" enemy="Zion" enemies="0">
+    <briefing>I trust that flea-ridden wench has not been contacting you, has she? I wouldn't get mixed up with that sort of trash if I were you. Bad for your career, yes?&#10;&#10;Now you must meet someone far more interesting. He is the gentleman I mentioned earlier: The Effectuator. Any travel into or out of the Merovingian's personal constructs goes through him. He does nothing but lounge around all day, drinking his frou-frou drinks and pushing papers... I'm sorry? Did you just say something? I didn't think so. Now go, do not keep him waiting!</briefing>
+    <enter><say>So, it sounds like the Effectuator is some sorta trumped up travel agent, when it comes down to it. Well, whatever he does, he's very high up in the Frenchman's hierarchy -- kind of outside of the whole structure, actually -- so if you get a chance to get on his good side, take it.</say></enter>
+    <near npc="1" radius="1000">
+      <say>What the-- where did he come from?</say>
+    </near>
+    <objective goal="1" text="Meet with the Effectuator" type="Talk" npc="1">
+      <talk><say npc="1">You must be {player}. I've heard so much about you; now it is time to see if you can help me.&#10;&#10;But no, let my friend in the next room tell you more about it.</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to the Effectuator in the next room" type="Talk" npc="2" after="1">
+      <talk>
+        <say>Isn't that the same guy?</say>
+        <say npc="2">So, I take it you met my friend out there? Quite a chap, eh? He reminds me of me, when I was five minutes younger... ah, youth...&#10;&#10;Perhaps you should talk to my associate, through the next door. I'm a little choked up at the moment.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to the Effectuator's associate through the next door" type="Talk" npc="3" after="2">
+      <talk>
+        <say>Waddya know, another one of these guys... what a joker.</say>
+        <say npc="3">Oh, {player}, please do forgive me. You see, I'm more or less broadcasting this signal... I'm not really "here" -- not that you're really "here" either though, come to think of it...&#10;&#10;What? Oh, yes, my task. Well, you see, there are many portals hidden throughout the Matrix. I think you knew of this already. Some of those portals lead to the Merovingian's personal constructs. All good and well, but now those filthy cavemen are close to discovering one of these portals. Even as we speak they are nearing this vital information.&#10;&#10;You must go, now, and stop them. Stop them before they learn too much!</say>
+      </talk>
+      <done><say>Off to defend the portal, huh? Okay, I'm getting the coordinates now. You can get out of there.</say></done>
+    </objective>
+  </phase>
+  <phase site="SlumApt" enemy="Zion" enemies="3">
+    <briefing>So, off to stop those pathetic Zion followers, eh? Give them a punch in the nose -- or whatever it is you do -- for me.</briefing>
+    <enter><say>All right, the Zion operatives are on site here. They've been here for some time -- hopefully they haven't turned up the information yet...</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Kill the Zion operatives" type="DefeatAll">
+      <done><say>Okay, all the operatives are accounted for... you're going to have to search the active computers here and make sure they haven't been compromised.</say></done>
+    </objective>
+    <objective goal="5" text="Search the computers" type="Search" object="1" item="0" after="4">
+      <done><say>Damn it! Looks like they've already got the data. I'm sending you to their nearest headquarters. We've got to stop them before they decrypt that data!</say></done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Zion" enemies="4">
+    <briefing>What are you waiting for, {player}? Stop those filthy Zionites!</briefing>
+    <enter><say>The Zion operatives are in this building. I know you're up to taking them out... right?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="6" text="Kill the Zion operatives" type="DefeatAll" />
+    <objective goal="7" text="Recover the Data" type="Search" object="1" item="6787">
+      <done><say contact="1">I will not have that information falling back into enemy hands. Upload it to your operator immediately!</say></done>
+    </objective>
+    <objective goal="8" text="Upload the Data at a hardline" type="Upload" item="6787" after="7" />
+  </phase>
+  <finish>Not bad, {player}. I'm sure I could have shown you a few little tips if I'd been there... ah, but good job, especially for you. Now scoot along, I'll handle the rest.</finish>
+</mission>

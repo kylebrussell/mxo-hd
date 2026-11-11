@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- War, Merovingian story mission 8.1.1. Source: research/missions/transcripts/Merv8-1-1.md (the archive replay of
+     [Merovingian Archive 8.1.1], given by [Archived]Flood; 25 screenshots cropped to the Mission window: three of the
+     Status tab during the first area, the rest of the log after it ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing (the first from the Status tab, as the log's top wasn't captured), the
+     closing line, every Flood, Operator, Malphas, Ookami, Twin, Mr. Black, Ebony, Dame White, Merovingian and
+     Persephone line, and those names. Entries that span two screenshots overlap by a line and are read as
+     contiguous. Italics dropped: Dame White's "my", Flood's "Don't" and "et cetera", the Twin's "I", the Merovingian's
+     "mon ami" and "n'est-ce pas?". The player's name (Variel) is {player}.
+     Ours: the description (not shown), every objective text (the Objectives tab was never opened), the sites (Normal,
+     but the second area is "one of their bases", a Zion base, so ZionOutpost; no neighbourhood was named), the looks
+     (Malphas's, Ookami's, the Twins', Ebony's, Dame White's, Persephone's and the Merovingian's are those of earlier
+     missions; Mr. Black's is his neighbourhood contact's from data/mission_contact_npcs.csv) and the enemy counts
+     (none: no fight anywhere in the log, as the web summary says). Item stand-in: the General's stolen code ("that
+     data", "that chunk of digits") is Data (6787; no item name was shown).
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the log's top (Mission Started and the first briefing) wasn't captured. The Operator's "Upload that chunk of
+     digits to me at..." is cut at the bottom of a screenshot and the next starts a minute later, so the search's done
+     line is only its whole first sentence, and the upload's done line and the end of the second area are missing; the
+     upload at a hardline comes from that cut line and the web summary. Entries may be missing before the first Twin
+     line and before Mr. Black's. The dead Zionites and Machines of the "mutual slaughter" aren't placed. Which Twin
+     said which line isn't shown; they alternate here. The Twins' lines and the Operator's "the machine in that room"
+     came on approach and are said on getting near the first Twin; Ookami's came 12 s before Malphas's and is said on
+     getting near Malphas; the second pair of Twins' lines, on getting near the Merovingian. Mr. Black is talked to
+     first ("What's the wifey think?"), then Dame White; Ebony's "..." is her line when talked to. Persephone's two lines
+     and the Merovingian's reply came after the last area's goals and are said when they complete; Persephone's second
+     line and his reply are said again when each is talked to. -->
+<mission id="308101" title="War" description="Profit from the new war between Zion and the Machines: steal the General's code from a raided Zion base, and sound out Dame White and Mr. Black for the Merovingian." plot="1"
+         order="8101" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Malphas" type="FRIENDLY" at="1" rsi="35000024" weapon="0" />
+  <npc id="2" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="0">
+    <say>The streets will run red with blood...and we will have the survivors at our mercy. Hraha-ha!</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>There should be a law...</say>
+  </npc>
+  <npc id="4" handle="Twin" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Downright rude, I say.</say>
+  </npc>
+  <npc id="5" handle="Mr. Black" type="FRIENDLY" at="3" rsi="7a0b0058" weapon="0" />
+  <npc id="6" handle="Ebony" type="FRIENDLY" at="3" rsi="5a000040" weapon="2568">
+    <say>...</say>
+  </npc>
+  <npc id="7" handle="Dame White" type="FRIENDLY" at="3" rsi="460a0058" weapon="0" />
+  <npc id="8" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="6">Ah, well... Let her worry, eh? But worrying, my friend, has never yet carried the day.</say>
+  </npc>
+  <npc id="9" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>Well, I don't see how they intend to manage it, new city or otherwise.</say>
+  </npc>
+  <npc id="10" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say>They'd better make a decent go of it. I couldn't stand another of these dreadful truces again.</say>
+  </npc>
+  <npc id="11" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
+    <say after="6">He is a schemer; that will never change. He will not be happy with what we have; he will risk it all on a roll of the dice.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Zion and the Machines have decided to start throwing stones at each other again; not that they needed much excuse to end that long farce of a "truce" they so loved to argue over, but apparently it's something to do with the monkeys deciding to move to a new cave where the toasters can't reach them quite so easily: "New Zion," or something like that, they're so creatively calling it.
+
+The only part of this you need to grasp, {player}, is that we stand to make a great deal of profit off of this "war" of theirs. Malphas has a few larger and more belabored words for you on that topic.</briefing>
+    <enter><say>So Zion and the Machines are back at it... Well that's a hell of a thing.&#10;&#10;That's where you're supposed to meet Malphas. I'm reading some of our programs in there.</say></enter>
+    <objective goal="1" text="Talk to Malphas" type="Talk" npc="1">
+      <talk><say npc="1">The resumption of Zion/Machine hostilities presents us with a profoundly exploitable situation. For instance, the Zionites have been holding a collection of code, stolen from the General's systems, at one of their bases nearby. The Machines have just raided the place, and the ensuing mutual slaughter has left the door wide open for us to liberate the data. You should have no difficulty in retrieving it, operative.</say></talk>
+      <done><say>"Should have no difficulty": how many times have we heard that line? Oh, well, I guess war doesn't mean vacation.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="2">The streets will run red with blood...and we will have the survivors at our mercy. Hraha-ha!</say>
+    </near>
+  </phase>
+  <phase site="ZionOutpost" enemy="Zion" enemies="0">
+    <briefing>Don't dawdle getting that data, operative. We've got bigger and badder things to get to, you know.</briefing>
+    <enter><say>I'm not reading anything that looks like Zionites or Machines in there... I've got a couple fuzzy signals, but I have a hunch we know who they are.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Get the data from the computer" type="Search" object="1" item="6787">
+      <done><say>Is it really gonna be this easy?</say></done>
+    </objective>
+    <objective goal="3" text="Upload the data at a hardline" type="Upload" item="6787" after="2" />
+    <near npc="3" radius="1000">
+      <say npc="3">This just isn't right.</say>
+      <say npc="4">Where's the fun if they've already offed themselves?</say>
+      <say npc="3">There should be a law...</say>
+      <say npc="4">Downright rude, I say.</say>
+      <say>Ah, the machine in that room looks like it has what we're after.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That went stunningly well. ... I'm not even sure that was sarcasm.
+
+We've arranged for you to meet with Dame White and her ball and chain, Mr. Black. The two of them constitute major business interests in the city--after the Merovingian, of course. Black and White will have some opinion by now of the news of the day, and we wish to know which way the wind is blowing before we commit ourselves.</briefing>
+    <enter><say>The Dame and Mr. Black aren't known as models of marital bliss, so keep a sharp eye out in there.</say></enter>
+    <objective goal="4" text="Talk to Mr. Black" type="Talk" npc="5">
+      <talk><say npc="5">I run things quietly. People don't bother me, I don't bother them. Stay sharp, stay at it long enough, and you'll be successful. Now, in a shooting war, you never know what idiot is going to get an idea to come mess with you. It's an unstable situation, and that's bad for business. If the Merovingian's smart, he'll invest in calming the two sides down.</say></talk>
+      <done><say>I'm not so sure the Merv's into that approach. What's the wifey think?</say></done>
+    </objective>
+    <objective goal="5" text="Talk to Dame White" type="Talk" npc="7" after="4">
+      <talk><say npc="7">A war can be a useful thing as long as you can keep yourself off the front lines--something your boss knows very well. We've been through this before, and know how to handle ourselves. I'm sure my business won't suffer any; tell the Frenchman to watch out that he doesn't lose his own shirt--with my kind regards, of course.</say></talk>
+      <done><say>Hm... I think we'd have to say that opinions are mixed, then.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Shh! Don't bore me with the opinions of others, {player}. It's the Merovingian who wants to know, so you can very well go tell him yourself. Personally, I don't give a frag. We're number one, and I see no reason why we should care what the less successful think about anything.</briefing>
+    <enter><say>Nice to see this hasn't spoiled Flood's sunny disposition. I wonder how the Merv is taking it?</say></enter>
+    <objective goal="6" text="Talk to the Merovingian" type="Talk" npc="8">
+      <talk><say npc="8">Ah, yes: the exploitive and the conservative. Mm...&#10;&#10;I tell you, mon ami, that at this time I prefer to look for, shall we say...opportunities. Let others deal to either side, or try to carry on business as usual. No, I believe that this is truly the perfect time for the unexpected--and it is so much more interesting, n'est-ce pas?</say></talk>
+    </objective>
+    <near npc="8" radius="1000">
+      <say npc="9">Sixty days, no more--unless we step in, you know.</say>
+      <say npc="10">Sixty? Fah! They lasted longer than that last time, even before you-know-who showed up.</say>
+      <say npc="9">Well, I don't see how they intend to manage it, new city or otherwise.</say>
+      <say npc="10">They'd better make a decent go of it. I couldn't stand another of these dreadful truces again.</say>
+    </near>
+    <complete>
+      <say npc="11">I know that tone... You are up to something already. What is it?</say>
+      <say npc="11">He is a schemer; that will never change. He will not be happy with what we have; he will risk it all on a roll of the dice.</say>
+      <say npc="8">Ah, well... Let her worry, eh? But worrying, my friend, has never yet carried the day.</say>
+    </complete>
+  </phase>
+  <finish>Yes, yes; "into the unknown," et cetera. Just so long as we're all clear that I have no intention of "roughing it."
+
+I'm sure we'll have something new and wonderful for you to bungle very soon then, {player}. Try not to cast yourself off a convenient precipice in all the excitement.</finish>
+</mission>

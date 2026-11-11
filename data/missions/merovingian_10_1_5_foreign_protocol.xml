@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Foreign Protocol, Merovingian story mission 10.1.5. Source: research/missions/transcripts/Merv10-1-5.md (a live run
+     given by Flood, not an archive replay: 22 screenshots of the Log tab scrolled top to bottom and four computer
+     popups; no chat, HUD or Objectives window). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Holographic Projection and Effectuator line, and the names. The
+     dots in the General's broadcast are retail's (a broken transmission). Retail's italics ("some", "persuade")
+     can't be carried. Ours: the description (the Summary tab only said "Datalink established."), every objective
+     text (the Objectives tab was never opened), the sites (all Normal: none is described beyond "a Machine
+     d-base"), the looks (the Holographic Projection, the Effectuator and the commandos as the 9.x Merovingian files
+     have them) and the enemy counts: none in phase 1 (only commandos on the scope), three Machines at the terminal
+     ("a few Machines"), eight at the d-base ("that's a lot of Machines!"), three at the analysis ("some active
+     programs", whose side isn't said: Machines here).
+     Joins between screenshots read as contiguous: "able to get / back to", "we'll / just have to play along", "hook up
+     the / General's broadcast", "the protocols are unusual; / they only partly", "ships it back to / us. Lovely.",
+     "at least slightly / related to Machine code", "nobody we / know has a clue", "tapped into anything / like this",
+     "ours is not to / reason why", "I think you'd just / stand in the street", "I don't / think.", "but it / must have
+     been incredibly massive".
+     Item stand-ins: the General's data from the commando is Data (6787); the data grabbed from the Machine d-base is
+     Data_CD (6831).
+     Rewards: the log shows none. These are Zion's chapter 10 values, those of Blip (10.2.5), its only chapter 10
+     mission (352,000 experience, 525,000 information; Blip showed the information, and the Zion file takes the
+     experience from The Spider, 11.1.5).
+     Gaps: phase 1 ended 74 seconds after the broadcast, with nothing logged in between; it is read as getting the
+     data from "that other commando". The commando who hooked up the broadcast never speaks; he stands there. The
+     computers' screens (the terminal's "[0] match(es) found", the d-base's full data recursion and its record on
+     how Halborn's ship was scanned, the analysis feed's "OLIGARCH NETWORK" and "Data feed terminated") can't be
+     shown: using or searching the computers completes the goals. The Effectuator arrives once the terminal comes up
+     empty ("Aw man, not him."). The "couple of my own programs" he gives the player ("a helping hand...or paw")
+     can't be given, so the player fights alone. His second line came 31 seconds after the first and is the talk's
+     done line here, after the Operator's "Guess we're stuck with them..."; what ended phase 2 two minutes later isn't
+     shown, so it ends with the talk. Phase 3's "Whew, finally" is read as all the Machines dead. In phase 4 the
+     Operator's "Uh-oh..." and "We're still in business..." came 23 and 26 seconds after arriving; here they follow
+     the arrival line. Its "active programs" needn't be fought: retail's area was done three seconds later, at the
+     computer. Retail ended phases 1 and 2 with "Goals for this mission phase are complete!"; leave="0" sends it. -->
+<mission id="310105" title="Foreign Protocol" description="Receive the General's broadcast from the blackout zone and find out what his strange data is." plot="1"
+         order="10105" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Commando" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568" />
+  <npc id="2" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0">
+    <say after="1">End transmission.</say>
+  </npc>
+  <npc id="3" handle="Commando" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="4" handle="The Effectuator" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" spawnAfter="3">
+    <say after="4">Well, I can't really say they don't bite. I think it's kind of cute, though. There was this one time that Ookami--&#10;&#10;Oh, the data? Couldn't really say. Nobody's ever tapped into anything like this. Pretty exciting, huh?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0" leave="0">
+    <briefing>Carlyne and some Zionite or other managed to hack Halborn's ship. He's dead, or at least gone, and Carlyne says he's going to leave now, too. Good riddance, as far as I'm concerned. We'll finally be able to get back to some semblance of normalcy without those two overriding our programs all over the city.&#10;&#10;Elsewhere, the General has actually reached the blackout area 800 miles northwest of the Machine city. I wouldn't be surprised if he's making it up, but until we have some other outside source that can verify it, we'll just have to play along. He's due to put a broadcast through about his findings, and you seem like the type who might enjoy watching him thrust his chest out and drone on.</briefing>
+    <enter><say>'Kay, I've got some commando programs on the scope. They should be the ones who'll hook up the General's broadcast for you.</say></enter>
+    <objective goal="1" text="Talk to the Holographic Projection" type="Talk" npc="2">
+      <talk><say npc="2">...located a heavily fortified ... at the center of ... blackout zone. The defenses ... too strong for my ... to penetrate. Near the facility ... found a buried data conduit ... wasn't as heavily protected. We've ... to tap into it ... the protocols are unusual; they only partly ... Machine formats. I'm sending a ... If it can be deciphered ... may be able to ... the facility's defenses.</say></talk>
+      <done>
+        <say>Whoa... Okay, I think that other commando's got the data for us.</say>
+        <say npc="2">End transmission.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Get the data from the commando" type="Get" npc="3" item="6787" after="1" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3" leave="0">
+    <briefing>So the General digs up some code he can't understand, and ships it back to us. Lovely. Probably crawling with viruses. I'm going to have it thoroughly scanned...&#10;&#10;At any rate, assuming that--and I know it's a stretch, but best to be prepared--the General actually found something useful, the first step will be finding out what it means. Since it sounds like it's at least slightly related to Machine code, obviously the first place to start looking for a match is a Machine database.&#10;&#10;Luckily for you, I've got one handy. It's a terminal we spotted when hacking their Sentinel systems. Even if it is from the no-fly zone, Sentinel records probably have some sort of information relating to this.</briefing>
+    <enter><say>Got a few Machines near the terminal in there. Doesn't look too bad, and I should be able to handle the security on the terminal, no problem. Just access the computer, and we'll search for a match to this weird new protocol stuff.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Access the computer" type="Use" object="1">
+      <done><say>Hum... Nothing. Not a great--&#10;&#10;Aw man, not him.</say></done>
+    </objective>
+    <objective goal="4" text="Talk to The Effectuator" type="Talk" npc="4" after="3">
+      <talk><say npc="4">Heyyy! So, here's the scoop: we're gonna have to dig way deeper into the Machine network to find whatever data type that is, because nobody we know has a clue. That means you may have to persuade a few Machines to let you take a peek at their data, if you know what I mean, and I think you do! Wink wink, eh?&#10;&#10;Oh yeah, and here's a couple of my own programs to give you a helping hand...or paw... Whatever.</say></talk>
+      <done>
+        <say>Guess we're stuck with them...</say>
+        <say npc="4">Well, I can't really say they don't bite. I think it's kind of cute, though. There was this one time that Ookami--&#10;&#10;Oh, the data? Couldn't really say. Nobody's ever tapped into anything like this. Pretty exciting, huh?</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="8">
+    <briefing>Hrmph. It's probably just corrupt gibberish, like most of what the General produces. But "ours is not to reason why," hm? So go get doing.</briefing>
+    <enter><say>They picked out a Machine d-base we haven't been able to access before. This one's top-level security, so...&#10;&#10;Jeez, that's a lot of Machines!&#10;&#10;Oh, sorry. Uh... Good luck?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="5" text="Kill the Machines" type="DefeatAll">
+      <done><say>Whew, finally. Grab that data and get out of there!</say></done>
+    </objective>
+    <objective goal="6" text="Search the Machine database" type="Search" object="1" item="6831" after="5" />
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>The data's been sent to the General. He's trying to use the results to decipher the data he's tapping from the conduit, and he's sending that feed back to us.&#10;&#10;Don't just stand there, operative; go see how the analysis of the data is proceeding!&#10;&#10;Honestly, sometimes I think you'd just stand in the street and get hit by cars if I didn't give you directions.</briefing>
+    <enter>
+      <say>The analysis is supposed to be going on in there. I'm reading some active programs.</say>
+      <say>Uh-oh... Not quite what Flood was expecting from data analysis, I don't think.</say>
+      <say>We're still in business as long as they didn't get to that computer yet.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="7" text="Check the analysis at the computer" type="Use" object="1">
+      <done><say>What th-? He was trying to search the network they'd tapped into, but it must have been incredibly massive. Then there was some kind of security override that killed his session, maybe...&#10;&#10;The feed was still a little scrambled, but it looked like the system he was in called itself the "Oligarch Network." Weird...</say></done>
+    </objective>
+  </phase>
+  <finish>Of course you don't understand it, operative, and obviously, neither did the General. He's probably had his tentacles blown all the way across that blackout zone by now, considering how quickly his little hacking effort there was nullified.&#10;&#10;The Oligarch Network, eh? Hmph. If Carlyne was involved with it, it can't be that impressive.</finish>
+</mission>

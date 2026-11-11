@@ -21,7 +21,7 @@
      numbered through the whole mission so that the NPCs' after-lines can't be set off by an earlier phase's goal. -->
 <mission id="212101" title="Representative" description="Clear Zionites out of Akasaka, then stand by as Agent Pace receives the newly arrived Oligarchs." plot="1"
          order="12101" org="2" contact="Agent Gray" exp="288750" info="126000">
-  <npc id="1" handle="Tesarova" type="FRIENDLY" at="2" rsi="58010058" weapon="2564" />
+  <npc id="1" handle="Tesarova" type="FRIENDLY" at="2" rsi="fc0e0004" weapon="2564" />
   <npc id="2" handle="Helian" type="FRIENDLY" at="2" rsi="050100b4" weapon="2564" />
   <npc id="3" handle="Agent Pace" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
     <say after="4">Thank you for your assistance, operative. We will be leaving this location so that our guests may continue their business at their leisure.</say>

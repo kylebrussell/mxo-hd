@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Side Effects May Include, Merovingian story mission 5.3.1. Source: research/missions/transcripts/Merv5-3-1.md (the
+     archive replay of [Merovingian Archive 5.3.1], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the names Annita Franguiadakis,
+     Aposhanskij and Lambda Hendrickson. Flood and Annita used the player's handle; that is {player}. Flood's "both of
+     sides of the fence" is retail's wording and is kept. Ours: the description (the Summary tab was never opened),
+     every objective text (the Objectives tab was never opened), the first phase's test subject (his name and lines
+     fell in a gap of the log; he is "Test Subject", an Exile, as the Operator guessed), the sites (none is described:
+     Normal), the looks and the enemy counts. Item stand-ins: Annita's drugs are Drugs (6816); Lambda's formula, which
+     the interface called "poison", is Poison (6804).
+     Rewards: the log shows 1,006,897 experience and 490,608 information (a level-48 player's). These are Machines
+     chapter 5's values (286,000 experience, 94,500 information, as Deviation paid): no Zion log shows chapter 5's.
+     Gaps: the test subject's lines and most of his fight fell between 12:06:34 and 12:07:55 and are lost. The Operator
+     and Flood said "them", but the Operator read one program signal, so there is one subject; he is a hostile who
+     waits to be attacked, reaching him is talking to him (optional, so killing him from afar doesn't block the phase),
+     and Flood's "try fighting them" is said then. The Operator's line at 12:12:52 was cut off and isn't used.
+     Aposhanskij is led outside and then follows the player into the last phase, where he is given the formula; in
+     retail he stayed friendly after it, and he does here. Lambda's diagnosis is his line when talked to after the
+     dose, which closes the mission. -->
+<mission id="305301" title="Side Effects May Include" description="Test a formula synthesized from the residues of Anome's stolen cheat codes." plot="1"
+         order="5301" org="3" contact="Flood" exp="286000" info="94500">
+  <npc id="1" handle="Test Subject" type="HOSTILE" attacksOnSight="0" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Annita Franguiadakis" type="FRIENDLY" at="2" rsi="a5060090" weapon="2568" />
+  <npc id="3" handle="Aposhanskij" type="FRIENDLY" at="3" rsi="c9020058" weapon="2564" />
+  <npc id="4" handle="Lambda Hendrickson" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Back again? Well, well. I suppose I had better find something for you to do before you go starting duels outside churches.
+
+Whether or not you recall it, we recently recovered trace residues of the cheat codes stolen by Anome. We've extrapolated and synthesized full doses of an experimental mixture from those residues, and have applied it to a certain test subject. He's been locked up overnight, and now it's time to go see how he's doing. Since it's possible that he could have become highly dangerous due to the code he ingested, I think it best that I send you in to check on him.</briefing>
+    <enter><say>I've got a program's signal in there... Probably an Exile, from what Flood said. I'm not reading any Unlimit-style code corruption in him, though.</say></enter>
+    <near npc="1" radius="1000">
+      <say>There they are... Seems normal, from these readings. And they don't look too dangerous... I guess you'd better go talk to them.</say>
+    </near>
+    <objective goal="1" text="Talk to the Test Subject" type="Talk" npc="1" optional="1">
+      <done><say contact="1">Oh, stop wasting time and try fighting them, operative.</say></done>
+    </objective>
+    <objective goal="2" text="Kill the Test Subject" type="Defeat" npc="1">
+      <done><say>I didn't see anything. Did you see anything? Seemed perfectly normal to me.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Apparently the synthesized formula has no effect on programs. Well, not that one, at any rate. We'll just have to try it on a redpill then. {player}...
+
+Hm, on second thought, maybe I'd better not try it on you first.
+
+Go to the indicated location, and get certain drugs that our technician Annita Franguiadakis will give you.</briefing>
+    <enter><say>Drugs? What's Flood planning?</say></enter>
+    <objective goal="1" text="Get the drugs from Annita Franguiadakis" type="Get" npc="2" item="6816">
+      <talk><say npc="2">{player}? Yes, I've got the item Flood requested. Here you go.</say></talk>
+      <done>
+        <say npc="2">Please take these. I have other tasks I have to get back to.</say>
+        <say npc="2">Oh, and I wouldn't go shaking those up or anything.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I have the perfect test subject for us, {player}--no, not you. Aposhanskij was a Machine operative who tried to play both of sides of the fence by selling his information to us. Unfortunately, he knew nothing useful. However, we refrained from killing him, thinking that we might one day have a use for such a fool. And so we do. Drug him and bring him outside.</briefing>
+    <enter><say>Got a redpill signal in there. Time to make his day.</say></enter>
+    <objective goal="1" text="Talk to Aposhanskij" type="Talk" npc="3">
+      <talk><say npc="3">What, did the Frenchman send you? Finally come around, has he? Hah, I knew it.</say></talk>
+      <done><say>Give him the treatment!</say></done>
+    </objective>
+    <objective goal="2" text="Give the drugs to Aposhanskij" type="Give" npc="3" item="6816" after="1">
+      <done>
+        <say npc="3">H-hey! What do you think you're doing?</say>
+        <say>Ah, much better. Okay, let's get him outside.</say>
+        <say npc="3">What are... Whoa... Hold still, you bastard...</say>
+      </done>
+    </objective>
+    <objective goal="3" text="Lead Aposhanskij out of the area" type="Escort" npc="3" to="exit" after="2" />
+    <objective goal="4" text="Do not let Aposhanskij die" type="Protect" npc="3" />
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Our doctor, Lambda Hendrickson is in there. He has a dose of the formula, which your interface program will identify as "poison," although it's been disappointingly benign so far. I think you can see where this is going, n'est-ce pas?</briefing>
+    <enter><say>So, if that guy's eyes start dripping green code, that's when you start running.</say></enter>
+    <near npc="4" radius="1000">
+      <say>Now get the stuff from Lambda Hendrickson.</say>
+    </near>
+    <objective goal="1" text="Get the poison from Lambda Hendrickson" type="Get" npc="4" item="6804">
+      <done><say>Give it to Aposhanskij and stand back!</say></done>
+    </objective>
+    <objective goal="2" text="Give the poison to Aposhanskij" type="Give" npc="3" item="6804" after="1">
+      <done><say>...
+
+He looks kinda PO'ed. What's the doc got on him?</say></done>
+    </objective>
+    <objective goal="3" text="Talk to Lambda Hendrickson" type="Talk" npc="4" after="2">
+      <talk><say npc="4">Hum... The subject appears to have been reduced to a bestial state. Higher brain functions have almost ceased. He is not manifesting unusual power levels--which is probably for the best, considering his current unthinking rage.</say></talk>
+      <done><say npc="3">Rrr... Grrawwrrr! Rrawwrr!</say></done>
+    </objective>
+  </phase>
+  <finish>Apparently the people who synthesized our formula were bunglers. This will require more testing... Eh... I'll get back to you, operative.</finish>
+</mission>

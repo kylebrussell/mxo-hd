@@ -525,8 +525,6 @@ namespace hds{
             pak.AddStringWithFixedSized(marginCharacter.Background,1023);
 
 
-            // ToDo: Analyse it and (Rep zion => 82, Rep Machine 2, RepMero 81
-            //pak.addHexBytes("000000000000000000178604E40008AF2F0175020000A39F714A81FF81FF81FF670067006700000003000301310000B402320000B403380000B4044E0000000200510000001600520000001900540000001300");
             pak.AddUint32((uint) marginCharacter.Exp,1);
             pak.AddUint32((uint) marginCharacter.Cash,1);
             pak.AddUShort(0x01); // Flag - always 1
@@ -535,15 +533,15 @@ namespace hds{
             pak.AddByteArray(TimeUtils.getCurrentTime());
             //pak.addByteArray(StringUtils.hexStringToBytes("875D714A")); // Last Changed Timestamp - current its static - needs to be dynamic
 
-            // Rputation Bytes (int16[7])
-            pak.AddInt16(-116,1);
-            pak.AddInt16(-117, 1);
-            pak.AddInt16(-20, 1);
-            pak.AddInt16(-59, 1);
-            pak.AddInt16(-58, 1);
-            pak.AddInt16(-57, 1);
-            pak.AddInt16(2, 1);
-            pak.AddByte(0x03);
+            // Signed standings in the order read by client.dll (0x6219902b and 0x621992aa).
+            pak.AddInt16(unchecked((short)marginCharacter.RepCyph), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepMachine), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepMero), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepNiobe), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepEpn), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepZion), 1);
+            pak.AddInt16(unchecked((short)marginCharacter.RepGm), 1);
+            pak.AddByte(MissionContacts.StoryContactMask);
             
             // 01 = onWorld , 00 = LA . In World you have to take care to not spawn the Character in LA State
             if (marginCharacter.DistrictId != (uint)MxOLocations.LA)

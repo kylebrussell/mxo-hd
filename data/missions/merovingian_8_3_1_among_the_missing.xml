@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Among the Missing, Merovingian story mission 8.3.1. Source: research/missions/transcripts/Merv8-3-1.md (one live
+     retail run, given by Flood, not an archive replay; 16 screenshots of the log taken during play, two after the
+     mission ended, and two "Computer" popups from the second area). The log is cut off in the third area, after
+     Alden Berman's second line. Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, every Flood, Operator, Holographic Projection and Alden Berman line, and
+     those names. Entries that span two screenshots are joined by their overlapping lines. The log's player name is
+     blacked out in the images; it is {player} here. Italics dropped: Flood's "I've". The Operator's "what look like
+     System programs" is as the log has it; Alden Berman's "SNTL OAJDE." and "Access?" are on two lines in the log.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal: none is described, and no neighbourhood was named), the looks (the
+     Holographic Projection's is that of earlier missions; Alden Berman's is a stand-in by sex), the enemy kinds and
+     counts (Zionites in the second area, "redpill signals ... they'll be Zionites": Zion; the third area's "System
+     programs": Machines), and the item: the surveillance records are Data (6787), a stand-in.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: the Operator's "Getting a signal..." (97 s after arriving) is said on getting near the projection, and the
+     projection's "End transmission." (6 s after the goals completed) when the phase's goals complete. The Operator's
+     "I'm picking up an active computer system nearby." came 106 s after arriving in the second area; there is nothing
+     to tie it to, so it is said on arrival after the arrival line. The two computer popups (a hacked Zionite's mail
+     about Roland, then a personnel query that finds nothing) can't be shown: hacking the computer, then searching it
+     for nothing, stands for them, and the Operator's "Well, that was a flop" is said when the search is done. Whether
+     the player fought the Zionites isn't shown, so killing them isn't required. In the third area the Operator's
+     "getting close to some kind of heavy data reading" came two seconds after Flood's briefing and "System programs
+     in there" three minutes later; both are said on arrival, in log order. Entries between 11:03:56 and 11:07:04 may
+     be missing (the screenshots on either side were taken at different times). Finding Alden Berman (he waits to be
+     attacked) is the first goal, his "SNTL OAJDE. Access?" said then and again when he is clicked again; hostile NPCs'
+     lines don't show on screen here (see Known gaps). Everything after his second line is lost: the second goal,
+     taking the surveillance records from him, is our reading of Flood's briefing and the Operator's "the data reading
+     is coming from that guy", and there is no finish line, as Flood's closing wasn't captured. -->
+<mission id="308301" title="Among the Missing" description="Find out who the unknown man seen with Lock in the ruins of old Zion's command area was." plot="1"
+         order="8301" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="Holographic Projection" type="FRIENDLY" at="1" rsi="8f080058" weapon="0" />
+  <npc id="2" handle="Alden Berman" type="HOSTILE" attacksOnSight="0" at="3" rsi="ec020058" weapon="2568">
+    <say after="4">SNTL OAJDE.&#10;Access?</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Well, well, well... So the toasters have finally wiped out Zion--the old one, anyway. The cave-dwellers really aren't making it easy for us to help them keep this convenient war of theirs going.
+
+The Cypherites hit them with a hijacked ship, then a bomb in their command center, while the Machines inserted a virus into their mainframe, courtesy of a device captured from the infamous, and now quite dead, Danielle Wright.
+
+In all the excitement, Sentinels swooped in and took over. Some of them even belonged to us, unbeknownst to the Machines. The General has some sort of report to make about it.</briefing>
+    <enter><say>You're due to meet the General's holographic projection in there. He'll probably wait until you're nearby before he makes his appearance, since the Machines like to jump his signal. No sign of hostiles in the area.&#10;&#10;There are tons of rumors going on about old Zion's destruction. Hard to tell what's true and what isn't, but at any rate, Zionites are still popping up in the Matrix, so most of them must have made it over to their new city.</say></enter>
+    <objective goal="1" text="Talk to the Holographic Projection" type="Talk" npc="1">
+      <talk><say npc="1">Several of my Sentinels were present when the city fell. A pitiful display--the Machines resorted to trickery, and dependence upon human agents, to achieve their end. Had I been in command...&#10;&#10;No matter. What concerns you is this: my scouts spotted two humans scrambling into shelter in the wreckage of Zion's command area. One was Zion's chief military commander, Lock. The other was unknown.&#10;&#10;My men could not risk tracking them further. As far as we can ascertain, Lock has not been seen since. Scouting images of the other man will be uploaded to you.</say></talk>
+      <done><say>Yeah, we've been hearing from operatives that Zion still doesn't know what happened to Lock after the bomb destroyed his command center. The Machines are keeping their mouths shut, so who knows if they bagged him or not.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say>Getting a signal... I think that's him.</say>
+    </near>
+    <complete>
+      <say npc="1">End transmission.</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>Ugh, now the General is uploading his dirty pictures to me... Yes, well... All I can make out from this is a tall, muscular, dark-skinned, and disgracefully dressed man with jacks in him stumbling through debris. I've certainly never seen him before; he can't be that important.
+
+Oh, why--that brings you to mind, {player}. Be a good operative and find out who this is, hm? Zion must have a record of him somewhere; go steal it.</briefing>
+    <enter>
+      <say>Oh, I'm sure Flood loves us, really.&#10;&#10;I'm picking up redpill signals in there. If Flood's on the money, they'll be Zionites. I'll keep my scanners peeled for their data terminal.</say>
+      <say>I'm picking up an active computer system nearby.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Hack the Zionites' data terminal" type="Use" object="1" />
+    <objective goal="3" text="Search the data terminal for the man's record" type="Search" object="1" item="0" after="2">
+      <done><say>Well, that was a flop. Either their security's getting better, or the old city getting wrecked has really put a nail in their tire.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="2">
+    <briefing>It seems I can't count on competence from anyone; no, not you, {player}--I gave up on you long ago. But usually Zion's systems work well enough to run a decent data query after you've hacked them. It's a sad state of affairs...
+
+Very well, I can see the way the wind is blowing. We'll try for what we need from the Machines; the jacks in his skin indicate that the man was an operative, and the Machines will have surveillance records of which Zionite ships were around the old city when they sacked it. That should narrow things down considerably.</briefing>
+    <enter>
+      <say>You're getting close to some kind of heavy data reading.</say>
+      <say>Okay, I'm reading what look like System programs in there. Let's hope they're more in the know about Zion's forces than Zion was.</say>
+    </enter>
+    <objective goal="4" text="Find Alden Berman" type="Talk" npc="2">
+      <talk><say npc="2">SNTL OAJDE.&#10;Access?</say></talk>
+      <done><say>Homey say wha-a?&#10;&#10;Hm... I think the data reading is coming from that guy.</say></done>
+    </objective>
+    <objective goal="5" text="Take the surveillance records from Alden Berman" type="Loot" npc="2" item="6787" after="4" />
+  </phase>
+</mission>

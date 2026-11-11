@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Black Box, Merovingian story mission 1.2.11. Source: research/missions/transcripts/Merv1-2-11.md (the archive
+     replay of [Merovingian Archive 1.2.11], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, the briefing, every Flood, Operator and NPC line, and every NPC name. Ours: the
+     description, the objective texts, the site (an office with desks and staff: Office), the looks and the enemy count
+     (Agent Johns's programs are the phase's generated Machines, one of them placed as "Agent" with the bark he had in
+     Team chat). Item stand-in: the Black Box is LED_Black_Box (6835). Where retail's box came from isn't shown; it was
+     found 11 seconds after the last program died, so it is looted from Agent Johns. Rewards: the log shows 525,000
+     information and no experience (a level-50 player's). These are Zion 1.2's values (68,750 experience, 91,000
+     information, as Confiscation paid).
+     Gaps: Jaymie Satnik greets the player, then turns hostile and calls security when the player goes through her desk.
+     NPCs can't switch sides, so she stays a friendly bluepill (her sex isn't shown; a female look by name): searching her desk (a Furniture object that turns up
+     nothing) plays her protest and her call for security. Agent Johns waits for the player (attacksOnSight="0"):
+     finding him is a Talk that plays his order and the Operator's line, then he is killed. The Machine Communique re:
+     Morpheus popup seen after this mission isn't used: nothing in the log ties it to the mission. -->
+<mission id="301211" title="The Black Box" description="Recover one of the Agents' Black Boxes intact." plot="1"
+         order="1211" org="3" contact="Flood" exp="68750" info="91000">
+  <npc id="1" handle="Jaymie Satnik" type="FRIENDLY" at="1" rsi="61000040" weapon="0">
+    <say>Good day. Is there anything I can help you with?</say>
+    <say after="1">Security!</say>
+  </npc>
+  <npc id="2" handle="Agent Johns" type="HOSTILE" at="1" rsi="3600004e" weapon="2568" attacksOnSight="0">
+    <say>I'm afraid that I cannot let you leave, {player}.</say>
+  </npc>
+  <npc id="3" handle="Agent" type="HOSTILE" at="1" rsi="9b000090" weapon="2568">
+    <say>Our pleasure.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>The pieces to the puzzle of the Agents are starting to fall into place and right now there is one piece that we desire. The Agents are carrying around strange Black Boxes and we need to uncover their purpose. We have theories on what they might be used for but we cannot be certain. All previous efforts in recovering one of these devices has resulted in the object being broken or damaged to the point where research was futile. We have just received word that the Agents are on site at this address. Go there now, eliminate all opposition and recover one of the Black Boxes.</briefing>
+    <enter><say>This is where we've traced the Agents. I don't know what business they are conducting here but it's my hope that you can find one of the Black Boxes on site or on one of the Agents. Good luck, {player}!</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Search the desk" type="Search" object="1" item="0">
+      <done>
+        <say npc="1">What are you doing in my desk?!</say>
+        <say>Something is very wrong here!</say>
+        <say npc="1">Security!</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Find Agent Johns" type="Talk" npc="2">
+      <talk>
+        <say>These Agents are behind the sabotaged hardlines! It's all starting to make sense now.</say>
+        <say npc="2">Kill {player}!</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Kill Agent Johns" type="Defeat" npc="2" />
+    <objective goal="4" text="Get the Black Box from Agent Johns" type="Loot" npc="2" item="6835" after="3">
+      <done>
+        <say>That's one of the Black Boxes that we were looking for.</say>
+        <say>Excellent work, {player}. Flood will be pleased.</say>
+      </done>
+    </objective>
+    <objective goal="5" text="Kill all of the programs" type="DefeatAll">
+      <done><say>All programs are dead. You can ignore the bluepills.</say></done>
+    </objective>
+  </phase>
+  <finish>Contact me when you are ready for your next assignment, {player}.</finish>
+</mission>

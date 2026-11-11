@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Chateau, Merovingian story mission 11.2.1. Source: research/missions/transcripts/Merv11-2-1.md (one live
+     retail run, given by Flood: 30 screenshots, eight during phases 2 and 3 (two with the Objectives window and a
+     Computer popup showing), the rest of the log after the mission ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Merovingian, Twin, Anibal Miller, Arago, Effectuator and Malphas
+     line, Nightmare's line (Team chat only), the names, and the objective texts "Search the area" and "Talk to the
+     Effectuator" (phase 3) from the Objectives window. The log's player was Briseus; his name is {player} here.
+     Italics ("Vite, vite!", "Some", "You", "detect", "you") are dropped. Flood's last briefing breaks off in eleven
+     asterisks, and his closing line is eleven asterisks and nothing else: his connection failing, as the Operator
+     and Malphas say; both are kept as the log has them. Ours: the description (the Summary tab only said "Datalink
+     established."), the other objective texts, the sites (Arago's office and the hallway control center's apartment
+     rooms are not told apart from ordinary buildings: all Normal), the looks (the Merovingian, the Twins, Nightmare,
+     the Effectuator and Malphas as the other Merovingian files have them; Arago, "the little goblin", has
+     Nightmare's look, as the two looked alike; Anibal Miller, in a lab coat, a bluepill's) and the enemy counts: no
+     mission hostile is mentioned, so no phase has any (the Silver Dragon Watching Eye that shot at the player in
+     Furihata is one of the International district's street gangs).
+     Joins between images read as contiguous: "just waiting to be / snatched", "but they will find / themselves
+     disappointed", "and neglects to / consider", "The hallway controls are not / responding.", "freakish teeth." /
+     "Hmph. As long as" as a paragraph break, "external connections." / "This very inability" as a paragraph break,
+     and "dumped by the / Merovingian."
+     Rewards: the log shows 80,615 experience and 84,000 information. These are Zion 11.2's values (352,000
+     experience, 175,000 information; Mara showed the information, and the Zion files take the experience from The
+     Spider, 11.1.5). The log's run paid 80,615 experience and 84,000 information.
+     Gaps: the Twins' "Inconvenient, hm?" and "We were dead once, too" are said on reaching them, and their later
+     lines are their click lines (which Twin said which isn't shown; they alternate here). The Operator entry after
+     the Merovingian's talk is hidden but for its header; it is taken as the area-complete line. In phase 2 Anibal
+     Miller's line is said on reaching Arago and again when he is clicked; no area-complete line shows after Arago's
+     talk. The computers' popups ("ALERT! Access violation", "Error()") can't be shown. Phase 3's "Search the area" is
+     a Use of a computer, whose done lines are the Operator's "Uh-oh. The hallway controls are not responding" and
+     the Effectuator's two lines; the floor full of Effectuators is three of them here, the first one the goal. Lines
+     logged after a goal (the Merovingian's "I do not know how that woman", Arago's repeated "Get me hall control!",
+     Malphas's "I'm surprised that Flood's connection") are what each says when clicked afterwards. -->
+<mission id="311201" title="The Chateau" description="Hear the Merovingian out on the loose interface program, then follow the failures in the white hallways back to the chateau." plot="1"
+         order="11201" org="3" contact="Flood" exp="352000" info="175000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">I do not know how that woman managed to resurrect herself as a polygonal monster, but considering the rest of her history, I do not think we need be overawed by her appearance; she may be clever, but she possesses an interesting flaw: she imagines herself to be acting on a universal scale, and neglects to consider the individual results of her actions.</say>
+  </npc>
+  <npc id="2" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">You can't keep a good program down, we always say.</say>
+  </npc>
+  <npc id="3" handle="Twin" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
+    <say after="1">That's the spirit.</say>
+  </npc>
+  <npc id="4" handle="Arago" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say after="2">Get me hall control! Why aren't they responding! Damn it!</say>
+  </npc>
+  <npc id="5" handle="Nightmare" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+    <say>Something able to access all those doors could get just about anywhere...</say>
+  </npc>
+  <npc id="6" handle="Anibal Miller" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
+    <say>I've found it's best not to comment on their...er...stature.</say>
+  </npc>
+  <npc id="7" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="8" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="9" handle="The Effectuator" type="FRIENDLY" at="3" rsi="9b0000b4" weapon="2568" />
+  <npc id="10" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="2564">
+    <say after="5">I'm surprised that Flood's connection to you lasted as long as it did; I tried to contact him before I left the construct, but he did not respond; he must have been entirely unaware of what was happening around him.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>That obnoxious Wright woman's arrival forced us to jettison the biological interface program into the simulation at large. I imagine it's hanging around helplessly out there somewhere, just waiting to be snatched by the first cherry-picker, be that Wright or--Turing forbid--some gang of Zionites. We won't even think about those Pluribus Neo people.&#10;&#10;In any case, the Merovingian has something to say to you about it, so keep your ears open, and your mouth shut.</briefing>
+    <enter><say>So I guess they're pretty sure that glowing wireframed woman who showed up was Danielle Wright, huh? Funny, wasn't she supposed to have been killed by the Machines for making an improved red pill program after the Truce ended?</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">Many people would like to get that program, {player}, but they will find themselves disappointed. I allowed it to be released temporarily, but only as a means of foiling my enemy; I mean to get it back, and woe betide the fool who stands in my way.&#10;&#10;Now, let us see what we can do, hm? Vite, vite!</say></talk>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Inconvenient, hm?</say>
+      <say npc="3">We were dead once, too, and now look at us.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Some of our people haven't been sleeping on the job, operative, and are already looking into finding that little lost program. You need to go talk to Arago, one of those who's been monitoring the situation, and get yourself caught up with the rest of us.</briefing>
+    <enter><say>That's the spot.</say></enter>
+    <objective goal="2" text="Talk to Arago" type="Talk" npc="4">
+      <talk>
+        <say npc="4">We can't actually detect the program itself, but we can look for signs of--</say>
+        <say npc="4">Get me hall control! Why aren't they responding! Damn it!&#10;&#10;Operative! Yes, you! Get over there!</say>
+      </talk>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="6">I've found it's best not to comment on their...er...stature.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You heard the little goblin, operative: to the hallway control center with you! Do I have to do all the thinking around here?&#10;&#10;Hm... No point in asking that, probably...</briefing>
+    <enter><say>The white hallways provide handy backdoors for accessing our various constructs and hideaways. You need a specially encoded key to get through any of the doorways--at least, that's how it's supposed to work.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Search the area" type="Use" object="1">
+      <done>
+        <say>Uh-oh. The hallway controls are not responding. This isn't--&#10;&#10;Oh, nuts. As if things weren't complicated enough, look who decides to show up.</say>
+        <say npc="7">Uh! Hm... Er... What'd you do?</say>
+        <say npc="7">I didn't do it.</say>
+      </done>
+    </objective>
+    <objective goal="4" text="Talk to the Effectuator" type="Talk" npc="7" after="3">
+      <talk><say npc="7">Wooh... I feel a...nap coming on...</say></talk>
+      <done><say>What'd you do?!</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The hallway control is a shambles, eh? No, I don't blame you; you hardly have the technical know-how to screw something that secure up. The Effectuator, on the other hand...&#10;&#10;Mm, there's Malphas pinging in. Must have just got out of the chateau here by the skin of his freakish teeth.&#10;&#10;Hmph. As long as our supply of tonics holds out, I won't be too***********</briefing>
+    <enter><say>Dunno what happened, but I can't get ahold of Flood now. Mixed blessing, I suppose... Maybe Malphas will have some ideas about what's going on with the hallways and chateau.</say></enter>
+    <objective goal="5" text="Talk to Malphas" type="Talk" npc="10">
+      <talk><say npc="10">There has been a series of system failures throughout the chateau. Despite our best efforts, we were not able to detect the source, but it must have been internal, because failures continued in new systems even after we shut down nearly all external connections.&#10;&#10;This very inability to detect the source leads me to posit that the source is, in fact, the interface program itself, which Silver's experiments showed could bypass security measures with ease. How it got there I...can't imagine, but possibly it found a connection back to our networks from somewhere close to where it was dumped by the Merovingian.</say></talk>
+      <done><say>That explains why we lost contact with Flood. How'd he not notice all those system failures? He was there the whole time.</say></done>
+    </objective>
+  </phase>
+  <finish>***********</finish>
+</mission>

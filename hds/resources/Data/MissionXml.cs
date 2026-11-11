@@ -32,6 +32,10 @@ namespace hds
                 finishLine = Plain(node.SelectSingleNode("finish")?.InnerText),
                 org = (byte)Int(node, "org", 0),
                 contact = Attr(node, "contact") ?? "Tyndall",
+                entryItem = (UInt32)Int(node, "entryItem", 0),
+                minLevel = (byte)Int(node, "minLevel", 0),
+                minReputation = (short)Int(node, "minReputation", 0),
+                completionItem = (UInt32)Int(node, "completionItem", 0),
                 neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 
@@ -65,7 +69,11 @@ namespace hds
                 level = (ushort)Int(node, "level", 1),
                 maxHealth = (ushort)Int(node, "maxHP", 500),
                 weapon = (UInt32)Int(node, "weapon", 0),
-                at = Int(node, "at", 0)
+                at = Int(node, "at", 0),
+                arrival = Arrival(node, "spawnAfter", "spawnNear", "spawnRadius", "spawnDelay", "spawnAt"),
+                wave = Int(node, "wave", 0),
+                hostileAfter = Int(node, "hostileAfter", -1),
+                friendlyAfter = Int(node, "friendlyAfter", -1)
             };
             foreach (XmlNode line in Elements(node, "say"))
             {
@@ -82,6 +90,9 @@ namespace hds
                 site = Attr(node, "site"),
                 enemy = Attr(node, "enemy"),
                 enemies = Int(node, "enemies", 0),
+                enemiesAfter = Int(node, "enemiesAfter", -1),
+                enemiesAt = Place(Attr(node, "enemiesAt")),
+                leave = Attr(node, "leave") == null ? (bool?)null : Int(node, "leave", 1) != 0,
                 neighbourhoods = Names(Attr(node, "neighbourhoods"))
             };
 
@@ -96,6 +107,24 @@ namespace hds
             foreach (XmlNode child in Elements(node, "object"))
             {
                 phase.objects.Add(new MissionObjectDef { id = (ushort)Int(child, "id", 0), kind = Attr(child, "kind") ?? "Furniture" });
+            }
+
+            foreach (XmlNode child in Elements(node, "wave"))
+            {
+                // Numbered 1, 2, ... in order unless they say; wave 0 is the phase's own enemies
+                MissionWave wave = new MissionWave
+                {
+                    id = Int(child, "id", phase.waves.Count + 1),
+                    enemy = Attr(child, "enemy") ?? phase.enemy,
+                    count = Int(child, "count", 1),
+                    arrival = Arrival(child, "after", "near", "radius", "delay", "spawnAt")
+                };
+                foreach (XmlNode line in Elements(child, "say"))
+                {
+                    wave.lines.Add(ParseLine(line, MissionSpeaker.Operator, 0));
+                }
+
+                phase.waves.Add(wave);
             }
             XmlNode briefing = node.SelectSingleNode("briefing");
             if (briefing != null)
@@ -163,7 +192,10 @@ namespace hds
                 afterGoal = Int(node, "after", -1),
                 objectId = (ushort)Int(node, "object", 0),
                 escortTo = Attr(node, "to") ?? "exit",
-                optional = Int(node, "optional", 0) != 0
+                optional = Int(node, "optional", 0) != 0,
+                waves = Numbers(Attr(node, "wave")),
+                seconds = Dbl(node, "seconds"),
+                limit = Dbl(node, "limit")
             };
             objective.npcId = objective.npcIds.Count > 0 ? objective.npcIds[0] : (ushort)0;
             foreach (XmlNode group in Elements(node, "talk"))
@@ -230,6 +262,52 @@ namespace hds
         private static List<string> Names(string text)
         {
             return (text ?? "").Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
+        }
+
+        /// <summary>
+        /// When an NPC or wave turns up: after="3" (a goal) or after="enter" (reaching the area), near="object:1" (with
+        /// radius), delay="30" (seconds), and where: spawnAt="player" or "object:1".
+        /// </summary>
+        private static MissionArrival Arrival(XmlNode node, string after, string near, string radius, string delay, string at)
+        {
+            string afterText = Attr(node, after);
+            MissionArrival arrival = new MissionArrival
+            {
+                onEnter = string.Equals(afterText, "enter", StringComparison.OrdinalIgnoreCase),
+                afterGoal = Int(node, after, -1),
+                near = Place(Attr(node, near)),
+                radius = Attr(node, radius) == null ? MissionArrival.DefaultRadius : Dbl(node, radius),
+                delay = Dbl(node, delay),
+                at = Place(Attr(node, at))
+            };
+            return arrival;
+        }
+
+        /// <summary>"player", "object:1", "npc:2" or "x,y,z", trimmed and in lower case where a word; null if not given.</summary>
+        private static string Place(string text)
+        {
+            text = text?.Trim();
+            if (string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+
+            return char.IsLetter(text[0]) ? text.ToLowerInvariant() : text;
+        }
+
+        /// <summary>"0" or "1,2", where 0 counts.</summary>
+        private static List<int> Numbers(string text)
+        {
+            List<int> numbers = new List<int>();
+            foreach (string part in (text ?? "").Split(','))
+            {
+                if (int.TryParse(part.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int number))
+                {
+                    numbers.Add(number);
+                }
+            }
+
+            return numbers;
         }
 
         /// <summary>"2" or "2,3".</summary>

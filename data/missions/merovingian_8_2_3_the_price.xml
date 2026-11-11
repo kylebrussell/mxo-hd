@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Price, Merovingian story mission 8.2.3. Source: research/missions/transcripts/Merv8-2-3.md (the archive replay
+     of [Merovingian Archive 8.2.3], given by [Archived]Flood; 33 screenshots of the log after it ended and two of
+     computer popups). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Flood, Operator, Veil, Merovingian, Persephone
+     and Binomi line, and those names. Four entries span two screenshots with no overlapping line and are read as
+     contiguous with a paragraph break, so a line may be missing at each join: Flood's first briefing ("...not about
+     to allow it." / "He has directions for you"), the Merovingian's "...the Cypherites." / "Secondly,", Flood's
+     "...Machine countermeasures." / "But if she really is" and the Operator's "...let EPN steal that." / "Um...".
+     Veil's leading "..." and Flood's "If you'd like leave" are as the log has them. Italics dropped: Flood's "our",
+     the Merovingian's whole "Of course, mademoiselle..." line, "n'est-ce pas?" and "mon ami", Persephone's two
+     "your"s. Ours: the description (the Summary tab only said "Datalink established."), every objective text (the
+     Objectives tab was never opened), the sites (Normal, except the "Wright Research office": Office; no
+     neighbourhood was named), the looks (the Merovingian's, Persephone's and Veil's are those of earlier missions;
+     Binomi's is a Dire Lupine's), the enemy kinds and counts, and the EPN boss's handle (not shown). No item was
+     shown: the code copy is carried by Binomi, so there are no item stand-ins.
+     Rewards: the log shows none. These are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000
+     information, as 1313 paid in 9.2): no Zion log shows chapter 8's.
+     Gaps: Veil's and the Operator's arrival lines are said on getting near Veil; Veil's "flat-out bushed" line is said
+     when she is talked to, and the Merovingian's "Of course, mademoiselle..." (28 s after the goals completed) when he
+     is talked to again. The two computers' popups (a string of numbers, then a comlog: "Code captured from
+     Merovingian source...") aren't shown; the Operator's lines on them are. Wright's security and the Machine programs
+     fought each other until the player reached the second computer; a phase has one enemy, so Machines stand for both
+     and killing them isn't required. Binomi "just appear[s]" when the Merovingian hands him over: he arrives once the
+     Merovingian has been talked to, and his goals open then. In phase 4 the player turned on Binomi after reaching the
+     EPN boss ("Rrrah! Have you lost your mind?!") and the goals completed 80 s later. An NPC changes side only on a
+     goal of its own phase, and phase 4 is another building, so the Binomi of phase 3 isn't led out: that phase ends
+     once he has been talked to, without asking the player to leave (leave="0"; retail's line there was "Goals for this
+     mission phase are complete!"), and phase 4's Binomi appears beside the player on reaching its floor. He is led to
+     the boss; talking to him then plays his "Rrrah!" and turns him hostile (hostileAfter), and killing him completes
+     the goals. The EPN boss waits to be attacked and has no goal; the EPN redpills are Zion. -->
+<mission id="308203" title="The Price" description="Raid Wright Research for something to use against E Pluribus Neo, and get the Merovingian's doctored code into EPN's hands." plot="1"
+         order="8203" org="3" contact="Flood" exp="363000" info="63000">
+  <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
+    <say after="1">Of course, mademoiselle. Another time... I look forward to a more extended...interview.</say>
+  </npc>
+  <npc id="2" handle="Veil" type="FRIENDLY" at="1" rsi="58010058" weapon="0">
+    <say>Oh, dear, I'm just flat-out bushed! Oh!</say>
+  </npc>
+  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="3" rsi="5c050004" weapon="0">
+    <say>Get him out of here.</say>
+  </npc>
+  <npc id="5" handle="Binomi" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="1" />
+  <npc id="6" handle="E Pluribus Neo Leader" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />
+  <npc id="7" handle="Binomi" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" spawnAfter="enter" spawnAt="player" hostileAfter="2" />
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Those bratty E Pluribus Neos are scheming to sabotage Machine power lines using our map. The injustice is appalling, and the Merovingian, of course, is not about to allow it.
+
+He has directions for you, operative, if only you'd set your feet in motion.</briefing>
+    <enter><say>Hey... The Merv is in there, but he's with some redpills, and they aren't ours.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="1">
+      <talk><say npc="1">I am inclined to think this charming creature disingenuous, operative, but her attitude alone has told me much. The Machines very likely do not know of the intended sabotage by EPN, for they would almost certainly have informed their allies, and EPN's mortal enemies, the Cypherites.&#10;&#10;Secondly, her lazy excuse has reminded me of the obsession the Cypherites, and their enemies, have with pills. There is a woman, Wright, who we know is working on pills for Zion. It is possible we can take advantage of this to revenge ourselves upon EPN for their theft. You will pay her company a visit, yes?</say></talk>
+      <done><say>I was wondering when we were gonna get mixed up in that Danielle Wright business.&#10;&#10;Haven't you heard? Well, I'm sure Flood can give us the narcissist's version.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">...love to help, sugar, only I really don't know anything about it, and besides, we've got a pill problem on our hands just now.&#10;&#10;But I like how you think, dearie. We must do this again some time when I can...relax properly.</say>
+      <say>Veil?!&#10;&#10;What's the Merv doing hanging out with Cypherites?</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Wright is an annoying woman who used to work for Zion, operative, until she apparently decided that she wants to take over the Matrix from the Machines, and that the best way to go about that was to move into the city, start her own company, and get rich pawning watered-down modern technology off onto the public. She hasn't invented anything for a while quite as troublesome as the emergency jack-out system she invented when she lived in Zion, but it looks like she's making a real try now, fixing Zion's red pills so that they can continue removing people from pods without worrying about Machine countermeasures.
+
+But if she really is working on a new red pill, it's something E Pluribus Neo will go positively gah-gah over, which means that it's something we can use to manipulate them. So get in there and steal something useful from her.</briefing>
+    <enter><say>That's a Wright Research office. She's got her own private security force, so be careful, because I'm definitely reading some people... Well, and some programs.&#10;&#10;That's funny, our information said her security force was human.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Computer" />
+    <objective goal="1" text="Hack the computer" type="Use" object="1">
+      <done>
+        <say>You totally hacked that thing.</say>
+        <say>I don't know what that is. Try finding something that's actually useful.</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Hack the other computer" type="Use" object="2" after="1">
+      <done>
+        <say>Well, that's nice! Machines and Wright's security team wiped each other out just in time for you to waltz up to that computer. I guess the Machines are trying to hop on the pill wagon too.</say>
+        <say>And the Machines even hacked it for you! How do you like--&#10;&#10;Wait a second. Does that say... Wright stole something from us? But we were supposed to steal something from her!</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0" leave="0">
+    <briefing>Apparently everyone thinks they can blithely steal from us these days, operative. You can imagine that the Merovingian is not pleased at this particular moment...but why settle for imagining? You're assigned to go collect something from him.
+
+If you'd like leave with the same number of attached organs with which you're entering, I recommend significant amounts of bowing and scraping.</briefing>
+    <enter><say>Uh-oh... Persephone's with him. She doesn't always do wonders for his temper.</say></enter>
+    <objective goal="1" text="Talk to the Merovingian" type="Talk" npc="3">
+      <talk><say npc="3">I have found what that Wright woman used the Zionites to steal: code my wife had kept from her old life exciting human fools in the Machine pods!&#10;&#10;I know why she did it... The code contained dynamic links to Machine pod control routines; Wright wants them for the pills, n'est-ce pas?&#10;&#10;But I can use this... E Pluribus Neo will want the data as well. So, I will give them a copy...carefully modified... Take this lupine here.</say></talk>
+      <done><say>Huh? What's that mangy lupine gonna do for us?&#10;&#10;Sure is creepy how they just appear like that...</say></done>
+    </objective>
+    <objective goal="2" text="Talk to Binomi" type="Talk" npc="5" after="1">
+      <done>
+        <say npc="3">Wright will pay for this, mark my words. But first thieves first, eh, mon ami?</say>
+        <say npc="5">Hrr... I don't like this...</say>
+      </done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">Hm! You used to tell me that you would protect me, keep me safe...and now you shout at me when your enemies steal my possessions from under the noses of your guards?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="3">
+    <briefing>That dire lupine is carrying the code copy, operative. One of the dynamic links has been modified; it now points to a program of our own, that will cause a unique transmission pulse to fire when the code is scanned in a hovercraft.
+
+You don't see why this is important yet, do you? Well, no matter. Just take the lupine where you're told. There will be some E Pluribus Neo people there. I think we can rely on nature to take its course at that point.</briefing>
+    <enter><say>I've got redpill signals in there. If Flood's right, that's EPN. You're supposed to get the lupine through to their boss.</say></enter>
+    <objective goal="1" text="Lead Binomi to the E Pluribus Neo leader" type="Escort" npc="7" to="npc:6">
+      <done>
+        <say>There's the boss!</say>
+        <say contact="1">Now get that mutt killed off, operative. I don't care how it happens, as long as EPN sniffs around and picks up that code he's carrying.&#10;&#10;Yes, we want EPN to capture that code. Understood?</say>
+      </done>
+    </objective>
+    <objective goal="2" text="Talk to Binomi" type="Talk" npc="7" after="1">
+      <talk><say npc="7">Rrrah! Have you lost your mind?!</say></talk>
+    </objective>
+    <objective goal="3" text="Kill Binomi" type="Defeat" npc="7" after="2">
+      <done><say>I'm still not sure I get it. So... EPN stole a map from us. Then Wright and Zion stole an old code of ours. Then we made a copy of the old code, and let EPN steal that.&#10;&#10;Um... We know what two wrongs make, but what about three?</say></done>
+    </objective>
+  </phase>
+  <finish>Really, operative, just be silent, and let me do the explaining. It's better for everyone.
+
+E Pluribus Neo has now stolen our carefully modified code. They will see that it has something to do with functions necessary for the new pills, and will think that they must rush this data off straightaway.
+
+The zealots upload our code to their hovercraft so that their operator can scan it. Once scanned, the modified dynamic link is triggered, the transmission pulse fires, the General receives it, and triangulates the position with his Sentinels. They track the EPN ship, report where it goes in this foolish attempt of theirs to sabotage the Machine power lines, and we send that information to the Machines in a nice tidy report. The curs slaughter each other, the theft of our data is avenged, and the General can sample a power reading during the confusion. Have you got all that?</finish>
+</mission>

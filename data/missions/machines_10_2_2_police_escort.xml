@@ -48,7 +48,7 @@
     <say display="5">Lunch break.</say>
   </npc>
   <npc id="9" handle="Jeneva Basset" type="FRIENDLY" at="3" rsi="5a000040" weapon="0">
-    <say after="1">Shouldn't you do something about the...you know...body?</say>
+    <say after="7">Shouldn't you do something about the...you know...body?</say>
   </npc>
   <npc id="10" handle="Captain Park" type="FRIENDLY" at="4" rsi="38000024" weapon="0">
     <say display="5">*Copy, Control. Keep me posted.*</say>
@@ -92,10 +92,10 @@ Yeah, I'm sure I spotted this guy. Tall, bald, dark skin, looking like a terrori
     <enter><say>Man, life on the beat sucks.
 
 That should be their HQ. You can drop them off there.</say></enter>
-    <objective goal="1" text="Escort Officer Gilbert to the end of their beat" type="Escort" npc="2" to="npc:7">
+    <objective goal="5" text="Escort Officer Gilbert to the end of their beat" type="Escort" npc="2" to="npc:7">
       <done><say>Okay... Can we call Gray and get on with this, please?</say></done>
     </objective>
-    <objective goal="2" text="Don't let Officer Gilbert die" type="Protect" npc="2" />
+    <objective goal="6" text="Don't let Officer Gilbert die" type="Protect" npc="2" />
     <near npc="7" radius="1000">
       <say npc="2">Hm... It was right around here somewhere that I saw him... I think... Or maybe down there...</say>
     </near>
@@ -104,12 +104,12 @@ That should be their HQ. You can drop them off there.</say></enter>
     <briefing>Yes, we have another report matching the same description. Local officials have yet to reach the scene.</briefing>
     <enter><say>Right, I've got one signal in there...probably a civilian. Some kind of computer system, too.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to Jeneva Basset" type="Talk" npc="9">
+    <objective goal="7" text="Talk to Jeneva Basset" type="Talk" npc="9">
       <talk><say npc="9">God, I don't know! I found them like that. Of course I called you right away! The operator said to leave the apartment, but what if *he's* waiting outside?
 
 Did you see anyone? There was a strange man going out of the building as I came in. I've never seen him here before--he certainly doesn't live here! Oh, but I told all that to the operator.</say></talk>
     </objective>
-    <objective goal="2" text="Search the computer" type="Search" object="1" item="0">
+    <objective goal="8" text="Search the computer" type="Search" object="1" item="0">
       <done><say>I scanned some prints off that keyboard. I'll send them to Gray.
 
 Hrm... Activity log's been wiped. Great.</say></done>
@@ -119,11 +119,11 @@ Hrm... Activity log's been wiped. Great.</say></done>
     <briefing>The fingerprints you found match partial prints retrieved by police at the previous location. We've correlated them with another incident reported recently. The reporting officials have...assured me that the data record at this site has been left undisturbed.</briefing>
     <enter><say>That's the spot. The officials have been notified to let you through.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to Lon Jefferies" type="Talk" npc="11">
+    <objective goal="9" text="Talk to Lon Jefferies" type="Talk" npc="11">
       <talk><say npc="11">Yes, this is the system that was tampered with. It looks like there was an attempt to delete activity records, but they were restored automatically from our backup server.</say></talk>
     </objective>
-    <objective goal="2" text="Get the log file from the computer" type="Search" object="1" item="6800" after="1" />
-    <objective goal="3" text="Upload the log file at a hardline" type="Upload" item="6800" after="2" />
+    <objective goal="10" text="Get the log file from the computer" type="Search" object="1" item="6800" after="9" />
+    <objective goal="11" text="Upload the log file at a hardline" type="Upload" item="6800" after="10" />
     <near npc="11" radius="1000">
       <say>Finally, solid data! Get the information and upload it at the nearest hardline.</say>
     </near>

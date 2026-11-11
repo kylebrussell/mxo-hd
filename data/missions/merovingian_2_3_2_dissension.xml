@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dissension, Merovingian story mission 2.3.2. Source: research/missions/transcripts/Merv2-3-2.md (the archive
+     replay of [Merovingian Archive 2.3.2], given by [Archived]Flood). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, every Operator, Flood and NPC line, and the names
+     Desayd and Phillips. The player (Vesuveus) is {player}. Ours: the description (the Summary tab was never opened),
+     every objective text (the Objectives tab was never opened), the looks, the enemy counts and the sites (none was
+     described: Normal). Phillips speaks for the commandos, military programs, and has an Exile look like the
+     commandos elsewhere. Item stand-in: Phillips' document for the Merovingian is Document_Treaty (6859). Rewards:
+     the log shows 79,416,249 experience and 1,039,500 information (a level-50 player's). These are Zion 2.3's values
+     (308,000 experience, 98,000 information, as Free Your Mind paid).
+     Gaps: in phase 1 the site held neither Desayd nor the package, only hostile Exiles, and its goal was done on
+     arrival; here it is a search of a filing cabinet, desk or dresser that turns up nothing, and the Exiles attack
+     on sight. "Make your exit." may be the end of the Operator's line or a line of its own; it is said after it. The
+     Operator's "Those are Exiles attacking you!" came as the goals completed and is said then. In phase 2 Desayd
+     turned on the player and vanished mid-fight; he can't vanish here, so he is killed (Kill Desayd) and the
+     Operator's "he just disappeared" line is said when he dies. The Operator's "flash of Desayd's RSI signal" is said
+     on coming within 15 m of him. Flood's two briefing entries of phase 3 are one briefing, and his third line there
+     is the arrival line. Phillips' first hidden line was probably his "See to it" line, which he says when talked to
+     again. Goals are numbered across the mission (phase 3: 3 to 5) so that Phillips' repeat line, waiting for goal
+     4, doesn't count phase 2's goals. -->
+<mission id="302302" title="Dissension" description="Find Desayd and the missing package, then meet the commandos' envoy." plot="1"
+         order="2302" org="3" contact="Flood" exp="308000" info="98000">
+  <npc id="1" handle="Desayd" type="HOSTILE" at="2" rsi="c9020058" weapon="2568" />
+  <npc id="2" handle="Phillips" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568">
+    <say after="4">See to it that the Merovingian gets that document.
+
+It is our hope that we can aid one another.</say>
+  </npc>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>{player}, we have a problem. While I hate coming out and saying this, you have the greatest chance to rectify our little dilemma.
+
+It seems the package you brought to Desayd has never made it to the Merovingian. I believe that Desayd was intercepted by a group who is possibly upset about the death of Morpheus. The Frenchman disagrees, but as I am the one handing out assignments, we will apply my scenario: find Desayd and secure the package.</briefing>
+    <enter><say>Let's hope Desayd is in good shape. You could use his help if things get out of hand.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="1" text="Look for Desayd and the package" type="Search" object="1" item="0">
+      <done>
+        <say>There's no package and no Desayd on site, but some hostile Exiles. This is not cool. I can't wait to hear what Flood has to say about this.</say>
+        <say>Make your exit.</say>
+      </done>
+    </objective>
+    <complete><say>What's going on?! Those are Exiles attacking you!</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="4">
+    <briefing>Words cannot describe the seething rage I have at this moment. Renegades are not tolerated!
+
+Desayd must be found and the package must be recovered -- no matter the cost. I have given you updated coordinates. Go there. Now.</briefing>
+    <enter><say>I'm not getting a reading or seeing anything in the code stream for that place. For all I know, you could be in the wrong area. Then again, the coordinates check out. Those are the same numbers Flood sent you.
+
+Prepare for the worst. I'll bark into the headset if anything seems off.</say></enter>
+    <objective goal="1" text="Kill the Exiles" type="DefeatAll">
+      <done><say>Not a single one of the Exiles has the package! Could anything else possibly go wrong?</say></done>
+    </objective>
+    <objective goal="2" text="Kill Desayd" type="Defeat" npc="1">
+      <done><say>What the hell just happened?! I've never seen anything like that before! One second, you were fighting Desayd, and in the next he just disappeared!</say></done>
+    </objective>
+    <near npc="1" radius="1500">
+      <say>I just saw a flash of Desayd's RSI signal in the code stream! He can't be far. Move quickly!</say>
+    </near>
+    <near npc="1" radius="600">
+      <say>What the--?! Desayd is attacking! Defend yourself!</say>
+      <say npc="1">The failing Frenchman can't fend for you forever.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>We have another thorn in our midst. Someone powerful enough to turn Desayd is quite the foe.
+
+Whoever has the package will most certainly be punished for their foolhardy actions. For the time being, I'm putting that part of your task on hold as another matter has reared its head.
+
+Go to this address and greet a man by the name of Phillips. Phillips represents a group of commandos that are trying to make their presence known in the Matrix.</briefing>
+    <enter><say contact="1">The commandos have yet to reveal a central representative, or figurehead -- so to speak, so our desire to let them meet the Merovingian himself is null. I do hope you don't mind playing canary and descending into the well.</say></enter>
+    <objective goal="3" text="Talk to Phillips" type="Talk" npc="2">
+      <talk><say npc="2">Attention, {player}! I am from a group of military programs seeking an alliance with the Merovingian and his organization. My group needs refuge within the Matrix, and a partnership with the Merovingian would benefit both parties. Or, if the Frenchman prefers, we can exercise non-interference. That is up to him.</say></talk>
+      <done><say>Grab that doc and we'll do the hardline thing.</say></done>
+    </objective>
+    <objective goal="4" text="Get the document from Phillips" type="Get" npc="2" item="6859" after="3">
+      <talk><say npc="2">I have a document prepared for the Merovingian. It details the benefits of what our alliance could bring. Please, present this to him.</say></talk>
+    </objective>
+    <objective goal="5" text="Upload the document at a hardline" type="Upload" item="6859" after="4">
+      <done><say>Everything checks out. I'll forward the doc onto Flood.</say></done>
+    </objective>
+  </phase>
+  <finish>Very interesting... The Merovingian will very much like to hear this. You have done well. Yes, you heard me right, that was a compliment. Don't get used to it.
+
+If the commandos' motives are true, we may have a new ally to silence the recent uprising of rebelling Exiles.</finish>
+</mission>

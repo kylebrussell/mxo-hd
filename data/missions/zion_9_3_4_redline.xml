@@ -17,11 +17,11 @@
      sighting on to Carlyne and the EJP joke are only words. -->
 <mission id="109304" title="Redline" description="Hear Carlyne's request, and confirm Halborn's location for him." plot="1"
          order="9304" org="1" contact="Tyndall" exp="374000" info="63000">
-  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="c6020058" weapon="2568">
+  <npc id="1" handle="Carlyne" type="FRIENDLY" at="1" rsi="d8040058" weapon="2568">
     <say>Yes, I will contact your broadcaster with a code path they can use to reach me. Thank you very much for your consideration.</say>
   </npc>
   <npc id="2" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568" />
-  <npc id="3" handle="Carlyne" type="FRIENDLY" at="4" rsi="c6020058" weapon="2568" />
+  <npc id="3" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568" />
   <npc id="4" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>There has been fighting across Richland as Halborn continues his hunt of the Oracle, with Carlyne in pursuit. The Machines do appear to be supporting Halborn, or at least opposing Carlyne, and leaving Halborn free to operate. While we've heard reports of Machine and Merovingian operatives encountering the Oracle briefly, it doesn't appear that Halborn has located her.&#10;&#10;Carlyne has contacted us again, no doubt in order to communicate something about Halborn. Be careful, operative. It is difficult to track all of the factors involved in this conflict, and it's still possible that Carlyne may attempt to mislead us somehow.</briefing>

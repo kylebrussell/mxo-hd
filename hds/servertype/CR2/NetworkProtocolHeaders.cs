@@ -14,7 +14,9 @@ namespace hds
         CLIENT_RANGE_COMBAT = 0x41,
         CLIENT_FREE_FIRE_CHOICE = 0x3f, // 3f <inventory slot u16> <kind u32>: hotbar Free Fire weapon (kind 0x10 = item)
         CLIENT_LEAVE_COMBAT = 0x44,
-        CLIENT_DUEL_REQUEST = 0x50,
+        CLIENT_DUEL_REQUEST = 0x50,            // 50 <target handle u32>: /duel on the target; 0 = /duel stop
+        CLIENT_DUEL_RESPONSE = 0x52,           // 52 <challenger handle u32> <accepts u8> <reason u8>
+        CLIENT_PVP_FLAG = 0x19e,               // 81 9e (no body): /pvp
         CLIENT_JUMP_START = 0xc2,
         CLIENT_JUMP_CANCEL = 0xc4,
         CLIENT_OBJECTINTERACTION_DYNAMIC = 0xc7,
@@ -55,12 +57,14 @@ namespace hds
         CLIENT_LOOT_ACCEPT = 0x11f,
 
         // Inventory
+        CLIENT_USE_MISSION_TICKET = 0x59, // 59 <slot u8>: native GoldenTicket item use
         CLIENT_ITEM_MOUNT_RSI = 0x63,
         CLIENT_ITEM_UNMOUNT_RSI = 0x64,
         CLIENT_ITEM_MOVE_SLOT = 0x65,
         CLIENT_ITEM_RECYCLE = 0x5D,
         CLIENT_VENDOR_BUY = 0x10e,
         CLIENT_VENDOR_SELL = 0x111,
+        CLIENT_COLLECTOR_EXCHANGE = 0x116,
         CLIENT_TRADE_REQUEST = 0x182,
         CLIENT_TRADE_ACTION = 0x185,
         
@@ -159,7 +163,7 @@ namespace hds
         SERVER_MISSION_INFO_RESPONSE = 0x8099,
         SERVER_MISSION_LOCATION_POSITION = 0x809E,
         SERVER_LOOT_WINDOW_RESPONSE = 0x8119,
-        SERVER_LOOT_ACCEPTED_RESPONSE = 0x811a,
+        SERVER_LOOT_ACCEPTED_RESPONSE = 0x8120,
         SERVER_TEAM_CREATE        = 0x808d,
         SERVER_TEAM_INVITE_MEMBER = 0x808f,
 

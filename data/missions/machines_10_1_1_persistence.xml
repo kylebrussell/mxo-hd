@@ -35,9 +35,9 @@
   <npc id="4" handle="Agent Norris" type="FRIENDLY" at="1" rsi="3600004e" weapon="2568">
     <say display="5">The Oracle conducted herself foolishly. Her termination is not surprising.</say>
   </npc>
-  <npc id="5" handle="Halborn" type="FRIENDLY" at="3" rsi="ec020058" weapon="2564" />
-  <npc id="6" handle="Halborn" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
-    <say after="1">What are you always snooping around for? Shouldn't you be watching the crosswalk or something?</say>
+  <npc id="5" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2564" />
+  <npc id="6" handle="Halborn" type="FRIENDLY" at="4" rsi="8f080058" weapon="2564">
+    <say after="6">What are you always snooping around for? Shouldn't you be watching the crosswalk or something?</say>
   </npc>
   <npc id="7" handle="Agent Pace" type="FRIENDLY" at="4" rsi="6e060040" weapon="2568" />
   <phase site="Normal" enemy="Machines" enemies="0">
@@ -64,7 +64,7 @@ As soon as you can locate him, we will arrange a formal meeting to make this req
 
 We have been tracking various override activity signals. You are being sent to examine the most promising of these.</briefing>
     <enter><say>Gray was on the money about signals, anyway. Guess we'll find out if it's actually Halborn or not.</say></enter>
-    <objective goal="1" text="Destroy the override programs" type="DefeatAll">
+    <objective goal="3" text="Destroy the override programs" type="DefeatAll">
       <done><say>Ah. Not him.
 
 Too bad we can't just have a meeting with one of those things. At least they don't talk back.</say></done>
@@ -75,8 +75,8 @@ Too bad we can't just have a meeting with one of those things. At least they don
     <enter><say>This whole passive-aggressive approach to Halborn is kind of weird, isn't it? Why don't we just, like, get a really big gun or something--like a tank. Let's see him stand up to an M1A1, huh? Huh? We must have some of those lying around, right?
 
 Anyway... More override signals in there. Let's check 'em out.</say></enter>
-    <objective goal="1" text="Destroy the override programs" type="DefeatAll" />
-    <objective goal="2" text="Talk to Halborn" type="Talk" npc="5">
+    <objective goal="4" text="Destroy the override programs" type="DefeatAll" />
+    <objective goal="5" text="Talk to Halborn" type="Talk" npc="5">
       <talk><say npc="5">Oh? Took all this trouble to come find me for that, huh?
 
 Whatever. There's something I can fill them in on, anyway.</say></talk>
@@ -88,13 +88,13 @@ Whatever. There's something I can fill them in on, anyway.</say></talk>
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Agent Pace will be conducting this meeting, operative. You are designated to assist her.</briefing>
     <enter><say>Why are we always late to these things? It's like that dream where you forgot to get dressed before you left the house...</say></enter>
-    <objective goal="1" text="Talk to Halborn" type="Talk" npc="6">
+    <objective goal="6" text="Talk to Halborn" type="Talk" npc="6">
       <talk><say npc="6">...not leaving; not without that program. You either accept that, or I shut you down.
 
 Anyway, I've figured out what I need to do. Didn't want to have to be bothered... Huh. This is what it's come down to.</say></talk>
       <done><say>Uh-oh, sounds like he still wants to stick around. I guess that didn't go too well for Pace. At least she didn't end up like the Oracle...</say></done>
     </objective>
-    <objective goal="2" text="Talk to Agent Pace" type="Talk" npc="7" after="1">
+    <objective goal="7" text="Talk to Agent Pace" type="Talk" npc="7" after="6">
       <talk><say npc="7">... I don't know what he is planning, operative, but he will have to be watched carefully. His continued presence in the simulation will only cause further instability.</say></talk>
       <done>
         <say>I'm tellin' you: M1A1.</say>

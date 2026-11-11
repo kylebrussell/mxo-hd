@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Theophany, Merovingian story mission 10.3.5. Source: research/missions/transcripts/Merv10-3-5.md (one live run,
+     given by Flood: 28 screenshots, three during play in areas 1 to 3 with the Objectives window open, the rest of the
+     log after the mission ended). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, the NPC names, the objective texts "Search
+     the Computer" (phases 1 to 3) and "Get the Data from the Computer" (the Objectives window), and the area 1 guard,
+     Machine Exterminator and Blood Drunk lines (Team chat only). The log's player was Briseus; his name is {player}
+     here, and so is "Ms. Napilitano" (his surname) in the Exterminator's line. The italics are dropped; the
+     Operator's asterisks around "that" are retail's own. Ours: the description (the Summary tab only said "Datalink
+     established."), phase 4's objective text, the sites (the Ouroboros subnet's areas are Office, the Merovingian's
+     place Normal), the looks and the enemy counts. Area 1's hostiles were Ouroboros Security, a Machine Exterminator
+     and Tactical Security, area 2's Jade Moon Enforcers, area 3's Ouroboros Security and "a trillion override
+     programs"; Ouroboros sides with the Machines, so the generated hostiles are Machines, with the two speakers of
+     area 1 as named hostiles.
+     Item stand-ins: the program is Data (6787), as retail's objective calls it "the Data".
+     Cut joins read as contiguous: "Hmph, except / against Machines", "security report on / Mauser's", "whatever was /
+     inducing them", "Think it's too / much to hope", "I'm not / reading code attacks"; read as paragraph breaks: "step
+     at a time. / ...And you might", "Mm-hm... / Okay, got some hits", "much as usual. / Now, if you", "override programs.
+     / Yeah, I'll get right", "too tough. / Getting a funky", "take a peek? / Just for a sec?", "what it must be. / That
+     fool".
+     Rewards: the log shows 22,000 experience and 80,500 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5). The log shows
+     the run paid 22,000 experience and 80,500 information.
+     Gaps: Flood's last briefing loses at least one line between "operative." and "Hm... I suppose" (a half-cut line
+     there can't be read); the two parts are joined as paragraphs. Persephone's first line (11:59:05) is lost. The
+     chatter of area 1 and the Twins' and Persephone's lines in area 4 are said on getting near them. Blood Drunk, the
+     dying program, stands in area 2 instead of dying: his line, which is in Team chat but in no visible log shot, is
+     placed between the Operator's "Looks like someone started without us." and "Computer's still active, though.",
+     where the log has room for a hidden entry, all on getting near him; the shattered remains of the other programs
+     aren't there. The Operator's "What? Ouch." came two seconds before the router line and is part of the search's
+     done lines. The Get is a second Search of the same computer, giving the Data. The Merovingian's "And to think",
+     Persephone's "..." and the Twins' last two lines are what each says when clicked after the program is given (the
+     Merovingian and Persephone said theirs twice). -->
+<mission id="310305" title="Theophany" description="Crack the Ouroboros subnet, find the strange program hidden in it, and bring it to the Merovingian." plot="1"
+         order="10305" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Ouroboros Security" type="HOSTILE" at="1" rsi="38000024" weapon="2568" />
+  <npc id="2" handle="Machine Exterminator" type="HOSTILE" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="3" handle="Blood Drunk" type="FRIENDLY" at="2" rsi="ec020058" weapon="0" />
+  <npc id="4" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="5">And to think, it was likely there this whole time, even as its creator died rather than disclose it, and the Machines swore their most solemn oaths that it had been removed from this place. Haha! Who knew? Who indeed...</say>
+  </npc>
+  <npc id="5" handle="Persephone" type="FRIENDLY" at="4" rsi="5c050004" weapon="0">
+    <say after="5">...</say>
+  </npc>
+  <npc id="6" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="5">Ah, that's a shame.</say>
+  </npc>
+  <npc id="7" handle="Twin" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568">
+    <say after="5">Hm.</say>
+  </npc>
+  <phase site="Office" enemy="Machines" enemies="2">
+    <briefing>Apparently it was "feelings" or "love" or some such nonsense that served as the key to reading data from the network link we couldn't locate a week ago. Ridiculous way to try to secure your data... Hmph, except against Machines, I suppose, or other emotional eunuchs; goodness knows we have all kinds around here.&#10;&#10;At any rate, we now have access to that Ouroboros subnet, so get in there and get cracking, operative.</briefing>
+    <enter><say>The Ouroboros security report on Mauser's hacking spree doesn't have any record of this part of their network, so we're moving without a map. The layout is a little different from what we've seen before, but it looks like they're still following the usual Ouroboros pain-in-the-jack system of securing each terminal individually, so we'll just have to take this one step at a time.&#10;&#10;...And you might want to make this step a quiet one. I've got some hefty unidentified signals in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="1" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>It isn't taking our passwords. We're gonna have to break this thing...&#10;&#10;Okay... Nothing on that box. Let's check its friends... Mm-hm...&#10;&#10;Okay, got some hits. Let's move.</say></done>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">Halt!</say>
+      <say npc="2">{player}, you are in violation of System regulation number--</say>
+      <say npc="1">Oh, damn it!</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="3">
+    <briefing>Well, it looks like the Machines are more worried about what we're getting into than in whatever was inducing them to avoid crossing swords--hmm...make that pocket-knives--with Ouroboros up to this point. If you can manage to stay alive, you might actually do something useful for once, {player}. Just think of how proud you'll be when I don't have to chastise you quite as much as usual.&#10;&#10;Now, if you want that to happen, you'll do as I say, and get moving! It isn't as though our enemies are merely waiting meekly for you to make the next move. I've already sent some of our programs ahead, so you'd better hurry up if you want to earn any credit.</briefing>
+    <enter><say>I think Flood's getting a little trigger-happy here. I'm not picking up much in there; just a little computer activity, and...ah, that must be one of our programs.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="2" text="Search the Computer" type="Search" object="1" item="0">
+      <done>
+        <say>What? Ouch. I guess we're just lucky the computer's still up.</say>
+        <say>Huh. Just a router, but it didn't seem to have any protection. Think it's too much to hope that we'll have smooth sailing from here on in?&#10;&#10;... Yeah, I thought so.</say>
+      </done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Looks like someone started without us.</say>
+      <say npc="3">Wingless! It...was...</say>
+      <say>Computer's still active, though. You're getting close.</say>
+    </near>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="4">
+    <briefing>Operative, I don't know if you consider yourself worth more than our programs whose shattered remains you so blithely bypass, but allow me to assure you that I hold you in no such regard; you're merely more cost-effective to revive.</briefing>
+    <enter><say>And *that* was probably the nicest thing Flood's ever said to anyone.&#10;&#10;Hm... You remember what I said about "smooth sailing"? Well... That was before I knew we'd be running smack into about a trillion override programs.&#10;&#10;Yeah, I'll get right to work on refining that estimate.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Search the Computer" type="Search" object="1" item="0">
+      <done><say>Crud, that's at least a Type 7 firewall. Might as well try-- Hey!&#10;&#10;Well, what do you know. That wasn't too tough.&#10;&#10;Getting a funky data reading off that thing. What've we got?</say></done>
+    </objective>
+    <objective goal="4" text="Get the Data from the Computer" type="Search" object="1" item="6787" after="3">
+      <done><say>It's a program... Got some really strange encoding. I don't think that thing will execute under normal Matrix proto--&#10;&#10;Hey. The override signals... I'm not reading code attacks in there now. Is everything...cool?</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>The Merovingian wants to see the program we've found, operative.&#10;&#10;Hm... I suppose I'll have to rely on you to deliver it. Now, don't go dawdling at phone booths like you usually do, or...or you'll be in hot water, that's what!</briefing>
+    <enter><say>I wonder if that program's important... Maybe you could upload it real quick so I could take a peek?&#10;&#10;Just for a sec?&#10;&#10;Aw, come on. I'll let you see my Sentinel claw!</say></enter>
+    <objective goal="5" text="Give the Data to the Merovingian" type="Give" npc="4" item="6787">
+      <done><say npc="4">Incroyable... You feel it, my dear? Calling out to every pore, every molecule, every bit... When I heard how the override programs had responded, I knew what it must be.&#10;&#10;That fool--that poor fool; the need to possess it drove him mad, and he did not even know what it felt like.&#10;&#10;Hahaha! One god died for it, another was banished, but now, the interface program...is mine!</say></done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say npc="6">What is it? Let's have a look. Just one....</say>
+      <say npc="7">...or two.</say>
+      <say npc="6">Don't worry about him. I'll handle it.</say>
+      <say npc="7">He can't be trusted with it. I should know.</say>
+    </near>
+    <near npc="5" radius="1000">
+      <say npc="5">Get it away from me. Do you think me mad?</say>
+    </near>
+  </phase>
+  <finish>So that was supposed to be the so-called "biological interface program" that Halborn was so broken up about? Hum! I don't see what the excitement is about. It's just code, {player}; we progressed past your mystical chests and chalices some time ago. Why, I wouldn't be surprised if it turned out to be completely redundant, given our resources--rather like you, {player}.&#10;&#10;Oh, yes, yes; you'll be paid in due course. Now go off to your phone booth or what have you.</finish>
+</mission>

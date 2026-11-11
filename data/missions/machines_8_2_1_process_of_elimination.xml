@@ -13,11 +13,10 @@
      Gaps: Hypatia was friendly until she had spoken and then "went postal"; here she is a hostile who waits to be
      attacked (talking means reaching her, then she is killed). In retail she was only beaten and taken into custody by
      Agent Clark, who arrived afterwards and said "Subject secured.", and she answered "Hm! We'll just see about this.";
-     we have no arrivals and she is dead, so Clark stands in the site from the start, Gray's custody line and Clark's are
-     said when the phase's goals are done, and Hypatia's last line is left out. The Holographic Projection appeared at
-     the relay only after the terminal was cracked; here it stands there from the start and its talk opens after the
-     search. Its "End transmission." (seen in Team chat only) is said after its talk. The Auditor's two Exile programs
-     are bystanders. -->
+     here she is dead, Clark arrives once she is, Gray's custody line and Clark's are said when the phase's goals are
+     done, and Hypatia's last line is left out. The Holographic Projection appears at the relay once the terminal is
+     cracked, and its talk opens then. Its "End transmission." (seen in Team chat only) is said after its talk. The
+     Auditor's two Exile programs are bystanders. -->
 <mission id="208201" title="Process of Elimination" description="Cripple the Merovingian's profit-making ventures and cut him off from his allies." plot="1"
          order="8201" org="2" contact="Agent Gray" exp="373830" info="63000">
   <npc id="1" handle="Adan Beeman" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568">
@@ -26,11 +25,11 @@
   <npc id="2" handle="Rueben Ellis" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
     <say display="5">Our only goal is to ensure that faulty code is detected and fixed before it is given widespread distribution throughout the simulation, leading to further faults and destabilization. We have no political affiliation.</say>
   </npc>
-  <npc id="3" handle="The Auditor" type="FRIENDLY" at="2" rsi="9c0000b4" weapon="2568">
+  <npc id="3" handle="The Auditor" type="FRIENDLY" at="2" rsi="240d0098" weapon="2568">
     <say>And what shall I tell the Merovingian if he inquires as to the reason behind my cessation of service?</say>
   </npc>
-  <npc id="4" handle="Hypatia" type="HOSTILE" attacksOnSight="0" at="3" rsi="a8060090" weapon="2568" />
-  <npc id="5" handle="Agent Clark" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568">
+  <npc id="4" handle="Hypatia" type="HOSTILE" attacksOnSight="0" at="3" rsi="4b0a0058" weapon="2568" />
+  <npc id="5" handle="Agent Clark" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" spawnAfter="2">
     <say after="2">Subject secured.</say>
   </npc>
   <npc id="6" handle="Elite Guard" type="HOSTILE" at="4" rsi="9c0000b4" weapon="2568">
@@ -39,7 +38,7 @@
   <npc id="7" handle="Merovingian Martial Arts Initiate" type="HOSTILE" at="4" rsi="c6020058" weapon="2568">
     <say>Dodge this!</say>
   </npc>
-  <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" />
+  <npc id="8" handle="Holographic Projection" type="FRIENDLY" at="4" rsi="8f080058" weapon="0" spawnAfter="2" />
   <phase site="Normal" enemy="Merovingian" enemies="4">
     <briefing>{player}, we have been aware for some time now that the Merovingian has been directing the General's Sentinels who managed to escape the Matrix.
 

@@ -18,7 +18,7 @@
 <mission id="203302" title="Pound the Pavement" description="Trace the jamming device found at the scene of the theft." plot="1"
          order="3302" org="2" contact="Agent Gray" exp="330000" info="108500">
   <npc id="1" handle="Kalt" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
-  <npc id="2" handle="Silver" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Silver" type="FRIENDLY" at="2" rsi="750a0058" weapon="2568" />
   <npc id="3" handle="Demon Army Lieutenant" type="HOSTILE" at="3" rsi="9c0000b4" weapon="2568" />
   <npc id="4" handle="Demon Army Courier" type="HOSTILE" at="4" rsi="c6020058" weapon="2568" />
   <phase site="Office" enemy="Machines" enemies="0" neighbourhoods="Kedemoth">

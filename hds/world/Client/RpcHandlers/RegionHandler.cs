@@ -27,7 +27,8 @@ namespace hds
             float zPos = pakReader.ReadFloat(1);
             
             DataLoader objectLoader = DataLoader.getInstance();
-            StaticWorldObject objectValues = objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectIDBytes,1));
+            StaticWorldObject objectValues = objectLoader.getObjectValues(NumericalUtils.ByteArrayToUint32(objectIDBytes,1),
+                (UInt16)Store.currentClient.playerData.getDistrictId());
 
             UInt16 goId = NumericalUtils.ByteArrayToUint16(objectValues.type, 1);
             

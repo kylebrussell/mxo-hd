@@ -61,13 +61,120 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
-        /// <summary>Puts each looted item in the first free bag slot and tells the client.</summary>
-        public static void GiveItems(WorldClient client, IEnumerable<UInt32> items)
+        public static void Drop(WorldClient client, Mob source, UInt32 info, UInt32 missionItem, IEnumerable<UInt32> items)
         {
-            foreach (UInt32 goid in items)
+            lock (client.playerData.loot)
             {
+                SendWindow(client, client.playerData.loot.Add(source, info, missionItem, items));
+            }
+        }
+
+        /// <summary>Reopens the killer's saved contents for this corpse, including a partially looted full bag.</summary>
+        public static void Open(WorldClient client, UInt64 entity)
+        {
+            lock (client.playerData.loot)
+            {
+                SendWindow(client, client.playerData.loot.Select(entity));
+            }
+            client.FlushQueue();
+        }
+
+        private static void SendWindow(WorldClient client, NpcLootCache.Corpse corpse)
+        {
+            List<UInt32> items = new List<UInt32>();
+            List<byte> flags = new List<byte>();
+            if (corpse != null)
+            {
+                if (corpse.MissionItem != 0)
+                {
+                    items.Add(corpse.MissionItem);
+                    flags.Add(0x08);
+                }
+                foreach (UInt32 item in corpse.Items)
+                {
+                    items.Add(item);
+                    flags.Add(0);
+                }
+            }
+            client.messageQueue.addRpcMessage(BuildLootWindow(corpse?.Info ?? 0, items, flags));
+        }
+
+        /// <summary>Grants the selected corpse once, retaining every item that does not fit.</summary>
+        public static bool TryTakeAll(WorldClient client)
+        {
+            Mob emptied = null;
+            ServerPackets packets = new ServerPackets();
+            lock (client.playerData.loot)
+            {
+                if (!client.playerData.loot.WindowOpen)
+                {
+                    return false;
+                }
+                NpcLootCache.Corpse corpse = client.playerData.loot.Current;
+                if (corpse == null)
+                {
+                    packets.SendLootAccepted(client);
+                    return true;
+                }
+
+                if (corpse.Info > 0)
+                {
+                    UInt32 total = (UInt32)Math.Min(client.playerData.getInfo() + (long)corpse.Info, UInt32.MaxValue);
+                    Store.dbManager.WorldDbHandler.SaveInfo(client, total);
+                    client.playerData.setInfo(total);
+                    Output.WriteDebugLog("[LOOT] Player received " + corpse.Info + " info. Total: " + total);
+                    corpse.Info = 0;
+                }
+                packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
+                GiveItems(client, corpse.Items);
+
+                var remaining = new List<(byte[] Data, UInt32 Item)>();
+                foreach (UInt32 item in corpse.Items)
+                {
+                    remaining.Add((new byte[4], item));
+                }
+                if (corpse.MissionItem != 0)
+                {
+                    if (MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
+                    {
+                        corpse.MissionItem = 0;
+                    }
+                    else
+                    {
+                        remaining.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
+                    }
+                }
+                packets.SendLootAccepted(client, remaining.ToArray());
+                if (remaining.Count == 0)
+                {
+                    emptied = corpse.Source;
+                }
+            }
+            // Tutorial callbacks can remove NPCs. Keep their lock outside the loot cache's lock.
+            if (emptied != null)
+            {
+                TutorialMission.Of(client)?.OnCorpseLooted(emptied);
+            }
+            return true;
+        }
+
+        /// <summary>Removes each granted item immediately, so a later failure cannot grant it again on retry.</summary>
+        private static void GiveItems(WorldClient client, List<UInt32> items)
+        {
+            int index = 0;
+            while (index < items.Count)
+            {
+                UInt32 goid = items[index];
                 // Stacks onto an existing stack (Code Bits, pills) and refuses a full bag
                 UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
+                if (slot == 0)
+                {
+                    index++;
+                }
+                else
+                {
+                    items.RemoveAt(index);
+                }
                 Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
             }
         }

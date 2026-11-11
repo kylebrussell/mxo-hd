@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Necromancy, Merovingian story mission 11.1.5. Source: research/missions/transcripts/Merv11-1-5.md (one live retail
+     run, given by Flood: 26 screenshots taken after the mission ended, the Log tab scrolled top to bottom). Placement
+     is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Silver, Carlyne, Merovingian and ??? line, and the names: the
+     woman who comes for the program is "???" in the log, and is that here. The log's player was Briseus; his name is
+     {player} here. Italics ("will", "if you please", "Vite", "mon ami") are dropped. Ours: the description (the
+     Summary tab only said "Datalink established."), every objective text (the Objectives tab was never opened), the
+     sites (none is described: all Normal), the looks (Flood, Silver, Carlyne and the Merovingian as the other
+     Merovingian files have them; ??? is Danielle Wright, as 11.2.1 says, and has her look) and the enemy counts. Phase 2 has Machines (Flood: "all we
+     have to worry about at the moment are their operatives"); phases 3 and 4 have no hostiles ("I'm not picking up
+     any activity signals in there"; phase 4's are only override signals and Carlyne).
+     Joins between images read as contiguous: "Could be / trouble.", "what to tell you. / Maybe we will" (no
+     paragraph break, as the scroll step fits; one can't be ruled out), "the intruders to / know that", "on your /
+     employer's behalf", "small value on / your own short lives", "which means / that all we have to worry about",
+     "pretty deep fried." / "So, all of our programs dead" as a paragraph break, "in a particularly / aesthetic pose",
+     "I'll have to / ask that you deliver it", "the interface program. / You must open it", "get him out of there! /
+     Who knows", and "make my way from / here."
+     Rewards: the log shows 253,230 experience and 84,000 information. These are Zion 11.1's values (352,000
+     experience, 115,500 information, as The Spider paid). The log's run paid 253,230 experience and 84,000
+     information.
+     Gaps: Flood stands in phase 1 as an NPC (the log gives him the green NPC icon there); his "...and if you honestly
+     think" is said on reaching Silver. The Operator's "Looking good." is read as the operatives being down; an
+     area-complete line after it may be hidden by the scroll. Phase 3 is one Use of the terminal, with both Operator
+     lines (1:47:50 and 1:47:54) as its done lines; the dead programs ("all of our programs dead") aren't placed.
+     Phase 4: the Operator's "Finally!" and Carlyne's demand come on reaching the Merovingian; talking to him gives his
+     two lines and ???'s threat; ???'s "I know it is... Ah. There." (its dashes can't go in this comment) is her line when clicked after that; opening the
+     computer ("Open the computer to the outside network" is ours) gives the Operator's "The interface program was on
+     there" and ???'s "You're wasting your time"; then the Merovingian's "Vite" when he is talked to, and he follows
+     the player out ("Lead the Merovingian out of the area" is ours); his thanks and ???'s "Clever." come at the way
+     out. An Operator entry at about 1:51:25 PM is hidden by the scroll. Carlyne's repeated "No. No more questions" is
+     his line when clicked. Lines logged after a goal (Silver's "The interface program has remarkable properties",
+     Flood's "Hmph! He'll be singing", the Merovingian's repeated "This is new...") are what each says when clicked
+     afterwards. -->
+<mission id="311105" title="Necromancy" description="Talk Silver back to work, then get the Merovingian out alive when Carlyne comes to collect the interface program." plot="1"
+         order="11105" org="3" contact="Flood" exp="352000" info="115500">
+  <npc id="1" handle="Flood" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="1">Hmph! He'll be singing a different tune once I've reported this to the Merovingian!</say>
+  </npc>
+  <npc id="2" handle="Silver" type="FRIENDLY" at="1" rsi="750a0058" weapon="2564">
+    <say after="1">The interface program has remarkable properties, but it is capricious, and out of control. Given sufficient time, I have no doubt that I could bend it to my will...but that time has run out.&#10;&#10;Live to fight another day, meatbag! You humans may place small value on your own short lives, but I intend to be around long after your flesh has rotted and returned to the mud.</say>
+  </npc>
+  <npc id="3" handle="The Merovingian" type="FRIENDLY" at="4" rsi="57050004" weapon="0">
+    <say after="4">This is new...&#10;&#10;Listen to me carefully, {player}, and do exactly as I say. The computer here houses the interface program. You must open it to the outside network, now. Do not question; there is no time! Quickly!</say>
+  </npc>
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568">
+    <say>No. No more questions; no more stalling. The program, if you please.</say>
+  </npc>
+  <npc id="5" handle="???" type="FRIENDLY" at="4" rsi="60010058" weapon="0">
+    <say after="4">I know it is-- Ah. There.</say>
+  </npc>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Silver is being obstinate, operative. Would you come here and handle him, please?&#10;&#10;Thinks he can get out of work simply because Carlyne appeared...</briefing>
+    <enter><say>Yeah, did you hear about that? Carlyne showed up out of nowhere, asking for the interface program. He hasn't even been in the Matrix for months, but I guess he found out somehow that we got it. The Merv stalled him a bit, but from what I heard, Carlyne didn't sound in the mood to wait very long. Could be trouble.</say></enter>
+    <objective goal="1" text="Talk to Silver" type="Talk" npc="2">
+      <talk><say npc="2">Say what you like, but I have no intention of going down with the ship. I know enough about the intruders to know that there isn't anything you can do to stop them. If he wants that program, he's going to get it, and any program stupid enough to stand in his way will simply get switched off.&#10;&#10;I prefer to keep my recent memories intact, thank you, including the fruits of the research I've done on your employer's behalf. If he was really interested in making use of that program, he wouldn't ask me to stand by when the Oligarchs come for it.</say></talk>
+      <done><say>Well, it was worth it to see Flood hit a brick wall.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="1">...and if you honestly think that the Merovingian will let that dime-store dictator get his one-dimensional hands on the program, or that he'll allow you to frisk off just because the fellow popped his head in, well...! I simply don't know what to tell you. Maybe we will have to plant you by the stairs after all.&#10;&#10;Oh, here he is. Talk some sense into the man, would you, {player}?</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="3">
+    <briefing>Fah! I'll deal with him later.&#10;&#10;{player}, the Machines have redoubled their efforts to find the interface program; they're petrified at the thought of Carlyne pulling a Halborn and going on a termination spree with his override codes, I suspect. But because of that very fear, they won't field their programs, which means that all we have to worry about at the moment are their operatives, whom even you should be able to deal with, hm? So, get going.</briefing>
+    <enter><say>Got some trouble in there for you.</say></enter>
+    <objective goal="2" text="Kill the Machine operatives" type="DefeatAll">
+      <done><say>Looking good.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Don't just stand there thinking you're "all that," operative. We aren't out of the woods yet.</briefing>
+    <enter><say>Huh-oh. I'm not picking up any activity signals in there.</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="3" text="Check the terminal" type="Use" object="1">
+      <done>
+        <say>Great...&#10;&#10;Still not reading any activity in there. I can't get any response from the terminal.</say>
+        <say>That thing's been pretty deep fried.&#10;&#10;So, all of our programs dead, computer toasted, and I'm not seeing any signs of physical trauma on them.&#10;&#10;I'm getting a bad feeling about this.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Blast it, {player}, we're losing programs faster than you lose brain cells, and it looks to me like the wave of destruction is getting closer and closer to the Merovingian himself. I doubt you can do anything about it at this point, but you might as well go in there and get yourself finished off in style. If you fall in a particularly aesthetic pose I may see about putting a photo of it up on my wall of ex-operatives.</briefing>
+    <enter><say>I'm picking up override signals all over that area, {player}. I think this is it! We've got to get the Merovingian out of there! What's he sticking around for, anyway?</say></enter>
+    <object id="1" kind="Computer" />
+    <objective goal="4" text="Talk to the Merovingian" type="Talk" npc="3">
+      <talk>
+        <say npc="3">So. You see, he is desperate. Now we can begin to negotia-- Eh?</say>
+        <say npc="3">This is new...&#10;&#10;Listen to me carefully, {player}, and do exactly as I say. The computer here houses the interface program. You must open it to the outside network, now. Do not question; there is no time! Quickly!</say>
+      </talk>
+      <done><say npc="5">I'll be taking the program. Don't interfere, and you won't end up like him.</say></done>
+    </objective>
+    <objective goal="5" text="Open the computer to the outside network" type="Use" object="1" after="4">
+      <done>
+        <say>The interface program was on there... So, basically, we just flushed it into the Matrix at large.&#10;&#10;Ack, never mind that right now. Grab the Merv and get him out of there! Who knows what that woman's going to try.</say>
+        <say npc="5">You're wasting your time. You can't keep me out.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Lead the Merovingian out of the area" type="Escort" npc="3" to="exit" after="5">
+      <talk><say npc="3">Vite, while she is distracted...</say></talk>
+      <done>
+        <say npc="3">So, now we begin to see who has really been playing this game. They waited for their chance, but we were too quick for them, eh? We have freed the interface program into the wide network of the Matrix.&#10;&#10;Thank you for your timely assistance, mon ami. I can make my way from here. We will meet again, soon...for the hunt.</say>
+        <say npc="5">...&#10;&#10;Clever.</say>
+      </done>
+    </objective>
+    <near npc="3" radius="1000">
+      <say>Finally! Why's he--&#10;&#10;Override activation! It's Carlyne! Move, move, move!</say>
+      <say npc="4">My dear sir, you are late for our agreed-upon delivery of the interface program. I'm afraid that I'll have to ask that you deliver it to me...now.</say>
+    </near>
+  </phase>
+  <finish>I've always said we were better off without the stupid thing, anyway.&#10;&#10;Hm... I suppose I should congratulate you on getting the Merovingian out of there in one piece, {player}.&#10;&#10;I know, you're overwhelmed by emotion right now. Don't worry; I'll make sure not to compliment you again any time soon.</finish>
+</mission>

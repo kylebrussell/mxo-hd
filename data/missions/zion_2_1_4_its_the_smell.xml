@@ -22,7 +22,7 @@
     <say after="2">Yeah, well, don't say I didn't warn you.</say>
   </npc>
   <npc id="2" handle="Gregory Uhrich" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
-    <say after="1">An insecticide ingredient? I don't know nothing about that. Hey, lemme know if you see any more dead flies 'round here. Place was lousy with the things earlier.</say>
+    <say after="3">An insecticide ingredient? I don't know nothing about that. Hey, lemme know if you see any more dead flies 'round here. Place was lousy with the things earlier.</say>
   </npc>
 
   <phase site="Normal" enemy="Merovingian" enemies="0">
@@ -48,11 +48,11 @@
       <say>I'm not picking up any trace of the pesticide ingredient in that building. Either somebody busted in and stole it, or Junge has been lying to us. Hey, is that a dead fly on the floor over--&#10;&#10;Oh, crud! I've got an unidentified inbound signal on that floor! Maybe it's Junge--I guess you'd better go see. But wait, what if it's an Agent, or even...the Assassin?</say>
     </enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Talk to Gregory Uhrich" type="Talk" npc="2">
+    <objective goal="3" text="Talk to Gregory Uhrich" type="Talk" npc="2">
       <talk><say npc="2">Hey, whoa, calm down there, kiddo! I'm just the janitor. No, nobody else but you been here today. I expected Junge to show up, but he must'a flaked out again. Leaves me to sweep up all those dead flies by myself; it just figgers. And some punk busted the lock off the back door, but I don't think they had the guts to come inside.</say></talk>
       <done><say>Oh, just the janitor. Uh, I knew that. Whew.&#10;&#10;I don't know what to make of this: dead flies, busted locks... But I suppose the simplest explanation is that Reyes Junge swindled us. Head outside while I dial up Tyndall and see if she can locate him.</say></done>
     </objective>
-    <objective goal="2" text="Search the computer" type="Use" object="1" optional="1">
+    <objective goal="4" text="Search the computer" type="Use" object="1" optional="1">
       <done><say>Huh, somebody deleted all the data on that computer without installing anything to replace it. That's sort of weird.</say></done>
     </objective>
   </phase>
@@ -66,14 +66,14 @@
     <object id="1" kind="Computer" />
     <object id="2" kind="Computer" />
     <object id="3" kind="Safe" />
-    <objective goal="1" text="Hack the first security computer" type="Use" object="1" />
-    <objective goal="2" text="Hack the second security computer" type="Use" object="2" after="1">
+    <objective goal="5" text="Hack the first security computer" type="Use" object="1" />
+    <objective goal="6" text="Hack the second security computer" type="Use" object="2" after="5">
       <done>
         <say>Jackpot! The sealed room is open now. Check it out.</say>
         <say>I got a lock on the insecticide ingredient! It's in a wall safe in that room!</say>
       </done>
     </objective>
-    <objective goal="3" text="Get the insecticide ingredient from the wall safe" type="Search" object="3" item="6804" after="2" />
+    <objective goal="7" text="Get the insecticide ingredient from the wall safe" type="Search" object="3" item="6804" after="6" />
   </phase>
 
   <phase site="Office" enemy="Merovingian" enemies="0">
@@ -84,7 +84,7 @@
       <say>The desk is right in there-- Hey! It's that signal again, real close this time! He's almost on top of you! Get out of there! Get out!</say>
     </enter>
     <object id="1" kind="Furniture" />
-    <objective goal="1" text="Leave the ingredient at the desk" type="Put" object="1" item="6804">
+    <objective goal="8" text="Leave the ingredient at the desk" type="Put" object="1" item="6804">
       <done><say>Wait, the...the signal's gone now. I swear... No really, there was something there, right on your tail! Don't tell me I was just imagining the whole thing. Ohh, boy. I think I need to take a little "time out" now. I can't take much more of this Assassin thing...</say></done>
     </objective>
   </phase>

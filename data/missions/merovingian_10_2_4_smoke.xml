@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Smoke, Merovingian story mission 10.2.4. Source: research/missions/transcripts/Merv10-2-4.md (one live retail run,
+     given by Flood: 22 full-screen shots of the log paged through after the mission ended). Placement is generated:
+     see docs/MISSIONS.md.
+     Retail's text: the title, every Flood, Operator, Boury, Bernoulli, Bohrmann, Holographic Projection and Tarazed
+     line, and the names. The log's player was Briseus; his name is {player} here. The Operator's "The data was listed
+     off a computer" is kept as shown ("lifted" was probably meant); the Holographic Projection's italics are dropped.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (no image shows
+     the Objectives window), the sites (all Normal: none is described), the looks (the radio boy is one of the
+     General's commandos, as at the General's broadcast in 10.2.3, and gets that handle since the log never names him;
+     the Holographic Projection has the other files' look for it; Tarazed a lupine's) and the enemy counts.
+     Joins between pages read as contiguous: "who survived, / unfortunately", "are actually / having the time",
+     "of course, / but oh", "must / have been", "Years of dealing / with slacking operatives". Flood's "but now we
+     can't raise them. / Just wait" is read as one paragraph; a paragraph break there is possible. The Operator's "I'm
+     picking up weird activity on him" starts a page with no header, so it is the second paragraph of his "A dire
+     lupine?" line.
+     Rewards: the log shows 242,000 experience and 80,500 information. These are Zion's chapter 10 values, those of
+     Blip (10.2.5), its only chapter 10 mission (352,000 experience, 525,000 information; Blip showed the information,
+     and the Zion file takes the experience from The Spider, 11.1.5).
+     Gaps: phase 1's goal isn't in the log: the Operator says the General's radio boy is waiting, and 25 seconds later
+     "Another missile strike?"; here talking to the radio boy brings that line, and the General's broadcast itself
+     isn't heard. The entry after it fell between two pages and is taken to be the area's completion. The three
+     Exiles' lines came one after another; each is said on talking to them, and again when clicked (retail repeated
+     them). What the player found at the rowdies' place isn't shown beyond "Must have been some party."; here it is a
+     search of a Furniture object for nothing (bodies aren't spawned). Flood's "That idiot, the General" came between
+     that and the Holographic Projection's report; it is said when the search is done. Tarazed's log icon was green,
+     but the Operator's "he dropped like his strings were cut", a fight ending just before the mission did and an item
+     received ("Dhanna Nuono", System chat) say he was beaten: he is a hostile who waits to be attacked, and his line
+     is said when he dies. The "external signal" controlling him has no mechanic. -->
+<mission id="310204" title="Smoke" description="Find out who stole the topographic data on the no-fly zone from under the Merovingian's nose." plot="1"
+         order="10204" org="3" contact="Flood" exp="352000" info="525000">
+  <npc id="1" handle="Commando" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="2" handle="Boury" type="FRIENDLY" at="2" rsi="ec020058" weapon="2568">
+    <say after="2">Stealing from the Merovingian--it's unthinkable! Whoever did it will die in unspeakable agony. But...hrm...if any are judged guilty of negligence, they'll almost certainly be punished, too.</say>
+  </npc>
+  <npc id="3" handle="Bernoulli" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
+    <say after="3">It couldn't have been an outsider... There's no scent--except yours.</say>
+  </npc>
+  <npc id="4" handle="Bohrmann" type="FRIENDLY" at="2" rsi="c6020058" weapon="2568">
+    <say after="4">Hrr, of course we three aren't the only ones who watch this area. The others come and go...but there's always someone here.</say>
+  </npc>
+  <npc id="5" handle="Holographic Projection" type="FRIENDLY" at="3" rsi="8f080058" weapon="0">
+    <say after="6">End transmission.&#10;&#10;Reactivate the jammers. I want perimeter reports from--</say>
+  </npc>
+  <npc id="6" handle="Tarazed" type="HOSTILE" attacksOnSight="0" at="4" rsi="9c0000b4" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The General's Sentinels think they detected a ship of the type supposedly used by the intruders, just before they were hit by a missile barrage. That's all well and good, but if the General--who survived, unfortunately--thinks it excuses him from finishing the job of extracting data from that network he found out there, he's in for a surprise.&#10;&#10;He's scheduled to beam in a broadcast now. Go make sure he knows the score, operative.</briefing>
+    <enter><say>The General's radio boy should be waiting for you in there. Coast looks clear.</say></enter>
+    <objective goal="1" text="Talk to the General's radio operator" type="Talk" npc="1">
+      <done><say>Another missile strike? Wow, doesn't sound like things are going too well out there.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>You know, operative, there are many recorded cases of soldiers in human wars intentionally giving themselves minor injuries in order to avoid going into battle. I wouldn't be at all surprised if that's what the General is doing: inventing ridiculous stories of intruder ships and missile strikes, while he and his men are actually having the time of their lives out there in the no-fly zone, out of range of all sensors.&#10;&#10;I've just been notified of an equally disgusting problem, but at least this one I can do something about: someone has stolen the topographic data on the no-fly zone. The General should still have a copy, of course, but oh, we've oh-so-conveniently just lost contact with him again. I smell a rat, operative, and you're going to go smoke it out. Get over to the scene of the crime.</briefing>
+    <enter><say>The data was listed off a computer, right out from under some of our Exiles. Whoever snagged it must have been pretty good to get past their noses undetected.</say></enter>
+    <objective goal="2" text="Talk to Boury" type="Talk" npc="2">
+      <talk><say npc="2">Stealing from the Merovingian--it's unthinkable! Whoever did it will die in unspeakable agony. But...hrm...if any are judged guilty of negligence, they'll almost certainly be punished, too.</say></talk>
+    </objective>
+    <objective goal="3" text="Talk to Bernoulli" type="Talk" npc="3">
+      <talk><say npc="3">It couldn't have been an outsider... There's no scent--except yours.</say></talk>
+    </objective>
+    <objective goal="4" text="Talk to Bohrmann" type="Talk" npc="4">
+      <talk><say npc="4">Hrr, of course we three aren't the only ones who watch this area. The others come and go...but there's always someone here.</say></talk>
+    </objective>
+    <complete><say>Hm... So someone got the data out of there without leaving a trace--not even a hint of a scent that would give them away.</say></complete>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>Glub, glub, glub! Do you know what that sound is, operative? It's the sound of me drowning in the incompetence of subordinates!&#10;&#10;We just had rowdies at a location nearby call in some sort of alert about a suspicious character, but now we can't raise them. Just wait, I'm sure you'll get there to find them in a drunken stupor in the middle of a party, and they'll call it a missile strike...</briefing>
+    <enter><say>Doesn't look like much of a party in there to me. I'm not picking up any activity, as a matter of fact.</say></enter>
+    <object id="1" kind="Furniture" />
+    <objective goal="5" text="Find the rowdies" type="Search" object="1" item="0">
+      <done>
+        <say>Must have been some party.</say>
+        <say contact="1">That idiot, the General, finally sorted out his personal problems sufficiently to get back in contact. He should be coming through now.</say>
+      </done>
+    </objective>
+    <objective goal="6" text="Talk to the Holographic Projection" type="Talk" npc="5" after="5">
+      <talk><say npc="5">I've been informed of the data theft. I'm having a copy of my version of the topographic data sent back to you.</say></talk>
+      <done><say npc="5">End transmission.&#10;&#10;Reactivate the jammers. I want perimeter reports from--</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Merovingian" enemies="0">
+    <briefing>So he's just fine, imagine that... I can see right through his smoke and mirrors, {player}. Years of dealing with slacking operatives have taught me a trick or two.&#10;&#10;We're running a scan around your area for a match of the General's copy of the stolen file. Shouldn't be long before we have our culprit red-handed.&#10;&#10;Ah, that would be them now. Try to take them alive.</briefing>
+    <enter><say>I'm getting something, but...it's hard to pin down. Working on it...</say></enter>
+    <objective goal="7" text="Stop Tarazed" type="Defeat" npc="6">
+      <done>
+        <say npc="6">The data's already been uploaded.&#10;&#10;Thank the Frenchman for me. It would have been much more difficult to get it from the Machines.</say>
+        <say>What th--? That weird broadcast signal cut out, and he dropped like his strings were cut. He didn't sound much like a lupine, either. Something funny's going on here.</say>
+      </done>
+    </objective>
+    <near npc="6" radius="1000">
+      <say>A dire lupine? So that's why the others didn't spot an intruder!&#10;&#10;I'm picking up weird activity on him. There's an external signal--some kind of broadcast...but it isn't using standard encryption.</say>
+    </near>
+  </phase>
+  <finish>It wasn't a lupine, {player}--not anymore, at any rate. I'm fairly sure that was Mauser, the fellow Zion's been chasing around the city. He's been hacking phone lines right and left, it seems, which has put the Machines in a foul mood, but now he's really crossed the line by stealing from us.</finish>
+</mission>

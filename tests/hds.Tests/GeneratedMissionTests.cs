@@ -316,7 +316,10 @@ public class GeneratedMissionTests
                 switch (objective.type)
                 {
                     case MissionGoalType.DefeatAll:
-                        Assert.True(phase.enemies > 0 || mission.npcs.Any(n => !n.friendly), goal + ": nobody to defeat");
+                        Assert.True(phase.Waves().Any() || mission.npcs.Any(n => !n.friendly || n.hostileAfter >= 0), goal + ": nobody to defeat");
+                        break;
+                    case MissionGoalType.Survive:
+                        Assert.True(objective.seconds > 0, goal + ": no time to hold out");
                         break;
                     case MissionGoalType.Search:
                     case MissionGoalType.Put:
@@ -343,7 +346,8 @@ public class GeneratedMissionTests
 
                 if (objective.type == MissionGoalType.Escort)
                 {
-                    Assert.True(objective.escortTo == "exit" || objective.escortTo == "hardline" || objective.escortTo.StartsWith("npc:"), goal);
+                    Assert.True(objective.escortTo == "exit" || objective.escortTo == "hardline" || objective.escortTo.StartsWith("npc:") ||
+                                (objective.escortTo.StartsWith("object:") && objects.Contains(ushort.Parse(objective.escortTo.Substring(7)))), goal);
                 }
             }
         }

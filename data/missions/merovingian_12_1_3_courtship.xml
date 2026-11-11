@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Courtship, Merovingian story mission 12.1.3. Source: research/missions/transcripts/Merv12-1-3.md (two
+     screenshots of ZippyTheSquirrel's typed account on the official forum, "12.1 missions logs/summaries/screenshots
+     (all orgs)"; no log, objectives or rewards). Placement is generated: see docs/MISSIONS.md.
+     Retail's text, as typed: the title, both briefings, the closing line, every Operator, Merovingian Ballista,
+     Merovingian Howitzer, Tesarova, Persephone and Merovingian line, and those names. Italics dropped: the
+     Operator's "that's". Ours: the description, every objective text, the sites (none is described: both Normal),
+     the looks, and the order of the first area's lines (the post gives them in sequence: here each Talk waits for
+     the one before). The second area's Override Functions and Executable are from the post's note; its "surprise
+     Runtime" isn't placed.
+     Rewards: the post shows none. These are Hothouse's (12.1.1), whose log shows 239,105 experience and 105,000
+     information (a level-30 player's), the values for all of 12.1.
+     Gaps: the Ballista's and Howitzer's lines are said on getting near them. Defeating the Executable gives the
+     reading Flood needs, as the Operator says; the other Override programs needn't be killed. The search of the
+     Oligarch base in Union Hill came after the mission and isn't built. -->
+<mission id="312103" title="Courtship" description="Report to the Merovingian and trace the route to the Oligarchs' base." plot="1"
+         order="12103" org="3" entryItem="48131" completionItem="48140" minLevel="50" minReputation="60" district="2" districtName="dt" contact="Flood" exp="239105" info="105000">
+  <npc id="1" handle="Merovingian Ballista" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
+  <npc id="2" handle="Merovingian Howitzer" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
+  <npc id="3" handle="Tesarova" type="FRIENDLY" at="1" rsi="fc0e0004" weapon="2564" />
+  <npc id="4" handle="Persephone" type="FRIENDLY" at="1" rsi="5c050004" weapon="2564" />
+  <npc id="5" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="2564" />
+  <npc id="6" handle="Override Executable" type="HOSTILE" at="2" rsi="110f0004" weapon="2568" />
+  <npc id="7" handle="Override Function" type="HOSTILE" at="2" rsi="ec0e0004" weapon="2568" />
+  <npc id="8" handle="Override Function" type="HOSTILE" at="2" rsi="ef0e0004" weapon="2568" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Thanks to the information we obtained, the Merovingian has been able to meet the Oligarch female, Tesarova.
+
+However... Yes... However, all has not proceeded as might have been hoped. You're due to receive instructions on an...alternate solution.</briefing>
+    <enter><say>If this means that she didn't spill the beans on how to override Machine programs after he put the moves on her, then we may have one testy Merv on our hands in there.</say></enter>
+    <near npc="1" radius="600"><say npc="1">Something isn't right about this whole thing. If I could just put my finger on it...</say></near>
+    <near npc="2" radius="600"><say npc="2">Persephone found out about it, somehow. Probably isn't helping.</say></near>
+    <objective goal="1" text="Talk to Tesarova" type="Talk" npc="3">
+      <talk><say npc="3">He's just been showing me all kinds of things. Such nice little programs you've got around here to amuse yourselves with...like the man with the teeth! Ha-ha!
+
+And wherever did he manage to pick up Carlyne's android body? Now that surprised me; I didn't think I'd ever see that rotten old thing again, not after Carlyne let the podling woman steal his signal like that, the dope!</say></talk>
+    </objective>
+    <objective goal="2" text="Talk to Persephone" type="Talk" npc="4" after="1">
+      <talk>
+        <say npc="4">Only a human can be "inhuman."</say>
+        <say>Well... At least she's got a little color back.</say>
+        <say npc="3">"Married?" Of course I heard the people go on about it, but...programs? Really? Oh hahaha! This is priceless!
+
+Oh, I'm so glad I came.</say>
+      </talk>
+    </objective>
+    <objective goal="3" text="Talk to the Merovingian" type="Talk" npc="5" after="2">
+      <talk><say npc="5">Elle n'est pas une femme, elle est un... Phah! That world of yours, what does it do to females, eh? No manners, no gratitude... I offer her advantages, an alliance, keys to power hidden within the simulation, and what does she do? She laughs, the fool!
+
+Ehh... Nom de Dieu, nom de Dieu... She does not understand my resources. Well, I do not need her permission, hm? I know she has a base here, and if it is here, there is a way to access it. Yes...
+
+Contact Flood, operative! We will check the data again. There must be a way...
+
+Information... Carlyne... She is careless... Fou!
+
+And she expects to catch her... Hah!</say></talk>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>Oh, fine. He's fortunate to have me here when the unreliable ones fail him.
+
+Yes, there's probably a way to access the area the Oligarchs have set up for themselves here in the simulation, but we need a traceback from another position in order to evaluate the code paths properly.
+
+You don't need to know what all that means. Just go where I tell you, and keep your scans running.</briefing>
+    <enter><say>Getting some glitched-up readings in there. I'll try to keep the scanners up, but Flood better be--
+
+Ahh, I'm not even gonna say it.</say></enter>
+    <near npc="6" radius="1800"><say>Whoa, yeah. That thing--the Executable: take it out. That ought to get us a reading Flood can use.</say></near>
+    <objective goal="1" text="Defeat the Override Executable" type="Defeat" npc="6">
+      <done><say>Now that's returning a fat chunk of data. Even Flood ought to be able to make something out of this.</say></done>
+    </objective>
+  </phase>
+  <finish>Don't bother me; I've almost finished correlating this with the other data...
+
+Hurry up there! I've got my best operative waiting! Oh, psh!
+
+Yes, well... It's a good thing the Merovingian had me along this time. It looks like we can access the Oligarch area if we run a white hallway connection out through 129 223 789; that's in Union Hill, operative. No, no, all you'll need to do is just open the door and trot on through. Mm-hm.</finish>
+</mission>

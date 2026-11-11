@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signature Manipulation, Merovingian story mission 1.1.3. Source: research/missions/transcripts/Merv1-1-3.md (the
+     archive replay of [Merovingian Archive 1.1.3], given by [Archived]Flood). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, operator and NPC line, the NPC names, and phase 2's objective
+     texts ("Retrieve the Access Card from the Machine base", "Plant the Bug inside the Desk", from the Objectives
+     window). A possible hidden line in the first briefing, before "Pick up the device", is read as contiguous. Ours:
+     the description, the other objective texts, the sites (Anza's and Sisyphus' places and the mainframe facility:
+     Normal; "the first Machine base", an office with desks and filing cabinets in the mid-mission screenshot: Office),
+     the looks, the enemy counts, and phase 3's three Agents (their number, and their handle "Agent": none was named).
+     Item stand-ins: the Signature Manipulator is Device (6820), the Bug Bug (6824), "a rather large bomb" Large_Bomb
+     (6818), the Access Card Access_Card (6791).
+     Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.1's values
+     (55,200 experience, 73,500 information, as Redpill Rescue paid).
+     Gaps: the disguise. In phase 2 the six Agents are friendly bystanders, and their exchanges are said on getting
+     near Agent West, Agent Long and Agent Miller (the operator's "Search the computer in this room" hint came with
+     Agent Miller's lines, by the computer). Agent North's first line was only "..." and is left out. The computer's
+     "Digital Signature verified" text has no place. In phase 3 the disguise failed after the bomb was set and the
+     Agents attacked: three Agents stand there friendly and turn hostile when the bomb is set (hostileAfter), and the
+     operator's two lines about it (48 and 67 s later in the log) are said then. The operator's "What's going on
+     here?!" on reaching the mainframe is unexplained and left out; the hint "That's the mainframe..." is the second
+     enter line. The access card goes into the computer as a Put (done with Hack). In phase 4 the attacking programs
+     arrive once Sisyphus is talked to, and the goal to kill them opens then; the operator's "The device won't be safe
+     until the attacking programs are dead." has no place. Phase 4's last operator line wasn't readable. -->
+<mission id="301103" title="Signature Manipulation" description="Use the Signature Manipulator to infiltrate the Machines." plot="1"
+         order="1103" org="3" contact="Flood" exp="55200" info="73500">
+  <npc id="1" handle="Anza" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
+    <say after="4">Be careful with these and be sure that you follow the instructions to the letter. The Merovingian would be most displeased if the mission isn't carried out as ordered.</say>
+  </npc>
+  <npc id="2" handle="Agent Wong" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>I can not help you.</say>
+  </npc>
+  <npc id="3" handle="Agent North" type="FRIENDLY" at="2" rsi="6e060040" weapon="2568">
+    <say>Agent Gray has reason to believe that these rogue programs were never Machines in the first place. These persons, or organization, might have an agenda of their own, outside of just attempting to pose as one of us.</say>
+  </npc>
+  <npc id="4" handle="Agent West" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>I saw one of those foolish humans running from Agent Park in an illegal sector yesterday.</say>
+  </npc>
+  <npc id="5" handle="Agent Brown" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>Move along.</say>
+  </npc>
+  <npc id="6" handle="Agent Long" type="FRIENDLY" at="2" rsi="9b000090" weapon="2568">
+    <say>It's quite alright, Agent Brown. Christian Foster has permission to be here.</say>
+  </npc>
+  <npc id="7" handle="Agent Miller" type="FRIENDLY" at="2" rsi="3600004e" weapon="2568">
+    <say>We have been having trouble... with rogue programs recently.</say>
+  </npc>
+  <npc id="8" handle="Sisyphus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
+    <say after="9">I won't take the device until we are safe.</say>
+  </npc>
+  <npc id="9" handle="Agent" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" hostileAfter="8" />
+  <npc id="10" handle="Agent" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" hostileAfter="8" />
+  <npc id="11" handle="Agent" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" hostileAfter="8" />
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>The moment has come, {player}. You must use the Signature Manipulator as it was intended. If you are unsure of its use, I shall explain...
+
+The Signature Manipulator has the power to change your RSI signal to that of a Machine program. This means Exiles and redpills can walk among Agents and they would think you are one of them. This won't work in restricted zones of the Matrix. Somehow, they can still detect your presence if you haven't accessed that sector's node.
+
+Pick up the device, as well as a few other tools, from Anza. He will have further instructions for you.</briefing>
+    <enter><say>Anza is expecting you. Speak with him.</say></enter>
+    <objective goal="1" text="Talk to Anza" type="Talk" npc="1">
+      <talk><say npc="1">Flood told me to expect you. I just didn't think you'd be here so soon... I will be giving you the device, a bug for recording and a rather large bomb for your mission. I'll send the outline to your operator so they can give you the details.</say></talk>
+    </objective>
+    <objective goal="2" text="Get the Signature Manipulator from Anza" type="Get" npc="1" item="6820" after="1">
+      <talk><say npc="1">Just take them from me.</say></talk>
+    </objective>
+    <objective goal="3" text="Get the Bug from Anza" type="Get" npc="1" item="6824" after="2" />
+    <objective goal="4" text="Get the bomb from Anza" type="Get" npc="1" item="6818" after="3">
+      <done>
+        <say>Once you're out of the area I'll send you details for the rest of your assignment. It doesn't look like anything too... crazy.</say>
+        <say npc="1">Be careful with these and be sure that you follow the instructions to the letter. The Merovingian would be most displeased if the mission isn't carried out as ordered.</say>
+      </done>
+    </objective>
+  </phase>
+  <phase site="Office" enemy="Machines" enemies="0">
+    <briefing>Use the Signature Manipulator to sneak into this Machine base and plant the Bug Anza gave you. While you are there, pick up the Access Card to the second Machine facility. Disabling the facility will allow the Merovingian to gain control over select sections of the City. If you succeed, this move will benefit us.
+
+I've already sent you the address to the Machine base. Pick up the Access Card there and plant the Bug.</briefing>
+    <enter><say>This building houses the first Machine base. They think you are a program named Christian Foster. Try not to let the programs intimidate you.</say></enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Furniture" />
+    <objective goal="5" text="Retrieve the Access Card from the Machine base" type="Search" object="1" item="6791">
+      <done><say>That was the card Flood was so anxious about.</say></done>
+    </objective>
+    <objective goal="6" text="Plant the Bug inside the Desk" type="Put" object="2" item="6824">
+      <done>
+        <say>The bug is in place.</say>
+        <say>You didn't forget to turn the Bug on, did you? I'm just joking, {player}. The Bug is always on. In fact, I'm picking up a few transmissions as we speak.</say>
+      </done>
+    </objective>
+    <near npc="4" radius="1000">
+      <say npc="4">I saw one of those foolish humans running from Agent Park in an illegal sector yesterday.</say>
+      <say npc="5">It's almost...</say>
+      <say npc="4">...amusing.</say>
+    </near>
+    <near npc="6" radius="1000">
+      <say npc="5">Do you have clearance?</say>
+      <say npc="6">It's quite alright, Agent Brown. Christian Foster has permission to be here.</say>
+      <say>They really think that you're Christian Foster. The Signature Manipulator is working better than I thought it would.</say>
+      <say npc="5">Move along.</say>
+    </near>
+    <near npc="7" radius="1000">
+      <say>Unless my calculations are way off, the computer in this room has the Access Card that we need and the targeted desk is in here as well. Search the computer in this room and place the bug within the desk.</say>
+      <say npc="7">We have been having trouble... with rogue programs recently.</say>
+      <say npc="3">Agent Gray has reason to believe that these rogue programs were never Machines in the first place. These persons, or organization, might have an agenda of their own, outside of just attempting to pose as one of us.</say>
+      <say npc="7">They should be removed from the system.</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="0">
+    <briefing>I've updated your objectives and directed you to the location that holds the mainframe. When you've made it there, put the access card to use on one of the computers which will allow you to transfer sensitive data to the mainframe.
+
+Before we can plant the bomb on the mainframe, you'll need to transfer some sensitive data to the mainframe. Without the data on the server, destroying the mainframe would be a worthless attempt.</briefing>
+    <enter>
+      <say>This is the place. Ready to wreak some havoc?</say>
+      <say>That's the mainframe but before you plant the bomb, you need to insert the access card into the computer and transfer the data to the mainframe.</say>
+    </enter>
+    <object id="1" kind="Computer" />
+    <object id="2" kind="Mainframe" />
+    <objective goal="7" text="Use the Access Card on the computer to transfer the data" type="Put" object="1" item="6791">
+      <done><say>The data has been transferred.</say></done>
+    </objective>
+    <objective goal="8" text="Plant the bomb on the mainframe" type="Put" object="2" item="6818" after="7">
+      <done><say>The bomb is set!</say></done>
+    </objective>
+    <complete>
+      <say>The device isn't working on the Agents at all!</say>
+      <say>No, no! This is impossible!</say>
+    </complete>
+  </phase>
+  <phase site="Normal" enemy="Machines" enemies="4" enemiesAfter="9">
+    <briefing>What the hell happened back there? Everything was fine until the bomb was set! I don't understand... Maybe planting the bomb caused an electromagnetic pulse to break the Signature Manipulator... This disturbs me.
+
+Just get the Signature Manipulator to Sisyphus, one of the Merovingian's personal assistants. I'm sending you her address now.</briefing>
+    <enter><say>Sisyphus is your final contact. See to it that the device makes it into her hands.</say></enter>
+    <objective goal="9" text="Talk to Sisyphus" type="Talk" npc="8">
+      <talk>
+        <say npc="8">Flood informed me of the complications that seem to have destroyed the device. This is quite unfortunate. The Merovingian will be quite displeased to hear of this...
+
+Wait... I hear something in the other room. Find out what that insidious sound is!</say>
+        <say>We have a problem, {player}. It appears that a group of programs has located your position, and they want you dead. Put a stop to the programs.</say>
+      </talk>
+    </objective>
+    <objective goal="10" text="Kill the attacking programs" type="DefeatAll" after="9">
+      <done><say>That's all of them.</say></done>
+    </objective>
+    <objective goal="11" text="Give the Signature Manipulator to Sisyphus" type="Give" npc="8" item="6820" after="10">
+      <talk><say npc="8">You handled that extremely well, better than I or anyone would have expected... I'll take the Signature Manipulator now.</say></talk>
+      <done>
+        <say>Nice work.</say>
+        <say npc="8">My suspicions are correct. The device is severely damaged and is beyond repair. This is most unsettling... I will have to let Flood tell the Merovingian the dreadful news... Now, be gone!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>The events that took place on your assignment were rather unsettling, {player}. It appears that we will not be able to rely on such fragile technology to hide our existence from the Machines in the Matrix. The attack by the Agents poses questions that require answering.
+
+In the meantime, do not put faith in Zion or the Machines. There is very little those whelps can do to help you anymore.</finish>
+</mission>

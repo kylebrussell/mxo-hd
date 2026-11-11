@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- They Can Only Be Given, Merovingian story mission 6.3.2. Source: research/missions/transcripts/Merv6-3-2.md (the
+     archive replay of [Merovingian Archive 6.3.2], given by [Archived]Flood; 15 screenshots of the log after it
+     ended, none during play). Placement is generated: see docs/MISSIONS.md.
+     Retail's text: the title, every briefing, the closing line, and every Flood, Operator, Oracle, Merovingian,
+     Alligator, Malphas and Ookami line. Four entries span two screenshots and are read as contiguous: Flood's
+     "hoping to protect her", Flood's "There are more of them, naturally. The world has no shortage..." (the cut line
+     between the two sentences is the end of the first), the Merovingian's "This stubbornness of
+     hers" and Malphas's "it is apparent that he means to seek". "Salope!" was in italics.
+     Ours: the description (the Summary tab only said "Datalink established."), every objective text (the Objectives
+     tab was never opened), the sites (all Normal; "Her Zion dupes infest Mara", so the mission prefers Mara), the
+     looks (the Oracle's, the Merovingian's and Ookami's are those of earlier missions) and the enemy counts (the
+     second fight took six minutes to the first's two, so it is the bigger group). No item was shown.
+     Rewards: the log shows 1,012,000 experience and 493,500 information (a level-47 player's archive replay). These
+     are the Zion files' values for 7.2 to 9.2 (363,000 experience, 63,000 information, as 1313 paid in 9.2): no Zion
+     log shows chapter 6's.
+     Gaps: the Oracle's and the Merovingian's first lines came on arrival and are said on getting near the Oracle;
+     their second lines are said when they are talked to. Flood's "make sure that no Zionite reinforcements reach the
+     Merovingian" has no fight in the log (43 seconds from arriving to Alligator's line; the end of that area wasn't
+     captured), so the area is just the talk with Alligator. Ookami's first line (10:08:18 PM) wasn't captured, so he
+     only has his second, said when he is talked to; whether he had a goal of his own isn't known. Malphas's second
+     line (four seconds after the first) is said when he is talked to again. -->
+<mission id="306302" title="They Can Only Be Given" description="Clear a path through the Zion operatives in Mara so the Merovingian can meet the Oracle." plot="1"
+         order="6302" org="3" contact="Flood" neighbourhoods="Mara" exp="363000" info="63000">
+  <npc id="1" handle="The Oracle" type="FRIENDLY" at="3" rsi="3c000040" weapon="0">
+    <say>I knew you were coming. As you can see, I've decided to be unreasonable. I wouldn't want to make things too easy for your boss, you know.</say>
+  </npc>
+  <npc id="2" handle="The Merovingian" type="FRIENDLY" at="3" rsi="57050004" weapon="0">
+    <say>Salope! This stupid, meddlesome old crone! She will give them to me, one way or the other! This stubbornness of hers will only end up costing her dearly!</say>
+  </npc>
+  <npc id="3" handle="Alligator" type="FRIENDLY" at="3" rsi="d8040058" weapon="2568" />
+  <npc id="4" handle="Malphas" type="FRIENDLY" at="4" rsi="35000024" weapon="0">
+    <say after="4">Despite the Oracle's resistance, the wheel of events turns in our favor. With Seraph out of the picture, and the General posing a significant threat to the interests of both Zion and the Machines, we currently enjoy great freedom of action. Opportunity is in the air.</say>
+  </npc>
+  <npc id="5" handle="Ookami" type="FRIENDLY" at="4" rsi="a8060090" weapon="0">
+    <say>Hrr... I'm going back to hunt little soldiers through the witch's alleys. At least that provides some sport!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="4">
+    <briefing>With Seraph having so conveniently taken himself out of the picture, the Merovingian would like to meet the Oracle. We may safely assume that she would prefer not to meet him. Her Zion dupes infest Mara, hoping to protect her in Seraph's absence. You will kill them, and continue killing them, until we have cleared a corpse-strewn path to the fortune-teller.</briefing>
+    <enter><say>I've got redpill signals in there. Time to get to work!</say></enter>
+    <objective goal="1" text="Kill the Zion operatives" type="DefeatAll">
+      <done><say>Aw, you ran out of playmates. Time to go find some more.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="7">
+    <briefing>There are more of them, naturally. The world has no shortage of fools willing to die for an empty promise.</briefing>
+    <enter><say>I've got reds in there.</say></enter>
+    <objective goal="2" text="Kill the Zion operatives" type="DefeatAll">
+      <done><say>All clear. So far, so good.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>That will suffice. The Merovingian has reached the Oracle. The leader of the squad with him is Alligator. Rendezvous with Alligator, and make sure that no Zionite reinforcements reach the Merovingian.</briefing>
+    <enter><say>Massive code readings in there. I guess that's them. Our forces still have the building locked down.</say></enter>
+    <objective goal="3" text="Talk to Alligator" type="Talk" npc="3">
+      <talk><say npc="3">The enemy has not yet had a chance to gather their strength for a counter-attack. They will shortly, but by that time we will be long gone. It appears that our master has completed his business here.</say></talk>
+    </objective>
+    <near npc="1" radius="1000">
+      <say npc="1">I don't think so. You'll have to come up with something better than that.</say>
+      <say npc="2">You bitch! So you insist on being stubborn? You know what happened the last time you crossed me.&#10;&#10;Very well! I gave you a fair opportunity, and you refused. You will reap the consequences of your lack of cooperation!</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>You're due for a debriefing with Malphas. Try to pay attention; one of these days you may actually manage to learn something.</briefing>
+    <enter><say>That's the place.</say></enter>
+    <objective goal="4" text="Talk to Malphas" type="Talk" npc="4">
+      <talk><say npc="4">The advantage of surprise was on our side. I was not counting on it, but evidently the Oracle chose not to warn Zion of our attack, which she must have seen coming. Perhaps she felt it was to her advantage to defy the Merovingian face-to-face.&#10;&#10;In any case, it is apparent that he means to seek other means of persuading her to meet his terms. She will anticipate this as well. It is exceedingly difficult to gain a strategic advantage over a precognitive. I suspect that we will only succeed in outmaneuvering her if she allows us to do so...but that is only my opinion.</say></talk>
+    </objective>
+  </phase>
+  <finish>Hmph. It looks like the Merovingian has made up his mind to see this through. It's all a waste of time if you ask me--but of course you're not bright enough to do that. Go on, go do whatever it is you do with yourself when I'm not actively directing your otherwise aimless existence.</finish>
+</mission>

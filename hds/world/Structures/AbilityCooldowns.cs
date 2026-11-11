@@ -198,6 +198,7 @@ namespace hds
         /// <summary>True while the ability, or the group it shares a timer with, is cooling down.</summary>
         public static bool IsCoolingDown(ClientData data, UInt16 abilityId, double now)
         {
+            abilityId = AbilityCatalog.Canonical(abilityId);
             lock (data.cooldownEndsAt)
             {
                 if (data.cooldownEndsAt.TryGetValue(abilityId, out double end) && now < end)
@@ -205,7 +206,7 @@ namespace hds
                     return true;
                 }
 
-                return Retail.TryGetValue(abilityId, out Cooldown cd) && cd.Group != 0 &&
+                return TryGet(abilityId, out Cooldown cd) && cd.Group != 0 &&
                        data.cooldownEndsAt.TryGetValue(cd.Group, out double groupEnd) && now < groupEnd;
             }
         }
@@ -216,7 +217,8 @@ namespace hds
         /// </summary>
         public static void Start(WorldClient client, UInt16 abilityId, double now)
         {
-            if (!Retail.TryGetValue(abilityId, out Cooldown cd))
+            abilityId = AbilityCatalog.Canonical(abilityId);
+            if (!TryGet(abilityId, out Cooldown cd))
             {
                 return;
             }
@@ -248,6 +250,19 @@ namespace hds
                 client.messageQueue.addRpcMessage(BuildTimer(abilityId, OwnTimer, cd.Seconds, false));
                 client.FlushQueue();
             });
+        }
+
+        public static bool TryGet(UInt16 id, out Cooldown cooldown)
+        {
+            id = AbilityCatalog.Canonical(id);
+            if (Retail.TryGetValue(id, out cooldown)) return true;
+            var entry = AbilityCatalog.Find(id);
+            if (entry == null || entry.Number("Ability/RecastTime") <= 0) return false;
+            UInt16 family = AbilityCatalog.IdOf((UInt32)entry.Number("Ability/FamilyRecastTimer"));
+            float seconds = (float)entry.Number("Ability/RecastTime");
+            float shared = (float)(AbilityCatalog.Find(family)?.Number("Ability/RecastTime", seconds) ?? seconds);
+            cooldown = new Cooldown(seconds, family, shared);
+            return true;
         }
     }
 }

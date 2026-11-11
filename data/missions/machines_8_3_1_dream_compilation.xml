@@ -45,7 +45,7 @@ Coupled with our viral attack on their mainframe, these attacks effectively elim
   <npc id="8" handle="Agent Stewart" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
     <say>The program has executed within the designated parameters.</say>
   </npc>
-  <npc id="9" handle="Morpheus" type="FRIENDLY" at="4" rsi="ec020058" weapon="2564">
+  <npc id="9" handle="Morpheus" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say>Fine...but we can't wait too long... Why haven't they... Zion refuses to fight... Even if I am said to be dead.</say>
   </npc>
   <phase site="Normal" enemy="Machines" enemies="0">

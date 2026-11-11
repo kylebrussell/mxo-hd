@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Less Obvious Signs of the Apocalypse, Merovingian story mission 9.3.5. Source:
+     research/missions/transcripts/Merv9-3-5.md (the archive replay of [Merovingian Archive 9.3.5], given by
+     [Archived]Flood; 22 screenshots of the log taken after the mission ended). Placement is generated: see
+     docs/MISSIONS.md.
+     Retail's text: the title, every briefing, Flood, Operator and NPC line, and the NPC names. The asterisks in
+     "*do*" are retail's own; the italics ("know", "too", "are" and the Agents' lines) are dropped. Ours: the
+     description (the Summary tab was never opened), every objective text (the Objectives tab was never opened), the
+     sites (none is described: all Normal; phase 2 is in Mara and phases 3 and 4 in Kedemoth, as Flood names them), the
+     looks (Halborn and Carlyne as in 9.3.1; the three Agents are redpills in Agent disguises, so they have an Agent's
+     look; Eos's sex isn't shown) and the enemy counts: no hostile and no kill is logged, so no phase has any.
+     Item stand-ins: none.
+     Joins between shots read as contiguous: "raring to" / "finish off Halborn.", "but I guess the" / "plan's about to
+     change.", "I can't waste my time" / "here.", "tracking him down in" / "Mara.", "looks big enough" / "to be him",
+     "Oh, and" / "tell Halborn", "staying put for once. This won't work" / "if he moves early". Read as a paragraph
+     break: "as bait." / "You get the joy". "staying put" is cut through its descenders at the bottom of a shot.
+     Rewards: the log shows 396,000 experience and 66,500 information, and an item forwarded to email because the
+     inventory was full, what it was not shown (a level-37 player's live run). These are Zion 9.3's values (374,000
+     experience, 63,000 information, as Senseless paid). No reward item is given.
+     Gaps: the redpill guards' exchange in phase 1 (Ophiuchi's challenge, Eos's answers) came on the player's
+     approach, before Halborn spoke; it is said on getting near Ophiuchi. No "Goals complete" was logged after the
+     Talks with Halborn in phases 1 and 3. Phase 4's area completed when Carlyne arrived and spoke ("Where is he?"),
+     19 seconds after the player got there; here Carlyne is waiting and is talked to, and the
+     Agents' order, Carlyne's answer and Agent Park's aside follow as done lines (retail spread them over 13
+     seconds). Lines logged after a goal (Halborn's "I'm all right" and "The old woman's close", Carlyne's "You'd
+     better hurry", Agent Wilson's repeated order, Agent Park's "It's me, Eos!", Agent Lee's "So far, so good!") are
+     what each says when clicked afterwards. -->
+<mission id="309305" title="Less Obvious Signs of the Apocalypse" description="Talk Halborn into acting as bait, then lure Carlyne into the Merovingian's trap." plot="1"
+         order="9305" org="3" contact="Flood" exp="374000" info="63000">
+  <npc id="1" handle="Halborn" type="FRIENDLY" at="1" rsi="8f080058" weapon="2568">
+    <say after="1">I'm all right, damn it. Keep your hands off me.</say>
+  </npc>
+  <npc id="2" handle="Ophiuchi" type="FRIENDLY" at="1" rsi="d8040058" weapon="2564" />
+  <npc id="3" handle="Eos" type="FRIENDLY" at="1" rsi="34050040" weapon="2564" />
+  <npc id="4" handle="Carlyne" type="FRIENDLY" at="2" rsi="d8040058" weapon="2568">
+    <say after="2">You'd better hurry, {player}. Poor Halborn always has been a fragile creature. No telling how long he'll be able to hold up.</say>
+  </npc>
+  <npc id="5" handle="Halborn" type="FRIENDLY" at="3" rsi="8f080058" weapon="2568">
+    <say after="3">The old woman's close... I know it.</say>
+  </npc>
+  <npc id="6" handle="Carlyne" type="FRIENDLY" at="4" rsi="d8040058" weapon="2568" />
+  <npc id="7" handle="Agent Wilson" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say after="4">Carlyne, you are ordered to come with us. The System requires information concerning your activities.</say>
+  </npc>
+  <npc id="8" handle="Agent Park" type="FRIENDLY" at="4" rsi="9b000090" weapon="2568">
+    <say after="4">Hey, {player}! It's me, Eos! Pretty good disguise, huh?</say>
+  </npc>
+  <npc id="9" handle="Agent Lee" type="FRIENDLY" at="4" rsi="3600004e" weapon="2568">
+    <say after="4">So far, so good!</say>
+  </npc>
+  <phase site="Normal" enemy="Zion" enemies="0">
+    <briefing>We managed to pull Halborn out of the override inferno he and Carlyne ignited when they ran into each other in Richland. Halborn was in pretty sad shape, whereas intel makes Carlyne out to be fit as a fiddle, and raring to finish off Halborn.&#10;&#10;Halborn's insisting that he wants to go find the Oracle, but there's no way he can get past Carlyne in his condition. That means it's up to us to take Carlyne out of the picture, and we've got a plan to make that happen. All we need is for Halborn to stick around at the right spot as bait.&#10;&#10;You get the joy of explaining this to him, {player}. Make sure he's cooperative.</briefing>
+    <enter><say>Okay, Halborn's supposed to be in there. I've got what looks like him and our redpill guards. We've been trying to keep him out of Carlyne's detection range, but I guess the plan's about to change.</say></enter>
+    <objective goal="1" text="Talk to Halborn" type="Talk" npc="1">
+      <talk><say npc="1">This is stupid... I can't waste my time here. I've got to find her before--&#10;&#10;All right, fine. Have them let me know where I need to be--just as long as I get out of here. He'll find me if I stay in one place for too long.</say></talk>
+      <done><say>Guess that's about as much as we can hope for. Let's tell Flood it's on.</say></done>
+    </objective>
+    <near npc="2" radius="1000">
+      <say npc="2">Hold it right there, buckaroo. How about you show me some ID?</say>
+      <say npc="3">Hey, Ophiuchi, can't you see that's {player}?</say>
+      <say npc="2">Hmph. Could be faked.</say>
+      <say npc="3">Sorry about that. He's kind of a newbie. Just came over from the Machines...</say>
+    </near>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Mara">
+    <briefing>Now that the lame duck's finally in motion, it's time to tip off the eager hunter. Carlyne's remaining his usual extroverted self, so even you won't have any trouble tracking him down in Mara. Just get him interested.&#10;&#10;I don't know, operative. Use your imagination. Do I have to come up with all the ideas for you?</briefing>
+    <enter><say>We're in luck: I don't see any Zionites around. The override signal I'm picking up in there looks big enough to be him, so here's hoping our luck holds out.&#10;&#10;Hey, I was thinking, maybe you could tape glow sticks all over your body, and pretend to be Halborn.&#10;&#10;I know! I get a good one every now and then.</say></enter>
+    <objective goal="2" text="Talk to Carlyne" type="Talk" npc="4">
+      <talk><say npc="4">So... It's you.&#10;&#10;Fit as a fiddle, thank you very much. It's more than I can say for old Halborn, I'm afraid... But you already know that, don't you, {player}? Oh yes, I have my sources...&#10;&#10;Why don't you run along now? Oh, and tell Halborn not to make this too easy, hm? I do hate an anticlimax.</say></talk>
+      <done><say>Well, getting his attention wasn't too hard. We'll just have to see if he's cagey enough to try to follow us.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>Then get over to Kedemoth, operative, and make sure Halborn's staying put for once. This won't work if he moves early and makes it too obvious to Carlyne that the artificial override signal we're generating nearby is a fake.</briefing>
+    <enter><say>I hope whatever it is Flood's got planned goes down fast. I don't see Carlyne being fooled for long by a spoofed signal...</say></enter>
+    <objective goal="3" text="Talk to Halborn" type="Talk" npc="5">
+      <talk><say npc="5">Oh. You again.&#10;&#10;I'm here, aren't I? Just hurry up with whatever you're going to do.</say></talk>
+      <done><say>Always a pleasure... Anyway, better move out. Carlyne can't be too far behind.</say></done>
+    </objective>
+  </phase>
+  <phase site="Normal" enemy="Zion" enemies="0" neighbourhoods="Kedemoth">
+    <briefing>Stop lollygagging, and get into position, operative. Carlyne will be there any second. You *do* have an Agent disguise, don't you?</briefing>
+    <enter><say>Um... I love it when Flood assumes that we know the details of whatever crackerjack scheme he's cooked up.&#10;&#10;I've got override readings in there... They seem a little erratic. I'm also picking up some of our redpills.</say></enter>
+    <objective goal="4" text="Talk to Carlyne" type="Talk" npc="6">
+      <talk><say npc="6">Where is he? There's something--</say></talk>
+      <done>
+        <say npc="7">Carlyne, you are ordered to come with us. The System requires information concerning your activities.</say>
+        <say npc="6">What?! Machine programs? They must be getting desperate. They should know I can take care of these in the blink of an eye...</say>
+        <say npc="8">What's that? I can't! This collar is so tight!</say>
+      </done>
+    </objective>
+  </phase>
+  <finish>There. Halborn will get a head start after the Oracle while Carlyne wastes time trying to override operatives disguised as programs.&#10;&#10;That won't keep Carlyne occupied for long, of course. Halborn had better get it right this time. If he blows it now, it's his own neck on the line.&#10;&#10;Although, what makes him think he'll find her this time, I really couldn't say. It's being bandied about that she appeared and spoke to both EPN and Cypherites in the past week. I suppose there are less obvious signs that the world is ending...</finish>
+</mission>

@@ -24,6 +24,8 @@ namespace hds
         private bool flushingQueueInProgress = false;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
+        private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
+        private bool packetWorkerRunning;
         private readonly object flushLock = new object();
         private long lastFlushTick;
         private volatile bool flushPending;
@@ -62,6 +64,46 @@ namespace hds
             lastUsedTime = TimeUtils.getUnixTimeUint32();
         }
 
+
+        /// <summary>
+        /// A player the server plays itself (dev partners such as ?duelbot): a full character in the world that other
+        /// clients see and fight, with no connection behind it. What is sent to it is dropped.
+        /// </summary>
+        public bool IsBot { get; private set; }
+
+        public static WorldClient CreateBot(string key)
+        {
+            lock (WorldServer.Clients)
+            {
+                Store.world.objMan.PushClient(key); // the object table is guarded by this lock everywhere else
+            }
+            return new WorldClient(key);
+        }
+
+        private WorldClient(string botKey)
+        {
+            IsBot = true;
+            key = botKey;
+            messageQueue = new MessageQueue();
+            playerData = new ClientData { isBot = true };
+            viewMan = new ViewManager();
+            playerData.setUniqueKey(key);
+            playerInstance = Store.world.objMan.GetAssignedObject(key);
+            alive = true;
+            lastUsedTime = TimeUtils.getUnixTimeUint32();
+        }
+
+        private void DropQueuedMessages()
+        {
+            lock (messageQueue.ObjectMessagesQueue.SyncRoot)
+            {
+                messageQueue.ObjectMessagesQueue.Clear();
+            }
+            lock (messageQueue.RPCMessagesQueue.SyncRoot)
+            {
+                messageQueue.RPCMessagesQueue.Clear();
+            }
+        }
 
         // This method sends one packet at a time to the game client 
         private void sendPacket(byte[] data)
@@ -158,6 +200,11 @@ namespace hds
 
         public void FlushQueue(bool sent = false, bool force = false)
         {
+            if (IsBot)
+            {
+                DropQueuedMessages();
+                return;
+            }
             if (!force && !sent)
             {
                 long now = Environment.TickCount64;
@@ -444,6 +491,39 @@ namespace hds
             return processedPacket;
         }
 
+        /// <summary>Called by the socket receiver before it arms the next receive, preserving datagram arrival order.</summary>
+        internal void QueuePacket(byte[] packet)
+        {
+            lock (receivedPackets)
+            {
+                receivedPackets.Enqueue(packet);
+                if (packetWorkerRunning)
+                {
+                    return;
+                }
+                packetWorkerRunning = true;
+            }
+            ThreadPool.QueueUserWorkItem(_ => ProcessQueuedPackets());
+        }
+
+        private void ProcessQueuedPackets()
+        {
+            while (true)
+            {
+                byte[] packet;
+                lock (receivedPackets)
+                {
+                    if (receivedPackets.Count == 0)
+                    {
+                        packetWorkerRunning = false;
+                        return;
+                    }
+                    packet = receivedPackets.Dequeue();
+                }
+                processPacket(packet);
+            }
+        }
+
         public void processPacket(byte[] packet)
         {
             lock (processLock)
@@ -553,6 +633,10 @@ namespace hds
         {
             get
             {
+                if (IsBot)
+                {
+                    return alive;
+                }
                 UInt32 now = TimeUtils.getUnixTimeUint32();
                 if (!this.alive || (now - lastUsedTime > 30))
                 {

@@ -86,68 +86,36 @@ namespace hds
                         Console.WriteLine(ex);
                     }
 
-                    if (orgId < 6)
+                    if (orgId >= 0 && orgId < 6)
                     {
                         Store.dbManager.WorldDbHandler.SetOrgId(Store.currentClient.playerData.getCharID(), orgId);
-                        List<Attribute> updateAttributes = new List<Attribute>();
-                        Store.currentClient.playerInstance.OrganizationID.setValue(orgId);
-                        updateAttributes.Add(Store.currentClient.playerInstance.OrganizationID);
-
-                        PacketContent myselfStateData = new PacketContent();
-                        myselfStateData.AddByteArray(
-                            Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
-                        Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                        // The field is one byte. A signed int selects setValue(float), whose low byte is 0 for 1..5.
+                        Store.currentClient.playerInstance.OrganizationID.setValue((byte)orgId);
+                        Store.currentClient.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf(
+                            (PlayerViewAttributes.SelfOrganizationId, PlayerViewAttributes.U8((byte)orgId))), false);
+                        // Other players' clients decide by it whether this one can be fought (OrganizationID, other-view 4)
+                        PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherOrganizationId, PlayerViewAttributes.U8((byte)orgId))));
+                        Store.currentClient.FlushQueue();
                     }
                 }
 
-                if (command.Equals("?rep") && commands.Length == 3)
+                if (command.Equals("?rep") && commands.Length == 3 && short.TryParse(commands[2], out short reputation))
                 {
-                    int reputation = 0;
-                    try
+                    WorldClient client = Store.currentClient;
+                    var player = client.playerInstance;
+                    (byte org, string column, Attribute attribute) = commands[1] switch
                     {
-                        reputation = Int16.Parse(commands[2].ToString());
-                    }
-                    catch (Exception exception)
+                        "zion" => (MissionContacts.Zion, "repZion", player.ReputationZionMilitary),
+                        "machine" => (MissionContacts.Machines, "repMachine", player.ReputationMachines),
+                        "mero" => (MissionContacts.Merovingian, "repMero", player.ReputationMerovingian),
+                        _ => (0, null, null),
+                    };
+                    if (attribute != null)
                     {
-                        Console.WriteLine(exception);
-                    }
-
-                    List<Attribute> updateAttributes = new List<Attribute>();
-
-                    bool changedReputation = false;
-                    switch (commands[1].ToString())
-                    {
-                        case "zion":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repZion", reputation);
-                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationZionMilitary);
-                            break;
-                        case "machine":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repMachine", reputation);
-                            Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationMachines);
-                            break;
-                        case "mero":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repMero", reputation);
-                            Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationMerovingian);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (changedReputation)
-                    {
-                        PacketContent myselfStateData = new PacketContent();
-                        myselfStateData.AddByteArray(
-                            Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
-                        Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                        Store.dbManager.WorldDbHandler.SetReputation(client.playerData.getCharID(), column, reputation);
+                        attribute.setValue(unchecked((UInt16)reputation));
+                        client.messageQueue.addObjectMessage(player.GetSelfUpdateAttributes(new List<Attribute> { attribute }, true), false);
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildOrganizationReputation(org, reputation));
                     }
                 }
 
@@ -386,6 +354,59 @@ namespace hds
                         new ServerPackets().sendSystemChatMessage(Store.currentClient,
                             "?tradebot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
                     }
+                }
+
+                if (command.Equals("?duelbot") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: a player played by the server to duel or fight, so one client can see both sides
+                    // (docs/PVP.md). ?duelbot [wait|attack|gun|challenge|pvp], ?duelbot off
+                    string arg = commands.Length > 1 ? commands[1] : "";
+                    if (arg.Equals("off", StringComparison.OrdinalIgnoreCase))
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            DuelBot.Dismiss(Store.currentClient) ? "DuelBot left." : "You have no DuelBot.", "BROADCAST");
+                    }
+                    else if (DuelBot.TryParseMode(arg, out DuelBot.Mode botMode))
+                    {
+                        DuelBot.Summon(Store.currentClient, botMode);
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, "DuelBot (" + botMode + ") is next to you.", "BROADCAST");
+                    }
+                    else
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                            "?duelbot [wait|attack|gun|challenge|pvp|off]", "BROADCAST");
+                    }
+                }
+                else if (command.Equals("?duelbot"))
+                {
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        "?duelbot is a dev command (start the server with MXO_DEV_COMMANDS=1).", "BROADCAST");
+                }
+
+                if (command.Equals("?pvpflag") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                {
+                    // Dev command: the PvP flag itself, whatever the server type allows /pvp to do
+                    PvpFlag.Set(Store.currentClient, commands[1].Equals("on", StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (command.Equals("?pvpability") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    UInt16.TryParse(commands[1], out UInt16 flagAbility))
+                {
+                    // Dev command: one of the flag abilities (PvpFlag.Abilities: a PvP pulse, a pacification zone) lands on you
+                    if (!PvpFlag.ApplyAbility(Store.currentClient, flagAbility))
+                    {
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, "Not a PvP flag ability.", "BROADCAST");
+                    }
+                }
+
+                if (command.Equals("?health") && commands.Length == 2 && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    UInt16.TryParse(commands[1], out UInt16 devHealth) && devHealth > 0)
+                {
+                    // Dev command: your own health, so a test fight between players ends in rounds, not minutes
+                    Store.currentClient.playerInstance.Health.setValue(devHealth);
+                    Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildSelfHealthUpdate(devHealth), false);
+                    PvpFlag.ToWatchers(Store.currentClient, PlayerViewAttributes.Build((PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(devHealth))));
+                    Store.currentClient.FlushQueue();
                 }
 
                 if (command.Equals("?die"))

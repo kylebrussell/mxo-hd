@@ -8,20 +8,20 @@
      {player}. Her "Saluti" was in italics; it is plain here. Gray's "should have began" is retail's.
      Ours: the description (the Summary tab was never opened), the other objective texts, the sites (the three
      Ouroboros offices are Office, the meeting with Pace is not described: Normal; retail ran in Murasaki and
-     Ikebukuro, International), the looks and the enemy counts. Ouroboros Security are the corporation's own guards
-     and have no organisation; they are Machines here, the nearest (the Oligarchs' front company in the System's
-     simulation).
+     Ikebukuro, International), the looks and the number of guards (three; the bark was logged three times).
+     Ouroboros Security are the corporation's own guards and have no organisation; they are named NPCs here, not
+     generated hostiles.
      Rewards: 297,000 experience and 98,000 information, shown on completing this mission.
      Gaps: the two Agents joined the player at Pace's; here they follow once Pace has been talked to (a lead out of
      the area), and in phase 2 the visit is done by bringing them to the first office worker. Barney Rodick never
      appears; the search for him is a talk with a second worker. Agent Long's line, logged twice, is said once on
      nearing him. In phase 3 the manager's pep talk and the walkout are said on nearing him, with the Operator's
      "What in hell is going on in there?". In phase 4 retail's security turned hostile after the computer was
-     searched ("drawn attention of the shiny-helmet variety"); here the guards are there from the start, and one of
-     them says the guards' bark on being neared. The support staff's puzzling is said on nearing them, and their
-     "Good God! Don't touch that!" and "Ohhh snap!" when the computer is searched. Lines that lost a line at a
-     screenshot join (Gray's phase 4 briefing, the Operator's last two) are used as they read. The bystanders' other
-     lines are their lines when talked to. -->
+     searched ("drawn attention of the shiny-helmet variety"); here three guards stand on the floor as friendlies
+     and turn hostile then, and one of them says the guards' bark after the Operator's line. The support staff's
+     puzzling is said on nearing them, and their "Good God! Don't touch that!" and "Ohhh snap!" when the computer is
+     searched. Lines that lost a line at a screenshot join (Gray's phase 4 briefing, the Operator's last two) are
+     used as they read. The bystanders' other lines are their lines when talked to. -->
 <mission id="211103" title="Redundancy" description="Confront Ouroboros about the crisis caused by its failed parts." plot="1"
          order="11103" org="2" contact="Agent Gray" exp="297000" info="98000">
   <npc id="1" handle="Agent Pace" type="FRIENDLY" at="1" rsi="6e060040" weapon="2568" />
@@ -64,7 +64,9 @@ I know your beeper numbers!</say>
   </npc>
   <npc id="13" handle="Bluepill" type="FRIENDLY" at="4" rsi="38000024" weapon="0" />
   <npc id="14" handle="Bluepill" type="FRIENDLY" at="4" rsi="5a000040" weapon="0" />
-  <npc id="15" handle="Ouroboros Security" type="HOSTILE" at="4" rsi="35000024" weapon="2568" />
+  <npc id="15" handle="Ouroboros Security" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" hostileAfter="1" />
+  <npc id="16" handle="Ouroboros Security" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" hostileAfter="1" />
+  <npc id="17" handle="Ouroboros Security" type="FRIENDLY" at="4" rsi="35000024" weapon="2568" hostileAfter="1" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>Operative, we have been able to quell some of the rioting in the city, but civilian casualties will continue to rise as long as the widespread shortage of functional television and Internet devices persists. The Ouroboros Corporation, as the supplier of the malfunctioning parts, should have began to furnish working replacements, but this has not occurred, and their apparent recalcitrance is only increasing customer dissatisfaction. Ouroboros must be confronted about the crisis caused by their failed parts, and provide a solution--or at least an explanation.
 
@@ -107,7 +109,7 @@ I'd make some kind of profound statement about the fragility of prewar society d
       <say>What in hell is going on in there?</say>
     </near>
   </phase>
-  <phase site="Office" enemy="Machines" enemies="3">
+  <phase site="Office" enemy="Machines" enemies="0">
     <briefing>Hm. Ouroboros' product problems may be a symptom of an internal malaise.
 
 The location you see marked is an Ouroboros systems support facility. Staff there should be capable of diagnosing the problems.</briefing>
@@ -122,6 +124,11 @@ The location you see marked is an Ouroboros systems support facility. Staff ther
 Hm... I'm picking up some data corruption on that machine: just the kind of errors that start to crop up without proper maintenance. It's also having trouble connecting to some shared network resources... Oy, the error log looks like two Sentinels in a wrestling match.
 
 Uh-oh, I think you've drawn attention of the shiny-helmet variety. Well, I don't see any actual useful data there, anyway.</say>
+        <say npc="15">You!
+
+Hey!
+
+I'm talking!</say>
       </done>
     </objective>
     <near npc="13" radius="400">
@@ -129,13 +136,6 @@ Uh-oh, I think you've drawn attention of the shiny-helmet variety. Well, I don't
       <say npc="14">I just don't know what it could be, then.</say>
       <say npc="13">I wonder if we have a backup...</say>
       <say npc="14">Well, I'm all out of ideas.</say>
-    </near>
-    <near npc="15" radius="600">
-      <say npc="15">You!
-
-Hey!
-
-I'm talking!</say>
     </near>
   </phase>
   <finish>The sudden failures cascading through Ouroboros services must have an intelligent origin. This cause must be found before more failures occur.
