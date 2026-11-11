@@ -1,6 +1,7 @@
 {
   "source": "data/mob_parsed.csv",
-  "source_sha256": "bf43a47d7995ee7348029a8c2dd1e331965eaa3f18b90513fd6f9dbc3e031e5f",
+  "source_hash_format": "UTF-8, LF line endings",
+  "source_sha256": "b8f298431937348e385e2b2205b320941bd64fdb2c720bb4afc256058f724429",
   "policy": "NpcSpawnScope.Classify; unknown city nav is retained; historical mission/encounter samples require explicit runtime ownership.",
   "counts": {
     "OpenWorld": 8976,

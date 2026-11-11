@@ -14,7 +14,9 @@ public class NpcSpawnScopeTests
         string source = Path.Combine(root, "data", "mob_parsed.csv");
         string folder = Path.Combine(root, "data", "npc_spawns");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
-        Assert.Equal(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant(),
+        byte[] canonicalSource = System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(source).Replace("\r\n", "\n"));
+        Assert.Equal("UTF-8, LF line endings", manifest.RootElement.GetProperty("source_hash_format").GetString());
+        Assert.Equal(Convert.ToHexString(SHA256.HashData(canonicalSource)).ToLowerInvariant(),
             manifest.RootElement.GetProperty("source_sha256").GetString());
         var rows = new List<string>();
         foreach (var scope in Enum.GetValues<NpcSpawnScope.Scope>())

@@ -36,7 +36,9 @@ foreach (var (scope, rows) in groups)
     File.WriteAllLines(Path.Combine(output, file), new[] { header }.Concat(rows));
     Console.WriteLine($"{scope}: {rows.Count}, ambient={NpcSpawnScope.LoadAmbient(scope)}");
 }
-var manifest = new { source = "data/mob_parsed.csv", source_sha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant(),
+byte[] canonicalSource = System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(source).Replace("\r\n", "\n"));
+var manifest = new { source = "data/mob_parsed.csv", source_hash_format = "UTF-8, LF line endings",
+    source_sha256 = Convert.ToHexString(SHA256.HashData(canonicalSource)).ToLowerInvariant(),
     policy = "NpcSpawnScope.Classify; unknown city nav is retained; historical mission/encounter samples require explicit runtime ownership.",
     counts = groups.ToDictionary(g => g.Key.ToString(), g => g.Value.Count), rows = provenance };
 File.WriteAllText(Path.Combine(output, "manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
