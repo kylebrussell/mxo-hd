@@ -26,6 +26,8 @@ Binary evidence:
 - `81 2f`: constructor `6214225d`, UI `6208cad8`: result u8, slot u8, TypeID u32, XP float. `81 30` constructor `621423dc`: ObjectID u32, Complexity u8, Category u32.
 - Compile cost multiplier `.12`: `6269fd01..fd70`, immediate `3df5c28f`. `crafting_server.py` supplies cost discount, Gaussian roll (mean50, deviation16, clamp0..100), strict `4*(skill+specialization/10)+roll > 4*complexity+50`. Missing stored complexity is refused.
 
+The first `81 2e` producer (`6208be40..bf74`) reads ReqAbilityID at `62871018` and checks base37 (Write Code); it packs the selected result as `goid<<7`. The second (`6208c13d..c1e8`) copies the selected packed SourceCode. The Analyzer/Write Code branch is deliberately incomplete until its output/charge semantics can be verified in the native UI.
+
 `data/crafting_rules.json` exports 42,804 stored item rule rows. `research/crafting/extract_rules.py` reproduces this and `data/pvp_archives.json` directly from the client packmap. Missing GOB fields remain null. `char_recipes` persists learned recipes and the margin includes them on subsequent logins. The historical baseline recipe list is preserved.
 
 ## Shared PvP interlock
@@ -59,7 +61,7 @@ GOB Ticket fields identify 24 reusable archive books, their organization and inc
 | 7 | 17 | 7 | Datamine | 1–100 |
 | 8 | 18 | 9 | Sati's Playground | 1–100 |
 
-Names are from the books' STA Info strings. `rshooks.LookupCID` uses `ConstructIDBase + PvPID - 1`; `626a2824` sets base11. The archive01 retail world-load capture also carries construct15. Resource lookup, saved district and navmesh continue to use the server map index; world-load Atlas carries the construct ID.
+Names are from the books' STA Info strings. `rshooks.LookupCID` uses `ConstructIDBase + PvPID - 1`; `626a2824` sets base11. The archive01 retail world-load capture also carries construct15. Resource lookup, saved district and navmesh continue to use the server map index; world-load Atlas carries the construct ID. The existing world-load writer emits `06 0e 00` followed by that u32 at byte3 (its AddUShort helper emits one byte).
 
 City sender placements come from the actual static CSV rows:
 
@@ -101,5 +103,7 @@ Release the lock with CSR110 at Mara, full health, pvpflag0 and mission986 only.
 - All48 map/organization arrivals locate walkable floor; book level/org gates and the complete sender state cycle have unit coverage.
 - Native-wire crafting, owned buff cancellation, wrong/replayed container deposits, saved Death Effect across a fresh server, and six-player observer mapping/withdrawal/rejoin pass headlessly.
 - Archive transport passes end to end (215.8s): matching equipped book, simultaneous underlevel refusal, construct11 with server map6, returner creation, forged stale handle refusal, valid return and reusable book preserved.
-- Final complete70-case regression is in progress; the handoff file records its final result. Earlier complete run passed69 cases with the archive assertion failure; the subsequent corrected test exposed and fixed the generic spawn-counter bug described above.
-- Native client A/B failed before gameplay; corrected native retry remains unverified. CSR110 was reset/verified at Mara, health250/250, flag0, mission986; NativeD stopped and released the lock at18:01ET.
+- Final complete headless regression: **70/70 pass in538.6s**, six fresh servers concurrently at the peak. This includes the final generic spawn-counter fix and corrected archive/return test.
+- Native client A/B failed before gameplay; corrected native retry remains unverified; no QA server is left listening. CSR110 was reset/verified at Mara, health250/250, flag0, mission986; NativeD stopped and released the lock at18:01ET.
+
+Runtime commit `f8c387d` passes GitHub CI [43118168743](https://github.com/kylebrussell/mxo-hd/actions/runs/43118168743). PR100 remains draft for the explicit parity limits and native checklist above; PR99 isolates the startup fix.
