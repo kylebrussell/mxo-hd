@@ -337,7 +337,8 @@ namespace hds.databases{
 	        List<CrewMember> crewMembers = new List<CrewMember>();
 	        OpenConnection();
 	        string query =
-		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online FROM crew_members cm LEFT JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "' ";
+		        "SELECT cm.char_id, cm.is_captain, cm.is_first_mate, c.handle, c.is_online " +
+                "FROM crew_members cm JOIN characters c ON cm.char_id=c.charId WHERE cm.crew_id = '" + crewId + "'";
 	        
 	        queryExecuter = conn.CreateCommand();
 	        queryExecuter.CommandText = query;
@@ -358,6 +359,7 @@ namespace hds.databases{
 		        member.isOnline = isOnline;
 		        crewMembers.Add(member);
 	        }
+	        dr.Close();
 	        CloseConnection();
 
 	        return crewMembers;
@@ -1280,7 +1282,7 @@ namespace hds.databases{
             }
         }
 
-        public CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem)
+        public CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false)
         {
             using MySqlConnection connection = new MySqlConnection(connectionString);
             connection.Open();
@@ -1288,7 +1290,7 @@ namespace hds.databases{
             using MySqlTransaction transaction = connection.BeginTransaction();
             using MySqlCommand command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char AND slot BETWEEN 1 AND 96 ORDER BY slot FOR UPDATE";
+            command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char ORDER BY slot FOR UPDATE";
             command.Parameters.AddWithValue("@char", charId);
 
             HashSet<int> occupied = new HashSet<int>();
@@ -1297,7 +1299,15 @@ namespace hds.databases{
             {
                 while (reader.Read())
                 {
+                    if (uniqueReward && reader.GetUInt32(2) == rewardItem)
+                    {
+                        return null;
+                    }
                     UInt16 slot = reader.GetUInt16(1);
+                    if (slot < 1 || slot > 96)
+                    {
+                        continue;
+                    }
                     if (quantity == 0 || reader.GetUInt32(2) != requiredItem)
                     {
                         occupied.Add(slot);

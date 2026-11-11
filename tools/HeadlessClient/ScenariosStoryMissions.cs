@@ -18,9 +18,13 @@ public static partial class Scenarios
         XElement[] definitions)
     {
         int order = (int)mission.Attribute("order")!;
+        uint ticket = (uint?)mission.Attribute("entryItem") ?? 0;
+        int district = (int?)mission.Attribute("district") ?? 1;
         HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Story" + (int)mission.Attribute("id")!)
         {
-            X = 58800, Y = 2495, Z = 31900, Level = 50
+            X = 58800, Y = 2495, Z = 31900, Level = 50,
+            DistrictId = district, District = district == 2 ? "dt" : "slums",
+            Items = ticket == 0 ? Array.Empty<(int, uint, int)>() : new[] { (1, ticket, 1) }
         });
         await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_missions " +
             "(charId INT UNSIGNED NOT NULL, missionId INT NOT NULL, completions INT NOT NULL DEFAULT 1, PRIMARY KEY (charId, missionId))");
@@ -29,6 +33,15 @@ public static partial class Scenarios
         await context.Database.ExecuteAsync("INSERT INTO char_missions (charId, missionId) VALUES " + string.Join(",", prior));
 
         await player.EnterWorldAsync();
+        if (ticket != 0)
+        {
+            player.SendChat("?rep mero 100");
+            await player.WaitForRpcAsync("80 ab 03 64 00");
+            player.SendRpc("59 01");
+            await player.WaitForRpcAsync("80 9c");
+            await player.WaitForRpcAsync("80 9e 00");
+            return player;
+        }
         player.SendRpc("80 94 05 00 03");
         await player.WaitForTextAsync((string)mission.Attribute("title")!);
         await player.WaitForRpcAsync("80 97 05 00");
@@ -74,6 +87,8 @@ public static partial class Scenarios
         {
             XElement mission = definitions.Single(definition => (int)definition.Attribute("id")! == ids[index]);
             HeadlessPlayer player = await StartMerovingianStoryMission(context, mission, definitions);
+            player.SendRpc("65 01 00 60 00");
+            await player.WaitForRpcAsync("65 01 00 60 00");
             await EnterMissionArea(player);
 
             switch (index)
@@ -89,10 +104,16 @@ public static partial class Scenarios
                     break;
             }
 
+            await FillTicketCompletionBag(context, player);
             await LeaveMissionArea(player);
             await player.WaitForRpcAsync("80 a2 00", TimeSpan.FromSeconds(15));
             Check.Equal(1L, await context.Database.LongAsync($"SELECT completions FROM char_missions " +
                 $"WHERE charId={player.CharId} AND missionId={(int)mission.Attribute("id")!}"), "Chapter 12 completion recorded");
+            Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid={(uint)mission.Attribute("entryItem")!}"),
+                "A moved entry ticket is consumed on completion");
+            Check.Equal((long)(uint)mission.Attribute("completionItem")!,
+                await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={player.CharId} AND slot=96"),
+                "A full bag reuses the consumed ticket's slot for its verification token");
         }
     }
 

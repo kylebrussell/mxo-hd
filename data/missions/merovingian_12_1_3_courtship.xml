@@ -4,7 +4,7 @@
      The first scene uses ordered conversations. The Executable and its Functions share the second floor,
      and defeating the Executable triggers the scan. The visit to the Oligarch base was outside the mission. -->
 <mission id="312103" title="Courtship" description="Report to the Merovingian and trace the route to the Oligarchs' base." plot="1"
-         order="12103" org="3" contact="Flood" exp="239105" info="105000">
+         order="12103" org="3" entryItem="48131" completionItem="48140" minLevel="50" minReputation="60" district="2" districtName="dt" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Merovingian Ballista" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568" />
   <npc id="2" handle="Merovingian Howitzer" type="FRIENDLY" at="1" rsi="c9020058" weapon="2568" />
   <npc id="3" handle="Tesarova" type="FRIENDLY" at="1" rsi="fc0e0004" weapon="2564" />

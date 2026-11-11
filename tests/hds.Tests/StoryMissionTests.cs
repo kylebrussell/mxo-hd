@@ -78,6 +78,22 @@ public class StoryMissionTests
         }
     }
 
+    [Theory]
+    [InlineData("merovingian_12_1_1_hothouse.xml", 48125u, 48134u, 30, 20, 1)]
+    [InlineData("merovingian_12_1_2_deep_cover.xml", 48128u, 48137u, 40, 40, 2)]
+    [InlineData("merovingian_12_1_3_courtship.xml", 48131u, 48140u, 50, 60, 2)]
+    public void Chapter12UsesTheShippedMissionTicketsAndGates(string file, uint ticket, uint completion,
+        int level, int reputation, int district)
+    {
+        Mission mission = Load(file);
+        Assert.Equal(ticket, mission.entryItem);
+        Assert.Equal(completion, mission.completionItem);
+        Assert.Equal(level, mission.minLevel);
+        Assert.Equal(reputation, mission.minReputation);
+        Assert.Equal(district, mission.district);
+        Assert.False(MissionContacts.Offers(MissionContacts.Named("Flood"), mission));
+    }
+
     [Fact]
     public void StoryMissionsComeInChapterOrder()
     {

@@ -20,6 +20,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("login", Login),
+        new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
@@ -37,6 +38,9 @@ public static partial class Scenarios
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
+        new Scenario("mission-ticket-collector", MissionTicketCollector, StillNpcs),
+        new Scenario("mission-ticket-gates", MissionTicketGates, StillNpcs),
+        new Scenario("mission-ticket-completion-retry", MissionTicketCompletionRetry, StillNpcs),
         new Scenario("merovingian-chapter-samples", MerovingianChapterSamples, StillNpcs),
         new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
@@ -147,6 +151,23 @@ public static partial class Scenarios
         (HeadlessPlayer alice, _, ViewCreation bob, ViewCreation aliceSeen) = await TwoNearby(context, new CharacterSeed("Alice"), new CharacterSeed("Bob") { X = 17120 });
         Check.That(bob.ViewId > 3, "Server view ids start at 4");
         Check.Equal(alice.CharId, BitConverter.ToUInt32(aliceSeen.Attributes["CharacterID"]), "CharacterID in the other player's spawn");
+    }
+
+    private static async Task LoginWithOrphanedCrewMember(ScenarioContext context)
+    {
+        await context.Database.ExecuteAsync(@"
+INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank,created_at)
+VALUES (9000,'LegacyCrew','CrewStartup',0,3,0,0,NOW());
+INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
+VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("CrewStartup") { CrewId = 9000 });
+        RpcRecord crew = await player.WaitForRpcAsync("80 86", TimeSpan.FromSeconds(15));
+        Check.That(Contains(crew.Bytes, "LegacyCrew") && Contains(crew.Bytes, "CrewStartup"),
+            "Login sends the crew and its existing member despite an orphaned row");
+        await player.EnterWorldAsync();
+        player.SendChat("?rep mero 30");
+        await player.WaitForRpcAsync("80 ab 03 1e 00");
+        Check.That(!context.Server.FullOutput().Contains("Packet handling failed"), "World setup completes without dropping a packet");
     }
 
     /// <summary>
@@ -441,7 +462,7 @@ public static partial class Scenarios
     {
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
             Items = new (int, uint, int)[] { (1, 48150, 4), (2, 48150, 5), (97, 48150, 1) }
         }))[0];
 
@@ -449,6 +470,8 @@ public static partial class Scenarios
         RpcRecord location = await player.WaitForRpcAsync("81 15");
         RpcRecord dialog = await player.WaitForRpcAsync("81 13");
         Check.Equal(51, location.Bytes.Length, "Collector position record");
+        Check.Equal(-146195d, BitConverter.ToDouble(location.Bytes, 18), "Collector window uses Azuna's observed client X");
+        Check.Equal(50682d, BitConverter.ToDouble(location.Bytes, 34), "Collector window uses Azuna's observed client Z");
         Check.Equal("c3060004c3060004c3060004c0060004", WireFormat.ToHex(dialog.Bytes[18..]), "Azuna's dialogue IDs");
         Check.Equal(WireFormat.ToHex(location.Bytes[2..18]), WireFormat.ToHex(dialog.Bytes[2..18]), "Collector session");
         for (int item = 0; item < 10; item++)
@@ -496,7 +519,7 @@ public static partial class Scenarios
         var items = Enumerable.Range(1, 96).Select(slot => (slot, slot == 1 ? 48150u : NpcLoot.CodeBit1, slot == 1 ? 11 : 1)).ToArray();
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200, Items = items
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682, Items = items
         }))[0];
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForRpcAsync("81 13");
@@ -520,7 +543,7 @@ public static partial class Scenarios
     {
         HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")
         {
-            District = "dt", DistrictId = 2, X = -146900, Y = -55, Z = 50200,
+            District = "dt", DistrictId = 2, X = -146195, Y = -54, Z = 50682,
             Items = new[] { (1, 48150u, 10) }
         }))[0];
 
@@ -532,7 +555,7 @@ public static partial class Scenarios
         {
             player.SendRpc("81 16 " + payload);
         }
-        player.SendChat("?tp -145900 -55 50200 0 0 0");
+        player.SendChat("?tp -145195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=1"),
             "Malformed requests leave the data intact");
@@ -544,7 +567,7 @@ public static partial class Scenarios
             "The trade checks the current position");
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForTextAsync("Move closer to Azuna to trade.");
-        player.SendChat("?tp -146900 -55 50200 0 0 0");
+        player.SendChat("?tp -146195 -55 50682 0 0 0");
         await player.WaitForTextAsync("Teleported to 0/0");
         player.SendRpc("80 c8 3d 03 90 28 01 00");
         await player.WaitForRpcAsync("81 13");

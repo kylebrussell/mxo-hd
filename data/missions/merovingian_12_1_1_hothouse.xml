@@ -2,10 +2,10 @@
 <!-- Flood's 12.1.1, from research/missions/transcripts/Merv12-1-1.md. The screenshots give the dialogue and
      Briseus's level-30 rewards. The objective names, generated sites and redpill count are reconstructed.
      Ookami leads in the log. The mission engine stages her with its existing escort and carries her to the second site.
-     The outdoor South Vauxton search is referenced in Flood's closing call. The next chapter mission follows
-     through the ordinary story sequence. -->
+     The outdoor South Vauxton search is referenced in Flood's closing call. The shipped mission ticket
+     opens this mission independently of the story sequence. -->
 <mission id="312101" title="Hothouse" description="Follow Ookami's lead on the interface program and intercept a Machine patrol." plot="1"
-         order="12101" org="3" contact="Flood" exp="239105" info="105000">
+         order="12101" org="3" entryItem="48125" completionItem="48134" minLevel="30" minReputation="20" district="1" districtName="slums" contact="Flood" exp="239105" info="105000">
   <npc id="1" handle="Ookami" type="FRIENDLY" at="1" rsi="a8060090" weapon="2568" />
   <npc id="2" handle="Tesarova" type="FRIENDLY" at="2" rsi="fc0e0004" weapon="2564" />
   <npc id="3" handle="Machine Vector" type="HOSTILE" at="3" rsi="d8040058" weapon="2568" />

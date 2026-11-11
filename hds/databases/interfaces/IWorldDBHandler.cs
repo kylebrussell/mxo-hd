@@ -73,7 +73,7 @@ namespace hds.databases.interfaces{
         List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
         void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);
         void EnsureTransactionalInventory();
-        CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem);
+        CollectorExchange ExchangeCollectorItems(UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID, int count);
         List<CodeStorage.Entry> GetCodeStorage(UInt32 charId);
         UInt16 GetNextAbilitySlot(UInt32 charId);

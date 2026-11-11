@@ -157,7 +157,7 @@ namespace hds
         /// </summary>
         public static bool Offers(MissionContact contact, Mission mission)
         {
-            if (contact == null)
+            if (contact == null || mission.entryItem != 0)
             {
                 return false;
             }
