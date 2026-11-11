@@ -38,6 +38,9 @@ namespace hds
     {
         public const byte Zion = 1, Machines = 2, Merovingian = 3;
 
+        // The client's intro state uses bit (org - 1) to show an organization's contact.
+        public const byte StoryContactMask = (1 << (Zion - 1)) | (1 << (Machines - 1)) | (1 << (Merovingian - 1));
+
         /// <summary>Tyndall as retail's Zion list header carried her, for when the data file is missing.</summary>
         private static readonly MissionContact Fallback = new MissionContact
         {

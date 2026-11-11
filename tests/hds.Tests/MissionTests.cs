@@ -46,12 +46,12 @@ public class MissionTests
     }
 
     [Fact]
-    public void MissionCompleteMatchesRetail()
+    public void MissionCompletePreservesAllStoryContacts()
     {
-        // Retail end of Welcome to the Matrix (luizoe Recursion, 19:50:35): 1 kill, 120 s, 21,000 info, 5,500 XP, intro state 1
+        // Welcome to the Matrix (luizoe Recursion, 19:50:35), with the server's intro state covering all three organizations.
         byte[] message = ServerPackets.BuildMissionComplete(5500, 21000, 1, 120);
         Assert.Equal(26, message.Length);
-        Assert.Equal("80a2" + "00" + "0100" + "0000" + "78000000" + "08520000" + "7c150000" + "00000000000001", Hex(message));
+        Assert.Equal("80a2" + "00" + "0100" + "0000" + "78000000" + "08520000" + "7c150000" + "00000000000007", Hex(message));
     }
 
     [Fact]

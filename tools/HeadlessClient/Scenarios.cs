@@ -33,6 +33,7 @@ public static partial class Scenarios
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
         new Scenario("story-mission-talks", StoryMissionTalks, StillNpcs),
+        new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
     };
 
@@ -257,6 +258,29 @@ public static partial class Scenarios
         // Aborting takes the NPCs away again
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("80 a2 08");
+    }
+
+    private static async Task FloodStoryMission(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice") { X = 58800, Y = 2495, Z = 31900 });
+
+        // Margin character data 02 for an existing character. The intro state follows the seven reputation values.
+        Check.Equal((byte)0x07, player.CharacterData[0x02][1155], "Contacts visible on login");
+        await player.EnterWorldAsync();
+
+        player.SendRpc("80 94 05 00 03");
+        RpcRecord header = await player.WaitForRpcAsync("80 95");
+        Check.Equal("8095" + "00000000" + "0500" + "0100" + "00" + "03" + "d2070000" + "380000b4" + "e60d0028",
+            WireFormat.ToHex(header.Bytes), "List header for Flood's first mission");
+        await player.WaitForTextAsync("The End of the Beginning");
+        await player.WaitForRpcAsync("80 97 05 00");
+
+        player.SendRpc("80 98 06 00 00 00 01 02 00");
+        await player.WaitForTextAsync("Eliminate Machine opposition and steal vital info.");
+        player.SendRpc("80 9b 07 00 01");
+        await player.WaitForRpcAsync("80 9c");
+        await player.WaitForTextAsync("I am glad to see that you have decided to take up employment");
+        await player.WaitForRpcAsync("80 9e 00");
     }
 
     /// <summary>

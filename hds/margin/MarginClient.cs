@@ -543,7 +543,7 @@ namespace hds{
             pak.AddInt16(-58, 1);
             pak.AddInt16(-57, 1);
             pak.AddInt16(2, 1);
-            pak.AddByte(0x03);
+            pak.AddByte(MissionContacts.StoryContactMask);
             
             // 01 = onWorld , 00 = LA . In World you have to take care to not spawn the Character in LA State
             if (marginCharacter.DistrictId != (uint)MxOLocations.LA)
