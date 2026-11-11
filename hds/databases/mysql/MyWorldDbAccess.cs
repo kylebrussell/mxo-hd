@@ -598,13 +598,14 @@ namespace hds.databases{
 				Store.currentClient.playerInstance.CrewID.enable();
 				Store.currentClient.playerInstance.CrewID.setValue(crewId);
 
-				Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16) Convert.ToDecimal(dr.GetValue(21)));
-				Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16) Convert.ToDecimal(dr.GetValue(22)));
-				Store.currentClient.playerInstance.ReputationNiobe.setValue((UInt16) Convert.ToDecimal(dr.GetValue(23)));
-				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue((UInt16) Convert.ToDecimal(dr.GetValue(24)));
-				Store.currentClient.playerInstance.ReputationCypherites.setValue((UInt16) Convert.ToDecimal(dr.GetValue(25)));
-				Store.currentClient.playerInstance.ReputationGMOrganization.setValue((UInt16) Convert.ToDecimal(dr.GetValue(26)));
-				Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16) Convert.ToDecimal(dr.GetValue(27)));
+				// Reputation attributes carry the two's-complement bytes of the signed standings.
+				Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)dr.GetInt32(21)));
+				Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)dr.GetInt32(22)));
+				Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)dr.GetInt32(23)));
+				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)dr.GetInt32(24)));
+				Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)dr.GetInt32(25)));
+				Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)dr.GetInt32(26)));
+				Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)dr.GetInt32(27)));
 				
 
 			}

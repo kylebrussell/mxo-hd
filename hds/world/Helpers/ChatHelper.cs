@@ -100,54 +100,23 @@ namespace hds
                     }
                 }
 
-                if (command.Equals("?rep") && commands.Length == 3)
+                if (command.Equals("?rep") && commands.Length == 3 && short.TryParse(commands[2], out short reputation))
                 {
-                    int reputation = 0;
-                    try
+                    WorldClient client = Store.currentClient;
+                    var player = client.playerInstance;
+                    (byte org, string column, Attribute attribute) = commands[1] switch
                     {
-                        reputation = Int16.Parse(commands[2].ToString());
-                    }
-                    catch (Exception exception)
+                        "zion" => (MissionContacts.Zion, "repZion", player.ReputationZionMilitary),
+                        "machine" => (MissionContacts.Machines, "repMachine", player.ReputationMachines),
+                        "mero" => (MissionContacts.Merovingian, "repMero", player.ReputationMerovingian),
+                        _ => (0, null, null),
+                    };
+                    if (attribute != null)
                     {
-                        Console.WriteLine(exception);
-                    }
-
-                    List<Attribute> updateAttributes = new List<Attribute>();
-
-                    bool changedReputation = false;
-                    switch (commands[1].ToString())
-                    {
-                        case "zion":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repZion", reputation);
-                            Store.currentClient.playerInstance.ReputationZionMilitary.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationZionMilitary);
-                            break;
-                        case "machine":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repMachine", reputation);
-                            Store.currentClient.playerInstance.ReputationMachines.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationMachines);
-                            break;
-                        case "mero":
-                            changedReputation = true;
-                            Store.dbManager.WorldDbHandler.SetReputation(Store.currentClient.playerData.getCharID(),
-                                "repMero", reputation);
-                            Store.currentClient.playerInstance.ReputationMerovingian.setValue((UInt16)(Int16)reputation); // an int went to setValue(float)
-                            updateAttributes.Add(Store.currentClient.playerInstance.ReputationMerovingian);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (changedReputation)
-                    {
-                        PacketContent myselfStateData = new PacketContent();
-                        myselfStateData.AddByteArray(
-                            Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, true));
-                        Store.currentClient.messageQueue.addObjectMessage(myselfStateData.ReturnFinalPacket(), false);
+                        Store.dbManager.WorldDbHandler.SetReputation(client.playerData.getCharID(), column, reputation);
+                        attribute.setValue(unchecked((UInt16)reputation));
+                        client.messageQueue.addObjectMessage(player.GetSelfUpdateAttributes(new List<Attribute> { attribute }, true), false);
+                        client.messageQueue.addRpcMessage(ServerPackets.BuildOrganizationReputation(org, reputation));
                     }
                 }
 

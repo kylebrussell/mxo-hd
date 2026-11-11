@@ -20,6 +20,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("login", Login),
+        new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
@@ -36,6 +37,29 @@ public static partial class Scenarios
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
     };
+
+    private static async Task OrganizationReputation(ScenarioContext context)
+    {
+        HeadlessPlayer player = await context.AddPlayerAsync(new CharacterSeed("Alice"));
+        await player.EnterWorldAsync();
+
+        player.SendChat("?rep mero -20");
+        await player.WaitForRpcAsync("80 ab 03 ec ff");
+        player.SendChat("?rep machine 82");
+        await player.WaitForRpcAsync("80 ab 02 52 00");
+        player.SendChat("?rep zion -9");
+        await player.WaitForRpcAsync("80 ab 01 f7 ff");
+        await context.Database.ExecuteAsync($"UPDATE characters SET repCyph=-6, repNiobe=4, repEpn=5, repGM=7 WHERE charId={player.CharId}");
+
+        // A fresh server on the same test database verifies a new login without waiting for UDP timeout.
+        string username = await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING (userId) WHERE charId={player.CharId}");
+        using ServerInstance reloaded = await ServerInstance.StartAsync(context.RepositoryRoot, context.Database.Name);
+        using HeadlessPlayer relogged = await HeadlessPlayer.LoginAsync(reloaded.Address, username, player.Handle);
+        byte[] background = relogged.CharacterData[0x02];
+        Check.Equal("faff5200ecff04000500f7ff0700", WireFormat.ToHex(background[1141..1155]), "Saved reputation in the client order");
+        await relogged.EnterWorldAsync();
+        Check.Equal(0, relogged.World.Problems.Count, "Negative reputation loads into the world");
+    }
 
     // Where data/mob*.csv puts NPCs in the Slums, in both the Debug and Release lists
     private const double NpcX = 24499, NpcY = 495, NpcZ = -1498;

@@ -250,6 +250,16 @@ namespace hds
         public const UInt32 InfoReasonVendorBuy = 0x08;
         public const UInt32 InfoReasonRecycle = 0x0f;
 
+        /// <summary>80 ab: organization byte followed by signed reputation. The client's mission UI reads this update.</summary>
+        internal static byte[] BuildOrganizationReputation(byte org, short reputation)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddHexBytes("80ab");
+            pak.AddByte(org);
+            pak.AddInt16(reputation, 1);
+            return pak.ReturnFinalPacket();
+        }
+
         public void SendInfoCurrent(WorldClient client, UInt32 info, UInt32 reason = InfoReasonLoad)
         {
             client.messageQueue.addRpcMessage(BuildInfoCurrent(info, reason));
