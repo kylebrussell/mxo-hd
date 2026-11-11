@@ -24,6 +24,8 @@ namespace hds
         private bool flushingQueueInProgress = false;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
+        private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
+        private bool packetWorkerRunning;
         private readonly object flushLock = new object();
         private long lastFlushTick;
         private volatile bool flushPending;
@@ -442,6 +444,39 @@ namespace hds
 
             this.DeletedAckedPackets((UInt16) decValues[3]); // REMOVING FROM ACK QUEUE
             return processedPacket;
+        }
+
+        /// <summary>Called by the socket receiver before it arms the next receive, preserving datagram arrival order.</summary>
+        internal void QueuePacket(byte[] packet)
+        {
+            lock (receivedPackets)
+            {
+                receivedPackets.Enqueue(packet);
+                if (packetWorkerRunning)
+                {
+                    return;
+                }
+                packetWorkerRunning = true;
+            }
+            ThreadPool.QueueUserWorkItem(_ => ProcessQueuedPackets());
+        }
+
+        private void ProcessQueuedPackets()
+        {
+            while (true)
+            {
+                byte[] packet;
+                lock (receivedPackets)
+                {
+                    if (receivedPackets.Count == 0)
+                    {
+                        packetWorkerRunning = false;
+                        return;
+                    }
+                    packet = receivedPackets.Dequeue();
+                }
+                processPacket(packet);
+            }
         }
 
         public void processPacket(byte[] packet)

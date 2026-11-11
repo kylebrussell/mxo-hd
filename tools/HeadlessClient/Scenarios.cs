@@ -21,6 +21,7 @@ public static partial class Scenarios
     {
         new Scenario("login", Login),
         new Scenario("organization-reputation", OrganizationReputation),
+        new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
         new Scenario("many-logins-at-once", ManyLoginsAtOnce),
         new Scenario("secure-trade", SecureTrade),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
@@ -55,6 +56,23 @@ public static partial class Scenarios
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
         }),
     };
+
+    private static async Task OrderedRpcBurst(ScenarioContext context)
+    {
+        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Alice")))[0];
+        const int requests = 64;
+        for (int reputation = 1; reputation <= requests; reputation++)
+        {
+            player.SendChat("?rep mero " + reputation);
+        }
+        await player.WaitUntilAsync(() => player.Received("80 ab 03").Count == requests,
+            "All reputation changes in the burst", TimeSpan.FromSeconds(30));
+        short[] received = player.Received("80 ab 03").Select(record => BitConverter.ToInt16(record.Bytes, 3)).ToArray();
+        Check.Equal(string.Join(",", Enumerable.Range(1, requests)), string.Join(",", received),
+            "Received datagrams are dispatched to the character in arrival order");
+        Check.Equal(64L, await context.Database.LongAsync($"SELECT repMero FROM characters WHERE charId={player.CharId}"),
+            "The final request determines the saved standing");
+    }
 
     private static async Task OrganizationReputation(ScenarioContext context)
     {
