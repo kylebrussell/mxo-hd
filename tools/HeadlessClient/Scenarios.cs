@@ -44,6 +44,7 @@ public static partial class Scenarios
         new Scenario("merovingian-chapter-samples", MerovingianChapterSamples, StillNpcs),
         new Scenario("mission-arrivals-and-escort-to-object", MissionArrivalsAndEscortToObject, StillNpcs),
         new Scenario("mission-waves-sides-and-timers", MissionWavesSidesAndTimers, StillNpcs, "encounter-runtime.xml"),
+        new Scenario("mission-waves-and-side-switch", MissionWavesAndSideSwitch, StillNpcs),
         new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
         new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
         new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),

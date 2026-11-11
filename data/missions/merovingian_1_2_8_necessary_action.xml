@@ -7,15 +7,17 @@
      (6808). Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.2's
      values (68,750 experience, 91,000 information, as Confiscation paid).
      Gaps: in retail Dora is friendly while held, is led out of the building and to Alphonse ("If Dora dies on the way
-     there..."), then turns hostile and is killed. NPCs can't switch sides, and a follower stays with the player, so
-     Dora isn't led out: the Dora of the second phase is a hostile who waits beside Alphonse (attacksOnSight="0"); finding
-     her is a Talk that plays her plea, then she is killed. The Agents arrive after the confession, as in retail, but
-     "You've got company!" isn't said. The white computer that would release Dora if touched, and the serum only working
-     in that room, can't be expressed: there is only the black computer, used once the serum is given. Flood's "Now that
-     we have the information we seek" came one second before Dora's confession in the log; it is said after it. The
-     Operator's line about the new Agents (said with the first area's completion) is the first phase's complete line; a
-     hidden line at a scroll seam in it, and in Turso's last line, is read as nothing. The Forum Post popup seen after
-     this mission isn't used: nothing in the log ties it to the mission. -->
+     there..."), then turns hostile and is killed. An NPC changes side only on a goal of its own phase, and the second
+     phase is another building, so the Dora who is held can't be the one who turns there: she isn't led out, and the Dora
+     of the second phase is already at Alphonse's site, friendly. She turns hostile (hostileAfter) once Alphonse has been
+     talked to ("Finish her! Now!"), and waits to be attacked (attacksOnSight="0"); finding her plays her plea, then she
+     is killed. The Agents arrive after the confession, as in retail, but "You've got company!" isn't said. The white
+     computer that would release Dora if touched, and the serum only working in that room, can't be expressed: there is
+     only the black computer, used once the serum is given. Flood's "Now that we have the information we seek" came one
+     second before Dora's confession in the log; it is said after it. The Operator's line about the new Agents (said with
+     the first area's completion) is the first phase's complete line; a hidden line at a scroll seam in it, and in Turso's
+     last line, is read as nothing. The Forum Post popup seen after this mission isn't used: nothing in the log ties it to
+     the mission. -->
 <mission id="301208" title="Necessary Action" description="Extract the location of Morpheus from a captured Zion operative." plot="1"
          order="1208" org="3" contact="Flood" exp="68750" info="91000">
   <npc id="1" handle="Turso" type="FRIENDLY" at="1" rsi="a5060090" weapon="2568" />
@@ -24,7 +26,7 @@
     <say after="3">Ugh! My stomach! Oooh...</say>
   </npc>
   <npc id="3" handle="Alphonse" type="FRIENDLY" at="2" rsi="9b0000b4" weapon="2568" />
-  <npc id="4" handle="Dora" type="HOSTILE" at="2" rsi="60010058" weapon="2568" attacksOnSight="0" />
+  <npc id="4" handle="Dora" type="FRIENDLY" at="2" rsi="60010058" weapon="2568" hostileAfter="1" attacksOnSight="0" />
   <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="4">
     <briefing>Our search for Morpheus must continue, however we have managed to capture a Zion operative by the name of Dora who has worked closely with Morpheus on a number of occasions. We need you to extract information from Dora and get her to give up information on Morpheus' current location.
 
@@ -70,7 +72,7 @@ Dora is being held at this address. Go there now.</briefing>
     <objective goal="2" text="Find Dora" type="Talk" npc="4" after="1">
       <talk><say npc="4">No... Please... Don't kill me.</say></talk>
     </objective>
-    <objective goal="3" text="Kill Dora" type="Defeat" npc="4">
+    <objective goal="3" text="Kill Dora" type="Defeat" npc="4" after="1">
       <done>
         <say npc="3">Mwhaha! Excellent! I love to see the Neo-worshipping cry babies bleed!
 

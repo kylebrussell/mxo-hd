@@ -7,17 +7,18 @@
      Effectuator's and dire lupines' team chat lines. Flood's briefing and closing line each span two screenshots with no
      header between them and are taken as one entry (a line between may be missing in the briefing). Ours: the
      description (the Summary tab was never opened), every objective text (nor was the Objectives tab), the sites (no
-     building was described: all Normal), the looks and the enemy counts. No items. Rewards: the log shows 79,416,249
-     experience and 1,039,500 information. These are Zion 3.1's values (308,000 experience, 101,500 information, as
-     Dire Connection paid).
+     building was described: all Normal), the looks and the enemy counts (three attackers, then two more). No items.
+     Rewards: the log shows 79,416,249 experience and 1,039,500 information. These are Zion 3.1's values (308,000
+     experience, 101,500 information, as Dire Connection paid).
      Gaps: "a couple of Dire Lupines" are two NPCs of that name, each talked to and led out (Talk, then Escort to the
      exit); they said nothing in the captured log when picked up. The Zion attackers (the phase's generated Zionites)
-     arrive once the lupines reach the Effectuator ("inbound signals"), and the kill goal opens then. The Operator's
-     "Keep looking, I think there are some more attackers nearby..." (retail has a double dash there) has no moment to
-     hang on and isn't said; nor is the Effectuator's second, cut copy of his greeting or his uncaptured line at
-     2:23:56. His three short team chat lines and the lupines' "Done." and "No more." were most likely said when
-     clicked after the end; one of each is kept as their line once he has been thanked ("Smashing! Simply smashing!"
-     and "Bravissimo!" aren't said). -->
+     arrive once the lupines reach the Effectuator ("inbound signals"), and the kill goal opens then. A second group
+     comes 91 seconds later (the time between "inbound signals" and the Operator's "Keep looking, I think there are some
+     more attackers nearby..." in the log; retail has a double dash there), with that line, and the kill goal counts it
+     too. The Effectuator's second, cut copy of his greeting and his uncaptured line at 2:23:56 aren't said. His three
+     short team chat lines and the lupines' "Done." and "No more." were most likely said when clicked after the end; one
+     of each is kept as their line once he has been thanked ("Smashing! Simply smashing!" and "Bravissimo!" aren't said).
+     -->
 <mission id="303105" title="The Gatekeeper" description="Bring dire lupines to the Effectuator and defend a construct portal from Zion." plot="1"
          order="3105" org="3" contact="Flood" exp="308000" info="101500">
   <npc id="1" handle="Dire Lupine Bane" type="FRIENDLY" at="1" rsi="9c0000b4" weapon="2568">
@@ -38,9 +39,10 @@
     <objective goal="3" text="Lead the first dire lupine out of the area" type="Escort" npc="1" to="exit" after="1" />
     <objective goal="4" text="Lead the second dire lupine out of the area" type="Escort" npc="2" to="exit" after="2" />
   </phase>
-  <phase site="Normal" enemy="Zion" enemies="4" enemiesAfter="5">
+  <phase site="Normal" enemy="Zion" enemies="3" enemiesAfter="5">
     <briefing>Now, simply lead those fleabags to the next location. The Effectuator is waiting there for you. No dallying!</briefing>
     <enter><say>Keep an eye out, {player}. Those Zion operatives will be on their way.</say></enter>
+    <wave count="2" after="5" delay="91"><say>Keep looking -- I think there are some more attackers nearby...</say></wave>
     <objective goal="5" text="Lead the dire lupines to the Effectuator" type="Escort" npc="1,2" to="npc:3">
       <done>
         <say npc="3">Ah, ciao, {player}! I trust you have some of those delightful pups in tow?</say>

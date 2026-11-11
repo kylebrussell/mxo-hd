@@ -4,20 +4,22 @@
      Retail's text: the title, every briefing, Agent Gray, Operator and NPC line, and the NPCs' names (Agent Park,
      Brown The Exterminator, Isaiah Copley, Lon Royer, Gnat). Ours: the description (the log shows no Summary), the
      objective texts (the Objectives tab was never opened), the sites (unnamed buildings: Normal), the looks (Brown The
-     Exterminator a Machine program; his two team members, whose kind isn't said, redpill operatives) and the enemy
-     counts (phase 2's "one boatload" is five). Item stand-in: the virus is Virus (6786). Rewards: the screenshots are
-     crops of the Mission window with no chat panel, so no reward is shown; these are the Zion chapter 2 values (about
-     297,000 experience and 98,000 information). A Newspaper Clipping (a bug spray advert) was seen in an item window
-     afterwards and may have been retail's reward item; it isn't given.
+     Exterminator a Machine program; his two team members, whose kind isn't said, redpill operatives), the enemy counts
+     (phase 2's "one boatload" is five) and phase 4's time limit. Item stand-in: the virus is Virus (6786). Rewards: the
+     screenshots are crops of the Mission window with no chat panel, so no reward is shown; these are the Zion chapter 2
+     values (about 297,000 experience and 98,000 information). A Newspaper Clipping (a bug spray advert) was seen in an
+     item window afterwards and may have been retail's reward item; it isn't given.
      Gaps: the team (Brown, Isaiah Copley, Lon Royer) is led out in phase 1 and follows the player to the end; Gray's
      option to leave team members outside the strong point isn't offered, and the team doesn't fight. Their barks in
      phase 2 were six; an NPC says one line when talked to, so each says one ("Oh yeah!", "Keep your eyes open!" and
      "Hope we find some real enemies in here." are left out), and Isaiah's "We're all set!" is said when Agent Park is
      talked to. In phase 3 retail wanted Brown brought to the mainframe: he is led to it, and his jamming field failure
      is a Get of the virus from him that opens after, then the player puts it in the mainframe. Phase 4's timer (kill
-     them all before the security net is restored) isn't kept, and the cascading resonance (killing Gnat kills the rest)
-     can't be: the phase ends when Gnat dies, and the other Exiles are left standing. At least one line after Gnat's
-     bark wasn't captured. -->
+     them all before the security net is restored) is a limit on killing Gnat of 15 minutes from reaching the area; the
+     log gives no length, and the length is ours (retail's run took about nine minutes, from the Operator's 11:51:55 PM
+     line to Gnat's death at 12:01:07 AM). No timer is shown. The cascading resonance (killing Gnat kills the rest)
+     can't be expressed: the phase ends when Gnat dies, and the other Exiles are left standing. At least one line after
+     Gnat's bark wasn't captured. -->
 <mission id="202105" title="Reprisal" description="Lead an assault team against the Merovingian's strong points." plot="1"
          order="2105" org="2" contact="Agent Gray" exp="297000" info="98000">
   <npc id="1" handle="Agent Park" type="FRIENDLY" at="1" rsi="9b000090" weapon="2568" />
@@ -75,7 +77,7 @@
   <phase site="Normal" enemy="Merovingian" enemies="3">
     <briefing>You handled that situation well, {player}. We are now sending you to the final location. It is protected by a powerful security net; however, the virus you planted in that mainframe was designed to lower the net for a short time. Now you must get to the location and terminate all Exiles before the security net is restored. You may want to take advantage of these particular Exiles' cascading resonance programming.</briefing>
     <enter><say>Cascading resonance! I've heard about this, but I've never seen it before. Here's the deal: all of the Exiles in there are linked to each other in a parent/child relationship. The "parents" derive power from their child nodes. But whenever an Exile is killed, any of their "children" also die, and so on down the tree. If you can take out the Exile at the top, all the rest will fall. Okay, let's see... it looks like Gnat is at the top of the tree. If you can sneak in and take him out, you're all good!</say></enter>
-    <objective goal="1" text="Kill Gnat" type="Defeat" npc="5">
+    <objective goal="1" text="Kill Gnat before the security net is restored" type="Defeat" npc="5" limit="900">
       <done>
         <say>Beautiful! You should've seen that cascade down through the code...</say>
         <say>Well, now I guess we know why you don't see that kind of programming more often. You can clear out of there.</say>

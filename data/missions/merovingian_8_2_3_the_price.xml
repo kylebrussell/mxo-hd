@@ -23,10 +23,12 @@
      fought each other until the player reached the second computer; a phase has one enemy, so Machines stand for both
      and killing them isn't required. Binomi "just appear[s]" when the Merovingian hands him over: he arrives once the
      Merovingian has been talked to, and his goals open then. In phase 4 the player turned on Binomi after reaching the
-     EPN boss ("Rrrah! Have you lost your mind?!") and the goals completed 80 s later; an NPC can't be escorted and then
-     fought here (Escort needs him friendly, a kill goal needs him hostile, and a new phase would be a new building), so
-     the player talks to him instead and he isn't killed. The EPN boss waits to be attacked and has no goal; the EPN
-     redpills are Zion. -->
+     EPN boss ("Rrrah! Have you lost your mind?!") and the goals completed 80 s later. An NPC changes side only on a
+     goal of its own phase, and phase 4 is another building, so the Binomi of phase 3 isn't led out: that phase ends
+     once he has been talked to, without asking the player to leave (leave="0"; retail's line there was "Goals for this
+     mission phase are complete!"), and phase 4's Binomi appears beside the player on reaching its floor. He is led to
+     the boss; talking to him then plays his "Rrrah!" and turns him hostile (hostileAfter), and killing him completes
+     the goals. The EPN boss waits to be attacked and has no goal; the EPN redpills are Zion. -->
 <mission id="308203" title="The Price" description="Raid Wright Research for something to use against E Pluribus Neo, and get the Merovingian's doctored code into EPN's hands." plot="1"
          order="8203" org="3" contact="Flood" exp="363000" info="63000">
   <npc id="1" handle="The Merovingian" type="FRIENDLY" at="1" rsi="57050004" weapon="0">
@@ -41,6 +43,7 @@
   </npc>
   <npc id="5" handle="Binomi" type="FRIENDLY" at="3" rsi="9c0000b4" weapon="2568" spawnAfter="1" />
   <npc id="6" handle="E Pluribus Neo Leader" type="HOSTILE" attacksOnSight="0" at="4" rsi="050100b4" weapon="2568" />
+  <npc id="7" handle="Binomi" type="FRIENDLY" at="4" rsi="9c0000b4" weapon="2568" spawnAfter="enter" spawnAt="player" hostileAfter="2" />
   <phase site="Normal" enemy="Merovingian" enemies="0">
     <briefing>Those bratty E Pluribus Neos are scheming to sabotage Machine power lines using our map. The injustice is appalling, and the Merovingian, of course, is not about to allow it.
 
@@ -75,7 +78,7 @@ But if she really is working on a new red pill, it's something E Pluribus Neo wi
       </done>
     </objective>
   </phase>
-  <phase site="Normal" enemy="Merovingian" enemies="0">
+  <phase site="Normal" enemy="Merovingian" enemies="0" leave="0">
     <briefing>Apparently everyone thinks they can blithely steal from us these days, operative. You can imagine that the Merovingian is not pleased at this particular moment...but why settle for imagining? You're assigned to go collect something from him.
 
 If you'd like leave with the same number of attached organs with which you're entering, I recommend significant amounts of bowing and scraping.</briefing>
@@ -90,7 +93,6 @@ If you'd like leave with the same number of attached organs with which you're en
         <say npc="5">Hrr... I don't like this...</say>
       </done>
     </objective>
-    <objective goal="3" text="Lead Binomi out of the area" type="Escort" npc="5" to="exit" after="2" />
     <near npc="4" radius="1000">
       <say npc="4">Hm! You used to tell me that you would protect me, keep me safe...and now you shout at me when your enemies steal my possessions from under the noses of your guards?</say>
     </near>
@@ -100,14 +102,16 @@ If you'd like leave with the same number of attached organs with which you're en
 
 You don't see why this is important yet, do you? Well, no matter. Just take the lupine where you're told. There will be some E Pluribus Neo people there. I think we can rely on nature to take its course at that point.</briefing>
     <enter><say>I've got redpill signals in there. If Flood's right, that's EPN. You're supposed to get the lupine through to their boss.</say></enter>
-    <objective goal="1" text="Lead Binomi to the E Pluribus Neo leader" type="Escort" npc="5" to="npc:6">
+    <objective goal="1" text="Lead Binomi to the E Pluribus Neo leader" type="Escort" npc="7" to="npc:6">
       <done>
         <say>There's the boss!</say>
         <say contact="1">Now get that mutt killed off, operative. I don't care how it happens, as long as EPN sniffs around and picks up that code he's carrying.&#10;&#10;Yes, we want EPN to capture that code. Understood?</say>
       </done>
     </objective>
-    <objective goal="2" text="Talk to Binomi" type="Talk" npc="5" after="1">
-      <talk><say npc="5">Rrrah! Have you lost your mind?!</say></talk>
+    <objective goal="2" text="Talk to Binomi" type="Talk" npc="7" after="1">
+      <talk><say npc="7">Rrrah! Have you lost your mind?!</say></talk>
+    </objective>
+    <objective goal="3" text="Kill Binomi" type="Defeat" npc="7" after="2">
       <done><say>I'm still not sure I get it. So... EPN stole a map from us. Then Wright and Zion stole an old code of ours. Then we made a copy of the old code, and let EPN steal that.&#10;&#10;Um... We know what two wrongs make, but what about three?</say></done>
     </objective>
   </phase>

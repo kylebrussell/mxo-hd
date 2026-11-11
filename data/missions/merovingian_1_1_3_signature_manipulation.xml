@@ -7,20 +7,21 @@
      window). A possible hidden line in the first briefing, before "Pick up the device", is read as contiguous. Ours:
      the description, the other objective texts, the sites (Anza's and Sisyphus' places and the mainframe facility:
      Normal; "the first Machine base", an office with desks and filing cabinets in the mid-mission screenshot: Office),
-     the looks and the enemy counts. Item stand-ins: the Signature Manipulator is Device (6820), the Bug Bug (6824),
-     "a rather large bomb" Large_Bomb (6818), the Access Card Access_Card (6791).
+     the looks, the enemy counts, and phase 3's three Agents (their number, and their handle "Agent": none was named).
+     Item stand-ins: the Signature Manipulator is Device (6820), the Bug Bug (6824), "a rather large bomb" Large_Bomb
+     (6818), the Access Card Access_Card (6791).
      Rewards: the log shows 525,000 information and no experience (a level-50 player's). These are Zion 1.1's values
      (55,200 experience, 73,500 information, as Redpill Rescue paid).
      Gaps: the disguise. In phase 2 the six Agents are friendly bystanders, and their exchanges are said on getting
      near Agent West, Agent Long and Agent Miller (the operator's "Search the computer in this room" hint came with
      Agent Miller's lines, by the computer). Agent North's first line was only "..." and is left out. The computer's
      "Digital Signature verified" text has no place. In phase 3 the disguise failed after the bomb was set and the
-     Agents attacked; the phase's hostiles arrive when the bomb is set, and the operator's two lines about it are
-     said then. The operator's "What's going on here?!" on reaching the mainframe is unexplained and left out; the hint
-     "That's the mainframe..." is the second enter line. The access card goes into the computer as a Put (done with
-     Hack). In phase 4 the attacking programs arrive once Sisyphus is talked to, and the goal to kill them opens then;
-     the operator's "The device won't be safe until the attacking programs are dead." has no place. Phase 4's last
-     operator line wasn't readable. -->
+     Agents attacked: three Agents stand there friendly and turn hostile when the bomb is set (hostileAfter), and the
+     operator's two lines about it (48 and 67 s later in the log) are said then. The operator's "What's going on
+     here?!" on reaching the mainframe is unexplained and left out; the hint "That's the mainframe..." is the second
+     enter line. The access card goes into the computer as a Put (done with Hack). In phase 4 the attacking programs
+     arrive once Sisyphus is talked to, and the goal to kill them opens then; the operator's "The device won't be safe
+     until the attacking programs are dead." has no place. Phase 4's last operator line wasn't readable. -->
 <mission id="301103" title="Signature Manipulation" description="Use the Signature Manipulator to infiltrate the Machines." plot="1"
          order="1103" org="3" contact="Flood" exp="55200" info="73500">
   <npc id="1" handle="Anza" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
@@ -47,6 +48,9 @@
   <npc id="8" handle="Sisyphus" type="FRIENDLY" at="4" rsi="a8060090" weapon="2568">
     <say after="9">I won't take the device until we are safe.</say>
   </npc>
+  <npc id="9" handle="Agent" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" hostileAfter="8" />
+  <npc id="10" handle="Agent" type="FRIENDLY" at="3" rsi="9b000090" weapon="2568" hostileAfter="8" />
+  <npc id="11" handle="Agent" type="FRIENDLY" at="3" rsi="3600004e" weapon="2568" hostileAfter="8" />
   <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>The moment has come, {player}. You must use the Signature Manipulator as it was intended. If you are unsure of its use, I shall explain...
 
@@ -102,7 +106,7 @@ I've already sent you the address to the Machine base. Pick up the Access Card t
       <say npc="7">They should be removed from the system.</say>
     </near>
   </phase>
-  <phase site="Normal" enemy="Machines" enemies="3" enemiesAfter="8">
+  <phase site="Normal" enemy="Machines" enemies="0">
     <briefing>I've updated your objectives and directed you to the location that holds the mainframe. When you've made it there, put the access card to use on one of the computers which will allow you to transfer sensitive data to the mainframe.
 
 Before we can plant the bomb on the mainframe, you'll need to transfer some sensitive data to the mainframe. Without the data on the server, destroying the mainframe would be a worthless attempt.</briefing>

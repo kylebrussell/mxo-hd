@@ -10,10 +10,11 @@
      Neo: enemy Zion). No mission items. Rewards: 385,000 experience and 63,000 information, shown on completing this
      mission (the same as 8.3.1).
      Gaps: at the first site the Operator saw nothing at first and the redpills' signals showed up half a minute
-     later; ours are there from the start and both lines are said on arrival. The simulacrum appears behind the
-     player once Leigh Quigley has been talked to (retail put it in the room just passed through), and the talk to him
-     opens then. Agents Green and Jones followed the player as support; they are led out of Clark's site and then to
-     Agent Pace, and the talk to Pace waits for them. They don't fight. -->
+     later; ours arrive on the floor's spots 34 seconds after the player reaches it (the log's 11:13:15 and 11:13:49
+     PM), with the Operator's "Whoops! Got signals" line. The simulacrum appears behind the player once Leigh Quigley
+     has been talked to (retail put it in the room just passed through), and the talk to him opens then. Agents Green
+     and Jones followed the player as support; they are led out of Clark's site and then to Agent Pace, and the talk to
+     Pace waits for them. They don't fight. -->
 <mission id="208302" title="Of Two Minds" description="Find the General's Morpheus simulacrum and win its cooperation." plot="1"
          order="8302" org="2" contact="Agent Gray" exp="385000" info="63000">
   <npc id="1" handle="Leigh Quigley" type="FRIENDLY" at="2" rsi="35000024" weapon="0">
@@ -45,7 +46,7 @@ We will have to report our failure to Agent Gray.</say>
   <npc id="7" handle="Morpheus" type="FRIENDLY" at="4" rsi="050100b4" weapon="2564">
     <say after="8">I wish to do what I believe to be right...but along which path right may lie, I do not know.</say>
   </npc>
-  <phase site="Normal" enemy="Zion" enemies="4">
+  <phase site="Normal" enemy="Zion" enemies="0">
     <briefing>Operative, the simulacrum we compiled from data on Morpheus proved insufficiently accurate to unlock the neural encryption on the captured Zion RSI database archive, and has been terminated.
 
 We do not currently have access to additional Morpheus data that would allow us to compile a more accurate simulacrum. Most remaining data is likely to have been either destroyed along with Zion's mainframe, or smuggled to Zion's new city.
@@ -55,8 +56,8 @@ We are left with one remaining option: the simulacrum constructed by the General
       <say>Hm, I guess this means we really have been keeping tabs on the thing. I wonder what it's been up to, though?
 
 Looks pretty quiet in there.</say>
-      <say>I don't think there's anything there. It must have... Whoops! Got signals now--redpills!</say>
     </enter>
+    <wave count="4" after="enter" delay="34"><say>I don't think there's anything there. It must have... Whoops! Got signals now--redpills!</say></wave>
     <objective goal="1" text="Kill all of the redpills" type="DefeatAll">
       <done><say>Looks clear. EPN seems to be sticking their nose in, huh? Well, I bet we've got a better handle on lil' Morphy's location than they do.</say></done>
     </objective>

@@ -17,12 +17,13 @@
      first is the one to talk to, and the other two say their after lines. Their "Amigo!" and "Compadre!" came on
      coming near and are said with the Operator's "three at once". In phase 2 the goon who carries the second half of
      the file arrives once the first half is found ("Ooh, looks like you just got more company!"), and the goal to
-     loot it opens then; phase 4's goon is there from the start ("The place is hot"), and the goal to loot him is open
-     from the start. The log shows no kill goal, so the goons need not all be beaten. Phase 3's computer screens (the
-     data feed to 70972.3272.79493.022:0232 and "Remote user maxson override in progress") can't be shown; the
-     Operator's lines tell it. The Operator's "A hardline junction box? ... Hey, and a computer." came on approach and
-     is said on arrival; the junction box had no goal and isn't placed. The searches of phases 3 and 4 turn up
-     nothing, as in the log. Lines at screenshot joins read whole and are used as such. -->
+     loot it opens then; two more (our count) arrive once he has been looted ("more corrupt code signals"). Phase 4's
+     goon is there from the start ("The place is hot"), and the goal to loot him is open from the start. The log shows
+     no kill goal, so the goons need not all be beaten. Phase 3's computer screens (the data feed to
+     70972.3272.79493.022:0232 and "Remote user maxson override in progress") can't be shown; the Operator's lines tell
+     it. The Operator's "A hardline junction box? ... Hey, and a computer." came on approach and is said on arrival; the
+     junction box had no goal and isn't placed. The searches of phases 3 and 4 turn up nothing, as in the log. Lines at
+     screenshot joins read whole and are used as such. -->
 <mission id="305202" title="Location Data" description="Raid the computer center of Anome's hacker, Maxson, and recover his data." plot="1"
          order="5202" org="3" contact="Flood" exp="286000" info="94500">
   <npc id="1" handle="The Effectuator" type="FRIENDLY" at="1" rsi="9b0000b4" weapon="2568">
@@ -67,6 +68,7 @@ So look, this Maxson guy working for Anome... Operatives recovered some data poi
     <briefing>I don't care about excuses, operative; I just want to know when the Effectuator has found that blasted Niobe. Is that clear?</briefing>
     <enter><say>Maxson's supposed computer center is in there. If this guy's working for Anome, then I think we know who to expect...</say></enter>
     <object id="1" kind="Computer" />
+    <wave count="2" after="2" />
     <objective goal="1" text="Get the encoded file from the computer" type="Search" object="1" item="6800">
       <done><say>That looks like it could be useful data...but it seems to be only half of an encoded file. You'd better check around there to see if they have the other half of the file, too.
 
