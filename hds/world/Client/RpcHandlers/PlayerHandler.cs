@@ -333,16 +333,31 @@ namespace hds
                 drops = new List<UInt32>(Store.currentClient.playerData.pendingLootDrops);
                 Store.currentClient.playerData.pendingLootDrops.Clear();
             }
-            NpcLoot.GiveItems(Store.currentClient, drops);
+            List<UInt32> unclaimed = NpcLoot.GiveItems(Store.currentClient, drops);
+            lock (Store.currentClient.playerData.pendingLootDrops)
+            {
+                Store.currentClient.playerData.pendingLootDrops.AddRange(unclaimed);
+            }
+            var remaining = new List<(byte[] Data, UInt32 Item)>();
+            foreach (UInt32 item in unclaimed)
+            {
+                remaining.Add((new byte[4], item));
+            }
 
             UInt32 missionItem = Store.currentClient.playerData.pendingLootItem;
             if (missionItem != 0)
             {
-                Store.currentClient.playerData.pendingLootItem = 0;
-                MissionRuntime.OnMissionItemLooted(Store.currentClient, missionItem);
+                if (!MissionRuntime.OnMissionItemLooted(Store.currentClient, missionItem))
+                {
+                    remaining.Add((new byte[] { 0, 0, 0, 0x08 }, missionItem));
+                }
+                else
+                {
+                    Store.currentClient.playerData.pendingLootItem = 0;
+                }
             }
 
-            packet.SendLootAccepted(Store.currentClient);
+            packet.SendLootAccepted(Store.currentClient, remaining.ToArray());
         }
 
         public void ProcessPlayerGetDetails(ref byte[] rpcData)

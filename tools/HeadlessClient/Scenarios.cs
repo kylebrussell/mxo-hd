@@ -37,11 +37,20 @@ public static partial class Scenarios
         new Scenario("flood-story-mission", FloodStoryMission, StillNpcs),
         new Scenario("merovingian-chapter-12", MerovingianChapter12, StillNpcs),
         new Scenario("moved-mission-item", MovedMissionItem, StillNpcs),
+        new Scenario("full-bag-mission-get", FullBagMissionGet, StillNpcs),
+        new Scenario("full-bag-mission-provided", FullBagMissionProvided, StillNpcs),
+        new Scenario("full-bag-mission-container", FullBagMissionContainer, StillNpcs),
+        new Scenario("full-bag-mission-computer", FullBagMissionComputer, StillNpcs),
+        new Scenario("full-bag-mission-loot", FullBagMissionLoot, StillNpcs),
         new Scenario("neighbourhood-contact-missions", NeighbourhoodContactMissions),
         new Scenario("azuna-collector", AzunaCollector, StillNpcs),
         new Scenario("azuna-collector-full-bag", AzunaCollectorFullBag, StillNpcs),
         new Scenario("azuna-collector-guards", AzunaCollectorGuards, StillNpcs),
         new Scenario("azuna-function-data-loot", AzunaFunctionDataLoot, new Dictionary<string, string>
+        {
+            ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
+        }),
+        new Scenario("full-bag-world-loot", FullBagWorldLoot, new Dictionary<string, string>
         {
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
         }),

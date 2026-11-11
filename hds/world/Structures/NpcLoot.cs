@@ -62,14 +62,20 @@ namespace hds
         }
 
         /// <summary>Puts each looted item in the first free bag slot and tells the client.</summary>
-        public static void GiveItems(WorldClient client, IEnumerable<UInt32> items)
+        public static List<UInt32> GiveItems(WorldClient client, IEnumerable<UInt32> items)
         {
+            List<UInt32> remaining = new List<UInt32>();
             foreach (UInt32 goid in items)
             {
                 // Stacks onto an existing stack (Code Bits, pills) and refuses a full bag
                 UInt16 slot = InventoryHandler.AddItem(client, goid, 0);
+                if (slot == 0)
+                {
+                    remaining.Add(goid);
+                }
                 Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
             }
+            return remaining;
         }
     }
 }

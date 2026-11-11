@@ -173,7 +173,10 @@ namespace hds
                 return false;
             }
 
-            GiveItem(client, progress, objective.item);
+            if (!GiveItem(client, progress, objective.item))
+            {
+                return true;
+            }
             Complete(client, progress, objective);
             client.FlushQueue();
             return true;
@@ -189,7 +192,10 @@ namespace hds
                 return false;
             }
 
-            TakeItem(client, progress, objective.item);
+            if (objective.item != 0 && !TakeItem(client, progress, objective.item))
+            {
+                return true;
+            }
             Complete(client, progress, objective);
             client.FlushQueue();
             return true;
@@ -310,9 +316,9 @@ namespace hds
                 if (objective.type == MissionGoalType.Search && MissionStaging.IsComputer(state.goid))
                 {
                     // A computer's Take or Hack: no loot window, the item goes straight to the inventory
-                    if (objective.item != 0)
+                    if (objective.item != 0 && !GiveItem(client, progress, objective.item))
                     {
-                        GiveItem(client, progress, objective.item);
+                        break;
                     }
 
                     Complete(client, progress, objective);
@@ -341,7 +347,10 @@ namespace hds
 
                 if (objective.type == MissionGoalType.Put && progress.itemSlots.ContainsKey(objective.item))
                 {
-                    TakeItem(client, progress, objective.item);
+                    if (!TakeItem(client, progress, objective.item))
+                    {
+                        break;
+                    }
                     Complete(client, progress, objective);
                     break;
                 }
@@ -373,20 +382,25 @@ namespace hds
                     continue;
                 }
 
-                state.lootOpen = false;
                 foreach (MissionObjective objective in new List<MissionObjective>(progress.OpenObjectives()))
                 {
                     if (objective.type == MissionGoalType.Search && objective.objectId == state.def.id)
                     {
-                        if (objective.item != 0)
+                        if (objective.item != 0 && !GiveItem(client, progress, objective.item))
                         {
-                            GiveItem(client, progress, objective.item);
+                            ushort instance = client.playerData.missionInstanceCounter;
+                            new ServerPackets().SendLootAccepted(client, new[]
+                            {
+                                (new byte[] { 0, (byte)instance, (byte)(instance >> 8), 0x82 }, objective.item)
+                            });
+                            return true;
                         }
 
                         Complete(client, progress, objective);
                     }
                 }
 
+                state.lootOpen = false;
                 // Emptied: the container goes to the state retail's Open leads to (OpenedState, 0x834), which plays its
                 // opening and takes Open off its menu
                 ObjectStates.ShowOpened(client, state.entity, state.goid);
@@ -416,7 +430,10 @@ namespace hds
                 {
                     if (objective.item != 0)
                     {
-                        TakeItem(client, progress, objective.item);
+                        if (!TakeItem(client, progress, objective.item))
+                        {
+                            continue;
+                        }
                     }
 
                     Complete(client, progress, objective);
@@ -457,25 +474,29 @@ namespace hds
             return objective?.item ?? 0;
         }
 
-        /// <summary>The player accepted a loot window holding a Loot objective's item.</summary>
-        public static void OnMissionItemLooted(WorldClient client, UInt32 itemGoId)
+        /// <summary>Returns false when the mission item needs more bag space, so the loot can be retried.</summary>
+        public static bool OnMissionItemLooted(WorldClient client, UInt32 itemGoId)
         {
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
             {
-                return;
+                return true;
             }
 
             foreach (MissionObjective objective in progress.OpenObjectives())
             {
                 if (objective.type == MissionGoalType.Loot && objective.item == itemGoId)
                 {
-                    GiveItem(client, progress, itemGoId);
+                    if (!GiveItem(client, progress, itemGoId))
+                    {
+                        return false;
+                    }
                     Complete(client, progress, objective);
                     client.FlushQueue();
-                    return;
+                    return true;
                 }
             }
+            return true;
         }
 
         private static MissionLine LatestLine(MissionProgress progress, ushort npcId)
@@ -496,13 +517,25 @@ namespace hds
             return chosen;
         }
 
-        private static void GiveItem(WorldClient client, MissionProgress progress, UInt32 goId)
+        private static bool GiveItem(WorldClient client, MissionProgress progress, UInt32 goId)
         {
             UInt16 slot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
+            if (slot == 0)
+            {
+                if (!progress.inventoryFullNotice)
+                {
+                    new ServerPackets().sendSystemChatMessage(client, "Make room in your inventory for the mission item.", "BROADCAST");
+                    progress.inventoryFullNotice = true;
+                    client.FlushQueue();
+                }
+                return false;
+            }
             Store.dbManager.WorldDbHandler.AddItemToInventory(slot, goId);
             client.messageQueue.addRpcMessage(ServerPackets.BuildMissionItemAdd(slot, goId, ItemElement(progress, goId),
                 client.playerData.missionInstanceCounter));
             progress.itemSlots[goId] = slot;
+            progress.inventoryFullNotice = false;
+            return true;
         }
 
         /// <summary>The first byte of the key of the NPC the item is to be given to.</summary>
@@ -538,7 +571,7 @@ namespace hds
             }
         }
 
-        private static void TakeItem(WorldClient client, MissionProgress progress, UInt32 goId)
+        private static bool TakeItem(WorldClient client, MissionProgress progress, UInt32 goId)
         {
             if (progress.itemSlots.TryGetValue(goId, out UInt16 slot))
             {
@@ -547,9 +580,11 @@ namespace hds
                 {
                     Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
                     new ServerPackets().sendInventoryItemDelete(slot, client);
+                    progress.itemSlots.Remove(goId);
+                    return true;
                 }
-                progress.itemSlots.Remove(goId);
             }
+            return false;
         }
 
         private static void Complete(WorldClient client, MissionProgress progress, MissionObjective objective)
@@ -623,20 +658,29 @@ namespace hds
                 packets.SendSetMissionObjective((ushort)objective.goal, ObjectiveOpen, Fill(client, objective.description), client);
             }
 
-            // Things the player is to hand over or upload that no goal gives them ("the antidote you downloaded")
-            foreach (MissionObjective objective in phase.missionObjectives)
+            GiveProvidedItems(client, progress);
+            client.FlushQueue();
+        }
+
+        // Items the briefing provides, including a retry when the bag was full at the start of this phase.
+        private static bool GiveProvidedItems(WorldClient client, MissionProgress progress)
+        {
+            bool sent = false;
+            foreach (MissionObjective objective in progress.Phase.missionObjectives)
             {
                 bool handsOver = objective.type == MissionGoalType.Give || objective.type == MissionGoalType.Put ||
                                  objective.type == MissionGoalType.Upload;
-                if (handsOver && objective.item != 0 && !progress.itemSlots.ContainsKey(objective.item) &&
+                if (handsOver && !progress.IsDone(objective.goal) && objective.item != 0 && !progress.itemSlots.ContainsKey(objective.item) &&
                     !Provided(progress.mission, progress.phaseIndex, objective.item))
                 {
-                    GiveItem(client, progress, objective.item);
-                    Output.WriteDebugLog("[MISSION] Gave item " + objective.item + " for goal " + objective.goal);
+                    if (GiveItem(client, progress, objective.item))
+                    {
+                        Output.WriteDebugLog("[MISSION] Gave item " + objective.item + " for goal " + objective.goal);
+                        sent = true;
+                    }
                 }
             }
-
-            client.FlushQueue();
+            return sent;
         }
 
         private static void Finish(WorldClient client, MissionProgress progress)
@@ -754,7 +798,7 @@ namespace hds
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
 
-            bool sent = false;
+            bool sent = GiveProvidedItems(client, progress);
             MissionStaging.Follow(client, progress, x, y, z);
             sent |= TickObjects(client, progress, x, y, z);
             sent |= TickEscorts(client, progress, x, y, z);
@@ -861,9 +905,9 @@ namespace hds
 
                     if (objective.type == MissionGoalType.Search)
                     {
-                        if (objective.item != 0)
+                        if (objective.item != 0 && !GiveItem(client, progress, objective.item))
                         {
-                            GiveItem(client, progress, objective.item);
+                            break;
                         }
 
                         Complete(client, progress, objective);
@@ -874,7 +918,10 @@ namespace hds
                     {
                         if (objective.type == MissionGoalType.Put)
                         {
-                            TakeItem(client, progress, objective.item);
+                            if (!TakeItem(client, progress, objective.item))
+                            {
+                                break;
+                            }
                         }
 
                         Complete(client, progress, objective);

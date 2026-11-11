@@ -159,6 +159,33 @@ What the guide doesn't give is our fit: where (generated sites), the NPCs' looks
 - Hostile NPCs' talk lines reach the client but didn't show on screen when tested.
 - A mission doesn't survive a relog: the NPCs go, and its items are taken back.
 
+### Full bags and loot replies
+
+Story mission Get, Search and Loot goals complete after their item fits in the bag. A full bag leaves the
+goal open. Items supplied by a briefing are retried when space becomes available. Give, Put and Upload
+verify the tracked item is still present before completing the objective.
+
+Retail's Take All reply is `81 20`, with a u16 array offset of 12, u32 status, u32 info amount, then a u16
+count and eight bytes per unclaimed item, containing its four-byte descriptor and goid. The
+`abilities_loot_but_inventory_full_corrupted` capture in the
+`20260607T200024Z-hdneo-public-remaining-small-ability-loot-market` intake shows two unclaimed items at
+lines 80-81 and another Take All request at line 100. The client's class at 0x6287fea0 also names these
+fields. The server retains unclaimed pending drops for another Take All and credits the money once.
+The loot state remains per player. A later kill replaces that pending window.
+
+### Chapter 12 reconstruction
+
+The three Merovingian 12.1 missions use dialogue from the archived screenshot and forum logs, with
+generated sites and reconstructed objectives. Hothouse's captured rewards are reused for Deep Cover
+and Courtship. Their XML comments identify the placement and encounter choices. The headless scenario
+completes all three using normal mission and combat RPCs, with development teleporting and weakened enemies.
+
+The shipped collector strings `CL_STORY_12_1_MERV_OFFER01` through `OFFER03` describe a separate entry
+path through mission tokens 48134, 48137 and 48140. Their requirements are level 30 and reputation 20
+in Westview, level 40 and reputation 40 in Downtown, and level 50 and reputation 60 in Downtown.
+The token is consumed on completion and retained on abort. The current reconstruction offers these
+missions through Flood's story sequence. Collector-issued entry tokens and their gates still need implementation.
+
 ## Contacts
 
 The client ships retail's contact list: `resource/missions/definitions/sponsors.xml`, the "Missile" mission system's 67 contacts. `data/mission_contacts.csv` is that file (`research/missions/gen_mission_contacts.py` writes it), and `MissionContacts` reads it.

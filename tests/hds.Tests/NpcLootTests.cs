@@ -22,6 +22,20 @@ public class NpcLootTests
     }
 
     [Fact]
+    public void LootReplyMatchesRetailFullBagCapture()
+    {
+        // abilities_loot_but_inventory_full_corrupted, lines 80-81. Both items remain unclaimed.
+        Assert.Equal("81200c000000000000000000020000000028d61e000000000000a41c0000",
+            Hex(ServerPackets.BuildLootAccepted(new[]
+            {
+                (new byte[] { 0, 0, 0, 0x28 }, 7894u),
+                (new byte[4], 7332u)
+            })));
+        Assert.Equal("81200c0000000000000000000000",
+            Hex(ServerPackets.BuildLootAccepted(Array.Empty<(byte[], uint)>())));
+    }
+
+    [Fact]
     public void CodeBitTierFollowsLevel()
     {
         Assert.Equal(7332u, NpcLoot.CodeBitFor(5));   // Code Bit 1

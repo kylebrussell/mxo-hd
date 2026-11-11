@@ -31,6 +31,7 @@ namespace hds
         public readonly List<Mob> hostiles = new List<Mob>();                       // the phase's generated hostiles
         public bool entered;  // the phase's enter lines have played
         public bool failed;
+        public bool inventoryFullNotice;
 
         public MissionProgress(Mission mission)
         {
