@@ -79,6 +79,10 @@ namespace hds
             return value == 1 ? CombatTacticType.Energized : value == 2 ? CombatTacticType.Precise : CombatTacticType.Normal;
         }
 
+        /// <summary>The script toggles set tactical mode; keep it effective across subsequent tactic-button RPCs.</summary>
+        public static CombatTacticType Type(WorldClient client) => AbilityBuffs.IsActive(client, 9) ? CombatTacticType.Energized :
+            AbilityBuffs.IsActive(client, 15) ? CombatTacticType.Precise : client.playerData.combatTacticType;
+
         public static double TypeDamageMultiplier(CombatTacticType type)
         {
             return type == CombatTacticType.Energized ? 1.15 : type == CombatTacticType.Precise ? 0.85 : 1.0;

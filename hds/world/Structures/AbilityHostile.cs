@@ -235,7 +235,7 @@ namespace hds
 
         private static AbilityCatalog.Modifier SweepMod(ushort id) => Enabled(id).FirstOrDefault(m => m.Text("StatModUpdateFunc") == "NegativeConditionSweepPulse");
 
-        public static bool IsSweep(ushort id) => SweepMod(id) != null;
+        public static bool IsSweep(ushort id) => id == 868 || SweepMod(id) != null;
 
         /// <summary>
         /// Puts a sweep on a friendly player: a pulse tempmod (kind 0x09, as DeflectVirus1's proc record) for the stored
@@ -243,6 +243,12 @@ namespace hds
         /// </summary>
         public static bool ApplySweep(WorldClient caster, WorldClient target, ushort id)
         {
+            if (id == 868)
+            {
+                // Purity's one init callback, not a persistent periodic sweep.
+                Pulse(TimedEffects.ForPlayer(target),new TimedEffects.Active { Parent=id, Value=25 });
+                return true;
+            }
             var m = SweepMod(id);
             if (m == null || !Timed(m)) return false;
             var subject = TimedEffects.ForPlayer(target);

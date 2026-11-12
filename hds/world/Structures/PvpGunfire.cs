@@ -164,7 +164,7 @@ namespace hds
                 FreeAttacks.Shot shot;
                 lock (rng)
                 {
-                    shot = FreeAttacks.Fire(rng, PvpFlag.LevelOf(shooter), shooter.playerData.combatTactic, shooter.playerData.combatTacticType,
+                    shot = FreeAttacks.Fire(rng, PvpFlag.LevelOf(shooter), shooter.playerData.combatTactic, CombatTactics.Type(shooter),
                         PvpFlag.LevelOf(target), target.playerData.combatTactic, gun,
                         AbilityStats.Attack(shooter, true), AbilityStats.Defense(target, true),
                         AbilityStats.Player(shooter, 1139), AbilityStats.Player(shooter, 171) / 100.0,
