@@ -88,5 +88,8 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
     };
 });
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(row))) + "\n]\n");
+// Emit optional callback coverage only where it is executable; preserve other rows byte-for-byte.
+File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + JsonSerializer.Serialize(
+    JsonSerializer.SerializeToElement(row).EnumerateObject().Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .ToDictionary(p => p.Name, p => p.Value)))) + "\n]\n");
 Console.WriteLine("Wrote " + output);
