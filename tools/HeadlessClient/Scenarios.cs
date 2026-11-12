@@ -53,6 +53,7 @@ public static partial class Scenarios
         new Scenario("ability-tactical-blur", AbilityTacticalBlur, StillNpcs),
         new Scenario("ability-scaled-buffs", AbilityScaledBuffs, StillNpcs),
         new Scenario("ability-scaled-buff-vitals", AbilityScaledBuffVitals, StillNpcs),
+        new Scenario("qa-revive-in-place", QaReviveInPlace, StillNpcs),
         new Scenario("ability-resurrection-resources", AbilityResurrectionResources, StillNpcs),
         new Scenario("ability-resurrection-approval-guards", AbilityResurrectionApprovalGuards, StillNpcs),
         new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
