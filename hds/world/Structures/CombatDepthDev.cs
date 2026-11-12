@@ -22,6 +22,11 @@ namespace hds
                 PvpCombat.Damage(caller, hits);
                 return "Special defence 281 stat1011 total " + defence + "; seeded landed " + hits + "/1000; diagnostic HP " + before + "->" + PvpCombat.HealthOf(caller) + ".";
             }
+            if (command == "empweakness" && args.Length == 3 && (args[1] == "on" || args[1] == "off") &&
+                ushort.TryParse(args[2],out ushort empHealth) && empHealth > 0)
+                return AbilityEmpBlast.Fixture(caller,args[1] == "on",empHealth);
+            if (command == "empweakness" && args.Length == 2 && (args[1] == "on" || args[1] == "off"))
+                return AbilityEmpBlast.Fixture(caller,args[1] == "on");
             if (command == "determination" && args.Length == 2 && int.TryParse(args[1], out int value) && value >= 0 && value <= 1000)
             {
                 var subject = TimedEffects.ForPlayer(caller);

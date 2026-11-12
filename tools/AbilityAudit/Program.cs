@@ -34,6 +34,7 @@ static string UtilityCoverage(ushort id) => id switch
     UtilityAbilities.DetectLuggables => "handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.FindDataNode => "distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)",
     UtilityAbilities.LocateDataNode => "base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)",
+    AbilityEmpBlast.Ability => "script neutral0/5000 gated by explicit NPC1026 grant; caster-radius10, cast1s, reuse30s, NPC HP/death; production grant owners, item consumption, exact eligibility/TestFunction2 and cost default unresolved; [evidence](ABILITY-EMP-BLAST.md)",
     _ => ""
 };
 var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>

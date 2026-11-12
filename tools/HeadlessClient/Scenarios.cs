@@ -96,6 +96,7 @@ public static partial class Scenarios
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
         new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
+        new Scenario("ability-emp-blast", EmpBlast, StillNpcs.Concat(new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
         new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),
         new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
         {
