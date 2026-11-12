@@ -69,8 +69,9 @@ bool petsMode = args.Length > 3 && args[3] == "coder-pets";
 bool stylesMode = args.Length > 3 && args[3] == "styles";
 bool npcStart = args.Length > 3 && args[3] == "npc" || passivesMode || stylesMode;
 bool outdoorStart = args.Length > 3 && args[3] == "outdoor";
+bool clientActionsMode = args.Length > 3 && args[3] == "ignored-actions";
 bool dataMiningMode = args.Length > 3 && args[3] == "data-mining";
-bool actionsMode = args.Length > 3 && args[3] == "actions";
+bool actionsMode = args.Length > 3 && args[3] == "actions" || clientActionsMode;
 int nativeX = outdoorStart ? 26000 : npcStart ? 24800 : 23828, nativeZ = npcStart || outdoorStart ? -1498 : 13984;
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 const string lockPath = "C:/Users/russe/Developer/mxo-client.lock";
@@ -150,6 +151,12 @@ INSERT INTO inventory(charId,goid,slot,count,purity) VALUES
 (110,1271,1,1,0),(110,531,2,1,0),(110,2399,3,1,0),
 (110,7332,4,20,0),(110,7333,5,20,0),(110,7334,6,20,0),(110,7335,7,20,0),
 (110,7336,8,20,0),(110,7337,9,20,0),(110,7338,10,20,0),(110,7339,11,20,0);
+");
+    if (clientActionsMode)
+        await database.ExecuteAsync($@"
+UPDATE characters SET cash=100000,healthC=500,healthM=500 WHERE charId=110;
+INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
+ VALUES(110,400,{CodeStorage.BaseValue(7332)},0,0,'P7 native archive fixture');
 ");
     if (dataMiningMode)
         await database.ExecuteAsync("DELETE FROM inventory WHERE charId=110 AND slot<97; INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,422,1,1,0)");

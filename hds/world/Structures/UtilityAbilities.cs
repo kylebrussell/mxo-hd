@@ -507,9 +507,15 @@ namespace hds
             {
                 client.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(HackConstructAbilityFail));
             }
-            else
+            else if (NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(), 1) == 0)
             {
                 client.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(HackConstructFactionFail));
+            }
+            else
+            {
+                // No faction-construct instance registry or ownership backend has been recovered. Do not
+                // charge, grant a key or claim success, and do not tell an actual member they lack a faction.
+                ClientActionsHandler.Notice(client, "Faction construct hacking is unavailable: this server has no faction construct instances. No information was charged.");
             }
             Output.WriteDebugLog("[UTILITY] Hack Construct at a hardline: level " + Level(client, HackConstructKey));
         }

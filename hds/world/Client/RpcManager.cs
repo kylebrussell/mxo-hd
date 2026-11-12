@@ -26,6 +26,19 @@ namespace hds{
             }
 		    switch (header)
 		    {
+                case 0x60: ClientActionsHandler.StoredCompile(Store.currentClient, rpcData); break;
+                case 0x110: ClientActionsHandler.CloseVendor(Store.currentClient, rpcData); break;
+                case 0x11a: ClientActionsHandler.CloseContainer(Store.currentClient, rpcData); break;
+                case 0x2a: ClientActionsHandler.Afk(Store.currentClient, rpcData); break;
+                case 0x14d: ClientActionsHandler.Echo(Store.currentClient, rpcData); break;
+                case 0xc6: ClientActionsHandler.Pill(Store.currentClient, rpcData); break;
+                case 0x117: ClientActionsHandler.CloseCollector(Store.currentClient, rpcData); break;
+                case 0x141: ClientActionsHandler.CloseElevator(Store.currentClient, rpcData); break;
+                case 0x157: case 0x159: case 0x15b:
+                    ClientActionsHandler.Snoop(Store.currentClient, header, rpcData); break;
+                case 0x1b0: case 0x1b7: case 0x1b2: case 0x1b4: case 0x1b9: case 0x1bb: case 0x1bd:
+                    ClientActionsHandler.Support(Store.currentClient, header, rpcData); break;
+
 
 		        case (int) RPCRequestHeader.CLIENT_SPAWN_READY:
                     if (Store.currentClient.playerData.worldChangePending) break;

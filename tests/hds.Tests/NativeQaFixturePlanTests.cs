@@ -39,8 +39,8 @@ public class NativeQaFixturePlanTests
             Assert.Equal(dev, environment.GetProperty("MXO_DEV_COMMANDS").GetString());
             Assert.Equal(gm, environment.GetProperty("MXO_GM_CHARACTER_IDS").GetString());
             Assert.Equal("11000", environment.GetProperty("MXO_AUTH_PORT").GetString());
-            Assert.Equal(mode=="health-callbacks"?"0":"",environment.GetProperty("MXO_CALLBACK_QA_ROLL15").GetString());
-            Assert.Equal(mode=="health-callbacks"?"0":"",environment.GetProperty("MXO_CALLBACK_QA_ROLL100").GetString());
+            Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL15").GetString());
+            Assert.Equal(mode == "health-callbacks" ? "0" : "", environment.GetProperty("MXO_CALLBACK_QA_ROLL100").GetString());
             Assert.Empty(Directory.EnumerateFileSystemEntries(empty));
         }
         finally { Directory.Delete(empty); }

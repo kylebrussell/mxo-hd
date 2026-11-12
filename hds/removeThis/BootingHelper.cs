@@ -70,6 +70,7 @@ namespace hds
             client.playerInstance.MaxHealth.enable();
             client.playerInstance.YawInterval.enable(); //ROTATION
             client.playerInstance.OrganizationID.enable();
+            if (client.playerInstance.AFK.getValue()[0] != 0) client.playerInstance.AFK.enable();
 
             client.playerInstance.StealthAwareness.setValue(0x01); // TODO: See what's stealth awareness
             client.playerInstance.InnerStrengthAvailable.enable();
