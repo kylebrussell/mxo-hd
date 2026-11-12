@@ -49,6 +49,9 @@ namespace hds
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
         public byte missionPhase = 0;
+        internal string MissionPersistenceId;
+        internal uint MissionRewardExperience;
+        internal bool MissionDeathSettled;
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it

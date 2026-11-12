@@ -1314,6 +1314,14 @@ namespace hds.databases{
             connection.Open();
             EnsureTransactionalInventory(connection);
             using MySqlTransaction transaction = connection.BeginTransaction();
+            CollectorExchange result=ExchangeCollectorItems(connection,transaction,charId,requiredItem,quantity,rewardItem,uniqueReward);
+            if(result!=null)transaction.Commit();
+            return result;
+        }
+
+        private CollectorExchange ExchangeCollectorItems(MySqlConnection connection, MySqlTransaction transaction,
+            UInt32 charId, UInt32 requiredItem, int quantity, UInt32 rewardItem, bool uniqueReward = false)
+        {
             using MySqlCommand command = connection.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "SELECT invId, slot, goid, count FROM inventory WHERE charId=@char ORDER BY slot FOR UPDATE";
@@ -1374,7 +1382,6 @@ namespace hds.databases{
             command.Parameters.AddWithValue("@reward", rewardItem);
             command.Parameters.AddWithValue("@slot", rewardSlot);
             command.ExecuteNonQuery();
-            transaction.Commit();
             return new CollectorExchange(rewardSlot, changes.ConvertAll(change => (change.Slot, change.Remaining)));
         }
 
