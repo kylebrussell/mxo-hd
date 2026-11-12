@@ -242,12 +242,30 @@ namespace hds
             }
         }
 
+        private static void RefuseEquipment(byte[] request)
+        {
+            var client = Store.currentClient;
+            client.messageQueue.addRpcMessage(ServerPackets.BuildEquipmentRefusal(request));
+            new ServerPackets().sendSystemChatMessage(client,
+                "That item cannot be equipped there. To use a tool, right-click it and choose Activate Item.", "SYSTEM");
+            client.FlushQueue();
+        }
+
         public void processUnmountItem(ref byte[] rpcData)
         {
+            if (rpcData == null || rpcData.Length != 2 || rpcData[0] < 0x61 || rpcData[0] > 0x6a ||
+                rpcData[1] > 96) { RefuseEquipment(rpcData); return; }
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
-            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
+            if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
+            {
+                uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+                PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot);
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot) == before)
+                    RefuseEquipment(rpcData);
+                return;
+            }
 
             if (sourceSlot == WeaponSlot)
             {
@@ -395,19 +413,29 @@ namespace hds
 
         public void processMountItem(ref byte[] rpcData)
         {
+            if (rpcData == null || rpcData.Length != 2 || rpcData[0] < 1 || rpcData[0] > 96 ||
+                rpcData[1] < 0x61 || rpcData[1] > 0x6b) { RefuseEquipment(rpcData); return; }
             byte sourceSlot = rpcData[0];
             byte destSlot   = rpcData[1];
 
-            if (PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot)) return;
-
-            if (destSlot == WeaponSlot)
+            if (sourceSlot == PvpArchives.BookSlot || destSlot == PvpArchives.BookSlot)
             {
+                uint before = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+                PvpArchives.Equipment(Store.currentClient, sourceSlot, destSlot);
+                if (Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot) == before)
+                    RefuseEquipment(rpcData);
+                return;
+            }
+
+            UInt32 sourceItem = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
+            if (destSlot == WeaponSlot || destSlot == 0x6b && RangedWeapons.IsGun(sourceItem))
+            {
+                if (!RangedWeapons.IsGun(sourceItem)) { RefuseEquipment(rpcData); return; }
                 EquipWeapon(sourceSlot);
                 return;
             }
 
             UInt32 clothingItemId = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(rpcData[0]);
-            TutorialMission.Of(Store.currentClient)?.OnItemEquipped(clothingItemId);
             DataLoader dataLoader = DataLoader.getInstance();
             ClothingItem item = dataLoader.getItemValues(clothingItemId);
 
@@ -475,14 +503,16 @@ namespace hds
 
             }
 
-            if (toRealSlotId == 0)
+            if (toRealSlotId == 0 || destSlot != 0x6b && destSlot != toRealSlotId)
             {
                 // Not a known clothing item. This used to carry on and move the item to inventory slot 0.
                 Output.WriteDebugLog("[INVENTORY] Mount request for item " + clothingItemId + " from slot " +
-                                     sourceSlot + " to " + destSlot + " ignored: not a known clothing item");
+                                     sourceSlot + " to " + destSlot + " refused: not a matching clothing item");
+                RefuseEquipment(rpcData);
                 return;
             }
 
+            TutorialMission.Of(Store.currentClient)?.OnItemEquipped(clothingItemId);
             if (partModel != null)
             {
                 Store.dbManager.WorldDbHandler.UpdateRsiPartValue(partModel,item.getModelId(), Store.currentClient.playerData.getCharID());
