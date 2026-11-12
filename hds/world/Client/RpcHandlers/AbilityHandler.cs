@@ -111,7 +111,7 @@ namespace hds
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             double now = TimeUtils.GetSimTimeSeconds();
-            if (AbilityID != CompileSession.Ability && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
+            if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
             {
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
@@ -130,7 +130,7 @@ namespace hds
                 return;
             }
 
-            if (AbilityID != CompileSession.Ability) CompileSession.End(Store.currentClient);
+            if (!CraftingSession.Handles(AbilityID)) CraftingSession.End(Store.currentClient);
 
             // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
             if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
@@ -140,8 +140,8 @@ namespace hds
             }
 
             // Tool activation and window close are a distinct flag-bearing 80 b9 path.
-            if (AbilityID == CompileSession.Ability)
-            { CompileSession.Process(Store.currentClient, packet); return; }
+            if (CraftingSession.Handles(AbilityID))
+            { CraftingSession.Process(Store.currentClient, packet); return; }
 
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
@@ -480,11 +480,6 @@ namespace hds
                 pak.sendISCurrent(Store.currentClient, innerStrength);
             }
 
-            if (currentAbility.getAbilityID() == 970)
-            {
-                // Spawn Code Write Window
-                pak.SendCodeWriterWindow();
-            }
         }
 
         public void processCharacterAnimationSelf(UInt16 abilityID)
