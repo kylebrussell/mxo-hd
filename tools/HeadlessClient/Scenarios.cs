@@ -19,6 +19,8 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario("ability-control-duration-bonuses", AbilityControlDurationBonuses, StillNpcs),
+        new Scenario("ability-control-duration-npc", AbilityControlDurationNpc, StillNpcs),
         new Scenario("ability-passives-lifecycle", AbilityPassivesLifecycle, StillNpcs),
         new Scenario("ability-heal-magnitudes", AbilityHealMagnitudes, StillNpcs),
         new Scenario("ability-passive-damage", AbilityPassiveDamage, StillNpcs),

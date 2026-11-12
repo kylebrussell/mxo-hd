@@ -409,11 +409,18 @@ namespace hds
             string casterName = null, UInt16 targetView = 0, Random rng = null)
         {
             List<Active> mods = Instantiate(effect, rng ?? random);
-            foreach (Active m in mods)
+            for (int i = mods.Count - 1; i >= 0; i--)
             {
+                Active m = mods[i];
                 m.Caster = caster;
                 if (caster != null && m.Proc == TempMods.Proc.Dot)
                     m.Value = AbilityStats.ScaleAbilityDamage(caster, effect.Ability, m.Value);
+                if (m.Proc == TempMods.Proc.State && m.Seconds > 0)
+                {
+                    m.Seconds = AbilityControlDurations.Scale(caster, m.Target, m.Seconds);
+                    // Holder uses zero for indefinite effects. A fully reduced timed state must disappear instead.
+                    if (m.Seconds <= 0) { mods.RemoveAt(i); continue; }
+                }
                 m.CasterName = casterName;
                 m.TargetView = targetView;
             }
