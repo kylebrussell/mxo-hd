@@ -78,14 +78,20 @@ owned unloaded discipline ancestors18/515, analyser in bag2 and compiler in bag1
 Require fixture source/snapshot assembly hashes to match in the same configuration
 and `WriteCodeQa=true`; Debug and Release hashes are separate builds.
 
-Perform one pass on that pinned head: activate analyser2 and capture outgoing
+Perform one pass on that pinned head: right-click analyser2 and choose **Activate
+Item** (double-click sends equip `63`, not activation). Capture outgoing
 970/tool2/flag1, incoming970 linked968/toggle-on, visible writer and typing idle.
 Opening alone must change no cash, bag or archive. Close it and capture
 970/tool2/flag0 plus empty `81 1a`, record/toggle-off and standing idle. Reopen,
-activate compiler1, then writer2, verifying each prior UI/session closes and tool
+right-click compiler1 and choose **Activate Item**, then activate writer2 the same
+way, verifying each prior UI/session closes and tool
 bindings remain distinct. Reopen and move/remove analyser2 or unload parent37;
 the writer must close and no stale compile may execute. Restore/reopen, take
-damage or enter combat, then visit LA and return; each must clean state. Confirm
-the separate compiler subset still works with compiler1. Record UI/animation
+damage or enter combat, then use a hardline radial menu **Loading Area**, confirm,
+and jack back in; each must clean state. Confirm
+the compiler window and session still open and close with compiler1. The archive
+contains ordinary Antibiotic item code for the Compile list; selecting it currently
+must return a refusal without changing resources. Code-bit entries are filtered out
+by that UI; successful bit/fragment compilation is covered headlessly. Record UI/animation
 differences and unrecovered synthesis requests honestly; no native pass or full
 writing economy is asserted by headless success.

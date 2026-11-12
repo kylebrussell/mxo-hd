@@ -51,6 +51,8 @@ public class NativeQaFixturePlanTests
             catch { process.Kill(true); throw; }
             Assert.True(process.ExitCode==0,await errors);
             using var json = JsonDocument.Parse(await output);
+            Assert.Equal(mode is "remaining" or "health-callbacks", json.RootElement.GetProperty("SeedDisguiseTool").GetBoolean());
+            Assert.Equal(2399u << 7, json.RootElement.GetProperty("CompileArchiveValue").GetUInt32());
             var environment = json.RootElement.GetProperty("Environment");
             Assert.Equal(dev, environment.GetProperty("MXO_DEV_COMMANDS").GetString());
             Assert.Equal(gm, environment.GetProperty("MXO_GM_CHARACTER_IDS").GetString());
