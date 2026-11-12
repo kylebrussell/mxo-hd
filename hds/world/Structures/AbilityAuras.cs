@@ -37,7 +37,11 @@ namespace hds
         /// <summary>Hostile auras only: the pulsed effect is a debuff (UDB0). Friendly auras (Combat Aura, Deflect Virus,
         /// Daemon Boost, Code Shaper) pulse UBF0 effects and belong to the buff and pet executors.</summary>
         public static bool Handles(ushort id) => AbilityCatalog.Find(id)?.Number("Ability/IsAToggleAbility") == 1 && EffectOf(id) != 0 &&
-            AbilityHostile.IsDebuff(EffectOf(id));
+            (AbilityHostile.IsDebuff(EffectOf(id)) || Friendly(id));
+
+        // The two Combat Aura parents are deterministic beneficial pulses. Other friendly aura callbacks
+        // (Deflect Virus sweeps, Daemon Boost, health-change triggers) need their own executors.
+        public static bool Friendly(ushort id) => id == 42 || id == 485;
 
         public static ushort EffectOf(ushort id) => (ushort)(Callback(id, "ApplyAuraEffect")?.Number("MinValue") ?? 0);
 
@@ -117,6 +121,13 @@ namespace hds
             ushort effectId = EffectOf(id);
             var effect = AbilityCatalog.Find(effectId);
             if (effect == null) return;
+            if (Friendly(id))
+            {
+                // Use the effect's radius, exactly as ApplyAuraEffect invokes the effect ability.
+                AbilitySupport.Land(client, effectId, 2);
+                Output.WriteDebugLog("[AURA] " + id + " friendly pulse " + effectId);
+                return;
+            }
             double radius = effect.Number("Ability/RadiusOfEffect");
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);

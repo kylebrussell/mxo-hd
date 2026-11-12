@@ -98,4 +98,74 @@ public class AbilityScaledBuffTests
         Assert.Equal(0,AbilityBuffs.VitalTotal(target,106));
     }
 
+
+    [Fact]
+    public void GroupNumericBuffsRequireBeneficialMetadataAndStillRejectCallbacks()
+    {
+        Assert.True(AbilityScaledBuffs.TryGet(489,20,out var buff));
+        Assert.Equal(300,buff.Seconds);
+        Assert.Contains(buff.Modifiers,m=>m.Stat==172 && m.Value==10);
+        Assert.Contains(buff.Modifiers,m=>m.Stat==174 && m.Value==10);
+        Assert.False(AbilityScaledBuffs.TryGet(63,20,out _)); // RefundIS callback
+        Assert.False(AbilityScaledBuffs.TryGet(436,20,out _));
+        Assert.False(AbilityScaledBuffs.TryGet(361,20,out _)); // hostile field
+        Assert.True(AbilityAuras.Handles(42)); Assert.True(AbilityAuras.Handles(485));
+        Assert.Equal(695,AbilityAuras.EffectOf(42)); Assert.Equal(12,AbilityAuras.DrainOf(42));
+        Assert.Equal(696,AbilityAuras.EffectOf(485)); Assert.Equal(15,AbilityAuras.DrainOf(485));
+        Assert.False(AbilityAuras.Handles(378)); // sweep callback not silently dropped
+    }
+
+    [Fact]
+    public void TacticalTogglesReachCombatAndRejectTheirScriptConflict()
+    {
+        var c=Client(20);
+        Assert.True(AbilityBuffs.Apply(c,15));
+        Assert.Equal(CombatTacticType.Precise,CombatTactics.Type(c));
+        Assert.False(AbilityBuffs.Apply(c,9));
+        Assert.True(AbilityBuffs.Remove(c,15));
+        Assert.Equal(CombatTacticType.Normal,CombatTactics.Type(c));
+        Assert.True(AbilityBuffs.Apply(c,9));
+        Assert.Equal(CombatTacticType.Energized,CombatTactics.Type(c));
+        Assert.False(AbilityBuffs.Apply(c,15));
+        Assert.True(AbilityBuffs.Remove(c,9));
+    }
+
+    [Fact]
+    public void HyperSenseResolvesLearnedLevelAndRetainsItsRemovalSnapshot()
+    {
+        var c=Client(50);
+        AbilityPassives.SetLoaded(c,new[]{((ushort)1101,(ushort)20)},true);
+        Assert.True(AbilityBuffs.Apply(c,1101));
+        Assert.Equal(19,AbilityBuffs.Total(c,1011));
+        AbilityPassives.SetLoaded(c,new[]{((ushort)1101,(ushort)50)},true);
+        Assert.Equal(19,AbilityBuffs.Total(c,1011));
+        Assert.True(AbilityBuffs.Remove(c,1101));
+        Assert.Equal(0,AbilityBuffs.Total(c,1011));
+    }
+
+    [Fact]
+    public void GaussianBlurAddsAndRemovesOnlyItsOwnPresentationBit()
+    {
+        var c=Client(20);
+        Assert.True(AbilityBuffs.Apply(c,184));
+        Assert.True(AbilityBuffs.Apply(c,49));
+        Assert.Equal(0x440,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));
+        Assert.Equal(25,AbilityBuffs.Total(c,520));
+        Assert.True(AbilityBuffs.Remove(c,49));
+        Assert.Equal(0x400,NumericalUtils.ByteArrayToUint16(c.playerInstance.DissemblingType.getValue(),1));
+        AbilityBuffs.Remove(c,184);
+    }
+
+    [Fact]
+    public void FindWeaknessInfluencesThrownHitsWithoutBuffingBallisticOrViralDamage()
+    {
+        var c=Client(20);
+        Assert.Equal(100,AbilityStats.ScaleAbilityDamage(c,279,100));
+        Assert.True(AbilityBuffs.Apply(c,123));
+        Assert.Equal(110,AbilityStats.ScaleAbilityDamage(c,279,100));
+        Assert.Equal(100,AbilityStats.ScaleAbilityDamage(c,254,100));
+        Assert.Equal(100,AbilityStats.ScaleAbilityDamage(c,350,100));
+        AbilityBuffs.Remove(c,123);
+        Assert.Equal(100,AbilityStats.ScaleAbilityDamage(c,279,100));
+    }
 }

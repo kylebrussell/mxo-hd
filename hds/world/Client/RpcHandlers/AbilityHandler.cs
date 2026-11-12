@@ -125,6 +125,11 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Switch off Energized Attacks or Precise Blow before enabling the other.");
+                return;
+            }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // Stealth (docs/STEALTH.md): a state that is on switches off; otherwise the script's own test runs first.

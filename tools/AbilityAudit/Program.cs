@@ -12,7 +12,7 @@ static string Consumer(ushort stat) => stat switch
     163 or 522 or 524 or 996 or 997 => "combat accuracy",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",
     144 or 180 or 181 or 1140 or 1144 => "combat resistance",
-    159 or 171 or 172 or 1031 or 1139 or 1142 => "damage",
+    159 or 171 or 172 or 1031 or 1034 or 1028 or 1139 or 1142 => "damage",
     174 or 1141 => "healing",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
@@ -41,7 +41,9 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         id = e.Id, cost = AbilityCosts.Cost(e.Id), cost_source = AbilityCosts.Retail.ContainsKey(e.Id) ? "capture" :
             e.Has("Ability/AbilityInnerStrengthCost") ? "stored" : "fallback",
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
-        buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
+        tactical_toggle = e.Id == 9 || e.Id == 15,
+        buff_source = !buff ? "none" : AbilityBuffs.Retail.ContainsKey(e.Id) ? "capture" :
+            AbilityBuffs.Scripted.ContainsKey(e.Id) ? "stored scripted" : AbilityScaledBuffs.TryToggle(e.Id,50,out _) ? "stored learned level" : AbilityScaledBuffs.TryGet(e.Id,50,out _) ? "stored character level" : "stored constants",
         buff_stats = buff ? b.Modifiers.Select(m => new { stat = m.Stat, value = m.Value, consumer = Consumer(m.Stat) }).ToArray() : null,
         timed = timed ? t.Mods.Select(m => new { state = m.Proc == TempMods.Proc.State ? m.Target : 0,
             stat = m.Proc == TempMods.Proc.Stat ? m.Target : 0, proc = m.Proc.ToString(), seconds = m.Seconds,
@@ -58,7 +60,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
         grants = AbilityProgression.GrantsOf(e.Id),
-        aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
+        aura = AbilityAuras.Handles(e.Id) ? new { effect = AbilityAuras.EffectOf(e.Id), friendly = AbilityAuras.Friendly(e.Id), drain = AbilityAuras.DrainOf(e.Id), interval = AbilityAuras.IntervalOf(e.Id) } : null,
         sweep = AbilityHostile.IsSweep(e.Id),
         instant_hostile = AbilityHostile.Lands(e.Id),
         catalog_debuff = AbilityHostile.Catalog(e.Id) != null

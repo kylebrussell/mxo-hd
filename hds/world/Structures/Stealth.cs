@@ -377,6 +377,7 @@ namespace hds
         /// <summary>DissemblingType and ConditionStateFlags to the own view and to everyone who has a view of the player.</summary>
         private static void Present(WorldClient client, UInt16 bits, UInt32 flags, bool on)
         {
+            bits |= AbilityBuffs.DissemblingBits(client);
             client.playerInstance.DissemblingType.setValue(bits);
             lock (client.playerData.conditionTokens)
             {
@@ -401,7 +402,7 @@ namespace hds
         /// <summary>A view of the player was just created: give it the stealth state the creation record doesn't carry.</summary>
         public static void AfterSpawn(WorldClient observer, WorldClient target, UInt16 viewId)
         {
-            UInt16 bits = BitsOf(target);
+            UInt16 bits = (ushort)(BitsOf(target) | AbilityBuffs.DissemblingBits(target));
             if (bits == 0) return;
             observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId, BuildOther(bits, PvpFlag.FlagsOf(target))), false);
             observer.FlushQueue();

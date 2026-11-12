@@ -73,6 +73,16 @@ namespace hds
 
         private static Modifier Stat(UInt16 stat, Int32 value) => new Modifier(KindStat, stat, value);
 
+        public static readonly Dictionary<UInt16, Buff> Scripted = new Dictionary<UInt16, Buff>
+        {
+            // tempmods.py EnergizedAttacksInit / PerciseBlowInit set TT_ENERGIZED / TT_PRECISE.
+            // These have no numeric modifier; the exclusive switch and combat consumer carry the toggle.
+            { 9, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
+            { 15, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
+            // Stored Gaussian Blur numeric effect + ImpartBlurInit/Term's kBlur (client62521e2f).
+            { 49, new Buff { Seconds = 600, Family = 1013, DissemblingType = 0x40, Modifiers = new[] { Stat(520, 25) } } },
+        };
+
         /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
         public static readonly Dictionary<UInt16, Buff> Retail = new Dictionary<UInt16, Buff>
         {
@@ -254,7 +264,24 @@ namespace hds
         public static bool TryGet(UInt16 id, out Buff buff)
         {
             id = AbilityCatalog.Canonical(id);
-            return Retail.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff);
+            return AbilityScaledBuffs.TryToggle(id, 50, out buff) || Retail.TryGetValue(id, out buff) || Scripted.TryGetValue(id, out buff) || catalogBuffs.Value.TryGetValue(id, out buff) || AbilityScaledBuffs.TryGet(id, 50, out buff);
+        }
+
+        public static ushort DissemblingBits(WorldClient client)
+        {
+            ushort bits = 0;
+            lock (client.playerData.activeBuffs)
+                foreach (Active active in client.playerData.activeBuffs.Values)
+                    if (ActiveDefinition(active, out Buff buff)) bits |= buff.DissemblingType;
+            return bits;
+        }
+
+        private static void PresentDissembling(WorldClient client)
+        {
+            ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
+            client.playerInstance.DissemblingType.setValue(bits);
+            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((36, PlayerViewAttributes.U16(bits))), false);
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((27, PlayerViewAttributes.U16(bits))));
         }
 
         public static int Total(WorldClient client, UInt16 stat)
@@ -361,8 +388,12 @@ namespace hds
         /// buff comes off by itself when its time is up. Returns false for abilities that are not buffs.
         /// The caller flushes the queue.
         /// </summary>
+        public static bool TacticalConflict(WorldClient client, ushort ability) =>
+            ability == 9 && IsActive(client, 15) || ability == 15 && IsActive(client, 9);
+
         public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
         {
+            if (TacticalConflict(client, abilityId)) return false;
             if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
             {
                 return false;
@@ -412,6 +443,7 @@ namespace hds
                 client.messageQueue.addRpcMessage(record);
             }
             RefreshVitals(client);
+            if (buff.DissemblingType != 0) PresentDissembling(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (buff.Seconds > 0)
@@ -448,7 +480,9 @@ namespace hds
                 buff = active.Definition ?? buff;
                 data.activeBuffs.Remove(abilityId);
             }
+            if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
             TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
+            if (buff.DissemblingType != 0) PresentDissembling(client);
             if (!keepVitals) RefreshVitals(client);
 
             foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
@@ -461,7 +495,7 @@ namespace hds
             }
             if (buff.MovementScale > 0 && !keepMovement)
             {
-                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, 0), false);
+                client.messageQueue.addObjectMessage(BuildMovementUpdate(0f, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             }
             if (buff.EvadeShield)
             {

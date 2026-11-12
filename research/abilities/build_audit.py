@@ -199,9 +199,13 @@ def server(i):
     if passive:
         parts.append('loaded passive totals + records (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d} [{m['consumer']}]" for m in passive) + ')')
     if r['buff_source'] != 'none':
-        if r['buff_source'] == 'stored character level':
+        if r.get('tactical_toggle'):
+            parts.append('script tactical toggle; precise/energized combat attack and damage multipliers; mutual refusal')
+        elif i == 49:
+            parts.append('Gaussian Blur kBlur0x40 self/watchers/late views; stored Combat Evasion+25 has no engagement consumer')
+        elif r['buff_source'] in ('stored character level', 'stored learned level'):
             consumers = sorted({m['consumer'] for m in r['buff_stats'] if m['consumer'] != 'total only'})
-            parts.append('buff records + caster-level stat snapshot; ' + (', '.join(consumers) if consumers else 'numeric totals only; gameplay consumer missing'))
+            parts.append('buff records + ' + ('learned-level' if r['buff_source'] == 'stored learned level' else 'caster-level') + ' stat snapshot; ' + (', '.join(consumers) if consumers else 'numeric totals only; gameplay consumer missing'))
         else:
             parts.append(f"buff records + selected combat/vital stats ({r['buff_source']})")
     if r['timed']:
@@ -212,7 +216,7 @@ def server(i):
             parts.append(('stored' if r.get('catalog_debuff') else 'captured') + ' debuff records; accuracy/defence/resistance, IS cost, regen and max vitals consumed; other stats client-side/record only')
     if r.get('aura'):
         a = r['aura']
-        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on hostile NPC/PvP targets in its radius")
+        parts.append(f"toggled aura: IS drain {a['drain']}/{a['interval']:g}s, pulses {a['effect']} on {'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'} in its effect radius")
     if r.get('sweep'):
         parts.append('pulse sweep removes cleansable debuff parents (UDB0, not exempt)')
     if r.get('instant_hostile'):
@@ -233,7 +237,7 @@ def status(i):
     if i in PETS:
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
-    if r['buff_source'] == 'stored character level' and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
+    if i == 49 or r['buff_source'] in ('stored character level', 'stored learned level') and not any(m['consumer'] != 'total only' for m in r['buff_stats']):
         return 'cosmetic'
     if r.get('stealth') or r.get('utility') or r.get('resurrection') or r['healing'] or r['direct_damage'] or r['buff_source'] != 'none' or r['timed'] or r['grants'] or r.get('aura') or r.get('sweep') or r.get('instant_hostile') or any(m['level50'] is not None and m['consumer'] != 'total only' for m in r.get('passives', [])) or 'HyperJump' in abilities[i]['name']:
         return 'partial'
