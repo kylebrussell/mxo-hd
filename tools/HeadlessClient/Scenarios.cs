@@ -24,6 +24,7 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("zion-prima-chain", ZionPrimaChain, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="230410"}),
+        new Scenario("resist-damage-radius", ResistDamageRadius, StillNpcs),
         new Scenario("proxy-technician-control", ProxyTechnicianControlRefusal, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
         new Scenario("proxy-technician-friendly-attacks", ProxyTechnicianFriendlyAttacks, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1",["MXO_PROXY_TECHNICIAN_QA_ROLL"]="80" }),
         new Scenario("proxy-technician-lifecycle", ProxyTechnicianLifecycle, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="1" }),
