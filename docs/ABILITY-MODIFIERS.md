@@ -27,7 +27,24 @@ The native health-modifier path `625ec512..625ec58a` looks up a damage-type infl
 - Passive accuracy, defence and resistance bonuses feed the existing NPC/PvP combat bases. Regeneration bonuses change health/IS ticks. Crafting uses the shared totals rather than its previous separate guessed formula.
 - Melee/ballistic/viral influence changes ability hits in NPC and PvP paths and DOT totals once at application. Existing captured/generic damage bases remain approximations. Healing influence belongs to the caster, independently of the recipient's maximum health.
 
-The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including control-duration and stealth/detection consumers), passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
+The native evaluator and packet layouts are direct binary evidence. Applying newly available percent bonuses to the server's existing combat and regeneration bases is an integration policy: those base formulas are still approximate. Complete character-attribute contributions, several stat families (including stealth/detection consumers), Determination mitigation, passive aura callbacks, random value functions and pets remain gaps. A modifier that is stored and displayed but lacks its consuming system is explicitly not full parity. Final retail healing/damage magnitudes still need comparison with a known caster build.
+
+## Control-duration follow-up
+
+`6251dd00` resolves the state attribute link; `625174e0` identifies class4. At `625ec56e..574`, a class-4 modifier multiplies its **float duration** by the binary32 influence factor and retains fractional seconds. Other classes follow the integer-value path. The stored links are:
+
+| State | Duration bonus stat |
+|---|---|
+| Stun102 | 995 |
+| Pacify85 | 1039 |
+| Root99 | 1040 |
+| Blind90 | 1041 |
+| Powerless96 | 1042 |
+| Confuse91 | 1043 |
+
+`AbilityControlDurations` applies these links at cast application, for player and NPC targets. It does not invent an Enrage link where the shipped template has none. The state's expiry and record carry the same fractional duration. Explicit immunity timers remain separate, and root/pacify health-change rules are preserved. A fully reduced timed state is refused rather than accidentally becoming an indefinite state. Already applied states retain their original application duration when the caster changes loadout.
+
+The script's `GetAbilityMitigationDuration` and complete target Determination values are a separate unresolved step. The duration bonus implementation does not claim that reduction is present.
 
 ## Native checklist (pending)
 
@@ -39,6 +56,8 @@ Use the NativeQa harness's `passives` mode, `CSR_AbilityQA`, and **CSR_Tester110
 4. Compare viral damage against the test NPC and `?duelbot pvp` with Transmit Virus95 loaded/unloaded and Overclock327 on/off. Check both direct hits and virus ticks. Bystanders must still see combat.
 5. `?die`: no false PvP message. Learned-level passive records should decrease; Aikido's character-level function stays unchanged. Reconstruct, travel back from the Loading Area, then relog. No duplicate passive stats, missing records or compounded maximum health. Verify recovery over five minutes.
 6. Stop the harness and verify `stopped.json`: Mara `(23828,495,13984)`, full health, flag0, mission986 only. Do not select TheNeo or change security settings.
+
+For the control-duration follow-up, use NativeQa `controls` mode. It adds Disrupt Connection384 and Wicked Aim278, plus Stun315, Code Freeze40 and Freeze System48. At50, expect Stun315 to show8.05s while its explicit immunity stays14s; Code Freeze40 should show27.5s and still break on damage; Freeze System48 should show6.66s. Check that actions remain blocked until the stun ends, then resume. Unload the duration passives and repeat with their unboosted7/25/6s durations. Verify presentation on the NPC and the hostile QA helper/DuelBot; use only CSR_Tester110 natively. These native checks are pending.
 
 Headless coverage exercises owned loadouts, forged slot/level claims, upgrades, unload/removal, death scaling, a fresh server login, direct/group heal source values, HOT ticks and NPC/PvP paths. Native acceptance remains separate.
 
