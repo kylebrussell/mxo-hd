@@ -1,0 +1,20 @@
+{
+  "research/scale/2026-11-12/50/plan.json": "bedb7483c5717dd343fe5db91d7cc9a3030cb910cb7f0593f17badd6237e8655",
+  "research/scale/2026-11-12/50/summary.json": "39ec6d0de614f24ec51ab111418deea6f7f12a99f0a7c7ea20e1e37bab195ae8",
+  "research/scale/2026-11-12/50/cpu-samples.json": "e81446e0606827750487ba5ff6888ec6a17e4a8e88995ed666ae1c1fca4cd4ca",
+  "research/scale/2026-11-12/50/rtt-ms.json": "7a664f8ade420866a0a54a6c27946f2e0d4f2772093c57bf5d4d8f9a5304d6a1",
+  "research/scale/2026-11-12/50/server-metrics.ndjson": "5b2ca8058872fe9131900d4fe164da9f71de429b133c88ff3b85319262a5c1b5",
+  "research/scale/2026-11-12/50/exit-code.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+  "research/scale/2026-11-12/100/plan.json": "9bbc0c06087ec052a1fbcb0c6e16dce2c9f3602b3f57ed415fd52f9ef8add44f",
+  "research/scale/2026-11-12/100/summary.json": "9cba4c83241b21c5d2ca67b5c157e69aeeb237da8e1ffdc40b4a3561aa5a9bca",
+  "research/scale/2026-11-12/100/cpu-samples.json": "92dfb9064b6b494f8a1281d3c1d389a963230b32d552412448249b81d2e719a5",
+  "research/scale/2026-11-12/100/rtt-ms.json": "2efa2c6389938aaa3a89bb9563e0440627a586755ab1672cb57d51735c52a6eb",
+  "research/scale/2026-11-12/100/server-metrics.ndjson": "06ff9bdafe4fb1ce266007310e2b2ffa9e608876ada0a2714574f72ff09e031b",
+  "research/scale/2026-11-12/100/exit-code.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+  "research/scale/2026-11-12/200/plan.json": "40c1744f9e8dd656b49ae8e8e1211d44809e2029ca9fd9cbec2a025f665cabfe",
+  "research/scale/2026-11-12/200/summary.json": "6df9d7ee7a13252ffb4f8734a1eda84006d1275b33c2d43741e4ef1873915dfa",
+  "research/scale/2026-11-12/200/cpu-samples.json": "e4998ae58caff0c2200b71ba77cbcd4c161ed8756b880a1f79ed32383b070d95",
+  "research/scale/2026-11-12/200/rtt-ms.json": "4d4aa5bbabb554a6b45a7c7d51d482380fbdbddfb6590f35bf5b5955db750f40",
+  "research/scale/2026-11-12/200/server-metrics.ndjson": "88acc7e53de0809b95ba7477f8dcf05aaa3f27647a007d0cdd34a7b41c3fa288",
+  "research/scale/2026-11-12/200/exit-code.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+}
