@@ -59,7 +59,13 @@ public static partial class Scenarios
                                 p.SendRpc("81 1f");
                             }
                             else if(type!="Defeat" && !(type=="Talk" && hostile))
-                            {string action=type=="Talk"?"09":type=="Get"?"0d":"0e";p.SendRpc($"80 c7 {MissionNpcId(view)} {action} 00");}
+                            {
+                                if(type is "Get" or "Give")
+                                {
+                                    string tracker=type=="Get"?"GiverActiveTracker":"TakerActiveTracker";
+                                    Check.That(view.Attributes.TryGetValue(tracker,out var active) && active.Any(b=>b!=0),$"{type} is exposed by the actual NPC {tracker}");
+                                }
+                                string action=type=="Talk"?"09":type=="Get"?"0d":"0e";p.SendRpc($"80 c7 {MissionNpcId(view)} {action} 00");}
                             // Hostile Find/Talk is proximity, as the native client offers no Talk interaction on it.
                             break;
                         }
