@@ -161,13 +161,15 @@ namespace hds
 
         /// <summary>
         /// Own view at death, retail (F1 pvp death): 02 00 02 80 80 80 c1 01 00 00 80 80 01 00 00 00 01 =
-        /// IsDead (own-view attribute 21) = 1, Health = 0, ConditionStateFlags = 0x01000000.
+        /// IsDead (own-view attribute 21) = 1, Health = 0. The capture had the PvP bit already set;
+        /// ordinary deaths preserve the supplied real flags instead of copying that bit to everyone.
         /// </summary>
-        public static byte[] BuildSelfDeathUpdate()
+        public static byte[] BuildSelfDeathUpdate(UInt32 conditionFlags = 0)
         {
-            PacketContent pak = new PacketContent();
-            pak.AddHexBytes("020002" + "808080c1" + "01" + "0000" + "8080" + "01" + "00000001");
-            return pak.ReturnFinalPacket();
+            return PlayerViewAttributes.BuildSelf(
+                (PlayerViewAttributes.SelfIsDead, PlayerViewAttributes.U8(1)),
+                (PlayerViewAttributes.SelfHealth, PlayerViewAttributes.U16(0)),
+                (PlayerViewAttributes.SelfConditionStateFlags, PlayerViewAttributes.U32(conditionFlags)));
         }
 
         /// <summary>2e: the death system message (string id 0x60000092), byte-identical in all three retail deaths.</summary>

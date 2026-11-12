@@ -78,6 +78,14 @@ namespace hds
 
 		// The tactic button pressed (RPC 42) and the record ids of its modifier records; see CombatTactics
 		public CombatTactic combatTactic = CombatTactic.Speed;
+        public UInt32 combatSelection = CombatSelection.NoAbility;
+        public UInt16 combatStyle = AbilityProgression.SelfDefenseAbility;
+        public UInt16 martialArt;
+        public readonly object craftingSync = new object();
+        public float deathPenalty = 1;
+        public double deathPenaltyAt, deathPenaltySentAt;
+        public bool deathPenaltyLoaded;
+        public ushort deathPenaltyRecord;
 		public CombatTacticType combatTacticType = CombatTacticType.Normal;
 
 		// The part of a point of Inner Strength regenerated but not yet granted; see AbilityHandler.RegenAmount
@@ -122,6 +130,8 @@ namespace hds
 		public readonly System.Collections.Generic.List<OpenDoor> openDoors = new System.Collections.Generic.List<OpenDoor>();
 
         public bool waitForRPCShutDown;
+        public bool worldChangePending;
+        public UInt16 tutorialConstructId;
         internal ushort selfSpawnIdCounter;
         /// <summary>Goid of the gun the client picked for Free Fire (RPC 3f), 0 when none.</summary>
         public UInt32 freeFireWeaponGoid;

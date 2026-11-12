@@ -335,6 +335,9 @@ namespace hds
                 return;
             }
 
+            if (interactedView != null && interactedView.spawnId == (numericObjectId >> 16) &&
+                PvpArchives.OnUse(Store.currentClient, interactedView, (byte)objectTypeID)) return;
+
             // Objects the server follows (ObjectStates.Track) move to the state retail's script gives the use
             bool followed = interactedView != null &&
                             ObjectStates.OnUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID);

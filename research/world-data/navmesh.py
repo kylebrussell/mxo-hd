@@ -1,6 +1,6 @@
 r"""Pack the client's nav meshes (sector .nav files, floor prefab INAV meshes and their placements) into data/navmesh/<metr id>.bin.gz (read-only on the client).
 
-Usage: python -I navmesh.py <mxo-research/tools/client-data dir> <data/sector_properties.csv> <out dir>
+Usage: python -I navmesh.py <mxo-research/tools/client-data dir> <data/sector_properties.csv> <out dir> [world IDs, default 0,1,2,3]
   The .nav files are packed; rezmap_ltb.py (in the tools dir) reads them from the client.
 
 .nav layout (found by inspection, see docs/WORLD-DATA.md):
@@ -104,19 +104,19 @@ def placements(d, known):
     return out
 
 
-def pack_polygons(polys):
+def pack_polygons(polys, wide=False):
     body = bytearray(struct.pack('<H', len(polys)))
     for (a, b, c, dd), verts in polys:
         flat = abs(a) < 1e-6 and abs(c) < 1e-6 and abs(b) > 1e-6
         body += struct.pack('<B', len(verts) | (0 if flat else 0x80))
         body += struct.pack('<f', -dd / b) if flat else struct.pack('<4f', a, b, c, dd)
         for x, z in verts:
-            assert -32768 <= x <= 32767 and -32768 <= z <= 32767
-            body += struct.pack('<hh', int(round(x)), int(round(z)))
+            assert wide or (-32768 <= x <= 32767 and -32768 <= z <= 32767)
+            body += struct.pack('<ii' if wide else '<hh', int(round(x)), int(round(z)))
     return body
 
 
-def main(tools, sectors_csv, out_dir):
+def main(tools, sectors_csv, out_dir, worlds='0,1,2,3'):
     sys.path.insert(0, tools)
     import rezmap_ltb as R
     index = R.index()
@@ -126,8 +126,10 @@ def main(tools, sectors_csv, out_dir):
         if k.endswith('.nav') and '/worlds/' in k:
             by_name.setdefault(k.rsplit('/', 1)[1][:-4], k)
     os.makedirs(out_dir, exist_ok=True)
-    rows = [r for r in csv.DictReader(open(sectors_csv)) if r['metr_id'] in ('0', '1', '2', '3')]
-    for metr in ('0', '1', '2', '3'):
+    selected = worlds.split(',')
+    rows = [r for r in csv.DictReader(open(sectors_csv)) if r['metr_id'] in selected]
+    for metr in selected:
+        wide = metr not in ('0', '1', '2', '3') # Datamine's sector-local polygons exceed int16 coordinates
         secs = [r for r in rows if r['metr_id'] == metr]
         body = bytearray()
         prefabs = {}  # resource id -> index in the prefab table
@@ -141,7 +143,7 @@ def main(tools, sectors_csv, out_dir):
             regions = [polygons(d, o, s) or [] for o, s in sections(d)[1:]]
             body += struct.pack('<HH', int(r['sector']), len(regions))
             for polys in regions:
-                body += pack_polygons(polys)
+                body += pack_polygons(polys, wide)
             sidi = by_name[name][:-3] + 'sidi'
             insts = placements(R.read(bp[sidi]), index) if sidi in bp else []
             body += struct.pack('<H', len(insts))
@@ -149,10 +151,10 @@ def main(tools, sectors_csv, out_dir):
                 if rid not in prefabs:
                     polys = (inav(R.read(index[rid])) or []) if rid in index else []
                     prefabs[rid] = len(prefabs)
-                    prefab_body += struct.pack('<I', rid) + pack_polygons(polys)
+                    prefab_body += struct.pack('<I', rid) + pack_polygons(polys, wide)
                 body += struct.pack('<H9hB', prefabs[rid], *b, rot)
             count += 1
-        data = (b'MXNV' + struct.pack('<HHI', 2, int(metr), len(prefabs)) + bytes(prefab_body) + struct.pack('<I', count) +
+        data = (b'MXNV' + struct.pack('<HHI', 3 if wide else 2, int(metr), len(prefabs)) + bytes(prefab_body) + struct.pack('<I', count) +
                 bytes(body))
         path = os.path.join(out_dir, '%s.bin.gz' % metr)
         with gzip.open(path, 'wb', compresslevel=9) as f:
@@ -161,4 +163,4 @@ def main(tools, sectors_csv, out_dir):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:5])

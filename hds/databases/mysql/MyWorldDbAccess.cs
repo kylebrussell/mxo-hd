@@ -10,7 +10,7 @@ using MySqlConnector;
 
 namespace hds.databases{
 	
-    public class MyWorldDbAccess: IWorldDBHandler{
+    public partial class MyWorldDbAccess: IWorldDBHandler{
 
 		// One per thread, as Store.currentClient is. These used to be one connection, command and reader shared by every
 		// player and timer thread: under load a query failed with "Connection must be Open" (and the player stuck at

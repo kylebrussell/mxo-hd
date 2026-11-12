@@ -20,6 +20,13 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
+        new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
+        new Scenario("death-penalty-persistence", DeathPenaltyPersistence, StillNpcs),
+        new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
+        new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
+        new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
+        new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
+        new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
         new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
@@ -469,8 +476,8 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         await player.WaitForRpcAsync("80 99");
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9e 00");
-        player.SendChat("?missionfloor");
-        ViewCreation herschel = await player.WaitForViewNamedAsync("Herschel");
+        await EnterMissionArea(context, player);
+        ViewCreation herschel = await VisitMissionNpc(context, player, "Herschel");
         player.SendRpc($"80 c7 {Le(herschel.ViewId)} {Le((ushort)herschel.SpawnId)} 0d 00");
         await player.WaitForRpcAsync("5e 01 00 a9 1a 00 00");
         player.SendRpc("65 01 00 05 00");

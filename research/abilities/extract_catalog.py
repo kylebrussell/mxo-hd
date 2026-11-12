@@ -21,7 +21,7 @@ def string(data, offset):
     return data[offset + 4:end].decode('latin1'), end
 
 
-def extract(client):
+def extract(client, raw_goids=False):
     packed = (client / 'packmaps/gameobjects.pkb').read_bytes()
     # The GOB resource has no rezmap.ltb entry. These are the verified 7.6005 resource bounds.
     data = packed[0x8af9d1:0x476488a]
@@ -30,8 +30,8 @@ def extract(client):
     templates = {}
     for i in range(count):
         key, offset, size = struct.unpack_from('<3I', data, 40 + i * 12)
-        if key & 0x80000000:
-            templates[(key & 0x7fffffff) >> 10] = (offset, size)
+        if raw_goids or key & 0x80000000:
+            templates[key if raw_goids else (key & 0x7fffffff) >> 10] = (offset, size)
     tables = []
     p = attrs_at + 4
     widths = collections.defaultdict(list)
@@ -91,7 +91,7 @@ def extract(client):
             values[field] = value
         rows.append(dict(id=ability_id, name=name, schema=table_id,
                          components=[dict(name=n, type=t) for n, t in components[component_id]], fields=values))
-    assert len(rows) == 1404
+    assert raw_goids or len(rows) == 1404
     return dict(source='MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb',
                 gob_sha256=hashlib.sha256(data).hexdigest(), schema_version=1,
                 omitted_fields='Not stored; engine defaults have not been reconstructed.', abilities=rows)

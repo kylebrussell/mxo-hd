@@ -73,7 +73,7 @@ The client's rule says who is an opponent. These are the server's additions (`Pv
 - **`/pvp`** is client RPC `81 9e` with no fields (0x621d5280). The client expects no reply: it prints "You are now / no longer susceptible to PvP" when bit 24 of its own flags changes (0x625fdca0).
 - **The safe level** protects by the comparison the client uses for mode 1, level > `PvPMaxSafeLevel`. That retail's PvP server spared exactly those levels is inferred.
 - **The flag abilities.** `tempmods.py` has four tempmods: `PVPFlagFlipperInit` (flip), `PVPFlagOnInit` (on), `PVPFlagMsgOnInit` (on, with ID_ABILITY_PVPPULSE if it was off) and `PVPFlagMsgOffInit` (off, with ID_ABILITY_PACZONE if it was on). `PvpFlag.Abilities` maps abilities to them **by name** (the ability data isn't in the scripts): PVPFlipper 721/735/736 flip, PVPPulseFlipper 1210/1212/1214 turn on, PacZoneFlipper 1232/1233/1234 turn off. None is a player's ability: they belong to NPCs and to the PvP-pulse and pacification-zone objects of live events. They work when they land on a player (`PvpFlag.ApplyAbility`); nothing in the world casts them yet. `?pvpability <id>` lands one on yourself.
-  - Not done: `PvPIfInInventory` (the PvP_Pass items), `PVPFlagMsgOnTimeInit` (leaving a pacification zone) and the org rule of the PvP teleporters (`serverrules.TeleporterOrgCheck`, `rshooks.LookupTeleportLocationData`): the archive constructs they lead to aren't reachable on this server.
+  - Archive books, equipped slot106, sender cycles, level/org gates and organization returners are implemented; see [archive evidence and limitations](CLIENT-COMBAT-ACTIONS.md#archive-books-and-transporters). GOB Ticket fields identify PvP_Pass items as reusable archive books; carrying one is not evidence for PvPIfInInventory. PVPFlagMsgOnTimeInit and the independent inventory tempmod still need complete hooks.
 
 ### Refusals: RPC 4d
 
@@ -129,7 +129,7 @@ The rules are the ones NPC fights use, from retail's own scripts (`CombatRules`,
 
 Combat views now carry shared, timed round entries for both fighters and bystanders. Visibility updates admit late observers and remove their combat views when they leave; no participant RPC45/47 or own combat state leaks to observers. Stuns suppress player hits through the shared control gates. See [combat round evidence and limits](COMBAT-ROUND-ENTRIES.md).
 
-**Not done:** more than two players in one interlock; full fighting-style and special-ability choreography; complete timed result-tail semantics.
+Shared interlocks now admit up to six players, with target changes, individual departure/rejoin and per-exchange opponent handles. See [group rules and limits](CLIENT-COMBAT-ACTIONS.md#shared-pvp-interlock). Native group presentation remains pending. **Not done:** full fighting-style/special-ability choreography and complete timed result-tail semantics.
 
 ### Health, conditions
 
@@ -263,7 +263,7 @@ The native retest at 94667f5 passed: `?org 1` followed by `?duelbot pvp` showed 
 
 - **What happened.** After `?duelbot attack`, `/duel` and `?health 20`, the bot won. The messages were right. The player's health bar emptied but the character kept standing, and `/reconstruct` gave the client's own "You cannot /reconstruct, you are not dead." So the client never stored IsDead.
 - **The record itself was retail's.** The own-view defeat matches niobe3dualduality 03:03:51 attribute for attribute (indices 14, 20, 21, 27, 35, 42; masks `80 80 c1 … c1 … 80 81/89 … 01`), with two differences:
-  - DeathPenalty (38) is left out. It is optional in the mask, and retail's ordinary deaths sent it with other values.
+  - DeathPenalty (38) preserves the existing factor through a duel. Ordinary deaths add a fading loss; [Death Effect](CLIENT-COMBAT-ACTIONS.md#death-effect) documents persistence, evidence and the remaining combat-scaling limit.
   - The flags kept the in-combat bit (`00 00 10 00`), where retail's had only the PvP flag. Now fixed: the defeat clears it.
 - **What was different from retail is the order.** The server tore the interlock down first (final record, `46 … 00`, the delete of the combat view, the position handoff) and sent the defeat right after it. The queue gathers whatever is sent within 50 ms into one packet, so the defeat usually went out in the same packet as the teardown. Retail sent the defeat while the interlock was up and took the combat view down 9 s later. The NPC-kill path the client accepts also had the teardown first. That does not fit neatly, so the order is the most likely cause, not a proven one: client.dll's handling of an own-view update that arrives with an interlock ending was not traced.
 - **Fix.** Retail's order and timing (see "The end" under Fights), the flags without the in-combat bit, and the defeat sent once more after the teardown, in a packet of its own (ours). `/reconstruct` before the teardown is due runs the teardown first and stands the player up in the next packet. The server already answered `81 4c` from a duel's loser with the stand-up (`DuelHandler.StandUp`, before the respawn path); that is unchanged.

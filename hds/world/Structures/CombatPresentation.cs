@@ -18,6 +18,8 @@ namespace hds
         private readonly byte[] centre;
         private readonly uint started;
         private readonly float[] aOffset, bOffset;
+        private readonly Dictionary<byte, WorldClient> fighters = new Dictionary<byte, WorldClient>();
+        private readonly Dictionary<byte, float[]> offsets = new Dictionary<byte, float[]>();
         private readonly Dictionary<WorldClient, ushort> observers = new Dictionary<WorldClient, ushort>();
         private bool ended;
         private uint sequence;
@@ -36,6 +38,8 @@ namespace hds
             // Retail keeps the fighters 70 world units either side of the centre after the approach.
             aOffset = new[] { (float)(-70 * dx / length), 0f, (float)(-70 * dz / length) };
             bOffset = new[] { -aOffset[0], (float)(by - ay), -aOffset[2] };
+            fighters.Add(1, attacker); offsets.Add(1, aOffset); offsets.Add(2, bOffset);
+            if (defender != null) fighters.Add(2, defender);
             lock (registrySync) registry.Add(this);
         }
 
@@ -52,8 +56,51 @@ namespace hds
             ClientView view = receiver.viewMan.FindViewForEntity(mob.getEntityId());
             return view?.viewCreated == true ? DuelPackets.Handle(view.ViewID, view.spawnId) : 0;
         }
-        private bool CanSee(WorldClient client) => client.Alive && client.playerData.getOnWorld() &&
-            client.playerData.getDistrictId() == attacker.playerData.getDistrictId() && Handle(client, true) != 0 && Handle(client, false) != 0;
+        private bool CanSee(WorldClient client) => client.Alive && client.playerData.getOnWorld() && fighters.Count > 0 &&
+            client.playerData.getDistrictId() == fighters.Values.First().playerData.getDistrictId() &&
+            fighters.Values.All(fighter => PvpCombat.HandleOf(client, fighter) != 0) && (mob == null || Handle(client, false) != 0);
+
+        private IReadOnlyDictionary<byte, uint> Handles(WorldClient receiver)
+        {
+            var handles = fighters.ToDictionary(p => p.Key, p => PvpCombat.HandleOf(receiver, p.Value));
+            if (mob != null) handles.Add(2, Handle(receiver, false));
+            return handles;
+        }
+
+        /// <summary>Promote an observer's existing view rather than creating the same view twice.</summary>
+        public void AddFighter(WorldClient client, byte slot)
+        {
+            lock (sync)
+            {
+                if (ended || slot < 1 || slot > 6 || fighters.ContainsKey(slot)) throw new InvalidOperationException("Combat slot unavailable");
+                observers.Remove(client);
+                fighters.Add(slot, client);
+                double angle = (slot - 2) * Math.PI / 2;
+                offsets[slot] = new[] { (float)(160 * Math.Cos(angle)), 0f, (float)(160 * Math.Sin(angle)) };
+                sequence++;
+                foreach (var old in observers.Where(o => !CanSee(o.Key)).ToArray())
+                { DeleteObserver(old.Key,old.Value); observers.Remove(old.Key); }
+                foreach (WorldClient receiver in fighters.Values.Concat(observers.Keys).ToArray())
+                {
+                    ClientView view = receiver.viewMan.FindViewForEntity(entity);
+                    if (view?.viewCreated != true) continue;
+                    receiver.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view.ViewID, centre, Handles(receiver), sequence), false);
+                    receiver.FlushQueue();
+                }
+            }
+        }
+
+        public void RemoveFighter(WorldClient client, byte slot)
+        {
+            lock (sync)
+            {
+                if (!fighters.Remove(slot)) return;
+                offsets.Remove(slot);
+                sequence++;
+                byte[] removed = ServerPackets.BuildCombatViewFinalRecord(centre, sequence, 1u << (slot - 1));
+                foreach (var receiver in fighters.Values.Concat(observers.Keys).Where(c => c != client)) SendToFighter(receiver, removed);
+            }
+        }
 
         private void RefreshObservers()
         {
@@ -67,10 +114,12 @@ namespace hds
                     { DeleteObserver(old.Key, old.Value); observers.Remove(old.Key); }
                 foreach (WorldClient client in clients)
                 {
-                    if (client == attacker || client == defender || observers.ContainsKey(client) || !CanSee(client)) continue;
+                    if (fighters.ContainsValue(client) || observers.ContainsKey(client) || !CanSee(client)) continue;
+                    // A departed fighter may still be waiting for the death teardown. Do not recreate its live view.
+                    if (client.viewMan.FindViewForEntity(entity)?.viewCreated == true) continue;
                     new ServerPackets().SendSpawnGameObject(client, handler, entity);
                     ushort view = client.viewMan.FindViewForEntity(entity).ViewID;
-                    client.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view, centre, Handle(client, true), Handle(client, false)), false);
+                    client.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view, centre, Handles(client), sequence + 1), false);
                     observers.Add(client, view);
                     client.FlushQueue();
                 }
@@ -78,6 +127,10 @@ namespace hds
         }
         public void Round(bool attackerWins, uint flags, CombatTactic attackerTactic, CombatTactic defenderTactic,
             ushort attackerRoll, ushort defenderRoll, bool opening)
+            => RoundPair(1, 2, attackerWins, flags, attackerTactic, defenderTactic, attackerRoll, defenderRoll, opening);
+
+        public void RoundPair(byte attackerSlot, byte defenderSlot, bool attackerWins, uint flags,
+            CombatTactic attackerTactic, CombatTactic defenderTactic, ushort attackerRoll, ushort defenderRoll, bool opening)
         {
             RefreshObservers();
             lock (sync)
@@ -91,8 +144,8 @@ namespace hds
                 ushort duration = (ushort)(animation.DurationMs + (opening ? 1300 : 0));
                 var entry = new CombatRoundEntry
                 {
-                    FirstSlot = attackerWins ? (byte)1 : (byte)2, SecondSlot = attackerWins ? (byte)2 : (byte)1,
-                    FirstOffset = attackerWins ? aOffset : bOffset, SecondOffset = attackerWins ? bOffset : aOffset,
+                    FirstSlot = attackerWins ? attackerSlot : defenderSlot, SecondSlot = attackerWins ? defenderSlot : attackerSlot,
+                    FirstOffset = offsets[attackerWins ? attackerSlot : defenderSlot], SecondOffset = offsets[attackerWins ? defenderSlot : attackerSlot],
                     FirstApproachMs = approach, SecondApproachMs = approach,
                     Sequence = checked((ushort)sequence), StartMs = unchecked(CombatHandler.CombatStartTime() - started) + 200,
                     FirstDurationMs = duration, SecondDurationMs = duration, Animation = animation.Reference,
@@ -103,7 +156,7 @@ namespace hds
                 CombatRoundEntry.U32(entry.ResultData, 4, attackerWins ? defenderRoll : attackerRoll);
                 CombatRoundEntry.U16(entry.ResultData, 8, 0x1000); CombatRoundEntry.U16(entry.ResultData, 10, 0x1000);
                 byte[] update = ServerPackets.BuildCombatViewRound(centre, sequence, entry);
-                SendToFighter(attacker, update); if (defender != null) SendToFighter(defender, update);
+                foreach (WorldClient fighter in fighters.Values) SendToFighter(fighter, update);
                 foreach (var observer in observers) Send(observer.Key, observer.Value, update);
                 Output.WriteDebugLog($"[COMBAT-VIEW] Round {sequence}: animation {animation.Id} ({animation.Name}), {observers.Count} observers");
             }
@@ -137,7 +190,9 @@ namespace hds
             if (client.viewMan.getViewById(view)?.entityId != entity) return;
             if (client.Alive && client.playerData.getOnWorld())
             {
-                Send(client, view, ServerPackets.BuildCombatViewFinalRecord(centre, sequence));
+                uint mask = 0;
+                foreach (byte slot in offsets.Keys) mask |= 1u << (slot - 1);
+                Send(client, view, ServerPackets.BuildCombatViewFinalRecord(centre, sequence, mask));
                 byte[] delete = new byte[] { 1, 0, 1, 1, 0, (byte)view, (byte)(view >> 8) };
                 client.messageQueue.addObjectMessage(delete, false); client.FlushQueue();
             }

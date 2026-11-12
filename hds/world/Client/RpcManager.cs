@@ -28,9 +28,13 @@ namespace hds{
 		    {
 
 		        case (int) RPCRequestHeader.CLIENT_SPAWN_READY:
+                    if (Store.currentClient.playerData.worldChangePending) break;
 		            new PlayerHandler().processSpawn();
 		            new PlayerHandler().processAttributes();
 		            break;
+                case (int)RPCRequestHeader.CLIENT_ENTER_TUTORIAL:
+                    TeleportHandler.EnterTutorial(Store.currentClient, rpcData);
+                    break;
 			        
 		        case (int) RPCRequestHeader.CLIENT_CLOSE_COMBAT:
 					#if DEBUG
@@ -49,6 +53,22 @@ namespace hds{
 		        case (int) RPCRequestHeader.CLIENT_FREE_FIRE_CHOICE:
 		            CombatManager.GetHandler(Store.currentClient).ProcessFreeFireChoice(ref rpcData);
 		            break;
+
+                case (int)RPCRequestHeader.CLIENT_COMBAT_SELECTION:
+                    CombatSelection.Process(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_MARTIAL_ART:
+                    CombatSelection.ProcessMartialArt(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_DISABLE_BUFF:
+                    AbilityCancellation.Process(Store.currentClient, rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_COMPILE_CODE:
+                    new CraftingHandler().HandleCompileRequest(rpcData);
+                    break;
+                case (int)RPCRequestHeader.CLIENT_INVENTORY_ABILITY:
+                    CraftingHandler.ProcessInventoryAbility(Store.currentClient, rpcData);
+                    break;
 
 		        case (int) RPCRequestHeader.CLIENT_RANGE_COMBAT:
 			        #if DEBUG
@@ -280,8 +300,8 @@ namespace hds{
 			        IgnoreListHandler.ProcessRemove(Store.currentClient, rpcData);
 			        break;
 		        // MarketPlace
-		        case (int) RPCRequestHeader.CLIENT_MP_OPEN:
-		            new MarketPlaceHandler().ProcessOpen(ref rpcData);
+		        case (int) RPCRequestHeader.CLIENT_CONTAINER_PUT:
+                    ContainerActions.Process(Store.currentClient, rpcData);
 		            break;
 		        case (int) RPCRequestHeader.CLIENT_MP_OPEN_WINDOW:
 		            new MarketPlaceHandler().ProcessOpen(ref rpcData);

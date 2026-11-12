@@ -48,6 +48,7 @@ namespace hds
 
         public void processSpawn()
         {
+            if (Store.currentClient.playerData.worldChangePending) return;
 
             // Always spawn. District 0 is the Tutorial (MxOLocations.TUTORIAL), a real world the client has
             // already loaded via sendWorldCMD; the old "districtId > 0" check skipped the self-spawn there and
@@ -75,6 +76,8 @@ namespace hds
             Store.currentClient.playerInstance.EquippedItemID.setValue(weapon);
 
             PvpFlag.OnEnterWorld(Store.currentClient);
+            Store.currentClient.playerData.deathPenaltyRecord = 0; // the new world discarded the old modifier records
+            DeathPenalty.OnEnter(Store.currentClient);
 
             // REFACTOR!!!!
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
@@ -82,6 +85,7 @@ namespace hds
 
             Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
             Store.currentClient.playerData.setOnWorld(true);
+            if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);
             if (Store.currentClient.playerData.pvpFlag)
             {
                 // Retail's PvP server sent the flag on the own view right after the spawn (some_pvp capture)

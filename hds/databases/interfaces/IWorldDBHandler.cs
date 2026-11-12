@@ -80,6 +80,10 @@ namespace hds.databases.interfaces{
         UInt16 GetNextAbilitySlot(UInt32 charId);
         void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry);
         void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count);
+        HashSet<UInt32> GetLearnedRecipes(UInt32 charId);
+        void LearnRecipe(UInt32 charId, UInt32 goid);
+        (float Factor, double At) GetDeathPenalty(UInt32 charId);
+        void SaveDeathPenalty(UInt32 charId, float factor, double at);
         void RemoveCodeStorage(UInt32 charId, UInt16 slot);
         void UpdateRsiPartValue(string part, uint value, UInt32 charId);
         bool IsSlotinUseByItem(UInt16 slotId);

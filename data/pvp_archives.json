@@ -1,0 +1,509 @@
+{
+  "source": "MxO 7.6005 gameobjects.gob in packmaps/gameobjects.pkb",
+  "gob_sha256": "3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103",
+  "schema_version": 1,
+  "objects": [
+    {
+      "goid": 38269,
+      "name": "ArchivistBase_Returner_Default",
+      "fields": {
+        "Archivist/ArchivistOrganization": 0,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38270,
+      "name": "ArchivistBase_Sender_Default",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 1000.0,
+        "Archivist/WillSendCypherites": 1,
+        "Archivist/WillSendMachines": 1,
+        "Archivist/WillSendMerovingian": 1,
+        "Archivist/WillSendNeo": 1,
+        "Archivist/WillSendNiobe": 1,
+        "Archivist/WillSendZion": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38271,
+      "name": "Zion_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38272,
+      "name": "Machine_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 2,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38273,
+      "name": "Merovingian_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 3,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38274,
+      "name": "PluribusNeo_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 5,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38275,
+      "name": "Niobe_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 4,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38276,
+      "name": "Cypherites_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 6,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Cursor": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 9007,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 38277,
+      "name": "Cypherites_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendCypherites": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38278,
+      "name": "Machine_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendMachines": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38279,
+      "name": "Merovingian_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendMerovingian": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38280,
+      "name": "Niobe_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendNiobe": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38281,
+      "name": "PluribusNeo_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendNeo": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38282,
+      "name": "Zion_ArchivistBase_Sender",
+      "fields": {
+        "Archivist/CheckInventorySlotID": 106,
+        "Archivist/Radius": 500.0,
+        "Archivist/WillSendZion": 1,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0
+      }
+    },
+    {
+      "goid": 38533,
+      "name": "PvP_Pass_Zion_6",
+      "fields": {
+        "Ticket/MaxLevel": 35,
+        "Ticket/MinLevel": 26,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 6,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38534,
+      "name": "PvP_Pass_Zion_5",
+      "fields": {
+        "Ticket/MaxLevel": 50,
+        "Ticket/MinLevel": 40,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 5,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38535,
+      "name": "PvP_Pass_Zion_4",
+      "fields": {
+        "Ticket/MaxLevel": 25,
+        "Ticket/MinLevel": 15,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 4,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38536,
+      "name": "PvP_Pass_Zion_3",
+      "fields": {
+        "Ticket/MaxLevel": 45,
+        "Ticket/MinLevel": 36,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 3,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38537,
+      "name": "PvP_Pass_Zion_2",
+      "fields": {
+        "Ticket/MaxLevel": 40,
+        "Ticket/MinLevel": 30,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 2,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38538,
+      "name": "PvP_Pass_Zion_1",
+      "fields": {
+        "Ticket/MaxLevel": 30,
+        "Ticket/MinLevel": 20,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 1,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38541,
+      "name": "PvP_Pass_Machines_6",
+      "fields": {
+        "Ticket/MaxLevel": 35,
+        "Ticket/MinLevel": 26,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 6,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38542,
+      "name": "PvP_Pass_Machines_5",
+      "fields": {
+        "Ticket/MaxLevel": 50,
+        "Ticket/MinLevel": 40,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 5,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38543,
+      "name": "PvP_Pass_Machines_4",
+      "fields": {
+        "Ticket/MaxLevel": 25,
+        "Ticket/MinLevel": 15,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 4,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38544,
+      "name": "PvP_Pass_Machines_3",
+      "fields": {
+        "Ticket/MaxLevel": 45,
+        "Ticket/MinLevel": 36,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 3,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38545,
+      "name": "PvP_Pass_Machines_2",
+      "fields": {
+        "Ticket/MaxLevel": 40,
+        "Ticket/MinLevel": 30,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 2,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38546,
+      "name": "PvP_Pass_Machines_1",
+      "fields": {
+        "Ticket/MaxLevel": 30,
+        "Ticket/MinLevel": 20,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 1,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38547,
+      "name": "PvP_Pass_Mero_6",
+      "fields": {
+        "Ticket/MaxLevel": 35,
+        "Ticket/MinLevel": 26,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 6,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38548,
+      "name": "PvP_Pass_Mero_5",
+      "fields": {
+        "Ticket/MaxLevel": 50,
+        "Ticket/MinLevel": 40,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 5,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38549,
+      "name": "PvP_Pass_Mero_4",
+      "fields": {
+        "Ticket/MaxLevel": 25,
+        "Ticket/MinLevel": 15,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 4,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38550,
+      "name": "PvP_Pass_Mero_3",
+      "fields": {
+        "Ticket/MaxLevel": 45,
+        "Ticket/MinLevel": 36,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 3,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38551,
+      "name": "PvP_Pass_Mero_2",
+      "fields": {
+        "Ticket/MaxLevel": 40,
+        "Ticket/MinLevel": 30,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 2,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 38552,
+      "name": "PvP_Pass_Mero_1",
+      "fields": {
+        "Ticket/MaxLevel": 30,
+        "Ticket/MinLevel": 20,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 1,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47267,
+      "name": "Generic_ArchivistBase_Returner",
+      "fields": {
+        "Archivist/ArchivistOrganization": 0,
+        "GenericTeleporter/IsAbsolute": 1,
+        "GenericTeleporter/Position": "000000000000000000000000000000000000000000000000",
+        "GenericTeleporter/RotationDegrees": 0.0,
+        "GenericTeleporter/UseCount": 0,
+        "GenericTeleporter/WorldID": 0,
+        "Usable/Defaultable": 1,
+        "Usable/ExecuteRuleID": 1000,
+        "Usable/MaxDistance": 1000.0,
+        "Usable/NameID": 16777220
+      }
+    },
+    {
+      "goid": 47268,
+      "name": "PvP_Pass_Machines_7",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 7,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47269,
+      "name": "PvP_Pass_Mero_7",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 7,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47270,
+      "name": "PvP_Pass_Zion_7",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 7,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47724,
+      "name": "PvP_Pass_Machines_8",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 2,
+        "Ticket/PvPID": 8,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47725,
+      "name": "PvP_Pass_Mero_8",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 3,
+        "Ticket/PvPID": 8,
+        "Ticket/TicketType": 0
+      }
+    },
+    {
+      "goid": 47726,
+      "name": "PvP_Pass_Zion_8",
+      "fields": {
+        "Ticket/MaxLevel": 100,
+        "Ticket/MinLevel": 1,
+        "Ticket/OrganizationID": 1,
+        "Ticket/PvPID": 8,
+        "Ticket/TicketType": 0
+      }
+    }
+  ]
+}

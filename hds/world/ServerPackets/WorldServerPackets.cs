@@ -42,7 +42,9 @@ namespace hds
             pak.AddUShort((ushort)RPCResponseHeaders.SERVER_LOAD_WORLD_CMD);
             pak.AddUShort(0x0e); // dunno if header or not - just part of this
             pak.AddUShort(0);
-            pak.AddUint32(districtId, 1); // Atlas Byte
+            uint instance = districtId == 0 && client.playerData.tutorialConstructId != 0
+                ? client.playerData.tutorialConstructId : PvpArchives.ConstructId(districtId);
+            pak.AddUint32(instance, 1); // retail construct ID, distinct from our map index
             pak.AddByteArray(TimeUtils.getCurrentSimTime());
             pak.AddByte(0x01); // SimeTime + 01 
             pak.AddUint16(offsetWeatherEvent, 1);
@@ -116,7 +118,7 @@ namespace hds
             // The client's own PvP rule reads these two (client.dll 0x625ed830; docs/PVP.md). Retail sent PvPServer 6
             // on its PvP server and 2 elsewhere: with 0, the client's default, it ignores every player's PvP flag.
             // The safe level used to be sent as 16 whatever the configuration said.
-            SendServerSettingUInt(client, "PvPServer", (UInt32)PvpFlag.ServerMode);
+            SendServerSettingUInt(client, "PvPServer", (UInt32)PvpFlag.ModeFor(client));
             SendServerSettingUInt(client, "PvPMaxSafeLevel", (UInt32)PvpFlag.MaxSafeLevel);
 
             if (Store.worldConfig.FixedBinkIDOverride > 0)

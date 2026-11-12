@@ -20,6 +20,9 @@ namespace hds
         /// <summary>The value of the client's PvPServer setting on this server: hostile (6) or by flag (2).</summary>
         public static int ServerMode => Store.worldConfig != null && Store.worldConfig.IsPvpServer ? PvpRules.ModeHostile : PvpRules.ModeByFlag;
 
+        public static int ModeFor(WorldClient client) => client.playerData.getDistrictId() == 7 ? PvpRules.ModeEveryoneButTeam :
+            client.playerData.getDistrictId() == 9 ? PvpRules.ModeOff : ServerMode;
+
         public static int MaxSafeLevel => Store.worldConfig != null ? Store.worldConfig.PvpMaxSafeLevel : 15;
 
         public static UInt32 FlagsOf(WorldClient client)

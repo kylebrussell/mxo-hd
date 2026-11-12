@@ -107,4 +107,19 @@ public class CombatRoundEntryTests
             Assert.NotEqual(0ul, move.Reference);
         }
     }
+
+    [Fact]
+    public void SixFighterInitOrdersHandlesBySlotAndFramesAllOfThem()
+    {
+        var fighters = new Dictionary<byte, uint> { { 6, 600 }, { 2, 200 }, { 1, 100 }, { 5, 500 }, { 4, 400 }, { 3, 300 } };
+        byte[] packet = ServerPackets.BuildCombatInitialize(9, new byte[24], fighters, 17);
+        Assert.Equal(65, packet.Length);
+        Assert.Equal(62, BitConverter.ToUInt16(packet, 3));
+        Assert.Equal(17u, BitConverter.ToUInt32(packet, 32));
+        Assert.Equal(0x3fu, BitConverter.ToUInt32(packet, 36));
+        for (int slot = 1; slot <= 6; slot++) Assert.Equal((uint)(100 * slot), BitConverter.ToUInt32(packet, 40 + 4 * (slot - 1)));
+        Assert.Equal(0, packet[64]);
+        Assert.Throws<ArgumentException>(() => ServerPackets.BuildCombatInitialize(9, new byte[24], new Dictionary<byte,uint> { { 7, 1 } }, 1));
+        Assert.Equal(4u, BitConverter.ToUInt32(ServerPackets.BuildCombatViewFinalRecord(new byte[24], 18, 4), 33));
+    }
 }

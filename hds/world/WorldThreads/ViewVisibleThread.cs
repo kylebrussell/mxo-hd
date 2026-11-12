@@ -60,10 +60,12 @@ namespace hds
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
                 CombatPresentation.CheckObservers();
+                foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
                 MobAggro.Check(aliveClients, mobGrids);
                 CheckForStaticSubways(aliveClients, subways);
                 CheckForStaticObjectsViewsInRange(aliveClients);
                 MissionContactNpcs.CheckViews(aliveClients);
+                foreach (WorldClient client in aliveClients) PvpArchives.Check(client, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
               }
               catch (Exception ex)
               {

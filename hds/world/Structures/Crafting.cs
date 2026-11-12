@@ -185,7 +185,7 @@ namespace hds
         /// recipes that turn Code Bits into code fragments and the health pill recipes, so Code Bits looted from
         /// NPCs can be compiled.
         /// </summary>
-        public static byte[] BuildKnownRecipesBlock(byte[] baseBlock)
+        public static byte[] BuildKnownRecipesBlock(byte[] baseBlock, IEnumerable<UInt32> learned = null)
         {
             List<UInt32> goids = new List<UInt32>();
             HashSet<UInt32> seen = new HashSet<UInt32>();
@@ -205,6 +205,10 @@ namespace hds
                     goids.Add(goid);
                 }
             }
+
+            if (learned != null)
+                foreach (UInt32 goid in learned)
+                    if (Recipes.ContainsKey(goid) && seen.Add(goid)) goids.Add(goid);
 
             byte[] block = new byte[4 + goids.Count * 4];
             Array.Copy(baseBlock, 0, block, 0, Math.Min(4, baseBlock.Length));

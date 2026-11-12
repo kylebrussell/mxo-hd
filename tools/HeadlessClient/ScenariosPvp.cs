@@ -331,7 +331,7 @@ public static partial class Scenarios
             for (int at = BytePattern.IndexOf(section, needle, 0); at >= 0; at = BytePattern.IndexOf(section, needle, at + 1))
             {
                 if (at + 49 <= section.Length && section[at + 7] == 1 &&
-                    BitConverter.ToUInt32(section, at + 36) == 3 &&
+                    BitConverter.ToUInt32(section, at + 36) is > 0 and <= 0x3f &&
                     at + 3 + BitConverter.ToUInt16(section, at + 3) <= section.Length)
                 {
                     view = BitConverter.ToUInt16(section, at + 5);

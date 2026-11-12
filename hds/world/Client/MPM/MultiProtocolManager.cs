@@ -74,6 +74,7 @@ namespace hds{
                 Store.currentClient.playerData.setSseq(0);
                 Store.currentClient.playerData.setPss(0x00);
                 Store.currentClient.playerData.setOnWorld(false);
+                Store.currentClient.playerData.worldChangePending = false;
                 Store.currentClient.playerData.setRPCShutDown(false);
                 Store.currentClient.playerData.setRPCCounter(0);
                 // The client's counters started again: what was sent before can't be resent with its old counter
