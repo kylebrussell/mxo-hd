@@ -29,6 +29,7 @@ namespace hds
         private uint weapon;
         private int state; // 0= nothing, 1=rotating (just an example - must check this near from the npc class)
         private bool is_dead;
+        public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
         private bool is_lootable;
         private bool is_spawned = true;
         // Explicit server-owned NPC grants; never inferred from a name or accepted in an ability request.
@@ -48,6 +49,9 @@ namespace hds
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;
         public byte missionPhase = 0;
+        internal string MissionPersistenceId;
+        internal uint MissionRewardExperience;
+        internal bool MissionDeathSettled;
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
@@ -483,7 +487,7 @@ namespace hds
             themob.CombatantMode.setValue(0x22);
             themob.Position.setValue(NumericalUtils.doublesToLtVector3d(getXPos(), getYPos(), getZPos()));
             themob.YawInterval.setValue((byte) getRotation());
-            themob.IsDead.setValue(false);
+            themob.IsDead.setValue(getIsDead());
             themob.IsEnemy.setValue(true);
             themob.IsFriendly.setValue(false);
 
@@ -530,7 +534,7 @@ namespace hds
             byte[] titleAbility = {0x00, 0x10, 0x00, 0x00};
             themob.TitleAbility.setValue(titleAbility);
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
-            themob.CurrentState.setValue(StringUtils.hexStringToBytes("06080000"));
+            themob.CurrentState.setValue(StringUtils.hexStringToBytes(getIsDead() ? "fd070000" : "06080000"));
 
             if (RangedWeapons.IsGun(getWeapon()))
             {
@@ -815,7 +819,7 @@ namespace hds
             // Update player's health attribute
             victim.playerInstance.Health.setValue(newHealth);
             TimedEffects.HealthChanged(TimedEffects.ForPlayer(victim), playerHealth - newHealth,
-                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1));
+                newHealth < NumericalUtils.ByteArrayToUint16(victim.playerInstance.MaxHealth.getValue(), 1), damageEvent:true);
 
             newHealth = PvpCombat.HealthOf(victim); // callbacks may heal or cause another health change
 

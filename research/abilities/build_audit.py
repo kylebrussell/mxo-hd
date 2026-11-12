@@ -357,6 +357,8 @@ Friendly direct/group heals and HOTs use each shipped template's deterministic b
 
 Combat styles (Self Defense, Aikido, Karate, Kung-Fu, Hacker/Coder/Spy Style) become active through `3e`. The active style's while-enabled modifiers join the passive totals, and its ILDB exchange set drives the interlock moves all viewers see. `CombatSpecialMove` abilities need their stored stance: a loaded style is switched to, an unloaded one refuses the move. Thrown DOTs, Berserker/Side Roll caster buffs, Taunt aggro and the Exile weapons have executors. Their inferences and gaps (RandomCombatStateChance, weakness by NPC name, unmapped special choreography) are in [COMBAT-STYLES.md](COMBAT-STYLES.md). `43` MartialArt is unreachable in 7.6005.
 
+Concentration564 now consumes loaded modifiers for damage cast-through on explicit stored interruptible templates only; native integer-division/typed-argument evidence, absent-flag boundary and server input policy are in [ABILITY-CONCENTRATION.md](ABILITY-CONCENTRATION.md).
+
 `AbilityEffects`, `Virii`, `TempMods` and other modules contain script-derived pure helpers for corrosion, disables and immunity, but helpers without live handler wiring remain missing/partial in this audit.
 
 ## Per-ability table

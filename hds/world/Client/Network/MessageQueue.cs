@@ -27,6 +27,7 @@ namespace hds
          */
         public void addRpcMessage(byte[] messageBlock)
         {
+            if(MissionOutput.Stage(this,messageBlock,false,false))return;
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
             {
@@ -51,6 +52,7 @@ namespace hds
 
         public void addObjectMessage(byte[]messageBlock,bool isTimed)
         {
+            if(MissionOutput.Stage(this,messageBlock,true,isTimed))return;
             SequencedMessage message = new SequencedMessage(messageBlock);
             message.isTimed = isTimed;
             lock (ObjectMessagesQueue.SyncRoot)

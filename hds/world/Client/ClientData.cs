@@ -120,6 +120,8 @@ namespace hds
 
 		// Running mission: how far through it the player is, and the NPCs it spawned
 		public MissionProgress missionProgress;
+        internal string missionCheckpoint;
+        internal bool missionCheckpointLoaded;
         public readonly object missionSync = new object();
 		public TutorialMission tutorial;
 		public MissionSite missionPreview; public Mission missionPreviewFor; // a generated mission's first site, picked for its info

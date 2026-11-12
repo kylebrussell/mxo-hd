@@ -40,6 +40,18 @@ public sealed class ThrowawayDatabase : IDisposable
         return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_PASSWORD\" exec mysql -u\"$MYSQL_USER\" -N -B \"$1\"", Name, sql);
     }
 
+    /// <summary>Fixed failure DDL only inside this harness-owned mxotest database; never changes server security settings.</summary>
+    public Task<string> InstallMissionRollbackTriggerAsync(bool completing, bool accepting = false)
+    {
+        string condition=accepting?"OLD.payload IS NULL AND NEW.payload IS NOT NULL":completing?"NEW.payload IS NULL AND OLD.payload IS NOT NULL":
+            "NEW.payload IS NOT NULL AND JSON_CONTAINS(JSON_EXTRACT(NEW.payload,'$.Done'),'1') AND NOT JSON_CONTAINS(JSON_EXTRACT(OLD.payload,'$.Done'),'1')";
+        string sql="DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF "+condition+
+            " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,sql);
+    }
+    public Task<string> RemoveMissionRollbackTriggerAsync() =>
+        RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER mission_test_rollback");
+
     public async Task<string> ScalarAsync(string sql) => (await ExecuteAsync(sql)).Trim();
 
     public async Task<long> LongAsync(string sql) => long.Parse(await ScalarAsync(sql), CultureInfo.InvariantCulture);

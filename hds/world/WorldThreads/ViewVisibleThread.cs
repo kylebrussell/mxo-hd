@@ -555,10 +555,10 @@ namespace hds
 
                         nearbyMobEntities.Add(thismob.getEntityId());
 
-                        // A corpse stays for players who saw the NPC die; newcomers don't get it (it would spawn
-                        // standing with 0 health). No view lookup here: GetViewForEntityAndGo hands out a view id,
+                        // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
+                        // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
                         // and one the client never sees spawned puts every later view id one off.
-                        if (thismob.getIsDead())
+                        if (!DeathPresentation.CanIntroduceNpc(thismob) && !MissionPersistence.PendingLootOwner(thisclient,thismob))
                         {
                             continue;
                         }
@@ -788,7 +788,7 @@ namespace hds
 
                 TradeHandler.Abort(deadClient);
                 CombatManager.RemoveClient(deadClient);
-                MissionRuntime.End(deadClient);
+                MissionPersistence.Suspend(deadClient);
                 TutorialMission.Of(deadClient)?.Abandon();
                 foreach (WorldClient otherclient in allClients)
                 {

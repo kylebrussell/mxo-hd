@@ -294,6 +294,7 @@ namespace hds
             SaveNearestHardlineAsLocation(client);
             CraftingSession.End(client);
             client.playerData.setOnWorld(false);
+            MissionPersistence.Save(client);
             client.playerData.worldChangePending = true;
 
             client.playerData.respawnPending = false;
@@ -316,6 +317,7 @@ namespace hds
             if (payload.Length != 0 || !client.playerData.DistrictIsLA() || client.playerData.worldChangePending) return;
             CraftingSession.End(client);
             client.playerData.setOnWorld(false);
+            MissionPersistence.Save(client);
             client.playerData.worldChangePending = true;
             client.playerData.tutorialConstructId = 800; // fixed local instance; retail allocated800..899
             client.playerData.setDistrictId((uint)MxOLocations.TUTORIAL);
