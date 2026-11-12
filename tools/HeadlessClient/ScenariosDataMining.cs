@@ -23,12 +23,14 @@ public static partial class Scenarios
         p.SendRpc($"80 c7 {Le(item.ViewId)} {(byte)(item.SpawnId+1):x2} 00 02 00");
         p.SendRpc("81 48"); await p.WaitForRpcAsync("81 49");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=596"),"forged handle ignored");
+        Check.That(context.Server.DebugLog().Contains("outcome=denied_handle db=unchanged"),"Structured diagnostic identifies forged handle rejection");
         Check.Equal(0, p.Received("80 bd 05 57 04 00 00 00 00 00 00").Count, "Forged pickup preserves the exclusive Sneak");
         p.SendRpc($"80 c7 {MissionNpcId(item)} 02 00");
         var added=await p.WaitForRpcAsync("5e ?? ?? 54 02 00 00");
         await p.WaitForRpcAsync("80 bd 05 57 04 00 00 00 00 00 00"); // successful pickup breaks the exclusive Sneak
         ushort slot=BitConverter.ToUInt16(added.Bytes,1);
         Check.Equal(0L,await context.Database.LongAsync("SELECT COUNT(*) FROM world_luggables WHERE goid=596"),"picked ground row removed");
+        Check.That(context.Server.DebugLog().Contains("outcome=success db=committed ground="),"Native pickup diagnostics identify committed bag slot");
         var contested=await UtilityFixture(p,562);
         await watcher.WaitUntilAsync(()=>watcher.ViewsOfGoid(562).Count>0,"contested shared view",TimeSpan.FromSeconds(10));
         p.SendRpc($"80 c7 {MissionNpcId(contested)} 02 00");
@@ -77,7 +79,7 @@ public static partial class Scenarios
     private static async Task DataMiningLocator(ScenarioContext context)
     {
         var p=await context.AddPlayerAsync(new CharacterSeed("Miner") {Level=50,Items=new[]{(30,422u,1)}});
-        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES ({p.CharId},300,{AbilityGoid(621)},50,1),({p.CharId},301,{AbilityGoid(540)},1,1),({p.CharId},302,{AbilityGoid(541)},1,1)");
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES ({p.CharId},300,{AbilityGoid(621)},50,1),({p.CharId},301,{AbilityGoid(540)},1,1),({p.CharId},302,{AbilityGoid(541)},1,1),({p.CharId},303,{AbilityGoid(215)},5,1)");
         await p.EnterWorldAsync();
         p.SendChat("?utilityobject 606"); await p.WaitForTextAsync("Utility fixture 606 placed.");
         var item=await UtilityFixture(p,596);
@@ -103,6 +105,37 @@ public static partial class Scenarios
         await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00");
         Cast(p,621); await p.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 2e 00 00 60");
         Check.Equal(0,p.World.Problems.Count,"locator protocol");
+    }
+    private static async Task DataMiningKnownBaseLocator(ScenarioContext context)
+    {
+        var seed=await context.AddPlayerAsync(new CharacterSeed("NativeMiner") {Level=50,Items=new[]{(30,422u,1)}});
+        ushort[] ids={2,17,44,215,538,539,540,541,621,52,537};
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={seed.CharId}; INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES "+
+            string.Join(",",ids.Select((id,slot)=>$"({seed.CharId},{slot},{AbilityGoid(id)},{(id==215?5:id==44?10:50)},{(id==52||id==537?0:1)})")));
+        string user=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={seed.CharId}");
+        seed.Dispose(); context.Server.Dispose();
+        using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs);
+        using var p=await HeadlessPlayer.LoginAsync(server.Address,user,seed.Handle);
+        Dictionary<ushort,uint> Unpack(byte[] block) => Enumerable.Range(0,block.Length/6).Select(i=>BitConverter.ToUInt32(block,i*6+2)).ToDictionary(v=>hds.AbilityCatalog.IdOf(v));
+        var known=Unpack(p.CharacterData[7]); var loaded=Unpack(p.CharacterData[6]);
+        Check.That(known.ContainsKey(52)&&known.ContainsKey(537),"Native margin known list includes Hacker/Data Miner folder ownership");
+        Check.That(!loaded.ContainsKey(52)&&!loaded.ContainsKey(537),"UI folder ownership does not load unwanted passive stats");
+        Check.Equal(5u,known[215]&1023,"Base locator retains its real level cap in packed margin ID");
+        Check.Equal(10u,known[44]&1023,"Download Map retains cap10");
+        Check.That(loaded.ContainsKey(215)&&loaded.ContainsKey(621),"Both distinct native search IDs are loaded");
+        await p.EnterWorldAsync();
+        p.SendChat("?utilityobject 606"); await p.WaitForTextAsync("Utility fixture 606 placed.");
+        Cast(p,215); await p.WaitForRpcAsync("80 bd 05 d7 00 00 00 00 00 00 01");
+        await p.WaitForRpcAsync("80 cd 00 00 62 04 00 28");
+        await p.WaitForRpcAsync("80 bd 05 d7 00 00 00 00 00 00 00",TimeSpan.FromSeconds(15)); // source handheld Duration=10, not an indefinite polling toggle
+        p.SendChat("?utilitylocator 423"); await p.WaitForTextAsync("Locator fixture changed.");
+        Cast(p,621); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 01");
+        await p.WaitForRpcAsync("80 cd 00 00 62 04 00 28");
+        Cast(p,215); await p.WaitForRpcAsync("80 bd 05 6d 02 00 00 00 00 00 00"); // another locator use ends the active ID, never emits a false215-off
+        SetAbilityLoaded(p,3,215,5,false); p.SendRpc("81 48"); await p.WaitForRpcAsync("81 49");
+        Cast(p,621); await p.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 2e 00 00 60");
+        p.SendChat("?utilitystatus"); await p.WaitForTextAsync("search=0, loaded215=0, loaded621=50");
+        Check.Equal(0,p.World.Problems.Count,"native-margin/base-locator protocol");
     }
     private static async Task DataMiningMissionMap(ScenarioContext context)
     {

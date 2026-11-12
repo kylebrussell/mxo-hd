@@ -27,6 +27,26 @@ public class DataMiningTests
         Assert.Equal(records,c.messageQueue.RPCMessagesQueue.Count);
     }
     [Fact]
+    public void BaseLocatorRemainsDistinctAndKeepsItsOwnActivationAndToolPrerequisites()
+    {
+        Assert.True(UtilityAbilities.Handles(215));
+        Assert.True(UtilityAbilities.Handles(621));
+        Assert.Equal(215,AbilityCatalog.Canonical(215));
+        Assert.Equal(215,AbilityCatalog.IdOf((uint)AbilityCatalog.Find(621).Number("Ability/MasteryBaseAbility")));
+        Assert.Equal(5,AbilityCosts.Cost(215));
+        Assert.Equal(0,AbilityCosts.Cost(621));
+        using var json=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"data","utility_objects.json")));
+        foreach(var tool in json.RootElement.GetProperty("locators").EnumerateArray())
+            Assert.Equal(AbilityCatalog.IdOf(tool.GetProperty("fields").GetProperty("AbilityPrerequisite/ReqAbilityID").GetUInt32()),
+                UtilityAbilities.LocatorRequirement(tool.GetProperty("goid").GetUInt32()));
+        var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        c.playerData=new ClientData(); c.messageQueue=new MessageQueue();
+        DataMining.Start(c,423,215);
+        Assert.True(DataMining.Stop(c,out ushort stopped));
+        Assert.Equal(215,stopped);
+        Assert.False(DataMining.Stop(c,out _));
+    }
+    [Fact]
     public void StoredGobDefinitionsRetainRealPickupComponentsAndLevels()
     {
         Assert.Equal(2,DataMining.Find(596).PickupUse);

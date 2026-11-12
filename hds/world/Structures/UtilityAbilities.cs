@@ -66,6 +66,7 @@ namespace hds
             { DisableSecurityDevices, new UInt32[] { 616 } },
             { DisarmTraps, new UInt32[] { 2500 } },
             { FindDataNode, new UInt32[] { 422, 423, 38209, 38208 } },
+            { LocateDataNode, new UInt32[] { 422, 423, 38209, 38208 } },
         };
 
         /// <summary>DataNodeLocator/Range (metres) and /Type (0 handheld, 1 goggles) of the locator tools.</summary>
@@ -172,8 +173,11 @@ namespace hds
 
         // ---- Runtime --------------------------------------------------------------------------------------------------
 
+        public static bool IsDataNodeSearch(UInt16 ability) => ability == LocateDataNode || ability == FindDataNode;
+        /// <summary>Actual tool AbilityPrerequisite/ReqAbilityID from the GOB, not a mastery alias.</summary>
+        public static ushort LocatorRequirement(uint tool) => tool == 38208 ? (ushort)622 : Locators.ContainsKey(tool) ? LocateDataNode : (ushort)0;
         public static bool Handles(UInt16 ability) =>
-            ability == DisarmTraps || ability == RecallTeamMember || ability == RecallMissionTeam || ability == FindDataNode;
+            ability == DisarmTraps || ability == RecallTeamMember || ability == RecallMissionTeam || IsDataNodeSearch(ability);
 
         public static int Level(WorldClient client, UInt16 ability) => AbilityPassives.Level(client, ability);
 
@@ -187,7 +191,8 @@ namespace hds
             if (!Tools.TryGetValue(ability, out UInt32[] tools)) return 0;
             foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(client.playerData.getCharID()))
             {
-                if (item.Slot >= 1 && item.Slot <= 96 && tools.Contains(item.Goid)) return item.Goid;
+                if (item.Slot >= 1 && item.Slot <= 96 && tools.Contains(item.Goid) &&
+                    (!IsDataNodeSearch(ability) || Level(client, LocatorRequirement(item.Goid)) > 0)) return item.Goid;
             }
             return 0;
         }
@@ -340,7 +345,8 @@ namespace hds
                     Recall(client, ability, targetView);
                     break;
                 case FindDataNode:
-                    ToggleFindDataNode(client);
+                case LocateDataNode:
+                    ToggleFindDataNode(client,ability);
                     break;
             }
             client.FlushQueue();
@@ -425,8 +431,8 @@ namespace hds
         /// <summary>Idempotent deactivation: a concurrent tool/death cleanup must never turn a pickup into a new search.</summary>
         public static bool StopFindDataNode(WorldClient client)
         {
-            if (!DataMining.Stop(client)) return false;
-            ToCaster(client, LocateDataNodeOff, FindDataNode);
+            if (!DataMining.Stop(client,out ushort ability)) return false;
+            ToCaster(client, LocateDataNodeOff, ability);
             return true;
         }
 
@@ -436,19 +442,20 @@ namespace hds
         /// the visual search, with the handheld Detect Luggables asks for the nearest luggable. Those searches are the
         /// client's 80 cb/cd/ce records, sent by DataMining.Check (docs/DATA-MINING.md).
         /// </summary>
-        private static void ToggleFindDataNode(WorldClient client)
+        private static void ToggleFindDataNode(WorldClient client, ushort ability)
         {
             if (StopFindDataNode(client)) return;
+            if (Level(client,ability) <= 0) return;
 
-            UInt32 tool = ToolFor(client, FindDataNode);
+            UInt32 tool = ToolFor(client, ability);
             if (tool == 0)
             {
                 client.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(ToolFail));
                 return;
             }
 
-            DataMining.Start(client, tool);
-            ToCaster(client, LocateDataNodeOn, FindDataNode);
+            DataMining.Start(client, tool,ability);
+            ToCaster(client, LocateDataNodeOn, ability);
             (float range, byte type) = Locators[tool];
             Output.WriteDebugLog("[UTILITY] Find Data Node with tool " + tool + ": range " + range + " m, " +
                                  (type == 0 ? "handheld" : "goggles") +

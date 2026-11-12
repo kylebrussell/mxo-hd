@@ -33,7 +33,8 @@ namespace hds
         private sealed class Search
         {
             public uint Tool;
-            public double Next;
+            public ushort Ability;
+            public double Next, Expires;
             public ushort District;
             public readonly HashSet<ushort> Markers = new HashSet<ushort>();
         }
@@ -78,22 +79,29 @@ namespace hds
         {
             x = y = z = 0; NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref x, ref y, ref z);
         }
-        public static void Start(WorldClient c, uint tool)
+        public static void Start(WorldClient c, uint tool, ushort ability = UtilityAbilities.FindDataNode)
         {
+            if (!UtilityAbilities.IsDataNodeSearch(ability)) throw new ArgumentOutOfRangeException(nameof(ability));
             lock (sync)
             {
                 Stop(c); var s = searches.GetOrCreateValue(c); s.Tool = tool; s.District = (ushort)c.playerData.getDistrictId();
-                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, true));
+                s.Ability = ability; s.Expires = UtilityAbilities.Locators[tool].type == 0 ? TimeUtils.GetSimTimeSeconds() + 10 : double.PositiveInfinity;
+                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(ability, true));
+                Output.WriteDebugLog("[DATA-MINING] search char="+c.playerData.getCharID()+" ability="+ability+" tool="+tool+" outcome=on");
             }
         }
-        public static bool Stop(WorldClient c)
+        public static bool Stop(WorldClient c) => Stop(c,out _);
+        public static bool Stop(WorldClient c, out ushort ability)
         {
             lock (sync)
             {
+                ability = 0;
                 if (!searches.TryGetValue(c, out var s)) return false;
+                ability = s.Ability;
                 foreach (ushort id in s.Markers) c.messageQueue.addRpcMessage(DataMiningPackets.Remove(id));
                 searches.Remove(c);
-                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(UtilityAbilities.FindDataNode, false));
+                c.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(ability, false));
+                Output.WriteDebugLog("[DATA-MINING] search char="+c.playerData.getCharID()+" ability="+ability+" tool="+s.Tool+" outcome=off");
                 return true;
             }
         }
@@ -112,10 +120,13 @@ namespace hds
                 foreach (ClientView v in c.viewMan.Snapshot().Where(v => v.entityId >= 982000000000UL && v.entityId < 983000000000UL).ToList())
                     if (!visible.Any(g => g.Entity == v.entityId)) Delete(c, v);
                 if (!searches.TryGetValue(c, out var s)) return;
-                if (c.playerData.isDead || district != s.District || UtilityAbilities.Level(c, 621) <= 0 ||
+                if (c.playerData.isDead || district != s.District || UtilityAbilities.Level(c, s.Ability) <= 0 ||
+                    UtilityAbilities.Level(c, UtilityAbilities.LocatorRequirement(s.Tool)) <= 0 ||
                     !Store.dbManager.WorldDbHandler.GetInventoryItems(c.playerData.getCharID()).Any(i => i.Slot >= 1 && i.Slot <= 96 && i.Goid == s.Tool))
                 { Stop(c); c.FlushQueue(); return; }
-                double now = TimeUtils.GetSimTimeSeconds(); if (now < s.Next) return;
+                double now = TimeUtils.GetSimTimeSeconds();
+                if (now >= s.Expires) { UtilityAbilities.StopFindDataNode(c); c.FlushQueue(); return; }
+                if (now < s.Next) return;
                 var (metres, type) = UtilityAbilities.Locators[s.Tool]; s.Next = now + (type == 0 ? 10 : 1);
                 var nodes = ground.Where(g => g.Node && InRange(g, district, x, y, z, metres * 100)).OrderBy(g => (g.X-x)*(g.X-x)+(g.Z-z)*(g.Z-z)).Take(64).ToList();
                 var desired = new Dictionary<ushort, (uint fx, double x, double y, double z)>();
@@ -178,20 +189,29 @@ namespace hds
         private static void Delete(WorldClient c, ClientView v)
         { new ServerPackets().sendDeleteViewPacket(c, v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); }
         private static void Say(WorldClient c, string s) => new ServerPackets().sendSystemChatMessage(c, s, "SYSTEM");
-        public static bool Use(WorldClient c, ClientView v, byte action)
+        public static bool IsEntity(ulong entity) => entity >= 982000000000UL && entity < 983000000000UL;
+        public static bool Use(WorldClient c, ClientView v, byte action, ushort? receivedSpawn = null)
         {
+            if (!IsEntity(v.entityId)) return false;
+            string context = "[DATA-MINING] pickup char="+c.playerData.getCharID()+" view="+v.ViewID+" spawn="+(receivedSpawn ?? v.spawnId)+
+                " expectedSpawn="+v.spawnId+" entity="+v.entityId+" goid="+v.GoID+" use="+action;
+            void Log(string outcome) => Output.WriteDebugLog(context+" "+outcome);
+            if (receivedSpawn.HasValue && receivedSpawn.Value != v.spawnId) { Log("outcome=denied_handle db=unchanged"); return true; }
             lock (sync)
             {
                 Load(); Ground g = ground.Find(g => g.Entity == v.entityId);
-                if (g == null) return v.entityId >= 982000000000UL && v.entityId < 983000000000UL;
+                if (g == null) { Log("outcome=missing_ground db=unchanged"); return true; }
                 Definition d = Find(g.Goid);
-                if (g.Node || action != d.PickupUse || c.playerData.isDead) return true;
+                if (g.Node || action != d.PickupUse || c.playerData.isDead) { Log("outcome=denied_action expectedUse="+d.PickupUse+" dead="+c.playerData.isDead+" node="+g.Node+" db=unchanged"); return true; }
                 Position(c, out double x, out double y, out double z);
-                if (!CanPickup(g, (ushort)c.playerData.getDistrictId(), x,y,z,d.Reach)) { Say(c,"Move closer to pick up the luggable."); return true; }
+                if (!CanPickup(g, (ushort)c.playerData.getDistrictId(), x,y,z,d.Reach)) { Log("outcome=denied_reach db=unchanged"); Say(c,"Move closer to pick up the luggable."); return true; }
                 string refusal = PickupRefusal(d, MissionStaging.PlayerLevel(c), Store.dbManager.WorldDbHandler.GetInventoryItems(c.playerData.getCharID()));
-                if (refusal != null) { Say(c, refusal); return true; }
-                ushort slot = WorldLuggablesDb.Pickup(c.playerData.getCharID(),g);
-                if (slot == 0) { Say(c,"Your inventory is full."); return true; }
+                if (refusal != null) { Log("outcome=denied_requirement reason="+refusal+" db=unchanged"); Say(c, refusal); return true; }
+                ushort slot;
+                try { slot = WorldLuggablesDb.Pickup(c.playerData.getCharID(),g); }
+                catch (Exception ex) { Log("outcome=db_exception type="+ex.GetType().Name); throw; }
+                if (slot == 0) { Log("outcome=no_bag_slot_or_missing_ground db=not_committed"); Say(c,"Your inventory is full."); return true; }
+                Log("outcome=success db=committed ground="+g.Id+" bagSlot="+slot);
                 ground.Remove(g);
                 new ServerPackets().sendInventoryItemAdd(slot,g.Goid,0,0,c);
                 foreach (WorldClient other in SocialHandler.OnlineWhere(p => p.playerData.getOnWorld()))
@@ -217,6 +237,7 @@ namespace hds
                 if (!NavMesh.Project(district,x,y,z,out NavPoint floor,150) || Math.Abs(floor.y-y)>150) { Say(c,"No nearby floor for the luggable."); return; }
                 var g = new Ground {Goid=(ushort)item.Goid,District=district,X=floor.x,Y=floor.y,Z=floor.z};
                 if (!WorldLuggablesDb.Drop(c.playerData.getCharID(),slot,g)) return;
+                Output.WriteDebugLog("[DATA-MINING] drop char="+c.playerData.getCharID()+" bagSlot="+slot+" goid="+g.Goid+" ground="+g.Id+" outcome=success db=committed");
                 ground.Add(g); new ServerPackets().sendInventoryItemDelete(slot,c); Spawn(c,g); c.FlushQueue();
             }
         }
@@ -247,6 +268,18 @@ namespace hds
             { Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(i.Slot,c.playerData.getCharID()); new ServerPackets().sendInventoryItemDelete(i.Slot,c); }
             if (tool!=0) InventoryHandler.AddItem(c,tool,0x10);
             Say(c,"Locator fixture changed."); c.FlushQueue();
+        }
+        public static void DevStatus(WorldClient c)
+        {
+            if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1" || !Store.config.dbParams.DatabaseName.StartsWith("mxotest_",StringComparison.Ordinal)) return;
+            lock (sync)
+            {
+                Load(); ushort active = searches.TryGetValue(c,out var s) ? s.Ability : (ushort)0;
+                var bag=Store.dbManager.WorldDbHandler.GetInventoryItems(c.playerData.getCharID());
+                Say(c,"Utility status: search="+active+", loaded215="+UtilityAbilities.Level(c,215)+", loaded621="+UtilityAbilities.Level(c,621)+
+                    ", carried="+string.Join(",",bag.Where(i=>i.Slot>=1 && i.Slot<=96 && i.Goid<=ushort.MaxValue && IsLight((ushort)i.Goid)).Select(i=>i.Goid+"@"+i.Slot)));
+                c.FlushQueue();
+            }
         }
         /// <summary>Called under MissionRuntime's mission lock. Ping categories/refresh are choices; roll is retail.</summary>
         public static void RevealMission(WorldClient c, MissionProgress progress)

@@ -744,5 +744,43 @@
         "Usable/PickupExclusive3": 47278
       }
     }
+  ],
+  "locators": [
+    {
+      "goid": 422,
+      "name": "DataNodeLocator_HandHeld",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 30.0,
+        "DataNodeLocator/Type": 0
+      }
+    },
+    {
+      "goid": 423,
+      "name": "DataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 5.0,
+        "DataNodeLocator/Type": 1
+      }
+    },
+    {
+      "goid": 38208,
+      "name": "AdvancedDataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2148120576,
+        "DataNodeLocator/Range": 15.0,
+        "DataNodeLocator/Type": 1
+      }
+    },
+    {
+      "goid": 38209,
+      "name": "BasicDataNodeLocatorGoggles",
+      "fields": {
+        "AbilityPrerequisite/ReqAbilityID": 2147703808,
+        "DataNodeLocator/Range": 5.0,
+        "DataNodeLocator/Type": 1
+      }
+    }
   ]
 }
