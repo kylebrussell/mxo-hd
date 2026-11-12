@@ -404,6 +404,7 @@ namespace hds
             {
                 fx = CombatHandler.DefaultAbilityHitFx;
             }
+            damage = CombatSpecials.Damage(abilityId, null) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, damage);
             string casterName = PvpFlag.Name(caster), targetName = PvpFlag.Name(target);
             Output.WriteDebugLog("[PVP] " + casterName + "'s " + ability.getAbilityName() + " lands on " + targetName + " for " + damage);
@@ -422,6 +423,7 @@ namespace hds
             // A non-damaging control still has an activation effect on its victim. Send that effect to the
             // victim and their watchers; the caster's execution animation is a separate view update.
             ServerPackets.SendPlayerAbilityEffect(target, fx);
+            CombatSpecials.Landed(caster, abilityId);
             if (Damage(target, damage))
             {
                 Defeated(target, caster);

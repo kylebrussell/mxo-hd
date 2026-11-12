@@ -125,6 +125,12 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
+            // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles)
+            if (!CombatStyles.CanUse(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "That move requires the " + CombatStyles.Name(CombatStyles.RequiredStyle(AbilityID)) + " combat style.");
+                return;
+            }
             bool support = AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
@@ -178,6 +184,7 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
@@ -185,8 +192,10 @@ namespace hds
             });
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
-                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID)))
+            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true &&
+                (!currentAbility.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID)) &&
+                (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
+                 CombatSpecials.TargetsEnemy(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,

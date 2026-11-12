@@ -8,7 +8,7 @@ namespace hds
     /// <summary>Friendly abilities resolve to players, never to the hostile damage fallback.</summary>
     public static class AbilitySupport
     {
-        public static bool Handles(UInt16 id) => AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id);
+        public static bool Handles(UInt16 id) => (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id)) && !CombatSpecials.Handles(id);
         public static WorldClient PlayerInView(WorldClient caster, UInt16 view)
         {
             if (view <= 2) return caster;

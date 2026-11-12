@@ -217,6 +217,13 @@ namespace hds
         /// resolves (<see cref="ResolveCloseCombatRound"/>). A later ability before that round replaces it, as a
         /// new choice of move. Returns false when the target isn't the current close-combat target.
         /// </summary>
+        /// <summary>Whether this player is in a live fight with the NPC (Taunt's hold on it, CombatSpecials).</summary>
+        public bool IsFighting(Mob mob)
+        {
+            CombatSession session = currentSession;
+            return mob != null && session != null && session.IsActive && session.DefenderMob == mob;
+        }
+
         public bool QueueRoundAbility(AbilityItem ability, UInt16 targetViewId)
         {
             if (pvpFight != null)
@@ -282,7 +289,8 @@ namespace hds
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
                     AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
-                    CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned;
+                    CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
+                    !CombatSpecials.TurnedAway(mob, player);
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
                 playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
                     AbilityStats.Player(player, 1142), AbilityStats.Toughness(mob, false));
@@ -806,7 +814,11 @@ namespace hds
                 // Phase 3: Mob attacks the player back (with player's defensive tactic applied). An NPC with a gun
                 // shoots back in a gunfight; others keep the close-combat counterattack.
                 bool playerDied;
-                if (session.Type == CombatSession.CombatType.Ranged && RangedWeapons.IsGun(session.DefenderMob.getWeapon()))
+                if (CombatSpecials.TurnedAway(session.DefenderMob, session.Attacker))
+                {
+                    playerDied = false; // a Taunt turned the NPC on another player
+                }
+                else if (session.Type == CombatSession.CombatType.Ranged && RangedWeapons.IsGun(session.DefenderMob.getWeapon()))
                 {
                     playerDied = NpcReturnFire(session);
                 }

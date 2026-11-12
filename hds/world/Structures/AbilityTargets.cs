@@ -130,8 +130,10 @@ namespace hds
                 }
             }
 
-            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, damage);
             Mob mob = FindMob(client, targetViewId, out ClientView view);
+            // Combat-style specials and Exile weapons have their own damage, never the generic fallback (CombatSpecials)
+            damage = CombatSpecials.Damage(abilityId, mob) ?? damage;
+            damage = AbilityStats.ScaleAbilityDamage(client, abilityId, damage);
             if (mob == null)
             {
                 // Another player: PvpCombat decides whether they can be hit
@@ -147,6 +149,7 @@ namespace hds
             // must already see a stun
             TimedEffects.ApplyToMob(client, mob, targetViewId, abilityId);
             if (!handler.ApplyAbilityToNpc(mob, targetViewId, damage, fx)) return false;
+            CombatSpecials.Landed(client, abilityId);
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }

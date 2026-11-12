@@ -328,6 +328,7 @@ namespace hds
         public static bool TryGet(UInt16 id, out Effect effect)
         {
             id = AbilityCatalog.Canonical(id);
+            if (CombatSpecials.TryTimed(id, out effect)) return true;
             Effect source = AbilityCatalog.Controls(id);
             if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
             var mods = new List<Mod>();
