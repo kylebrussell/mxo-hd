@@ -78,10 +78,11 @@ namespace hds
                 }
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
-            if (newWorld) CompileSession.End(client, false);
-            else CompileSession.Check(client);
+            if (newWorld) CraftingSession.End(client, false);
+            else CraftingSession.Check(client);
             Refresh(client, !newWorld);
             EvasionShield.LoadoutChanged(client);
+            AbilityDesperation.LoadoutChanged(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker

@@ -8,6 +8,25 @@ namespace hds
         {
             if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1") return "Combat depth requires MXO_DEV_COMMANDS=1.";
             string command = args.Length > 0 ? args[0] : "";
+            if (command == "specialdefense")
+            {
+                // Paired seeded production contests; fixture-only. No live round's RNG or health is changed.
+                var move = new AbilityItem(); move.setAbilityID(281);
+                int defence = AbilityStats.SpecialDefense(caller, move), hits = 0;
+                var rng = new Random(731);
+                for (int i = 0; i < 1000; i++)
+                    if (CombatInterlock.RollHit(rng, CombatTactic.Speed, 50, CombatTactic.Speed, 50,
+                        out _, out _, CombatTacticType.Normal, 0, defence)) hits++;
+                ushort before = PvpCombat.HealthOf(caller);
+                if (before <= hits) return "Special defence diagnostic requires more than 1000 HP (use ?health 5000).";
+                PvpCombat.Damage(caller, hits);
+                return "Special defence 281 stat1011 total " + defence + "; seeded landed " + hits + "/1000; diagnostic HP " + before + "->" + PvpCombat.HealthOf(caller) + ".";
+            }
+            if (command == "empweakness" && args.Length == 3 && (args[1] == "on" || args[1] == "off") &&
+                ushort.TryParse(args[2],out ushort empHealth) && empHealth > 0)
+                return AbilityEmpBlast.Fixture(caller,args[1] == "on",empHealth);
+            if (command == "empweakness" && args.Length == 2 && (args[1] == "on" || args[1] == "off"))
+                return AbilityEmpBlast.Fixture(caller,args[1] == "on");
             if (command == "determination" && args.Length == 2 && int.TryParse(args[1], out int value) && value >= 0 && value <= 1000)
             {
                 var subject = TimedEffects.ForPlayer(caller);
@@ -78,7 +97,7 @@ namespace hds
                 TimedEffects.RemoveParent(TimedEffects.ForPlayer(caller),1102); DuelBot.Dismiss(caller);
                 return "Combat depth fixture removed.";
             }
-            return "?combatdepth determination <0..1000> | stun | cast <ability> | join | status | shieldstatus | sightgap | sightclear | off";
+            return "?combatdepth determination <0..1000> | stun | cast <ability> | join | status | shieldstatus | specialdefense | sightgap | sightclear | off";
         }
     }
 }

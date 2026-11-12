@@ -50,7 +50,7 @@ namespace hds
                     pending.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now) ||
                     AbilityCooldowns.IsCoolingDown(data, ability, now))
                 { Deny(client, ability); return true; }
-                CompileSession.End(client);
+                CraftingSession.End(client);
                 var token = new Pending();
                 pending.Add(client, token);
                 int world = data.worldGeneration, life = data.lifeGeneration;

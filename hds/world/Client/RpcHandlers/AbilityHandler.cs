@@ -88,6 +88,7 @@ namespace hds
 
 
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
+            if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
@@ -110,7 +111,7 @@ namespace hds
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
             double now = TimeUtils.GetSimTimeSeconds();
-            if (AbilityID != CompileSession.Ability && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
+            if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
             {
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
@@ -138,7 +139,7 @@ namespace hds
                 return;
             }
 
-            if (AbilityID != CompileSession.Ability) CompileSession.End(Store.currentClient);
+            if (!CraftingSession.Handles(AbilityID)) CraftingSession.End(Store.currentClient);
 
             // A combat style used from the Actions window (80 b9 <style>) switches the style, as a 3e does (CombatStyles)
             if (CombatStyles.UseStyle(Store.currentClient, AbilityID))
@@ -148,8 +149,8 @@ namespace hds
             }
 
             // Tool activation and window close are a distinct flag-bearing 80 b9 path.
-            if (AbilityID == CompileSession.Ability)
-            { CompileSession.Process(Store.currentClient, packet); return; }
+            if (CraftingSession.Handles(AbilityID))
+            { CraftingSession.Process(Store.currentClient, packet); return; }
 
             // Double-clicking a consumable sends its ability with the item's bag slot.
             UInt16? itemSlot = ConsumableItems.ItemSlotOfAbilityRequest(packet);
@@ -291,6 +292,7 @@ namespace hds
                     if (AbilityID == CoderPets.PowerBoost) CoderPets.LandPowerBoost(client, powerBoost);
                     else CoderPets.Land(client, AbilityID, currentTargetViewId);
                 }
+                if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
@@ -487,11 +489,6 @@ namespace hds
                 pak.sendISCurrent(Store.currentClient, innerStrength);
             }
 
-            if (currentAbility.getAbilityID() == 970)
-            {
-                // Spawn Code Write Window
-                pak.SendCodeWriterWindow();
-            }
         }
 
         public void processCharacterAnimationSelf(UInt16 abilityID)

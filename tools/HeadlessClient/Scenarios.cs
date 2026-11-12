@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using hds;
 
 namespace HeadlessClient;
@@ -24,6 +24,8 @@ public static partial class Scenarios
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
         new Scenario("anti-stun-pills", AntiStunPillUse, HealthCallbackNpcs),
+        new Scenario("qa-loadout", QaLoadoutCommands, StillNpcs),
+        new Scenario("qa-loadout-disabled", QaLoadoutDisabled, new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("ability-1124-tool-refusal", DisruptConnectionToolRefusal, StillNpcs),
         new Scenario("stealth-shields-native-fixture", StealthShieldNativeFixture, StillNpcs),
         new Scenario("stealth-shields-native-refusal", StealthShieldNativeRefusal, StillNpcs),
@@ -38,10 +40,13 @@ public static partial class Scenarios
         new Scenario("ignored-actions-gm", IgnoredActionsGm, new Dictionary<string,string> { ["MXO_GM_CHARACTER_IDS"]="1001", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-support", IgnoredActionsSupport, new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="0", ["MXO_MOB_WANDER"]="0", ["MXO_MOBS"]="test", ["MXO_AGGRO"]="0" }),
         new Scenario("ignored-actions-presence-trade-compile", IgnoredActionsPresenceTradeCompile, StillNpcs),
+        new Scenario("ability-desperation-snapshot", DesperationSnapshot, HealthCallbackNpcs.Concat(new Dictionary<string,string> { ["MXO_DESPERATION_QA_HOLD_HEALTH"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
         new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
         new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, HealthCallbackNpcs),
         new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
+        new Scenario("typed-special-queued", TypedSpecialQueued, StillNpcs),
+        new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),
         new Scenario("combat-depth-stealth-sight", CombatDepthStealthSight, StillNpcs),
         new Scenario("combat-depth-fixture", CombatDepthFixture, StillNpcs),
         new Scenario("combat-depth-special-shared", CombatDepthSpecialAndShared, StillNpcs),
@@ -90,11 +95,15 @@ public static partial class Scenarios
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),
         new Scenario("compile-session-authority", CompileSessionAuthority, StillNpcs),
+        new Scenario("writer-session-authority", WriterSessionAuthority, StillNpcs),
+        new Scenario("writer-session-dev-disabled", WriterSessionDevDisabled,
+            new Dictionary<string,string>(StillNpcs) { ["MXO_DEV_COMMANDS"]="0" }),
         new Scenario("compile-storage-depletion", CompileStorageDepletion, StillNpcs),
         new Scenario("pvp-group-interlock", PvpGroupInterlock, StillNpcs),
         new Scenario("combat-rounds-and-observers", CombatRoundsAndObservers, StillNpcs),
         new Scenario("ability-parity-controls", AbilityParityControls, StillNpcs),
         new Scenario("ability-parity-area", AbilityParityArea, StillNpcs),
+        new Scenario("ability-emp-blast", EmpBlast, StillNpcs.Concat(new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
         new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),
         new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
         {

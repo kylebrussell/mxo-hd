@@ -16,6 +16,7 @@ namespace hds
 
             string command = commands[0].ToLower();
             if (ClientActionsHandler.Dev(Store.currentClient, commands)) return;
+            if (QaLoadout.Dev(Store.currentClient, commands)) return;
 
             try
             {
@@ -563,8 +564,8 @@ namespace hds
                     CodeStorageHandler.ProcessUploadRequest(Store.currentClient);
                 }
 
-                if (command.Equals("?compilesession"))
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, CompileSession.Dev(Store.currentClient, commands), "SYSTEM");
+                if (command.Equals("?compilesession") || command.Equals("?writersession"))
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, CraftingSession.Dev(Store.currentClient, commands), "SYSTEM");
 
                 if (command.Equals("?compile") && commands.Length == 2)
                 {

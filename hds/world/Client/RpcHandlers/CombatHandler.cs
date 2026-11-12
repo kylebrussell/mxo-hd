@@ -295,7 +295,7 @@ namespace hds
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    AbilityStats.Attack(player, false), AbilityStats.Defense(mob, false)) && !playerStunned;
+                    AbilityStats.Attack(player, false), AbilityStats.SpecialDefense(mob, ability)) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
                     CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
                     npcTurn;
@@ -466,7 +466,7 @@ namespace hds
             session.OnCombatEnd += HandleCombatEnd;
             client.playerData.combatGeneration++;
             rangedOutOfRangeTicks = 0;
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             FaceThePlayer(session);
@@ -688,7 +688,7 @@ namespace hds
 
             // Start combat session
             currentSession.Start(CombatInterlock.RoundMs);
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
 
             // Retail resolved the opening move as the starter's opportunity attack straight away (tutorial 13:28:32: the
@@ -1074,7 +1074,7 @@ namespace hds
             rangedOutOfRangeTicks = 0;
 
             // First shot now, then one per tick.
-            CompileSession.End(client);
+            CraftingSession.End(client);
             isCombatRunning = true;
             bool killed = ResolveRangedShot(currentSession, true);
             client.FlushQueue();
