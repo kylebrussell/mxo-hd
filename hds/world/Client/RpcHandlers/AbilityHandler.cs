@@ -87,6 +87,8 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
 
+            // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
+            if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
@@ -234,9 +236,10 @@ namespace hds
                 return;
             }
 
+            bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
-            if (!stealth) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
+            if (!stealth && !lineUpConcealed) Stealth.BreakForAction(Store.currentClient, "used ability " + AbilityID);
 
             ProcessAbilityScript(this.currentAbility);
 
@@ -251,6 +254,7 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
+                else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
                 else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (pet)

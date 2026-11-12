@@ -269,14 +269,14 @@ namespace hds
         public static Random PulseRandom = random;
 
         /// <summary>tempmods.NegativeConditionSweepPulse on one subject.</summary>
-        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse)
+        internal static bool Pulse(TimedEffects.Subject subject, TimedEffects.Active pulse, Random rng=null)
         {
             var parents = subject.Effects.Snapshot().Select(a => a.Parent).Distinct().Where(Cleansable).ToList();
             WorldClient client = subject is PlayerEffects ? subject.Context : null;
             string name = client != null ? TimedEffects.PlayerName(client) : "";
             foreach (ushort parent in parents)
             {
-                if (Roll(PulseRandom, 100) >= pulse.Value) continue;
+                if (Roll(rng??PulseRandom, 100) >= pulse.Value) continue;
                 TimedEffects.RemoveParent(subject, parent);
                 Output.WriteDebugLog("[HOSTILE] sweep " + pulse.Parent + " removes debuff " + parent + (client != null ? " from " + name : ""));
                 if (client == null) continue;

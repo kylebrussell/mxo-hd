@@ -40,6 +40,8 @@ namespace hds
                         if((active.Definition?.Family ?? 0)==definition.Family) replacing.Add(active.AbilityId);
             if(AbilityCatalog.Find(id)?.Number("Ability/AbilityIsExclusive")==1 && Stealth.Current(client) is Stealth.State state)
                 replacing.Add(state.Def.Ability);
+            double stacking=AbilityCatalog.Find(id)?.Number("Ability/StackingType")??0;
+            if(stacking>0) replacing.UnionWith(ids.Where(other=>AbilityCatalog.Find(other)?.Number("Ability/StackingType")==stacking));
             int credit=ids.Where(replacing.Contains).Sum(Size);
             return cost <= Math.Max(0,Maximum(client)-Used(client)-Reserved(client))+credit;
         }
