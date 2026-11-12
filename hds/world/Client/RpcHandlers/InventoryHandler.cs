@@ -475,7 +475,7 @@ namespace hds
                     toRealSlotId = 0x64;
                     partModel = "gloves";
                     break;
-                    
+
                 case "2001682761":
                 case "FEMALE COAT":
                 case "MALE COAT":
