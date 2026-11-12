@@ -10,6 +10,38 @@ public static partial class Scenarios
         return reply;
     }
 
+    private static async Task QaReviveInPlace(ScenarioContext context)
+    {
+        var helper=await context.AddPlayerAsync(new CharacterSeed("QAFriend") { Level=50 });
+        var corpse=await context.AddPlayerAsync(new CharacterSeed("QADead") { X=17120,Level=50,Health=777,MaxHealth=777,InnerStrength=1,MaxInnerStrength=333 });
+        await helper.EnterWorldAsync(); await corpse.EnterWorldAsync();
+        var watched=await helper.WaitForViewNamedAsync(corpse.Handle);
+        await KillForResurrection(corpse);
+        Cast(helper,416,watched.ViewId);
+        await corpse.WaitForRpcAsync("81 88",TimeSpan.FromSeconds(15));
+        helper.SendChat("?qarevive QADead");
+        await corpse.WaitForViewUpdateAsync(2,"01 28 ?? 40 00 3f a0 01");
+        await helper.WaitForViewUpdateAsync(watched.ViewId,"01 2a ?? 40 00 3f a0 01 00");
+        await corpse.WaitForViewUpdateAsync(2,"02 80 80 80 d1 00 4d 01 09 03 80 80 01 00 00 00 00");
+        await helper.WaitForViewUpdateAsync(watched.ViewId,"02 80 80 92 00 09 03 80 04 00 00 00 00");
+        await corpse.WaitForRpcAsync(ResurrectionLine);
+        corpse.SendRpc(NativeResurrectionReply(416));
+        corpse.SendRpc("81 48"); await corpse.WaitForRpcAsync("81 49");
+        Check.Equal(1,corpse.Received(ResurrectionLine).Count,"Old offer cannot restore the new life");
+        await KillForResurrection(corpse);
+        corpse.SendChat("?qarevive");
+        await corpse.WaitForRpcAsync(ResurrectionLine);
+        Check.Equal(2,corpse.Received(ResurrectionLine).Count,"Dead self can use fixture revive");
+        helper.SendChat("?qarevive QADead"); await helper.WaitForTextAsync("QA revive refused");
+        helper.SendChat("?qarevive MissingFixture"); await helper.WaitForTextAsync("QA revive refused");
+        await KillForResurrection(corpse);
+        corpse.SendRpc("81 4c"); await corpse.WaitForRpcAsync("80 fd 00 00 00 00 01 01");
+        helper.SendChat("?qarevive QADead"); await helper.WaitForTextAsync("QA revive refused");
+        corpse.SendRpc("81 48"); await corpse.WaitForRpcAsync("81 49");
+        Check.Equal(2,corpse.Received(ResurrectionLine).Count,"Pending reconstruct is never revived or teleported");
+        Check.Equal(0,helper.World.Problems.Count+corpse.World.Problems.Count,"QA revive protocol");
+    }
+
     private const string ResurrectionLine = "81 67 ?? ?? ?? ?? 3e 28 00 c6";
 
     private static async Task KillForResurrection(HeadlessPlayer target)
