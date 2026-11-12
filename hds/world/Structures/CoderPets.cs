@@ -8,7 +8,7 @@ namespace hds
 {
     /// <summary>
     /// Coder simulacra (pets): Remote Proxy, Logic Daemon and Patch Daemon summons, the abilities that act on the caster's
-    /// own simulacrum (Repair/Fix, Fortify, Charge, Detonate Proxy, Drain Code), Daemon Boost, and the client's orders
+    /// own simulacrum (Repair/Fix, Fortify, Power Boost, Charge, Detonate Proxy, Drain Code), Daemon Boost, and the client's orders
     /// (<c>81 7a</c>/<c>81 7b</c>/<c>81 7c</c>). See docs/CODER-PETS.md for the evidence behind each number.
     /// </summary>
     public static class CoderPets
@@ -51,13 +51,14 @@ namespace hds
         /// <summary>simulacra.simulacra_choices: Remote Proxy picks one at random.</summary>
         public static readonly string[] ProxySheets = { "Aikido", "Karate", "KungFu", "Pistol", "Rifle", "SMG" };
 
+        public const UInt16 PowerBoost = 25;
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
             DaemonBoost1 = 609, DaemonBoost2 = 619, DaemonBoostEffect1 = 699, DaemonBoostEffect2 = 700;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
 
         /// <summary>Abilities whose target must be the caster's own simulacrum (CastValidTarget 11; Decoy1_Test/StopProxy1_Test).</summary>
         public static bool TargetsOwnPet(UInt16 id) => id == DrainCode || id == FortifySimulacra || id == DetonateProxy ||
-            id == ChargeSimulacra || Repairs.Contains(id);
+            id == ChargeSimulacra || id == PowerBoost || Repairs.Contains(id);
 
         public static bool IsDaemonBoost(UInt16 id) => id == DaemonBoost1 || id == DaemonBoost2;
 
@@ -89,8 +90,10 @@ namespace hds
             // OURS: retail pet sheet IS/cost/regen values are not established. A real bounded pool makes 603 meaningful.
             public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
             public int FortifyResistance, BoostAccuracy;
+            public double PowerBoostUntil;
+            public int PowerMeleeDamage, PowerBallisticDamage;
             public double BoostUntil;
-            public int BoostDamage;
+            public int BoostViralDamage, BoostHealing;
             public bool Gone, WindowRemoved;
             public byte Counter;
         }
@@ -241,6 +244,80 @@ namespace hds
         // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
         public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
             75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0), 5, 95);
+
+        public sealed class PowerBoostCast
+        {
+            public readonly Pet Target;
+            public readonly int CasterLevel, CasterLife, CasterWorld;
+            public PowerBoostCast(WorldClient caster, Pet target)
+            {
+                Target = target; CasterLevel = caster.playerInstance.Level.getValue()[0];
+                CasterLife = caster.playerData.lifeGeneration; CasterWorld = caster.playerData.worldGeneration;
+            }
+            public bool Matches(WorldClient caster, Pet current) => Target != null && Target == current &&
+                Target.Owner == caster && !Target.Gone && !Target.Mob.getIsDead() &&
+                caster.playerData.lifeGeneration == CasterLife && caster.playerData.worldGeneration == CasterWorld;
+        }
+
+        // A 4s cast remains bound to the original pet and caster lifecycle, never a replacement pet.
+        public static PowerBoostCast CapturePowerBoost(WorldClient caster) => new PowerBoostCast(caster, Of(caster));
+
+        public static void LandPowerBoost(WorldClient caster, PowerBoostCast cast)
+        {
+            Pet pet = cast?.Target;
+            if (pet == null) return;
+            lock (pet)
+            {
+                if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) ||
+                    Refusal(caster, PowerBoost, 0) != null) return;
+                ApplyPowerBoost(pet, cast.CasterLevel, TimeUtils.GetSimTimeSeconds());
+                SendHit(pet, FirstFx(AbilityCatalog.Find(PowerBoost)));
+            }
+        }
+
+        public static void ApplyPowerBoost(Pet pet, int casterLevel, double now)
+        {
+            var entry = AbilityCatalog.Find(PowerBoost);
+            pet.PowerMeleeDamage = pet.PowerBallisticDamage = 0;
+            foreach (var modifier in entry.Modifiers)
+            {
+                if (!AbilityValues.TryValue(modifier, casterLevel, casterLevel, out int value)) continue;
+                if (modifier.Target == 159) pet.PowerMeleeDamage = value;
+                if (modifier.Target == 171) pet.PowerBallisticDamage = value;
+            }
+            pet.PowerBoostUntil = now + entry.Modifiers.First(m => m.Target == 159).Number("Duration");
+            // ForceCombat40 has no pet forced-interlock/shield consumer; intentionally remains a documented gap.
+        }
+
+        /// <summary>159/171 damage influence uses /100, as the existing combat damage pipeline does.
+        /// Only proxy melee/firearms qualify: Nuker viral attacks and healer healing receive neither stat.</summary>
+        public static UInt16 PowerBoostDamage(Pet pet, int baseDamage, double now)
+        {
+            int influence = pet.Kind != Kind.Proxy || now >= pet.PowerBoostUntil ? 0 :
+                Ranged(pet) ? pet.PowerBallisticDamage : pet.PowerMeleeDamage;
+            return (UInt16)Math.Clamp((int)(baseDamage * (1 + influence / 100.0)), 0, UInt16.MaxValue);
+        }
+
+        /// <summary>Sourced 699 stats172/174: viral damage/healing influence, not flat generic damage.</summary>
+        public static void ApplyDaemonBoost(Pet pet, UInt16 effect, int casterLevel, double now)
+        {
+            pet.BoostViralDamage = pet.BoostHealing = pet.BoostAccuracy = 0;
+            var entry = AbilityCatalog.Find(effect);
+            foreach (var modifier in entry.Modifiers)
+            {
+                if (!AbilityValues.TryValue(modifier, casterLevel, casterLevel, out int value)) continue;
+                if (modifier.Target == 172) pet.BoostViralDamage = value;
+                if (modifier.Target == 174) pet.BoostHealing = value;
+                if (effect == DaemonBoostEffect2) pet.BoostAccuracy = value; // all3 accuracy modifiers share level*1.3
+            }
+            pet.BoostUntil = now + entry.Modifiers.First().Number("Duration");
+        }
+
+        public static UInt16 DaemonBoostDamage(Pet pet, int damage, double now) =>
+            (UInt16)Math.Clamp((int)(damage * (1 + (pet.Kind == Kind.Nuker && now < pet.BoostUntil ? pet.BoostViralDamage : 0) / 100.0)), 0, UInt16.MaxValue);
+
+        public static UInt16 DaemonBoostHealing(Pet pet, int healing, double now) =>
+            (UInt16)Math.Clamp((int)(healing * (1 + (pet.Kind == Kind.Healer && now < pet.BoostUntil ? pet.BoostHealing : 0) / 100.0)), 0, UInt16.MaxValue);
 
         // ---- Spawning --------------------------------------------------------------------------------------------
 
@@ -498,6 +575,8 @@ namespace hds
             }
             if (TargetsOwnPet(id))
             {
+                if (id == PowerBoost && CombatManager.GetHandler(caster).isCombatRunning)
+                    return "You cannot use Power Boost in combat.";
                 Pet pet = Of(caster);
                 if (pet == null || pet.Mob.getIsDead()) return "You need an active simulacrum.";
                 // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
@@ -505,7 +584,7 @@ namespace hds
                 if (targetView > 2)
                 {
                     Mob selected = AbilityTargets.FindMob(caster, targetView, out _);
-                    if (selected != null && selected != pet.Mob) return "That is not your simulacrum.";
+                    if ((selected != null && selected != pet.Mob) || (id == PowerBoost && selected == null)) return "That is not your simulacrum.";
                 }
                 double range = AbilityCatalog.Find(id)?.Number("Ability/SelectionRange", 16) ?? 16;
                 if (OwnerDistanceMetres(pet) > range) return "Your simulacrum is out of range.";
@@ -791,14 +870,15 @@ namespace hds
 
         /// <summary>
         /// A simulacrum's hit: the NPC round damage model at its level against the target's (our choice; no retail capture shows
-        /// a simulacrum's damage), plus Daemon Boost's Viral Damage while it lasts.
+        /// a simulacrum's damage), with typed Power Boost/Daemon Boost influence while each lasts.
         /// </summary>
         private static void Attack(Pet pet, Mob target, double now)
         {
             if (!SpendAction(pet, now)) return;
             if (Random.Shared.NextDouble() * 100 >= HitChance(pet, target.getLevel(), now)) return;
-            UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
-            if (now < pet.BoostUntil) damage = (UInt16)Math.Min(UInt16.MaxValue, damage + pet.BoostDamage);
+            UInt16 rawDamage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
+            UInt16 damage = DaemonBoostDamage(pet, PowerBoostDamage(pet, rawDamage, now), now);
+            if (damage != rawDamage) Output.WriteDebugLog("[PET] typed influence " + pet.Kind + " base " + rawDamage + " final " + damage);
             UInt32 fx = Ranged(pet) ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
             FaceTowards(pet, target.getXPos(), target.getZPos());
             DamageForOwner(pet, target, damage, fx);
@@ -827,7 +907,9 @@ namespace hds
             pet.NextAttack = now + AttackPeriodSeconds;
             if (!SpendAction(pet, now)) return;
             int amount = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), owner.playerInstance.Level.getValue()[0]);
-            if (now < pet.BoostUntil) amount += pet.BoostDamage;
+            int rawHealing = amount;
+            amount = DaemonBoostHealing(pet, amount, now);
+            if (amount != rawHealing) Output.WriteDebugLog("[PET] typed healing base " + rawHealing + " final " + amount);
             AbilityHandler.HealSelf(owner, (UInt16)amount);
         }
 
@@ -861,17 +943,15 @@ namespace hds
             UInt16 effect = on == DaemonBoost1 ? DaemonBoostEffect1 : DaemonBoostEffect2;
             var entry = AbilityCatalog.Find(effect);
             double radius = entry?.Number("Ability/RadiusOfEffect", 20) ?? 20;
-            if (OwnerDistanceMetres(pet) > radius) { pet.BoostUntil = now + 5; pet.BoostDamage = 0; pet.BoostAccuracy = 0; return; }
-            pet.BoostUntil = now + 5;
-            pet.BoostDamage = effect == DaemonBoostEffect1 ? (int)(owner.playerInstance.Level.getValue()[0] * 0.5) : 0;
-            pet.BoostAccuracy = effect == DaemonBoostEffect2 ? (int)(owner.playerInstance.Level.getValue()[0] * 1.3) : 0;
+            if (OwnerDistanceMetres(pet) > radius) { pet.BoostUntil = now + 5; pet.BoostViralDamage = pet.BoostHealing = pet.BoostAccuracy = 0; return; }
+            lock (pet) ApplyDaemonBoost(pet, effect, owner.playerInstance.Level.getValue()[0], now);
             SendHit(pet, FirstFx(entry));
         }
 
         // ---- Dev command (MXO_DEV_COMMANDS=1) ------------------------------------------------------------------
 
         public static readonly UInt16[] DevAbilities = { 27, 28, 29, 586, 594, 22, 601, 611, 616, 602, 612, 617, 30, 31, 587, 596, 615,
-            20, 603, 34, 19, 609, 619 };
+            20, 25, 603, 34, 19, 609, 619 };
 
         /// <summary>?pet: casts through the real ability path, summons directly, orders, and a hostile dummy to fight.</summary>
         public static string DevCommand(WorldClient client, string[] args)
@@ -915,7 +995,7 @@ namespace hds
                     return current == null
                         ? "No simulacrum. ?pet cast|summon <ability>, ?pet dummy [level], ?pet follow|stay|attack|dismiss|defensive|aggressive|passive, ?pet abilities"
                         : current.Mob.getName() + " L" + current.Mob.getLevel() + " " + current.Mob.getHealthC() + "/" + current.Mob.getHealthM() + " HP, " + Math.Round(current.InnerStrength, 1) + "/" + current.MaxInnerStrength + " IS" +
-                          ", " + current.Order + ", " + current.Stance + ", cost " + (TimeUtils.GetSimTimeSeconds() < current.ChargeUntil ? 8 : 10) + ", resistance " + (TimeUtils.GetSimTimeSeconds() < current.FortifyUntil ? current.FortifyResistance : 0) + ", accuracy " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostAccuracy : 0) + (current.Target != null ? ", fighting " + current.Target.getName() : "");
+                          ", " + current.Order + ", " + current.Stance + ", cost " + (TimeUtils.GetSimTimeSeconds() < current.ChargeUntil ? 8 : 10) + ", resistance " + (TimeUtils.GetSimTimeSeconds() < current.FortifyUntil ? current.FortifyResistance : 0) + ", aura viral/heal " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostViralDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostHealing : 0) + ", power melee/ballistic " + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerMeleeDamage : 0) + "/" + (TimeUtils.GetSimTimeSeconds() < current.PowerBoostUntil ? current.PowerBallisticDamage : 0) + ", accuracy " + (TimeUtils.GetSimTimeSeconds() < current.BoostUntil ? current.BoostAccuracy : 0) + (current.Target != null ? ", fighting " + current.Target.getName() : "");
             }
         }
 

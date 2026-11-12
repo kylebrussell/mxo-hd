@@ -169,4 +169,81 @@ public class CoderPetTests
         Assert.Equal(95, CoderPets.HitChance(pet, 50, 14));
         Assert.Equal(75, CoderPets.HitChance(pet, 50, 15));
     }
+    [Fact]
+    public void PowerBoostUsesCasterLevelTypedInfluenceAndReplacesRatherThanStacks()
+    {
+        var pet = ResourcePet(); pet.Kind = CoderPets.Kind.Proxy; pet.Sheet = "Aikido";
+        CoderPets.ApplyPowerBoost(pet, 50, 10);
+        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 309));
+        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 310));
+        pet.Sheet = "SMG";
+        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 309));
+        CoderPets.ApplyPowerBoost(pet, 20, 20);
+        Assert.Equal(88, CoderPets.PowerBoostDamage(pet, 80, 319));
+        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 320));
+        pet.Kind = CoderPets.Kind.Nuker;
+        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 21));
+        pet.Kind = CoderPets.Kind.Healer;
+        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 21));
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(pet, 80, 21));
+    }
+
+    [Fact]
+    public void Daemon699AndPower25UseIndependentTimersAndCorrectDamageTypes()
+    {
+        var pet = ResourcePet();
+        CoderPets.ApplyPowerBoost(pet, 50, 10);
+        CoderPets.ApplyDaemonBoost(pet, 699, 40, 20); //20 viral/healing influence, through25s
+        pet.Kind = CoderPets.Kind.Nuker;
+        Assert.Equal(96, CoderPets.DaemonBoostDamage(pet, 80, 24));
+        Assert.Equal(80, CoderPets.DaemonBoostDamage(pet, 80, 25));
+        pet.Kind = CoderPets.Kind.Healer;
+        Assert.Equal(96, CoderPets.DaemonBoostHealing(pet, 80, 24));
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(pet, 80, 25));
+        pet.Kind = CoderPets.Kind.Proxy; pet.Sheet = "Aikido";
+        Assert.Equal(80, CoderPets.DaemonBoostDamage(pet, 80, 24));
+        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 25));
+        CoderPets.ApplyDaemonBoost(pet, 700, 50, 309);
+        Assert.Equal(64,pet.BoostAccuracy); //binary32 scale1.3 *50 truncates64.999997 to64
+        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 309));
+        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 310));
+        Assert.Equal(95, CoderPets.HitChance(pet, 50, 310));
+        Assert.Equal(75, CoderPets.HitChance(pet, 50, 314));
+        Assert.Equal(80, CoderPets.PowerBoostDamage(ResourcePet(), 80, 21)); //fresh replacement carries no buff
+    }
+
+    [Fact]
+    public void PowerBoostCatalogGatesRemainSourcedAndForceCombatRemainsExplicitGap()
+    {
+        var entry = AbilityCatalog.Find(25);
+        Assert.Equal(50, AbilityCosts.Cost(25));
+        Assert.Equal(4, entry.CastSeconds);
+        Assert.Equal(10, entry.Number("Ability/SelectionRange"));
+        Assert.Equal(11, entry.Number("Ability/CastValidTarget"));
+        Assert.Equal(1, entry.Number("Ability/NonCombatOnlyAbility"));
+        Assert.Contains(entry.Modifiers, m => m.Target == 519 && m.Number("MinValue") == 40);
+        Assert.True(CoderPets.TargetsOwnPet(25));
+    }
+    [Fact]
+    public void PowerCastSnapshotsLevelAndRejectsOwnerLifeWorldAndPetReplacement()
+    {
+        var caster=Owner(110,50); var pet=ResourcePet(); pet.Owner=caster;
+        var cast=new CoderPets.PowerBoostCast(caster,pet);
+        caster.playerInstance.Level.setValue((byte)20);
+        CoderPets.ApplyPowerBoost(pet,cast.CasterLevel,10);
+        Assert.Equal(25,pet.PowerMeleeDamage);
+        Assert.True(cast.Matches(caster,pet));
+        Assert.False(cast.Matches(caster,ResourcePet()));
+        Assert.False(cast.Matches(Owner(110,50),pet));
+        caster.playerData.lifeGeneration++;
+        Assert.False(cast.Matches(caster,pet));
+        caster.playerData.lifeGeneration--;
+        caster.playerData.worldGeneration++;
+        Assert.False(cast.Matches(caster,pet));
+        caster.playerData.worldGeneration--;
+        pet.Mob.setIsDead(true);
+        Assert.False(cast.Matches(caster,pet));
+        pet.Mob.setIsDead(false); pet.Gone=true;
+        Assert.False(cast.Matches(caster,pet));
+    }
 }

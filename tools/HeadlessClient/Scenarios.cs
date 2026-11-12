@@ -56,6 +56,8 @@ public static partial class Scenarios
         new Scenario("ability-parity-support", AbilityParitySupport, StillNpcs),
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
+        new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),
+        new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
         new Scenario("data-mining-full-bag", DataMiningFullBag, StillNpcs),
