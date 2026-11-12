@@ -11,7 +11,7 @@ namespace hds
             QaLoadout.Allowed(dev,database,character,live&&onWorld,dead) && !string.Equals(handle,"TheNeo",StringComparison.OrdinalIgnoreCase);
         public static bool Dev(WorldClient client,string[] words)
         {
-            if(words.Length!=2||!DevAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
+            if(client.playerData.worldChangePending||client.playerData.DistrictIsLA()||words.Length!=2||!DevAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                 client.playerData.getCharID(),client.Alive,client.playerData.getOnWorld(),client.playerData.isDead,
                 StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue())))return false;
             if(words[1]=="start")
@@ -74,6 +74,21 @@ namespace hds
             }
         }
         internal static void Mutate(WorldClient client,Action action,bool beginMission=false)=>Mutate(client,()=>{action();return true;},beginMission);
+        internal static bool PendingLootOwner(WorldClient client,Mob mob)
+        {
+            if(client?.playerData==null||mob==null||!mob.getIsDead()||!mob.getIsLootable())return false;
+            var data=client.playerData;
+            lock(data.missionSync)
+            {
+                if(data.missionProgress==null||data.activeMission!=data.missionProgress.mission||mob.missionInstance==0||
+                    mob.missionInstance!=data.missionInstanceCounter||!data.missionMobs.Contains(mob))return false;
+                lock(data.loot)
+                {
+                    var corpse=data.loot.Peek(mob.getEntityId());
+                    return corpse!=null&&(corpse.Info>0||corpse.MissionItem!=0||corpse.Items.Count>0);
+                }
+            }
+        }
         private static bool Available(WorldClient client) => client?.playerData!=null && Store.dbManager?.WorldDbHandler!=null;
         internal static void LoadCheckpoint(WorldClient client)
         {
@@ -90,7 +105,7 @@ namespace hds
                 if(data.missionProgress==null&&!clear)return;
                 // Death presentation precedes its reward callback. Never checkpoint that transient dead/unpaid gap.
                 if(data.missionProgress!=null)
-                    lock(data.missionMobs)if(data.missionMobs.Any(m=>m.getIsDead()&&!m.ScriptedCorpse&&!m.MissionDeathSettled))return;
+                    lock(data.missionMobs)if(data.missionMobs.Any(m=>(m.getIsDead()||m.getHealthC()==0)&&!m.ScriptedCorpse&&!m.MissionDeathSettled))return;
                 LoadCheckpoint(client);
                 string next=null;
                 if(data.missionProgress!=null)

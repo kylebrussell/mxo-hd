@@ -110,7 +110,13 @@ namespace hds
         /// <summary>Grants the selected corpse once, retaining every item that does not fit.</summary>
         public static bool TryTakeAll(WorldClient client)
         {
-            if(client.playerData.missionProgress!=null)return MissionPersistence.Mutate(client,()=>TryTakeAllCore(client));
+            lock(client.playerData.missionSync)
+            {
+                Mob source;
+                lock(client.playerData.loot)source=client.playerData.loot.Current?.Source;
+                if(client.playerData.missionProgress!=null&&source!=null&&client.playerData.missionMobs.Contains(source))
+                    return MissionPersistence.Mutate(client,()=>TryTakeAllCore(client));
+            }
             return TryTakeAllCore(client);
         }
         private static bool TryTakeAllCore(WorldClient client)

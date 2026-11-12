@@ -5,9 +5,17 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    private static async Task<HeadlessPlayer> StartRelogMission(ScenarioContext context)
+    private static async Task<HeadlessPlayer> StartRelogMission(ScenarioContext context, bool acceptanceFailure = false)
     {
         HeadlessPlayer player=(await context.AddPlayersInWorldAsync(new CharacterSeed("MissionRelog"){Level=50,X=23828,Y=495,Z=13984}))[0];
+        if(acceptanceFailure)
+        {
+            await context.Database.InstallMissionRollbackTriggerAsync(false,true);
+            player.SendChat("?missionpersist start");await player.WaitForTextAsync("Mission progress could not be saved");
+            Check.Equal(0,player.Received("80 9c").Count,"Failed acceptance does not publish a mission name");
+            Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT COALESCE(payload,'NULL') FROM char_active_missions WHERE charId={player.CharId}"),"Failed acceptance leaves no active checkpoint");
+            await context.Database.RemoveMissionRollbackTriggerAsync();
+        }
         player.SendChat("?missionpersist start");
         await player.WaitForRpcAsync("80 9c");
         await player.WaitForRpcAsync("80 9e 00");
@@ -20,7 +28,7 @@ public static partial class Scenarios
     }
     private static async Task MissionRelogPersistence(ScenarioContext context)
     {
-        HeadlessPlayer original=await StartRelogMission(context);
+        HeadlessPlayer original=await StartRelogMission(context,true);
         // Invoke the real checkpoint repository against this owned disposable DB, with an already occupied same-GOID slot.
         // Config parsing opens no connection; replace and validate the DB name before constructing the repository.
         var config=new ServerConfig(Path.Combine(context.RepositoryRoot,"hds","bin","Debug","net8.0","Config.xml.dist"));config.LoadDbParams();
@@ -84,6 +92,11 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 a0 02 06 00 01");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6825"),"Second objective does not replay first grant");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6820"),"Second Get grants its own item");
+        await context.Database.InstallMissionRollbackTriggerAsync(true);
+        player.SendRpc("80 a6");await player.WaitForTextAsync("Mission progress could not be saved");
+        Check.Equal(0,player.Received("80 a2 08").Count,"Failed abandon cannot publish abort");
+        Check.Equal(2,(await MissionCheckpoint(context,player)).Items.Count,"Failed abandon retains exact owned effects");
+        await context.Database.RemoveMissionRollbackTriggerAsync();
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("80 a2 08");
         Check.Equal("NULL",await context.Database.ScalarAsync($"SELECT COALESCE(payload,'NULL') FROM char_active_missions WHERE charId={player.CharId}"),"Abandon clears checkpoint");
@@ -180,6 +193,44 @@ public static partial class Scenarios
         Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6825"),"No duplicate moved item");
         p.SendRpc("80 a6");await p.WaitForRpcAsync("80 a2 08");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6825"),"Abandon cleans moved ownership");
+    }
+
+    private static async Task MissionRelogCorpseLoot(ScenarioContext context)
+    {
+        var original=await context.AddPlayerAsync(new CharacterSeed("CorpseOwner"){Level=50});
+        await original.EnterWorldAsync();
+        original.SendRpc("80 94 05 00 03");await original.WaitForTextAsync("Mission Corpse Persistence Fixture");
+        await original.WaitForRpcAsync("80 97 05 00");original.SendRpc("80 98 06 00 00 00 01 02 00");await original.WaitForRpcAsync("80 99");
+        original.SendRpc("80 9b 07 00 01");await original.WaitForRpcAsync("80 9e 00");
+        var carrier=await VisitMissionNpc(context,original,"Pending Carrier");
+        await DefeatMissionNpc(original,carrier);
+        original.SendChat("?missionpersist status");await original.WaitForTextAsync("Mission persistence:");
+        var saved=await MissionCheckpoint(context,original);
+        var body=saved.Mobs.Single(m=>m.Name=="Pending Carrier");
+        Check.That(body.Dead&&body.Lootable&&!body.ScriptedCorpse,"Ordinary killed mission actor remains an ordinary lootable corpse");
+        Check.That(body.Loot!=null,"Generated pending loot checkpointed");
+        Check.Equal(6791u,body.Loot!.MissionItem,"Unclaimed mission card persisted");
+        long killXp=await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={original.CharId}");
+        Check.That(killXp>0&&body.RewardExperience>0,"Kill XP and actor marker committed together");
+        original.SendChat("?save");await original.WaitForRpcAsync("2e 07");
+        string username=await context.Database.ScalarAsync($"SELECT username FROM users JOIN characters USING(userId) WHERE charId={original.CharId}");
+        original.Dispose();context.Server.Dispose();
+        using var server=await ServerInstance.StartAsync(context.RepositoryRoot,context.Database.Name,StillNpcs,"mission-persistence-loot.xml");
+        using var p=await HeadlessPlayer.LoginAsync(server.Address,username,original.Handle);await p.EnterWorldAsync();await p.WaitForRpcAsync("80 9c");
+        carrier=await p.WaitForViewNamedAsync("Pending Carrier",TimeSpan.FromSeconds(20));
+        Check.Equal((byte)1,carrier.Attributes["IsDead"][0],"Restored corpse is introduced dead");
+        Check.Equal(killXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Relog does not duplicate kill XP");
+        p.SendRpc($"80 c7 {MissionNpcId(carrier)} 05 00");
+        var window=await p.WaitForRpcAsync("81 19");
+        Check.Equal(body.Loot.Info,BitConverter.ToUInt32(window.Bytes,8),"Same generated pending cash, no reroll");
+        p.SendRpc("81 1f");await p.WaitForRpcAsync("80 a0 01 06 00 01");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6791"),"One claimed mission card");
+        long paid=await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
+        Check.Equal(1000L+body.Loot.Info,paid,"Unpaid corpse cash credited exactly once");
+        p.SendRpc($"80 c7 {MissionNpcId(carrier)} 05 00");await p.WaitForRpcAsync("81 19");p.SendRpc("81 1f");await p.WaitForRpcAsync("81 20");
+        Check.Equal(paid,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"),"Reopen cannot repay pocket cash");
+        Check.Equal(killXp,await context.Database.LongAsync($"SELECT exp FROM characters WHERE charId={p.CharId}"),"Reopen cannot repay kill XP");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=6791"),"Reopen cannot duplicate mission card");
     }
 
 }

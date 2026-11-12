@@ -38,18 +38,19 @@ namespace hds
         private static readonly object timerLock = new object();
         private static Timer timer;
 
-        public static void Start(WorldClient client, Mission mission) => MissionPersistence.Mutate(client,()=>StartCore(client,mission),true);
+        public static bool Start(WorldClient client, Mission mission, ushort transaction = 0) => MissionPersistence.Mutate(client,()=>{StartCore(client,mission,transaction);return true;},true);
 
-        private static void StartCore(WorldClient client, Mission mission)
+        private static void StartCore(WorldClient client, Mission mission, ushort transaction)
         {
             lock (client.playerData.missionSync)
             {
-                End(client);
+                EndCore(client,false);
 
                 ClientData data = client.playerData;
                 MissionProgress progress = new MissionProgress(mission);
                 data.activeMission = mission;
                 data.missionProgress = progress;
+                new ServerPackets().sendMissionAccept(client,transaction,data.missionInstanceCounter,mission);
 
                 foreach (MissionNpc npc in mission.npcs)
                 {
@@ -93,9 +94,9 @@ namespace hds
         }
 
         /// <summary>Removes the mission's NPCs and deletes their views from the clients that have them.</summary>
-        public static void End(WorldClient client) => MissionPersistence.Mutate(client,()=>EndCore(client));
+        public static bool End(WorldClient client) => MissionPersistence.Mutate(client,()=>{EndCore(client);return true;});
 
-        private static void EndCore(WorldClient client)
+        private static void EndCore(WorldClient client, bool clearPersistent = true)
         {
             lock (client.playerData.missionSync)
             {
@@ -120,7 +121,7 @@ namespace hds
                 }
                 data.activeMission = null;
                 data.missionProgress = null;
-                MissionPersistence.Save(client,true);
+                if(clearPersistent)MissionPersistence.Save(client,true);
             }
 
         }

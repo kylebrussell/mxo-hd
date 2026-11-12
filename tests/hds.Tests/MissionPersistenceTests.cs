@@ -83,6 +83,20 @@ public class MissionPersistenceTests
         Assert.Same(right,MissionProgress.FindSavedSite(new[]{new MissionSite(),wrong,right},door));
         Assert.Null(MissionProgress.FindSavedSite(new[]{right},null!));
     }
+
+    [Fact]
+    public void PendingCorpseRequiresCurrentOwnerCacheAndDoesNotBecomeScripted()
+    {
+        var client=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        var mission=Definition();client.playerData=new ClientData{activeMission=mission,missionProgress=new MissionProgress(mission),missionInstanceCounter=23};
+        var mob=new Mob();mob.setEntityId(42);mob.setIsDead(true);mob.setIsLootable(true);mob.missionInstance=23;
+        client.playerData.missionMobs.Add(mob);client.playerData.loot.Add(mob,37,6791,Array.Empty<uint>());client.playerData.loot.Close();
+        Assert.True(MissionPersistence.PendingLootOwner(client,mob));Assert.False(mob.ScriptedCorpse);Assert.False(client.playerData.loot.WindowOpen);
+        mob.missionInstance=24;Assert.False(MissionPersistence.PendingLootOwner(client,mob));mob.missionInstance=23;
+        var saved=client.playerData.missionProgress.Capture(23,new[]{mob},client.playerData.loot);
+        Assert.Equal(37u,Assert.Single(saved.Mobs).Loot.Info);
+        client.playerData.loot.Forget(mob);Assert.False(MissionPersistence.PendingLootOwner(client,mob));
+    }
     [Theory]
     [InlineData("1","mxotest_m1",110,true,true,false,"Tester",true)]
     [InlineData("true","mxotest_m1",110,true,true,false,"Tester",false)]

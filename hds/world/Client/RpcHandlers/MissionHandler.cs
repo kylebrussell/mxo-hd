@@ -44,11 +44,8 @@ namespace hds
                 SocialHandler.EnsureTeam(client);
 
                 data.missionInstanceCounter++;
-                ServerPackets pak = new ServerPackets();
-                pak.sendMissionAccept(client, txn, data.missionInstanceCounter, mission);
-
-                // Spawns the mission's NPCs, then the first phase's briefing, waypoints and objectives (retail's order).
-                MissionRuntime.Start(client, mission);
+                // Acceptance, NPCs and briefing publish only after their durable checkpoint (retail's order).
+                if(!MissionRuntime.Start(client,mission,txn))return false;
                 UtilityAbilities.OnMissionAccepted(client);
                 client.FlushQueue();
                 Output.WriteDebugLog("[MISSION] Accepted '" + mission.title + "'");
@@ -103,7 +100,7 @@ namespace hds
                 return;
             }
 
-            MissionRuntime.End(Store.currentClient);
+            if(!MissionRuntime.End(Store.currentClient))return;
             ServerPackets pak = new ServerPackets();
             pak.SendMissionAbort(Store.currentClient);
         }

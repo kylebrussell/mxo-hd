@@ -558,7 +558,7 @@ namespace hds
                         // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
                         // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
                         // and one the client never sees spawned puts every later view id one off.
-                        if (!DeathPresentation.CanIntroduceNpc(thismob))
+                        if (!DeathPresentation.CanIntroduceNpc(thismob) && !MissionPersistence.PendingLootOwner(thisclient,thismob))
                         {
                             continue;
                         }

@@ -41,9 +41,9 @@ public sealed class ThrowawayDatabase : IDisposable
     }
 
     /// <summary>Fixed failure DDL only inside this harness-owned mxotest database; never changes server security settings.</summary>
-    public Task<string> InstallMissionRollbackTriggerAsync(bool completing)
+    public Task<string> InstallMissionRollbackTriggerAsync(bool completing, bool accepting = false)
     {
-        string condition=completing?"NEW.payload IS NULL AND OLD.payload IS NOT NULL":
+        string condition=accepting?"OLD.payload IS NULL AND NEW.payload IS NOT NULL":completing?"NEW.payload IS NULL AND OLD.payload IS NOT NULL":
             "NEW.payload IS NOT NULL AND JSON_CONTAINS(JSON_EXTRACT(NEW.payload,'$.Done'),'1') AND NOT JSON_CONTAINS(JSON_EXTRACT(OLD.payload,'$.Done'),'1')";
         string sql="DELIMITER $$\nCREATE TRIGGER mission_test_rollback BEFORE UPDATE ON char_active_missions FOR EACH ROW BEGIN IF "+condition+
             " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='M1 deliberate precommit rollback'; END IF; END$$\nDELIMITER ;\n";

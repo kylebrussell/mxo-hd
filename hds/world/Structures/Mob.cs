@@ -52,7 +52,6 @@ namespace hds
         internal string MissionPersistenceId;
         internal uint MissionRewardExperience;
         internal bool MissionDeathSettled;
-        public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
         public bool missionGiver = false; // offers the client's Get interaction
         public bool missionTaker = false; // offers the client's Give interaction
         public bool hostileMissionKey = false; // the tutorial's opponents carry the mission's key: the client won't fight them there without it
