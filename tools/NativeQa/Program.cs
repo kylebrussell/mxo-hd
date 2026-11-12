@@ -9,13 +9,32 @@ const string configuration = "Debug";
 #else
 const string configuration = "Release";
 #endif
+// Actions groups learned abilities by their catalog discipline. Own missing folders without loading their stats.
+static ushort[] DisciplineAncestors(JsonElement catalog, IEnumerable<ushort> requested)
+{
+    var rows = catalog.GetProperty("abilities").EnumerateArray().ToDictionary(r => r.GetProperty("id").GetUInt16());
+    var selected = requested.ToHashSet(); var known = new HashSet<ushort>(selected); var pending = new Queue<ushort>(selected);
+    while (pending.Count > 0)
+    {
+        if (!rows.TryGetValue(pending.Dequeue(), out var row) ||
+            !row.GetProperty("fields").TryGetProperty("Ability/DisciplineBelongsTo", out var belongs)) continue;
+        ushort parent = AbilityCatalog.IdOf(belongs.GetUInt32());
+        if (parent == 0 || !rows.TryGetValue(parent, out var p) ||
+            !p.GetProperty("fields").TryGetProperty("Ability/IsDiscipline", out var discipline) || discipline.GetInt32() == 0) continue;
+        if (known.Add(parent)) pending.Enqueue(parent);
+    }
+    return known.Except(selected).Order().ToArray();
+}
 // Read-only provenance inspection exits before fixture directories, client locks or database access.
 if (args.Length > 0 && args[0] == "--build-info")
 {
     string inspectRoot = Path.GetFullPath(args.Length > 1 ? args[1] : Directory.GetCurrentDirectory());
     string assembly = Path.Combine(inspectRoot, "hds", "bin", configuration, "net8.0", "hds.dll");
+    ushort[] requested = args.Length > 2 ? args[2].Split(',').Select(ushort.Parse).Distinct().ToArray() : Array.Empty<ushort>();
+    using var planCatalog = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(inspectRoot,"data","ability_catalog.json")));
     Console.WriteLine(JsonSerializer.Serialize(new { Configuration=configuration, SourceAssembly=assembly,
-        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))) },
+        SourceAssemblySha256=Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(assembly))),
+        RequestedAbilities=requested, OwnedUnloadedDisciplineAncestors=DisciplineAncestors(planCatalog.RootElement,requested) },
         new JsonSerializerOptions { WriteIndented=true }));
     return;
 }
@@ -86,8 +105,10 @@ DELETE FROM char_abilities WHERE char_id=110;
     var names = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(), e => e.GetProperty("name").GetString()!);
     var levels = catalog.RootElement.GetProperty("abilities").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetUInt16(),
         e => e.GetProperty("fields").TryGetProperty("Ability/AbilityLevelCap", out var cap) ? Math.Min(50, cap.GetInt32()) : 50);
-    string loadout = string.Join("\n", abilities.Distinct().Select((id, slot) =>
-        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},1,'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
+    var disciplineAncestors = DisciplineAncestors(catalog.RootElement,abilities);
+    var loadedIds = abilities.ToHashSet();
+    string loadout = string.Join("\n", abilities.Distinct().Concat(disciplineAncestors).Select((id, slot) =>
+        $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name) VALUES(110,{slot},{0x80000000L | ((long)id << 10)},{levels.GetValueOrDefault(id,50)},{(loadedIds.Contains(id)?1:0)},'{names.GetValueOrDefault(id, "QA").Replace("'", "''")}');"));
     await database.ExecuteAsync(loadout);
     if (actionsMode)
         await database.ExecuteAsync(@"
@@ -145,7 +166,8 @@ INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name)
     await File.WriteAllTextAsync(Path.Combine(qaRoot,"state.json"), JsonSerializer.Serialize(new
     { Database=database.Name, Directory=server.WorkingDirectory, Account=account, Character="CSR_Tester", CharId=nativeId, BuildCommit=commit,
         Configuration=configuration, SourceAssembly=sourceAssembly, SourceAssemblySha256=sourceAssemblySha256,
-        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities }, new JsonSerializerOptions { WriteIndented=true }));
+        SnapshotAssemblySha256=snapshotAssemblySha256, Status="Ready", Abilities=abilities,
+        OwnedUnloadedDisciplineAncestors=disciplineAncestors }, new JsonSerializerOptions { WriteIndented=true }));
     Console.WriteLine("Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110.");
     int seen = 0;
     var handled = new HashSet<string>();
