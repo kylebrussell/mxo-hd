@@ -125,7 +125,20 @@ namespace hds
                 Deny(AbilityID, "You cannot use abilities while powerless.");
                 return;
             }
-            bool support = AbilitySupport.Handles(AbilityID);
+            // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
+            bool pet = CoderPets.Handles(AbilityID);
+            if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                CoderPets.ToggleOff(Store.currentClient);
+                return;
+            }
+            string petRefusal = pet ? CoderPets.Refusal(Store.currentClient, AbilityID, currentTargetViewId) : null;
+            if (petRefusal != null)
+            {
+                Deny(AbilityID, petRefusal);
+                return;
+            }
+            bool support = !pet && AbilitySupport.Handles(AbilityID);
             if (support && AbilitySupport.Targets(Store.currentClient, AbilityID, currentTargetViewId).Count == 0)
             {
                 Deny(AbilityID, "Choose a living friendly target within range.");
@@ -178,6 +191,7 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId);
+                if (pet) CoderPets.Land(client, AbilityID, currentTargetViewId);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId);
                 if (AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
@@ -186,7 +200,7 @@ namespace hds
             });
 
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
-            if (currentTargetViewId > 2 && !support && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
+            if (currentTargetViewId > 2 && !support && !pet && definition?.FriendlyTarget != true && !currentAbility.getIsBuff() &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID)))
             {
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
