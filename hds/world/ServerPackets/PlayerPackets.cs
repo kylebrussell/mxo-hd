@@ -441,6 +441,15 @@ namespace hds
             pak.AddUint16(viewId,1);
             pak.AddByte(0x00);
             receiverClient.messageQueue.addObjectMessage(pak.ReturnFinalPacket(),false);
+            if (DeathPresentation.IsCorpse(otherClient))
+            {
+                receiverClient.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId,
+                    PlayerViewAttributes.Build(
+                        (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(1)),
+                        (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(0)))), false);
+                receiverClient.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId,
+                    DeathPresentation.OtherCorpse(otherClient)), false);
+            }
             receiverClient.FlushQueue();
             return spawnId;
         }

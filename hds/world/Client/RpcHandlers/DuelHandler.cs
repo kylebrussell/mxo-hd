@@ -326,7 +326,11 @@ namespace hds
             TradeHandler.Abort(loser);
 
             ClientData data = loser.playerData;
-            data.duelDeath = true;
+            lock (data.lifeSync)
+            {
+                data.duelDeath = true;
+                data.lifeGeneration++;
+            }
             data.duelId = 0;
             data.conditionStateFlags = 0;
             winner.playerData.duelId = 0;
@@ -341,6 +345,7 @@ namespace hds
             AbilityBuffs.RemoveAll(loser);
             DeathPenalty.Send(loser); // retain a previous injury; a duel doesn't add another death penalty
             PvpFlag.ToWatchers(loser, BuildOtherDuelDeath());
+            DeathPresentation.Corpse(loser);
             winner.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfDuelId, PlayerViewAttributes.U32(0))), false);
             PvpFlag.ToWatchers(winner, PlayerViewAttributes.Build((PlayerViewAttributes.OtherDuelId, PlayerViewAttributes.U32(0))));
 
@@ -418,11 +423,24 @@ namespace hds
             {
                 return false;
             }
-            client.playerData.duelDeath = false;
+            lock (client.playerData.lifeSync)
+            {
+                client.playerData.duelDeath = false;
+                client.playerData.lifeGeneration++;
+            }
             if (PvpFight.RunPendingTeardown(client))
             {
                 // Up before the interlock came down: it comes down first, the stand-up follows in a packet of its own
-                DelayedActions.After(ReassertSeconds, () => SendStandUp(client));
+                int life = client.playerData.lifeGeneration, world = client.playerData.worldGeneration;
+                DelayedActions.After(ReassertSeconds, () =>
+                {
+                    lock (client.playerData.lifeSync)
+                    {
+                        if (!client.Alive || !client.playerData.getOnWorld() || DeathPresentation.IsCorpse(client) ||
+                            client.playerData.lifeGeneration != life || client.playerData.worldGeneration != world) return;
+                        SendStandUp(client);
+                    }
+                });
             }
             else
             {
@@ -441,6 +459,9 @@ namespace hds
             client.messageQueue.addObjectMessage(BuildStandUp(client.playerData.emoteCounter, (float)x, (float)y, (float)z,
                 CombatHandler.CombatStartTime()), false);
             client.FlushQueue();
+            // Stand up on observer views too; the own-view compound packet above remains retail's exact record.
+            PvpFlag.ToWatchers(client, DeathPresentation.Build(false, client.playerData.emoteCounter,
+                DeathPresentation.Standing, DeathPresentation.Idle, DeathPresentation.NoAbility, (float)x, (float)y, (float)z));
             PvpFlag.ToWatchers(client, PlayerViewAttributes.Build(
                 (PlayerViewAttributes.OtherIsDead, PlayerViewAttributes.U8(0)),
                 (PlayerViewAttributes.OtherHealth, PlayerViewAttributes.U16(1))));

@@ -514,6 +514,17 @@ namespace hds
                     Store.currentClient.FlushQueue();
                 }
 
+                if (command.Equals("?dismissbuff") && commands.Length == 2 &&
+                    Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
+                    ushort.TryParse(commands[1], out ushort dismissAbility))
+                {
+                    // Exercise the same parser, category/prohibition gates and removal path as native80bb.
+                    AbilityCancellation.Process(Store.currentClient, BitConverter.GetBytes(dismissAbility));
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient,
+                        AbilityCancellation.CanDismiss(dismissAbility) ? "Buff dismissal requested: " + dismissAbility :
+                        "Buff dismissal refused: " + dismissAbility, "BROADCAST");
+                }
+
                 if (command.Equals("?die"))
                 {
                     // Dev command: run the player death path without needing a mob strong enough to win.
